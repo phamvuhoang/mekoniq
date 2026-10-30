@@ -1,0 +1,19 @@
+{
+  "device": "Thiết bị",
+  "pos": "Bán hàng",
+  "kitchen": "Bếp",
+  "fleet": "Robot",
+  "checkout": "Thu ngân",
+  "settings": "Quản lý",
+  "refresh": "Làm mới",
+  "submit": "Xác nhận",
+  "empty": "Chưa có dữ liệu",
+  "reconciliation": "Đối soát",
+  "maintenance": "Bảo trì",
+  "import": "Nhập phiếu cũ",
+  "recovery": "Phục hồi",
+  "isolated": "Ghi nhận riêng",
+  "error": "Không thể xử lý",
+  "enroll": "Thiết bị chưa được cấp quyền",
+  "retry": "Thử kết nối lại"
+}

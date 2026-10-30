@@ -1,0 +1,20 @@
+{
+  "name": "@mekoniq/tablet-android",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "cap sync android",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint src capacitor.config.ts",
+    "android:build": "./android/gradlew -p android assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.6.0",
+    "@capacitor/android": "8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.0",
+    "@mekoniq/tablet-web": "workspace:*"
+  }
+}

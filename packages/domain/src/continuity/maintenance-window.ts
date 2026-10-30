@@ -2,12 +2,14 @@ import type {CommandEnvelope,Snapshot,JsonObject} from '../../../contracts/src/i
 import {find,change,ok,requireState} from './shared';
 import {grantBlocksReissue} from '../billing/settlement-grant';
 import {hashPayload} from '../../../contracts/src/index';
+import {deviceCheckpointComplete} from './checkpoint';
 function checkpointHash(s:Snapshot[]){return hashPayload(s.filter(x=>!['maintenance','__scope__'].includes(x.ref.kind)).map(x=>({kind:x.ref.kind,id:x.ref.id,version:x.version})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));}
 export function prepareMaintenance(c:CommandEnvelope,s:Snapshot[]) {
   const missing=c.payload.missingDevices??[];
   if(!Array.isArray(missing)||missing.some(x=>typeof x!=='string'))throw new Error('INVALID_DEVICE_INVENTORY');
   const checkpoints:JsonObject[]=s.filter(x=>x.ref.kind==='device-checkpoint').map(x=>({deviceId:x.ref.id,...x.state}));
-  const missingDevices=[...new Set([...missing,...s.filter(x=>x.ref.kind==='device'&&x.state.status==='active'&&!checkpoints.some(checkpoint=>checkpoint.deviceId===x.ref.id&&checkpoint.deviceEpoch===x.state.deviceEpoch&&checkpoint.status==='complete'&&checkpoint.pendingCount===0&&checkpoint.receivedCursor===checkpoint.appliedCursor)).map(x=>x.ref.id)])];
+  const nowMs=Number(find(s,'__scope__','authority')?.state.nowMs);
+  const missingDevices=[...new Set([...missing,...s.filter(x=>x.ref.kind==='device'&&x.state.status==='active'&&!checkpoints.some(checkpoint=>checkpoint.deviceId===x.ref.id&&deviceCheckpointComplete(checkpoint,x.state.deviceEpoch,nowMs))).map(x=>x.ref.id)])];
   return ok([change('MaintenancePrepared','maintenance','current',{status:'prepared',id:c.operationId,mode:c.payload.mode??'full_shutdown',checkpointHash:checkpointHash(s),checkpoints,missingDevices,preparedBy:c.actorRef,preparedAt:c.recordedAt})],{checkpoints,missingDevices});
 }
 export function enterMaintenance(c:CommandEnvelope,s:Snapshot[]) {

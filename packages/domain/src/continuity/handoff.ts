@@ -1,6 +1,7 @@
 import type {CommandEnvelope,Snapshot} from '../../../contracts/src/index';
 import {canonicalBytes,hashPayload,verifyEs256,type PublicEcJwk} from '../../../contracts/src/index';
 import {recoveryInventory} from './recovery-inventory';
+import {deviceCheckpointComplete} from './checkpoint';
 import {find,requireState,text,change,ok,object,objects} from './shared';
 export function canActivate(s:{fenced:boolean;cursorComplete:boolean;unknownResources:number}){return s.fenced&&s.cursorComplete&&s.unknownResources===0;}
 export function prepareHandoff(c:CommandEnvelope,s:Snapshot[]) {
@@ -13,7 +14,7 @@ export function prepareHandoff(c:CommandEnvelope,s:Snapshot[]) {
   const devices=s.filter(x=>x.ref.kind==='device'&&x.state.status==='active');
   const cursorComplete=devices.every(device=>{
     const checkpoint=find(s,'device-checkpoint',device.ref.id)?.state;
-    return checkpoint?.status==='complete'&&checkpoint.deviceEpoch===device.state.deviceEpoch&&checkpoint.pendingCount===0&&checkpoint.receivedCursor===checkpoint.appliedCursor;
+    return deviceCheckpointComplete(checkpoint,device.state.deviceEpoch,Number(authority.nowMs));
   });
   const checkpointHash=hashPayload(s.filter(x=>x.ref.kind!=='ownership'&&x.ref.kind!=='__scope__').map(x=>({kind:x.ref.kind,id:x.ref.id,version:x.version})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));
   return ok([change('OwnershipHandoffPrepared','ownership',c.venueId,{...current,newDeviceId,status:'preparing',fenced:false,cursorComplete,checkpointHash,handoffId:c.operationId,preparedAt:c.recordedAt})],{handoffId:c.operationId,checkpointHash,oldEpoch:c.coordinatorEpoch,newEpoch:c.coordinatorEpoch+1,cursorComplete});

@@ -1,0 +1,19 @@
+{
+  "device": "Device",
+  "pos": "Sales",
+  "kitchen": "Kitchen",
+  "fleet": "Robots",
+  "checkout": "Checkout",
+  "settings": "Manage",
+  "refresh": "Refresh",
+  "submit": "Confirm",
+  "empty": "No records yet",
+  "reconciliation": "Reconciliation",
+  "maintenance": "Maintenance",
+  "import": "Import history",
+  "recovery": "Recovery",
+  "isolated": "Isolated capture",
+  "error": "Unable to process",
+  "enroll": "Device enrollment required",
+  "retry": "Retry connection"
+}

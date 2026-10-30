@@ -116,5 +116,5 @@ export function validateAssetManifest(value:unknown):AssetManifest {return check
 export function validateSettlementGrant(value:unknown):SettlementGrant {return check<SettlementGrant>('SettlementGrant',value);}
 export function validateGrantReturn(value:unknown):GrantReturnProof {return check<GrantReturnProof>('GrantReturnProof',value);}
 
-export function validateAuthorityProvision(value:unknown):SignedAuthorityProvision {return check<SignedAuthorityProvision>('SignedAuthorityProvision',value);}
+export function validateAuthorityProvision(value:unknown):SignedAuthorityProvision {return check<SignedAuthorityProvision>('SignedAuthorityProvision',value,4*1024*1024);}
 export function validatePairingGrant(value:unknown):SignedPairingGrant {return check<SignedPairingGrant>('SignedPairingGrant',value);}

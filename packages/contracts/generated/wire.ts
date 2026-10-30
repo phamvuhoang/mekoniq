@@ -337,6 +337,24 @@ export interface AuthorityProvision {
    * @maxItems 100
    */
   fencingProofs?: JsonObject[];
+  /**
+   * @maxItems 10000
+   */
+  handoffSnapshots?: Snapshot[];
+  /**
+   * @maxItems 1000
+   */
+  handoffEntries?: JournalEntry[];
+  /**
+   * @maxItems 1000
+   */
+  handoffProducerKeys?: {
+    deviceId: string;
+    deviceEpoch: string;
+    publicJwk: JsonObject;
+  }[];
+  handoffReceiptsComplete?: true;
+  handoffReceiptCount?: number;
 }
 export interface SignedAuthorityProvision {
   grant: AuthorityProvision;

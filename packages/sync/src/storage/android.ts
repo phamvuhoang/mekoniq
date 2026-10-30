@@ -1,6 +1,8 @@
 import type { AggregateRef, CommandEnvelope, CommandResult, CommitBatch, CommitReceipt, DomainEvent, JournalEntry, JsonObject, Scope, Snapshot, SyncAck } from '../../../contracts/src/index';
 import type { DurableStore } from '../store';
 export interface NativeJournal {
+  checkpoint():Promise<JsonObject>;
+  fenceCurrentOwner(input:{handoffId:string}):Promise<JsonObject>;
   receiveCloudEntries(input:{entries:JournalEntry[]}):Promise<{received:number;applied:number}>;
   exportArchive(input:{password:string}):Promise<{uri:string;sha256:string;committed:true;journalCount:number}>;
   inspectArchive(input:{password:string}):Promise<JsonObject>;

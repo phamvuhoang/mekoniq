@@ -1707,6 +1707,56 @@
           "items": {
             "$ref": "#/definitions/JsonObject"
           }
+        },
+        "handoffSnapshots": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": {
+            "$ref": "#/definitions/Snapshot"
+          }
+        },
+        "handoffEntries": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/definitions/JournalEntry"
+          }
+        },
+        "handoffProducerKeys": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "deviceId",
+              "deviceEpoch",
+              "publicJwk"
+            ],
+            "properties": {
+              "deviceId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "deviceEpoch": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "publicJwk": {
+                "$ref": "#/definitions/JsonObject"
+              }
+            }
+          }
+        },
+        "handoffReceiptsComplete": {
+          "const": true
+        },
+        "handoffReceiptCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
         }
       }
     },
