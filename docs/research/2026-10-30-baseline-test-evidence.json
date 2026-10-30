@@ -1,0 +1,47 @@
+{
+  "kind": "trial_baseline_test_evidence",
+  "date": "2026-10-30",
+  "commit": "5eda9b7c89d8c386891b79d56f5a9196afa23143",
+  "isolation": "git archive into temporary directory; no services started; no robot commands",
+  "runtime": "Node.js v26.3.0 on macOS",
+  "total_passed_scenario_lines": 101,
+  "all_scripts_exit_zero": true,
+  "production_source_tested": false,
+  "tests": [
+    {
+      "script": "test.js",
+      "exit": 0,
+      "passed_lines": 40,
+      "stdout": "✓ giao 2 bàn, khách bàn 07 huỷ khi robot tới -> mang về bếp\n✓ xong lệnh mà còn lệnh chờ -> đi thẳng, không ghé dock\n✓ trạm huỷ trước khi xếp đồ -> robot về luôn\n✓ trạm huỷ giữa đường khi đã xếp đồ -> mang về quầy pha chế\n✓ khách huỷ trước khi bếp xếp -> cả nhiệm vụ huỷ\n✓ gọi robot tới bàn 03 rồi gửi chén đĩa về khu rửa\n✓ gọi robot về bếp rồi giao từ màn robot\n✓ thu dọn bàn: khu rửa\n✓ E-stop: dừng hẳn, trạm không nhả được, chỉ nhả tại robot\n✓ đi theo lối đi đã thiết kế, không cắt ngang bàn\n✓ vật cản cố định -> dừng, xin nhường đường, đi vòng\n✓ người đi ngang -> chờ rồi đi tiếp, không đổi lộ trình\n✓ lối duy nhất bị chặn -> báo nhân viên, dọn lối -> chạy tiếp\n✓ đóng lối đi -> robot tự tìm đường khác; đóng hết -> báo không có lộ trình\n✓ lối hẹp chỉ cho 1 robot, robot kia chờ ở đầu lối\n✓ khách không nhận -> nhắc, quá giờ mang về\n✓ mất kết nối và kết nối lại\n✓ pin yếu -> không nhận việc, robot khác nhận\n✓ chỉ định robot bận -> chờ, ưu tiên GẤP lên trước\n✓ chuyển xử lý thủ công\n✓ siteSave / siteReset / point without route node\n✓ probe / pos / log\n✓ seed site / robots removed / nearest-by-cm assignment\n✓ route/simulator ignore points without a node\n✓ adapter alert / resolve events\n✓ khách gọi nhân viên: 1 cảnh báo tới khi Đã biết, rồi gọi lại được\n✓ call refused when features.call is off\n✓ đổi bàn khi robot đang đi: tới bàn mới, không về bếp\n✓ robot chờ ở bếp -> thu dọn Bàn 05 từ màn robot\n✓ thu dọn từ màn robot bị từ chối khi robot chờ ở bàn\n✓ dẫn khách từ bếp tới Bàn 07, đi chậm, khách xác nhận\n✓ dẫn khách: không ai xác nhận -> nhắc, quá giờ robot tự về, không tính timeout giao món\n✓ guide refused when features.guide is off\n✓ gọi món 2 danh mục -> mỗi trạm một cảnh báo, chỉ món của trạm đó\n✓ order refused when features.order is off\n✓ khách báo đã chuyển khoản -> đơn của bàn chuyển paid-claimed, cảnh báo kèm số tiền\n✓ review: cảnh báo khách không đẩy mất cảnh báo dừng khẩn cấp\n✓ review: 20 cảnh báo lỗi -> cảnh báo khách mới bị bỏ, không xoá lỗi\n✓ review: Đã biết hoá đơn / chuyển khoản -> đóng đơn của bàn\n✓ review: khách huỷ món sau khi bếp đã đổi bàn -> không huỷ nhầm bàn mới\nOK — all scenarios pass\n",
+      "stderr": ""
+    },
+    {
+      "script": "test-valetudo.js",
+      "exit": 0,
+      "passed_lines": 28,
+      "stdout": "✓ fit/toSite\n✓ ingest / telemetry / publishes\n✓ trip end / blocked / redirect\n✓ map-data position\n✓ compact map / telemetry pos\n✓ probe\n✓ wait / retry / blocked / self-clear\n✓ acceptCm\n✓ stuck watchdog\n✓ retryable errors\n✓ new goal / paused / trip-end log\n✓ rebuild keeps the trip\n✓ progress between stops resets the tries\n✓ simulator ignores valetudo robots\n✓ valetudo state rebuilt when site.json changes\n✓ config / parse robustness, mirrored map\n✓ nomoveSec / tripSec knobs\n✓ knob edit keeps ingested state; topic change does not\n✓ online without $state; $state lost sticks\n✓ new goal right after a sent command stops the robot first\n✓ health: link alerts once, wifi facts, garbage ignored, kept across rebuild\n✓ health: state saved before the health fields existed\n✓ health: retained redelivery does not count as heard from\n✓ speed: Valetudo logs and ignores it\n✓ retained status cannot finish an active trip\n✓ retained docked snapshot recovers a trip completed during downtime\n✓ fault cleared during downtime recovers a blocked trip\n✓ reconnect preserves pending retarget STOP/send sequence\n",
+      "stderr": ""
+    },
+    {
+      "script": "test-site.js",
+      "exit": 0,
+      "passed_lines": 15,
+      "stdout": "✓ seed normalizes to itself\n✓ ids, kinds, dish, dock, knobs, regex\n✓ numeric strings coerced\n✓ battery thresholds\n✓ robot point coords\n✓ size / type / unknown fields kept\n✓ inUse\n✓ nextTable / KNOBS\n✓ migrates old site.valetudo.points\n✓ features default to off, coerced to booleans\n✓ quick notes trimmed, capped, defaulted\n✓ entrance points accepted\n✓ menu validated\n✓ category station defaults to the first station point\n✓ payment validated\n",
+      "stderr": ""
+    },
+    {
+      "script": "test-health.js",
+      "exit": 0,
+      "passed_lines": 12,
+      "stdout": "✓ steady state\n✓ ip changed\n✓ ip null\n✓ first run\n✓ first run kept\n✓ missing broker facts\n✓ no password field\n✓ ipEvents transitions\n✓ localIp no route → null\n✓ localIp unbound 0.0.0.0 → null\n✓ localIp private LAN only\n✓ localIp 192.168.1.5\nOK — health\n",
+      "stderr": ""
+    },
+    {
+      "script": "test-review.js",
+      "exit": 0,
+      "passed_lines": 6,
+      "stdout": "✓ another save after disconnect preserves draft\n✓ matching request acknowledges save\n✓ save request identity survives hello\n✓ simulator site has no broker outage alert\n✓ removing final real robot resolves existing outage\n✓ API refuses map cached under old topic\n",
+      "stderr": ""
+    }
+  ]
+}
