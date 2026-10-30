@@ -251,7 +251,7 @@ test("new dispatcher cannot activate while trial still owns the robot", async ()
 
 - [ ] **2. Chạy RED.** `pnpm test:acceptance -- first-shift`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** UAT cafe/table-service/buffet/robot-only/no-robot/chain; all selected UI/API/ledger/offline workflows. Inventory scopes F01–F30 and evidence per provider/model; full parity claim only actual accepted scope, not generic marketing comparison.
+- [ ] **3. Hiện thực phần cốt lõi.** UAT trial-service/cafe/table-service/buffet/robot-only/no-robot/chain; all selected UI/API/ledger/offline workflows. Với `trial-service`, chạy lại E2E W06-T06 bằng đúng container/APK release digest dùng cho bộ chức năng đầy đủ: venue mới chỉ khác setting/data đã provision; không sửa code, dùng migration riêng hay build riêng. Inventory scopes F01–F30 and evidence per provider/model; full parity claim only actual accepted scope, not generic marketing comparison.
 
 ```ts
 export function programComplete(rows:{required:boolean;status:string}[]) {

@@ -38,6 +38,8 @@ Task có sáu bước: test hành vi → RED → phần lõi → wiring/lưu tr�
 
 Không tạo trước hàng loạt màn hình/API trả dữ liệu giả cho các wave chưa triển khai. Mỗi module được thêm phải có command handler, transaction, quyền, policy, UI cần thiết và test. Chức năng ngoài chưa có credential/hardware giữ disabled và `blocked_external`; không thay bằng success giả.
 
+**Cam kết triển khai theo setting:** preset `trial-service` phải cung cấp tập chức năng của baseline trial đã khảo sát trên cùng release artifact với bộ nhà hàng đầy đủ. Sau provisioning nhà hàng/tablet/robot và map binding đã nghiệm thu, chỉ chọn preset/chỉnh setting; không sửa source hoặc build riêng. W02-T03 định nghĩa preset, W06-T06 kiểm hồi quy nghiệp vụ và cấu hình tối giản, W08-T04 giữ kiểm thử giữa các preset, W11-T05 kiểm cùng artifact khi release. Module nâng cao bị tắt không được gây lỗi dependency cho luồng trial; các dependency cốt lõi về identity, audit, lưu trữ/sync và an toàn luôn giữ. “Chỉ setting” không bỏ qua cài app, pair thiết bị, cấu hình bàn/điểm và nghiệm thu robot cho nhà hàng mới.
+
 ## 2. Wave, dependencies và mốc bàn giao
 
 | Wave | Phạm vi | Task | Mốc |
@@ -267,7 +269,7 @@ ID task tra trong wave tương ứng (`W05-T03` ở file Wave05). Cột này là
 | ID | Yêu cầu | Task thực hiện/nghiệm thu |
 |---|---|---|
 | F01 | Identity/tenant/device | W02-T01, W02-T02, W11-T01 |
-| F02 | Feature policy/presets | W02-T03, W08-T04 |
+| F02 | Feature policy/presets | W02-T03, W06-T06, W08-T04, W11-T05 |
 | F03 | Menu/modifiers/price | W03-T01, W05-T01 |
 | F04 | Bàn/phiên/chuyển/gộp | W03-T02, W05-T02 |
 | F05 | POS/QR/kiosk/robot ordering | W03-T06, W05-T05 |

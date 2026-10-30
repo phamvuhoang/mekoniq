@@ -59,6 +59,7 @@ Preset là cấu hình khởi tạo có version, quản lý được sửa theo 
 
 | Preset | Nhóm thường bật | Nhóm tùy chọn |
 |---|---|---|
+| Tương đương trial (`trial-service`) | Trạm/điểm, fleet, giao nhiều bàn, khay, thu dọn, gọi robot, xác nhận trên màn robot, cảnh báo/KPI | Gọi nhân viên/dẫn khách/menu–gọi món/yêu cầu thanh toán theo các cờ của trial đã khảo sát; không bắt buộc bật bộ quản trị nhà hàng mở rộng |
 | Quán cà phê/quầy nhanh | POS, menu/modifier, takeaway, bar/KDS, payment, ca | QR, loyalty, kho, robot |
 | Nhà hàng phục vụ tại bàn | Bàn/phiên, menu, order, bếp, POS, payment | QR, booking, giao robot, thu dọn, dẫn khách |
 | Buffet/lẩu/nướng | Bàn, gói/thời gian, order bổ sung, KDS, POS | Robot nhiều lượt, kho, membership |
@@ -67,6 +68,10 @@ Preset là cấu hình khởi tạo có version, quản lý được sửa theo 
 | Chuỗi | Các module của từng chi nhánh + quản lý tập trung | Triển khai cấu hình theo nhóm, kênh online, loyalty dùng chung |
 
 “Chỉ robot” vẫn cần người dùng, địa điểm, audit và điều phối; không yêu cầu catalog/POS. “Không robot” giao món bằng nhân viên qua cùng fulfillment, không tạo mission giả.
+
+`trial-service` là yêu cầu nghiệm thu riêng: sau khi cài và provision thiết bị/robot được hỗ trợ, nhà hàng chọn preset và chỉnh setting để dùng tập chức năng trial trên **cùng bản phát hành production**, không sửa source, fork theo nhà hàng hoặc build riêng. Kho, mua hàng, CRM/loyalty, đặt bàn, quản lý chuỗi và các connector ngoài không được thành điều kiện bắt buộc của preset này. Nếu bật gọi món/thanh toán, preset chỉ kéo theo các dependency nghiệp vụ cần thiết; UI vận hành giữ phạm vi đã chọn. Identity, audit, đồng bộ và kiểm soát an toàn vẫn hoạt động.
+
+Mốc đối chiếu là baseline trial `5eda9b7c89d8c386891b79d56f5a9196afa23143` trong báo cáo nghiên cứu. Các hành vi production về quyền, chứng cứ hoàn thành robot và xác nhận thanh toán vẫn áp dụng. Import setting không tự migrate mission/bill đang chạy, tạo map binding hợp lệ hoặc chứng minh một model robot mới đã tương thích.
 
 ## 4. Quy tắc bật/tắt bắt buộc
 

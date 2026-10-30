@@ -142,7 +142,7 @@ export function mayAcquireOwner(current: {owner:string|null;status:string}) {
 **Interfaces:**
 
 - Consumes: Actor permissions, capabilities manifest, current config revision, open work count.
-- Produces: `evaluateFeature(input):{allowed:boolean;reason:string;revision:number}`; `Configuration.Publish`, `Configuration.Apply`; preset versions.
+- Produces: `evaluateFeature(input):{allowed:boolean;reason:string;revision:number}`; `Configuration.Publish`, `Configuration.Apply`; preset versions, gồm `trial-service` theo capability matrix §3.
 
 - [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
@@ -171,7 +171,7 @@ export function transitionFeature(enabled:boolean, openWork:number) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Cloud publish draft→validated→applied per venue; UI không nói applied khi mất ACK. Coordinator guard và worker guard gọi cùng engine; accepted aggregates giữ policy snapshot nhưng safety/permission vẫn kiểm.
+- [ ] **4. Nối vào runtime và lưu trữ.** Cloud publish draft→validated→applied per venue; UI không nói applied khi mất ACK. Coordinator guard và worker guard gọi cùng engine; accepted aggregates giữ policy snapshot nhưng safety/permission vẫn kiểm. Preset `trial-service` có version, map các cờ `call/guide/order/pay` sang capability độc lập qua preview; mặc định module nâng cao tắt, chỉ tự thêm dependency bắt buộc của chức năng đã chọn và giải thích trên UI. W02 kiểm policy/schema của preset; luồng nghiệp vụ đầy đủ được kiểm ở W06-T06 khi các module tương ứng đã tồn tại.
 
 - [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/feature-policy.test.ts`; kỳ vọng PASS. Direct API bypass, stale config, disable while order/bill/mission open, cash-only/no-robot/robot-only presets; config unknown fields reject chứ không auto-enable. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 

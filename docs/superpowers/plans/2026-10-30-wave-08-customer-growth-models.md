@@ -184,7 +184,7 @@ export function rangesOverlap(a:{start:number;end:number},b:{start:number;end:nu
 **Interfaces:**
 
 - Consumes: Quantity scale, recipe links, price/time policies and readiness.
-- Produces: `Buffet.Start/Extend`, `Combo.Quote`, `WeighedItem.Quote`; cafe/table-service/buffet/robot-only/no-robot/chain preset templates.
+- Produces: `Buffet.Start/Extend`, `Combo.Quote`, `WeighedItem.Quote`; cafe/table-service/buffet/robot-only/no-robot/chain preset templates; giữ preset `trial-service` và regression suite W06-T06 khi thêm các module nâng cao.
 
 - [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 

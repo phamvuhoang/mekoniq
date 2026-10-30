@@ -415,6 +415,8 @@
       "depends": "W05, W06-T01..W06-T05",
       "testFile": "tests/integration/trial-config-import.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/trial-config-import.test.ts",
+      "additionalTestFiles": ["tests/e2e/trial-service-preset.spec.ts"],
+      "additionalTestCommands": ["pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts"],
       "status": "planned"
     },
     {
@@ -640,7 +642,9 @@
       "label": "Feature policy/presets",
       "tasks": [
         "W02-T03",
-        "W08-T04"
+        "W06-T06",
+        "W08-T04",
+        "W11-T05"
       ]
     },
     {
