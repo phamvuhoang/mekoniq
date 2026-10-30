@@ -1,0 +1,1 @@
+{"name":"@mekoniq/sync","version":"0.1.0","private":true,"type":"module","dependencies":{"@mekoniq/contracts":"workspace:*","@mekoniq/domain":"workspace:*","postgres":"3.4.8"}}
