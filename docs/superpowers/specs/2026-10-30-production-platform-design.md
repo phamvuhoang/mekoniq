@@ -1,6 +1,6 @@
 # MEKONIQ — kiến trúc production
 
-Ngày: 2026-10-30. Trạng thái: **đề xuất để người dùng duyệt; chưa hiện thực**.
+Ngày: 2026-10-30. Trạng thái: **đã được người dùng duyệt trong phiên làm việc; chưa hiện thực**.
 
 Tài liệu liên quan: [nghiên cứu trial](../../research/2026-10-30-trial-and-platform-research.md), [ma trận chức năng](../../product/2026-10-30-capability-matrix.md), [offline, phân vùng mạng và bảo trì](2026-10-30-offline-continuity-design.md).
 

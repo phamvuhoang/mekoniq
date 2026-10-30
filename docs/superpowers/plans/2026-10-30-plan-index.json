@@ -1,0 +1,1039 @@
+{
+  "date": "2026-10-30",
+  "status": "planned",
+  "applicationImplemented": false,
+  "taskCount": 62,
+  "waves": [
+    {
+      "id": "W00",
+      "plan": "2026-10-30-wave-00-foundations.md",
+      "title": "Wave 00 — workspace, contracts và giao dịch nền"
+    },
+    {
+      "id": "W01",
+      "plan": "2026-10-30-wave-01-android-lan.md",
+      "title": "Wave 01 — Android durable store và coordinator LAN"
+    },
+    {
+      "id": "W02",
+      "plan": "2026-10-30-wave-02-cloud-sync-policy.md",
+      "title": "Wave 02 — cloud identity, policy và đồng bộ"
+    },
+    {
+      "id": "W03",
+      "plan": "2026-10-30-wave-03-restaurant-vertical-slice.md",
+      "title": "Wave 03 — menu đến bếp, robot giả lập và bill tiền mặt"
+    },
+    {
+      "id": "W04",
+      "plan": "2026-10-30-wave-04-offline-maintenance.md",
+      "title": "Wave 04 — partition, đối soát và nhập bù bảo trì"
+    },
+    {
+      "id": "W05",
+      "plan": "2026-10-30-wave-05-complete-pos.md",
+      "title": "Wave 05 — POS, thu ngân và trải nghiệm phục vụ đầy đủ"
+    },
+    {
+      "id": "W06",
+      "plan": "2026-10-30-wave-06-real-robots.md",
+      "title": "Wave 06 — Valetudo, ROS 2/Nav2 và pilot robot thật"
+    },
+    {
+      "id": "W07",
+      "plan": "2026-10-30-wave-07-inventory-workforce.md",
+      "title": "Wave 07 — kho, mua hàng và nhân sự vận hành"
+    },
+    {
+      "id": "W08",
+      "plan": "2026-10-30-wave-08-customer-growth-models.md",
+      "title": "Wave 08 — khuyến mãi, CRM, đặt bàn và mô hình nhà hàng"
+    },
+    {
+      "id": "W09",
+      "plan": "2026-10-30-wave-09-chain-integrations.md",
+      "title": "Wave 09 — quản lý chuỗi và nền tảng tích hợp"
+    },
+    {
+      "id": "W10",
+      "plan": "2026-10-30-wave-10-provider-and-protocol-certification.md",
+      "title": "Wave 10 — nhà cung cấp thật và chuẩn robot mở rộng"
+    },
+    {
+      "id": "W11",
+      "plan": "2026-10-30-wave-11-production-release.md",
+      "title": "Wave 11 — chất lượng production, triển khai và chuyển đổi"
+    }
+  ],
+  "tasks": [
+    {
+      "wave": "W00",
+      "id": "W00-T01",
+      "title": "Workspace và API lifecycle chạy được",
+      "depends": "Thiết kế đã duyệt",
+      "testFile": "tests/integration/cloud-health.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/cloud-health.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W00",
+      "id": "W00-T02",
+      "title": "Schema wire và canonical signing bytes",
+      "depends": "W00-T01",
+      "testFile": "tests/contracts/wire.test.ts",
+      "testCommand": "pnpm test:contracts -- tests/contracts/wire.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W00",
+      "id": "W00-T03",
+      "title": "Money, quantity và kết quả domain thuần",
+      "depends": "W00-T02",
+      "testFile": "tests/unit/money.test.ts",
+      "testCommand": "pnpm test:unit -- tests/unit/money.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W00",
+      "id": "W00-T04",
+      "title": "Transaction kernel và durable idempotency",
+      "depends": "W00-T02, W00-T03",
+      "testFile": "tests/integration/atomic-command.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/atomic-command.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W00",
+      "id": "W00-T05",
+      "title": "Test lab dùng runtime thật và fault injection",
+      "depends": "W00-T01..W00-T04",
+      "testFile": "tests/integration/crash-window.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/crash-window.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W01",
+      "id": "W01-T01",
+      "title": "Native SQLite bridge kiểm CAS và batch atomic",
+      "depends": "W00-T04",
+      "testFile": "apps/tablet-android/android/app/src/androidTest/java/io/mekoniq/tablet/JournalAtomicityTest.kt",
+      "testCommand": "apps/tablet-android/android/gradlew -p apps/tablet-android/android connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=io.mekoniq.tablet.JournalAtomicityTest",
+      "status": "planned"
+    },
+    {
+      "wave": "W01",
+      "id": "W01-T02",
+      "title": "Keystore và identity của thiết bị",
+      "depends": "W01-T01, W00-T02",
+      "testFile": "apps/tablet-android/android/app/src/androidTest/java/io/mekoniq/tablet/DeviceIdentityTest.kt",
+      "testCommand": "apps/tablet-android/android/gradlew -p apps/tablet-android/android connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=io.mekoniq.tablet.DeviceIdentityTest",
+      "status": "planned"
+    },
+    {
+      "wave": "W01",
+      "id": "W01-T03",
+      "title": "LAN listener, pairing và heartbeat domain runtime",
+      "depends": "W01-T01, W01-T02",
+      "testFile": "tests/unit/coordinator-health.test.ts",
+      "testCommand": "pnpm test:unit -- tests/unit/coordinator-health.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W01",
+      "id": "W01-T04",
+      "title": "UI trạng thái kết nối, outbox và role shell",
+      "depends": "W01-T03",
+      "testFile": "tests/e2e/device-status.spec.ts",
+      "testCommand": "pnpm test:e2e -- tests/e2e/device-status.spec.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W01",
+      "id": "W01-T05",
+      "title": "Qualification vòng đời Android và hai thiết bị",
+      "depends": "W01-T01..W01-T04",
+      "testFile": "tests/android/LifecycleAcceptanceTest.kt",
+      "testCommand": "pnpm test:android -- lifecycle",
+      "status": "planned"
+    },
+    {
+      "wave": "W02",
+      "id": "W02-T01",
+      "title": "Identity, tenant isolation và phiên nhân viên",
+      "depends": "W00-T01..W00-T04",
+      "testFile": "tests/integration/tenant-auth.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/tenant-auth.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W02",
+      "id": "W02-T02",
+      "title": "Enrollment và sổ ownership của venue/robot",
+      "depends": "W01-T02, W02-T01",
+      "testFile": "tests/integration/device-grants.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/device-grants.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W02",
+      "id": "W02-T03",
+      "title": "Feature engine, dependency và cấu hình có version",
+      "depends": "W02-T01, W00-T03",
+      "testFile": "tests/integration/feature-policy.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/feature-policy.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W02",
+      "id": "W02-T04",
+      "title": "Sync inbox/outbox, gaps và quarantine",
+      "depends": "W02-T01, W02-T02, W00-T04",
+      "testFile": "tests/integration/sync-replay.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/sync-replay.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W02",
+      "id": "W02-T05",
+      "title": "Cloud relay, scoped projection và worker side-effect firewall",
+      "depends": "W02-T03, W02-T04",
+      "testFile": "tests/integration/relay-effects.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/relay-effects.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W03",
+      "id": "W03-T01",
+      "title": "Catalog phiên bản và giá snapshot cơ bản",
+      "depends": "W00-T03, W02-T03",
+      "testFile": "tests/integration/menu-snapshot.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/menu-snapshot.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W03",
+      "id": "W03-T02",
+      "title": "Phiên bàn và vòng đời order có version",
+      "depends": "W03-T01",
+      "testFile": "tests/integration/order-lifecycle.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/order-lifecycle.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W03",
+      "id": "W03-T03",
+      "title": "KDS theo trạm và allocation số lượng",
+      "depends": "W03-T02",
+      "testFile": "tests/integration/kitchen-allocation.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/kitchen-allocation.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W03",
+      "id": "W03-T04",
+      "title": "Mission state machine và simulator adapter",
+      "depends": "W03-T03, W02-T02",
+      "testFile": "tests/integration/simulated-delivery.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/simulated-delivery.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W03",
+      "id": "W03-T05",
+      "title": "Bill snapshot và cash receipt tối thiểu",
+      "depends": "W03-T02, W00-T03",
+      "testFile": "tests/integration/basic-settlement.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/basic-settlement.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W03",
+      "id": "W03-T06",
+      "title": "Ghép UI và kiểm thử vertical slice nhiều tablet",
+      "depends": "W03-T01..W03-T05, W01-T05",
+      "testFile": "tests/integration/wan-outage-journey.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/wan-outage-journey.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W04",
+      "id": "W04-T01",
+      "title": "Isolated capture và conflict workbench",
+      "depends": "W02-T04, W03-T02, W03-T05",
+      "testFile": "tests/integration/partition-conflicts.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/partition-conflicts.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W04",
+      "id": "W04-T02",
+      "title": "Settlement grants độc quyền và tiền chưa rõ",
+      "depends": "W04-T01, W02-T02, W03-T05",
+      "testFile": "tests/integration/settlement-grants.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/settlement-grants.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W04",
+      "id": "W04-T03",
+      "title": "Maintenance window, export và phiếu dự phòng",
+      "depends": "W04-T01, W03-T04",
+      "testFile": "tests/integration/maintenance-checkpoint.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/maintenance-checkpoint.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W04",
+      "id": "W04-T04",
+      "title": "Import lịch sử idempotent và duyệt theo receipt",
+      "depends": "W04-T01..W04-T03, W02-T05",
+      "testFile": "tests/integration/historical-import.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/historical-import.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W04",
+      "id": "W04-T05",
+      "title": "Handoff, restore và reconciliation của robot",
+      "depends": "W04-T02, W04-T03, W03-T04",
+      "testFile": "tests/integration/ownership-handoff.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/ownership-handoff.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W04",
+      "id": "W04-T06",
+      "title": "Gate A: chạy toàn bộ bộ continuity",
+      "depends": "W04-T01..W04-T05",
+      "testFile": "tests/acceptance/continuity-suite.test.ts",
+      "testCommand": "pnpm test:acceptance -- continuity",
+      "status": "planned"
+    },
+    {
+      "wave": "W05",
+      "id": "W05-T01",
+      "title": "Giá đầy đủ: modifier, thuế/phí và discount allocation",
+      "depends": "W03-T01, W00-T03",
+      "testFile": "tests/unit/pricing.test.ts",
+      "testCommand": "pnpm test:unit -- tests/unit/pricing.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W05",
+      "id": "W05-T02",
+      "title": "Chuyển/gộp bàn và amendment xuống bếp",
+      "depends": "W03-T02, W03-T03",
+      "testFile": "tests/integration/table-order-amendments.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/table-order-amendments.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W05",
+      "id": "W05-T03",
+      "title": "Split/mixed tender/refund và bill ledger",
+      "depends": "W05-T01, W04-T02",
+      "testFile": "tests/integration/financial-lifecycle.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/financial-lifecycle.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W05",
+      "id": "W05-T04",
+      "title": "Ca, sổ két và hàng đợi in",
+      "depends": "W05-T03",
+      "testFile": "tests/integration/cash-print.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/cash-print.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W05",
+      "id": "W05-T05",
+      "title": "Guest QR, kiosk và support/guide/bussing",
+      "depends": "W05-T02, W03-T04, W02-T03",
+      "testFile": "tests/integration/guest-boundaries.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/guest-boundaries.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W05",
+      "id": "W05-T06",
+      "title": "Báo cáo ca/doanh thu và UX end-to-end",
+      "depends": "W05-T01..W05-T05",
+      "testFile": "tests/integration/sales-reconciliation.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/sales-reconciliation.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W06",
+      "id": "W06-T01",
+      "title": "Capability registry, map binding và traffic admission",
+      "depends": "W03-T04, W04-T05",
+      "testFile": "tests/integration/robot-admission.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/robot-admission.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W06",
+      "id": "W06-T02",
+      "title": "Valetudo REST/MQTT transport và completion evidence",
+      "depends": "W06-T01, W01-T03",
+      "testFile": "tests/adapters/valetudo-conformance.test.ts",
+      "testCommand": "pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W06",
+      "id": "W06-T03",
+      "title": "ROS executor durable journal và native action ownership",
+      "depends": "W06-T01, W00-T02",
+      "testFile": "robotics/agent/tests/test_executor_recovery.py",
+      "testCommand": "python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q",
+      "status": "planned"
+    },
+    {
+      "wave": "W06",
+      "id": "W06-T04",
+      "title": "Nav2 action bridge, localization và nhà hàng Gazebo",
+      "depends": "W06-T03",
+      "testFile": "robotics/agent/tests/test_nav2_adapter.py",
+      "testCommand": "python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q",
+      "status": "planned"
+    },
+    {
+      "wave": "W06",
+      "id": "W06-T05",
+      "title": "Commission S100/ZLTECH profiles và safety boundary",
+      "depends": "W06-T01..W06-T04",
+      "testFile": "tests/hardware/test_profile_validation.py",
+      "testCommand": "python3 -m pytest tests/hardware/test_profile_validation.py -q",
+      "status": "planned"
+    },
+    {
+      "wave": "W06",
+      "id": "W06-T06",
+      "title": "Import trial read-only và gate pilot B",
+      "depends": "W05, W06-T01..W06-T05",
+      "testFile": "tests/integration/trial-config-import.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/trial-config-import.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W07",
+      "id": "W07-T01",
+      "title": "Recipe, đơn vị và tiêu hao khi chế biến",
+      "depends": "W03-T03, W04-T04",
+      "testFile": "tests/integration/stock-consumption.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/stock-consumption.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W07",
+      "id": "W07-T02",
+      "title": "Nhà cung cấp, mua hàng, nhận/trả và giá vốn",
+      "depends": "W07-T01",
+      "testFile": "tests/integration/procurement.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/procurement.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W07",
+      "id": "W07-T03",
+      "title": "Kiểm kê, hao hụt và lịch sử điều chỉnh",
+      "depends": "W07-T01, W07-T02",
+      "testFile": "tests/integration/stocktake.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/stocktake.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W07",
+      "id": "W07-T04",
+      "title": "Lịch ca, chấm công và báo cáo vận hành",
+      "depends": "W02-T01, W05-T06, W07-T01..W07-T03",
+      "testFile": "tests/integration/workforce-reporting.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/workforce-reporting.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W08",
+      "id": "W08-T01",
+      "title": "Promotion, voucher và giới hạn dùng",
+      "depends": "W05-T01, W04-T02",
+      "testFile": "tests/integration/voucher-limits.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/voucher-limits.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W08",
+      "id": "W08-T02",
+      "title": "CRM, consent và loyalty ledger",
+      "depends": "W08-T01, W05-T03",
+      "testFile": "tests/integration/loyalty.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/loyalty.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W08",
+      "id": "W08-T03",
+      "title": "Booking, waitlist và chuyển cọc vào bill",
+      "depends": "W05-T02, W05-T03",
+      "testFile": "tests/integration/reservations.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/reservations.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W08",
+      "id": "W08-T04",
+      "title": "Buffet, combo, món cân và preset acceptance",
+      "depends": "W08-T01..W08-T03, W07",
+      "testFile": "tests/unit/restaurant-models.test.ts",
+      "testCommand": "pnpm test:unit -- tests/unit/restaurant-models.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W09",
+      "id": "W09-T01",
+      "title": "Menu/config rollout theo chi nhánh",
+      "depends": "W02-T03, W05-T01",
+      "testFile": "tests/integration/chain-rollout.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/chain-rollout.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W09",
+      "id": "W09-T02",
+      "title": "Báo cáo chuỗi và giới hạn dùng chung",
+      "depends": "W05-T06, W08-T02, W09-T01",
+      "testFile": "tests/integration/chain-reporting.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/chain-reporting.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W09",
+      "id": "W09-T03",
+      "title": "Connector contract, online order ingress và effect receipts",
+      "depends": "W02-T05, W03-T02",
+      "testFile": "tests/integration/external-orders.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/external-orders.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W09",
+      "id": "W09-T04",
+      "title": "Node-RED bridge và developer SDK",
+      "depends": "W09-T03, W03-T04, W06-T01",
+      "testFile": "tests/contract/automation-scopes.test.ts",
+      "testCommand": "pnpm test:contracts -- tests/contract/automation-scopes.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W10",
+      "id": "W10-T01",
+      "title": "Đăng ký profile và thu thập bằng chứng tích hợp",
+      "depends": "W09-T03, W06-T01",
+      "testFile": "tests/contracts/provider-profile.test.ts",
+      "testCommand": "pnpm test:contracts -- tests/contracts/provider-profile.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W10",
+      "id": "W10-T02",
+      "title": "Payment provider, VietQR và đối soát giao dịch thật",
+      "depends": "W10-T01, W05-T03",
+      "testFile": "tests/providers/payment-provider.test.ts",
+      "testCommand": "pnpm test:providers -- tests/providers/payment-provider.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W10",
+      "id": "W10-T03",
+      "title": "Hóa đơn điện tử và xuất kế toán",
+      "depends": "W10-T01, W05-T03, W04-T04",
+      "testFile": "tests/providers/einvoice-provider.test.ts",
+      "testCommand": "pnpm test:providers -- tests/providers/einvoice-provider.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W10",
+      "id": "W10-T04",
+      "title": "Zalo/kênh bán/POS ngoài theo profile",
+      "depends": "W10-T01, W09-T03, W09-T04",
+      "testFile": "tests/providers/channel-provider.test.ts",
+      "testCommand": "pnpm test:providers -- tests/providers/channel-provider.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W10",
+      "id": "W10-T05",
+      "title": "VDA 5050 adapter với version rõ ràng",
+      "depends": "W06-T01, W06-T03",
+      "testFile": "tests/adapters/vda5050-conformance.test.ts",
+      "testCommand": "pnpm test:adapters -- tests/adapters/vda5050-conformance.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W10",
+      "id": "W10-T06",
+      "title": "SDK hãng và optional Open-RMF/MassRobotics boundaries",
+      "depends": "W06-T01, W10-T01",
+      "testFile": "tests/adapters/vendor-profile.test.ts",
+      "testCommand": "pnpm test:adapters -- tests/adapters/vendor-profile.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W11",
+      "id": "W11-T01",
+      "title": "Security qualification và dữ liệu nhạy cảm",
+      "depends": "W02, W04, W05, release-selected W09/W10",
+      "testFile": "tests/security/tenant-escape.test.ts",
+      "testCommand": "pnpm test:security -- tests/security/tenant-escape.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W11",
+      "id": "W11-T02",
+      "title": "Hiệu năng, observability và fault load",
+      "depends": "W05, W06 software gate, W09 selected",
+      "testFile": "tests/acceptance/load-budget.test.ts",
+      "testCommand": "pnpm test:load",
+      "status": "planned"
+    },
+    {
+      "wave": "W11",
+      "id": "W11-T03",
+      "title": "Backup, migration và restore khi client cũ offline",
+      "depends": "W04-T03..W04-T06, all release data modules",
+      "testFile": "tests/integration/upgrade-recovery.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/upgrade-recovery.test.ts",
+      "status": "planned"
+    },
+    {
+      "wave": "W11",
+      "id": "W11-T04",
+      "title": "Release pipeline và deployment có rollback",
+      "depends": "W11-T01..W11-T03",
+      "testFile": "tests/acceptance/release-manifest.test.ts",
+      "testCommand": "pnpm test:acceptance -- release-manifest",
+      "status": "planned"
+    },
+    {
+      "wave": "W11",
+      "id": "W11-T05",
+      "title": "UAT, cutover một nguồn điều khiển và đóng chương trình",
+      "depends": "W11-T04, all required F01–F30 acceptance tasks",
+      "testFile": "tests/acceptance/first-shift.test.ts",
+      "testCommand": "pnpm test:acceptance -- first-shift",
+      "status": "planned"
+    }
+  ],
+  "featureCoverage": [
+    {
+      "id": "F01",
+      "label": "Identity/tenant/device",
+      "tasks": [
+        "W02-T01",
+        "W02-T02",
+        "W11-T01"
+      ]
+    },
+    {
+      "id": "F02",
+      "label": "Feature policy/presets",
+      "tasks": [
+        "W02-T03",
+        "W08-T04"
+      ]
+    },
+    {
+      "id": "F03",
+      "label": "Menu/modifiers/price",
+      "tasks": [
+        "W03-T01",
+        "W05-T01"
+      ]
+    },
+    {
+      "id": "F04",
+      "label": "Bàn/phiên/chuyển/gộp",
+      "tasks": [
+        "W03-T02",
+        "W05-T02"
+      ]
+    },
+    {
+      "id": "F05",
+      "label": "POS/QR/kiosk/robot ordering",
+      "tasks": [
+        "W03-T06",
+        "W05-T05"
+      ]
+    },
+    {
+      "id": "F06",
+      "label": "Order/courses/amendments",
+      "tasks": [
+        "W03-T02",
+        "W05-T02"
+      ]
+    },
+    {
+      "id": "F07",
+      "label": "KDS/bếp/bar",
+      "tasks": [
+        "W03-T03",
+        "W05-T02"
+      ]
+    },
+    {
+      "id": "F08",
+      "label": "Delivery/bussing/multi-stop",
+      "tasks": [
+        "W03-T04",
+        "W05-T05",
+        "W06-T06"
+      ]
+    },
+    {
+      "id": "F09",
+      "label": "Robot interoperability",
+      "tasks": [
+        "W06-T01",
+        "W06-T02",
+        "W06-T03",
+        "W06-T04",
+        "W06-T05",
+        "W10-T05",
+        "W10-T06"
+      ]
+    },
+    {
+      "id": "F10",
+      "label": "Bill/split/merge/tax",
+      "tasks": [
+        "W03-T05",
+        "W05-T01",
+        "W05-T03"
+      ]
+    },
+    {
+      "id": "F11",
+      "label": "Payment/manual/provider",
+      "tasks": [
+        "W03-T05",
+        "W05-T03",
+        "W10-T02"
+      ]
+    },
+    {
+      "id": "F12",
+      "label": "Refund/void/reconciliation",
+      "tasks": [
+        "W05-T03",
+        "W04-T02"
+      ]
+    },
+    {
+      "id": "F13",
+      "label": "Cash shift/cashbook",
+      "tasks": [
+        "W03-T05",
+        "W05-T04"
+      ]
+    },
+    {
+      "id": "F14",
+      "label": "Printing/devices",
+      "tasks": [
+        "W05-T04",
+        "W11-T05"
+      ]
+    },
+    {
+      "id": "F15",
+      "label": "Guest support/guide",
+      "tasks": [
+        "W05-T05",
+        "W06-T01"
+      ]
+    },
+    {
+      "id": "F16",
+      "label": "Reservations/waitlist/deposit",
+      "tasks": [
+        "W08-T03"
+      ]
+    },
+    {
+      "id": "F17",
+      "label": "Promotion/voucher",
+      "tasks": [
+        "W08-T01"
+      ]
+    },
+    {
+      "id": "F18",
+      "label": "CRM/loyalty",
+      "tasks": [
+        "W08-T02",
+        "W09-T02"
+      ]
+    },
+    {
+      "id": "F19",
+      "label": "Inventory/recipes",
+      "tasks": [
+        "W07-T01",
+        "W07-T03"
+      ]
+    },
+    {
+      "id": "F20",
+      "label": "Procurement",
+      "tasks": [
+        "W07-T02"
+      ]
+    },
+    {
+      "id": "F21",
+      "label": "Workforce",
+      "tasks": [
+        "W02-T01",
+        "W07-T04"
+      ]
+    },
+    {
+      "id": "F22",
+      "label": "Reports",
+      "tasks": [
+        "W05-T06",
+        "W07-T04",
+        "W09-T02"
+      ]
+    },
+    {
+      "id": "F23",
+      "label": "Chain",
+      "tasks": [
+        "W09-T01",
+        "W09-T02"
+      ]
+    },
+    {
+      "id": "F24",
+      "label": "Online/Zalo/delivery/POS",
+      "tasks": [
+        "W09-T03",
+        "W10-T04"
+      ]
+    },
+    {
+      "id": "F25",
+      "label": "E-invoice/accounting export",
+      "tasks": [
+        "W10-T03"
+      ]
+    },
+    {
+      "id": "F26",
+      "label": "Buffet/combo/weighted models",
+      "tasks": [
+        "W08-T04"
+      ]
+    },
+    {
+      "id": "F27",
+      "label": "Node-RED/SDK",
+      "tasks": [
+        "W09-T04"
+      ]
+    },
+    {
+      "id": "F28",
+      "label": "Production operations",
+      "tasks": [
+        "W00-T01",
+        "W11-T01",
+        "W11-T02",
+        "W11-T03",
+        "W11-T04",
+        "W11-T05"
+      ]
+    },
+    {
+      "id": "F29",
+      "label": "Offline/sync/partitions",
+      "tasks": [
+        "W01-T01",
+        "W01-T03",
+        "W01-T05",
+        "W02-T04",
+        "W04-T01",
+        "W04-T02",
+        "W04-T05",
+        "W04-T06"
+      ]
+    },
+    {
+      "id": "F30",
+      "label": "Maintenance/import",
+      "tasks": [
+        "W04-T03",
+        "W04-T04",
+        "W04-T06",
+        "W11-T03"
+      ]
+    }
+  ],
+  "offlineCoverage": [
+    {
+      "id": "O01",
+      "tasks": [
+        "W03-T06",
+        "W04-T06",
+        "W06-T06"
+      ]
+    },
+    {
+      "id": "O02",
+      "tasks": [
+        "W00-T04",
+        "W01-T01",
+        "W03-T06"
+      ]
+    },
+    {
+      "id": "O03",
+      "tasks": [
+        "W02-T04"
+      ]
+    },
+    {
+      "id": "O04",
+      "tasks": [
+        "W04-T01",
+        "W04-T06"
+      ]
+    },
+    {
+      "id": "O05",
+      "tasks": [
+        "W04-T01"
+      ]
+    },
+    {
+      "id": "O06",
+      "tasks": [
+        "W04-T02"
+      ]
+    },
+    {
+      "id": "O07",
+      "tasks": [
+        "W00-T05",
+        "W01-T01"
+      ]
+    },
+    {
+      "id": "O08",
+      "tasks": [
+        "W01-T01",
+        "W01-T05",
+        "W04-T03"
+      ]
+    },
+    {
+      "id": "O09",
+      "tasks": [
+        "W02-T04"
+      ]
+    },
+    {
+      "id": "O10",
+      "tasks": [
+        "W04-T05",
+        "W06-T03"
+      ]
+    },
+    {
+      "id": "O11",
+      "tasks": [
+        "W04-T05",
+        "W06-T02",
+        "W06-T03"
+      ]
+    },
+    {
+      "id": "O12",
+      "tasks": [
+        "W02-T03",
+        "W09-T01"
+      ]
+    },
+    {
+      "id": "O13",
+      "tasks": [
+        "W04-T06",
+        "W11-T02"
+      ]
+    },
+    {
+      "id": "O14",
+      "tasks": [
+        "W04-T04"
+      ]
+    },
+    {
+      "id": "O15",
+      "tasks": [
+        "W04-T04"
+      ]
+    },
+    {
+      "id": "O16",
+      "tasks": [
+        "W04-T04"
+      ]
+    },
+    {
+      "id": "O17",
+      "tasks": [
+        "W02-T05",
+        "W04-T04"
+      ]
+    },
+    {
+      "id": "O18",
+      "tasks": [
+        "W04-T04"
+      ]
+    },
+    {
+      "id": "O19",
+      "tasks": [
+        "W02-T04",
+        "W11-T03"
+      ]
+    },
+    {
+      "id": "O20",
+      "tasks": [
+        "W04-T05",
+        "W06-T03"
+      ]
+    },
+    {
+      "id": "O21",
+      "tasks": [
+        "W01-T03",
+        "W01-T05"
+      ]
+    },
+    {
+      "id": "O22",
+      "tasks": [
+        "W04-T03",
+        "W04-T05",
+        "W11-T03"
+      ]
+    }
+  ]
+}

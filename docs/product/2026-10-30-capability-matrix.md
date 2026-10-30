@@ -1,6 +1,6 @@
 # Phạm vi chức năng MEKONIQ và tiêu chí nghiệm thu
 
-Ngày: 2026-10-30. Trạng thái: **đề xuất để duyệt, tất cả chức năng dưới đây chưa được triển khai trong `source`**.
+Ngày: 2026-10-30. Trạng thái: **phạm vi đã được người dùng duyệt; tất cả chức năng dưới đây chưa được triển khai trong `source`**.
 
 ## 1. Cách hiểu “đầy đủ như Mmenu”
 

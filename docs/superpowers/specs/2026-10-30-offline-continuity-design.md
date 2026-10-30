@@ -1,6 +1,6 @@
 # MEKONIQ — offline nhiều thiết bị, phục hồi mạng và nhập bù bảo trì
 
-Ngày: 2026-10-30. Trạng thái: **thiết kế đề xuất, chưa triển khai/kiểm thử trong source**.
+Ngày: 2026-10-30. Trạng thái: **thiết kế đã được người dùng duyệt; chưa triển khai/kiểm thử trong source**.
 
 Spec này là phần đầu cần hiện thực cùng nền tảng trong [thiết kế production](2026-10-30-production-platform-design.md). Yêu cầu đã xác nhận: cloud, không máy chủ riêng; nhiều POS/KDS/robot phối hợp khi mất WAN; lưu dữ liệu từng máy khi LAN mất; nhập lại dữ liệu của giai đoạn bảo trì toàn bộ.
 
