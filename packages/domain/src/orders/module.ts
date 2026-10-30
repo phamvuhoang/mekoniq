@@ -26,6 +26,7 @@ export function registerOrders(registry:ModuleRegistry):void {
   const menu=currentMenu(s);
   if(c.payload.menuVersion!==undefined && c.payload.menuVersion!==menu.state.version) return fail('STALE_QUOTE');
   const quoted=quote(menu,c.payload);
+  if(quoted.currency!==order.state.currency) return fail('CURRENCY_MISMATCH');
   const materialized=newOrderLines(c,quoted.lines as JsonObject[],order.ref.id,String(order.state.sessionId));
   const total=amount(String(BigInt(String(order.state.totalMinor))+BigInt(String(quoted.totalMinor))));
   return done([changed('OrderAmended',order,{lines:[...lineReferences(order.state),...materialized.lines],totalMinor:total}),changed('SessionOrderAmended',session,{}),...materialized.events],{orderId:order.ref.id,lineIds:materialized.lines.map(l=>l.id)});

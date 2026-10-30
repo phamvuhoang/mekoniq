@@ -6,6 +6,14 @@ import { issueRobotCommand } from './command-journal';
 import type { MissionStop } from './stop';
 
 function allocationsFor(s:Snapshot[],ids:string[]):Snapshot[] {return ids.map(id=>requireState(s,'allocation',id));}
+function onboardCargo(s:Snapshot[],mission:Snapshot,events:DomainEvent[]=[]):boolean {
+ const cargo=all(s,'allocation').filter(a=>a.state.missionId===mission.ref.id);
+ if(!cargo.length)return Boolean(mission.state.loaded); // Manual collect/unload missions have no delivery allocation.
+ return cargo.some(a=>{
+  const update=events.find(event=>event.data.kind==='allocation'&&event.data.id===a.ref.id);
+  return ((update?.data.state as JsonObject | undefined)?.status??a.state.status)==='loaded';
+ });
+}
 function adjustAllocations(s:Snapshot[],allocations:Snapshot[],action:'load'|'serve'|'release'|'return',at:string):DomainEvent[] {
  const events:DomainEvent[]=[];
  const byLine=new Map<string,bigint>();
@@ -104,6 +112,8 @@ export function registerMissions(registry:ModuleRegistry):void {
   } else if(stop.action==='return') {events=adjustAllocations(s,allocations,'return',c.recordedAt);loaded=false;}
   else if(stop.action==='collect') loaded=true;
   else if(stop.action==='unload') loaded=false;
+  // Allocation status is authoritative for delivery cargo; a stop may unload only one source/table.
+  if(all(s,'allocation').some(a=>a.state.missionId===mission.ref.id)) loaded=onboardCargo(s,mission,events);
   stop.status='completed';
   const next=nextStop(c,s,mission,stops,loaded,String(mission.state.status));
   if(!next.ok) return next;
@@ -117,7 +127,8 @@ export function registerMissions(registry:ModuleRegistry):void {
   const stops=structuredClone(mission.state.stops ?? []) as MissionStop[];
   for(const stop of stops) if(stop.status!=='completed') stop.status='skipped';
   const allocations=all(s,'allocation').filter(a=>a.state.missionId===mission.ref.id);
-  if(mission.state.loaded) {
+  const loaded=onboardCargo(s,mission);
+  if(loaded) {
    const sources=new Map<string,string[]>();
    for(const a of allocations.filter(x=>x.state.status==='loaded')) {const source=String(a.state.stationId);sources.set(source,[...(sources.get(source) ?? []),a.ref.id]);}
    if(!sources.size) sources.set(String(mission.state.source ?? 'kitchen'),[]);
@@ -130,13 +141,13 @@ export function registerMissions(registry:ModuleRegistry):void {
    const pending=allocations.filter(a=>a.state.status==='reserved');
    const released=adjustAllocations(s,pending,'release',c.recordedAt);
    const returning={...mission,state:{...mission.state,cancelRequestedAt:c.recordedAt}};
-   const result=nextStop(c,s,returning,stops,Boolean(mission.state.loaded),'cancelling');
+   const result=nextStop(c,s,returning,stops,loaded,'cancelling');
    if(!result.ok)return result;
    return done([{type:'MissionCancellationRequested',data:{missionId:mission.ref.id}},...released,...result.events],result.value);
   }
   const revision=Number(mission.state.revision)+1;
   const effects=mission.state.commandId ? [{id:stableId('cancel',c),type:'robot.cancel',payload:{robotId:mission.state.robotId!,commandId:mission.state.commandId!,missionId:mission.ref.id,controlEpoch:mission.state.controlEpoch ?? c.coordinatorEpoch}}] : [];
-  return done([changed('MissionCancellationRequested',mission,{status:'cancelling',stops,revision,cancelRequestedAt:c.recordedAt})],{missionId:mission.ref.id,effects});
+  return done([changed('MissionCancellationRequested',mission,{status:'cancelling',stops,revision,loaded,cancelRequestedAt:c.recordedAt})],{missionId:mission.ref.id,effects});
  });
  handle(registry,'Robot.Observe',(c,s)=>{
   const robot=requireState(s,'robot',text(c.payload.robotId));
@@ -149,7 +160,7 @@ export function registerMissions(registry:ModuleRegistry):void {
   if((type==='cancelled'||type==='completed')&&mission.state.status==='cancelling') {
    const reserved=all(s,'allocation').filter(a=>a.state.missionId===mission.ref.id&&a.state.status==='reserved');
    const released=adjustAllocations(s,reserved,'release',c.recordedAt);
-   const next=nextStop(c,s,mission,structuredClone(mission.state.stops) as MissionStop[],Boolean(mission.state.loaded),'cancelling');
+   const next=nextStop(c,s,mission,structuredClone(mission.state.stops) as MissionStop[],onboardCargo(s,mission),'cancelling');
    if(!next.ok) return next;
    return done([...released,...commandEvent,...next.events],next.value);
   }

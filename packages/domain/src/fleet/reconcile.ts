@@ -1,16 +1,25 @@
 import type {CommandEnvelope,Snapshot} from '../../../contracts/src/index';
 import {canonicalBytes,verifyEs256,type PublicEcJwk} from '../../../contracts/src/index';
 import {text,requireState,change,ok,object} from '../continuity/shared';
+function activeCommandId(s:Snapshot[],robot:Snapshot) {
+  if(robot.state.missionId) {
+    const mission=requireState(s,'mission',String(robot.state.missionId));
+    const command=requireState(s,'robot-command',text(mission.state.commandId));
+    if(mission.state.robotId!==robot.ref.id||command.state.robotId!==robot.ref.id||command.state.missionId!==mission.ref.id||command.state.controlEpoch!==robot.state.controlEpoch)throw new Error('COMMAND_IDENTITY_CONFLICT');
+    return command.ref.id;
+  }
+  return robot.state.commandId??robot.state.nativeGoalId??null;
+}
 export function prepareRobotReconciliation(c:CommandEnvelope,s:Snapshot[]) {
   const id=text(c.payload.robotId),robot=requireState(s,'robot',id),authority=requireState(s,'__scope__','authority');
-  const challenge={robotId:id,nonce:c.operationId,commandId:robot.state.commandId??robot.state.nativeGoalId??null,controlEpoch:robot.state.controlEpoch??0,mapId:robot.state.mapId??null,mapRevision:robot.state.mapRevision??null,status:'requested',requestedAtMs:authority.state.nowMs??0};
+  const challenge={robotId:id,nonce:c.operationId,commandId:activeCommandId(s,robot),controlEpoch:robot.state.controlEpoch??0,mapId:robot.state.mapId??null,mapRevision:robot.state.mapRevision??null,status:'requested',requestedAtMs:authority.state.nowMs??0};
   return ok([change('RobotReconciliationRequested','robot-recovery',id,challenge)],{challenge});
 }
 export function reconcileRobot(c:CommandEnvelope,s:Snapshot[]) {
   const id=text(c.payload.robotId),robot=requireState(s,'robot',id);
   if(!c.payload.proof)throw new Error('NATIVE_EVIDENCE_REQUIRED');
   const proof=object(c.payload.proof),challenge=requireState(s,'robot-recovery',id),authority=requireState(s,'__scope__','authority');
-  if(challenge.state.status!=='requested'||proof.organizationId!==c.organizationId||proof.venueId!==c.venueId||proof.robotId!==id||proof.nonce!==challenge.state.nonce||proof.commandId!==challenge.state.commandId||proof.controlEpoch!==robot.state.controlEpoch||proof.mapId!==robot.state.mapId||proof.mapRevision!==robot.state.mapRevision)throw new Error('NATIVE_PROOF_MISMATCH');
+  if(challenge.state.status!=='requested'||proof.organizationId!==c.organizationId||proof.venueId!==c.venueId||proof.robotId!==id||proof.nonce!==challenge.state.nonce||proof.commandId!==challenge.state.commandId||challenge.state.commandId!==activeCommandId(s,robot)||proof.controlEpoch!==robot.state.controlEpoch||proof.mapId!==robot.state.mapId||proof.mapRevision!==robot.state.mapRevision)throw new Error('NATIVE_PROOF_MISMATCH');
   if(!['completed','cancelled','failed','executing','unknown'].includes(String(proof.status)))throw new Error('INVALID_NATIVE_STATE');
   const observedAtMs=Date.parse(String(proof.observedAt)),nowMs=Number(authority.state.nowMs);
   if(!Number.isFinite(observedAtMs)||observedAtMs<Number(challenge.state.requestedAtMs)||nowMs-observedAtMs>5000||observedAtMs-nowMs>1000)throw new Error('NATIVE_PROOF_STALE');

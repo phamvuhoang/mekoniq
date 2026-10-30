@@ -13,6 +13,8 @@ export function applyImport(c:CommandEnvelope,s:Snapshot[]) {
   const key=sourceKey(identity),receiptId=sourceId(identity),contentHash=hashPayload(row);
   const existing=find(s,'historical-receipt',receiptId);
   if(existing&&existing.state.contentHash!==contentHash)throw new Error('SOURCE_CONFLICT');
+  // Validation/approval may predate another batch's commit. Recheck under the apply read-set CAS.
+  if(typeof row.paymentReference==='string'&&s.some(x=>x.ref.kind==='historical-receipt'&&x.state.paymentReference===row.paymentReference&&x.state.sourceKey!==key))throw new Error('DUPLICATE_PAYMENT_REFERENCE');
   const events=[];
   // A durable source link also de-duplicates a later tablet export for this paper receipt.
   const sourceRef=typeof row.originalOperationId==='string'?row.originalOperationId:null;
