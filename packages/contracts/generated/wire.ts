@@ -331,6 +331,12 @@ export interface AuthorityProvision {
   ownerDeviceEpoch: string;
   publicJwk: JsonObject;
   expiresAt: string;
+  previousCoordinatorEpoch?: number;
+  handoffId?: string;
+  /**
+   * @maxItems 100
+   */
+  fencingProofs?: JsonObject[];
 }
 export interface SignedAuthorityProvision {
   grant: AuthorityProvision;

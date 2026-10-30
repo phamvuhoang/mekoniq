@@ -1,0 +1,16 @@
+{
+ "id":"supabase-free-compatible","snapshotAt":"2026-10-30","sources":["https://supabase.com/pricing","https://supabase.com/docs/guides/platform/manage-your-usage"],
+ "warningRatio":0.70,"criticalRatio":0.85,"maxAssetBytes":20971520,
+ "quotas":[
+  {"metric":"databaseBytes","limit":500000000,"scope":"project"},
+  {"metric":"storageBytes","limit":1000000000,"scope":"organization"},
+  {"metric":"egressBytes","limit":5000000000,"scope":"organization"},
+  {"metric":"cachedEgressBytes","limit":5000000000,"scope":"organization"},
+  {"metric":"realtimeConnections","limit":200,"scope":"project"},
+  {"metric":"realtimeMessagesMonth","limit":2000000,"scope":"organization"},
+  {"metric":"monthlyActiveUsers","limit":50000,"scope":"organization"},
+  {"metric":"activeProjects","limit":2,"scope":"organization"}
+ ],
+ "measurements":{},"capacityStatus":"not_measured","hostedStatus":"not_verified","productionRecoveryStatus":"not_verified",
+ "requiredPaidFeatures":[],"pausePolicy":"Treat provider pause/quota as unavailable; retain unacknowledged journal and continue eligible LAN work."
+}

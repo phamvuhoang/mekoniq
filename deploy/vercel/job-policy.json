@@ -1,0 +1,1 @@
+{"maxJobs":20,"budgetMs":20000,"leaseMs":30000,"scheduler":"Supabase Cron + pg_net","schedule":"* * * * *","authentication":"HMAC-SHA256 timestamp.nonce.raw-body; 60s window; durable one-use nonce","unknown":"query/reconcile before any retry"}
