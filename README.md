@@ -4,6 +4,14 @@ Nền tảng nhà hàng và robot phục vụ, được thiết kế lại từ 
 
 **Trạng thái ngày 2026-10-30: thiết kế đã được người dùng duyệt; đã lập implementation plan gồm 12 wave, 63 task; chưa triển khai mã ứng dụng production.** Các kiểm thử đã chạy là kiểm thử của bản chụp `trial`, không phải chứng nhận cho hệ thống mới.
 
+## Tài liệu trình bày tương tác
+
+- [Engineering Atlas](artifacts/engineering.html): 8 chương về kiến trúc, data flow, offline, robot, chức năng và triển khai.
+- [Investor Story](artifacts/investor.html): pitch deck 10 slide với hình ảnh, animation, BOM và mô hình doanh thu minh hoạ.
+- [Cách mở, bản xem Pages, chỉnh sửa và kiểm thử](artifacts/README.md).
+
+Hai file HTML chạy độc lập/offline, chuyển Việt / Nhật / Anh ngay trên màn hình. Các kiểm thử giao diện của tài liệu được ghi riêng trong `artifacts`; trạng thái triển khai production không thay đổi.
+
 ## Thiết kế đã duyệt và kế hoạch triển khai
 
 1. [Kết quả đọc trial và nghiên cứu nguồn chính thức](docs/research/2026-10-30-trial-and-platform-research.md).

@@ -1,0 +1,68 @@
+{
+  "scope": "Standalone HTML presentations only; not production application or robot acceptance.",
+  "tested_at_utc": "2026-10-30T07:17:49.294703+00:00",
+  "environment": {
+    "browser": "Google Chrome 156.0.8078.76",
+    "playwright": "1.64.1",
+    "mode": "headless, file://, network offline"
+  },
+  "languages": [
+    "vi",
+    "ja",
+    "en"
+  ],
+  "viewports": [
+    "1440x900",
+    "1024x768",
+    "768x1024",
+    "375x812"
+  ],
+  "files": {
+    "engineering.html": {
+      "bytes": 94202,
+      "sha256": "4b4e1263a611d5a2a0054fba1810e2d86e288c9bdb31b6f52205701552e114ee"
+    },
+    "investor.html": {
+      "bytes": 84052,
+      "sha256": "11fa07a835f9f6b775be8da15a4ca797ecf48c88c9b47a7af10041e0abcb98bb"
+    }
+  },
+  "result": {
+    "views": 216,
+    "interactions": [
+      "architecture selection",
+      "lost ACK / dedup illustration",
+      "language preserves flow state",
+      "four network modes",
+      "30 capabilities / no-robot manual fulfillment",
+      "MRR/12-month arithmetic",
+      "localized numbers and retained inputs",
+      "slider keys do not navigate",
+      "keyboard Home/End",
+      "problem comparison",
+      "product stage selection",
+      "customer presets",
+      "reduced motion",
+      "full-deck print rendering",
+      "offline file:// with zero network requests",
+      "flow autoplay and global pause"
+    ],
+    "failures": [],
+    "errors": [],
+    "externalRequests": []
+  },
+  "pages": {
+    "engineering": {
+      "url": "https://chatgpt.com/space/page_0c0b52bccf7481918e5a45ac0ad84ea6",
+      "embed_saved_and_read_back": true
+    },
+    "investor": {
+      "url": "https://chatgpt.com/space/page_86729025d6548191a54021ac49b24dd6",
+      "embed_saved_and_read_back": true
+    }
+  },
+  "limits": [
+    "Embedded Pages viewer not visually inspected in an authenticated session.",
+    "Safari and physical tablets not tested."
+  ]
+}
