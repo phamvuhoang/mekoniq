@@ -6,7 +6,7 @@
 
 **Architecture:** Giữ một coordinator; isolated ticket không tự sửa aggregate chung. Settlement grant khóa bill, historical imports chỉ tạo facts; handoff giữ unknown resources bị khóa.
 
-**Tech Stack:** SQLite/PostgreSQL journal, TypeScript domain, Android exports, CSV parser, React reconciliation UI.
+**Tech Stack:** SQLite/PostgreSQL journal, TypeScript domain, Android exports, CSV parser, HTML reconciliation UI.
 
 **Spec:** [Production](../specs/2026-10-30-production-platform-design.md), [Continuity](../specs/2026-10-30-offline-continuity-design.md), [F01–F30](../../product/2026-10-30-capability-matrix.md).
 
@@ -18,7 +18,8 @@
 - “Tiền lưu số nguyên theo đơn vị tiền nhỏ nhất; VND là đồng. Không cộng tiền bằng float.”
 - “Không tự phát lệnh di chuyển/thu tiền/in/xuất hóa đơn khi replay lịch sử.”
 - “Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit.”
-- Node.js 24 LTS; PostgreSQL 18; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Node.js 24 LTS; Supabase PostgreSQL 17; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Next.js web/API trên Vercel; Supabase Auth/Realtime/Storage và profile Free bắt buộc; tablet HTML bundle + native Android. Tuân theo [stack và giới hạn Free](../specs/2026-10-30-vercel-supabase-free-stack.md); không thêm dịch vụ trả phí bắt buộc để khởi chạy.
 - Đọc [plan tổng và hợp đồng dùng chung](2026-10-30-production-implementation-plan.md) trước task; mọi đường dẫn/command tính từ `source/`.
 - Đây là kế hoạch, chưa có application files hoặc scripts bên dưới. Tạo chúng tại task sở hữu; không chạy lệnh triển khai/robot thật chỉ để kiểm tra tài liệu.
 - Không đánh dấu PASS khi thiếu thiết bị/provider; ghi `blocked_external` cho đúng acceptance gate, tiếp tục task không phụ thuộc.
@@ -40,7 +41,7 @@
 **Files:**
 
 - Create: `packages/domain/src/continuity/{isolated-ticket,observations,reconciliation}.ts`.
-- Create: `apps/operations-ui/src/routes/{IsolatedSales,Reconciliation}.tsx`.
+- Create: `apps/tablet-web/src/screens/{IsolatedSales,Reconciliation}.ts`.
 - Test: `tests/integration/partition-conflicts.test.ts`.
 
 **Interfaces:**
@@ -135,7 +136,7 @@ export function grantBlocksReissue(status:string) {
 **Files:**
 
 - Create: `packages/domain/src/continuity/{maintenance-window,checkpoint,export}.ts`.
-- Create: `apps/operations-ui/src/routes/Maintenance.tsx`, `docs/templates/maintenance-receipts.csv`.
+- Create: `apps/tablet-web/src/screens/Maintenance.ts`, `docs/templates/maintenance-receipts.csv`.
 - Create: `apps/tablet-android/android/app/src/main/java/io/mekoniq/tablet/export/JournalExport.kt`.
 - Test: `tests/integration/maintenance-checkpoint.test.ts`.
 
@@ -183,7 +184,7 @@ export function checkpointClean(s:{loadedMissions:number;unknownGrants:number;mi
 **Files:**
 
 - Create: `packages/domain/src/continuity/{import-batch,import-validator,import-apply,source-links}.ts`.
-- Create: `apps/operations-ui/src/routes/ImportHistory.tsx`, `tests/fixtures/import/maintenance.csv`.
+- Create: `apps/tablet-web/src/screens/ImportHistory.ts`, `tests/fixtures/import/maintenance.csv`.
 - Test: `tests/integration/historical-import.test.ts`.
 
 **Interfaces:**
@@ -231,7 +232,7 @@ export function sourceKey(r:{venueId:string;sourceType:string;sourceSeries:strin
 **Files:**
 
 - Create: `packages/domain/src/continuity/{handoff,recovery-inventory}.ts`, `packages/domain/src/fleet/reconcile.ts`.
-- Create: `apps/operations-ui/src/routes/Recovery.tsx`, `docs/operations/coordinator-recovery.md`.
+- Create: `apps/tablet-web/src/screens/Recovery.ts`, `docs/operations/coordinator-recovery.md`.
 - Test: `tests/integration/ownership-handoff.test.ts`.
 
 **Interfaces:**

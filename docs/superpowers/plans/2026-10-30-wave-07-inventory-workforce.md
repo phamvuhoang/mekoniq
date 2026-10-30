@@ -6,7 +6,7 @@
 
 **Architecture:** Stock movements append-only theo source event và recipe version. Receipt/procurement/stocktake có quyền và audit; offline observations cùng continuity workflow.
 
-**Tech Stack:** TypeScript domain, SQLite/PostgreSQL projections, React backoffice, decimal quantities.
+**Tech Stack:** TypeScript domain, SQLite/PostgreSQL projections, HTML tablet, Next.js backoffice, decimal quantities.
 
 **Spec:** [Production](../specs/2026-10-30-production-platform-design.md), [Continuity](../specs/2026-10-30-offline-continuity-design.md), [F01–F30](../../product/2026-10-30-capability-matrix.md).
 
@@ -18,7 +18,8 @@
 - “Tiền lưu số nguyên theo đơn vị tiền nhỏ nhất; VND là đồng. Không cộng tiền bằng float.”
 - “Không tự phát lệnh di chuyển/thu tiền/in/xuất hóa đơn khi replay lịch sử.”
 - “Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit.”
-- Node.js 24 LTS; PostgreSQL 18; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Node.js 24 LTS; Supabase PostgreSQL 17; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Next.js web/API trên Vercel; Supabase Auth/Realtime/Storage và profile Free bắt buộc; tablet HTML bundle + native Android. Tuân theo [stack và giới hạn Free](../specs/2026-10-30-vercel-supabase-free-stack.md); không thêm dịch vụ trả phí bắt buộc để khởi chạy.
 - Đọc [plan tổng và hợp đồng dùng chung](2026-10-30-production-implementation-plan.md) trước task; mọi đường dẫn/command tính từ `source/`.
 - Đây là kế hoạch, chưa có application files hoặc scripts bên dưới. Tạo chúng tại task sở hữu; không chạy lệnh triển khai/robot thật chỉ để kiểm tra tài liệu.
 - Không đánh dấu PASS khi thiếu thiết bị/provider; ghi `blocked_external` cho đúng acceptance gate, tiếp tục task không phụ thuộc.
@@ -40,7 +41,7 @@
 **Files:**
 
 - Create: `packages/domain/src/inventory/{recipe,uom,movement,consumption}.ts`.
-- Create: `apps/operations-ui/src/routes/{Recipes,Inventory}.tsx`.
+- Create: `apps/tablet-web/src/screens/{Recipes,Inventory}.ts`.
 - Test: `tests/integration/stock-consumption.test.ts`.
 
 **Interfaces:**
@@ -86,7 +87,7 @@ ON stock_movement(venue_id, source_event_id, recipe_version, ingredient_id, move
 **Files:**
 
 - Create: `packages/domain/src/procurement/{supplier,purchase-order,goods-receipt,return,cost}.ts`.
-- Create: `apps/operations-ui/src/routes/Purchasing.tsx`.
+- Create: `apps/tablet-web/src/screens/Purchasing.ts`.
 - Test: `tests/integration/procurement.test.ts`.
 
 **Interfaces:**
@@ -132,7 +133,7 @@ export function receivable(ordered:string, received:string, tolerance:string) {
 
 **Files:**
 
-- Create: `packages/domain/src/inventory/{stocktake,adjustment,valuation}.ts`, `apps/operations-ui/src/routes/Stocktake.tsx`.
+- Create: `packages/domain/src/inventory/{stocktake,adjustment,valuation}.ts`, `apps/tablet-web/src/screens/Stocktake.ts`.
 - Test: `tests/integration/stocktake.test.ts`.
 
 **Interfaces:**
@@ -177,7 +178,8 @@ export function applyAdjustment(s:{current:string;delta:string}) {
 
 **Files:**
 
-- Create: `packages/domain/src/workforce/{schedule,attendance,approval}.ts`, `apps/operations-ui/src/routes/{Staff,InventoryReports}.tsx`.
+- Create: `packages/domain/src/workforce/{schedule,attendance,approval}.ts`, `apps/tablet-web/src/screens/{Staff,InventoryReports}.ts`.
+- Create: `apps/cloud-web/src/components/backoffice/OperationsReports.tsx`, `apps/cloud-web/src/app/(backoffice)/admin/operations/page.tsx`; cloud reports có watermark, thao tác venue qua relay, chấm công/kho tại tablet không phụ thuộc Next.js.
 - Create: `packages/domain/src/reporting/{stock,food-cost,attendance}.ts`.
 - Test: `tests/integration/workforce-reporting.test.ts`.
 

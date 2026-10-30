@@ -6,7 +6,7 @@
 
 **Architecture:** Cloud quản lý trung tâm; một tablet có sẵn làm coordinator LAN, các tablet và robot có journal bền vững. Domain chia module, cùng hợp đồng schema; quyền ghi bill/robot độc quyền và đồng bộ facts không tự chạy lại side effects.
 
-**Tech Stack:** Node.js 24 LTS, TypeScript strict/pnpm, NestJS, PostgreSQL 18, React/Vite/Capacitor Android, Kotlin/SQLite/Keystore, Python/rclpy, ROS 2 Jazzy/Ubuntu 24.04/Gazebo Harmonic.
+**Tech Stack:** Node.js 24 LTS, TypeScript strict/pnpm, Next.js Route Handlers/Vercel, Supabase PostgreSQL 17, Next.js web; HTML/CSS/TypeScript + Vite/Capacitor Android, Kotlin/SQLite/Keystore, Python/rclpy, ROS 2 Jazzy/Ubuntu 24.04/Gazebo Harmonic.
 
 **Spec:** [Kiến trúc đã duyệt](../specs/2026-10-30-production-platform-design.md), [offline và bảo trì đã duyệt](../specs/2026-10-30-offline-continuity-design.md), [phạm vi F01–F30](../../product/2026-10-30-capability-matrix.md).
 
@@ -18,7 +18,8 @@
 - “Tiền lưu số nguyên theo đơn vị tiền nhỏ nhất; VND là đồng. Không cộng tiền bằng float.”
 - “Không tự phát lệnh di chuyển/thu tiền/in/xuất hóa đơn khi replay lịch sử.”
 - “Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit.”
-- Node.js 24 LTS; PostgreSQL 18; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Node.js 24 LTS; Supabase PostgreSQL 17; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Next.js web/API trên Vercel; Supabase Auth/Realtime/Storage và profile Free bắt buộc; tablet HTML bundle + native Android. Tuân theo [stack và giới hạn Free](../specs/2026-10-30-vercel-supabase-free-stack.md); không thêm dịch vụ trả phí bắt buộc để khởi chạy.
 - “Mất Internet nhưng còn LAN: nhiều tablet POS, bếp và robot vẫn phối hợp.”
 - “Mất cả LAN: từng thiết bị giữ dữ liệu cục bộ; đồng bộ lại khi kết nối trở lại.”
 - “Bảo trì toàn bộ: có phương án ghi nhận và nhập bù dữ liệu của thời gian gián đoạn.”
@@ -32,7 +33,9 @@
 
 Thiết kế đã được người dùng duyệt. Tài liệu này là **kế hoạch thực thi**, chưa triển khai mã ứng dụng. Không cần duyệt lại các quyết định đã có; chỉ mở quyết định mới nếu thử nghiệm chứng minh ràng buộc thiết kế không khả thi.
 
-Kế hoạch có **12 wave, 62 task**; mọi checkbox bắt đầu chưa làm. [Index máy đọc được](2026-10-30-plan-index.json) ghi ID, file test, command và coverage. Mỗi wave là một plan tự đủ để giao việc, nhưng phải đọc spec và phần hợp đồng chung trước. Đường dẫn tương đối của application files và lệnh chạy đều tính từ thư mục `source/`.
+Kế hoạch có **12 wave, 63 task**; mọi checkbox bắt đầu chưa làm. [Index máy đọc được](2026-10-30-plan-index.json) ghi ID, file test, command và coverage. Mỗi wave là một plan tự đủ để giao việc, nhưng phải đọc spec và phần hợp đồng chung trước. Đường dẫn tương đối của application files và lệnh chạy đều tính từ thư mục `source/`.
+
+Cập nhật stack theo yêu cầu người dùng: [Next.js/Vercel + Supabase Free + tablet HTML](../specs/2026-10-30-vercel-supabase-free-stack.md). W02 có thêm T06 để Storage/quota Free có task và acceptance riêng; không tăng số wave, không bỏ chức năng nhà hàng hoặc offline. “Hobby Supabase” được hiểu là Free; Vercel commercial plan là quyết định hạ tầng riêng. Mã phần mềm của cả 12 wave có thể phát triển với Next.js/Supabase CLI local không cần tài khoản cloud; hosted/hardware/provider/release gates vẫn cần bằng chứng thật.
 
 Task có sáu bước: test hành vi → RED → phần lõi → wiring/lưu trữ → GREEN/hồi quy → evidence/commit. Đoạn mã trong plan là test khởi đầu và invariant quan trọng, không thay thế việc hoàn thiện toàn bộ interfaces/behavior đã liệt kê. Chia bước lập trình dài thành các vòng RED/GREEN nhỏ trong cùng task; không tạo một commit hàng nghìn dòng chỉ vì cùng ID.
 
@@ -46,7 +49,7 @@ Không tạo trước hàng loạt màn hình/API trả dữ liệu giả cho c�
 |---|---|---:|---|
 | [W00](2026-10-30-wave-00-foundations.md) | workspace, contracts và giao dịch nền | 5 | A |
 | [W01](2026-10-30-wave-01-android-lan.md) | Android durable store và coordinator LAN | 5 | A |
-| [W02](2026-10-30-wave-02-cloud-sync-policy.md) | cloud identity, policy và đồng bộ | 5 | A |
+| [W02](2026-10-30-wave-02-cloud-sync-policy.md) | Supabase identity, policy, đồng bộ, Storage và Free profile | 6 | A |
 | [W03](2026-10-30-wave-03-restaurant-vertical-slice.md) | menu đến bếp, robot giả lập và bill tiền mặt | 6 | A |
 | [W04](2026-10-30-wave-04-offline-maintenance.md) | partition, đối soát và nhập bù bảo trì | 6 | A |
 | [W05](2026-10-30-wave-05-complete-pos.md) | POS, thu ngân và trải nghiệm phục vụ đầy đủ | 6 | B |
@@ -160,7 +163,7 @@ interface CommandRouter {
 
 Native layer cấp sequence, tạo canonical journal bytes và ký trước COMMIT trong cùng boundary; nếu signer/storage lỗi transaction rollback và không ACK. Không để JS cấp sequence rồi native commit sau bằng giao dịch khác. Table tối thiểu: aggregate snapshots, operation receipts, producer counters, journal, audit, outbox, inbox, received/applied cursors, quarantine. Scope/operationId/hash và producer epoch/sequence có unique constraints.
 
-[SQLite atomic commit](https://www.sqlite.org/atomiccommit.html) là cơ sở triển khai; process kill test không thay được power-loss/hardware qualification. PostgreSQL dùng transaction với application role không bypass [RLS](https://www.postgresql.org/docs/18/ddl-rowsecurity.html). Migrations của cloud/tablet tách file nhưng có cùng semantic conformance tests.
+[SQLite atomic commit](https://www.sqlite.org/atomiccommit.html) là cơ sở triển khai; process kill test không thay được power-loss/hardware qualification. PostgreSQL dùng transaction với application role không bypass [RLS](https://www.postgresql.org/docs/17/ddl-rowsecurity.html). Migrations của cloud/tablet tách file nhưng có cùng semantic conformance tests.
 
 ### 3.3 ACK và replay
 
@@ -190,6 +193,15 @@ Connector W09-T03: `verify(raw,headers)`, `normalize(verified)`, `execute(intent
 
 Valetudo trên tablet: W06-T02 tạo native ExecutorService/ExecutorJournal/NativeRobotTransport và typed Capacitor bridge. TS adapter không tự phát mutation ngoài native executor; native lưu quyền/command trước I/O và giữ unknown nếu reboot không xác định được goal. ROS dùng Python executor W06-T03 trên onboard Linux. Hai runtime dùng cùng RobotCommand/journal conformance vectors; không cần thêm server tại nhà hàng.
 
+### 3.5 Hợp đồng Next.js, Supabase và tablet HTML
+
+- `apps/cloud-web` là một Next.js app web/API; `/v1/*` đi qua allowlisted Route Handler registry, `/health/*` là handler riêng. Mỗi module mới đăng ký method/path/schema/permission và application service; không tạo Nest controller hoặc listener thường trú. Mutation venue relay tới owner cũ, không biến Supabase Data API thành đường ghi thứ hai.
+- `supabase/migrations` là nguồn migration PostgreSQL duy nhất; local/hosted cùng major/extensions đã xác minh. Task thêm bảng cũng sở hữu migration timestamp duy nhất, RLS/grants và upgrade test; SQLite migrations vẫn riêng. Connection dùng Supavisor transaction pooling, `SET LOCAL`, role không bypass RLS. Transaction không giữ qua HTTP request.
+- Supabase Auth giữ user/session; `authorize` giữ tenant/venue roles và policy. Signed device/offline grant vẫn riêng. Realtime mang hint, HTTP journal/receipt quyết định đã nhận; token không hợp lệ thì authorized device pull, không public broadcast. Guest table token dùng API có scope, không tự coi là Supabase JWT.
+- Job là row bền vững; Next.js consumer có lease/idempotency/time budget, Supabase Cron gọi qua pg_net khi có due jobs. Không dùng worker daemon hoặc process memory làm source of truth. Upload blob trực tiếp Supabase Storage, finalize manifest; quota error không được ACK dữ liệu chưa commit.
+- `apps/tablet-web` dùng HTML/CSS/DOM TypeScript, đóng bundle cùng native Android. `packages/ui` chứa DOM helpers/view models/i18n, không bắt React/Next server cho LAN. Cloud admin/guest dùng Next.js React, chia sẻ domain/view model; task có UI phải nối screen/route thật và permission test. Khi quản trị qua cloud không tới được, những thao tác nội bộ cần offline vẫn có màn tablet và policy đã cache.
+- `supabase-free-compatible` là profile hạ tầng độc lập preset `trial-service`/đầy đủ. Không có paid Supabase prerequisite để chạy; capacity, custom SMTP, backup độc lập và Vercel commercial plan ghi theo target. Free functional gate và production recovery RPO/RTO tách evidence, không tự hạ chuẩn hoặc gán SLA chưa đo.
+
 ## 4. Test harness và fixtures để task không phụ thuộc ngữ cảnh chat
 
 W00-T05 tạo `tests/support/lab.ts`; W03-T01 tạo `tests/support/restaurant-lab.ts`. Test code trong các plan dùng các helper sau, **phải gọi production router/database**, không dựng fake success của domain.
@@ -206,7 +218,9 @@ W00-T05 tạo `tests/support/lab.ts`; W03-T01 tạo `tests/support/restaurant-la
 | Lab.fault/restart | `fault(name)`, `restart('coordinator'|'cloud'|'executor')`; fault registry/child process kill checkpoints | W00-T05; plugin faults task tương ứng |
 | Lab.partition/heal/sync | `partition('wan'|'lan'|'venue-b-wan')`, `heal()`, `sync()`; transport thực bị ngắt, sync chờ durable cursor hoặc timeout | W00-T05/W02-T04 |
 | Lab.advance | `(milliseconds:number)`; fake clock unit/integration, không thay soak thực | W00-T05 |
-| Lab.http/rlsVisibleIds | request authenticated API, query qua app DB role | W02-T01 |
+| Lab.http/rlsVisibleIds | `http(actor,method,path,body?)` gọi Next.js thật bằng Supabase Auth local fixture; query qua app DB role | W02-T01 |
+| Cloud test lifecycle | `startCloud({databaseUrl,port:0})` chạy Next.js child process, trả url/close; không giả serverless bằng custom listener production | W00-T01 |
+| Supabase service fixtures | Local Auth/Realtime/Storage thật, seed và cleanup theo scope; storage upload/finalize dùng HTTP thật | W02-T01/T05/T06 |
 | Lab.cloudAppliedCount/pendingCount | applied facts cloud; outbox pending của device | W02-T04 |
 | Lab.unresolvedConflictCount | đọc conflict queue persistent | W04-T01 |
 | Lab.importApproved | chạy Validate→Preview→Approve→Apply thật với manager fixture; không bypass approval logic | W04-T04 |
@@ -234,12 +248,14 @@ Kotlin instrumentation test snippets đặt trong class tên file; test context/
 
 ## 5. Tooling, lệnh chuẩn và evidence
 
-W00-T01 tạo scripts như dưới; chúng **chưa tồn tại ở thời điểm viết plan**. Wrapper `scripts/test-runner.mjs` strip một delimiter `--`, truyền argv bằng spawn, không build shell command từ input. Suite chưa có config/module phải báo prerequisite, không success.
+W00-T01 tạo registry/scripts nền như dưới; script chuyên biệt được hiện thực ở task sở hữu ghi trong bảng. Chúng **chưa tồn tại ở thời điểm viết plan**. Wrapper `scripts/test-runner.mjs` strip một delimiter `--`, truyền argv bằng spawn, không build shell command từ input. Suite chưa có config/module phải báo prerequisite, không success.
 
 | Command | Trách nhiệm |
 |---|---|
 | `pnpm install --frozen-lockfile` | Install reproducible khi lockfile đã tạo; lần đầu resolve version có kiểm Node24 compatibility và lưu chính xác |
 | `pnpm doctor` | Node/Docker/Python/JDK/Android SDK/các tool cần ở wave hiện tại; không sửa global environment |
+| `pnpm supabase:start` / `pnpm supabase:stop` | W00-T01: CLI local DB/Auth/Realtime/Storage/mail sink, không login/link hosted; migrations từ `supabase/migrations` |
+| `pnpm dev:cloud` / `pnpm dev:tablet` | W00-T01 Next.js local; W01-T04 Vite HTML bundle. Cổng riêng, không dùng máy dev thay coordinator trong bài test WAN outage |
 | `pnpm build` / `pnpm typecheck` / `pnpm lint` | Workspace apps/packages hiện đã register; báo thiếu script cho package mới |
 | `pnpm contracts:generate` / `pnpm contracts:check` | Tạo typings/fixtures codegen, fail nếu generated drift |
 | `pnpm test:unit -- path` | Vitest deterministic domain |
@@ -252,11 +268,14 @@ W00-T01 tạo scripts như dưới; chúng **chưa tồn tại ở thời điể
 | `pnpm test:security -- path` | Boundary/abuse/regression |
 | `pnpm test:acceptance -- continuity/release-manifest/first-shift` | Named registry dispatch tới suite thật và evidence assertions |
 | `pnpm test:load` | Tạo measured artifact, assert thresholds từ artifact hiện tại |
+| `pnpm cloud:budget` | W02-T06: report quota/usage có nguồn, thời điểm đo và unknown, không giả số đo hosted |
+| `pnpm jobs:run` | W02-T05: local runner dùng đúng bounded job consumer, không tạo daemon production |
+| `pnpm test:load:free` | W11-T02: chạy fixture Free và `tests/acceptance/supabase-free-capacity.test.ts`, kiểm artifact thật/budget/dự báo tháng |
 | `python3 -m pytest robotics/agent/tests -q` | Agent unit/store tests trong Python environment đã pin |
 | `colcon build`, `colcon test` | Chạy trong ROS workspace Linux Jazzy, log test-result; không chạy nhầm root source |
 | `apps/tablet-android/android/gradlew -p apps/tablet-android/android connectedDebugAndroidTest` | Native SQL/Keystore/LAN instrumentation |
 
-Runner cấu hình test HTTP/DB ports riêng do OS cấp, không dùng trial 1880/1884 hoặc robot IP thật. Compose là môi trường dev/cloud, không triển khai server trong nhà hàng. Android tool scripts require selected test serial và không tự force-stop app của thiết bị chưa enroll test.
+Runner cấu hình HTTP ports riêng và Supabase CLI project/ports test cố định không trùng trial 1880/1884 hoặc robot IP thật. Supabase containers chỉ là môi trường development/CI, không triển khai server trong nhà hàng. Android tool scripts require selected test serial và không tự force-stop app của thiết bị chưa enroll test. Offline tests chặn đường tới Next.js/Supabase local nhưng giữ LAN tablet để chứng minh không cần máy dev/cloud cho vận hành nội bộ.
 
 Mỗi task tạo `docs/implementation/evidence/Wxx-Tyy.md` gồm actual commit, changed files, full commands, runtime/versions, kết quả, artifact links, limits và external blockers. Không commit secret/PII thật. Test failure/unknown là trạng thái có thật, không đổi expectation chỉ để xanh. Sau test phù hợp đạt, không lặp toàn suite vô ích; full regression chạy tại gate.
 
@@ -270,7 +289,7 @@ ID task tra trong wave tương ứng (`W05-T03` ở file Wave05). Cột này là
 |---|---|---|
 | F01 | Identity/tenant/device | W02-T01, W02-T02, W11-T01 |
 | F02 | Feature policy/presets | W02-T03, W06-T06, W08-T04, W11-T05 |
-| F03 | Menu/modifiers/price | W03-T01, W05-T01 |
+| F03 | Menu/modifiers/price | W02-T06, W03-T01, W05-T01 |
 | F04 | Bàn/phiên/chuyển/gộp | W03-T02, W05-T02 |
 | F05 | POS/QR/kiosk/robot ordering | W03-T06, W05-T05 |
 | F06 | Order/courses/amendments | W03-T02, W05-T02 |
@@ -295,8 +314,8 @@ ID task tra trong wave tương ứng (`W05-T03` ở file Wave05). Cột này là
 | F25 | E-invoice/accounting export | W10-T03 |
 | F26 | Buffet/combo/weighted models | W08-T04 |
 | F27 | Node-RED/SDK | W09-T04 |
-| F28 | Production operations | W00-T01, W11-T01, W11-T02, W11-T03, W11-T04, W11-T05 |
-| F29 | Offline/sync/partitions | W01-T01, W01-T03, W01-T05, W02-T04, W04-T01, W04-T02, W04-T05, W04-T06 |
+| F28 | Production operations | W00-T01, W02-T05, W02-T06, W11-T01, W11-T02, W11-T03, W11-T04, W11-T05 |
+| F29 | Offline/sync/partitions | W01-T01, W01-T03, W01-T05, W02-T04, W02-T05, W02-T06, W04-T01, W04-T02, W04-T05, W04-T06, W11-T02 |
 | F30 | Maintenance/import | W04-T03, W04-T04, W04-T06, W11-T03 |
 
 ## 7. Coverage offline/bảo trì
@@ -349,6 +368,10 @@ Chi tiết expected outcome theo spec continuity §9. Các task ghi trong bảng
 | Không fake provider success; official documents/license | W10-T01 đến W10-T06 |
 | Outbox/metrics/observability và scope source-of-truth | W02-T05, W09-T02, W11-T02 |
 | Backout không làm mất giao dịch mới | W04-T05, W11-T03, W11-T04, W11-T05 |
+| Next.js web/API trên Vercel; local Supabase không cần cloud account | W00-T01, W02-T01, W11-T04 |
+| Supabase Auth/Realtime/Storage; pooling/RLS; hint mất vẫn catch-up | W00-T04, W02-T01, W02-T04, W02-T05, W02-T06 |
+| Supabase Free functional/capacity, pause/quota recovery, backup không cần PITR | W02-T06, W11-T02, W11-T03, W11-T04 |
+| Tablet HTML bundle + native offline, web quản trị/khách Next.js | W01-T04, W03-T01, W03-T06, W05-T05, W08, W09 |
 
 ## 9. Input bên ngoài và cách xử lý blocker
 
@@ -361,7 +384,7 @@ Chi tiết expected outcome theo spec continuity §9. Các task ghi trong bảng
 | Payment provider/merchant sandbox + webhook credentials | W10-T01/T02 | Manual cash/verified transfer vẫn hoạt động; provider chưa nghiệm thu |
 | E-invoice provider, field rules và sandbox | W10-T01/T03 | Export/ledger chạy; không giả issued invoice |
 | Zalo/marketplace/POS partner app registration/docs/permissions | W10-T01/T04 | Internal/guest web chạy; partner chưa bật |
-| Cloud account/domain/TLS/secret manager/backup target, release authority | W11-T03/T04 | Artifacts/staging dry-run chuẩn bị đầy đủ, không deploy vào target đoán |
+| Vercel commercial target, Supabase Free project/region, SMTP, independent backup target, release authority | W11-T01..W11-T04 | Phát triển toàn bộ local; chuẩn bị build/config/dry-run, hosted capacity/recovery/deploy chưa được gán đạt |
 | Printer/transport model | W05-T04, W11-T05 | Spool/protocol fixture test được; physical print chưa được advertised |
 
 Không cần yêu cầu tất cả input này trước khi bắt đầu W00. Mỗi blocker nằm ở task/gate đúng chỗ; không làm chậm các phần không phụ thuộc. Trước khi đề nghị publish/deploy thật, chuẩn bị manifest, diff, test evidence và rollback cụ thể.

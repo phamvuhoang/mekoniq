@@ -6,7 +6,7 @@
 
 **Architecture:** Capacitor dùng UI/domain TypeScript; native Kotlin sở hữu SQLite, Keystore và listener TLS. Coordinator chỉ healthy khi cả service và domain foreground runtime xử lý được.
 
-**Tech Stack:** React/Vite, Capacitor Android, Kotlin, SQLite, Android Keystore, TLS, instrumentation tests.
+**Tech Stack:** HTML/CSS/TypeScript + Vite, Capacitor Android, Kotlin, SQLite, Android Keystore, TLS, instrumentation tests.
 
 **Spec:** [Production](../specs/2026-10-30-production-platform-design.md), [Continuity](../specs/2026-10-30-offline-continuity-design.md), [F01–F30](../../product/2026-10-30-capability-matrix.md).
 
@@ -18,7 +18,8 @@
 - “Tiền lưu số nguyên theo đơn vị tiền nhỏ nhất; VND là đồng. Không cộng tiền bằng float.”
 - “Không tự phát lệnh di chuyển/thu tiền/in/xuất hóa đơn khi replay lịch sử.”
 - “Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit.”
-- Node.js 24 LTS; PostgreSQL 18; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Node.js 24 LTS; Supabase PostgreSQL 17; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Next.js web/API trên Vercel; Supabase Auth/Realtime/Storage và profile Free bắt buộc; tablet HTML bundle + native Android. Tuân theo [stack và giới hạn Free](../specs/2026-10-30-vercel-supabase-free-stack.md); không thêm dịch vụ trả phí bắt buộc để khởi chạy.
 - Đọc [plan tổng và hợp đồng dùng chung](2026-10-30-production-implementation-plan.md) trước task; mọi đường dẫn/command tính từ `source/`.
 - Đây là kế hoạch, chưa có application files hoặc scripts bên dưới. Tạo chúng tại task sở hữu; không chạy lệnh triển khai/robot thật chỉ để kiểm tra tài liệu.
 - Không đánh dấu PASS khi thiếu thiết bị/provider; ghi `blocked_external` cho đúng acceptance gate, tiếp tục task không phụ thuộc.
@@ -198,9 +199,10 @@ export function coordinatorReady(s: {
 
 **Files:**
 
-- Create: `apps/operations-ui/src/{App,main}.tsx`, `apps/operations-ui/src/routes/DeviceStatus.tsx`.
-- Create: `packages/ui/src/{SyncStatus,OfflineBanner}.tsx`, `packages/ui/locales/{vi,en}.json`.
-- Create: `apps/operations-ui/src/transport/session.ts`, `apps/tablet-android/src/ui-entry.ts`.
+- Create: `apps/tablet-web/src/{router,main}.ts`, `apps/tablet-web/src/screens/DeviceStatus.ts`.
+- Create: `apps/tablet-web/{index.html,package.json,vite.config.ts}`, `apps/tablet-web/src/styles.css`, `apps/tablet-web/public/` cho font/audio cần offline.
+- Create: `packages/ui/src/{SyncStatus,OfflineBanner}.ts`, `packages/ui/locales/{vi,en}.json`.
+- Create: `apps/tablet-web/src/transport/session.ts`, `apps/tablet-android/src/ui-entry.ts`.
 - Test: `tests/e2e/device-status.spec.ts`.
 
 **Interfaces:**
@@ -224,15 +226,19 @@ test("local commit is not presented as cloud sync", async ({page}) => {
 
 - [ ] **3. Hiện thực phần cốt lõi.** Fixture query chỉ tồn tại trong test build. UI có last sync time, pending count, owner endpoint và lý do unavailable; không dựa vào navigator.onLine để xác nhận owner reachable.
 
-```tsx
+```ts
 export function SyncStatus({level}: {level:"local"|"venue"|"cloud"|"unknown"}) {
   const label = {local:"Đã lưu trên thiết bị", venue:"Nhà hàng đã nhận",
     cloud:"Đã đồng bộ cloud", unknown:"Chưa xác định kết quả"}[level];
-  return <span role="status" aria-live="polite">{label}</span>;
+  const node = document.createElement("span");
+  node.setAttribute("role", "status");
+  node.setAttribute("aria-live", "polite");
+  node.textContent = label;
+  return node;
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Tạo transport interface dùng cloud/relay/LAN cùng command envelope. Reconnect theo backoff+jitter; retry giữ operationId. Role route mới chỉ hiển thị capability thực sự được module đăng ký; không tạo các màn chức năng giả.
+- [ ] **4. Nối vào runtime và lưu trữ.** HTML entry/DOM router chạy từ local bundle; Capacitor trỏ build `tablet-web`, fonts/audio không cần CDN. Safe text rendering và cleanup subscriptions khi đổi screen. Tạo transport interface cloud/relay/LAN cùng command envelope; backoff+jitter, retry giữ operationId. Role route chỉ hiển thị capability module đã đăng ký; không gọi Next.js SSR/Server Actions cho tác vụ LAN.
 
 - [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:e2e -- tests/e2e/device-status.spec.ts`; kỳ vọng PASS. Test 1280×800, 800×1280, touch, keyboard, VI/EN, stale draft vẫn giữ; pending journal chặn reset. Native APK dùng bundle local khi startup mất WAN. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 

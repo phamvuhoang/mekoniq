@@ -2,6 +2,8 @@
 
 Ngày khảo sát: 2026-10-30. Đây là bằng chứng đầu vào cho thiết kế, không phải báo cáo hệ thống production đã hoàn thành.
 
+Cập nhật sau khảo sát theo yêu cầu người dùng: stack hiện hành là [Next.js/Vercel, Supabase Free và tablet HTML](../superpowers/specs/2026-10-30-vercel-supabase-free-stack.md). Các lựa chọn công nghệ ban đầu bên dưới là lịch sử nghiên cứu; không dùng chúng thay spec/implementation plan đã cập nhật. Bằng chứng đọc và kiểm thử baseline trial giữ nguyên.
+
 ## 1. Phạm vi và cách đọc mã
 
 - `source` trống khi bắt đầu; thư mục cha `robot` không có Git repository.

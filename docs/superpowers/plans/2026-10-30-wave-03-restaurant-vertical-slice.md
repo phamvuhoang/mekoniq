@@ -6,7 +6,7 @@
 
 **Architecture:** Các domain module cùng command kernel ở coordinator. Menu/order/KDS/fulfillment/mission/billing có state riêng, liên kết qua ID và lượng; UI dùng projection đã commit.
 
-**Tech Stack:** TypeScript domain, SQLite coordinator, PostgreSQL projections, React tablet UI, deterministic robot fake.
+**Tech Stack:** TypeScript domain, SQLite coordinator, PostgreSQL projections, HTML tablet UI, deterministic robot fake.
 
 **Spec:** [Production](../specs/2026-10-30-production-platform-design.md), [Continuity](../specs/2026-10-30-offline-continuity-design.md), [F01–F30](../../product/2026-10-30-capability-matrix.md).
 
@@ -18,7 +18,8 @@
 - “Tiền lưu số nguyên theo đơn vị tiền nhỏ nhất; VND là đồng. Không cộng tiền bằng float.”
 - “Không tự phát lệnh di chuyển/thu tiền/in/xuất hóa đơn khi replay lịch sử.”
 - “Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit.”
-- Node.js 24 LTS; PostgreSQL 18; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Node.js 24 LTS; Supabase PostgreSQL 17; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Next.js web/API trên Vercel; Supabase Auth/Realtime/Storage và profile Free bắt buộc; tablet HTML bundle + native Android. Tuân theo [stack và giới hạn Free](../specs/2026-10-30-vercel-supabase-free-stack.md); không thêm dịch vụ trả phí bắt buộc để khởi chạy.
 - Đọc [plan tổng và hợp đồng dùng chung](2026-10-30-production-implementation-plan.md) trước task; mọi đường dẫn/command tính từ `source/`.
 - Đây là kế hoạch, chưa có application files hoặc scripts bên dưới. Tạo chúng tại task sở hữu; không chạy lệnh triển khai/robot thật chỉ để kiểm tra tài liệu.
 - Không đánh dấu PASS khi thiếu thiết bị/provider; ghi `blocked_external` cho đúng acceptance gate, tiếp tục task không phụ thuộc.
@@ -35,11 +36,12 @@
 
 ### W03-T01: Catalog phiên bản và giá snapshot cơ bản
 
-**Depends on:** W00-T03, W02-T03
+**Depends on:** W00-T03, W02-T03, W02-T06
 
 **Files:**
 
-- Create: `packages/domain/src/catalog/{menu,price-book,publish}.ts`, `apps/operations-ui/src/routes/MenuEditor.tsx`.
+- Create: `packages/domain/src/catalog/{menu,price-book,publish}.ts`, `apps/cloud-web/src/components/backoffice/MenuEditor.tsx`.
+- Create: `apps/cloud-web/src/app/(backoffice)/admin/catalog/page.tsx`.
 - Create: `tests/fixtures/restaurant-v1.json`, `tests/support/restaurant-lab.ts`.
 - Test: `tests/integration/menu-snapshot.test.ts`.
 
@@ -76,7 +78,7 @@ export function lineTotal(unitMinor:string, quantity:string) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** CRUD menu bằng permission riêng; publish chặn item thiếu trạm/giá/currency. UI menu editor + cashier picker VI/EN; immutable menu versions, sold-out là availability riêng.
+- [ ] **4. Nối vào runtime và lưu trữ.** Next.js admin menu editor có permission riêng; publish chặn item thiếu trạm/giá/currency, coordinator ACK revision trước khi dùng. Ảnh dùng Supabase Storage manifest/signing W02-T06, tối ưu trước upload. Tablet cache catalog và ảnh theo manifest, cashier picker HTML VI/EN hoạt động khi WAN mất; ảnh thiếu có fallback, không chặn đơn hợp lệ. Menu versions bất biến, sold-out là availability riêng.
 
 - [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/menu-snapshot.test.ts`; kỳ vọng PASS. Client gửi giá giả, stale quote, item sold-out, category station missing và zero/negative quantity. Modifier/tax nâng ở W05, không bật giả trước đó. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
@@ -89,7 +91,7 @@ export function lineTotal(unitMinor:string, quantity:string) {
 **Files:**
 
 - Create: `packages/domain/src/orders/{session,order,commands}.ts`, `packages/domain/src/orders/module.ts`.
-- Create: `apps/operations-ui/src/routes/Pos.tsx`, `packages/sync/migrations/sqlite/002_orders.sql`.
+- Create: `apps/tablet-web/src/screens/Pos.ts`, `packages/sync/migrations/sqlite/002_orders.sql`.
 - Test: `tests/integration/order-lifecycle.test.ts`.
 
 **Interfaces:**
@@ -140,7 +142,7 @@ if (order.status === "closed")
 **Files:**
 
 - Create: `packages/domain/src/kitchen/{ticket,readiness}.ts`, `packages/domain/src/fulfillment/{allocation,handoff}.ts`.
-- Create: `apps/operations-ui/src/routes/Kitchen.tsx`.
+- Create: `apps/tablet-web/src/screens/Kitchen.ts`.
 - Test: `tests/integration/kitchen-allocation.test.ts`.
 
 **Interfaces:**
@@ -192,7 +194,7 @@ export function availablePortions(ready:string, allocated:string) {
 **Files:**
 
 - Create: `packages/domain/src/fleet/{mission,stop,scheduler,command-journal}.ts`.
-- Create: `packages/robot-adapters/src/{contract,registry,simulator}.ts`, `apps/operations-ui/src/routes/Fleet.tsx`.
+- Create: `packages/robot-adapters/src/{contract,registry,simulator}.ts`, `apps/tablet-web/src/screens/Fleet.ts`.
 - Test: `tests/integration/simulated-delivery.test.ts`.
 
 **Interfaces:**
@@ -240,7 +242,7 @@ export function cancellationAction(loaded:boolean) {
 
 **Files:**
 
-- Create: `packages/domain/src/billing/{bill,settlement,payment-ledger}.ts`, `apps/operations-ui/src/routes/Checkout.tsx`.
+- Create: `packages/domain/src/billing/{bill,settlement,payment-ledger}.ts`, `apps/tablet-web/src/screens/Checkout.ts`.
 - Create: `packages/domain/src/cash/basic-shift.ts` (Shift.Open tối thiểu; W05-T04 mở rộng).
 - Test: `tests/integration/basic-settlement.test.ts`.
 
@@ -288,7 +290,7 @@ export function dueMinor(total:string, applied:string, refunded:string) {
 **Files:**
 
 - Create: `tests/e2e/restaurant-journey.spec.ts`, `tests/android/RestaurantJourneyTest.kt`.
-- Modify: `apps/operations-ui/src/App.tsx`, `apps/tablet-android/src/coordinator-runtime.ts`.
+- Modify: `apps/tablet-web/src/router.ts`, `apps/tablet-android/src/coordinator-runtime.ts`.
 - Create: `docs/operations/first-service.md`.
 - Create: `tests/support/restaurant-journey.ts`.
 - Test: `tests/integration/wan-outage-journey.test.ts`.

@@ -2,7 +2,7 @@
   "date": "2026-10-30",
   "status": "planned",
   "applicationImplemented": false,
-  "taskCount": 62,
+  "taskCount": 63,
   "waves": [
     {
       "id": "W00",
@@ -195,17 +195,32 @@
     {
       "wave": "W02",
       "id": "W02-T05",
-      "title": "Cloud relay, scoped projection và worker side-effect firewall",
+      "title": "Realtime hints, cloud relay và bounded jobs",
       "depends": "W02-T03, W02-T04",
       "testFile": "tests/integration/relay-effects.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/relay-effects.test.ts",
+      "status": "planned",
+      "additionalTestFiles": [
+        "tests/integration/realtime-jobs.test.ts"
+      ],
+      "additionalTestCommands": [
+        "pnpm test:integration -- tests/integration/realtime-jobs.test.ts"
+      ]
+    },
+    {
+      "wave": "W02",
+      "id": "W02-T06",
+      "title": "Supabase Storage và profile Free có quota guards",
+      "depends": "W02-T01, W02-T04, W02-T05",
+      "testFile": "tests/integration/storage-free-profile.test.ts",
+      "testCommand": "pnpm test:integration -- tests/integration/storage-free-profile.test.ts",
       "status": "planned"
     },
     {
       "wave": "W03",
       "id": "W03-T01",
       "title": "Catalog phiên bản và giá snapshot cơ bản",
-      "depends": "W00-T03, W02-T03",
+      "depends": "W00-T03, W02-T03, W02-T06",
       "testFile": "tests/integration/menu-snapshot.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/menu-snapshot.test.ts",
       "status": "planned"
@@ -415,8 +430,12 @@
       "depends": "W05, W06-T01..W06-T05",
       "testFile": "tests/integration/trial-config-import.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/trial-config-import.test.ts",
-      "additionalTestFiles": ["tests/e2e/trial-service-preset.spec.ts"],
-      "additionalTestCommands": ["pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts"],
+      "additionalTestFiles": [
+        "tests/e2e/trial-service-preset.spec.ts"
+      ],
+      "additionalTestCommands": [
+        "pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts"
+      ],
       "status": "planned"
     },
     {
@@ -597,7 +616,15 @@
       "depends": "W05, W06 software gate, W09 selected",
       "testFile": "tests/acceptance/load-budget.test.ts",
       "testCommand": "pnpm test:load",
-      "status": "planned"
+      "status": "planned",
+      "additionalTestFiles": [
+        "tests/acceptance/supabase-free-capacity.test.ts",
+        "tests/integration/cloud-unavailable.test.ts"
+      ],
+      "additionalTestCommands": [
+        "pnpm test:load:free",
+        "pnpm test:integration -- tests/integration/cloud-unavailable.test.ts"
+      ]
     },
     {
       "wave": "W11",
@@ -651,6 +678,7 @@
       "id": "F03",
       "label": "Menu/modifiers/price",
       "tasks": [
+        "W02-T06",
         "W03-T01",
         "W05-T01"
       ]
@@ -855,6 +883,8 @@
       "label": "Production operations",
       "tasks": [
         "W00-T01",
+        "W02-T05",
+        "W02-T06",
         "W11-T01",
         "W11-T02",
         "W11-T03",
@@ -870,10 +900,13 @@
         "W01-T03",
         "W01-T05",
         "W02-T04",
+        "W02-T05",
+        "W02-T06",
         "W04-T01",
         "W04-T02",
         "W04-T05",
-        "W04-T06"
+        "W04-T06",
+        "W11-T02"
       ]
     },
     {
@@ -1037,6 +1070,68 @@
         "W04-T03",
         "W04-T05",
         "W11-T03"
+      ]
+    }
+  ],
+  "stackCoverage": [
+    {
+      "id": "S01",
+      "requirement": "Next.js web/API on Vercel; Supabase CLI local development",
+      "tasks": [
+        "W00-T01",
+        "W11-T04"
+      ]
+    },
+    {
+      "id": "S02",
+      "requirement": "Supabase PostgreSQL/Auth, transaction pool and RLS",
+      "tasks": [
+        "W00-T04",
+        "W02-T01",
+        "W11-T01"
+      ]
+    },
+    {
+      "id": "S03",
+      "requirement": "Supabase Realtime hints, durable pull and bounded jobs",
+      "tasks": [
+        "W02-T04",
+        "W02-T05"
+      ]
+    },
+    {
+      "id": "S04",
+      "requirement": "Supabase Storage and mandatory Free functional/capacity profile",
+      "tasks": [
+        "W02-T06",
+        "W11-T02",
+        "W11-T04"
+      ]
+    },
+    {
+      "id": "S05",
+      "requirement": "HTML tablet bundle with native LAN/SQLite offline continuity",
+      "tasks": [
+        "W01-T04",
+        "W03-T06",
+        "W04-T06"
+      ]
+    },
+    {
+      "id": "S06",
+      "requirement": "Free backup and independent measured production recovery gate",
+      "tasks": [
+        "W11-T03",
+        "W11-T04"
+      ]
+    },
+    {
+      "id": "S07",
+      "requirement": "Trial-service and full product on same Next.js/APK release",
+      "tasks": [
+        "W02-T03",
+        "W06-T06",
+        "W11-T05"
       ]
     }
   ]

@@ -18,7 +18,8 @@
 - “Tiền lưu số nguyên theo đơn vị tiền nhỏ nhất; VND là đồng. Không cộng tiền bằng float.”
 - “Không tự phát lệnh di chuyển/thu tiền/in/xuất hóa đơn khi replay lịch sử.”
 - “Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit.”
-- Node.js 24 LTS; PostgreSQL 18; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Node.js 24 LTS; Supabase PostgreSQL 17; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Next.js web/API trên Vercel; Supabase Auth/Realtime/Storage và profile Free bắt buộc; tablet HTML bundle + native Android. Tuân theo [stack và giới hạn Free](../specs/2026-10-30-vercel-supabase-free-stack.md); không thêm dịch vụ trả phí bắt buộc để khởi chạy.
 - Đọc [plan tổng và hợp đồng dùng chung](2026-10-30-production-implementation-plan.md) trước task; mọi đường dẫn/command tính từ `source/`.
 - Đây là kế hoạch, chưa có application files hoặc scripts bên dưới. Tạo chúng tại task sở hữu; không chạy lệnh triển khai/robot thật chỉ để kiểm tra tài liệu.
 - Không đánh dấu PASS khi thiếu thiết bị/provider; ghi `blocked_external` cho đúng acceptance gate, tiếp tục task không phụ thuộc.
@@ -39,7 +40,8 @@
 
 **Files:**
 
-- Create: `packages/domain/src/promotions/{rules,stacking,voucher,redemption}.ts`, `apps/operations-ui/src/routes/Promotions.tsx`.
+- Create: `packages/domain/src/promotions/{rules,stacking,voucher,redemption}.ts`, `apps/cloud-web/src/components/backoffice/Promotions.tsx`.
+- Create: `apps/cloud-web/src/app/(backoffice)/admin/promotions/page.tsx`, `apps/tablet-web/src/screens/PromotionStatus.ts`; tablet dùng rule/quota đã cache, không gọi server để tính ưu đãi nội bộ khi mất WAN.
 - Test: `tests/integration/voucher-limits.test.ts`.
 
 **Interfaces:**
@@ -85,7 +87,8 @@ WHERE voucher_id = :id AND remaining > 0;
 
 **Files:**
 
-- Create: `packages/domain/src/customers/{profile,consent,loyalty}.ts`, `apps/operations-ui/src/routes/Customers.tsx`.
+- Create: `packages/domain/src/customers/{profile,consent,loyalty}.ts`, `apps/cloud-web/src/components/backoffice/Customers.tsx`.
+- Create: `apps/cloud-web/src/app/(backoffice)/admin/customers/page.tsx`, `apps/tablet-web/src/screens/CustomerLookup.ts`; local projection tối thiểu theo scope, offline redemption theo grant, không tiêu điểm chung chuỗi tùy ý.
 - Test: `tests/integration/loyalty.test.ts`.
 
 **Interfaces:**
@@ -130,7 +133,8 @@ ON loyalty_entry(organization_id, customer_id, source_event_id, entry_kind);
 
 **Files:**
 
-- Create: `packages/domain/src/reservations/{booking,resource,waitlist,deposit}.ts`, `apps/operations-ui/src/routes/Reservations.tsx`.
+- Create: `packages/domain/src/reservations/{booking,resource,waitlist,deposit}.ts`, `apps/cloud-web/src/components/backoffice/Reservations.tsx`.
+- Create: `apps/cloud-web/src/app/(backoffice)/admin/reservations/page.tsx`, `apps/tablet-web/src/screens/Reservations.ts`; cloud gửi yêu cầu đến owner venue, tablet phục vụ waitlist/check-in theo policy khi WAN mất.
 - Test: `tests/integration/reservations.test.ts`.
 
 **Interfaces:**

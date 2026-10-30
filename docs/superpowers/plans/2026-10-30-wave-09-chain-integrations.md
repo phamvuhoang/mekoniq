@@ -6,7 +6,7 @@
 
 **Architecture:** Cloud quản lý desired configuration và reports có watermark; coordinator ACK effective revision. Connector ingress/egress dùng signed messages, inbox/outbox và scoped service accounts.
 
-**Tech Stack:** NestJS/PostgreSQL, React chain backoffice, OpenAPI SDK, webhook adapters, Node-RED examples.
+**Tech Stack:** Next.js Route Handlers/Vercel/PostgreSQL, React chain backoffice, OpenAPI SDK, webhook adapters, Node-RED examples.
 
 **Spec:** [Production](../specs/2026-10-30-production-platform-design.md), [Continuity](../specs/2026-10-30-offline-continuity-design.md), [F01–F30](../../product/2026-10-30-capability-matrix.md).
 
@@ -18,7 +18,8 @@
 - “Tiền lưu số nguyên theo đơn vị tiền nhỏ nhất; VND là đồng. Không cộng tiền bằng float.”
 - “Không tự phát lệnh di chuyển/thu tiền/in/xuất hóa đơn khi replay lịch sử.”
 - “Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit.”
-- Node.js 24 LTS; PostgreSQL 18; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Node.js 24 LTS; Supabase PostgreSQL 17; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Next.js web/API trên Vercel; Supabase Auth/Realtime/Storage và profile Free bắt buộc; tablet HTML bundle + native Android. Tuân theo [stack và giới hạn Free](../specs/2026-10-30-vercel-supabase-free-stack.md); không thêm dịch vụ trả phí bắt buộc để khởi chạy.
 - Đọc [plan tổng và hợp đồng dùng chung](2026-10-30-production-implementation-plan.md) trước task; mọi đường dẫn/command tính từ `source/`.
 - Đây là kế hoạch, chưa có application files hoặc scripts bên dưới. Tạo chúng tại task sở hữu; không chạy lệnh triển khai/robot thật chỉ để kiểm tra tài liệu.
 - Không đánh dấu PASS khi thiếu thiết bị/provider; ghi `blocked_external` cho đúng acceptance gate, tiếp tục task không phụ thuộc.
@@ -39,8 +40,9 @@
 
 **Files:**
 
-- Create: `apps/cloud-api/src/modules/chain/{catalog-rollout,branch-overrides,rollout-state}.ts`.
-- Create: `apps/operations-ui/src/routes/ChainConfiguration.tsx`.
+- Create: `apps/cloud-web/src/server/modules/chain/{catalog-rollout,branch-overrides,rollout-state}.ts`.
+- Create: `apps/cloud-web/src/components/backoffice/ChainConfiguration.tsx`.
+- Create: `apps/cloud-web/src/app/(backoffice)/admin/chain/configuration/page.tsx`.
 - Test: `tests/integration/chain-rollout.test.ts`.
 
 **Interfaces:**
@@ -85,7 +87,8 @@ export function rolloutState(desired:number,effective:number) {
 
 **Files:**
 
-- Create: `apps/cloud-api/src/modules/chain/{reports,shared-entitlements}.ts`, `apps/operations-ui/src/routes/ChainReports.tsx`.
+- Create: `apps/cloud-web/src/server/modules/chain/{reports,shared-entitlements}.ts`, `apps/cloud-web/src/components/backoffice/ChainReports.tsx`.
+- Create: `apps/cloud-web/src/app/(backoffice)/admin/chain/reports/page.tsx`.
 - Test: `tests/integration/chain-reporting.test.ts`.
 
 **Interfaces:**
@@ -131,7 +134,8 @@ export function remainingEscrow(issued:string,used:string,returned:string) {
 **Files:**
 
 - Create: `integrations/core/src/{connector,inbox,outbox,webhook-signature,external-ids}.ts`.
-- Create: `apps/cloud-api/src/modules/channels/{ingress,restaurant-ack}.ts`, `apps/guest-web/src/OnlineCheckout.tsx`.
+- Create: `apps/cloud-web/src/server/modules/channels/{ingress,restaurant-ack}.ts`, `apps/cloud-web/src/components/guest/OnlineCheckout.tsx`.
+- Create: `apps/cloud-web/src/app/(guest)/order/[venueId]/page.tsx`; ingress/webhooks đăng ký Next.js route registry, raw body chỉ đọc một lần để verify signature, external jobs qua bounded consumer W02-T05.
 - Test: `tests/integration/external-orders.test.ts`.
 
 **Interfaces:**

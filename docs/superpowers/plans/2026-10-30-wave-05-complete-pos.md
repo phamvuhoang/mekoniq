@@ -6,7 +6,7 @@
 
 **Architecture:** Mở rộng các aggregate đã chạy ở W03, giữ cùng ledger/policy/offline semantics. Mỗi màn hình gọi command thật và có permission, revision, audit.
 
-**Tech Stack:** Domain TypeScript, React, SQLite/PostgreSQL, signed table sessions, local print spool.
+**Tech Stack:** Domain TypeScript, HTML tablet/Next.js guest, SQLite/Supabase PostgreSQL, signed table sessions, local print spool.
 
 **Spec:** [Production](../specs/2026-10-30-production-platform-design.md), [Continuity](../specs/2026-10-30-offline-continuity-design.md), [F01–F30](../../product/2026-10-30-capability-matrix.md).
 
@@ -18,7 +18,8 @@
 - “Tiền lưu số nguyên theo đơn vị tiền nhỏ nhất; VND là đồng. Không cộng tiền bằng float.”
 - “Không tự phát lệnh di chuyển/thu tiền/in/xuất hóa đơn khi replay lịch sử.”
 - “Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit.”
-- Node.js 24 LTS; PostgreSQL 18; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Node.js 24 LTS; Supabase PostgreSQL 17; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Next.js web/API trên Vercel; Supabase Auth/Realtime/Storage và profile Free bắt buộc; tablet HTML bundle + native Android. Tuân theo [stack và giới hạn Free](../specs/2026-10-30-vercel-supabase-free-stack.md); không thêm dịch vụ trả phí bắt buộc để khởi chạy.
 - Đọc [plan tổng và hợp đồng dùng chung](2026-10-30-production-implementation-plan.md) trước task; mọi đường dẫn/command tính từ `source/`.
 - Đây là kế hoạch, chưa có application files hoặc scripts bên dưới. Tạo chúng tại task sở hữu; không chạy lệnh triển khai/robot thật chỉ để kiểm tra tài liệu.
 - Không đánh dấu PASS khi thiếu thiết bị/provider; ghi `blocked_external` cho đúng acceptance gate, tiếp tục task không phụ thuộc.
@@ -40,7 +41,7 @@
 **Files:**
 
 - Create: `packages/domain/src/catalog/{modifier,availability}.ts`, `packages/domain/src/pricing/{quote,tax,discount}.ts`.
-- Modify: `apps/operations-ui/src/routes/{MenuEditor,Pos}.tsx`.
+- Modify: `apps/cloud-web/src/components/backoffice/MenuEditor.tsx`, `apps/tablet-web/src/screens/Pos.ts`.
 - Test: `tests/unit/pricing.test.ts`.
 
 **Interfaces:**
@@ -85,7 +86,7 @@ export function quoteTaxExclusive(baseMinor:string, rateBps:number) {
 **Files:**
 
 - Create: `packages/domain/src/orders/{move-table,merge-session,course,amendment}.ts`.
-- Modify: `apps/operations-ui/src/routes/{Pos,Kitchen}.tsx`.
+- Modify: `apps/tablet-web/src/screens/{Pos,Kitchen}.ts`.
 - Test: `tests/integration/table-order-amendments.test.ts`.
 
 **Interfaces:**
@@ -132,7 +133,7 @@ if (sourceHasGrant || targetHasGrant) return {ok:false,code:"GRANT_UNRECONCILED"
 **Files:**
 
 - Create: `packages/domain/src/billing/{split,merge,tenders,refund,void}.ts`.
-- Modify: `apps/operations-ui/src/routes/Checkout.tsx`.
+- Modify: `apps/tablet-web/src/screens/Checkout.ts`.
 - Test: `tests/integration/financial-lifecycle.test.ts`.
 
 **Interfaces:**
@@ -182,7 +183,7 @@ export function canRefund(captured:string, refunded:string, request:string) {
 **Files:**
 
 - Create: `packages/domain/src/cash/{shift,cashbook}.ts`, `integrations/printing/src/{spool,escpos,receipt}.ts`.
-- Create: `apps/operations-ui/src/routes/{CashShift,PrintQueue}.tsx`.
+- Create: `apps/tablet-web/src/screens/{CashShift,PrintQueue}.ts`.
 - Test: `tests/integration/cash-print.test.ts`.
 
 **Interfaces:**
@@ -229,7 +230,8 @@ export function expectedCash(x:{opening:bigint;receipts:bigint;in:bigint;out:big
 
 **Files:**
 
-- Create: `apps/guest-web/src/{Menu,Cart,TableSession}.tsx`, `apps/operations-ui/src/routes/{RobotDisplay,GuestRequests}.tsx`.
+- Create: `apps/cloud-web/src/components/guest/{Menu,Cart,TableSession}.tsx`, `apps/tablet-web/src/screens/{RobotDisplay,GuestRequests}.ts`.
+- Create: `apps/cloud-web/src/app/(guest)/menu/[venueId]/page.tsx`, `apps/cloud-web/src/app/(guest)/table/[token]/page.tsx`, `apps/tablet-web/src/screens/Kiosk.ts`.
 - Create: `packages/domain/src/service/{guest-token,calls,guide,bussing}.ts`.
 - Test: `tests/integration/guest-boundaries.test.ts`.
 
@@ -268,7 +270,7 @@ export function guestSessionValid(token:{sessionId:string;revision:number},
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Local guest HTTPS option là deployment profile có trusted cert/DNS/bundle; default cloud guest fails explicit khi venue unreachable, staff nhập thay. Voice cues VI/EN không làm source of truth; kiosk accessibility target controls ≥48px.
+- [ ] **4. Nối vào runtime và lưu trữ.** Web guest Next.js dùng scoped HTTPS API, báo pending cho tới venue receipt; ảnh menu qua Storage, không lộ private map/chứng từ. Kiosk/màn robot là HTML bundle native để dùng LAN. Local guest HTTPS option cần trusted cert/DNS/static bundle độc lập Next.js server; mặc định cloud guest báo rõ khi venue unreachable, staff nhập thay. Voice cues VI/EN không làm source of truth; touch controls ≥48px.
 
 - [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/guest-boundaries.test.ts`; kỳ vọng PASS. QR ordering disabled while staff POS enabled; robot ordering independent delivery; guests cannot settle/clear E-stop; service call alert acknowledgement never closes bill. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
@@ -280,7 +282,7 @@ export function guestSessionValid(token:{sessionId:string;revision:number},
 
 **Files:**
 
-- Create: `packages/domain/src/reporting/{sales,shift,robot-kpi}.ts`, `apps/operations-ui/src/routes/Reports.tsx`.
+- Create: `packages/domain/src/reporting/{sales,shift,robot-kpi}.ts`, `apps/tablet-web/src/screens/Reports.ts`.
 - Create: `tests/e2e/full-pos.spec.ts`, `docs/operations/cashier-kitchen.md`.
 - Test: `tests/integration/sales-reconciliation.test.ts`.
 

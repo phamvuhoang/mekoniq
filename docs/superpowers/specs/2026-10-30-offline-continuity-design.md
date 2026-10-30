@@ -4,6 +4,8 @@ Ngày: 2026-10-30. Trạng thái: **thiết kế đã được người dùng du
 
 Spec này là phần đầu cần hiện thực cùng nền tảng trong [thiết kế production](2026-10-30-production-platform-design.md). Yêu cầu đã xác nhận: cloud, không máy chủ riêng; nhiều POS/KDS/robot phối hợp khi mất WAN; lưu dữ liệu từng máy khi LAN mất; nhập lại dữ liệu của giai đoạn bảo trì toàn bộ.
 
+Cloud hiện dùng [Next.js/Vercel và Supabase Free](2026-10-30-vercel-supabase-free-stack.md). HTTP journal sync là đường bền vững; Supabase Realtime chỉ báo có dữ liệu mới. LAN service trên tablet hoạt động độc lập Supabase, kể cả project bị pause hoặc hết quota.
+
 ## 1. Nguyên tắc không được vi phạm
 
 1. Giao dịch đã ghi nhận không bị mất chỉ vì mất ACK hoặc đổi cấu hình/cloud.
@@ -18,12 +20,12 @@ Spec này là phần đầu cần hiện thực cùng nền tảng trong [thiế
 
 ### 2.1 Ứng dụng Android trên mỗi tablet
 
-- Bundle UI và danh mục/cấu hình được lưu trước để khởi động không cần tải cloud.
+- Bundle HTML/CSS/TypeScript và danh mục/cấu hình được lưu trước để khởi động không cần tải cloud. Không cần Next.js SSR/Server Actions ở nhà hàng.
 - SQLite giữ projection được phép xem, journal, inbox, outbox, attachment manifest và các cursor đã xác nhận.
 - Native plugin thực hiện transaction và cấp sequence. Không dùng localStorage cho sổ giao dịch.
 - Keystore giữ device key. Dữ liệu nhạy cảm có mã hóa theo hồ sơ triển khai; khóa không nằm trong JS bundle.
 - UI gọi domain package chung qua application service; native layer sở hữu durability/network lifecycle.
-- Phiên làm việc được cache có phạm vi và thời hạn offline. Thiết bị mới chưa enroll không tự gia nhập nhà hàng khi mạng bị mất.
+- Supabase Auth dùng khi online; offline grant của MEKONIQ có chữ ký, phạm vi và thời hạn riêng. Không coi JWT Supabase hết hạn là còn hiệu lực. Device pull có chữ ký và quyền riêng khi không có phiên Realtime phù hợp. Thiết bị mới chưa enroll không tự gia nhập nhà hàng khi mạng bị mất.
 
 Android service chỉ được chạy theo loại và quyền hệ điều hành cho phép; phải test foreground, màn hình khóa, Doze và người dùng chủ động stop app. Không hứa service không bao giờ bị Android dừng. [Android background/foreground services](https://developer.android.com/develop/background-work/services/fgs).
 
@@ -53,6 +55,7 @@ Chỉ executor phát lệnh tới robot. Cloud, POS và Node-RED gửi intent t�
 | Cả WAN/LAN mất | Ghi ticket riêng và sự kiện tại máy; giới hạn bill chung; xem dữ liệu cache có thời điểm | Ghi tiến độ ticket đã nhận; ticket mới chuyển bằng con người nếu cần | Tiếp tục đoạn đã được cấp phép hoặc dừng/chờ theo profile; xác nhận tại màn robot được lưu cục bộ | Không đồng bộ; không kỳ vọng browser chưa cache khởi động được |
 | Coordinator/app chính hỏng | Thiết bị còn lại vào isolated; quy trình handoff có kiểm soát | Giữ journal và tiến độ cục bộ | Không nhận lệnh của coordinator mới khi epoch chưa được chuyển hợp lệ | Hiển thị sự cố và dữ liệu tại mốc sync cuối |
 | Bảo trì cloud | Như WAN mất | Như WAN mất | Như WAN mất | Tạm dừng tích hợp phụ thuộc cloud |
+| Supabase pause, lỗi quota hoặc Vercel tạm lỗi | Như WAN mất, giữ journal chưa ACK | Phối hợp qua LAN | Giữ owner cũ qua LAN | Hiển thị unavailable; pull theo cursor sau khôi phục, không giả ACK |
 | Bảo trì tất cả app hoặc mất nguồn toàn bộ | Phiếu/sổ giấy hoặc thiết bị dự phòng độc lập | Phiếu bếp thủ công | Ngừng nhận nhiệm vụ mới, xử lý tải hiện tại trước bảo trì | Sau phục hồi nhập bù và đối soát |
 
 “Đủ nghiệp vụ nội bộ” không bao gồm xác minh ngân hàng, giao dịch thẻ online, xuất hóa đơn điện tử, kênh giao hàng hay tiêu điểm chung chuỗi khi dịch vụ liên quan không tới được. Có thể ghi nhận bằng chứng thanh toán ngoài để đối soát, nhưng không giả lập xác nhận của provider.
@@ -141,6 +144,8 @@ Không xóa outbox khi chỉ mở được TCP hoặc nhận HTTP 202. ACK phả
 
 Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit. UI và backup không coi hai mức này như nhau. Raw facts từ thiết bị khác trong lúc partition được giữ nguyên nguồn, không bị coordinator ký lại như thể chính nó đã tiếp nhận từ đầu.
 
+Realtime hint bị mất/trùng/đảo thứ tự không đổi cursor. Coordinator pull định kỳ qua HTTPS và kiểm receipt; reconnect subscribe rồi catch-up từ durable cursor. Hint được gộp theo venue để giảm fanout; robot pose/heartbeat tần suất cao chạy trên LAN. Supabase Storage upload dùng manifest có scope/hash, tệp chưa lên được vẫn pending và không làm mất journal nghiệp vụ.
+
 ### 5.4 Quy tắc hợp nhất
 
 | Loại dữ liệu | Quy tắc |
@@ -167,6 +172,8 @@ Hết quyền offline không xóa dữ liệu và không cấm ghi sổ sự ki�
 SQLite phải xử lý storage full/corruption rõ ràng. Nếu transaction không commit, không báo đã nhận. Attachment lớn có upload/hash riêng; ledger giữ trạng thái thiếu attachment để bổ sung, không mất chứng từ tiền vì ảnh lỗi.
 
 Cloud không backup được dữ liệu chưa upload. Coordinator có thể nhân bản journal sang tablet khác trong LAN; mỗi tablet giữ intent/fact do mình tạo tới khi nhận durable cloud ACK và qua thời hạn giữ cấu hình. Đề xuất giữ tối thiểu 30 ngày sau sync trên thiết bị, không coi đây là thời hạn lưu trữ tài chính/pháp lý cuối cùng.
+
+Profile Supabase Free dùng logical database export và bản sao Storage ra nơi độc lập, có mã hóa/restore rehearsal; managed PITR không là dependency bắt buộc. Khả năng chạy Free và mục tiêu RPO/RTO production được nghiệm thu riêng theo spec stack. Restore phải phục hồi journal/receipts/schema/Auth/config cần thiết trước khi nối lại thiết bị; không tự phát live outbox cũ.
 
 Trước reset/gỡ app: kiểm tra số entry chưa sync, xuất encrypted journal qua native file flow và xác minh hash. Không cho nút reset thông thường xóa sổ chưa đồng bộ. Mất/hỏng tất cả thiết bị trước khi sync vẫn có thể mất dữ liệu; biện pháp là replica/export, không phải lời hứa “cloud tự phục hồi”.
 

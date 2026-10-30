@@ -6,7 +6,7 @@
 
 **Architecture:** Tách domain thuần khỏi transport và database. Schema là nguồn hợp đồng; database giữ idempotency, sequence, journal, audit và outbox trong một transaction.
 
-**Tech Stack:** Node.js 24, pnpm, TypeScript, NestJS, PostgreSQL 18, SQLite, Vitest, JSON Schema.
+**Tech Stack:** Node.js 24, pnpm, TypeScript, Next.js Route Handlers/Vercel, Supabase PostgreSQL 17, SQLite, Vitest, JSON Schema.
 
 **Spec:** [Production](../specs/2026-10-30-production-platform-design.md), [Continuity](../specs/2026-10-30-offline-continuity-design.md), [F01–F30](../../product/2026-10-30-capability-matrix.md).
 
@@ -18,7 +18,8 @@
 - “Tiền lưu số nguyên theo đơn vị tiền nhỏ nhất; VND là đồng. Không cộng tiền bằng float.”
 - “Không tự phát lệnh di chuyển/thu tiền/in/xuất hóa đơn khi replay lịch sử.”
 - “Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit.”
-- Node.js 24 LTS; PostgreSQL 18; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Node.js 24 LTS; Supabase PostgreSQL 17; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Next.js web/API trên Vercel; Supabase Auth/Realtime/Storage và profile Free bắt buộc; tablet HTML bundle + native Android. Tuân theo [stack và giới hạn Free](../specs/2026-10-30-vercel-supabase-free-stack.md); không thêm dịch vụ trả phí bắt buộc để khởi chạy.
 - Đọc [plan tổng và hợp đồng dùng chung](2026-10-30-production-implementation-plan.md) trước task; mọi đường dẫn/command tính từ `source/`.
 - Đây là kế hoạch, chưa có application files hoặc scripts bên dưới. Tạo chúng tại task sở hữu; không chạy lệnh triển khai/robot thật chỉ để kiểm tra tài liệu.
 - Không đánh dấu PASS khi thiếu thiết bị/provider; ghi `blocked_external` cho đúng acceptance gate, tiếp tục task không phụ thuộc.
@@ -41,21 +42,23 @@
 
 - Create: `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `eslint.config.mjs`, `.gitignore`, `.env.example`.
 - Create: `pnpm-lock.yaml` bằng package manager sau khi chọn dependency versions tương thích Node.js 24; không sửa lockfile thủ công.
-- Create: `apps/cloud-api/package.json`, `apps/cloud-api/src/main.ts`, `apps/cloud-api/src/health.ts`, `.github/workflows/ci.yml`.
-- Create: `deploy/dev/compose.yml`, `scripts/doctor.mjs`, `vitest.config.ts`.
+- Create: `apps/cloud-web/{package.json,next.config.ts,tsconfig.json,.env.local.example}`, `.github/workflows/ci.yml`.
+- Create: `apps/cloud-web/src/app/{layout,page}.tsx`, `apps/cloud-web/src/app/health/{live,ready}/route.ts`, `apps/cloud-web/src/server/health.ts`.
+- Create: `apps/cloud-web/src/app/v1/[...path]/route.ts`, `apps/cloud-web/src/server/{route-registry,request-context}.ts`, `tests/support/cloud-server.ts`.
+- Create: `supabase/config.toml`, `supabase/seed.sql`, `scripts/{doctor,supabase-local}.mjs`, `vitest.config.ts`.
 - Create: `scripts/test-runner.mjs`, `tsconfig.json`, `tests/fixtures/identity.json`.
 - Test: `tests/integration/cloud-health.test.ts`.
 
 **Interfaces:**
 
-- Consumes: Node.js 24, localhost database test; scripts trong plan tổng §5.
-- Produces: `startCloud({ databaseUrl, port:0 }): Promise<{url:string;close():Promise<void>}>`; HTTP GET `/health/live`, `/health/ready`.
+- Consumes: Node.js 24, Supabase CLI local (DB/Auth/Realtime/Storage/mail sink); scripts trong plan tổng §5.
+- Produces: Test helper `startCloud({ databaseUrl, port:0 }): Promise<{url:string;close():Promise<void>}>` khởi chạy Next.js thật; HTTP GET `/health/live`, `/health/ready`; allowlisted `/v1/*` route registry.
 
 - [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
-import { startCloud } from "../../apps/cloud-api/src/main";
+import { startCloud } from "../support/cloud-server";
 test("database outage is not advertised as ready", async () => {
   const api = await startCloud({ databaseUrl: "postgres://invalid@127.0.0.1:1/test", port: 0 });
   try {
@@ -67,7 +70,7 @@ test("database outage is not advertised as ready", async () => {
 
 - [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/cloud-health.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Tạo package scripts trước để test chạy; pin dependency resolved versions vào lockfile. Readiness kiểm tra kết nối có timeout; liveness chỉ kiểm process. Không chờ database vô hạn trong bootstrap.
+- [ ] **3. Hiện thực phần cốt lõi.** Tạo scripts/Next.js App Router và Supabase local trước; pin dependency/CLI/DB major tương thích, cloud SQL chuẩn PostgreSQL 17. Route Handlers dùng Node runtime, không cache health/auth/sync. Readiness DB probe có timeout; liveness không chờ DB. `startCloud` là helper chạy child process Next và đóng process/pool test, không custom HTTP listener trong Vercel Function.
 
 ```ts
 export function readiness(databaseReachable: boolean) {
@@ -76,9 +79,9 @@ export function readiness(databaseReachable: boolean) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Nest controller gọi DB health probe timeout 1 giây, tắt listener trong close. Compose chỉ PostgreSQL dev với cổng không trùng trial. Doctor kiểm Node major, Docker, Python, Android SDK/JDK và báo prerequisite thiếu; không tự chỉnh global máy người dùng.
+- [ ] **4. Nối vào runtime và lưu trữ.** Route registry khai báo method/path/schema/body limit/permission/handler, mặc định deny cho nghiệp vụ chưa có auth; mỗi task đăng ký module thật, không catch-all success. Supabase CLI chạy không login/link hosted, cổng riêng không trùng trial; chỉ local DB được phép reset qua script test. Doctor kiểm Node, Docker/CLI, DB major, Python, Android SDK/JDK theo wave. `.env.local.example` tách public Supabase URL/publishable key với DB/admin/job secrets, không dùng `NEXT_PUBLIC_*` cho secret.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/cloud-health.test.ts`; kỳ vọng PASS. Chạy API với DB test healthy rồi down; SIGTERM đóng listener/pool. Build UI package chưa tồn tại không là prerequisite của wave này. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/cloud-health.test.ts`; kỳ vọng PASS. Next.js build/start thật với DB healthy rồi down: live 200, ready 503, không cache kết quả cũ; SIGTERM helper đóng child process. `pnpm dev:cloud` và `pnpm supabase:start` chạy không có tài khoản cloud; service Auth/Realtime/Storage local có health. Chạy `pnpm build`, `pnpm typecheck` và `pnpm lint`; chưa lấy local success làm bằng chứng deploy Vercel.
 
 - [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W00-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "build: establish typed workspace and cloud lifecycle"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
@@ -188,7 +191,7 @@ return base.map(String);
 **Files:**
 
 - Create: `packages/sync/src/{store,command-processor,commit-batch}.ts`, `packages/sync/src/storage/{sqlite,postgres}.ts`.
-- Create: `packages/sync/migrations/sqlite/001_journal.sql`, `packages/sync/migrations/postgres/001_journal.sql`.
+- Create: `packages/sync/migrations/sqlite/001_journal.sql`, `supabase/migrations/20261030000100_journal.sql`.
 - Create: `tests/support/storage-cases.ts` (database lifecycle và command/batch fixtures cho SQLite/PostgreSQL).
 - Create: `packages/domain/src/modules.ts` chứa module registry; handler test-only đăng ký qua dependency injection, không đi vào bundle production.
 - Test: `tests/integration/atomic-command.test.ts`.
@@ -234,7 +237,7 @@ CREATE UNIQUE INDEX journal_producer_sequence
   ON journal(device_id, device_epoch, producer_sequence);
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** JS domain đọc snapshot và xây typed batch; native commit kiểm expected versions/owner/policy revisions rồi apply batch allowlist, không cho WebView gửi SQL tùy ý. `storageCases` tạo DB/file tạm riêng và command fixture scope `org-a/venue-a/device-a`, sequence `1`, domain event `NoteRecorded`.
+- [ ] **4. Nối vào runtime và lưu trữ.** JS domain đọc snapshot và xây typed batch; native commit kiểm versions/owner/policy, không nhận SQL tùy ý. Cloud dùng `supabase/migrations` là nguồn SQL duy nhất; application role không BYPASSRLS, transaction pool Supavisor với pool nhỏ (baseline 1/instance), prepared statements tắt nếu driver yêu cầu. Scope dùng `SET LOCAL` trong transaction; không giữ session state qua request. `storageCases` dùng file SQLite và Supabase PostgreSQL thật riêng test; kiểm isolation qua chính role ứng dụng, không qua postgres/service-role.
 
 - [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/atomic-command.test.ts`; kỳ vọng PASS. Crash trước commit rollback; sau commit trước ACK dedup; 20 request cùng operationId chỉ một mutation; full disk không ACK; foreign keys ON. Không chỉ chạy in-memory store. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 

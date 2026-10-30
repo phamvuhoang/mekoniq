@@ -4,6 +4,8 @@ Ngày: 2026-10-30. Trạng thái: **đã được người dùng duyệt trong p
 
 Tài liệu liên quan: [nghiên cứu trial](../../research/2026-10-30-trial-and-platform-research.md), [ma trận chức năng](../../product/2026-10-30-capability-matrix.md), [offline, phân vùng mạng và bảo trì](2026-10-30-offline-continuity-design.md).
 
+Stack được cập nhật theo yêu cầu người dùng: [Next.js/Vercel, Supabase Free và tablet HTML](2026-10-30-vercel-supabase-free-stack.md). Spec này cùng phụ lục stack là nguồn thiết kế hiện hành; các lựa chọn cloud ban đầu trong báo cáo nghiên cứu chỉ còn giá trị lịch sử.
+
 ## 1. Mục tiêu và ràng buộc đã xác nhận
 
 1. Xây lại mã trong `source`; `trial` là nguồn tham khảo hành vi, không phải nhánh để sửa.
@@ -32,15 +34,19 @@ Chọn phương án thứ hai. Dùng log bất biến và idempotency để đ�
 ```mermaid
 flowchart TB
   subgraph Cloud[Cloud MEKONIQ]
-    Web[Web quản trị / khách / quản lý chuỗi]
-    API[API và các module nghiệp vụ]
-    DB[(PostgreSQL)]
-    Worker[Outbox / sync / báo cáo / tích hợp]
-    Store[Object storage / backup]
+    Web[Next.js web trên Vercel]
+    API[Next.js Route Handlers trên Vercel]
+    DB[(Supabase PostgreSQL)]
+    Auth[Supabase Auth]
+    RT[Supabase Realtime - hints]
+    Worker[Durable outbox - batch jobs qua Cron]
+    Store[Supabase Storage]
     Web --> API
+    Auth --> API
     API --> DB
     DB --> Worker
     Worker --> Store
+    API --> RT
   end
   subgraph Venue[Thiết bị có sẵn tại nhà hàng]
     POS[Tablet POS và phục vụ - SQLite]
@@ -54,6 +60,7 @@ flowchart TB
     Hub <-->|Lệnh có quyền sở hữu| Executor
   end
   API <-->|Kết nối outbound TLS và sync journal| Hub
+  RT -->|Thông báo có dữ liệu mới khi có WAN| Hub
   Executor --> Adapter[Adapter theo năng lực]
   Adapter --> Valetudo[Valetudo API nội bộ]
   Adapter --> ROS[ROS 2 / Nav2]
@@ -64,13 +71,15 @@ flowchart TB
 
 ### Cloud
 
-Backend chia module trong một codebase, deploy API và worker riêng khi cần. PostgreSQL lưu dữ liệu tổ chức, bản ghi đã đồng bộ, cấu hình, payment ledger, audit và các projection. Object storage chứa ảnh/menu, map artifact, tệp nhập và backup. Bắt đầu với managed PostgreSQL, container deployment, secret manager và monitoring; không cần Kubernetes để đạt bản production đầu.
+Backend chia module trong `apps/cloud-web`, Next.js Route Handlers chạy trên Vercel. Supabase PostgreSQL lưu dữ liệu tổ chức, bản ghi đã đồng bộ, cấu hình, payment ledger, audit và các projection; Supabase Auth xác thực nhân viên; Storage chứa ảnh/menu, map và chứng từ. Realtime là notification có scope, không thay journal hoặc receipt. PostgreSQL durable outbox được consumer xử lý theo batch có lease/timeout; Supabase Cron đánh thức route khi có job, không cần worker daemon. Backup độc lập phải gồm cả database và tệp, không chỉ lưu vào cùng project.
+
+Profile `supabase-free-compatible` bắt buộc chạy được toàn bộ module đã chọn trong giới hạn dung lượng/tải. Không dùng PITR, read replica, paid branching hoặc dịch vụ Supabase trả phí làm điều kiện khởi chạy. Quota/pause được xử lý như cloud unavailable; tablet tiếp tục theo spec offline. Production recovery và capacity phải có bằng chứng riêng, không suy từ nhãn Free.
 
 Cloud sở hữu cấu hình gốc, quyền, quản lý chuỗi và tích hợp bên ngoài. Với hoạt động tại một nhà hàng, cloud chuyển yêu cầu đến coordinator đang được cấp quyền, rồi ghi nhận kết quả. Cloud không đồng thời là một chủ ghi thứ hai của cùng phiên bàn/bill/robot.
 
 ### Tablet và coordinator
 
-Ứng dụng Android có giao diện dùng chung với web, database SQLite qua native plugin và dịch vụ LAN native. Tablet POS được chỉ định làm coordinator khi provision nhà hàng. Các tablet khác kết nối trực tiếp trên LAN; cloud là đường relay khi thiết bị có WAN nhưng không tới LAN.
+Ứng dụng Android dùng HTML/CSS/TypeScript đóng bundle Vite như hướng giao diện trial, database SQLite qua native plugin và dịch vụ LAN native. Web quản trị/khách dùng Next.js; dùng chung domain/contracts/view models, không bắt tablet phụ thuộc Next.js server. Tablet POS được chỉ định làm coordinator khi provision nhà hàng. Các tablet khác kết nối trực tiếp trên LAN; cloud là đường relay khi thiết bị có WAN nhưng không tới LAN.
 
 Coordinator vận hành cả khi có Internet. Vì vậy, mất WAN không tạo việc “chuyển database chủ” giữa hai hệ thống đang cùng ghi. Nó ghi durable journal, tuần tự hóa nghiệp vụ tại nhà hàng và phân phối projection tới bếp/robot. Không cài Node-RED, PostgreSQL hoặc một Linux server riêng trên tablet.
 
@@ -84,14 +93,15 @@ Robot có ROS 2: executor trên onboard Linux. Robot chỉ cung cấp API như V
 
 Valetudo bản mới ưu tiên transport REST LAN cho cấu hình không có broker cục bộ. Adapter MQTT được giữ cho các triển khai đã có broker phù hợp; **broker chỉ trên cloud không đáp ứng điều khiển offline**. Không tự chuyển MQTT sang REST giữa một chuyến khi chưa reconciliation. VDA 5050 cần endpoint/broker LAN trên thiết bị sẵn có nếu muốn offline; chưa có thì capability offline phải báo không hỗ trợ.
 
-## 4. Stack đề xuất và cấu trúc mã
+## 4. Stack được chọn và cấu trúc mã
 
 | Lớp | Lựa chọn | Lý do |
 |---|---|---|
 | Runtime cloud | Node.js 24 LTS, TypeScript strict, pnpm workspace | Liên tục với JS trong trial, module và type rõ; version patch được pin khi build |
-| API | NestJS, REST OpenAPI, WebSocket có xác thực cho realtime/sync | Validation, guards, lifecycle; command và event có schema độc lập UI |
-| Cloud data | PostgreSQL 18; SQL migrations; query layer có transaction rõ | Ràng buộc dữ liệu, lock, outbox và audit |
-| Web và tablet UI | React + Vite; VI/EN trước; Capacitor cho Android | Dùng chung giao diện, native plugin cho storage/LAN/background |
+| Web/API | Next.js App Router/Route Handlers trên Vercel; REST OpenAPI | Web quản trị/khách và API chung deployment; domain độc lập framework |
+| Cloud data | Supabase PostgreSQL, baseline 17; một nguồn SQL migrations | RLS, transaction, lock, outbox và audit; local/hosted cùng major đã kiểm |
+| Cloud services | Supabase Auth, Realtime và Storage | Identity, scoped hints và tệp; phải chạy với profile Free |
+| Tablet UI | HTML/CSS/TypeScript + Vite; VI/EN; Capacitor Android | Bundle cục bộ, không cần SSR hoặc API cloud để chạy nghiệp vụ LAN |
 | Tablet runtime | SQLite + Kotlin plugin/service, Android Keystore | Journal bền vững, kết nối LAN và định danh thiết bị; không dựa vào tab nền |
 | Robot ROS | Python/rclpy, ROS 2 Jazzy, Ubuntu 24.04 | Action client gần runtime ROS; package theo distro |
 | Mô phỏng vật lý | Gazebo Harmonic + robot description MEKONIQ | Kiểm thử Nav2 độc lập phần cứng; bộ fake deterministic dùng cho domain CI |
@@ -103,22 +113,21 @@ Cấu trúc dự kiến, **chưa tạo mã scaffold**:
 
 ```text
 source/
-  apps/cloud-api/             HTTP, identity, backoffice và sync ingress
-  apps/cloud-worker/          outbox, projection, connector jobs
-  apps/operations-ui/         POS, KDS, fleet, robot display và quản trị
-  apps/guest-web/             menu/QR và kênh khách, projection giới hạn
+  apps/cloud-web/             Next.js web quản trị/khách, API và bounded jobs
+  apps/tablet-web/            HTML/CSS/TS: POS, KDS, fleet, robot display và offline
   apps/tablet-android/        Capacitor, SQLite, LAN service, key store
   packages/domain/            các module nghiệp vụ thuần, kiểm thử trên cloud/tablet
   packages/contracts/         JSON Schema/OpenAPI, codegen TS/Python
   packages/sync/              operation envelope, journal protocol, migration
-  packages/ui/                component và i18n dùng chung
+  packages/ui/                DOM helpers, view models, CSS và i18n tablet
   packages/robot-adapters/    simulator, Valetudo, adapter SDK
   robotics/agent/             executor ROS 2 và durable command journal
   robotics/description/       URDF/xacro, footprint, tải và giới hạn đã đo
   robotics/navigation/        Nav2 config, map lifecycle, launch theo profile
   robotics/simulation/        world nhà hàng và scenarios
   integrations/              payment, e-invoice, print, Node-RED
-  deploy/                    cloud containers, IaC, migration/backup tooling
+  supabase/                  config local, seed và một chuỗi migration cloud
+  deploy/                    Vercel config, Free profile, release/backup tooling
   tests/                     contract, integration, E2E, partition/recovery
   docs/                      thiết kế, quyết định, runbook, commissioning
 ```
@@ -232,7 +241,7 @@ Audit, xác thực, tenant isolation, bảo vệ replay và thao tác dừng kh�
 
 ## 10. Bảo mật và tích hợp
 
-- User session xác thực, server-side RBAC/venue scope; refresh rotation/revocation, CSRF cho cookie và origin checks cho WebSocket.
+- Supabase Auth xác thực user, server-side RBAC/venue scope; refresh/revocation do Auth quản lý, CSRF cho cookie và private Realtime authorization. Grant/device identity của MEKONIQ độc lập JWT online; không dùng service/admin key cho luồng tenant thông thường.
 - Thiết bị được enrollment riêng, private key trong Keystore; chứng thư và ACL theo venue. Guest token gắn table session, không tin query `table=T05` là quyền.
 - Tablet LAN dùng pairing và TLS. Discovery qua mDNS là tiện ích, không phải xác thực; fallback địa chỉ provision khi multicast bị chặn.
 - MQTT ACL theo robot, command không retained, không public broker/editor. Valetudo HTTP nội bộ cần mạng tách phù hợp và profile endpoint giới hạn; không để cloud nhận URL tùy ý rồi proxy.
@@ -245,11 +254,13 @@ Audit, xác thực, tenant isolation, bảo vệ replay và thao tác dừng kh�
 
 Cloud health gồm liveness riêng readiness; theo dõi sync lag, event gaps, conflict queue, command ACK latency, robot heartbeat, payment unknown, worker lag và dung lượng SQLite. Dữ liệu cần audit tách khỏi debug log; token/thông tin nhạy cảm không ghi log.
 
-Backup cloud mã hóa, restore diễn tập; tablet giữ journal chưa được xác nhận và checkpoint an toàn. Mục tiêu ban đầu: cloud PITR RPO ≤ 5 phút, RTO ≤ 30 phút, cần đo trong diễn tập. Giao dịch chưa sync chỉ tồn tại trên thiết bị/LAN replica; không hứa cloud backup bảo vệ dữ liệu chưa từng tới cloud.
+Backup cloud mã hóa, restore diễn tập; tablet giữ journal chưa được xác nhận và checkpoint an toàn. Profile Free dùng logical export cùng bản sao Storage độc lập, không bắt buộc managed PITR. Mục tiêu production RPO ≤ 5 phút, RTO ≤ 30 phút vẫn phải đo bằng chiến lược backup/restore thật; Free functional acceptance không tự đạt recovery gate này. Giao dịch chưa sync chỉ tồn tại trên thiết bị/LAN replica; không hứa cloud backup bảo vệ dữ liệu chưa từng tới cloud.
 
 Cập nhật dùng expand/contract migration, hỗ trợ client schema còn hoạt động, nâng từng thiết bị sau sync checkpoint. Trước migration không tương thích phải xuất journal, làm rõ thiết bị còn offline và đi qua maintenance workflow. Rollback app không được rollback mất tiền đã ghi.
 
 Mục tiêu tải để test bản đầu: 1 venue/20 tablet/10 robot/100 bàn, 10 command nghiệp vụ/giây; xác nhận local p95 ≤ 500 ms và phân phối KDS p95 ≤ 1 giây trên LAN tham chiếu. Đây là tiêu chí dự kiến cần benchmark, không phải số đo đạt sẵn. Thiết bị Android/OS cụ thể là một phần của support matrix.
+
+Capacity cho Supabase Free được đo riêng bằng fixture nhỏ trong spec stack, có dự báo tăng DB/Storage/egress/Realtime theo tháng. Không lấy benchmark LAN nói trên để khẳng định cùng tải kéo dài cả tháng nằm trong quota Free. Web/API thương mại trên Vercel cần plan cho phép commercial; không đồng nhất Supabase Free với Vercel Hobby.
 
 ## 12. Chia dự án và thứ tự triển khai
 

@@ -16,6 +16,8 @@ Nguồn:
 
 Mốc **A**: nền móng cloud/offline và một luồng chạy xuyên suốt; **B**: phục vụ/POS tại một nhà hàng; **C**: bộ quản trị nhà hàng mở rộng; **D**: chuỗi và hệ sinh thái tích hợp. Không triển khai máy chủ riêng tại nhà hàng. Mỗi mốc đều phải vượt cổng chất lượng production tương ứng; A không được gắn nhãn toàn bộ sản phẩm hoàn tất.
 
+Stack hiện hành: [Next.js/Vercel, Supabase Free và tablet HTML](../superpowers/specs/2026-10-30-vercel-supabase-free-stack.md). F01 dùng Supabase Auth cùng quyền/device grant MEKONIQ; F03 và chứng từ dùng Supabase Storage; F28/F29 phải kiểm quota/pause/reconnect và backup Free. Profile hạ tầng Free độc lập preset nghiệp vụ: không bỏ module để gắn nhãn tương thích Free, không suy ra tải không giới hạn hoặc đã đạt SLA production.
+
 ## 2. Danh mục sản phẩm
 
 | ID | Module / nguồn nhóm | Nội dung MEKONIQ cần xây | Tiêu chí nghiệm thu tối thiểu | Mốc |

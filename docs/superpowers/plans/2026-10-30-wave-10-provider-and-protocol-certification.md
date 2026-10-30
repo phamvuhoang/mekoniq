@@ -18,7 +18,8 @@
 - “Tiền lưu số nguyên theo đơn vị tiền nhỏ nhất; VND là đồng. Không cộng tiền bằng float.”
 - “Không tự phát lệnh di chuyển/thu tiền/in/xuất hóa đơn khi replay lịch sử.”
 - “Cloud ACK là đã commit ở cloud; ACK LAN là coordinator đã commit.”
-- Node.js 24 LTS; PostgreSQL 18; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Node.js 24 LTS; Supabase PostgreSQL 17; TypeScript strict; SQLite native trên Android; robot baseline ROS 2 Jazzy / Ubuntu 24.04 / Gazebo Harmonic.
+- Next.js web/API trên Vercel; Supabase Auth/Realtime/Storage và profile Free bắt buộc; tablet HTML bundle + native Android. Tuân theo [stack và giới hạn Free](../specs/2026-10-30-vercel-supabase-free-stack.md); không thêm dịch vụ trả phí bắt buộc để khởi chạy.
 - Đọc [plan tổng và hợp đồng dùng chung](2026-10-30-production-implementation-plan.md) trước task; mọi đường dẫn/command tính từ `source/`.
 - Đây là kế hoạch, chưa có application files hoặc scripts bên dưới. Tạo chúng tại task sở hữu; không chạy lệnh triển khai/robot thật chỉ để kiểm tra tài liệu.
 - Không đánh dấu PASS khi thiếu thiết bị/provider; ghi `blocked_external` cho đúng acceptance gate, tiếp tục task không phụ thuộc.
@@ -133,7 +134,7 @@ export function matchesPayment(expected:{merchant:string;currency:string;amount:
 **Files:**
 
 - Create: `integrations/einvoice/src/{provider-adapter,issue-query,amendment}.ts`, `integrations/accounting/src/export.ts`.
-- Create: `apps/operations-ui/src/routes/Invoices.tsx`, `docs/integrations/einvoice-acceptance.md`.
+- Create: `apps/tablet-web/src/screens/Invoices.ts`, `docs/integrations/einvoice-acceptance.md`.
 - Test: `tests/providers/einvoice-provider.test.ts`.
 
 **Interfaces:**
@@ -180,7 +181,7 @@ export function nextInvoiceAction(status:string) {
 
 **Files:**
 
-- Create: `integrations/channels/src/{zalo,delivery,pos-external}.ts`, `apps/guest-web/src/MiniAppBridge.tsx`.
+- Create: `integrations/channels/src/{zalo,delivery,pos-external}.ts`, `apps/cloud-web/src/components/guest/MiniAppBridge.tsx`.
 - Create: `tests/providers/channel-provider.test.ts`, `docs/integrations/channel-acceptance.md`.
 - Test: `tests/providers/channel-provider.test.ts`.
 
