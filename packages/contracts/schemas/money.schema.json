@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.money.v1",
+  "title": "Money",
+  "$ref": "mekoniq.wire.v1#/definitions/Money"
+}

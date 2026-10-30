@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.asset-manifest.v1",
+  "title": "AssetManifest",
+  "$ref": "mekoniq.wire.v1#/definitions/AssetManifest"
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "organizationId": "org-a",
+  "venueId": "venue-a",
+  "operationId": "op-fixture-1",
+  "type": "Journal.RecordNote",
+  "actorRef": "cashier",
+  "deviceId": "device-a",
+  "deviceEpoch": "epoch-a",
+  "coordinatorEpoch": 1,
+  "policyRevision": 1,
+  "occurredAt": "2026-10-30T00:00:00Z",
+  "recordedAt": "2026-10-30T00:00:00Z",
+  "payload": {
+    "note": "canonical fixture"
+  },
+  "payloadHash": "eb152ff0ee2338e3711af091c6008769072d4d249109dec8247e99622d698291"
+}

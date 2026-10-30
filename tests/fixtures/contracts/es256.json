@@ -1,0 +1,52 @@
+[
+  {
+    "canonical": "{\"a\":\"1\",\"b\":\"2\"}",
+    "signature": "Jq4x23T54Jr1TPTSMRnRL8vxwKS7Es5d2sbvxrkqs9ICgYU1hHXvxNjyX3ziHy4xIxPRhWiKRNblXFu1IHrwOQ",
+    "publicJwk": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "Yk_GsrtJYZiNkDTRbntgatYOcuiE8M_2yPLyE6ZPrv4",
+      "y": "507xreB3DcN5HWCrY7VMY-oiUmOFPsuTOeFaIBQTSR0"
+    }
+  },
+  {
+    "canonical": "{\"amount\":\"9007199254740993\",\"currency\":\"VND\"}",
+    "signature": "KE4-CSX1bkJfk6c5amVuycBXi2JErRy0xjBi-idUlJ7I2QsZ0zOkJyd1Hc98qj1lsxHWHh9BtamLDSg_mzxIeg",
+    "publicJwk": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "Yk_GsrtJYZiNkDTRbntgatYOcuiE8M_2yPLyE6ZPrv4",
+      "y": "507xreB3DcN5HWCrY7VMY-oiUmOFPsuTOeFaIBQTSR0"
+    }
+  },
+  {
+    "canonical": "{\"vi\":\"Món ăn\",\"日本語\":\"料理\"}",
+    "signature": "F7pAPlpEXffa6ejR6yJg5qa8DdRm2OK69EhLP2f7tFPf6B4OKBSdzUC_lKIiUNZNatqN4fqK9gYVwsrNxhpbew",
+    "publicJwk": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "Yk_GsrtJYZiNkDTRbntgatYOcuiE8M_2yPLyE6ZPrv4",
+      "y": "507xreB3DcN5HWCrY7VMY-oiUmOFPsuTOeFaIBQTSR0"
+    }
+  },
+  {
+    "canonical": "{\"numbers\":[1e-7,0.000001,333333333.3333333]}",
+    "signature": "fI2g_ziCxoEjqx5QUKt8C5h6GfN_5cDfN44FouVg6VTfjM_Nz_o2VG30LrTwaKJh-ON5ibQXDVt3UUWUKFuoQg",
+    "publicJwk": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "Yk_GsrtJYZiNkDTRbntgatYOcuiE8M_2yPLyE6ZPrv4",
+      "y": "507xreB3DcN5HWCrY7VMY-oiUmOFPsuTOeFaIBQTSR0"
+    }
+  },
+  {
+    "canonical": "{\"a\":[true,null,false],\"z\":\"line\\nquote\\\"slash\\\\\"}",
+    "signature": "PANkOmk1KuM9t6eOy0J_QauYIaokFtVfPHfmP5S2_mlBU4Q1O0JSI-X4B7O9a_lACKMswyEEvMD9tpcB8THGzg",
+    "publicJwk": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "Yk_GsrtJYZiNkDTRbntgatYOcuiE8M_2yPLyE6ZPrv4",
+      "y": "507xreB3DcN5HWCrY7VMY-oiUmOFPsuTOeFaIBQTSR0"
+    }
+  }
+]

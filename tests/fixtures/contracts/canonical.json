@@ -1,0 +1,49 @@
+[
+  {
+    "input": {
+      "b": "2",
+      "a": "1"
+    },
+    "canonical": "{\"a\":\"1\",\"b\":\"2\"}",
+    "sha256": "21f76dfbfe6dfe21f762080ef484112cf2952974cef30741fd1931e1c6d92112"
+  },
+  {
+    "input": {
+      "amount": "9007199254740993",
+      "currency": "VND"
+    },
+    "canonical": "{\"amount\":\"9007199254740993\",\"currency\":\"VND\"}",
+    "sha256": "98106df76295e775e0eacb965ed43755b276164ffb3ef55d55e00659d9c206c4"
+  },
+  {
+    "input": {
+      "日本語": "料理",
+      "vi": "Món ăn"
+    },
+    "canonical": "{\"vi\":\"Món ăn\",\"日本語\":\"料理\"}",
+    "sha256": "e5497355c869708ad5b7efa9f986b93794ead54fb82482485a37ca5f9e6aca5d"
+  },
+  {
+    "input": {
+      "numbers": [
+        1e-07,
+        1e-06,
+        333333333.3333333
+      ]
+    },
+    "canonical": "{\"numbers\":[1e-7,0.000001,333333333.3333333]}",
+    "sha256": "42bea0cf1d8277c2629e0614eff1c9241912949aa8a75f1d87fc883179d54763"
+  },
+  {
+    "input": {
+      "z": "line\nquote\"slash\\",
+      "a": [
+        true,
+        null,
+        false
+      ]
+    },
+    "canonical": "{\"a\":[true,null,false],\"z\":\"line\\nquote\\\"slash\\\\\"}",
+    "sha256": "8143d9d3178d7fbef29e71ec901ffb70594e816ba6509af2cfcb7395525b7e7b"
+  }
+]
