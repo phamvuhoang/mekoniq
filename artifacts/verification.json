@@ -1,6 +1,6 @@
 {
   "scope": "Standalone HTML presentations only; not production application or robot acceptance.",
-  "tested_at_utc": "2026-10-30T07:17:49.294703+00:00",
+  "tested_at_utc": "2026-10-30T07:51:07.175504+00:00",
   "environment": {
     "browser": "Google Chrome 156.0.8078.76",
     "playwright": "1.64.1",
@@ -19,17 +19,19 @@
   ],
   "files": {
     "engineering.html": {
-      "bytes": 94202,
-      "sha256": "4b4e1263a611d5a2a0054fba1810e2d86e288c9bdb31b6f52205701552e114ee"
+      "bytes": 96823,
+      "sha256": "22a5999d9ee951bee8185d30768a3e40dfb2f6c6cd4388ec8f372af3193c477c"
     },
-    "investor.html": {
-      "bytes": 84052,
-      "sha256": "11fa07a835f9f6b775be8da15a4ca797ecf48c88c9b47a7af10041e0abcb98bb"
+    "business-plan.html": {
+      "bytes": 93228,
+      "sha256": "c53d86215d96242731fb77ffe1216e23b4fc21e3040eeadc8103ea88936be408"
     }
   },
   "result": {
-    "views": 216,
+    "views": 228,
     "interactions": [
+      "Japanese default / JA EN VI order / isolated language preference",
+      "engineering dark palette on Business Plan",
       "architecture selection",
       "lost ACK / dedup illustration",
       "language preserves flow state",
@@ -42,6 +44,9 @@
       "problem comparison",
       "product stage selection",
       "customer presets",
+      "15M monthly rent / maximum revenue values fit",
+      "three robot generations / translated selection",
+      "running code and no external demo / no trial or Investor copy",
       "reduced motion",
       "full-deck print rendering",
       "offline file:// with zero network requests",
@@ -54,11 +59,14 @@
   "pages": {
     "engineering": {
       "url": "https://chatgpt.com/space/page_0c0b52bccf7481918e5a45ac0ad84ea6",
-      "embed_saved_and_read_back": true
+      "embed_saved_and_read_back": true,
+      "snapshot_updated_in_this_revision": false
     },
-    "investor": {
+    "business-plan": {
       "url": "https://chatgpt.com/space/page_86729025d6548191a54021ac49b24dd6",
-      "embed_saved_and_read_back": true
+      "embed_saved_and_read_back": true,
+      "snapshot_updated_in_this_revision": true,
+      "embedded_bytes": 93228
     }
   },
   "limits": [

@@ -7,7 +7,7 @@ Nền tảng nhà hàng và robot phục vụ, được thiết kế lại từ 
 ## Tài liệu trình bày tương tác
 
 - [Engineering Atlas](artifacts/engineering.html): 8 chương về kiến trúc, data flow, offline, robot, chức năng và triển khai.
-- [Investor Story](artifacts/investor.html): pitch deck 10 slide với hình ảnh, animation, BOM và mô hình doanh thu minh hoạ.
+- [Business Plan](artifacts/business-plan.html): 11 slide với màu sắc như engineering, Nhật mặc định, BOM, mô hình doanh thu và lộ trình robot giao món → pha chế → nấu ăn.
 - [Cách mở, bản xem Pages, chỉnh sửa và kiểm thử](artifacts/README.md).
 
 Hai file HTML chạy độc lập/offline, chuyển Việt / Nhật / Anh ngay trên màn hình. Các kiểm thử giao diện của tài liệu được ghi riêng trong `artifacts`; trạng thái triển khai production không thay đổi.

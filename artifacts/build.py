@@ -6,15 +6,15 @@ ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "src"
 style = (SRC / "core.css").read_text()
 core = (SRC / "core.js").read_text()
-for name, title in [("engineering", "MEKONIQ · Engineering Atlas"), ("investor", "MEKONIQ · Investor Story")]:
+for name, title in [("engineering", "MEKONIQ · Engineering Atlas"), ("business-plan", "MEKONIQ · Business Plan")]:
     content = (SRC / f"{name}.js").read_text()
     html = f'''<!doctype html>
-<html lang="vi"><head><meta charset="utf-8">
+<html lang="{'ja' if name == 'business-plan' else 'vi'}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="{'dark' if name == 'engineering' else 'light'}">
+<meta name="color-scheme" content="dark">
 <meta name="description" content="MEKONIQ interactive presentation · Tiếng Việt / 日本語 / English · 2026-10-30">
 <title>{title}</title><style>{style}</style></head>
-<body data-audience="{name}"><div id="app"></div>
+<body data-audience="{'business' if name == 'business-plan' else name}"><div id="app"></div>
 <noscript>Vui lòng bật JavaScript để xem bản trình bày. JavaScriptを有効にしてください。 Please enable JavaScript.</noscript>
 <script>{core}\n{content}</script></body></html>'''
     assert "</script" not in core.lower() and "</script" not in content.lower()
