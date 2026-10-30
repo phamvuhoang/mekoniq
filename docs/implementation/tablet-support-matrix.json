@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "appVersion": "0.1.0",
+  "updatedAt": "2026-10-30",
+  "profiles": [
+    {
+      "model": "Android Emulator sdk_gphone64_arm64",
+      "os": "Android 13",
+      "api": 33,
+      "buildFingerprint": "google/sdk_gphone64_arm64/emu64a:13/TE1A.220922.028/10190541:userdebug/dev-keys",
+      "webView": "103.0.5060.71",
+      "kind": "emulator",
+      "nativeStorage": "verified",
+      "keystoreAndCanonicalVectors": "verified",
+      "nativeActivityPause": "verified_emulator",
+      "twoPeerTLS": "verified_emulators",
+      "WANPartition": "verified_unavailable_cloud",
+      "physicalSleepDoze": "not_verified",
+      "soak24Hours": "not_verified",
+      "releaseSigning": "not_verified",
+      "evidence": [
+        "docs/implementation/evidence/W01-T01.md",
+        "docs/implementation/evidence/W01-T02.md",
+        "docs/implementation/evidence/W01-T03.md",
+        "docs/implementation/evidence/W01-T05.md",
+        "docs/implementation/evidence/W01-two-emulator.json"
+      ],
+      "transportPartition": "verified_adb_transport_removed",
+      "ownerRestartDeduplication": "verified_emulators",
+      "qualificationLimits": "Two isolated API33 emulators; ADB forwarding carries TLS bytes. No real AP, physical sleep, power-loss or 24-hour proof.",
+      "pairedCheckpointExchange": "implemented_not_exercised_in_two_peer_harness",
+      "handoffReceiptInstallation": "verified_native_sqlite_jvm_not_two_peer_repeated"
+    },
+    {
+      "model": null,
+      "kind": "physical_tablet",
+      "status": "not_verified",
+      "reason": "No two physical tablets/AP/support models supplied; no physical acceptance is claimed."
+    }
+  ]
+}

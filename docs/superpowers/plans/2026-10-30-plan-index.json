@@ -1,7 +1,7 @@
 {
   "date": "2026-10-30",
-  "status": "planned",
-  "applicationImplemented": false,
+  "status": "partially_implemented",
+  "applicationImplemented": true,
   "taskCount": 63,
   "waves": [
     {
@@ -73,7 +73,8 @@
       "depends": "Thiết kế đã duyệt",
       "testFile": "tests/integration/cloud-health.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/cloud-health.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W00-T01.md"
     },
     {
       "wave": "W00",
@@ -82,7 +83,8 @@
       "depends": "W00-T01",
       "testFile": "tests/contracts/wire.test.ts",
       "testCommand": "pnpm test:contracts -- tests/contracts/wire.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W00-T02.md"
     },
     {
       "wave": "W00",
@@ -91,7 +93,8 @@
       "depends": "W00-T02",
       "testFile": "tests/unit/money.test.ts",
       "testCommand": "pnpm test:unit -- tests/unit/money.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W00-T03.md"
     },
     {
       "wave": "W00",
@@ -100,7 +103,8 @@
       "depends": "W00-T02, W00-T03",
       "testFile": "tests/integration/atomic-command.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/atomic-command.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W00-T04.md"
     },
     {
       "wave": "W00",
@@ -109,7 +113,8 @@
       "depends": "W00-T01..W00-T04",
       "testFile": "tests/integration/crash-window.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/crash-window.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W00-T05.md"
     },
     {
       "wave": "W01",
@@ -118,7 +123,8 @@
       "depends": "W00-T04",
       "testFile": "apps/tablet-android/android/app/src/androidTest/java/io/mekoniq/tablet/JournalAtomicityTest.kt",
       "testCommand": "apps/tablet-android/android/gradlew -p apps/tablet-android/android connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=io.mekoniq.tablet.JournalAtomicityTest",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W01-T01.md"
     },
     {
       "wave": "W01",
@@ -127,7 +133,8 @@
       "depends": "W01-T01, W00-T02",
       "testFile": "apps/tablet-android/android/app/src/androidTest/java/io/mekoniq/tablet/DeviceIdentityTest.kt",
       "testCommand": "apps/tablet-android/android/gradlew -p apps/tablet-android/android connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=io.mekoniq.tablet.DeviceIdentityTest",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W01-T02.md"
     },
     {
       "wave": "W01",
@@ -136,7 +143,8 @@
       "depends": "W01-T01, W01-T02",
       "testFile": "tests/unit/coordinator-health.test.ts",
       "testCommand": "pnpm test:unit -- tests/unit/coordinator-health.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W01-T03.md"
     },
     {
       "wave": "W01",
@@ -145,7 +153,8 @@
       "depends": "W01-T03",
       "testFile": "tests/e2e/device-status.spec.ts",
       "testCommand": "pnpm test:e2e -- tests/e2e/device-status.spec.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W01-T04.md"
     },
     {
       "wave": "W01",
@@ -154,7 +163,9 @@
       "depends": "W01-T01..W01-T04",
       "testFile": "tests/android/LifecycleAcceptanceTest.kt",
       "testCommand": "pnpm test:android -- lifecycle",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W01-T05.md",
+      "remaining": "Physical supported tablet/AP qualification and 24-hour soak; emulator/software evidence does not accept Gate A."
     },
     {
       "wave": "W02",
@@ -163,7 +174,8 @@
       "depends": "W00-T01..W00-T04",
       "testFile": "tests/integration/tenant-auth.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/tenant-auth.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W02-T01.md"
     },
     {
       "wave": "W02",
@@ -172,7 +184,8 @@
       "depends": "W01-T02, W02-T01",
       "testFile": "tests/integration/device-grants.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/device-grants.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W02-T02.md"
     },
     {
       "wave": "W02",
@@ -181,7 +194,8 @@
       "depends": "W02-T01, W00-T03",
       "testFile": "tests/integration/feature-policy.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/feature-policy.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W02-T03.md"
     },
     {
       "wave": "W02",
@@ -190,7 +204,8 @@
       "depends": "W02-T01, W02-T02, W00-T04",
       "testFile": "tests/integration/sync-replay.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/sync-replay.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W02-T04.md"
     },
     {
       "wave": "W02",
@@ -199,13 +214,14 @@
       "depends": "W02-T03, W02-T04",
       "testFile": "tests/integration/relay-effects.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/relay-effects.test.ts",
-      "status": "planned",
+      "status": "verified_local",
       "additionalTestFiles": [
         "tests/integration/realtime-jobs.test.ts"
       ],
       "additionalTestCommands": [
         "pnpm test:integration -- tests/integration/realtime-jobs.test.ts"
-      ]
+      ],
+      "evidence": "../../implementation/evidence/W02-T05.md"
     },
     {
       "wave": "W02",
@@ -214,7 +230,8 @@
       "depends": "W02-T01, W02-T04, W02-T05",
       "testFile": "tests/integration/storage-free-profile.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/storage-free-profile.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W02-T06.md"
     },
     {
       "wave": "W03",
@@ -223,7 +240,8 @@
       "depends": "W00-T03, W02-T03, W02-T06",
       "testFile": "tests/integration/menu-snapshot.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/menu-snapshot.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W03-T01.md"
     },
     {
       "wave": "W03",
@@ -232,7 +250,8 @@
       "depends": "W03-T01",
       "testFile": "tests/integration/order-lifecycle.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/order-lifecycle.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W03-T02.md"
     },
     {
       "wave": "W03",
@@ -241,7 +260,8 @@
       "depends": "W03-T02",
       "testFile": "tests/integration/kitchen-allocation.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/kitchen-allocation.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W03-T03.md"
     },
     {
       "wave": "W03",
@@ -250,7 +270,8 @@
       "depends": "W03-T03, W02-T02",
       "testFile": "tests/integration/simulated-delivery.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/simulated-delivery.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W03-T04.md"
     },
     {
       "wave": "W03",
@@ -259,7 +280,8 @@
       "depends": "W03-T02, W00-T03",
       "testFile": "tests/integration/basic-settlement.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/basic-settlement.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W03-T05.md"
     },
     {
       "wave": "W03",
@@ -268,7 +290,8 @@
       "depends": "W03-T01..W03-T05, W01-T05",
       "testFile": "tests/integration/wan-outage-journey.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/wan-outage-journey.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W03-T06.md"
     },
     {
       "wave": "W04",
@@ -277,7 +300,8 @@
       "depends": "W02-T04, W03-T02, W03-T05",
       "testFile": "tests/integration/partition-conflicts.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/partition-conflicts.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W04-T01.md"
     },
     {
       "wave": "W04",
@@ -286,7 +310,8 @@
       "depends": "W04-T01, W02-T02, W03-T05",
       "testFile": "tests/integration/settlement-grants.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/settlement-grants.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W04-T02.md"
     },
     {
       "wave": "W04",
@@ -295,7 +320,8 @@
       "depends": "W04-T01, W03-T04",
       "testFile": "tests/integration/maintenance-checkpoint.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/maintenance-checkpoint.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W04-T03.md"
     },
     {
       "wave": "W04",
@@ -304,7 +330,8 @@
       "depends": "W04-T01..W04-T03, W02-T05",
       "testFile": "tests/integration/historical-import.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/historical-import.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W04-T04.md"
     },
     {
       "wave": "W04",
@@ -313,7 +340,8 @@
       "depends": "W04-T02, W04-T03, W03-T04",
       "testFile": "tests/integration/ownership-handoff.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/ownership-handoff.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W04-T05.md"
     },
     {
       "wave": "W04",
@@ -322,7 +350,9 @@
       "depends": "W04-T01..W04-T05",
       "testFile": "tests/acceptance/continuity-suite.test.ts",
       "testCommand": "pnpm test:acceptance -- continuity",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W04-T06.md",
+      "remaining": "Physical supported tablet/AP qualification and 24-hour soak; emulator/software evidence does not accept Gate A."
     },
     {
       "wave": "W05",
@@ -1134,5 +1164,12 @@
         "W11-T05"
       ]
     }
-  ]
+  ],
+  "implementationEvidence": "../../implementation/verification.md",
+  "gateA": "not_accepted",
+  "statusLegend": {
+    "verified_local": "Implemented and exercised locally; external production qualification is separate.",
+    "blocked_external": "Software implemented; mandatory physical/lifecycle/soak qualification remains.",
+    "planned": "Outside W00–W04 execution scope."
+  }
 }

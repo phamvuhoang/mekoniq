@@ -1,5 +1,7 @@
 # Wave 00 — workspace, contracts và giao dịch nền Implementation Plan
 
+> Execution 2026-10-30: phần mềm đã hiện thực trên `feat/w00-w04-production-foundation`. Trạng thái từng task và giới hạn kiểm chứng nằm trong [task index](2026-10-30-plan-index.json) và [verification](../../implementation/verification.md). Gate A chưa được chấp nhận; checklist thiết kế gốc bên dưới không thay thế bằng chứng chạy thử.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Tạo workspace build được cùng hợp đồng dữ liệu và transaction kernel dùng chung cho cloud/tablet.

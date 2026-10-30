@@ -1,0 +1,2 @@
+sourceType,sourceSeries,sourceNumber,occurredAt,clockConfidence,table,items,quantity,unitMinor,discountMinor,taxMinor,totalMinor,currency,paidCashMinor,paymentMethod,paymentReference,fulfilled,staff,notes
+paper,M1,001,2026-10-30T05:00:00Z,uncertain,table-1,rice,1,50000,0,0,50000,VND,50000,cash,,true,manager,Example only

@@ -1,0 +1,275 @@
+{
+  "generatedAt": "2026-10-30T14:26:12.610Z",
+  "commit": "ab1bbab7319e8bd56e2b4c11943d7ffa6d57fad1",
+  "dirty": true,
+  "node": "v24.22.2",
+  "mode": "software-only",
+  "reports": [
+    {
+      "id": "O01",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_run",
+      "evidence": [
+        "Production restaurant router + file SQLite + persisted fake-adapter effects; actual PostgreSQL journal ingest after WAN heal."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O02",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "Local ACK dropped after commit; retry returns original operation receipt."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O03",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "Actual PostgreSQL commit precedes lost cloud receipt; file outbox survives and deduplicates resend."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O04",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "Independent device SQLite is used during LAN partition; original signed source journal is verified during recovery."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O05",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "Two real device files preserve two source IDs for the same table; manager conflict remains open after heal."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O06",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "tests/integration/settlement-grants.test.ts: isolated collector commits once; 1 passed; .lab/continuity/settlement-grants-isolated_collector_commits_once.json"
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O07",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "tests/integration/crash-window.test.ts: kill after real SQLite commit; 1 passed; .lab/continuity/crash-window-kill_after_real_SQLite_commit.json"
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O08",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "tests/integration/storage-failure.test.ts: actual SQLite page limit; 1 passed; .lab/continuity/storage-failure-actual_SQLite_page_limit.json"
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O09",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "tests/integration/sync-replay.test.ts: commit ACK is durable; 1 passed; .lab/continuity/sync-replay-commit_ACK_is_durable.json"
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O10",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_run",
+      "evidence": [
+        "tests/integration/simulated-delivery.test.ts: simulator deduplicates native goals and reboot yields unknown; 1 passed; .lab/continuity/simulated-delivery-simulator_deduplicates_native_goals_and_reboot_yie.json"
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O11",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_run",
+      "evidence": [
+        "Expired durable robot command is rejected before any adapter execution attempt."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O12",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "Cached revision remains applied during WAN outage; shared engine blocks new work while permitting accepted-work completion. Cloud publication/ACK integration is covered by W02."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O13",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "Injected-clock expiry boundary and capture-only authorization verified; this is not a 24-hour Android soak."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions.",
+        "24-hour wall-clock soak has not run; injected clock verifies expiry only."
+      ]
+    },
+    {
+      "id": "O14",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "Reordered rows/new batches preserve source-key dedup and do not repeat historical money."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O15",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "Changed source amount cannot overwrite the original historical receipt."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O16",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "tests/integration/continuity-recovery.test.ts: late source reference; 1 passed; .lab/continuity/continuity-recovery-late_source_reference.json"
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O17",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "Historical completed receipt produces no KDS work or robot/payment/invoice side effects."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O18",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "tests/integration/continuity-recovery.test.ts: killed import resumes; 1 passed; .lab/continuity/continuity-recovery-killed_import_resumes.json"
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O19",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "tests/integration/sync-replay.test.ts: (commit ACK is durable|valid signed unsupported schema remains raw); 2 passed; .lab/continuity/sync-replay-_commit_ACK_is_durable_valid_signed_unsupported_sc.json"
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O20",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_run",
+      "evidence": [
+        "tests/integration/ownership-handoff.test.ts: unknown robot goal prevents replacement; 1 passed; .lab/continuity/ownership-handoff-unknown_robot_goal_prevents_replacement.json"
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O21",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_required",
+      "evidence": [
+        "Software TTL and unavailable-owner path reject ACK; real Android suspend/stop qualification remains not_run."
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    },
+    {
+      "id": "O22",
+      "software": "passed",
+      "android": "not_run",
+      "hardware": "not_run",
+      "evidence": [
+        "tests/integration/archive-restore.test.ts: encrypted export restores original signed IDs; 1 passed; .lab/continuity/archive-restore-encrypted_export_restores_original_signed_IDs.json",
+        "tests/integration/continuity-recovery.test.ts: encrypted checkpoint restores pending robot commands; 1 passed; .lab/continuity/continuity-recovery-encrypted_checkpoint_restores_pending_robot_comman.json"
+      ],
+      "limits": [
+        "Android/physical evidence is independent of these software assertions."
+      ]
+    }
+  ]
+}
