@@ -23,6 +23,11 @@ export async function createDeviceProvision(actor:Actor,scope:TenantScope,device
   const [member]=subjectId===actor.id?[]:await sql`SELECT role,station_ids FROM venue_membership WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND user_id=${subjectId}::uuid AND active`;
   if(subjectId!==actor.id&&!member)throw new Error('SCOPE_DENIED');
   const subjectRole=member?.role??actor.role;const subjectPermissions=member?rolePermissions(member.role):permissionsForVenue(actor,scope.venueId);
+  if(subjectId!==actor.id){
+   const callerPermissions=permissionsForVenue(actor,scope.venueId);
+   // Selecting an existing identity is a separate delegation capability. Never impersonate an owner.
+   if(subjectRole==='owner'||(!callerPermissions.includes('*')&&(!callerPermissions.includes('identity.delegate')||subjectPermissions.some(permission=>!callerPermissions.includes(permission)))))throw new Error('IDENTITY_DELEGATION_DENIED');
+  }
   const configured=stations.map(s=>s.aggregate_id as string);
   const assigned:unknown[]=member?member.station_ids:(actor.stationIdsByVenue?.[scope.venueId]??[]);
   const stationIds=subjectRole==='chef'?assigned.filter((id):id is string=>typeof id==='string'&&configured.includes(id)):configured;

@@ -17,6 +17,8 @@ export async function setupWave02() {
   const exists=await admin`SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name=${{ '20261030000200_identity_rls.sql':'venue','20261030000300_device_ownership.sql':'device_enrollment','20261030000400_sync.sql':'sync_inbox','20261030000500_jobs_realtime.sql':'cloud_job','20261030000600_storage_usage.sql':'asset_manifest'}[filename]??''}`;
   if(!exists.length)await admin.unsafe(migration);
  }
+ const [storageUpgrade]=await admin`SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='public.asset_manifest'::regclass AND conname='asset_manifest_status_check' AND pg_get_constraintdef(oid) LIKE '%collected%') AS applied`;
+ if(!storageUpgrade.applied)await admin.begin(sql=>sql.unsafe(readFileSync('supabase/migrations/20261031000100_cloud_storage_reservations.sql','utf8')));
  process.env.DATABASE_URL='postgresql://mekoniq_app:local_test_only@127.0.0.1:57422/postgres';
  if(!process.env.SUPABASE_SERVICE_ROLE_KEY){
   let status;try{status=JSON.parse(execFileSync('pnpm',['exec','supabase','status','--output','json'],{encoding:'utf8',timeout:15000,stdio:['ignore','pipe','ignore']}));}catch{throw new Error('LOCAL_SUPABASE_STATUS_UNAVAILABLE');}

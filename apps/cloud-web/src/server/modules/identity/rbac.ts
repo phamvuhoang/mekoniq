@@ -1,7 +1,7 @@
 import type {TenantScope} from './tenant-context';
 export type Actor={id:string;organizationId:string;venueIds:string[];permissions:string[];permissionsByVenue?:Record<string,string[]>;stationIdsByVenue?:Record<string,string[]>;role:string;deviceId?:string;deviceEpoch?:string};
 const roles:Record<string,string[]>={
- owner:['*'],manager:['fulfillment.write','continuity.capture','robot.stop','configuration.publish','configuration.read','catalog.publish','catalog.read','device.enroll','sync.write','sync.read','relay.write','assets.write','assets.read','order.read','order.write','kitchen.write','mission.write','billing.write','payment.cash','shift.write','continuity.import.approve','continuity.resolve','report.read'],
+ owner:['*'],manager:['identity.delegate','fulfillment.write','continuity.capture','robot.stop','configuration.publish','configuration.read','catalog.publish','catalog.read','device.enroll','sync.write','sync.read','relay.write','assets.write','assets.read','order.read','order.write','kitchen.write','mission.write','billing.write','payment.cash','shift.write','continuity.import.approve','continuity.resolve','report.read'],
  cashier:['relay.write','continuity.capture','robot.stop','catalog.read','order.read','order.write','billing.write','payment.cash','shift.write','fulfillment.write','mission.write','sync.read'],
  chef:['relay.write','robot.stop','catalog.read','order.read','kitchen.write','sync.read'],
  executor:['robot.observe','robot.stop'],

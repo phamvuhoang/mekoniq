@@ -10,7 +10,7 @@ export async function collectOrphanAssets(scope:TenantScope,limit=20,signal?:Abo
    // The row lock serializes renewal/reference changes with the bounded external delete.
    signal?.throwIfAborted();
    const {error}=await supabaseAdmin(signal??AbortSignal.timeout(10000)).storage.from(ASSET_BUCKET).remove([row.object_path]);if(error)continue;
-   const changed=await sql`UPDATE asset_manifest SET status='missing' WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND id=${row.id} AND referenced=false AND status<>'ready' RETURNING id`;removed+=changed.length;
+   const changed=await sql`UPDATE asset_manifest SET status='collected' WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND id=${row.id} AND referenced=false AND status<>'ready' RETURNING id`;removed+=changed.length;
   }
   return {removed};
  });
