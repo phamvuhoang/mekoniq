@@ -6,8 +6,8 @@ export async function nativeTransport() {
   let lastLevel:import('../../tablet-web/src/transport/session').AckLevel='unknown';
   return {
     async session(){
-      const session=await Identity.session();
-      if(!session.isCoordinator){try{await Lan.pullSnapshots();if(session.mode!=='capture-only')session.mode='coordinated';}catch{if(session.mode!=='capture-only')session.mode='isolated';}}
+      let session=await Identity.session();
+      if(!session.isCoordinator){try{await Lan.pullSnapshots();session=await Identity.session();if(session.mode!=='capture-only')session.mode='coordinated';}catch{if(session.mode!=='capture-only')session.mode='isolated';}}
       return {...session,level:lastLevel};
     },
     snapshots:async()=>{

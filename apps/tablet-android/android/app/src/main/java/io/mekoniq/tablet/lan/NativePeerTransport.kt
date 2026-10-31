@@ -33,14 +33,12 @@ class NativePeerTransport(private val context:Context) {
   fun flushSettlementObservations():Int {
     var accepted=0
     JournalDatabase(context).use {db ->
-      val entries=db.readableDatabase.rawQuery("SELECT j.entry_json FROM outbox o JOIN journal j ON j.entry_id=o.journal_entry_id WHERE o.kind='journal' AND o.venue_ack=0 ORDER BY o.rowid LIMIT 100",null).use {c ->mutableListOf<JSONObject>().apply {while(c.moveToNext())add(JSONObject(c.getString(0)))}}
+      val entries=db.pendingVenueObservations()
       for(entry in entries) {
         if(entry.getString("kind")!="observation" || entry.getJSONObject("payload").optString("operationType") !in setOf("SettlementGrant.Use","SettlementGrant.Return","Continuity.CaptureTicket","Continuity.RecordPaymentObservation"))continue
         val result=request("/v1/settlement-observations","POST",entry)
         if(result.optString("status")!="accepted")break
-        require(result.getString("sourceEntryId")==entry.getString("entryId") && result.getString("sourceHash")==entry.getString("payloadHash")) {"OBSERVATION_RECEIPT_MISMATCH"}
-        val transaction=db.writableDatabase;transaction.beginTransaction()
-        try {transaction.execSQL("UPDATE outbox SET venue_ack=1 WHERE journal_entry_id=? AND kind='journal'",arrayOf(entry.getString("entryId")));transaction.execSQL("DELETE FROM local_dirty WHERE operation_id=?",arrayOf(entry.getString("operationId")));transaction.setTransactionSuccessful()}finally{transaction.endTransaction()}
+        db.recordVenueObservationReceipt(entry,result)
         accepted++
       }
     }

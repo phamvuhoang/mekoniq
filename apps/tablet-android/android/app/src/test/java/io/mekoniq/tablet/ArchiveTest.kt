@@ -56,4 +56,41 @@ class ArchiveTest {
    context.deleteDatabase(restoredName)
   }
  }
+ @Test fun signedV1AndV2ArchivesRestoreOutboxThroughKnownMetadataUpgradeOnly() {
+  val context=RuntimeEnvironment.getApplication() as Context
+  val generator=KeyPairGenerator.getInstance("EC");generator.initialize(ECGenParameterSpec("secp256r1"));val pair=generator.generateKeyPair()
+  val jwk=ECKey.Builder(Curve.P_256,pair.public as ECPublicKey).build().toPublicJWK().toJSONString()
+  val config=Bundle().apply {putString("organizationId","org-a");putString("venueId","venue-a");putString("deviceId","device-a");putString("restoreProducerJwk",jwk)}
+  Shadows.shadowOf(context.getSystemService(Context.RESTRICTIONS_SERVICE) as RestrictionsManager).setApplicationRestrictions(config)
+  val signer:(ByteArray)->ByteArray={bytes->val signature=Signature.getInstance("SHA256withECDSA");signature.initSign(pair.private);signature.update(bytes);ECDSA.transcodeSignatureToConcat(signature.sign(),64)}
+  val scope=JSONObject().put("organizationId","org-a").put("venueId","venue-a")
+  JournalDatabase.testDatabase(context,signer).use {db->
+   val batch=testBatch("legacy-archive-operation",0)
+   val effect=JSONObject().put("id","legacy-archive-intent").put("type","command.intent").put("payload",batch.getJSONObject("command"))
+   batch.getJSONArray("effects").put(effect);db.commit(batch)
+   val snapshot=JournalExport.snapshot(context,db,"epoch-a")
+   for(version in listOf(1,2)) {
+    val old=JSONObject(snapshot.toString());val rows=old.getJSONObject("tables").getJSONArray("outbox")
+    for(index in 0 until rows.length()) {
+     val row=rows.getJSONObject(index);row.remove("venue_observation")
+     if(version==1){row.remove("payload_format");if(row.getString("kind")=="command.intent")row.put("payload_json",effect.toString())}
+    }
+    val encrypted=JournalExport.encrypt(context,old,"separate-long-password".toCharArray(),signer)
+    val verified=JournalExport.decrypt(context,encrypted,"separate-long-password".toCharArray())
+    val staged=JournalExport.restoreInactive(context,verified);assertFalse(staged.getBoolean("active"))
+    val name=staged.getString("stagedDatabase")
+    JournalDatabase(context,name,signer,{"epoch-a"}).use {restored->
+     val queued=restored.effects(scope,"command.intent").getJSONObject(0)
+     assertEquals("legacy-archive-operation",queued.getJSONObject("payload").getString("operationId"))
+     assertEquals("unknown",queued.getString("status"));assertFalse(restored.claimEffect(scope,"legacy-archive-intent"))
+     assertEquals(1,restored.journalCount());assertNotNull(restored.receipt(scope,"legacy-archive-operation",batch.getJSONObject("command").getString("payloadHash")))
+    }
+    context.deleteDatabase(name)
+   }
+   val invalid=JSONObject(snapshot.toString());invalid.getJSONObject("tables").getJSONArray("outbox").getJSONObject(0).remove("attempts")
+   val verifiedInvalid=JournalExport.decrypt(context,JournalExport.encrypt(context,invalid,"separate-long-password".toCharArray(),signer),"separate-long-password".toCharArray())
+   assertEquals("RESTORE_SCHEMA_MISMATCH",assertThrows(IllegalArgumentException::class.java){JournalExport.restoreInactive(context,verifiedInvalid)}.message)
+  }
+ }
+
 }

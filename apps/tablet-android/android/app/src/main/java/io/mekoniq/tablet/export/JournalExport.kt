@@ -116,7 +116,14 @@ object JournalExport {
             val columns=db.rawQuery("PRAGMA table_info($table)",null).use {cursor->mutableSetOf<String>().apply{while(cursor.moveToNext())add(cursor.getString(1))}}
             val rows=data.getJSONArray(table)
             for(index in 0 until rows.length()) {
-              val row=JSONObject(rows.getJSONObject(index).toString());require(row.keys().asSequence().toSet()==columns){"RESTORE_SCHEMA_MISMATCH"}
+              val row=JSONObject(rows.getJSONObject(index).toString());val archivedColumns=row.keys().asSequence().toSet()
+              if(table=="outbox") {
+                val version1=columns-setOf("payload_format","venue_observation")
+                val version2=columns-setOf("venue_observation")
+                if(archivedColumns==version1)row.put("payload_format","legacy").put("venue_observation",-1)
+                else if(archivedColumns==version2)row.put("venue_observation",-1)
+              }
+              require(row.keys().asSequence().toSet()==columns){"RESTORE_SCHEMA_MISMATCH"}
               if(table=="outbox" && row.getString("kind")!="journal" && row.getString("status") in setOf("pending","dispatching"))row.put("status","unknown")
               if(table=="aggregate_snapshot" && row.getString("kind")=="grant") {
                 val grant=JSONObject(row.getString("state_json"));if(grant.getString("status")!="reconciled"){grant.put("status","unknown").put("restorationIncomplete",true);row.put("state_json",grant.toString())}

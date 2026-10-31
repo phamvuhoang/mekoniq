@@ -22,7 +22,7 @@ class JournalDatabase(
   private val signer: (ByteArray) -> ByteArray = { DeviceKeys(context).sign(it) },
   private val deviceEpochProvider: () -> String = {DeviceKeys(context).deviceEpoch()},
   private val publicJwkProvider: () -> String = {DeviceKeys(context).publicJwk()}
-) : SQLiteOpenHelper(context, name, null, 1), AutoCloseable {
+) : SQLiteOpenHelper(context, name, null, 3), AutoCloseable {
   init {setWriteAheadLoggingEnabled(true)}
   override fun onConfigure(db: SQLiteDatabase) { db.setForeignKeyConstraintsEnabled(true); db.execSQL("PRAGMA synchronous=FULL") }
   override fun onCreate(db: SQLiteDatabase) {
@@ -36,14 +36,54 @@ class JournalDatabase(
     db.execSQL("CREATE TABLE native_fence(handoff_id TEXT PRIMARY KEY,proof_json TEXT NOT NULL)")
     db.execSQL("CREATE TABLE audit(entry_id TEXT PRIMARY KEY,actor_ref TEXT NOT NULL,event_json TEXT NOT NULL)")
     db.execSQL("CREATE TABLE domain_event(organization_id TEXT NOT NULL,venue_id TEXT NOT NULL,id TEXT PRIMARY KEY,type TEXT NOT NULL,data_json TEXT NOT NULL)")
-    db.execSQL("CREATE TABLE outbox(id TEXT PRIMARY KEY,journal_entry_id TEXT NOT NULL REFERENCES journal(entry_id),kind TEXT NOT NULL,payload_json TEXT NOT NULL,cloud_ack INTEGER NOT NULL DEFAULT 0,venue_ack INTEGER NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT 'pending',attempts INTEGER NOT NULL DEFAULT 0)")
+    db.execSQL("CREATE TABLE outbox(id TEXT PRIMARY KEY,journal_entry_id TEXT NOT NULL REFERENCES journal(entry_id),kind TEXT NOT NULL,payload_json TEXT NOT NULL,cloud_ack INTEGER NOT NULL DEFAULT 0,venue_ack INTEGER NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT 'pending',attempts INTEGER NOT NULL DEFAULT 0,payload_format TEXT NOT NULL DEFAULT 'legacy',venue_observation INTEGER NOT NULL DEFAULT -1 CHECK(venue_observation IN(-1,0,1)))")
+    createOutboxIndexes(db)
     db.execSQL("CREATE TABLE local_dirty(kind TEXT NOT NULL,id TEXT NOT NULL,operation_id TEXT NOT NULL,PRIMARY KEY(kind,id))")
     db.execSQL("CREATE TABLE projection_cursor(organization_id TEXT NOT NULL,venue_id TEXT NOT NULL,coordinator_epoch INTEGER NOT NULL,revision INTEGER NOT NULL,PRIMARY KEY(organization_id,venue_id))")
     db.execSQL("CREATE TABLE inbox(id TEXT PRIMARY KEY,raw_json TEXT NOT NULL)")
     db.execSQL("CREATE TABLE sync_cursor(producer TEXT PRIMARY KEY,received_cursor TEXT NOT NULL,applied_cursor TEXT NOT NULL)")
     db.execSQL("CREATE TABLE quarantine(id TEXT PRIMARY KEY,reason TEXT NOT NULL,raw_json TEXT NOT NULL)")
   }
-  override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) { error("UNSUPPORTED_SCHEMA_UPGRADE") }
+  override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    require(oldVersion in 1..2 && newVersion==3) {"UNSUPPORTED_SCHEMA_UPGRADE"}
+    if(oldVersion<2)db.execSQL("ALTER TABLE outbox ADD COLUMN payload_format TEXT NOT NULL DEFAULT 'legacy'")
+    db.execSQL("ALTER TABLE outbox ADD COLUMN venue_observation INTEGER NOT NULL DEFAULT -1 CHECK(venue_observation IN(-1,0,1))")
+    createOutboxIndexes(db)
+  }
+  override fun onOpen(db:SQLiteDatabase) {
+    super.onOpen(db)
+    // The marker also handles v1 archive rows restored into the current table schema.
+    val rows=db.rawQuery("SELECT o.id,o.kind,o.payload_json,j.entry_json FROM outbox o JOIN journal j ON j.entry_id=o.journal_entry_id WHERE o.payload_format='legacy' OR (o.kind='journal' AND o.venue_observation=-1)",null).use {c->mutableListOf<Array<String>>().apply {while(c.moveToNext())add(arrayOf(c.getString(0),c.getString(1),c.getString(2),c.getString(3)))}}
+    if(rows.isEmpty())return
+    db.beginTransaction()
+    try {
+      for(row in rows) {
+        val raw=JSONObject(row[2]);var payload=raw
+        if(row[1]!="journal") {
+          val effects=JSONObject(row[3]).getJSONObject("payload").optJSONArray("effects") ?: JSONArray()
+          val signedEffect=(0 until effects.length()).map {effects.getJSONObject(it)}.firstOrNull {it.optString("id")==row[0]&&it.optString("type")==row[1]}
+          val wrapped=raw.keys().asSequence().toSet()==setOf("id","type","payload")&&raw.optString("id")==row[0]&&raw.optString("type")==row[1]&&raw.optJSONObject("payload")!=null
+          if(signedEffect!=null&&canonical(raw).contentEquals(canonical(signedEffect.getJSONObject("payload"))))payload=raw
+          else if(wrapped) {
+            require(signedEffect==null||canonical(raw).contentEquals(canonical(signedEffect))) {"LEGACY_EFFECT_METADATA_CONFLICT"}
+            payload=raw.getJSONObject("payload")
+          }
+        }
+        val entry=JSONObject(row[3])
+        db.execSQL("UPDATE outbox SET payload_json=?,payload_format='inner',venue_observation=? WHERE id=?",arrayOf(payload.toString(),if(row[1]=="journal")venueObservation(entry) else 0,row[0]))
+        if(row[1]=="journal"&&entry.optString("kind")=="intent") {
+          val terminal=db.rawQuery("SELECT r.result_json FROM operation_receipt r JOIN outbox i ON i.journal_entry_id=? AND i.kind='command.intent' AND i.status='confirmed' WHERE r.organization_id=? AND r.venue_id=? AND r.operation_id=?",arrayOf(row[0],entry.getString("organizationId"),entry.getString("venueId"),entry.getString("operationId"))).use {it.moveToFirst()&&JSONObject(it.getString(0)).getString("status") in setOf("accepted","rejected")}
+          if(terminal)db.execSQL("UPDATE outbox SET venue_ack=1 WHERE id=?",arrayOf(row[0]))
+        }
+      }
+      db.setTransactionSuccessful()
+    }finally{db.endTransaction()}
+  }
+  private fun createOutboxIndexes(db:SQLiteDatabase) {
+    db.execSQL("CREATE INDEX IF NOT EXISTS outbox_payload_encoding ON outbox(payload_format)")
+    db.execSQL("CREATE INDEX IF NOT EXISTS outbox_venue_observations ON outbox(kind,venue_observation,venue_ack)")
+  }
+  private fun venueObservation(entry:JSONObject):Int = if(entry.optString("kind")=="observation"&&entry.getJSONObject("payload").optString("operationType") in setOf("SettlementGrant.Use","SettlementGrant.Return","Continuity.CaptureTicket","Continuity.RecordPaymentObservation"))1 else 0
   fun provisionForTest() {
     check(BuildConfig.DEBUG) { "TEST_PROVISIONING_FORBIDDEN" }
     val key=runCatching {DeviceKeys(context)}.getOrNull()
@@ -160,7 +200,7 @@ class JournalDatabase(
       if(oldJournal!=null)require(canonical(JSONObject(oldJournal)).contentEquals(canonical(entry))) {"HANDOFF_JOURNAL_CONFLICT"}
       else {
         db.execSQL("INSERT INTO journal VALUES(?,?,?,?,?,?,?,?,?,?)",arrayOf(entryId,org,venue,device,epoch,sequence,operation,entry.getString("payloadHash"),entry.toString(),signature))
-        db.execSQL("INSERT INTO outbox(id,journal_entry_id,kind,payload_json,cloud_ack,status) VALUES(?,?,?,?,1,'confirmed')",arrayOf(entryId,entryId,"journal",entry.toString()))
+        db.execSQL("INSERT INTO outbox(id,journal_entry_id,kind,payload_json,cloud_ack,status,payload_format,venue_observation) VALUES(?,?,?,?,1,'confirmed','inner',?)",arrayOf(entryId,entryId,"journal",entry.toString(),venueObservation(entry)))
         val events=payload.getJSONArray("events")
         for(eventIndex in 0 until events.length()) {val event=events.getJSONObject(eventIndex);db.execSQL("INSERT OR IGNORE INTO domain_event VALUES(?,?,?,?,?)",arrayOf(org,venue,"$entryId:$eventIndex",event.getString("type"),event.getJSONObject("data").toString()))}
       }
@@ -297,6 +337,14 @@ class JournalDatabase(
         check(localEvidence||pendingIntent||(localId==c.getString(2)&&localEpoch==c.getString(3)&&(c.getInt(4)==0||handoffCompletion))) {"COORDINATOR_FENCED"}
       }
       val reads = batch.optJSONArray("expectedReads") ?: JSONArray()
+      val checkpointTransition=when(command.getString("type")) {
+        "Ownership.Fence","Ownership.Activate" -> true
+        "Maintenance.Enter" -> command.getJSONObject("payload").optString("mode")=="full_shutdown"
+        "Ownership.PrepareHandoff" -> (0 until batch.getJSONArray("mutations").length()).any {batch.getJSONArray("mutations").getJSONObject(it).getJSONObject("newState").optBoolean("cursorComplete",false)}
+        "Maintenance.Prepare" -> (0 until batch.getJSONArray("mutations").length()).any {batch.getJSONArray("mutations").getJSONObject(it).getJSONObject("newState").optJSONArray("missingDevices")?.length()==0}
+        else -> false
+      }
+      if(checkpointTransition)requireFreshDeviceCheckpoints(db,org,venue)
       for (index in 0 until reads.length()) {
         val read = reads.getJSONObject(index);val ref = read.getJSONObject("ref")
         if(ref.getString("kind")=="__scope__") {
@@ -305,10 +353,7 @@ class JournalDatabase(
         } else db.rawQuery("SELECT version FROM aggregate_snapshot WHERE organization_id=? AND venue_id=? AND kind=? AND id=?",arrayOf(org,venue,ref.getString("kind"),ref.getString("id"))).use {
           val current = if(it.moveToFirst())it.getInt(0) else 0
           if(current != read.getInt("expectedVersion"))throw VersionConflict()
-          if(ref.getString("kind")=="device-checkpoint") {
-            val checkpoint=readSnapshot(ref).getJSONObject("state")
-            if(checkpoint.optLong("expiresAtMs",0)<=System.currentTimeMillis())throw VersionConflict()
-          }
+
         }
       }
       val mutations = batch.getJSONArray("mutations")
@@ -366,13 +411,20 @@ class JournalDatabase(
           }
         }
         if(ref.getString("kind")=="grant-return") {
-          require(command.getString("type")=="SettlementGrant.Return" && current==0) { "INVALID_GRANT_RETURN" }
+          val localReturn=command.getString("type")=="SettlementGrant.Return"
+          require((localReturn||command.getString("type")=="Continuity.AcceptSettlementObservation")&&current==0) {"INVALID_GRANT_RETURN"}
           val proof=mutation.getJSONObject("newState")
           val grantRef=JSONObject().put("organizationId",org).put("venueId",venue).put("kind","grant").put("id",proof.getString("grantId"))
           val grant=readSnapshot(grantRef).getJSONObject("state")
           val config=(context.getSystemService(Context.RESTRICTIONS_SERVICE) as RestrictionsManager).applicationRestrictions ?: Bundle.EMPTY
-          require(config.getString("deviceId")==grant.getString("deviceId") && deviceEpochProvider()==grant.getString("deviceEpoch") && command.getString("deviceId")==grant.getString("deviceId") && command.getString("deviceEpoch")==grant.getString("deviceEpoch")) { "GRANT_RETURN_RECIPIENT_REQUIRED" }
-          require(grant.getString("status")=="returned" && grant.getString("returnProofId")==proof.getString("grantId")) { "GRANT_NOT_CLOSED" }
+          if(localReturn)require(config.getString("deviceId")==grant.getString("deviceId") && deviceEpochProvider()==grant.getString("deviceEpoch") && command.getString("deviceId")==grant.getString("deviceId") && command.getString("deviceEpoch")==grant.getString("deviceEpoch")) { "GRANT_RETURN_RECIPIENT_REQUIRED" }
+          else {
+            require(batch.getJSONArray("effects").length()==0) {"SETTLEMENT_OBSERVATION_EFFECT_FORBIDDEN"}
+            verifyObservedReturn(command,proof,grant)
+          }
+          val closed=if(localReturn)grant else (0 until mutations.length()).map {mutations.getJSONObject(it)}.firstOrNull {it.getJSONObject("ref").getString("kind")=="grant"&&it.getJSONObject("ref").getString("id")==proof.getString("grantId")}?.getJSONObject("newState") ?: error("GRANT_CLOSURE_MUTATION_REQUIRED")
+          require(closed.getString("status")=="returned"&&closed.getString("returnProofId")==proof.getString("grantId")&&canonical(grantCapability(closed)).contentEquals(canonical(grantCapability(grant)))) {"GRANT_NOT_CLOSED"}
+          require(!grant.optBoolean("restorationIncomplete",false)&&grant.getString("status") in setOf("issued","partially_used","used","returned")) {"GRANT_RECONCILIATION_REQUIRED"}
           val issuer=db.rawQuery("SELECT public_jwk FROM authority WHERE organization_id=? AND venue_id=?",arrayOf(org,venue)).use {it.moveToFirst();it.getString(0)}
           require(DeviceKeys.verify(issuer,canonical(grantCapability(grant)),DeviceKeys.decode(grant.getString("signature")))) { "GRANT_SIGNATURE_INVALID" }
           val receipts=mutableListOf<JSONObject>()
@@ -382,7 +434,7 @@ class JournalDatabase(
           val receiptHash=MessageDigest.getInstance("SHA-256").digest(JsonCanonicalizer(summaries.toString()).encodedUTF8).joinToString("") {"%02x".format(it)}
           require(proof.getString("organizationId")==org && proof.getString("venueId")==venue && proof.getString("deviceId")==grant.getString("deviceId") && proof.getString("deviceEpoch")==grant.getString("deviceEpoch") && proof.getInt("issuerEpoch")==grant.getInt("issuerEpoch") && proof.getString("spentMinor")==spent.toString() && grant.getString("spentMinor")==spent.toString() && proof.getString("receiptHash")==receiptHash && proof.getJSONArray("receiptIds").toString()==ids.toString()) { "GRANT_RETURN_INVENTORY_MISMATCH" }
           val capability=JSONObject();for(key in listOf("schemaVersion","grantId","organizationId","venueId","deviceId","deviceEpoch","issuerEpoch","spentMinor","receiptIds","receiptHash","returnedAt"))capability.put(key,proof.get(key))
-          proof.put("signature",DeviceKeys.base64(signer(canonical(capability))))
+          if(localReturn)proof.put("signature",DeviceKeys.base64(signer(canonical(capability))))
           for(i in 0 until batch.getJSONArray("events").length()) {val data=batch.getJSONArray("events").getJSONObject(i).getJSONObject("data");if(data.optString("kind")=="grant-return" && data.optString("id")==ref.getString("id"))data.put("state",proof)}
         }
         db.execSQL("INSERT OR REPLACE INTO aggregate_snapshot VALUES(?,?,?,?,?,?)", arrayOf<Any>(org,venue,ref.getString("kind"),ref.getString("id"),current + 1, mutation.getJSONObject("newState").toString()))
@@ -408,7 +460,7 @@ class JournalDatabase(
       val sequence = (previous + BigInteger.ONE).toString()
       db.execSQL("INSERT OR REPLACE INTO producer_counter VALUES(?,?,?)", arrayOf(device,epoch,sequence))
       val entryId = UUID.randomUUID().toString()
-      val payload=JSONObject().put("events",batch.getJSONArray("events")).put("mutations",batch.getJSONArray("mutations")).put("operationType",command.getString("type")).put("commandEnvelope",command).put("commandResult",batch.getJSONObject("result")).put("commandFingerprint",commandFingerprint(command)).put("commandPayloadHash",command.getString("payloadHash"))
+      val payload=JSONObject().put("events",batch.getJSONArray("events")).put("effects",batch.getJSONArray("effects")).put("mutations",batch.getJSONArray("mutations")).put("operationType",command.getString("type")).put("commandEnvelope",command).put("commandResult",batch.getJSONObject("result")).put("commandFingerprint",commandFingerprint(command)).put("commandPayloadHash",command.getString("payloadHash"))
       val mutation=if(mutations.length()>0)mutations.getJSONObject(0) else null
       val timezone=db.rawQuery("SELECT state_json FROM aggregate_snapshot WHERE organization_id=? AND venue_id=? AND kind='venue-layout' AND id='current'",arrayOf(org,venue)).use {if(it.moveToFirst())JSONObject(it.getString(0)).optString("timezone","UTC") else "UTC"}
       val businessDate=java.time.Instant.parse(command.getString("occurredAt")).atZone(java.time.ZoneId.of(timezone)).toLocalDate().toString()
@@ -429,12 +481,12 @@ class JournalDatabase(
         db.execSQL("INSERT INTO domain_event VALUES(?,?,?,?,?)",arrayOf(org,venue,"$operation:$index",event.getString("type"),event.getJSONObject("data").toString()))
       }
       db.execSQL("INSERT INTO audit VALUES(?,?,?)", arrayOf(entryId,command.getString("actorRef"),batch.getJSONArray("events").toString()))
-      db.execSQL("INSERT INTO outbox(id,journal_entry_id,kind,payload_json) VALUES(?,?,?,?)", arrayOf(entryId,entryId,"journal",entry.toString()))
+      db.execSQL("INSERT INTO outbox(id,journal_entry_id,kind,payload_json,payload_format,venue_observation) VALUES(?,?,?,?,'inner',?)", arrayOf(entryId,entryId,"journal",entry.toString(),venueObservation(entry)))
       val effects = batch.getJSONArray("effects")
       require(entry.getString("kind") !in setOf("historical_import","observation") || effects.length()==0) { "HISTORICAL_EFFECT_FORBIDDEN" }
       for (index in 0 until effects.length()) {
         val effect = effects.getJSONObject(index)
-        db.execSQL("INSERT INTO outbox(id,journal_entry_id,kind,payload_json) VALUES(?,?,?,?)", arrayOf(effect.getString("id"),entryId,effect.getString("type"),effect.toString()))
+        db.execSQL("INSERT INTO outbox(id,journal_entry_id,kind,payload_json,payload_format) VALUES(?,?,?,?,'inner')", arrayOf(effect.getString("id"),entryId,effect.getString("type"),effect.getJSONObject("payload").toString()))
       }
       val result = batch.getJSONObject("result")
       db.execSQL("INSERT INTO operation_receipt VALUES(?,?,?,?,?,?,?)", arrayOf(org,venue,operation,payloadHash,result.toString(),sequence,commandFingerprint(command)))
@@ -452,6 +504,46 @@ class JournalDatabase(
       .put("effects",JSONArray().put(JSONObject().put("id",command.getString("operationId")+":intent").put("type","command.intent").put("payload",command))).put("result",result)
     commit(batch);return result
   }
+  private fun requireFreshDeviceCheckpoints(db:SQLiteDatabase,org:String,venue:String) {
+    val now=System.currentTimeMillis()
+    db.rawQuery("SELECT id,state_json FROM aggregate_snapshot WHERE organization_id=? AND venue_id=? AND kind='device'",arrayOf(org,venue)).use {devices->
+      while(devices.moveToNext()) {
+        val device=JSONObject(devices.getString(1));if(device.optString("status")!="active")continue
+        val checkpoint=readSnapshot(JSONObject().put("organizationId",org).put("venueId",venue).put("kind","device-checkpoint").put("id",devices.getString(0))).getJSONObject("state")
+        val expires=checkpoint.optLong("expiresAtMs",0)
+        if(checkpoint.optString("status")!="complete"||checkpoint.optString("deviceEpoch")!=device.optString("deviceEpoch")||checkpoint.optInt("pendingCount",-1)!=0||expires<=now||expires>now+60000)throw VersionConflict()
+        val received=checkpoint.optString("receivedCursor");val applied=checkpoint.optString("appliedCursor");val covered=checkpoint.optString("coveredSequence")
+        if(listOf(received,applied,covered).any {!Regex("0|[1-9][0-9]*").matches(it)}||received!=applied||BigInteger(applied)<BigInteger(covered))throw VersionConflict()
+      }
+    }
+  }
+  private fun verifyObservedReturn(command:JSONObject,proof:JSONObject,grant:JSONObject) {
+    val provenance=proof.getJSONObject("provenance");val entry=provenance.getJSONObject("originalJournal")
+    val org=command.getString("organizationId");val venue=command.getString("venueId")
+    val device=entry.getString("deviceId");val epoch=entry.getString("deviceEpoch")
+    require(command.getString("actorRef")=="settlement-sync"&&entry.getInt("schemaVersion")==1&&entry.getString("kind")=="observation"&&entry.getString("organizationId")==org&&entry.getString("venueId")==venue&&device==grant.getString("deviceId")&&epoch==grant.getString("deviceEpoch")) {"SETTLEMENT_SOURCE_MISMATCH"}
+    val enrolled=readSnapshot(JSONObject().put("organizationId",org).put("venueId",venue).put("kind","device").put("id",device)).getJSONObject("state")
+    require(enrolled.getString("status")=="active"&&enrolled.getString("deviceEpoch")==epoch) {"SETTLEMENT_SOURCE_DEVICE_INVALID"}
+    val key=enrolled.getJSONObject("publicJwk").toString();val unsigned=JSONObject(entry.toString());val signature=unsigned.getString("signature");unsigned.remove("signature")
+    require(DeviceKeys.verify(key,canonical(unsigned),DeviceKeys.decode(signature))) {"SETTLEMENT_SOURCE_SIGNATURE_INVALID"}
+    val payload=entry.getJSONObject("payload")
+    require(payload.getString("operationType")=="SettlementGrant.Return"&&entry.getString("payloadHash")==hash(payload)) {"SETTLEMENT_SOURCE_HASH_MISMATCH"}
+    val source=command.getJSONObject("payload")
+    require(source.getString("sourceEntryId")==entry.getString("entryId")&&source.getString("sourceHash")==entry.getString("payloadHash")&&source.getString("sourceDeviceId")==device&&source.getString("sourceDeviceEpoch")==epoch&&source.getString("sourceSequence")==entry.getString("sequence")&&command.getString("operationId")=="settlement-"+hash(JSONObject().put("entryId",entry.getString("entryId"))).take(32)) {"SETTLEMENT_COMMAND_BINDING_MISMATCH"}
+    for(keyName in listOf("entryId","deviceId","deviceEpoch","sequence","payloadHash","signature"))require(provenance.getString(keyName)==entry.getString(keyName)) {"SETTLEMENT_PROVENANCE_MISMATCH"}
+    val events=payload.getJSONArray("events")
+    fun event(type:String):JSONObject {
+      val matched=(0 until events.length()).map {events.getJSONObject(it)}.filter {it.getString("type")==type}
+      require(matched.size==1) {"SETTLEMENT_EVENT_REQUIRED"};return matched.single().getJSONObject("data")
+    }
+    val recorded=event("SettlementGrantReturnRecorded");val returned=event("SettlementGrantReturned")
+    val originalProof=JSONObject(proof.toString());originalProof.remove("provenance")
+    require(recorded.getString("id")==grant.getString("id")&&recorded.getString("kind")=="grant-return"&&canonical(recorded.getJSONObject("state")).contentEquals(canonical(originalProof))) {"SETTLEMENT_PROOF_MISMATCH"}
+    val closed=returned.getJSONObject("state")
+    require(returned.getString("id")==grant.getString("id")&&returned.getString("kind")=="grant"&&closed.getString("status")=="returned"&&closed.getString("returnProofId")==grant.getString("id")&&canonical(grantCapability(closed)).contentEquals(canonical(grantCapability(grant)))) {"GRANT_DURABLE_RETURN_REQUIRED"}
+    val capability=JSONObject();for(field in listOf("schemaVersion","grantId","organizationId","venueId","deviceId","deviceEpoch","issuerEpoch","spentMinor","receiptIds","receiptHash","returnedAt"))capability.put(field,proof.get(field))
+    require(DeviceKeys.verify(key,canonical(capability),DeviceKeys.decode(proof.getString("signature")))) {"GRANT_RETURN_SIGNATURE_INVALID"}
+  }
   fun recordVenueReceipt(command:JSONObject,result:JSONObject) {
     require(result.getString("operationId")==command.getString("operationId"))
     if(result.getString("status") !in setOf("accepted","rejected"))return
@@ -461,8 +553,27 @@ class JournalDatabase(
       require(receipt(scope,command.getString("operationId"),command.getString("payloadHash"),command)!=null) { "INTENT_NOT_COMMITTED" }
       db.execSQL("UPDATE operation_receipt SET result_json=? WHERE organization_id=? AND venue_id=? AND operation_id=?",arrayOf(result.toString(),command.getString("organizationId"),command.getString("venueId"),command.getString("operationId")))
       db.execSQL("UPDATE outbox SET status='confirmed' WHERE id=? AND kind='command.intent'",arrayOf(command.getString("operationId")+":intent"))
+      db.execSQL("UPDATE outbox SET venue_ack=1 WHERE kind='journal' AND journal_entry_id IN (SELECT entry_id FROM journal WHERE organization_id=? AND venue_id=? AND operation_id=? AND device_id=? AND device_epoch=?)",arrayOf(command.getString("organizationId"),command.getString("venueId"),command.getString("operationId"),command.getString("deviceId"),command.getString("deviceEpoch")))
       db.setTransactionSuccessful()
     } finally { db.endTransaction() }
+  }
+  fun pendingVenueObservations():List<JSONObject> {
+    val config=(context.getSystemService(Context.RESTRICTIONS_SERVICE) as RestrictionsManager).applicationRestrictions ?: Bundle.EMPTY
+    val device=config.getString("deviceId") ?: if(BuildConfig.DEBUG)"device-a" else error("IDENTITY_NOT_PROVISIONED")
+    val epoch=runCatching {deviceEpochProvider()}.getOrElse {if(BuildConfig.DEBUG)"epoch-a" else throw it}
+    val org=config.getString("organizationId") ?: if(BuildConfig.DEBUG)"org-a" else error("IDENTITY_NOT_PROVISIONED")
+    val venue=config.getString("venueId") ?: if(BuildConfig.DEBUG)"venue-a" else error("IDENTITY_NOT_PROVISIONED")
+    return readableDatabase.rawQuery("SELECT j.entry_json FROM outbox o JOIN journal j ON j.entry_id=o.journal_entry_id WHERE o.kind='journal' AND o.venue_ack=0 AND o.venue_observation=1 AND j.organization_id=? AND j.venue_id=? AND j.device_id=? AND j.device_epoch=? ORDER BY o.rowid LIMIT 100",arrayOf(org,venue,device,epoch)).use {c->mutableListOf<JSONObject>().apply {while(c.moveToNext())add(JSONObject(c.getString(0)))}}
+  }
+  fun recordVenueObservationReceipt(entry:JSONObject,result:JSONObject) {
+    require(result.getString("status")=="accepted"&&result.getString("operationId")==entry.getString("operationId")&&result.getString("sourceEntryId")==entry.getString("entryId")&&result.getString("sourceHash")==entry.getString("payloadHash")) {"OBSERVATION_RECEIPT_MISMATCH"}
+    val db=writableDatabase;db.beginTransaction()
+    try {
+      db.rawQuery("SELECT payload_hash FROM journal WHERE entry_id=? AND organization_id=? AND venue_id=? AND device_id=? AND device_epoch=?",arrayOf(entry.getString("entryId"),entry.getString("organizationId"),entry.getString("venueId"),entry.getString("deviceId"),entry.getString("deviceEpoch"))).use {require(it.moveToFirst()&&it.getString(0)==entry.getString("payloadHash")) {"OBSERVATION_RECEIPT_MISMATCH"}}
+      db.execSQL("UPDATE outbox SET venue_ack=1 WHERE journal_entry_id=? AND kind='journal'",arrayOf(entry.getString("entryId")))
+      db.execSQL("DELETE FROM local_dirty WHERE operation_id=?",arrayOf(entry.getString("operationId")))
+      db.setTransactionSuccessful()
+    }finally{db.endTransaction()}
   }
   fun readSnapshot(ref: JSONObject): JSONObject {
     val args = arrayOf(id(ref.getString("organizationId")),id(ref.getString("venueId")),id(ref.getString("kind")),id(ref.getString("id")))
@@ -558,14 +669,28 @@ class JournalDatabase(
     val org=id(bundle.getString("organizationId"));val venue=id(bundle.getString("venueId"));val db=writableDatabase
     db.beginTransaction()
     try {
-      db.rawQuery("SELECT coordinator_epoch,owner_device_id,owner_device_epoch,public_jwk FROM authority WHERE organization_id=? AND venue_id=?",arrayOf(org,venue)).use {
+      var currentPolicy=0
+      db.rawQuery("SELECT coordinator_epoch,owner_device_id,owner_device_epoch,public_jwk,policy_revision FROM authority WHERE organization_id=? AND venue_id=?",arrayOf(org,venue)).use {
         require(it.moveToFirst() && it.getInt(0)==bundle.getInt("coordinatorEpoch") && it.getString(1)==bundle.getString("issuerDeviceId") && it.getString(2)==bundle.getString("issuerDeviceEpoch")) { "PROJECTION_AUTHORITY_MISMATCH" }
         require(DeviceKeys.verify(it.getString(3),canonical(bundle),DeviceKeys.decode(signature))) { "INVALID_PROJECTION_SIGNATURE" }
+        currentPolicy=it.getInt(4)
       }
       db.rawQuery("SELECT revision FROM projection_cursor WHERE organization_id=? AND venue_id=?",arrayOf(org,venue)).use {
         if(it.moveToFirst())require(bundle.getInt("revision")>=it.getInt(0)) { "STALE_PROJECTION" }
       }
       val snapshots=bundle.getJSONArray("snapshots");require(snapshots.length()<=10000)
+      val projected=(0 until snapshots.length()).map {snapshots.getJSONObject(it)}
+      val authorities=projected.filter {it.getJSONObject("ref").optString("kind")=="__scope__"&&it.getJSONObject("ref").optString("id")=="authority"}
+      require(authorities.size==1) {"PROJECTION_AUTHORITY_REQUIRED"}
+      val authority=authorities.single().getJSONObject("state");integer(authority,"policyRevision")
+      val policy=authority.getInt("policyRevision");require(policy>=currentPolicy) {"STALE_POLICY_PROJECTION"}
+      val configuration=projected.filter {it.getJSONObject("ref").optString("kind")=="configuration"&&it.getJSONObject("ref").optString("id")=="applied"}
+      require(configuration.size<=1&&(policy==currentPolicy||configuration.size==1)) {"CONFIGURATION_PROJECTION_REQUIRED"}
+      if(configuration.isNotEmpty()) {
+        val state=configuration.single().getJSONObject("state");integer(state,"revision")
+        require(state.getInt("revision")==policy) {"CONFIGURATION_POLICY_MISMATCH"}
+        db.rawQuery("SELECT 1 FROM local_dirty WHERE kind='configuration' AND id='applied'",null).use {require(!it.moveToFirst()) {"CONFIGURATION_LOCAL_CONFLICT"}}
+      }
       for(index in 0 until snapshots.length()) {
         val snapshot=snapshots.getJSONObject(index);val ref=snapshot.getJSONObject("ref")
         require(ref.getString("organizationId")==org && ref.getString("venueId")==venue) { "PROJECTION_SCOPE_MISMATCH" }
@@ -585,6 +710,7 @@ class JournalDatabase(
         require(version>=existing.getInt("version")) { "STALE_AGGREGATE_PROJECTION" }
         db.execSQL("INSERT OR REPLACE INTO aggregate_snapshot VALUES(?,?,?,?,?,?)",arrayOf<Any>(org,venue,kind,aggregateId,version,state.toString()))
       }
+      db.execSQL("UPDATE authority SET policy_revision=? WHERE organization_id=? AND venue_id=?",arrayOf(policy,org,venue))
       db.execSQL("INSERT OR REPLACE INTO projection_cursor VALUES(?,?,?,?)",arrayOf(org,venue,bundle.getInt("coordinatorEpoch"),bundle.getInt("revision")))
       db.execSQL("UPDATE authority SET snapshot_revision=snapshot_revision+1 WHERE organization_id=? AND venue_id=?",arrayOf(org,venue))
       db.setTransactionSuccessful()
@@ -634,9 +760,9 @@ class JournalDatabase(
           val events=payload.getJSONArray("events")
           for(i in 0 until events.length()){val event=events.getJSONObject(i);db.execSQL("INSERT OR IGNORE INTO domain_event VALUES(?,?,?,?,?)",arrayOf(org,venue,command.getString("operationId")+":"+i,event.getString("type"),event.getJSONObject("data").toString()))}
           db.execSQL("INSERT OR IGNORE INTO audit VALUES(?,?,?)",arrayOf(entryId,entry.getString("actorRef"),events.toString()))
-          db.execSQL("INSERT INTO outbox(id,journal_entry_id,kind,payload_json,cloud_ack,status) VALUES(?,?,?, ?,1,'confirmed')",arrayOf(entryId,entryId,"journal",entry.toString()))
+          db.execSQL("INSERT INTO outbox(id,journal_entry_id,kind,payload_json,cloud_ack,status,payload_format,venue_observation) VALUES(?,?,?, ?,1,'confirmed','inner',?)",arrayOf(entryId,entryId,"journal",entry.toString(),venueObservation(entry)))
           val effects=result.getJSONObject("value").optJSONArray("effects") ?: JSONArray()
-          for(i in 0 until effects.length()){val effect=effects.getJSONObject(i);db.execSQL("INSERT OR IGNORE INTO outbox(id,journal_entry_id,kind,payload_json,status) VALUES(?,?,?,?,'unknown')",arrayOf(effect.getString("id"),entryId,effect.getString("type"),effect.getJSONObject("payload").toString()))}
+          for(i in 0 until effects.length()){val effect=effects.getJSONObject(i);db.execSQL("INSERT OR IGNORE INTO outbox(id,journal_entry_id,kind,payload_json,status,payload_format) VALUES(?,?,?,?,'unknown','inner')",arrayOf(effect.getString("id"),entryId,effect.getString("type"),effect.getJSONObject("payload").toString()))}
           db.execSQL("UPDATE authority SET snapshot_revision=snapshot_revision+1 WHERE organization_id=? AND venue_id=?",arrayOf(org,venue))
           db.execSQL("RELEASE recover_entry");applied++
         } catch(error:Exception) {
