@@ -1,0 +1,9 @@
+{
+  "name": "@mekoniq/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {"./*":"./src/*.ts"},
+  "scripts": {"build":"tsc --noEmit -p ../../tsconfig.json", "typecheck":"tsc --noEmit -p ../../tsconfig.json", "lint":"eslint src"},
+  "dependencies": {"@mekoniq/contracts":"workspace:*"}
+}

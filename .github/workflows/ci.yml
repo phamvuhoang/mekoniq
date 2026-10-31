@@ -1,0 +1,23 @@
+name: platform
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm supabase:start
+      - run: pnpm contracts:check && pnpm typecheck && pnpm lint && pnpm build
+      - run: pnpm test:unit && pnpm test:contracts && pnpm test:integration
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: failures
+          path: test-results/
+      - run: pnpm supabase:stop
+        if: always()

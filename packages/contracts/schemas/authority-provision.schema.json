@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.authority-provision.v1",
+  "title": "SignedAuthorityProvision",
+  "$ref": "mekoniq.wire.v1#/definitions/SignedAuthorityProvision"
+}

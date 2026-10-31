@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.robot-command.v1",
+  "title": "RobotCommand",
+  "$ref": "mekoniq.wire.v1#/definitions/RobotCommand"
+}

@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.commit-batch.v1",
+  "title": "CommitBatch",
+  "$ref": "mekoniq.wire.v1#/definitions/CommitBatch"
+}

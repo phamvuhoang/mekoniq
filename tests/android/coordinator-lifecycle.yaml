@@ -1,0 +1,15 @@
+version: 1
+runner: scripts/android-lab.mjs
+requires:
+  - two_distinct_explicitly_enrolled_test_serials
+  - signed_provisioning_and_pairing
+  - isolated_test_venue
+scenarios:
+  - coordinator_force_stop_peer_retains_durable_intent
+qualification_pending:
+  - two_physical_tablets_same_AP
+  - WAN_off_LAN_on
+  - screen_off_and_Doze
+  - reboot_and_storage_exhaustion
+  - 24_hour_soak
+# Missing qualification inputs fail prerequisites; they are never counted as passed.

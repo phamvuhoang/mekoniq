@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "scope": {
+    "organizationId": "org-a",
+    "venueId": "venue-a"
+  },
+  "menu": {
+    "version": 1,
+    "currency": "VND",
+    "items": [
+      {
+        "id": "rice",
+        "name": "Cơm",
+        "stationId": "kitchen",
+        "unitMinor": "50000",
+        "available": true
+      },
+      {
+        "id": "tea",
+        "name": "Trà",
+        "stationId": "bar",
+        "unitMinor": "20000",
+        "available": true
+      }
+    ]
+  },
+  "stations": [
+    {
+      "id": "kitchen",
+      "name": "Bếp"
+    },
+    {
+      "id": "bar",
+      "name": "Quầy pha chế"
+    },
+    {
+      "id": "wash",
+      "name": "Khu rửa"
+    }
+  ],
+  "tables": [
+    {
+      "id": "table-1",
+      "name": "Bàn 01",
+      "activeSessionId": null
+    },
+    {
+      "id": "table-2",
+      "name": "Bàn 02",
+      "activeSessionId": null
+    }
+  ],
+  "robot": {
+    "id": "sim-1",
+    "driver": "simulator",
+    "validation": "simulated",
+    "capabilities": [
+      "delivery",
+      "bussing",
+      "guide"
+    ],
+    "trays": 2,
+    "maxLoadMinor": "20000",
+    "battery": 100,
+    "minBattery": 20,
+    "availability": "idle",
+    "goalState": "idle",
+    "controlEpoch": 1,
+    "ownerDeviceId": "device-a",
+    "mapId": "restaurant-map",
+    "mapRevision": "1",
+    "parkingPoint": "parking",
+    "offlineExecution": true,
+    "bindings": {
+      "kitchen": {
+        "waypointId": "kitchen",
+        "mapId": "restaurant-map",
+        "mapRevision": "1",
+        "frame": "map",
+        "x": 0,
+        "y": 0,
+        "yaw": 0
+      },
+      "bar": {
+        "waypointId": "bar",
+        "mapId": "restaurant-map",
+        "mapRevision": "1",
+        "frame": "map",
+        "x": 1,
+        "y": 0,
+        "yaw": 0
+      },
+      "wash": {
+        "waypointId": "wash",
+        "mapId": "restaurant-map",
+        "mapRevision": "1",
+        "frame": "map",
+        "x": 2,
+        "y": 0,
+        "yaw": 0
+      },
+      "table-1": {
+        "waypointId": "table-1",
+        "mapId": "restaurant-map",
+        "mapRevision": "1",
+        "frame": "map",
+        "x": 3,
+        "y": 0,
+        "yaw": 0
+      },
+      "table-2": {
+        "waypointId": "table-2",
+        "mapId": "restaurant-map",
+        "mapRevision": "1",
+        "frame": "map",
+        "x": 4,
+        "y": 0,
+        "yaw": 0
+      },
+      "parking": {
+        "waypointId": "parking",
+        "mapId": "restaurant-map",
+        "mapRevision": "1",
+        "frame": "map",
+        "x": 5,
+        "y": 0,
+        "yaw": 0
+      }
+    },
+    "safetyState": "clear"
+  },
+  "configuration": {
+    "revision": 1,
+    "features": {
+      "catalog": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "sessions": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "pos.order": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "orders": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "kitchen": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "fulfillment": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "fleet": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "robot.delivery": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "robot.bussing": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "robot.guide": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "billing": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "cash.shift": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "payment.cash": {
+        "status": "enabled",
+        "revision": 1
+      }
+    },
+    "readiness": {
+      "robot": true
+    }
+  }
+}

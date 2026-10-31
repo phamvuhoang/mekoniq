@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.sync-ack.v1",
+  "title": "SyncAck",
+  "$ref": "mekoniq.wire.v1#/definitions/SyncAck"
+}

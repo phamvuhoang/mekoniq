@@ -1,0 +1,79 @@
+{
+  "startedAt": "2026-10-30T14:11:54.041Z",
+  "scope": {
+    "organizationId": "org-mekoniq-emulator-1b3a7ba1-3efd-4ce1-b2d5-43e5525d25d6",
+    "venueId": "venue-emulator"
+  },
+  "coordinator": "emulator-5580",
+  "peer": "emulator-5582",
+  "status": "passed",
+  "physicalQualification": "not_run",
+  "wallClockSoak": "not_run",
+  "network": "ADB TCP forwarding is transport only; bundled APK owns all business decisions",
+  "steps": [
+    {
+      "stage": "verified-device",
+      "serial": "emulator-5580",
+      "avd": "mekoniq-wave01-test",
+      "api": "33",
+      "model": "sdk_gphone64_arm64"
+    },
+    {
+      "stage": "verified-device",
+      "serial": "emulator-5582",
+      "avd": "mekoniq-wave01-peer",
+      "api": "33",
+      "model": "sdk_gphone64_arm64"
+    },
+    {
+      "stage": "paired-over-real-pinned-TLS",
+      "passed": true
+    },
+    {
+      "stage": "real-domain-session-and-order-with-WAN-unavailable",
+      "responses": [
+        {
+          "status": "accepted",
+          "value": {
+            "sessionId": "session-1b3a7ba1-3efd-4ce1-b2d5-43e5525d25d6"
+          },
+          "duplicate": false,
+          "ack": "venue",
+          "operationId": "open-1b3a7ba1-3efd-4ce1-b2d5-43e5525d25d6"
+        },
+        {
+          "status": "accepted",
+          "value": {
+            "orderId": "order-561d53553101c3ab9c2e5124aa4a107b",
+            "lineIds": [
+              "line-1db0fee2cfba51781f70484d8f11ce1d"
+            ],
+            "sessionId": "session-1b3a7ba1-3efd-4ce1-b2d5-43e5525d25d6"
+          },
+          "duplicate": false,
+          "ack": "venue",
+          "operationId": "order-1b3a7ba1-3efd-4ce1-b2d5-43e5525d25d6"
+        }
+      ]
+    },
+    {
+      "stage": "coordinator-restart-and-real-TLS-retry",
+      "orders": 1,
+      "duplicate": true
+    },
+    {
+      "stage": "transport-partition-keeps-peer-local-pending",
+      "response": {
+        "status": "pending",
+        "code": "OWNER_UNREACHABLE",
+        "ack": "local",
+        "operationId": "isolated-1b3a7ba1-3efd-4ce1-b2d5-43e5525d25d6",
+        "value": {},
+        "duplicate": false
+      },
+      "pending": 4
+    }
+  ],
+  "ownerCertificateFingerprint": "196fac54b7a4d865db45712cbb20d190a8d36ca44c5906e8b0fdeafae5b65b10",
+  "finishedAt": "2026-10-30T14:12:22.525Z"
+}

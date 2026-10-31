@@ -1,5 +1,7 @@
 # Wave 04 — partition, đối soát và nhập bù bảo trì Implementation Plan
 
+> Execution 2026-10-30: phần mềm đã hiện thực trên `feat/w00-w04-production-foundation`. Trạng thái từng task và giới hạn kiểm chứng nằm trong [task index](2026-10-30-plan-index.json) và [verification](../../implementation/verification.md). Gate A chưa được chấp nhận; checklist thiết kế gốc bên dưới không thay thế bằng chứng chạy thử.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Đáp ứng đủ offline LAN, isolated devices và nhập bù sau shutdown.

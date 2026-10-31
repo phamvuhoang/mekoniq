@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.journal.v1",
+  "title": "JournalEntry",
+  "$ref": "mekoniq.wire.v1#/definitions/JournalEntry"
+}

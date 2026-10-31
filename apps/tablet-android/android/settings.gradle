@@ -1,0 +1,6 @@
+pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+rootProject.name = 'MekoniqTablet'
+include ':app', ':capacitor-android'
+def capacitorAndroid = new File(rootDir, '../node_modules/@capacitor/android/capacitor')
+if (!capacitorAndroid.exists()) { capacitorAndroid = new File(rootDir, '../../../node_modules/@capacitor/android/capacitor') }
+project(':capacitor-android').projectDir = capacitorAndroid

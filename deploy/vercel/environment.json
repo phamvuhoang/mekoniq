@@ -1,0 +1,1 @@
+{"runtime":"nodejs24.x","commercialPlanBaseline":"Pro","public":["NEXT_PUBLIC_SUPABASE_URL","NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"],"serverOnly":["DATABASE_URL","SUPABASE_SERVICE_ROLE_KEY","DEVICE_GRANT_PRIVATE_KEY","JOB_HMAC_SECRET"],"databasePool":{"max":1,"prepare":false}}

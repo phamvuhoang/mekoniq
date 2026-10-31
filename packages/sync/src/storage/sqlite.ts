@@ -1,0 +1,1 @@
+export {openStore} from '../store';

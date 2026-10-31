@@ -2,7 +2,7 @@
 
 Nền tảng nhà hàng và robot phục vụ, được thiết kế lại từ bản thử nghiệm `../trial`.
 
-**Trạng thái ngày 2026-10-30: thiết kế đã được người dùng duyệt; đã lập implementation plan gồm 12 wave, 63 task; chưa triển khai mã ứng dụng production.** Các kiểm thử đã chạy là kiểm thử của bản chụp `trial`, không phải chứng nhận cho hệ thống mới.
+**Trạng thái ngày 2026-10-30:** đã hiện thực phần mềm W00–W04 trên branch `feat/w00-w04-production-foundation`. Có Next.js, Supabase local, domain nhà hàng, journal SQLite/PostgreSQL, ứng dụng Android và bộ kiểm thử continuity. Đây chưa phải chứng nhận production hoặc Gate A trên hai tablet thật. Xem [trạng thái và cách chạy](docs/implementation/README.md), [bằng chứng từng task](docs/implementation/evidence/) và [Gate A](docs/implementation/gates/A-continuity.md).
 
 ## Tài liệu trình bày tương tác
 
@@ -32,4 +32,4 @@ Offline phải gồm cả nhiều tablet POS/KDS/robot phối hợp khi còn LAN
 
 Toàn bộ công việc mới nằm trong `source`. Không sửa `trial`, không triển khai vào hệ thống robot đang chạy, không phụ thuộc đợt nâng cấp restaurant feature policy của phiên làm việc khác.
 
-Bước triển khai đầu tiên là [W00-T01: workspace và API lifecycle](docs/superpowers/plans/2026-10-30-wave-00-foundations.md). Mỗi task có file sở hữu, hợp đồng, test, lệnh xác minh và bằng chứng nghiệm thu. Các lệnh trong kế hoạch dành cho giai đoạn triển khai; README sẽ bổ sung lệnh cài đặt/chạy/kiểm thử sau khi có mã ứng dụng thực tế.
+Kế hoạch [W00–W04](docs/superpowers/plans/2026-10-30-production-implementation-plan.md) là nguồn yêu cầu. Trạng thái thực thi nằm trong [index task](docs/superpowers/plans/2026-10-30-plan-index.json); không suy từ mã hoặc kiểm thử phần mềm rằng các gate thiết bị/cloud đã đạt.

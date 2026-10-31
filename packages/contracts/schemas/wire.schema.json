@@ -1,0 +1,1880 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.wire.v1",
+  "title": "WireContract",
+  "anyOf": [
+    {
+      "$ref": "#/definitions/Money"
+    },
+    {
+      "$ref": "#/definitions/Scope"
+    },
+    {
+      "$ref": "#/definitions/AggregateRef"
+    },
+    {
+      "$ref": "#/definitions/JournalKind"
+    },
+    {
+      "$ref": "#/definitions/DomainEvent"
+    },
+    {
+      "$ref": "#/definitions/CommandEnvelope"
+    },
+    {
+      "$ref": "#/definitions/Snapshot"
+    },
+    {
+      "$ref": "#/definitions/CommandResult"
+    },
+    {
+      "$ref": "#/definitions/Decision"
+    },
+    {
+      "$ref": "#/definitions/Mutation"
+    },
+    {
+      "$ref": "#/definitions/EffectIntent"
+    },
+    {
+      "$ref": "#/definitions/CommitBatch"
+    },
+    {
+      "$ref": "#/definitions/CommitReceipt"
+    },
+    {
+      "$ref": "#/definitions/JournalEntry"
+    },
+    {
+      "$ref": "#/definitions/RobotCommand"
+    },
+    {
+      "$ref": "#/definitions/SyncAckEntry"
+    },
+    {
+      "$ref": "#/definitions/SyncAck"
+    },
+    {
+      "$ref": "#/definitions/OfflineGrant"
+    },
+    {
+      "$ref": "#/definitions/SignedOfflineGrant"
+    },
+    {
+      "$ref": "#/definitions/OwnershipGrant"
+    },
+    {
+      "$ref": "#/definitions/AssetManifest"
+    },
+    {
+      "$ref": "#/definitions/SettlementGrantCapability"
+    },
+    {
+      "$ref": "#/definitions/SettlementGrant"
+    },
+    {
+      "$ref": "#/definitions/GrantReturnProof"
+    },
+    {
+      "$ref": "#/definitions/AuthorityProvision"
+    },
+    {
+      "$ref": "#/definitions/SignedAuthorityProvision"
+    },
+    {
+      "$ref": "#/definitions/PairingGrant"
+    },
+    {
+      "$ref": "#/definitions/SignedPairingGrant"
+    }
+  ],
+  "definitions": {
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/JsonValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/JsonValue"
+          }
+        }
+      ]
+    },
+    "JsonObject": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/JsonValue"
+      }
+    },
+    "Money": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "minor"
+      ],
+      "properties": {
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "minor": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,29}|-[1-9][0-9]{0,29})$"
+        }
+      }
+    },
+    "Scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "organizationId",
+        "venueId"
+      ],
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        }
+      }
+    },
+    "AggregateRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "organizationId",
+        "venueId",
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        }
+      }
+    },
+    "JournalKind": {
+      "enum": [
+        "intent",
+        "accepted_fact",
+        "observation",
+        "historical_import"
+      ]
+    },
+    "DomainEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "data": {
+          "$ref": "#/definitions/JsonObject"
+        }
+      }
+    },
+    "CommandEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "organizationId",
+        "venueId",
+        "operationId",
+        "type",
+        "actorRef",
+        "deviceId",
+        "deviceEpoch",
+        "coordinatorEpoch",
+        "policyRevision",
+        "occurredAt",
+        "recordedAt",
+        "payload",
+        "payloadHash"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "operationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "actorRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "coordinatorEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "policyRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "payload": {
+          "$ref": "#/definitions/JsonObject"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "Snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "version",
+        "state"
+      ],
+      "properties": {
+        "ref": {
+          "$ref": "#/definitions/AggregateRef"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "state": {
+          "$ref": "#/definitions/JsonObject"
+        }
+      }
+    },
+    "CommandResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "value",
+        "duplicate",
+        "ack",
+        "operationId"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "pending",
+            "unknown"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "value": {
+          "$ref": "#/definitions/JsonObject"
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "ack": {
+          "enum": [
+            "none",
+            "local",
+            "venue",
+            "cloud"
+          ]
+        },
+        "operationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        }
+      }
+    },
+    "Decision": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "events",
+            "value"
+          ],
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "events": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DomainEvent"
+              }
+            },
+            "value": {
+              "$ref": "#/definitions/JsonObject"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "code"
+          ],
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "code": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\s\\x00-\\x1f]+$"
+            },
+            "details": {
+              "$ref": "#/definitions/JsonObject"
+            }
+          }
+        }
+      ]
+    },
+    "Mutation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "expectedVersion",
+        "newState"
+      ],
+      "properties": {
+        "ref": {
+          "$ref": "#/definitions/AggregateRef"
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "newState": {
+          "$ref": "#/definitions/JsonObject"
+        }
+      }
+    },
+    "EffectIntent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "payload": {
+          "$ref": "#/definitions/JsonObject"
+        }
+      }
+    },
+    "CommitBatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command",
+        "expectedAuthority",
+        "mutations",
+        "events",
+        "effects",
+        "result"
+      ],
+      "properties": {
+        "command": {
+          "$ref": "#/definitions/CommandEnvelope"
+        },
+        "expectedAuthority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "coordinatorEpoch",
+            "policyRevision"
+          ],
+          "properties": {
+            "coordinatorEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "policyRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "mutations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Mutation"
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DomainEvent"
+          }
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EffectIntent"
+          }
+        },
+        "result": {
+          "$ref": "#/definitions/CommandResult"
+        },
+        "expectedReads": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "expectedVersion"
+            ],
+            "properties": {
+              "ref": {
+                "$ref": "#/definitions/AggregateRef"
+              },
+              "expectedVersion": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            }
+          }
+        }
+      }
+    },
+    "CommitReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result",
+        "duplicate",
+        "sequence",
+        "payloadHash",
+        "committed"
+      ],
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/CommandResult"
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "sequence": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 30
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "committed": {
+          "const": true
+        }
+      }
+    },
+    "JournalEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "entryId",
+        "operationId",
+        "organizationId",
+        "venueId",
+        "deviceId",
+        "deviceEpoch",
+        "sequence",
+        "coordinatorEpoch",
+        "aggregateType",
+        "aggregateId",
+        "expectedVersion",
+        "resultingVersion",
+        "kind",
+        "occurredAt",
+        "recordedAt",
+        "timezone",
+        "businessDate",
+        "clockConfidence",
+        "actorRef",
+        "payload",
+        "payloadHash",
+        "signature"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "operationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "sequence": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 30
+        },
+        "coordinatorEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "aggregateType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "aggregateId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "resultingVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "kind": {
+          "$ref": "#/definitions/JournalKind"
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "businessDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "clockConfidence": {
+          "enum": [
+            "trusted",
+            "uncertain",
+            "unknown"
+          ]
+        },
+        "actorRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "grantRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "payload": {
+          "$ref": "#/definitions/JsonObject"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        },
+        "attachmentRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\\s\\x00-\\x1f]+$"
+          }
+        }
+      }
+    },
+    "RobotCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "operationId",
+        "organizationId",
+        "venueId",
+        "robotId",
+        "missionId",
+        "stopId",
+        "missionRevision",
+        "controlEpoch",
+        "issuerDeviceId",
+        "issuedAt",
+        "expiresAt",
+        "target",
+        "limits"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "operationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "robotId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "missionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "stopId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "missionRevision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "controlEpoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "issuerDeviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "target": {
+          "$ref": "#/definitions/JsonObject"
+        },
+        "limits": {
+          "$ref": "#/definitions/JsonObject"
+        }
+      }
+    },
+    "SyncAckEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryId",
+        "organizationId",
+        "venueId",
+        "deviceId",
+        "deviceEpoch",
+        "sequence",
+        "payloadHash",
+        "status"
+      ],
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "sequence": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 30
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "status": {
+          "enum": [
+            "applied",
+            "quarantined",
+            "pending",
+            "rejected"
+          ]
+        }
+      }
+    },
+    "SyncAck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "organizationId",
+        "venueId",
+        "deviceId",
+        "deviceEpoch",
+        "receivedCursor",
+        "appliedCursor",
+        "entries"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "receivedCursor": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "maxLength": 30
+        },
+        "appliedCursor": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "maxLength": 30
+        },
+        "entries": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/definitions/SyncAckEntry"
+          }
+        }
+      }
+    },
+    "OfflineGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "organizationId",
+        "venueId",
+        "actorRef",
+        "deviceId",
+        "deviceEpoch",
+        "permissions",
+        "coordinatorEpoch",
+        "issuedAt",
+        "expiresAt",
+        "nonce"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "actorRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "permissions": {
+          "type": "array",
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\\s\\x00-\\x1f]+$"
+          }
+        },
+        "coordinatorEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "stationIds": {
+          "type": "array",
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\\s\\x00-\\x1f]+$"
+          }
+        }
+      }
+    },
+    "SignedOfflineGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "payload",
+        "signature"
+      ],
+      "properties": {
+        "payload": {
+          "$ref": "#/definitions/OfflineGrant"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      }
+    },
+    "OwnershipGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "organizationId",
+        "venueId",
+        "resourceId",
+        "deviceId",
+        "deviceEpoch",
+        "epoch",
+        "issuedAt",
+        "nonce",
+        "proofHash"
+      ],
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "resourceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "proofHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "AssetManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "organizationId",
+        "venueId",
+        "kind",
+        "objectPath",
+        "expectedBytes",
+        "mime",
+        "expectedHash",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "objectPath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "expectedBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20971520
+        },
+        "mime": {
+          "enum": [
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "application/pdf",
+            "text/csv",
+            "application/json"
+          ]
+        },
+        "expectedHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "ready",
+            "missing",
+            "rejected"
+          ]
+        }
+      }
+    },
+    "SettlementGrantCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "id",
+        "organizationId",
+        "venueId",
+        "billId",
+        "billVersion",
+        "billSnapshotHash",
+        "deviceId",
+        "deviceEpoch",
+        "issuerDeviceId",
+        "issuerDeviceEpoch",
+        "issuerEpoch",
+        "nonce",
+        "currency",
+        "amountMinor",
+        "methods",
+        "issuedAt",
+        "expiresAt",
+        "expiresAtMs"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "billId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "billVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "billSnapshotHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "issuerDeviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "issuerDeviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "issuerEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "amountMinor": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,29})$"
+        },
+        "methods": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "const": "cash"
+          }
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "expiresAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "SettlementGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "id",
+        "organizationId",
+        "venueId",
+        "billId",
+        "billVersion",
+        "billSnapshotHash",
+        "deviceId",
+        "deviceEpoch",
+        "issuerDeviceId",
+        "issuerDeviceEpoch",
+        "issuerEpoch",
+        "nonce",
+        "currency",
+        "amountMinor",
+        "methods",
+        "issuedAt",
+        "expiresAt",
+        "expiresAtMs",
+        "spentMinor",
+        "status",
+        "signature"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "billId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "billVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "billSnapshotHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "issuerDeviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "issuerDeviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "issuerEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "amountMinor": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,29})$"
+        },
+        "methods": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "const": "cash"
+          }
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "expiresAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "spentMinor": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,29})$"
+        },
+        "status": {
+          "enum": [
+            "issued",
+            "partially_used",
+            "used",
+            "unknown",
+            "returned",
+            "reconciled"
+          ]
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        },
+        "returnProofId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "evidenceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "reconciledBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "reconciledAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        }
+      }
+    },
+    "GrantReturnProof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "grantId",
+        "organizationId",
+        "venueId",
+        "deviceId",
+        "deviceEpoch",
+        "issuerEpoch",
+        "spentMinor",
+        "receiptIds",
+        "receiptHash",
+        "returnedAt",
+        "signature"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "grantId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "issuerEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "spentMinor": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,29})$"
+        },
+        "receiptIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\\s\\x00-\\x1f]+$"
+          },
+          "maxItems": 10000
+        },
+        "receiptHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "returnedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      }
+    },
+    "AuthorityProvision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "organizationId",
+        "venueId",
+        "deviceEpoch",
+        "coordinatorEpoch",
+        "policyRevision",
+        "ownerDeviceId",
+        "ownerDeviceEpoch",
+        "publicJwk",
+        "expiresAt"
+      ],
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "coordinatorEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "policyRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "ownerDeviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "ownerDeviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "publicJwk": {
+          "$ref": "#/definitions/JsonObject"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "previousCoordinatorEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "handoffId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "fencingProofs": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/definitions/JsonObject"
+          }
+        },
+        "handoffSnapshots": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": {
+            "$ref": "#/definitions/Snapshot"
+          }
+        },
+        "handoffEntries": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/definitions/JournalEntry"
+          }
+        },
+        "handoffProducerKeys": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "deviceId",
+              "deviceEpoch",
+              "publicJwk"
+            ],
+            "properties": {
+              "deviceId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "deviceEpoch": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "publicJwk": {
+                "$ref": "#/definitions/JsonObject"
+              }
+            }
+          }
+        },
+        "handoffReceiptsComplete": {
+          "const": true
+        },
+        "handoffReceiptCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        }
+      }
+    },
+    "SignedAuthorityProvision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grant",
+        "signature"
+      ],
+      "properties": {
+        "grant": {
+          "$ref": "#/definitions/AuthorityProvision"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      }
+    },
+    "PairingGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "organizationId",
+        "venueId",
+        "deviceId",
+        "deviceEpoch",
+        "actorRef",
+        "permissions",
+        "stationIds",
+        "expiresAt",
+        "publicJwk",
+        "certificateFingerprint"
+      ],
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "venueId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "deviceEpoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "actorRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\s\\x00-\\x1f]+$"
+        },
+        "permissions": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\\s\\x00-\\x1f]+$"
+          }
+        },
+        "stationIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\\s\\x00-\\x1f]+$"
+          }
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "publicJwk": {
+          "$ref": "#/definitions/JsonObject"
+        },
+        "certificateFingerprint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "SignedPairingGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grant",
+        "signature"
+      ],
+      "properties": {
+        "grant": {
+          "$ref": "#/definitions/PairingGrant"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      }
+    }
+  }
+}

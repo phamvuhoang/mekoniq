@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-30",
+  "jvm": {
+    "tests": 17,
+    "failures": 0,
+    "suites": {
+      "NativeStoreTest": 12,
+      "ProvisioningTest": 2,
+      "ArchiveTest": 1,
+      "RuntimeQueueTest": 2
+    }
+  },
+  "instrumentation": {
+    "api": 33,
+    "tests": 6,
+    "failures": 0,
+    "elapsedSeconds": 47.402,
+    "suites": {
+      "DeviceIdentityTest": 2,
+      "JournalAtomicityTest": 3,
+      "RuntimeLifecycleTest": 1
+    }
+  },
+  "signatureInterop": {
+    "androidVectors": 5,
+    "nodeVerified": 5,
+    "pythonVerified": 5
+  },
+  "releaseApk": {
+    "path": "apps/tablet-android/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+    "sha256": "3bd900fef67925d15693ff531ae3262012a89a6e5fd5819f5ca4c2d20333e13f",
+    "signed": false,
+    "debugReceiverPresent": false
+  },
+  "pairedJourney": "W01-two-emulator.json",
+  "physicalQualification": "not_run",
+  "soak24Hours": "not_run",
+  "pairedCheckpointExchange": "implemented_not_exercised",
+  "finalBuild": {
+    "command": ":app:testDebugUnitTest :app:assembleRelease :app:assembleDebug :app:assembleDebugAndroidTest",
+    "status": "passed",
+    "elapsedSeconds": 1,
+    "dependencies": "clean pnpm workspace install; no temporary Capacitor symlink",
+    "assetOrder": "after final pnpm build and Capacitor sync"
+  },
+  "handoffRegression": {
+    "status": "passed_native_sqlite_jvm",
+    "checks": [
+      "preparing replacement becomes verified active owner",
+      "receipt inventory mismatch rolls back authority and journal writes",
+      "original accepted command retry is duplicate with unchanged journal count",
+      "no live effects replayed",
+      "cloud device inventory v1 preserves native paired device v4 and metadata",
+      "fresh peer checkpoints required after install"
+    ]
+  },
+  "handoffTwoPeerRepeat": "not_run_after_final_handoff_fix"
+}
