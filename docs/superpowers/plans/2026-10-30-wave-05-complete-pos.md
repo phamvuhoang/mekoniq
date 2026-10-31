@@ -49,7 +49,7 @@
 - Consumes: Exact money allocateMinor, menu version, tax/service profiles.
 - Produces: `quoteOrder(input):Quote`; normalized immutable charge lines có order-of-operations explicit.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -62,9 +62,9 @@ test("discount cents remain conserved across a three-way split", () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:unit -- tests/unit/pricing.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:unit -- tests/unit/pricing.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Modifier min/max selection, size price, sold-out/time availability; discount trước/sau tax là profile versioned, không suy luật thuế. Basis points integer; rounding half-up positive, reversals reference exact original allocations.
+- [x] **3. Hiện thực phần cốt lõi.** Modifier min/max selection, size price, sold-out/time availability; discount trước/sau tax là profile versioned, không suy luật thuế. Basis points integer; rounding half-up positive, reversals reference exact original allocations.
 
 ```ts
 export function quoteTaxExclusive(baseMinor:string, rateBps:number) {
@@ -73,11 +73,11 @@ export function quoteTaxExclusive(baseMinor:string, rateBps:number) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** UI preview/server re-quote bằng same policy revision. Snapshot modifier names/prices/tax/service calculation trên order và prepared bill; changing menu không recompute lịch sử.
+- [x] **4. Nối vào runtime và lưu trữ.** UI preview/server re-quote bằng same policy revision. Snapshot modifier names/prices/tax/service calculation trên order và prepared bill; changing menu không recompute lịch sử.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:unit -- tests/unit/pricing.test.ts`; kỳ vọng PASS. Tax inclusive/exclusive, zero-price modifier, currencies mismatch, repeated coupon allocations, availability crossing day/timezone, stale cart explicit re-confirm. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:unit -- tests/unit/pricing.test.ts`; kỳ vọng PASS. Tax inclusive/exclusive, zero-price modifier, currencies mismatch, repeated coupon allocations, availability crossing day/timezone, stale cart explicit re-confirm. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: price configurable restaurant menus without rounding loss"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: price configurable restaurant menus without rounding loss"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W05-T02: Chuyển/gộp bàn và amendment xuống bếp
 

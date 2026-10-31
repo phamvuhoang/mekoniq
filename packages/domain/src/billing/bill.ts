@@ -2,6 +2,7 @@ import type { ModuleRegistry } from '../modules';
 import type { JsonObject } from '../../../contracts/src/index';
 import { all, amount, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
 import { dueMinor } from './settlement';
+import { pricingRevisions, summarize } from '../pricing/quote';
 export function registerBills(registry:ModuleRegistry):void {
  handle(registry,'Bill.Prepare',(c,s)=>{
   const session=requireState(s,'session',text(c.payload.sessionId));
@@ -15,7 +16,7 @@ export function registerBills(registry:ModuleRegistry):void {
   const billId=c.payload.billId ? text(c.payload.billId) : stableId('bill',c);
   if(find(s,'bill',billId)) return fail('BILL_EXISTS');
   const lines=orders.flatMap(o=>(o.state.lines ?? []) as JsonObject[]);
-  return done([created('BillPrepared','bill',billId,{sessionId:session.ref.id,tableId:session.state.tableId!,currency:String(orders[0]!.state.currency),totalMinor:total,paidMinor:'0',refundedMinor:'0',status:'prepared',orderIds:orders.map(o=>o.ref.id),lines,preparedAt:c.recordedAt}),changed('SessionBillFrozen',session,{frozenBillId:billId}),...orders.map(o=>changed('OrderBilled',o,{status:'billed',billId}))],{billId,totalMinor:total,currency:String(orders[0]!.state.currency)});
+  return done([created('BillPrepared','bill',billId,{sessionId:session.ref.id,tableId:session.state.tableId!,currency:String(orders[0]!.state.currency),totalMinor:total,paidMinor:'0',refundedMinor:'0',status:'prepared',orderIds:orders.map(o=>o.ref.id),lines,summary:summarize(lines),pricingRevisions:pricingRevisions(lines),preparedAt:c.recordedAt}),changed('SessionBillFrozen',session,{frozenBillId:billId}),...orders.map(o=>changed('OrderBilled',o,{status:'billed',billId}))],{billId,totalMinor:total,currency:String(orders[0]!.state.currency)});
  });
  handle(registry,'Bill.Close',(c,s)=>{
   const bill=requireState(s,'bill',text(c.payload.billId)); expectVersion(c,bill);

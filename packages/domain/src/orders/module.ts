@@ -1,7 +1,7 @@
 import type { ModuleRegistry } from '../modules';
 import type { JsonObject } from '../../../contracts/src/index';
 import { currentMenu } from '../catalog/menu';
-import { quote } from '../catalog/price-book';
+import { quoteForCommand, summarize } from '../pricing/quote';
 import { assertMutableOrder, lineReferences } from './order';
 import { newOrderLines, sessionForOrder } from './commands';
 import { amount, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
@@ -13,10 +13,10 @@ export function registerOrders(registry:ModuleRegistry):void {
   if(c.payload.tableId!==session.state.tableId) return fail('TABLE_SESSION_MISMATCH');
   const menu=currentMenu(s);
   if(c.payload.menuVersion!==menu.state.version) return fail('STALE_QUOTE');
-  const quoted=quote(menu,c.payload), orderId=c.payload.orderId ? text(c.payload.orderId) : stableId('order',c);
+  const quoted=quoteForCommand(c,s), orderId=c.payload.orderId ? text(c.payload.orderId) : stableId('order',c);
   if(find(s,'order',orderId)) return fail('ORDER_EXISTS');
   const materialized=newOrderLines(c,quoted.lines as JsonObject[],orderId,sessionId);
-  const state={sessionId,tableId:session.state.tableId!,menuVersion:menu.state.version!,currency:quoted.currency!,lines:materialized.lines,totalMinor:quoted.totalMinor!,status:'open',policyRevision:c.policyRevision,occurredAt:c.occurredAt};
+  const state={sessionId,tableId:session.state.tableId!,menuVersion:menu.state.version!,currency:quoted.currency!,lines:materialized.lines,totalMinor:quoted.totalMinor,summary:summarize(materialized.lines),status:'open',policyRevision:c.policyRevision,occurredAt:c.occurredAt};
   return done([created('OrderAccepted','order',orderId,state),changed('SessionOrderAdded',session,{orderIds:[...((session.state.orderIds ?? []) as string[]),orderId]}),...materialized.events],{orderId,lineIds:materialized.lines.map(l=>l.id),sessionId});
  });
  handle(registry,'Order.Amend',(c,s)=>{
@@ -25,11 +25,11 @@ export function registerOrders(registry:ModuleRegistry):void {
   if(session.state.status!=='open' || session.state.frozenBillId) return fail('SESSION_FROZEN');
   const menu=currentMenu(s);
   if(c.payload.menuVersion!==undefined && c.payload.menuVersion!==menu.state.version) return fail('STALE_QUOTE');
-  const quoted=quote(menu,c.payload);
+  const quoted=quoteForCommand(c,s);
   if(quoted.currency!==order.state.currency) return fail('CURRENCY_MISMATCH');
   const materialized=newOrderLines(c,quoted.lines as JsonObject[],order.ref.id,String(order.state.sessionId));
-  const total=amount(String(BigInt(String(order.state.totalMinor))+BigInt(String(quoted.totalMinor))));
-  return done([changed('OrderAmended',order,{lines:[...lineReferences(order.state),...materialized.lines],totalMinor:total}),changed('SessionOrderAmended',session,{}),...materialized.events],{orderId:order.ref.id,lineIds:materialized.lines.map(l=>l.id)});
+  const total=amount(String(BigInt(String(order.state.totalMinor))+BigInt(String(quoted.totalMinor)))), lines=[...lineReferences(order.state),...materialized.lines];
+  return done([changed('OrderAmended',order,{lines,totalMinor:total,summary:summarize(lines)}),changed('SessionOrderAmended',session,{}),...materialized.events],{orderId:order.ref.id,lineIds:materialized.lines.map(l=>l.id)});
  });
  handle(registry,'Order.Cancel',(c,s)=>{
   const order=requireState(s,'order',text(c.payload.orderId)); expectVersion(c,order); assertMutableOrder(order.state);

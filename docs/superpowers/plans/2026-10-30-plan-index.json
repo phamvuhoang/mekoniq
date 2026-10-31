@@ -361,7 +361,8 @@
       "depends": "W03-T01, W00-T03",
       "testFile": "tests/unit/pricing.test.ts",
       "testCommand": "pnpm test:unit -- tests/unit/pricing.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T01.md"
     },
     {
       "wave": "W05",
