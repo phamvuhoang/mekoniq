@@ -1,8 +1,8 @@
 import {featureRegistry,validateDependencies,type FeatureConfig} from './registry';
 const profiles: Record<string,string[]> = {
   'trial-service':['fleet','fulfillment','robot.delivery','robot.bussing'],
-  'cash-only':['catalog','sessions','pos.order','orders','kitchen','fulfillment','billing','cash.shift','payment.cash'],
-  'no-robot':['catalog','sessions','pos.order','orders','kitchen','fulfillment','billing','cash.shift','payment.cash','reporting'],
+  'cash-only':['catalog','sessions','pos.order','orders','kitchen','fulfillment','billing','cash.shift','payment.cash','discount'],
+  'no-robot':['catalog','sessions','pos.order','orders','kitchen','fulfillment','billing','cash.shift','payment.cash','reporting','discount'],
   'robot-only':['fleet','fulfillment','robot.delivery','robot.bussing'],
 };
 export function preset(name:string,flags:Record<string,boolean>={}) {

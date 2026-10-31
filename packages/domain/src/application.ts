@@ -1,4 +1,4 @@
-import type {CommandEnvelope,Scope} from '../../contracts/src/index';
+import type {CommandEnvelope,JsonObject,Scope} from '../../contracts/src/index';
 import {ModuleRegistry} from './modules';
 import {registerRestaurantModules,commandPermissions} from './restaurant';
 import {registerContinuityModules,continuityHandlers} from './continuity/module';
@@ -11,6 +11,14 @@ export const productionPermissions:Record<string,string>={...commandPermissions,
    ['Continuity.CaptureTicket','Continuity.RecordPaymentObservation'].includes(type)?'continuity.capture':
    ['SettlementGrant.Use','SettlementGrant.Return'].includes(type)?'payment.cash':type.startsWith('Import.')?'continuity.import.approve':'continuity.resolve']))
 };
+/** Commands whose payload may carry coupons; carrying any needs discount.apply on top of the per-type permission. */
+const couponCommands=new Set(['Catalog.Quote','Order.Place','Order.Amend']);
+export function requiredPermissions(type:string,payload:JsonObject):string[] {
+ const base=productionPermissions[type];
+ if(!base)return [];
+ const ids=payload.discountIds;
+ return couponCommands.has(type)&&ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?[base,'discount.apply']:[base];
+}
 export function createProductionRegistry() {
  const registry=new ModuleRegistry();registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);registerLayout(registry);return registry;
 }
@@ -20,8 +28,8 @@ export function authorizeVenueCommand(principal:Principal,command:CommandEnvelop
  if(principal.id!==command.actorRef||principal.deviceId!==command.deviceId||principal.scope.organizationId!==command.organizationId||principal.scope.venueId!==command.venueId)return false;
  const capture=['Continuity.CaptureTicket','Continuity.RecordPaymentObservation'].includes(command.type);
  if(nowMs>=principal.expiresAtMs&&!capture)return false;
- const permission=productionPermissions[command.type];
- if(!permission||(!principal.permissions.includes('*')&&!principal.permissions.includes(permission)))return false;
+ const needed=requiredPermissions(command.type,command.payload);
+ if(!needed.length||!needed.every(permission=>principal.permissions.includes('*')||principal.permissions.includes(permission)))return false;
  if(command.type.startsWith('Kitchen.')&&!principal.permissions.includes('*')&&!principal.stationIds.includes(String(command.payload.stationId)))return false;
  return true;
 }

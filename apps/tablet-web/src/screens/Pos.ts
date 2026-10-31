@@ -13,7 +13,8 @@ export function Pos(c:ScreenContext) {
  table.input.addEventListener('change',()=>{draft.tableId=table.input.value;});
  const cart=el('div',undefined,'cart'),grid=el('div',undefined,'menu-grid'),chooser=el('div',undefined,'modifier-chooser'),quoteBox=el('div',undefined,'server-quote');
  const items=(Array.isArray(menu?.state.items)?menu.state.items:[]) as JsonObject[];
- const coupons=((menu?.state.pricing as JsonObject|undefined)?.discounts??[]) as JsonObject[];
+ const mayDiscount=c.session.permissions.includes('*')||c.session.permissions.includes('discount.apply');
+ const coupons=(mayDiscount?((menu?.state.pricing as JsonObject|undefined)?.discounts??[]):[]) as JsonObject[]; // the server enforces discount.apply and the discount feature; hiding is only UX
  const payload=(extra:JsonObject={}):JsonObject=>({tableId:table.input.value,menuVersion:menu?.state.version??0,items:draft.lines.map(l=>({itemId:l.itemId,quantity:l.quantity,...(l.modifiers.length?{modifiers:l.modifiers}:{})})),...(draft.discountIds.length?{discountIds:draft.discountIds}:{}),...extra});
  const changeCart=()=>{draft.quote=undefined;draft.operationId=crypto.randomUUID();renderCart();};
  const noteStale=(code?:string)=>{if(code!=='STALE_QUOTE')return false;draft.stale=true;draft.operationId=crypto.randomUUID();c.notify(tr(c,'Thực đơn đã thay đổi. Kiểm tra giỏ rồi bấm "Tính giá" để xác nhận lại.','The menu changed. Review the cart and press "Get price" to re-confirm.'),true);return true;};

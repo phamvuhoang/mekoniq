@@ -172,6 +172,10 @@
         "status": "enabled",
         "revision": 1
       },
+      "discount": {
+        "status": "enabled",
+        "revision": 1
+      },
       "billing": {
         "status": "enabled",
         "revision": 1

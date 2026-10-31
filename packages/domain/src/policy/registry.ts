@@ -12,6 +12,7 @@ export const featureRegistry: Record<string,FeatureDefinition> = {
   'robot.delivery':{id:'robot.delivery',group:'F08',dependencies:['fleet','fulfillment'],permission:'mission.write',readiness:'robot'},
   'robot.bussing':{id:'robot.bussing',group:'F08',dependencies:['fleet'],permission:'mission.write',readiness:'robot'},
   'fleet':{id:'fleet',group:'F09',dependencies:[],permission:'mission.write'},
+  'discount':{id:'discount',group:'F10',dependencies:['catalog'],permission:'discount.apply'},
   'billing':{id:'billing',group:'F10',dependencies:['orders'],permission:'billing.write'},
   'payment.cash':{id:'payment.cash',group:'F11',dependencies:['billing','cash.shift'],permission:'payment.cash'},
   'payment.transfer':{id:'payment.transfer',group:'F11',dependencies:['billing'],permission:'payment.verify',readiness:'bank'},

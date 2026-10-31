@@ -1,5 +1,5 @@
 import type {CommandEnvelope,CommandResult} from '../../../../../../packages/contracts/generated/wire';
-import {productionPermissions} from '../../../../../../packages/domain/src/application';
+import {requiredPermissions} from '../../../../../../packages/domain/src/application';
 import {hashPayload} from '../../../../../../packages/contracts/src/canonical';
 import {signGrant,configuredGrantSigner} from '../devices/grants';
 import {rolePermissions} from '../identity/rbac';
@@ -9,7 +9,7 @@ import {requirePermission,type Actor} from '../identity/rbac';
 import {validateOwnership} from '../devices/ownership';
 export async function enqueueRelay(actor:Actor,command:CommandEnvelope,expiresAt:string){
  validateEnvelope(command);requirePermission(actor,'relay.write',command);
- const commandPermission=productionPermissions[command.type];if(!commandPermission)throw new Error('UNKNOWN_COMMAND');requirePermission(actor,commandPermission,command);
+ const needed=requiredPermissions(command.type,command.payload);if(!needed.length)throw new Error('UNKNOWN_COMMAND');for(const permission of needed)requirePermission(actor,permission,command);
  if(actor.deviceId?(command.deviceId!==actor.deviceId||command.deviceEpoch!==actor.deviceEpoch):(command.deviceId!=='cloud-web'||command.deviceEpoch!=='cloud-web-v1'))throw new Error('SOURCE_DEVICE_MISMATCH');
  if(command.actorRef!==actor.id)throw new Error('ACTOR_MISMATCH');
  const expiry=Date.parse(expiresAt);
@@ -35,10 +35,10 @@ export async function pendingRelay(actor:Actor,scope:TenantScope){
   const commands=[];
   for(const row of rows){
    const command=row.command as CommandEnvelope;
-   const permission=productionPermissions[command.type];
+   const needed=requiredPermissions(command.type,command.payload);
    const member=/^[0-9a-f-]{36}$/i.test(command.actorRef)?(await sql`SELECT role,station_ids FROM venue_membership WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND user_id=${command.actorRef}::uuid AND active`)[0]:undefined;
    const permissions=member?rolePermissions(member.role):[];
-   const receiptOnly=Date.parse(row.expires_at)<=Date.now()||row.status==='unknown'||!permission||(!permissions.includes('*')&&!permissions.includes(permission));
+   const receiptOnly=Date.parse(row.expires_at)<=Date.now()||row.status==='unknown'||!needed.length||!needed.every(permission=>permissions.includes('*')||permissions.includes(permission));
    const nowMs=Date.now();const payload={schemaVersion:1,...scope,recipientDeviceId:actor.deviceId,recipientDeviceEpoch:actor.deviceEpoch!,coordinatorEpoch:Number(owner.epoch),commandHash:hashPayload({...command}),actorRef:command.actorRef,deviceId:command.deviceId,deviceEpoch:command.deviceEpoch,permissions:receiptOnly?[]:permissions,stationIds:receiptOnly?[]:member?.station_ids??[],receiptOnly,issuedAt:new Date(nowMs).toISOString(),expiresAt:new Date(receiptOnly?nowMs+60000:Math.min(Date.parse(row.expires_at),nowMs+60000)).toISOString()};
    const signed=signGrant(payload,signer);
    commands.push({command,expiresAt:row.expires_at,authorization:{grant:signed.payload,signature:signed.signature}});

@@ -3,7 +3,7 @@ import { canonicalMinor } from '../shared/money';
 import { currentMenu } from '../catalog/menu';
 import { availableAt } from '../catalog/availability';
 import { resolveModifiers } from '../catalog/modifier';
-import { fail, find, quantity, record, records, text } from '../restaurant-context';
+import { fail, find, quantity, record, records, requireFeature, text } from '../restaurant-context';
 import { allocateDiscounts, validatedDiscounts } from './discount';
 import { extractTaxInclusive, quoteTaxExclusive } from './tax';
 export type Quote = JsonObject & { menuVersion: number; currency: string; lines: JsonObject[]; totalMinor: string };
@@ -59,6 +59,9 @@ export function quoteOrder(i: QuoteInput): Quote {
   const ids = i.discountIds === undefined ? [] : Array.isArray(i.discountIds) && i.discountIds.length <= 10 ? i.discountIds.map(d => text(d)) : fail('INVALID_DISCOUNT');
   if (new Set(ids).size !== ids.length) return fail('DUPLICATE_DISCOUNT');
   const coupons = ids.map(id => (profile.discounts as JsonObject[]).find(d => d.id === id) ?? fail('DISCOUNT_NOT_FOUND'));
+  // Coupons always work on the pre-tax, pre-service gross (percent base = remaining eligible gross, capped at it) so tax/service
+  // are never an input to a discount. before_tax: service and tax are then computed on gross - discount.
+  // after_tax: service and tax are computed on the full gross and the discount only reduces the payable total (tax is NOT reduced).
   const shares = allocateDiscounts(priced.map(l => money(l.gross)), priced.map(l => l.itemId), coupons);
   const discountFirst = profile.discountOrder !== 'after_tax';
   const steps = discountFirst ? ['base', 'modifier', 'discount', 'service', 'tax'] : ['base', 'modifier', 'service', 'tax', 'discount'];
@@ -85,6 +88,8 @@ export function quoteOrder(i: QuoteInput): Quote {
 }
 /** Server-side entry used by every pricing command: time comes from the command, zone from the applied venue layout. */
 export function quoteForCommand(c: CommandEnvelope, snapshots: Snapshot[]): Quote {
+  const coupons = c.payload.discountIds;
+  if (coupons !== undefined && !(Array.isArray(coupons) && coupons.length === 0)) requireFeature(c, snapshots, 'discount'); // permission discount.apply is checked by the authorizers (requiredPermissions)
   const zone = find(snapshots, 'venue-layout', 'current')?.state.timezone;
   return quoteOrder({ menu: currentMenu(snapshots), items: c.payload.items, discountIds: c.payload.discountIds, currency: c.payload.currency, menuVersion: c.payload.menuVersion, at: c.occurredAt, timeZone: typeof zone === 'string' ? zone : 'UTC', policyRevision: c.policyRevision });
 }

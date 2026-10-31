@@ -58,9 +58,12 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
 function guardFeature(command:CommandEnvelope,snapshots:Snapshot[]):void {
  const mapped=commandFeatures[command.type];
  if(!mapped) return;
+ requireFeature(command,snapshots,command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature,mapped.intent);
+}
+/** Same applied-policy check the per-command guard uses, for a feature a payload opts into (e.g. coupons). */
+export function requireFeature(command:CommandEnvelope,snapshots:Snapshot[],feature:string,intent:'new'|'finish_existing'='new'):void {
  const policy=find(snapshots,'configuration','applied') ?? fail('CONFIGURATION_REQUIRED');
  const features=policy.state.features as unknown as FeatureConfig;
- const feature=command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature;
- const result=evaluateFeature({feature,status:features?.[feature]?.status ?? 'disabled',intent:mapped.intent,revision:Number(policy.state.revision),policyRevision:command.policyRevision,features,readiness:runtimeReadiness(snapshots)});
+ const result=evaluateFeature({feature,status:features?.[feature]?.status ?? 'disabled',intent,revision:Number(policy.state.revision),policyRevision:command.policyRevision,features,readiness:runtimeReadiness(snapshots)});
  if(!result.allowed) return fail(result.reason);
 }

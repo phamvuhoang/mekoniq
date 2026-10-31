@@ -4,6 +4,9 @@ import { quoteTaxExclusive, extractTaxInclusive } from '../../packages/domain/sr
 import { ModuleRegistry } from '../../packages/domain/src/modules';
 import { registerRestaurantModules } from '../../packages/domain/src/restaurant';
 import { hashPayload } from '../../packages/contracts/src/canonical';
+import { authorizeVenueCommand, requiredPermissions } from '../../packages/domain/src/application';
+import { couponText, parseCoupons, parseTax, taxText } from '../../apps/cloud-web/src/components/backoffice/pricing-text';
+import { rolePermissions } from '../../apps/cloud-web/src/server/modules/identity/rbac';
 import restaurantFixture from '../fixtures/restaurant-v1.json';
 import type { CommandEnvelope, JsonObject, Snapshot } from '../../packages/contracts/src/index';
 
@@ -165,4 +168,34 @@ test('Order.Place rejects a foreign currency and Order.Amend appends priced line
   const next = amended.events.find(e=>e.data.kind==='order')!.data.state as JsonObject;
   expect(next).toMatchObject({totalMinor:'165000',summary:{subtotalMinor:'150000',taxMinor:'15000',totalMinor:'165000'}});
   expect(next.lines as JsonObject[]).toHaveLength(2);
+});
+
+test('after_tax discount: percent base is the pre-tax pre-service gross, tax and service are not reduced, capped at gross', () => {
+  const p = pricing({discountOrder:'after_tax',service:{rateBps:1000,taxable:false},discounts:[{id:'half',name:'50%',kind:'percent',valueBps:5000},{id:'huge',name:'huge',kind:'fixed',amountMinor:'999999'}]});
+  const items = [{itemId:'rice',quantity:'1'}];
+  // gross 50000; service 5000; tax 5000 (both on gross); discount 25000 only lowers the payable total
+  expect(quote({items,discountIds:['half']},menuOf([rice],p))).toMatchObject({discountMinor:'25000',serviceMinor:'5000',taxMinor:'5000',totalMinor:'35000'});
+  expect(quote({items,discountIds:['huge']},menuOf([rice],p))).toMatchObject({discountMinor:'50000',serviceMinor:'5000',taxMinor:'5000',totalMinor:'10000'});
+});
+test('coupon and tax editor text round-trips every field, including item scope', () => {
+  const coupons = [{id:'a',name:'All',kind:'percent' as const,valueBps:1000},{id:'b',name:'Tea only',kind:'fixed' as const,amountMinor:'5000',itemIds:['tea','milk-tea']}];
+  expect(parseCoupons(couponText(coupons))).toEqual(coupons);
+  const taxes = [{id:'vat10',name:'VAT 10%',rateBps:1000,inclusive:false},{id:'vat8',name:'VAT 8%',rateBps:800,inclusive:true}];
+  expect(parseTax(taxText(taxes))).toEqual(taxes);
+});
+test('coupons need discount.apply on top of the command permission, in the production authorizer', () => {
+  const place = {sessionId:'s1',tableId:'table-1',menuVersion:1,items:[{itemId:'rice',quantity:'1'}]};
+  expect(requiredPermissions('Order.Place',place)).toEqual(['order.write']);
+  expect(requiredPermissions('Order.Place',{...place,discountIds:[]})).toEqual(['order.write']);
+  expect(requiredPermissions('Order.Place',{...place,discountIds:['c']})).toEqual(['order.write','discount.apply']);
+  expect(requiredPermissions('Order.Amend',{discountIds:'c'})).toEqual(['order.write','discount.apply']);
+  expect(requiredPermissions('Catalog.Quote',{discountIds:['c']})).toEqual(['catalog.read','discount.apply']);
+  expect(requiredPermissions('Unknown.Thing',{})).toEqual([]);
+  const as = (role:string, payload:JsonObject) => authorizeVenueCommand({id:role,deviceId:'device-a',scope:{organizationId:'org-a',venueId:'venue-a'},permissions:rolePermissions(role),expiresAtMs:10**15,stationIds:[]},
+    {schemaVersion:1,organizationId:'org-a',venueId:'venue-a',operationId:'op',type:'Order.Place',actorRef:role,deviceId:'device-a',deviceEpoch:'e',coordinatorEpoch:1,policyRevision:1,occurredAt:'2026-10-30T00:00:00Z',recordedAt:'2026-10-30T00:00:00Z',payload,payloadHash:hashPayload(payload)},0);
+  expect(as('cashier',place)).toBe(true);
+  expect(as('cashier',{...place,discountIds:['c']})).toBe(false);
+  expect(as('manager',{...place,discountIds:['c']})).toBe(true);
+  expect(rolePermissions('guest')).not.toContain('discount.apply');
+  expect(rolePermissions('chef')).not.toContain('discount.apply');
 });

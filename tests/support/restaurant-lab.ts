@@ -1,6 +1,6 @@
 import { createLab } from './lab';
 import { actors } from './actors';
-import {productionPermissions} from '../../packages/domain/src/application';
+import {requiredPermissions} from '../../packages/domain/src/application';
 import { registerPolicyModule } from '../../packages/domain/src/policy/module';
 import { registerContinuityModules } from '../../packages/domain/src/continuity/module';
 import { registerRestaurantModules } from '../../packages/domain/src/restaurant';
@@ -9,10 +9,10 @@ import type { JsonObject } from '../../packages/contracts/src/index';
 export async function createRestaurantLab() {
  const lab=await createLab(registry=>{registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);});
  lab.addAuthorization((actor,type,payload)=>{
-  const principal=actors[actor],permission=productionPermissions[type];
-  if(!principal||!permission) return false;
+  const principal=actors[actor],needed=requiredPermissions(type,payload);
+  if(!principal||!needed.length) return false;
   if(actor==='chef'&&type.startsWith('Kitchen.')&&payload.stationId!=='kitchen') return false;
-  return principal.permissions.includes('*')||principal.permissions.includes(permission);
+  return needed.every(permission=>principal.permissions.includes('*')||principal.permissions.includes(permission));
  });
  await lab.seed('configuration','applied',fixture.configuration as JsonObject);
  await lab.seed('catalog','current',fixture.menu as JsonObject);
