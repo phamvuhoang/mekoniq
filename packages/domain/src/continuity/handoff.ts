@@ -1,7 +1,7 @@
 import type {CommandEnvelope,Snapshot} from '../../../contracts/src/index';
 import {canonicalBytes,hashPayload,verifyEs256,type PublicEcJwk} from '../../../contracts/src/index';
 import {recoveryInventory} from './recovery-inventory';
-import {deviceCheckpointComplete} from './checkpoint';
+import {activeDeviceCheckpointsComplete} from './checkpoint';
 import {find,requireState,text,change,ok,object,objects} from './shared';
 export function canActivate(s:{fenced:boolean;cursorComplete:boolean;unknownResources:number}){return s.fenced&&s.cursorComplete&&s.unknownResources===0;}
 export function prepareHandoff(c:CommandEnvelope,s:Snapshot[]) {
@@ -11,11 +11,7 @@ export function prepareHandoff(c:CommandEnvelope,s:Snapshot[]) {
   if(newDeviceId===current.owner)throw new Error('OWNER_UNCHANGED');
   const replacement=requireState(s,'device',newDeviceId);if(replacement.state.status!=='active')throw new Error('REPLACEMENT_NOT_ENROLLED');
   object(replacement.state.publicJwk);
-  const devices=s.filter(x=>x.ref.kind==='device'&&x.state.status==='active');
-  const cursorComplete=devices.every(device=>{
-    const checkpoint=find(s,'device-checkpoint',device.ref.id)?.state;
-    return deviceCheckpointComplete(checkpoint,device.state.deviceEpoch,Number(authority.nowMs));
-  });
+  const cursorComplete=activeDeviceCheckpointsComplete(s,Number(authority.nowMs));
   const checkpointHash=hashPayload(s.filter(x=>x.ref.kind!=='ownership'&&x.ref.kind!=='__scope__').map(x=>({kind:x.ref.kind,id:x.ref.id,version:x.version})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));
   return ok([change('OwnershipHandoffPrepared','ownership',c.venueId,{...current,newDeviceId,status:'preparing',fenced:false,cursorComplete,checkpointHash,handoffId:c.operationId,preparedAt:c.recordedAt})],{handoffId:c.operationId,checkpointHash,oldEpoch:c.coordinatorEpoch,newEpoch:c.coordinatorEpoch+1,cursorComplete});
 }
@@ -24,6 +20,7 @@ export function fenceOwner(c:CommandEnvelope,s:Snapshot[]) {
   if(state.status!=='preparing'||state.newDeviceId!==c.payload.newDeviceId)throw new Error('HANDOFF_NOT_PREPARED');
   if(!Array.isArray(c.payload.proofs))throw new Error('FENCING_EVIDENCE_REQUIRED');
   const proofs=objects(c.payload.proofs),authority=requireState(s,'__scope__','authority').state;
+  if(!activeDeviceCheckpointsComplete(s,Number(authority.nowMs)))throw new Error('CHECKPOINT_INCOMPLETE');
   const resources=[{id:'coordinator',epoch:c.coordinatorEpoch,owner:String(authority.ownerDeviceId),key:object(authority.publicJwk)},...s.filter(x=>x.ref.kind==='robot').map(robot=>({id:`robot:${robot.ref.id}`,epoch:Number(robot.state.controlEpoch),owner:String(robot.state.ownerDeviceId),key:object(robot.state.executorPublicJwk)}))];
   const events=[];
   for(const resource of resources) {
@@ -44,7 +41,7 @@ export function activateOwner(c:CommandEnvelope,s:Snapshot[]) {
   if(inventory.unknownRobots.length||inventory.unknownGrants.length||inventory.missingDevices.length||inventory.loadedMissions.length||inventory.unknownReservations.length)throw new Error('RESOURCE_UNRECONCILED');
   const state=requireState(s,'ownership',c.venueId).state;
   if(state.fenced!==true||state.executorEpochAck!==true)throw new Error('FENCING_REQUIRED');
-  if(state.cursorComplete!==true)throw new Error('CHECKPOINT_INCOMPLETE');
+  if(state.cursorComplete!==true||!activeDeviceCheckpointsComplete(s,Number(requireState(s,'__scope__','authority').state.nowMs)))throw new Error('CHECKPOINT_INCOMPLETE');
   if(state.newDeviceId!==c.payload.newDeviceId)throw new Error('HANDOFF_DEVICE_MISMATCH');
   const epoch=typeof state.epoch==='number'?state.epoch:c.coordinatorEpoch;
   const replacement=requireState(s,'device',String(state.newDeviceId));if(replacement.state.status!=='active')throw new Error('REPLACEMENT_NOT_ENROLLED');

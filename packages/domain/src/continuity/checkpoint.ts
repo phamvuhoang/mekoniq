@@ -7,3 +7,10 @@ export function deviceCheckpointComplete(checkpoint:import('../../../contracts/s
  if([coveredSequence,receivedCursor,appliedCursor].some(value=>typeof value!=='string'||!/^(0|[1-9][0-9]*)$/.test(value)))return false;
  return BigInt(String(receivedCursor))>=BigInt(String(coveredSequence))&&BigInt(String(appliedCursor))>=BigInt(String(coveredSequence));
 }
+
+/** Evaluate the current enrollment inventory, rather than a cached preparation flag. */
+export function activeDeviceCheckpointsComplete(s:import('../../../contracts/src/index').Snapshot[],nowMs:number):boolean {
+ if(!Number.isFinite(nowMs))return false;
+ return s.filter(x=>x.ref.kind==='device'&&x.state.status==='active').every(device=>
+  deviceCheckpointComplete(s.find(x=>x.ref.kind==='device-checkpoint'&&x.ref.id===device.ref.id)?.state,device.state.deviceEpoch,nowMs));
+}

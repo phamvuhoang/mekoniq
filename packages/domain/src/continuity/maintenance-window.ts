@@ -2,7 +2,7 @@ import type {CommandEnvelope,Snapshot,JsonObject} from '../../../contracts/src/i
 import {find,change,ok,requireState} from './shared';
 import {grantBlocksReissue} from '../billing/settlement-grant';
 import {hashPayload} from '../../../contracts/src/index';
-import {deviceCheckpointComplete} from './checkpoint';
+import {deviceCheckpointComplete,activeDeviceCheckpointsComplete} from './checkpoint';
 function checkpointHash(s:Snapshot[]){return hashPayload(s.filter(x=>!['maintenance','__scope__'].includes(x.ref.kind)).map(x=>({kind:x.ref.kind,id:x.ref.id,version:x.version})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));}
 export function prepareMaintenance(c:CommandEnvelope,s:Snapshot[]) {
   const missing=c.payload.missingDevices??[];
@@ -20,6 +20,7 @@ export function enterMaintenance(c:CommandEnvelope,s:Snapshot[]) {
     const prepared=find(s,'maintenance','current');
     if(!prepared||prepared.state.status!=='prepared')throw new Error('CHECKPOINT_REQUIRED');
     if(Array.isArray(prepared.state.missingDevices)&&prepared.state.missingDevices.length)throw new Error('MISSING_DEVICE_CHECKPOINTS');
+    if(!activeDeviceCheckpointsComplete(s,Number(find(s,'__scope__','authority')?.state.nowMs)))throw new Error('MISSING_DEVICE_CHECKPOINTS');
     if(prepared.state.checkpointHash!==checkpointHash(s))throw new Error('CHECKPOINT_CHANGED');
   }
   return ok([change('MaintenanceEntered','maintenance','current',{...find(s,'maintenance','current')?.state,status:'active',mode:c.payload.mode,enteredAt:c.recordedAt,enteredBy:c.actorRef})]);

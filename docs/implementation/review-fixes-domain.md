@@ -26,3 +26,21 @@ PATH=/tmp/mekoniq-node24/node_modules/node/bin:$PATH pnpm exec vitest run tests/
 ```
 
 `pnpm typecheck` and ESLint on the four changed domain modules plus the new regression file pass. These results verify TypeScript domain behavior with SQLite and the simulator. Android execution, physical robots, AP behavior, and soak qualification were not run for this repair.
+
+## Scoped issue 3 safety-transition parity
+
+Checkpoint freshness and enrollment are revalidated at `Ownership.Fence`, `Ownership.Activate`, and `Maintenance.Enter(mode=full_shutdown)`, using the existing `deviceCheckpointComplete` rules and trusted `__scope__.authority.nowMs`. The shared inventory helper checks every currently active device's epoch, completeness, pending count, covered cursors, and expiry. A non-finite trusted clock fails closed. Preparation retains its existing diagnostics; its cached `cursorComplete` or checkpoint hash alone no longer permits these transitions. Ordinary order placement does not acquire this checkpoint prerequisite.
+
+Reproduction used real SQLite-backed command processing, preparing valid checkpoints before advancing time, enrolling another active device, or changing an enrolled epoch. **RED: 8 failed, 2 passed**: Fence/Activate accepted all six changed inventories; full shutdown accepted expired checkpoints and a changed epoch; a newly enrolled device was already blocked by the maintenance hash, and ordinary orders already worked with an expired checkpoint.
+
+```sh
+PATH=/tmp/mekoniq-node24/node_modules/node/bin:$PATH pnpm exec vitest run tests/integration/safety-transition-checkpoints.test.ts
+```
+
+**GREEN: 14/14 tests, 3 files**, including existing successful signed handoff and shutdown flows:
+
+```sh
+PATH=/tmp/mekoniq-node24/node_modules/node/bin:$PATH pnpm exec vitest run tests/integration/safety-transition-checkpoints.test.ts tests/integration/ownership-handoff.test.ts tests/integration/maintenance-checkpoint.test.ts
+```
+
+This follow-up changes only `checkpoint.ts`, `handoff.ts`, `maintenance-window.ts`, its focused regression file, and this evidence section. No Android, physical-device, or additional broad qualification is claimed.
