@@ -4,6 +4,7 @@ import { createProductionRegistry,authorizeVenueCommand } from '../../../package
 import {ingestContinuityObservation} from '../../../packages/sync/src/continuity-observations';
 import {ingestSettlementObservation} from '../../../packages/sync/src/settlement-observations';
 import {startCloudSync,type VerifiedCloudAuthorization} from './cloud-sync';
+import {nativeCloudRequest} from './native-cloud-request';
 import {startSimulatedRobotRuntime} from './robot-runtime';
 import type {PublicEcJwk} from '../../../packages/contracts/src/index';
 import { Identity, Journal, Lan } from './lan-bridge';
@@ -36,7 +37,7 @@ export async function startCoordinatorRuntime() {
     if(actor.receiptOnly || !(await Lan.heartbeat({storeWritable:true})).ready)return {status:'unknown',ack:'none',operationId:command.operationId,value:{},duplicate:false,code:'RUNTIME_UNAVAILABLE'};
     return processCommand(store,command,(c,s)=>registry.decide(c,s),c=>authorize(c,actor as unknown as JsonObject));
   };
-  const cloud=initial.cloudIssuerPublicJwk?startCloudSync({store,scope:initial,deviceId:initial.deviceId,deviceEpoch:initial.deviceEpoch,isCoordinator:initial.isCoordinator,request:input=>Identity.cloudRequest(input),cloudPublicJwk:initial.cloudIssuerPublicJwk as PublicEcJwk,dispatchDelegated:dispatchAuthorized,applyConfiguration:dispatchAuthorized,receiveEntries:entries=>Journal.receiveCloudEntries({entries})}):undefined;
+  const cloud=initial.cloudIssuerPublicJwk?startCloudSync({store,scope:initial,deviceId:initial.deviceId,deviceEpoch:initial.deviceEpoch,isCoordinator:initial.isCoordinator,request:nativeCloudRequest(Identity),cloudPublicJwk:initial.cloudIssuerPublicJwk as PublicEcJwk,dispatchDelegated:dispatchAuthorized,applyConfiguration:dispatchAuthorized,receiveEntries:entries=>Journal.receiveCloudEntries({entries})}):undefined;
   const robots=initial.isCoordinator?startSimulatedRobotRuntime({store,scope:initial,registry,isActive:async()=> (await Lan.heartbeat({storeWritable:true})).ready}):undefined;
   let actingCoordinator=initial.isCoordinator;
   let checkpointAt=0;

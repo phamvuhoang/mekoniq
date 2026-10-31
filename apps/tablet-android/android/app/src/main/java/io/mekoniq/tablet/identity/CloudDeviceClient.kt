@@ -8,7 +8,8 @@ import io.mekoniq.tablet.storage.JournalDatabase
 
 /** Device proof signing is bound to a small HTTPS API allowlist, never arbitrary bytes. */
 class CloudDeviceClient(private val context:Context) {
-  fun request(method:String,path:String,body:JSONObject?):JSONObject {
+  fun request(method:String,path:String,body:JSONObject?,request:NetworkRequest=NetworkRequest()):JSONObject {
+    request.checkActive()
     val config=(context.getSystemService(Context.RESTRICTIONS_SERVICE) as RestrictionsManager).applicationRestrictions
     val venue=config.getString("venueId") ?: error("ENROLLMENT_REQUIRED")
     require(Regex("[A-Za-z0-9_-]{1,128}").matches(venue))
@@ -24,12 +25,15 @@ class CloudDeviceClient(private val context:Context) {
     val connection=java.net.URL(base.trimEnd('/')+path).openConnection() as HttpsURLConnection
     connection.instanceFollowRedirects=false;connection.requestMethod=method;connection.doOutput=true;connection.connectTimeout=3000;connection.readTimeout=10000
     connection.setRequestProperty("Content-Type","application/json");connection.setRequestProperty("X-Mekoniq-Device-Proof",DeviceKeys.base64(envelope.toString().toByteArray()))
+    connection.sslSocketFactory=request.socketFactory(connection.sslSocketFactory)
+    request.attach(connection)
     return try {
       connection.outputStream.use {it.write(bytes)}
       val status=connection.responseCode
       val stream=if(status<400)connection.inputStream else connection.errorStream
       val result=stream?.use {input->val out=java.io.ByteArrayOutputStream();val buffer=ByteArray(8192);while(out.size()<=1048576){val n=input.read(buffer);if(n<0)break;out.write(buffer,0,n)};out.toByteArray()} ?: "{}".toByteArray()
       require(result.size<=1048576){"RESPONSE_TOO_LARGE"}
+      request.checkActive()
       val parsed=JournalDatabase.parseJsonStrict(result.toString(Charsets.UTF_8))
       if(status in 200..299 && path=="/v1/sync/push")JournalDatabase(context).use {it.recordVerifiedCloudAck(parsed)}
       if(status in 200..299 && path=="/v1/sync/ack") {
@@ -37,6 +41,6 @@ class CloudDeviceClient(private val context:Context) {
         JournalDatabase(context).use {it.recordVerifiedCloudAck(ack)}
       }
       JSONObject().put("status",status).put("body",parsed)
-    } finally {connection.disconnect()}
+    } finally {request.release(connection);connection.disconnect()}
   }
 }

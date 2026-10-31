@@ -11,15 +11,25 @@ private data class AuthorityState(val epoch:Int,val revision:Int,val owner:Strin
 @CapacitorPlugin(name = "Identity")
 class IdentityPlugin : Plugin() {
   private val keys by lazy { DeviceKeys(context) }
+  private val network=NetworkRequests()
+  private fun networkCall(call:PluginCall,code:String,work:(NetworkRequest)->org.json.JSONObject){
+    try{network.submit(call.getString("requestId") ?: call.callbackId,work,{value->call.resolve(JSObject(value.toString()))},{error->call.reject(error.message,code,error)})}
+    catch(error:Exception){call.reject(error.message,code,error)}
+  }
   @PluginMethod fun cloudRequest(call:PluginCall) {
-    bridge.execute {try{call.resolve(JSObject(CloudDeviceClient(context).request(call.getString("method") ?: error("METHOD_REQUIRED"),call.getString("path") ?: error("PATH_REQUIRED"),call.getObject("body")).toString()))}catch(e:Exception){call.reject(e.message,"CLOUD_UNAVAILABLE",e)}}
+    networkCall(call,"CLOUD_UNAVAILABLE"){request->CloudDeviceClient(context).request(call.getString("method") ?: error("METHOD_REQUIRED"),call.getString("path") ?: error("PATH_REQUIRED"),call.getObject("body"),request)}
   }
   @PluginMethod fun enroll(call:PluginCall) {
-    bridge.execute {try {call.resolve(JSObject(EnrollmentClient(context).enroll(call.getString("accessToken") ?: error("MANAGER_SESSION_REQUIRED")).toString()))}catch(e:Exception){call.reject(e.message,"ENROLLMENT_FAILED",e)}}
+    networkCall(call,"ENROLLMENT_FAILED"){request->EnrollmentClient(context,request).enroll(call.getString("accessToken") ?: error("MANAGER_SESSION_REQUIRED"))}
   }
   @PluginMethod fun refreshProvisioning(call:PluginCall) {
-    bridge.execute {try {call.resolve(JSObject(EnrollmentClient(context).provision(call.getString("accessToken") ?: error("MANAGER_SESSION_REQUIRED")).toString()))}catch(e:Exception){call.reject(e.message,"PROVISION_FAILED",e)}}
+    networkCall(call,"PROVISION_FAILED"){request->EnrollmentClient(context,request).provision(call.getString("accessToken") ?: error("MANAGER_SESSION_REQUIRED"))}
   }
+  @PluginMethod fun cancelNetworkRequest(call:PluginCall){
+    val id=call.getString("requestId") ?: return call.reject("REQUEST_ID_REQUIRED")
+    call.resolve(JSObject().put("cancelled",network.cancel(id)))
+  }
+  override fun handleOnDestroy(){network.close()}
   @PluginMethod fun publicJwk(call: PluginCall) { call.resolve(JSObject().put("jwk", JSObject(keys.publicJwk())).put("hardwareBacked", keys.isHardwareBacked()).put("certificate", DeviceKeys.base64(keys.certificateBytes())).put("certificateFingerprint",io.mekoniq.tablet.lan.PairingRegistry.fingerprint(keys.certificateBytes()))) }
   @PluginMethod fun installGrant(call: PluginCall) {
     try {

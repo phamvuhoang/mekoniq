@@ -3,7 +3,7 @@ import type {CommandEnvelope,CommandResult,JournalEntry,JsonObject,JsonValue,Sco
 import type {DurableStore} from '../../../packages/sync/src/store';
 import {contiguousCursor} from '../../../packages/sync/src/cursor';
 
-export type CloudRequest=(input:{method:'GET'|'POST';path:string;body?:JsonObject})=>Promise<{status:number;body:JsonObject}>;
+export type CloudRequest=(input:{method:'GET'|'POST';path:string;body?:JsonObject;signal?:AbortSignal})=>Promise<{status:number;body:JsonObject}>;
 export type VerifiedCloudAuthorization=Scope & {actorRef:string;deviceId:string;deviceEpoch:string;permissions:string[];stationIds:string[];expiresAt:string;receiptOnly?:boolean};
 export type CloudSyncOptions={
  store:DurableStore;scope:Scope;deviceId:string;deviceEpoch:string;isCoordinator:boolean;
@@ -39,13 +39,16 @@ export function startCloudSync(options:CloudSyncOptions) {
  const now=options.nowMs ?? Date.now;
  const interval=options.intervalMs ?? 5000,maxBatches=options.maxBatches ?? 2,maxCycleMs=options.maxCycleMs ?? 20000;
  if((options.requestTimeoutMs!==undefined&&(options.requestTimeoutMs<1||options.requestTimeoutMs>maxCycleMs))||interval<500||maxBatches<1||maxBatches>10||maxCycleMs<1000||maxCycleMs>30000)throw new Error('INVALID_SYNC_BUDGET');
+ const requests=new Set<AbortController>();
  let cycleDeadline=0,cycleStartedMonotonic=0;
  const remaining=()=>Math.min(cycleDeadline-now(),maxCycleMs-(globalThis.performance.now()-cycleStartedMonotonic));
  const request=async(path:string,body:JsonObject):Promise<JsonObject>=>{
   if(remaining()<=0)throw new Error('CLOUD_CYCLE_DEADLINE');
   const timeoutMs=Math.min(options.requestTimeoutMs ?? 5000,Math.max(1,remaining()));
-  let timeout:ReturnType<typeof setTimeout>|undefined;
-  const response=await Promise.race([options.request({method:'POST',path,body}),new Promise<never>((_resolve,reject)=>{timeout=setTimeout(()=>reject(new Error('CLOUD_REQUEST_TIMEOUT')),timeoutMs);})]).finally(()=>{if(timeout)clearTimeout(timeout);});
+  const controller=new AbortController();requests.add(controller);
+  const interrupted=new Promise<never>((_resolve,reject)=>controller.signal.addEventListener('abort',()=>reject(controller.signal.reason ?? new Error('CLOUD_REQUEST_CANCELLED')),{once:true}));
+  const timeout=setTimeout(()=>controller.abort(new Error('CLOUD_REQUEST_TIMEOUT')),timeoutMs);
+  const response=await Promise.race([Promise.resolve().then(()=>options.request({method:'POST',path,body,signal:controller.signal})),interrupted]).finally(()=>{clearTimeout(timeout);requests.delete(controller);});
   if(response.status!==200)throw new Error(`CLOUD_HTTP_${response.status}`);
   if(byteLength(response.body)>1048576)throw new Error('CLOUD_RESPONSE_TOO_LARGE');
   return object(response.body);
@@ -166,5 +169,5 @@ export function startCloudSync(options:CloudSyncOptions) {
   running=cycle().finally(()=>{running=undefined;});return running;
  }
  if(options.autostart!==false)timer=setTimeout(()=>{void tick().then(schedule,schedule);},0);
- return {tick,async close(){stopped=true;if(timer)clearTimeout(timer);await running?.catch(()=>{});}};
+ return {tick,async close(){stopped=true;if(timer)clearTimeout(timer);for(const request of requests)request.abort(new Error('CLOUD_REQUEST_CANCELLED'));await running?.catch(()=>{});}};
 }

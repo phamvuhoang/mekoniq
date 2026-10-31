@@ -7,20 +7,24 @@ import org.json.JSONObject
 import javax.net.ssl.HttpsURLConnection
 
 /** HTTPS enrollment uses an operator session and an issuer pinned in the managed profile. */
-class EnrollmentClient(private val context:Context) {
+class EnrollmentClient(private val context:Context,private val request:NetworkRequest=NetworkRequest()) {
   private val config=(context.getSystemService(Context.RESTRICTIONS_SERVICE) as RestrictionsManager).applicationRestrictions
   private fun post(path:String,body:JSONObject,token:String):JSONObject {
+    request.checkActive()
     val base=config.getString("cloudBaseUrl") ?: error("CLOUD_NOT_PROVISIONED")
     require(base.startsWith("https://")) { "HTTPS_REQUIRED" }
     val connection=java.net.URL(base.trimEnd('/')+path).openConnection() as HttpsURLConnection
     connection.instanceFollowRedirects=false;connection.requestMethod="POST";connection.doOutput=true;connection.connectTimeout=5000;connection.readTimeout=10000
     connection.setRequestProperty("Authorization","Bearer $token");connection.setRequestProperty("Content-Type","application/json")
+    connection.sslSocketFactory=request.socketFactory(connection.sslSocketFactory)
+    request.attach(connection)
     return try {
       connection.outputStream.use {it.write(body.toString().toByteArray())}
       require(connection.responseCode in 200..299) { "ENROLLMENT_HTTP_${connection.responseCode}" }
       val bytes=connection.inputStream.use { input ->val out=java.io.ByteArrayOutputStream();val buffer=ByteArray(4096);while(out.size()<=4194304){val n=input.read(buffer);if(n<0)break;out.write(buffer,0,n)};out.toByteArray() }
+      request.checkActive()
       require(bytes.size<=4194304);JSONObject(bytes.toString(Charsets.UTF_8))
-    } finally {connection.disconnect()}
+    } finally {request.release(connection);connection.disconnect()}
   }
   fun enroll(accessToken:String):JSONObject {
     val org=config.getString("organizationId") ?: error("SCOPE_NOT_PROVISIONED")

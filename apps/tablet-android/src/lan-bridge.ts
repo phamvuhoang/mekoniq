@@ -4,7 +4,8 @@ import type { NativeJournal } from '../../../packages/sync/src/storage/android';
 import type { TabletSession } from '../../tablet-web/src/transport/session';
 export const Journal=registerPlugin<NativeJournal>('Journal');
 export const Identity=registerPlugin<{
-  cloudRequest(input:{method:'GET'|'POST';path:string;body?:JsonObject}):Promise<{status:number;body:JsonObject}>;
+  cloudRequest(input:{requestId?:string;method:'GET'|'POST';path:string;body?:JsonObject}):Promise<{status:number;body:JsonObject}>;
+  cancelNetworkRequest(input:{requestId:string}):Promise<{cancelled:boolean}>;
   enroll(input:{accessToken:string}):Promise<{deviceId:string;deviceEpoch:string;provisioned:boolean}>;
   refreshProvisioning(input:{accessToken:string}):Promise<{deviceId:string;deviceEpoch:string;provisioned:boolean}>;
   session():Promise<TabletSession & {isCoordinator:boolean}>;
