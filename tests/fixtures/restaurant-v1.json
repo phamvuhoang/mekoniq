@@ -187,6 +187,18 @@
       "payment.cash": {
         "status": "enabled",
         "revision": 1
+      },
+      "payment.terminal": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "payment.transfer.manual": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "refund": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {

@@ -381,7 +381,8 @@
       "depends": "W05-T01, W04-T02",
       "testFile": "tests/integration/financial-lifecycle.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/financial-lifecycle.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T03.md"
     },
     {
       "wave": "W05",

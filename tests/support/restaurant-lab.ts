@@ -22,7 +22,7 @@ export async function createRestaurantLab() {
  for(const table of fixture.tables) await lab.seed('table',table.id,table);
  await lab.seed('robot',fixture.robot.id,fixture.robot as JsonObject);
  const seedAggregate=lab.seed.bind(lab);
- lab.seed=(kind,id,overrides)=>kind==='order-line'?seedOrderLine(lab,seedAggregate,id,overrides):seedAggregate(kind,id,overrides);
+ lab.seed=(kind,id,overrides)=>kind==='order-line'?seedOrderLine(lab,seedAggregate,id,overrides):kind==='payment'?seedPayment(lab,seedAggregate,id,overrides):seedAggregate(kind,id,overrides);
  return lab;
 }
 
@@ -48,4 +48,19 @@ async function seedOrderLine(lab:Awaited<ReturnType<typeof createLab>>,seed:(kin
  await seed('order',orderId,{sessionId,tableId,menuVersion:1,currency:quote.currency,lines:[line],totalMinor:quote.totalMinor,summary:{subtotalMinor:quote.subtotalMinor,discountMinor:quote.discountMinor,serviceMinor:quote.serviceMinor,taxMinor:quote.taxMinor,taxIncludedMinor:quote.taxIncludedMinor,totalMinor:quote.totalMinor},status:'open',policyRevision:1,version:typeof o.version==='number'?o.version:1});
  await seed('kitchen-ticket',lineId,{...common,name:priced.name,quantity:String(ordered),prepared:String(prepared),course,status:course>1?'held':prepared===ordered?'ready':prepared>0n?'partially_ready':'queued',version:1});
  await seed('fulfillment',lineId,{...common,quantity:String(ordered),ready:String(prepared-served),allocated:String(allocated),served:String(served),status:'open',version:1});
+}
+
+/**
+ * Fixture factory behind lab.seed('payment', id, overrides) (plan §4, ruling R-T03): a captured cash payment merged over defaults. Unless overrides name
+ * a billId, it also writes its parents: a closed bill `bill-<id>` the payment fully settled and the cashier's open shift `shift-<id>` that took the cash.
+ * `version` is the PAYMENT's version (the one Refund.Record expectedVersion targets).
+ */
+async function seedPayment(lab:Awaited<ReturnType<typeof createLab>>,seed:(kind:string,id:string,state:JsonObject)=>Promise<void>,id:string,o:JsonObject) {
+ const captured=String(o.capturedMinor??'100000'),currency=String(o.currency??'VND'),shiftId=String(o.shiftId??`shift-${id}`),billId=String(o.billId??`bill-${id}`);
+ if(o.billId===undefined) {
+  await seed('bill',billId,{status:'closed',totalMinor:captured,paidMinor:captured,refundedMinor:'0',unappliedMinor:'0',currency,orderIds:[],lines:[],sessionId:null,closedAt:new Date(lab.clock.nowMs).toISOString(),version:3});
+  await seed('shift',shiftId,{cashierId:'cashier',status:'open',currency,openingMinor:'0',cashMinor:captured,openedAt:new Date(lab.clock.nowMs).toISOString(),version:2});
+  await seed('cashier-shift','cashier',{shiftId,status:'open',version:1});
+ }
+ await seed('payment',id,{billId,shiftId,currency,method:'cash',status:'captured',capturedMinor:captured,appliedMinor:captured,unappliedMinor:'0',tenderedMinor:captured,changeMinor:'0',refundedMinor:'0',feeMinor:'0',actorRef:'cashier',occurredAt:new Date(lab.clock.nowMs).toISOString(),...o,version:typeof o.version==='number'?o.version:1});
 }

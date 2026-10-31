@@ -25,7 +25,7 @@ export function validatedPricing(raw: unknown): JsonObject {
 const NO_PRICING = validatedPricing({});
 const money = (value: bigint): string => { try { return canonicalMinor(String(value)); } catch { return fail('INVALID_AMOUNT'); } };
 /** A line's live amount: its immutable priced snapshot minus whatever Order.Amend cancelled (cumulative, in line.cancelled). */
-const netOf = (l: JsonObject, key: string, fallback?: string): bigint => BigInt(String(l[key] ?? (fallback ? l[fallback] : 0))) - BigInt(String((l.cancelled as JsonObject | undefined)?.[key] ?? 0));
+export const netOf = (l: JsonObject, key: string, fallback?: string): bigint => BigInt(String(l[key] ?? (fallback ? l[fallback] : 0))) - BigInt(String((l.cancelled as JsonObject | undefined)?.[key] ?? 0));
 const sumOf = (lines: JsonObject[], key: string): bigint => lines.reduce((a, l) => a + netOf(l, key), 0n);
 /** Component totals of a list of priced lines (orders, bills). Lines without charge snapshots count as plain subtotal. */
 export function summarize(lines: JsonObject[]): JsonObject {

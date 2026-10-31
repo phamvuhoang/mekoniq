@@ -141,7 +141,7 @@ if (sourceHasGrant || targetHasGrant) return {ok:false,code:"GRANT_UNRECONCILED"
 - Consumes: Bill snapshot allocations, grant rights, applied/unapplied money.
 - Produces: `Bill.Split`, `.Merge`, `Payment.VerifyManual`, `Refund.Record`, `Bill.Void`; exact immutable financial ledger.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -157,9 +157,9 @@ test("concurrent refunds cannot exceed the captured balance", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/financial-lifecycle.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/financial-lifecycle.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Split by line/quantity/equal amounts với exact discount/tax apportionment. Cash/card-terminal observation/transfer manual đều typed, manual verified có người/lý do/evidence. Refund chỉ phần chưa hoàn, không void payment captured.
+- [x] **3. Hiện thực phần cốt lõi.** Split by line/quantity/equal amounts với exact discount/tax apportionment. Cash/card-terminal observation/transfer manual đều typed, manual verified có người/lý do/evidence. Refund chỉ phần chưa hoàn, không void payment captured.
 
 ```ts
 export function refundableMinor(captured:string, refunded:string) {
@@ -170,11 +170,11 @@ export function canRefund(captured:string, refunded:string, request:string) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Unique external payment references scoped provider+merchant+transaction; charge unknown chặn thu lại theo policy. Customer claim vẫn pending; full reconciliation giữ overpayment, fees/change riêng khỏi gross sales.
+- [x] **4. Nối vào runtime và lưu trữ.** Unique external payment references scoped provider+merchant+transaction; charge unknown chặn thu lại theo policy. Customer claim vẫn pending; full reconciliation giữ overpayment, fees/change riêng khỏi gross sales.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/financial-lifecycle.test.ts`; kỳ vọng PASS. Partial payment, mixed tender, duplicate webhook observations, closed bill amendments, refunds do not invent stock return, authorization matrix cashier/manager. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/financial-lifecycle.test.ts`; kỳ vọng PASS. Partial payment, mixed tender, duplicate webhook observations, closed bill amendments, refunds do not invent stock return, authorization matrix cashier/manager. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T03.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: complete auditable restaurant billing and refunds"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T03.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: complete auditable restaurant billing and refunds"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W05-T04: Ca, sổ két và hàng đợi in
 

@@ -21,6 +21,9 @@ export const all = (snapshots: Snapshot[], kind: string): Snapshot[] => snapshot
 export const find = (snapshots: Snapshot[], kind: string, id: string): Snapshot | undefined => snapshots.find(s => s.ref.kind === kind && s.ref.id === id);
 export const requireState = (snapshots: Snapshot[], kind: string, id: string): Snapshot => find(snapshots, kind, id) ?? fail('NOT_FOUND');
 export const stableId = (prefix: string, command: CommandEnvelope, suffix = ''): string => `${prefix}-${hashPayload({operationId:command.operationId,suffix}).slice(0,32)}`;
+/** External payment reference {provider,merchantId,transactionId}; its id is unique per scope, so one transaction is one payment aggregate. */
+export const externalReference = (value: JsonValue | undefined): JsonObject => { const r = value === undefined ? fail('REFERENCE_REQUIRED') : record(value); return { provider: text(r.provider, 'REFERENCE_REQUIRED'), merchantId: text(r.merchantId, 'REFERENCE_REQUIRED'), transactionId: text(r.transactionId, 'REFERENCE_REQUIRED') }; };
+export const externalPaymentId = (ref: JsonObject): string => `ext-${hashPayload({ provider: ref.provider!, merchantId: ref.merchantId!, transactionId: ref.transactionId! }).slice(0, 32)}`;
 export const updated = (snapshot: Snapshot, change: JsonObject): JsonObject => ({ ...snapshot.state, ...change, version: snapshot.version + 1 });
 export const changed = (type:string,snapshot:Snapshot,change:JsonObject):DomainEvent => stateEvent(type,snapshot.ref.kind,snapshot.ref.id,updated(snapshot,change));
 export const created = (type:string,kind:string,id:string,state:JsonObject):DomainEvent => stateEvent(type,kind,id,{...state,version:1});
@@ -59,12 +62,21 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Bill.Prepare':{feature:'billing',intent:'finish_existing'},
  'Payment.RecordCash':{feature:'payment.cash',intent:'finish_existing'},
  'Bill.Close':{feature:'billing',intent:'finish_existing'},
+ 'Bill.Split':{feature:'billing',intent:'finish_existing'},
+ 'Bill.Merge':{feature:'billing',intent:'finish_existing'},
+ 'Bill.Void':{feature:'billing',intent:'finish_existing'},
+ 'Payment.RecordTerminal':{feature:'payment.terminal',intent:'new'},
+ 'Payment.VerifyManual':{feature:'payment.transfer.manual',intent:'new'},
+ // Refunds settle money already received: allowed by permission even when the refund/sales features are off (capability matrix §4).
+ 'Refund.Record':{feature:'refund',intent:'finish_existing'},
 };
+/** Resolving a terminal charge already observed (pending/unknown -> final) finishes existing work; only a new reference is new business. */
+const knownTerminalCharge=(command:CommandEnvelope,snapshots:Snapshot[]):boolean=>{ try { return Boolean(find(snapshots,'payment',externalPaymentId(externalReference(command.payload.reference)))); } catch { return false; } };
 function guardFeature(command:CommandEnvelope,snapshots:Snapshot[]):void {
  const mapped=commandFeatures[command.type];
  if(!mapped) return;
  // Cancelling a line of an existing order finishes existing work; only adding items is new work.
- const intent=command.type==='Order.Amend'&&command.payload.lineId!==undefined?'finish_existing':mapped.intent;
+ const intent=(command.type==='Order.Amend'&&command.payload.lineId!==undefined)||(command.type==='Payment.RecordTerminal'&&knownTerminalCharge(command,snapshots))?'finish_existing':mapped.intent;
  requireFeature(command,snapshots,command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature,intent);
 }
 /** Same applied-policy check the per-command guard uses, for a feature a payload opts into (e.g. coupons). */

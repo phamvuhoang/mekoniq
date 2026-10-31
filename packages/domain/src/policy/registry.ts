@@ -16,6 +16,10 @@ export const featureRegistry: Record<string,FeatureDefinition> = {
   'billing':{id:'billing',group:'F10',dependencies:['orders'],permission:'billing.write'},
   'payment.cash':{id:'payment.cash',group:'F11',dependencies:['billing','cash.shift'],permission:'payment.cash'},
   'payment.transfer':{id:'payment.transfer',group:'F11',dependencies:['billing'],permission:'payment.verify',readiness:'bank'},
+  // Manual non-cash tenders are staff attestations (bank app / standalone terminal slip), not integrations, so they carry no readiness.
+  // payment.transfer stays the bank-integrated path and keeps readiness 'bank'.
+  'payment.transfer.manual':{id:'payment.transfer.manual',group:'F11',dependencies:['billing'],permission:'payment.verify'},
+  'payment.terminal':{id:'payment.terminal',group:'F11',dependencies:['billing'],permission:'payment.terminal'},
   'payment.provider':{id:'payment.provider',group:'F11',dependencies:['billing'],permission:'payment.capture',readiness:'provider'},
   'refund':{id:'refund',group:'F12',dependencies:['billing'],permission:'payment.refund'},
   'cash.shift':{id:'cash.shift',group:'F13',dependencies:[],permission:'shift.write'},
