@@ -19,9 +19,15 @@ export function retargetHandoffs(c:CommandEnvelope,s:Snapshot[],allocationIds:Se
   if(status==='needs_attention') return fail('MISSION_UNRESOLVED');
   const targetRevision=Number(mission.state.targetRevision ?? 0)+1;
   for(const stop of hit) stop.targetId=toTable;
-  if(status==='queued') {events.push(changed('MissionRetargeted',mission,{stops,targetRevision}));continue;}
+  const bound=(robot:Snapshot)=>Boolean(((robot.state.bindings ?? {}) as JsonObject)[toTable]);
+  if(status==='queued') {
+   // No robot yet: the preferred one, or any robot, must know the new table or the move would only fail at dispatch.
+   const candidates=mission.state.preferredRobotId?[requireState(s,'robot',String(mission.state.preferredRobotId))]:all(s,'robot');
+   if(!candidates.some(bound)) return fail('TARGET_UNBOUND');
+   events.push(changed('MissionRetargeted',mission,{stops,targetRevision}));continue;
+  }
   const robot=requireState(s,'robot',String(mission.state.robotId));
-  if(!((robot.state.bindings ?? {}) as JsonObject)[toTable]) return fail('TARGET_UNBOUND');
+  if(!bound(robot)) return fail('TARGET_UNBOUND');
   const current=hit.find(x=>x.id===mission.state.currentStopId);
   if(!current) {events.push(changed('MissionRetargeted',mission,{stops,targetRevision}));continue;}
   const liveGoal=current.status==='travelling';

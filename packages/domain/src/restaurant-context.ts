@@ -63,7 +63,9 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
 function guardFeature(command:CommandEnvelope,snapshots:Snapshot[]):void {
  const mapped=commandFeatures[command.type];
  if(!mapped) return;
- requireFeature(command,snapshots,command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature,mapped.intent);
+ // Cancelling a line of an existing order finishes existing work; only adding items is new work.
+ const intent=command.type==='Order.Amend'&&command.payload.lineId!==undefined?'finish_existing':mapped.intent;
+ requireFeature(command,snapshots,command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature,intent);
 }
 /** Same applied-policy check the per-command guard uses, for a feature a payload opts into (e.g. coupons). */
 export function requireFeature(command:CommandEnvelope,snapshots:Snapshot[],feature:string,intent:'new'|'finish_existing'='new'):void {

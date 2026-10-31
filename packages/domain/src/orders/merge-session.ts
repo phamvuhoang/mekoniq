@@ -25,15 +25,18 @@ export function registerSessionMerge(registry:ModuleRegistry):void {
   if(all(s,'grant').some(g=>billIds.has(String(g.state.billId))&&g.state.status!=='reconciled')) return fail('GRANT_UNRECONCILED');
   if(source.state.frozenBillId||target.state.frozenBillId) return fail('SESSION_FROZEN');
   const targetTable=String(target.state.tableId),sourceTable=requireState(s,'table',String(source.state.tableId));
-  const retarget=retargetHandoffs(c,s,new Set(all(s,'allocation').filter(a=>a.state.sessionId===sourceId).map(a=>a.ref.id)),targetTable);
+  // Only open orders move: a cancelled/closed one keeps its session, matching the bill or history that already names it.
+  const moving=all(s,'order').filter(o=>o.state.sessionId===sourceId&&o.state.status==='open'),movingLines=new Set(moving.flatMap(o=>((o.state.lines ?? []) as {id:string}[]).map(l=>l.id)));
+  const bound=(x:Snapshot)=>x.state.sessionId===sourceId&&movingLines.has(String(x.state.lineId));
+  const retarget=retargetHandoffs(c,s,new Set(all(s,'allocation').filter(bound).map(a=>a.ref.id)),targetTable);
   const sessionEvents=lockOrder.map(id=>id===sourceId
    ?changed('SessionMerged',source,{status:'merged',mergedInto:targetId,mergedAt:c.recordedAt,revision:Number(source.state.revision ?? 0)+1})
-   :changed('SessionMergeReceived',target,{orderIds:[...((target.state.orderIds ?? []) as string[]),...((source.state.orderIds ?? []) as string[])],mergedFrom:[...((target.state.mergedFrom ?? []) as string[]),sourceId],revision:Number(target.state.revision ?? 0)+1}));
+   :changed('SessionMergeReceived',target,{orderIds:[...((target.state.orderIds ?? []) as string[]),...moving.map(o=>o.ref.id)],mergedFrom:[...((target.state.mergedFrom ?? []) as string[]),sourceId],revision:Number(target.state.revision ?? 0)+1}));
   return done([
    ...sessionEvents,
    ...(sourceTable.state.activeSessionId===sourceId?[changed('TableReleased',sourceTable,{activeSessionId:null})]:[]),
-   ...all(s,'order').filter(o=>o.state.sessionId===sourceId).map(o=>changed('OrderSessionChanged',o,{sessionId:targetId,tableId:targetTable,originSessionId:sourceId})),
-   ...SESSION_BOUND.flatMap(kind=>all(s,kind).filter(x=>x.state.sessionId===sourceId).map(x=>changed('SessionRefMoved',x,{sessionId:targetId,originSessionId:sourceId}))),
+   ...moving.map(o=>changed('OrderSessionChanged',o,{sessionId:targetId,tableId:targetTable,originSessionId:sourceId})),
+   ...SESSION_BOUND.flatMap(kind=>all(s,kind).filter(bound).map(x=>changed('SessionRefMoved',x,{sessionId:targetId,originSessionId:sourceId}))),
    ...retarget.events,
   ],{sourceSessionId:sourceId,targetSessionId:targetId,effects:retarget.effects});
  });

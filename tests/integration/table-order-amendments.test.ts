@@ -407,3 +407,65 @@ test("courses hold later dishes, fire them per order, and kitchen and bar progre
     expect([await status(main!),await status(drink!)]).toEqual(["partially_ready","held"]);
   } finally { await lab.close(); }
 });
+
+test("a queued mission is retargeted in place, and a move to a table no robot is bound to is rejected up front", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    const { unsubscribe } = await missionEnRoute(lab); // sim-1 is busy with s1
+    await openWithOrder(lab,"s2","table-2",[{itemId:"rice",quantity:"1"}]);
+    const order = await lab.state<{lines:{id:string}[]}>("order",(await lab.state<{orderIds:string[]}>("session","s2")).orderIds[0]!);
+    const lineId = order.lines[0]!.id;
+    accepted(await lab.command("chef","Kitchen.Ready",{lineId,quantity:"1",stationId:"kitchen",expectedVersion:1}));
+    const allocation = await lab.command("cashier","Fulfillment.Allocate",{lineId,quantity:"1",expectedVersion:2,method:"robot"});
+    const queued = await lab.command("cashier","Mission.Create",{allocationIds:[allocation.value.allocationId!],robotId:"sim-1"});
+    accepted(queued);
+    const missionId = String(queued.value.missionId);
+    expect(await lab.state("mission",missionId)).toMatchObject({status:"queued"});
+    const issued = await lab.count("RobotCommandIssued");
+    const robot = await lab.state<JsonObject>("robot","sim-1");
+    await lab.seed("robot","sim-1",{...robot,bindings:{...(robot.bindings as JsonObject),"table-3":{...((robot.bindings as JsonObject)["table-2"] as JsonObject),waypointId:"table-3",x:6}}});
+    await lab.seed("table","table-3",{id:"table-3",name:"Table 3",activeSessionId:null});
+    await lab.seed("table","table-9",{id:"table-9",name:"Table 9",activeSessionId:null});
+    const move = async (to: string) => lab.command("cashier","Session.Move",{sessionId:"s2",toTableId:to,expectedVersion:(await lab.state<{version:number}>("session","s2")).version});
+    expect((await move("table-9")).code).toBe("TARGET_UNBOUND");
+    expect(await lab.state("session","s2")).toMatchObject({tableId:"table-2"});
+    accepted(await move("table-3"));
+    const after = await lab.state<{status:string;targetRevision:number;stops:{action:string;targetId:string}[]}>("mission",missionId);
+    expect(after).toMatchObject({status:"queued",targetRevision:1});
+    expect(after.stops.find(s => s.action === "handoff")!.targetId).toBe("table-3");
+    expect(await lab.count("RobotCommandIssued")).toBe(issued); // nothing is sent to a robot for a queued mission
+    unsubscribe();
+  } finally { await lab.close(); }
+});
+
+test("merging re-points only open orders; cancelled ones keep the session their history names", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    await openWithOrder(lab,"s1","table-1",[{itemId:"rice",quantity:"1"}]);
+    const open = await openWithOrder(lab,"s2","table-2",[{itemId:"rice",quantity:"1"}]);
+    const gone = await lab.command("cashier","Order.Place",{sessionId:"s2",tableId:"table-2",menuVersion:1,items:[{itemId:"tea",quantity:"1"}]});
+    accepted(gone);
+    accepted(await lab.command("cashier","Order.Cancel",{orderId:String(gone.value.orderId),reason:"oops",expectedVersion:1}));
+    const v = async (id: string) => (await lab.state<{version:number}>("session",id)).version;
+    accepted(await lab.command("cashier","Session.Merge",{sourceSessionId:"s2",targetSessionId:"s1",expectedSourceVersion:await v("s2"),expectedTargetVersion:await v("s1")}));
+    expect(await lab.state("order",String(open.value.orderId))).toMatchObject({sessionId:"s1",originSessionId:"s2"});
+    expect(await lab.state("order",String(gone.value.orderId))).toMatchObject({sessionId:"s2",status:"cancelled"});
+    expect(await lab.state("kitchen-ticket",String((gone.value.lineIds as string[])[0]))).toMatchObject({sessionId:"s2"});
+    expect(await lab.state("kitchen-ticket",String((open.value.lineIds as string[])[0]))).toMatchObject({sessionId:"s1"});
+    expect(await lab.state<{orderIds:string[]}>("session","s1")).toMatchObject({orderIds:[expect.any(String),open.value.orderId]});
+    expect((await lab.state<{orderIds:string[]}>("session","s1")).orderIds).not.toContain(gone.value.orderId);
+    expect(await lab.state<{orderIds:string[]}>("session","s2")).toMatchObject({orderIds:[open.value.orderId,gone.value.orderId]});
+  } finally { await lab.close(); }
+});
+
+test("while pos.order drains, an existing order's line may still be cancelled but no items may be added", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    await lab.seed("order-line","line-1",{ordered:"2",prepared:"0",version:1});
+    const configuration = fixture.configuration as unknown as { features: Record<string, unknown> };
+    await lab.seed("configuration","applied",{...configuration,features:{...configuration.features,"pos.order":{status:"draining",revision:1}}} as JsonObject);
+    expect((await lab.command("manager","Order.Amend",{orderId:"order-line-1",expectedVersion:1,items:[{itemId:"tea",quantity:"1"}]})).code).toBe("FEATURE_DRAINING");
+    accepted(await lab.command("manager","Order.Amend",{lineId:"line-1",cancelQuantity:"1",reason:"guest",expectedVersion:1}));
+    expect(await lab.state("kitchen-ticket","line-1")).toMatchObject({quantity:"1"});
+  } finally { await lab.close(); }
+});
