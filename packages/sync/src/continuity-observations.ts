@@ -13,7 +13,11 @@ export async function ingestContinuityObservation(store:DurableStore,raw:unknown
  const unsigned=Object.fromEntries(Object.entries(entry).filter(([key])=>key!=='signature'));
  if(!verifyEs256(canonicalBytes(unsigned),entry.signature,object(source.publicJwk) as PublicEcJwk))throw new Error('SOURCE_SIGNATURE_INVALID');
  const payload:JsonObject={originalJournal:entry as unknown as JsonObject};
- const c:CommandEnvelope={schemaVersion:1,...scope,operationId:`capture-${hashPayload({entryId:entry.entryId}).slice(0,32)}`,type:'Continuity.AcceptObservation',actorRef:'continuity-sync',deviceId:text(authority.ownerDeviceId),deviceEpoch:text(authority.deviceEpoch),coordinatorEpoch:Number(authority.coordinatorEpoch),policyRevision:Number(authority.policyRevision),occurredAt:entry.occurredAt,recordedAt:new Date(Number(authority.nowMs)).toISOString(),payload,payloadHash:hashPayload(payload)};
+ const operationId=`capture-${hashPayload({entryId:entry.entryId}).slice(0,32)}`,payloadHash=hashPayload(payload);
+ // The verified original source defines retry identity; authority may have advanced since its receipt.
+ const previous=await store.receipt(scope,operationId,payloadHash);
+ if(previous)return {...previous,duplicate:true};
+ const c:CommandEnvelope={schemaVersion:1,...scope,operationId,type:'Continuity.AcceptObservation',actorRef:'continuity-sync',deviceId:text(authority.ownerDeviceId),deviceEpoch:text(authority.deviceEpoch),coordinatorEpoch:Number(authority.coordinatorEpoch),policyRevision:Number(authority.policyRevision),occurredAt:entry.occurredAt,recordedAt:new Date(Number(authority.nowMs)).toISOString(),payload,payloadHash};
  return processCommand(store,c,guarded((command,s)=>{
   if(entry.payload.operationType==='Continuity.CaptureTicket')return receiveTicket(command,s);
   const events=objects(entry.payload.events),observed=events.filter(event=>event.type==='PaymentObserved');

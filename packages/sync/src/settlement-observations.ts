@@ -22,7 +22,11 @@ export async function ingestSettlementObservation(store:DurableStore,raw:unknown
  if(device.deviceEpoch!==entry.deviceEpoch)throw new Error('SOURCE_DEVICE_EPOCH_MISMATCH');
  if(!verifyEs256(canonicalBytes(unsignedEntry(entry)),entry.signature,object(device.publicJwk) as PublicEcJwk))throw new Error('SOURCE_SIGNATURE_INVALID');
  const payload:JsonObject={sourceEntryId:entry.entryId,sourceHash:entry.payloadHash,sourceDeviceId:entry.deviceId,sourceDeviceEpoch:entry.deviceEpoch,sourceSequence:entry.sequence};
- const command:CommandEnvelope={schemaVersion:1,...scope,operationId:`settlement-${hashPayload({entryId:entry.entryId}).slice(0,32)}`,type:'Continuity.AcceptSettlementObservation',actorRef:'settlement-sync',deviceId:text(authority.ownerDeviceId),deviceEpoch:text(authority.deviceEpoch),coordinatorEpoch:Number(authority.coordinatorEpoch),policyRevision:Number(authority.policyRevision),occurredAt:entry.occurredAt,recordedAt:new Date(Number(authority.nowMs)).toISOString(),payload,payloadHash:hashPayload(payload)};
+ const operationId=`settlement-${hashPayload({entryId:entry.entryId}).slice(0,32)}`,payloadHash=hashPayload(payload);
+ // The verified original source defines retry identity; authority may have advanced since its receipt.
+ const previous=await store.receipt(scope,operationId,payloadHash);
+ if(previous)return {...previous,duplicate:true};
+ const command:CommandEnvelope={schemaVersion:1,...scope,operationId,type:'Continuity.AcceptSettlementObservation',actorRef:'settlement-sync',deviceId:text(authority.ownerDeviceId),deviceEpoch:text(authority.deviceEpoch),coordinatorEpoch:Number(authority.coordinatorEpoch),policyRevision:Number(authority.policyRevision),occurredAt:entry.occurredAt,recordedAt:new Date(Number(authority.nowMs)).toISOString(),payload,payloadHash};
  return processCommand(store,command,guarded((c,s)=>applyObservation(c,s,entry)),async()=>true);
 }
 function applyObservation(c:CommandEnvelope,s:Snapshot[],entry:JournalEntry) {
