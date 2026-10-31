@@ -23,7 +23,7 @@ export async function startCoordinatorServer(port=3451) {
       }
       if(req.method==='GET'&&path==='/snapshots') {
         let snapshots=await(await lab.getStore('coordinator')).snapshots(lab.scope);
-        if(principal.role==='chef')snapshots=snapshots.filter(s=>['station','kitchen-ticket','fulfillment'].includes(s.ref.kind)&&(!s.state.stationId||s.state.stationId==='kitchen'));
+        if(principal.role==='chef')snapshots=snapshots.filter(s=>['station','kitchen-ticket','kitchen-delta','kitchen-cancellation','fulfillment'].includes(s.ref.kind)&&(!s.state.stationId||s.state.stationId==='kitchen'));
         if(principal.role==='guest')snapshots=[];
         res.end(JSON.stringify(snapshots));return;
       }

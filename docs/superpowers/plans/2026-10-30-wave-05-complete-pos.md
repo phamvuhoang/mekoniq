@@ -94,7 +94,7 @@ export function quoteTaxExclusive(baseMinor:string, rateBps:number) {
 - Consumes: Session/order version locks, KDS ready/allocated/served quantities.
 - Produces: `Session.Move`, `.Merge`, `Order.SendCourse`, `Order.Amend`; KDS delta tickets.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -110,9 +110,9 @@ test("prepared food cancellation does not erase kitchen work", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/table-order-amendments.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/table-order-amendments.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Lock cả session nguồn/đích theo sorted ID, expected versions cho cả hai. Gộp không xóa source session refs hoặc bill. Đồ đã chế biến tạo choice return/waste/manual disposition riêng; delta KDS phải ACK.
+- [x] **3. Hiện thực phần cốt lõi.** Lock cả session nguồn/đích theo sorted ID, expected versions cho cả hai. Gộp không xóa source session refs hoặc bill. Đồ đã chế biến tạo choice return/waste/manual disposition riêng; delta KDS phải ACK.
 
 ```ts
 const lockOrder = [sourceSessionId, targetSessionId].sort();
@@ -120,11 +120,11 @@ if (sourceSessionId === targetSessionId) return {ok:false,code:"SAME_SESSION"};
 if (sourceHasGrant || targetHasGrant) return {ok:false,code:"GRANT_UNRECONCILED"};
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Table occupancy phục vụ hoạt động độc lập identity waypoint robot; bàn đổi tên không đổi physical map binding. UI conflict giữ draft và chỉ rõ bản mới; guest token bị rotate khi session đóng/khách mới.
+- [x] **4. Nối vào runtime và lưu trữ.** Table occupancy phục vụ hoạt động độc lập identity waypoint robot; bàn đổi tên không đổi physical map binding. UI conflict giữ draft và chỉ rõ bản mới; guest token bị rotate khi session đóng/khách mới.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/table-order-amendments.test.ts`; kỳ vọng PASS. Concurrent merge, order added during split, stale guest link, transfer while mission en route retarget version, kitchen bar courses partial ready. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/table-order-amendments.test.ts`; kỳ vọng PASS. Concurrent merge, order added during split, stale guest link, transfer while mission en route retarget version, kitchen bar courses partial ready. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T02.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: preserve table and kitchen history through service changes"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T02.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: preserve table and kitchen history through service changes"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W05-T03: Split/mixed tender/refund và bill ledger
 

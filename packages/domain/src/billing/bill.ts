@@ -27,6 +27,7 @@ export function registerBills(registry:ModuleRegistry):void {
   const orderIds=(bill.state.orderIds ?? []) as string[];
   const orders=orderIds.map(id=>requireState(s,'order',id));
   const lineIds=orders.flatMap(o=>((o.state.lines ?? []) as JsonObject[]).map(l=>l.id));
+  if(all(s,'kitchen-cancellation').some(x=>lineIds.includes(x.state.lineId)&&x.state.status==='requested')) return fail('DISPOSITION_PENDING');
   if(all(s,'allocation').some(a=>lineIds.includes(a.state.lineId)&&['reserved','loaded','unknown','returning'].includes(String(a.state.status)))) return fail('FULFILLMENT_UNRESOLVED');
   const events=[changed('BillClosed',bill,{status:'closed',closedAt:c.recordedAt}),...orders.map(o=>changed('OrderClosed',o,{status:'closed'}))];
   if(bill.state.sessionId) {

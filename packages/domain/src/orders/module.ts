@@ -4,6 +4,7 @@ import { currentMenu } from '../catalog/menu';
 import { quoteForCommand, summarize } from '../pricing/quote';
 import { assertMutableOrder, lineReferences } from './order';
 import { newOrderLines, sessionForOrder } from './commands';
+import { cancelOrderLine } from './amendment';
 import { amount, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
 export function registerOrders(registry:ModuleRegistry):void {
  handle(registry,'Order.Place',(c,s)=>{
@@ -20,6 +21,7 @@ export function registerOrders(registry:ModuleRegistry):void {
   return done([created('OrderAccepted','order',orderId,state),changed('SessionOrderAdded',session,{orderIds:[...((session.state.orderIds ?? []) as string[]),orderId]}),...materialized.events],{orderId,lineIds:materialized.lines.map(l=>l.id),sessionId});
  });
  handle(registry,'Order.Amend',(c,s)=>{
+  if(c.payload.lineId!==undefined) return cancelOrderLine(c,s); // line-cancel branch; otherwise add items
   const order=requireState(s,'order',text(c.payload.orderId)); expectVersion(c,order); assertMutableOrder(order.state);
   const session=sessionForOrder(s,order.state) ?? fail('NOT_FOUND');
   if(session.state.status!=='open' || session.state.frozenBillId) return fail('SESSION_FROZEN');
@@ -37,7 +39,7 @@ export function registerOrders(registry:ModuleRegistry):void {
   const lines=lineReferences(order.state);
   const portions=lines.map(line=>requireState(s,'fulfillment',String(line.id)));
   if(portions.some(p=>BigInt(String(p.state.allocated))>0n)) return fail('FULFILLMENT_ACTIVE');
-  if(portions.some(p=>BigInt(String(p.state.ready))+BigInt(String(p.state.served))>0n)) return fail('REQUIRES_DISPOSITION');
+  if(portions.some(p=>BigInt(String(p.state.ready))+BigInt(String(p.state.served))+BigInt(String(p.state.held ?? '0'))>0n)) return fail('REQUIRES_DISPOSITION');
   const session=sessionForOrder(s,order.state);
   const events=[changed('OrderCancelled',order,{status:'cancelled',cancellationReason:reason}),...portions.map(p=>changed('FulfillmentCancelled',p,{status:'cancelled'})),...lines.map(line=>changed('KitchenTicketCancelled',requireState(s,'kitchen-ticket',String(line.id)),{status:'cancelled'}))];
   if(session) events.push(changed('SessionOrderCancelled',session,{}));

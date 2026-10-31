@@ -1,11 +1,51 @@
 import type {JsonObject} from '../../../../packages/contracts/src/index';
-import {el,select,panel,list,tr,money,button,act,type ScreenContext} from '../ui';
+import {el,field,select,panel,list,tr,money,button,act,type ScreenContext} from '../ui';
 type Pick={groupId:string;optionId:string};
 type CartLine={itemId:string;quantity:string;modifiers:Pick[]};
 type Draft={tableId:string;lines:CartLine[];discountIds:string[];operationId:string;quote?:JsonObject;stale:boolean};
 const fresh=(tableId=''):Draft=>({tableId,lines:[],discountIds:[],operationId:crypto.randomUUID(),stale:false});
 let draft=fresh();
 const sameLine=(a:CartLine,b:CartLine)=>a.itemId===b.itemId&&JSON.stringify(a.modifiers)===JSON.stringify(b.modifiers);
+/** Unsent edits survive a re-render and a VERSION_CONFLICT: a conflict only records which newer version was found. */
+type Edit={quantity:string;reason:string;target:string};
+const edits=new Map<string,Edit>(),conflicts=new Map<string,number>();
+const edit=(key:string):Edit=>{let e=edits.get(key);if(!e){e={quantity:'1',reason:'',target:''};edits.set(key,e);}return e;};
+async function amend(c:ScreenContext,key:string,type:string,payload:JsonObject,version:number){
+ const result=await act(c,type,payload,version);
+ if(result?.status==='accepted'){edits.delete(key);conflicts.delete(key);}
+ else if(result?.code==='VERSION_CONFLICT'){conflicts.set(key,version);await c.refresh();}
+}
+const staleNote=(c:ScreenContext,key:string,version:number)=>conflicts.has(key)&&version>conflicts.get(key)!?el('p',tr(c,`Đã có bản mới hơn (v${version}) do thiết bị khác ghi. Bản nháp của bạn được giữ: kiểm tra rồi gửi lại.`,`A newer version (v${version}) was written by another device. Your draft is kept: review it, then send again.`),'offline-banner'):undefined;
+function tables(c:ScreenContext):HTMLElement {
+ const box=el('div',undefined,'screen-grid'),nameOf=(id:string)=>String(list(c,'table').find(t=>t.ref.id===id)?.state.name??id);
+ const open=list(c,'session').filter(s=>s.state.status==='open'),orders=list(c,'order');
+ for(const session of open){
+  const row=el('article',undefined,'record'),frozen=Boolean(session.state.frozenBillId);
+  row.append(el('strong',nameOf(String(session.state.tableId))),el('span',frozen?tr(c,'Đã in tạm tính','Bill prepared'):tr(c,'Đang phục vụ','Open'),'badge'));
+  const note=staleNote(c,'s'+session.ref.id,session.version);if(note)row.append(note);
+  const move=edit('move'+session.ref.id),freeTables=list(c,'table').filter(t=>!t.state.activeSessionId).map(t=>({id:t.ref.id,name:String(t.state.name??t.ref.id)}));
+  const to=select(tr(c,'Chuyển sang bàn','Move to table'),freeTables,move.target);to.input.addEventListener('change',()=>{move.target=to.input.value;});
+  const others=open.filter(o=>o!==session).map(o=>({id:o.ref.id,name:nameOf(String(o.state.tableId))})),merge=edit('merge'+session.ref.id),into=select(tr(c,'Gộp vào bàn','Merge into table'),others,merge.target);into.input.addEventListener('change',()=>{merge.target=into.input.value;});
+  const other=()=>open.find(o=>o.ref.id===into.input.value);
+  const moveButton=button(tr(c,'Chuyển bàn','Move'),()=>amend(c,'s'+session.ref.id,'Session.Move',{sessionId:session.ref.id,toTableId:to.input.value},session.version)),mergeButton=button(tr(c,'Gộp bàn','Merge'),()=>amend(c,'s'+session.ref.id,'Session.Merge',{sourceSessionId:session.ref.id,targetSessionId:into.input.value,expectedSourceVersion:session.version,expectedTargetVersion:other()?.version??0},session.version),'quiet');
+  moveButton.disabled=frozen||!freeTables.length;mergeButton.disabled=frozen||!others.length;
+  row.append(to.node,moveButton,into.node,mergeButton);
+  for(const order of orders.filter(o=>o.state.sessionId===session.ref.id&&o.state.status==='open')){
+   const key='o'+order.ref.id,orderNote=staleNote(c,key,order.version);if(orderNote)row.append(orderNote);
+   const fired=(order.state.courses??{}) as Record<string,string>; // course >1 waits until Order.SendCourse fires it
+   for(const course of [...new Set(((order.state.lines as JsonObject[]|undefined)??[]).map(l=>Number(l.course??1)).filter(n=>n>1&&fired[String(n)]!=='fired'))].sort())row.append(button(tr(c,`Gọi món đợt ${course}`,`Fire course ${course}`),()=>amend(c,key,'Order.SendCourse',{orderId:order.ref.id,course},order.version),'quiet'));
+   for(const line of (order.state.lines as JsonObject[]|undefined)??[]){
+    const active=BigInt(String(line.quantity))-BigInt(String(line.cancelledQuantity??'0'));if(active<=0n)continue;
+    const e=edit('l'+line.id),qty=field(tr(c,'Số lượng hủy','Quantity to cancel'),e.quantity,'number'),why=field(tr(c,'Lý do','Reason'),e.reason);qty.input.min='1';qty.input.max=String(active);qty.input.step='1';
+    qty.input.addEventListener('input',()=>{e.quantity=qty.input.value;});why.input.addEventListener('input',()=>{e.reason=why.input.value;});
+    row.append(el('p',`${String(line.name)} × ${String(active)}${line.cancelledQuantity&&line.cancelledQuantity!=='0'?` (${tr(c,'đã hủy','cancelled')} ${String(line.cancelledQuantity)})`:''}`),qty.node,why.node,button(tr(c,'Hủy món','Cancel item'),()=>amend(c,key,'Order.Amend',{lineId:String(line.id),cancelQuantity:qty.input.value,reason:why.input.value},order.version),'danger'));
+   }
+  }
+  box.append(row);
+ }
+ if(!box.children.length)box.append(el('p',tr(c,'Chưa có bàn nào đang phục vụ.','No open tables.')));
+ return box;
+}
 export function Pos(c:ScreenContext) {
  const root=el('div',undefined,'two-columns'),menu=list(c,'catalog').find(s=>s.ref.id==='current');
  const options=list(c,'table').map(t=>({id:t.ref.id,name:String(t.state.name??t.ref.id)}));
@@ -80,5 +120,5 @@ export function Pos(c:ScreenContext) {
  };
  for(const item of items){const card=button(String(item.name),()=>{if((item.modifierGroups as unknown[]|undefined)?.length)choose(item);else addLine({itemId:String(item.id),quantity:'1',modifiers:[]});},'menu-item');card.append(el('span',money(item.unitMinor),'price'));card.disabled=item.available===false;grid.append(card);}
  if(!items.length)grid.append(el('p',tr(c,'Chưa có thực đơn được áp dụng tại nhà hàng.','No menu has been applied to this venue.')));
- root.append(panel(tr(c,'Thực đơn','Menu'),grid,chooser),panel(tr(c,'Đơn mới','New order'),table.node,cart,quoteBox,orderButton,el('p',tr(c,'Giỏ được giữ đến khi nhà hàng xác nhận. Giá cuối cùng do bộ điều phối tính.','The cart stays until restaurant acceptance. The coordinator calculates final prices.'),'muted')));renderCart();return root;
+ root.append(panel(tr(c,'Thực đơn','Menu'),grid,chooser),panel(tr(c,'Đơn mới','New order'),table.node,cart,quoteBox,orderButton,el('p',tr(c,'Giỏ được giữ đến khi nhà hàng xác nhận. Giá cuối cùng do bộ điều phối tính.','The cart stays until restaurant acceptance. The coordinator calculates final prices.'),'muted')));renderCart();const page=el('div');page.append(root,panel(tr(c,'Bàn đang phục vụ','Open tables'),tables(c)));return page;
 }

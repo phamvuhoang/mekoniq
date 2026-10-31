@@ -6,6 +6,6 @@ export function registerSessions(registry:ModuleRegistry):void {
   const table=requireState(s,'table',tableId);
   if(find(s,'session',sessionId)) return fail('SESSION_EXISTS');
   if(table.state.activeSessionId) return fail('TABLE_OCCUPIED');
-  return done([created('SessionOpened','session',sessionId,{tableId,status:'open',orderIds:[],openedBy:c.actorRef,openedAt:c.recordedAt}),changed('TableOccupied',table,{activeSessionId:sessionId})],{sessionId});
+  return done([created('SessionOpened','session',sessionId,{tableId,status:'open',orderIds:[],revision:0,openedBy:c.actorRef,openedAt:c.recordedAt}),changed('TableOccupied',table,{activeSessionId:sessionId})],{sessionId});
  });
 }
