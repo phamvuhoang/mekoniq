@@ -2,6 +2,8 @@
 
 Branch: `feat/w00-w04-production-foundation`, tách từ `62a98bd`; làm trực tiếp trong repository `source`, không dùng worktree. `trial` và `web` được giữ nguyên.
 
+Review bổ sung ngày 2026-10-31: xem [13 bản sửa và kiểm chứng](review-repair-verification.md). Gate A vẫn chưa được chấp nhận.
+
 ## Chạy local
 
 Dùng Node.js theo `.node-version` (24.22.2), pnpm 10.32.1 và Docker. Không cần tài khoản hosted.

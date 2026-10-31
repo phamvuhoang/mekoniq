@@ -52,4 +52,23 @@ During verification, host load exceeded 110 and the coordinating agent confirmed
 
 The signed v1/v2 archive regression reproduced `RESTORE_SCHEMA_MISMATCH`, and a newly enrolled device after preparation was incorrectly allowed to enter full shutdown (`/tmp/native-review-archive-safety-red.log`: three selected tests, two intended failures, corrected observation-selection test passed). The repair adds only known outbox defaults before the existing strict column check, and native safety transitions now revalidate all current active devices. Tests additionally cover changed device epoch, expired checkpoint and a valid complete inventory.
 
-Malformed JSON and declared legacy envelopes that conflict with signed effect metadata fail closed; the repair does not delete records or invent acknowledgments to bypass corruption. Final aggregate verification is pending. No physical/device acceptance is inferred from these JVM tests.
+Malformed JSON and declared legacy envelopes that conflict with signed effect metadata fail closed; the repair does not delete records or invent acknowledgments to bypass corruption. Final native verification: all 27 cases covering this repair scope passed (NativeReviewTest 9, ArchiveTest 2, NativeStoreTest 12, ProvisioningTest 2, RuntimeQueueTest 2). The full 29-case invocation had one additional NetworkIsolationTest fixture failure at its two-second TCP accept setup, before its heartbeat/cancellation assertion; the other network test passed. The coordinating agent owns that unchanged-timeout rerun. Full invocation: `/tmp/native-review-final-green.log`, 19m46s under the documented host pressure. No JVM OOM occurred with 768 MiB, one worker and in-process Kotlin.
+
+All nine review regression cases are GREEN, including the 100-intent selection and terminal venue ACK lifecycle. The signed v1/v2 archive cases preserve receipts and keep restored effects unknown; missing mandatory columns remain rejected. New-device, changed-epoch, expired and complete-current checkpoint scenarios are covered in the native safety regression. No physical/device acceptance is inferred from these JVM tests.
+
+## Known follow-up outside this repair scope
+
+Static observation, not reproduced by a regression in this task: `apps/tablet-android/src/coordinator-runtime.ts:16` chooses `AndroidStore.ackLevel` from the initial coordinator role, while later dispatch checks current authority (`:31`). `packages/sync/src/command-processor.ts:27` uses that store ACK level. Whether a fenced former coordinator can display a venue ACK for a later local capture needs a separate runtime test; this is a pre-existing, unverified follow-up, and no change is made here.
+
+## Final APK verification
+
+After the coordinating agent's final production workspace build and Capacitor asset sync, `:app:assembleDebug :app:assembleRelease :app:assembleDebugAndroidTest --offline --no-daemon --max-workers=1 -Dorg.gradle.jvmargs=-Xmx768m -Pkotlin.compiler.execution.strategy=in-process` passed (14m48s; 171 tasks, 18 executed). No JVM tests or device instrumentation were rerun in this build.
+
+Release artifact: `apps/tablet-android/android/app/build/outputs/apk/release/app-release-unsigned.apk`.
+
+- SHA-256: `2adcbcbb6f3547d041828601b523a741d162976e8fce4ca6248de0423e7d77a3`.
+- APK bytes: 3657593.
+- `aapt dump xmltree` and `aapt dump badging` show no debug DeviceOwner receiver, debuggable flag or test-only flag in release.
+- Release remains unsigned; no deployment, device installation or physical qualification was performed.
+
+The coordinating agent subsequently reported the separate network rerun 2/2 GREEN after increasing only fixture startup preparation to 15 seconds and asserting native request activity. Measured heartbeat/cancellation assertions remain one second and socket EOF two seconds. The original full-run fixture failure remains recorded above.

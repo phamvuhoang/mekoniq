@@ -1,5 +1,7 @@
 # W00–W04 verification record
 
+Subsequent review repairs (13 software findings, 2026-10-31) are tracked in [review repair verification](review-repair-verification.md). This document retains the original implementation measurements.
+
 Date: 2026-10-30. Branch: `feat/w00-w04-production-foundation`; base: `62a98bd32afabbe3e98f002bb573be6ed2b945d5`. Work stayed in the existing `source` checkout, with no worktree. `trial` and `web` remained clean on `main`.
 
 Final implementation commit: `b04440ea7e7206c24a08fb317668f9cd925ab019`. This document and collected reports are recorded in the following evidence commit. No push, merge, hosted deployment or live robot change was performed.

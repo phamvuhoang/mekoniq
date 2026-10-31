@@ -1171,5 +1171,13 @@
     "verified_local": "Implemented and exercised locally; external production qualification is separate.",
     "blocked_external": "Software implemented; mandatory physical/lifecycle/soak qualification remains.",
     "planned": "Outside W00–W04 execution scope."
+  },
+  "reviewRepair": {
+    "date": "2026-10-31",
+    "base": "1713276",
+    "productionRevision": "8f99082",
+    "evidence": "../../implementation/review-repair-verification.md",
+    "status": "implemented_scoped_verified_full_regression_blocked",
+    "mergeReady": false
   }
 }
