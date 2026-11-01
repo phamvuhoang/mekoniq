@@ -19,6 +19,8 @@ import {enqueueRelay,pendingRelay,recordVenueReceipt} from './relay/commands';
 import {createAssetUpload,createAssetDownload,type UploadInput} from './storage/signed-upload';
 import {finalizeAsset} from './storage/finalize';
 import {guestMenu,guestMenuImage,guestSession,submitGuestCommand} from './guest/api';
+import {readReport} from './reports/read';
+import {reportCsv} from '../../../../../packages/domain/src/reporting/report';
 import type {CommandEnvelope,CommandResult,JsonObject} from '../../../../../packages/contracts/generated/wire';
 export type CloudRouteContext={actor:Actor|null;params:Record<string,string>;body:unknown};
 export type CloudRoute={method:string;path:string;permission:string|null;bodyLimit:number;handler:(request:Request,context:CloudRouteContext)=>Promise<Response>};
@@ -107,6 +109,12 @@ export function registerWave02Routes(register:(route:CloudRoute)=>void):void {
  });
  add('GET','/v1/assets/:id/download','assets.read',async(request,c)=>{
   const actor=actorRequired(c.actor);return Response.json(await createAssetDownload(actor,actorScope(actor,new URL(request.url).searchParams.get('venueId')??''),c.params.id));
+ });
+ add('GET','/v1/reports/:kind','report.read',async(request,c)=>{
+  const actor=actorRequired(c.actor),query=new URL(request.url).searchParams,businessDate=query.get('businessDate')??'';
+  const report=await readReport(actor,actorScope(actor,query.get('venueId')??''),c.params.kind,businessDate);
+  if(query.get('format')!=='csv')return Response.json(report);
+  return new Response(reportCsv(report),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="${c.params.kind}-${businessDate}.csv"`}}); // kind and date are validated by readReport
  });
  // Guest web: no staff session. Scope comes from the venue-signed table token (or the public menu's own org/venue), never from a cookie.
  add('GET','/v1/guest/menu/:organizationId/:venueId',null,async(_request,c)=>Response.json(await guestMenu({organizationId:c.params.organizationId,venueId:c.params.venueId})));

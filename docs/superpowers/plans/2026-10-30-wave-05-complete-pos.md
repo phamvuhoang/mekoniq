@@ -291,7 +291,7 @@ export function guestSessionValid(token:{sessionId:string;revision:number},
 - Consumes: Ledger facts, business date/timezone, projection watermark.
 - Produces: `GET /v1/reports/sales`, `/shifts`, `/robot-kpi`; CSV escaped export, effective/applied timestamps.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -308,9 +308,9 @@ test("late historical receipt adjusts the original business day", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/sales-reconciliation.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/sales-reconciliation.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Ledger là nguồn tổng, materialized views rebuild được theo checkpoint. Report phân biệt revenue/payment/cash/change/refund, khung ca timezone và late adjustments. Không sửa ledger để khớp báo cáo.
+- [x] **3. Hiện thực phần cốt lõi.** Ledger là nguồn tổng, materialized views rebuild được theo checkpoint. Report phân biệt revenue/payment/cash/change/refund, khung ca timezone và late adjustments. Không sửa ledger để khớp báo cáo.
 
 ```ts
 export function netSales(gross:string, discount:string, returns:string) {
@@ -318,14 +318,14 @@ export function netSales(gross:string, discount:string, returns:string) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** E2E cover đầy đủ workflow mô tả demo, permissions, recovery UI, touch portrait/landscape, VI/EN. Loading/empty/error/stale/offline có rõ trạng thái, không hiển thị số zero thay missing sync.
+- [x] **4. Nối vào runtime và lưu trữ.** E2E cover đầy đủ workflow mô tả demo, permissions, recovery UI, touch portrait/landscape, VI/EN. Loading/empty/error/stale/offline có rõ trạng thái, không hiển thị số zero thay missing sync.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/sales-reconciliation.test.ts`; kỳ vọng PASS. Report sum reconciles bill/payment/refund ledger, UTC ngày khác VN, CSV injection escaping. Rerun continuity scenarios impacted by new billing handlers. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/sales-reconciliation.test.ts`; kỳ vọng PASS. Report sum reconciles bill/payment/refund ledger, UTC ngày khác VN, CSV injection escaping. Rerun continuity scenarios impacted by new billing handlers. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T06.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: reconcile operational reports and complete pos acceptance"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T06.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: reconcile operational reports and complete pos acceptance"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ## Wave acceptance
 
-- [ ] Tổng tiền/số lượng bảo toàn qua tách/gộp/hoàn, không đưa float vào ledger.
-- [ ] QR chỉ đúng phiên bàn; nhân viên không được tự cấp quyền hoặc sửa policy offline.
-- [ ] In unknown và payment unknown đi reconciliation, không retry vô hạn.
+- [x] Tổng tiền/số lượng bảo toàn qua tách/gộp/hoàn, không đưa float vào ledger.
+- [x] QR chỉ đúng phiên bàn; nhân viên không được tự cấp quyền hoặc sửa policy offline.
+- [x] In unknown và payment unknown đi reconciliation, không retry vô hạn.

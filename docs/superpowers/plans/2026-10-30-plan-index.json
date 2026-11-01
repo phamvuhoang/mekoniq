@@ -411,7 +411,8 @@
       "depends": "W05-T01..W05-T05",
       "testFile": "tests/integration/sales-reconciliation.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/sales-reconciliation.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T06.md"
     },
     {
       "wave": "W06",

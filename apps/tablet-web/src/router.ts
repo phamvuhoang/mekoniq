@@ -17,6 +17,7 @@ import {PrintQueue} from './screens/PrintQueue';
 import {Kiosk} from './screens/Kiosk';
 import {RobotDisplay} from './screens/RobotDisplay';
 import {GuestRequests} from './screens/GuestRequests';
+import {Reports} from './screens/Reports';
 export const routes=[
  {path:'/device',key:'device',permission:'',screen:DeviceStatus},
  {path:'/pos',key:'pos',permission:'order.write',screen:Pos},
@@ -26,6 +27,7 @@ export const routes=[
  {path:'/checkout',key:'checkout',permission:'payment.cash',screen:Checkout},
  {path:'/cash',key:'cash',permission:'shift.write',screen:CashShift},
  {path:'/print',key:'print',permission:'print',screen:PrintQueue},
+ {path:'/reports',key:'reports',permission:'report.read',screen:Reports},
  {path:'/guest-requests',key:'guest-requests',permission:'order.write',screen:GuestRequests},
  {path:'/kiosk',key:'kiosk',permission:'guest.order',screen:Kiosk},
  {path:'/robot-screen',key:'robot-screen',permission:'guest.order',screen:RobotDisplay},
