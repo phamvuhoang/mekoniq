@@ -117,7 +117,7 @@ test("HTTP 200 plus stale idle telemetry cannot mean arrival", async () => {
 
 - [x] **2. Chạy RED.** `pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [x] **3. Hiện thực phần cốt lõi.** Pin official routes/capability version from supplied robot; REST LAN for no broker deployment. MQTT command no retain, per-robot ACL; do not switch transports mid-trip. Fresh position+matching goal/map+status needed; uncertainty becomes needs_attention.
+- [x] **3. Hiện thực phần cốt lõi.** Pin official routes/capability version from supplied robot; REST LAN for no broker deployment. MQTT command no retain, per-robot ACL; do not switch transports mid-trip. Fresh position+matching goal/map+status needed; uncertainty becomes needs_attention. (software part only; hardware blocked_external: routes/capabilities are pinned to upstream Valetudo 2026.10.0, not read from a supplied robot)
 
 ```ts
 export function arrivalConfirmed(s:{fresh:boolean;mapMatches:boolean;goalMatches:boolean;
