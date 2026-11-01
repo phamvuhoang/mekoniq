@@ -8,6 +8,8 @@ import { robotSetupView } from "../../apps/tablet-web/src/screens/RobotSetup";
 import { completeSimulatedTravel, createSimulator } from "../support/restaurant-journey";
 import { dispatchRobotEffects, robotEventCommand } from "../../packages/robot-adapters/src/dispatch";
 import type { RobotEvent } from "../../packages/robot-adapters/src/contract";
+import { startNativeValetudoRuntime } from "../../apps/tablet-android/src/robot-executor-bridge";
+import { valetudoProfile } from "../support/valetudo-rig";
 
 type Lab=Awaited<ReturnType<typeof createRestaurantLab>>;
 const robot=(lab:Lab,id:string,o:JsonObject={})=>lab.seed("robot",id,{...structuredClone(fixture.robot) as JsonObject,id,...o});
@@ -307,9 +309,50 @@ test("an adapter safety_state fault holds the next leg and blocks Mission.Resume
     expect((await lab.command("cashier","Mission.Resume",{missionId,expectedVersion:held.version})).code).toBe("SAFETY_NOT_CLEAR");
     expect(await lab.count("RobotCommandIssued")).toBe(issued);
     expect(await executeIntents(lab)).toBe(executes);
+    await lab.advance(1000); // a clear must be strictly newer than the fault it lifts
     expect((await observe(safety("clear","4"))).status).toBe("accepted");
     const resumed=await lab.command("cashier","Mission.Resume",{missionId,expectedVersion:held.version});
     expect(resumed.status).toBe("accepted");
     expect(await lab.count("RobotCommandIssued")).toBe(issued+1);
   } finally { await lab.close(); }
+});
+
+test("safety observations are ordered: an older or same-instant clear never lifts a newer fault", async () => {
+  const lab=await createRestaurantLab();
+  try {
+    // The ordering key is the envelope's occurredAt (the forwarder sets it to the event's observedAt); the lab stamps it from its clock.
+    const observe=(safetyState:string,sequence:string)=>{const e:RobotEvent={type:"safety_state",id:`b-${sequence}`,commandId:"",bootId:"b",sequence,observedAt:new Date(lab.clock.nowMs).toISOString(),payload:{robotId:"sim-1",controlEpoch:1,safetyState}};return lab.command("owner","Robot.Observe",robotEventCommand(e),e.id);};
+    lab.clock.nowMs+=1000;expect((await observe("fault","1")).status).toBe("accepted");
+    const fault=await lab.state<JsonObject>("robot","sim-1");
+    expect(fault).toMatchObject({safetyState:"fault"});
+    lab.clock.nowMs-=500;expect((await observe("clear","0")).code).toBe("STALE_SAFETY_OBSERVATION"); // replayed older clear
+    lab.clock.nowMs+=500;expect((await observe("clear","2")).code).toBe("STALE_SAFETY_OBSERVATION"); // same instant
+    expect(await lab.state<JsonObject>("robot","sim-1")).toMatchObject({safetyState:"fault"});
+    lab.clock.nowMs+=1000;expect((await observe("clear","3")).status).toBe("accepted");
+    expect(await lab.state<JsonObject>("robot","sim-1")).toMatchObject({safetyState:"clear"});
+  } finally { await lab.close(); }
+});
+
+test("after a WebView reload, a robot already in error with no command reaches the domain: fault recorded, admission and Resume refused", async () => {
+  const lab=await createRestaurantLab();let runtime:ReturnType<typeof startNativeValetudoRuntime>|undefined;
+  try {
+    const base=await lab.state<JsonObject>("robot","sim-1");
+    await robot(lab,"val-1",{...base,driver:"valetudo",validation:"integration_tested",capabilities:["delivery","guide"],ownerDeviceId:"coordinator",controlEpoch:4,speedControl:false});
+    await lab.seed("mission","m-held",{kind:"delivery",status:"needs_attention",attentionReason:"MAP_BINDING_STALE",robotId:"val-1",loaded:false,revision:1,currentStopId:"s-1",allocationIds:[],stops:[{id:"s-1",action:"standby",targetId:"table-1",status:"pending",allocationIds:[]}]});
+    const samples=[{receivedAtMs:lab.clock.nowMs,reachable:true,status:"error",error:"Wheel stuck",mapFingerprint:"fp",position:{x:0,y:0}}];
+    const bridge={submit:async()=>({accepted:false,unknown:false}),reconcile:async()=>({status:"unknown" as const,evidence:{reason:"NO_GOAL_QUERY"}}),cancel:async()=>({acknowledged:false,unknown:true}),requestStop:async()=>({acknowledged:false,physicalStopConfirmed:false}),observations:async()=>({samples})};
+    const profile={...valetudoProfile("native","http://10.0.2.2:1"),robotId:"val-1",mapFingerprint:"fp"};
+    runtime=startNativeValetudoRuntime({store:await lab.getStore("coordinator"),scope:lab.scope,registry:lab.registry,profile,bridge,nowMs:()=>lab.clock.nowMs,intervalMs:0});
+    await runtime.step(); // not dispatchable (integration_tested): the observation is refused, so nothing is latched
+    expect(await lab.count("RobotSafetyObserved")).toBe(0);
+    const r=await lab.state<JsonObject>("robot","val-1");await lab.seed("robot","val-1",{...r,validation:"hardware_validated"}); // seeded profile, not hardware evidence
+    lab.clock.nowMs+=1000;samples.push({...samples[0]!,receivedAtMs:lab.clock.nowMs});
+    await runtime.step();
+    expect(await lab.state<JsonObject>("robot","val-1")).toMatchObject({safetyState:"fault",controlEpoch:4});
+    lab.clock.nowMs+=1000;samples.push({...samples[0]!,receivedAtMs:lab.clock.nowMs});await runtime.step();
+    expect(await lab.count("RobotSafetyObserved")).toBe(1); // latched after acceptance: no re-send
+    expect((await lab.command("cashier","Mission.Create",{robotId:"val-1",target:"table-1"})).code).toBe("SAFETY_NOT_CLEAR");
+    const held=await lab.state<{version:number}>("mission","m-held");
+    expect((await lab.command("cashier","Mission.Resume",{missionId:"m-held",expectedVersion:held.version})).code).toBe("SAFETY_NOT_CLEAR");
+  } finally { await runtime?.close();await lab.close(); }
 });

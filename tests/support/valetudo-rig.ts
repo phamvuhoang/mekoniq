@@ -49,7 +49,7 @@ export function createFakeBroker() {
 export async function createValetudoServer(options:{host?:string;port?:number;topic?:string;now?:()=>number}={}) {
  const now=options.now ?? Date.now,topic=options.topic ?? 'valetudo/EmulatedRobot',broker=createFakeBroker();
  const robot={status:'idle',flag:'none',x:2000,y:1500,angle:90,mapRevision:'r1',goToTarget:undefined as {x:number;y:number}|undefined,error:undefined as string|undefined,noPose:false};
- const lab={gotoMode:'accept' as 'accept'|'reject'|'fail'|'silent',gotoDelayMs:0,unreachable:false,mapPadBytes:0,gotos:[] as Goto[],stops:0,discardedRetained:0,capabilities:capabilitiesFixture as string[],bootAt:now()-3600000};
+ const lab={gotoMode:'accept' as 'accept'|'reject'|'fail'|'silent',gotoDelayMs:0,unreachable:false,mapPadBytes:0,gotos:[] as Goto[],stops:0,discardedRetained:0,capabilities:capabilitiesFixture as string[],bootAt:now()-3600000,stopFailures:0};
  const attributes=()=>{const a=clone(attributesFixture) as Record<string,unknown>[];Object.assign(a[0]!,{value:robot.status,flag:robot.flag,...(robot.status==='error'?{error:{severity:{kind:'transient',level:'error'},subsystem:'motors',message:robot.error ?? 'Wheel stuck'}}:{})});return a;};
  const map=()=>{
   const m=clone(mapFixture) as typeof mapFixture & {entities:Record<string,unknown>[];layers:Record<string,unknown>[];metaData:Record<string,unknown>};
@@ -83,8 +83,9 @@ export async function createValetudoServer(options:{host?:string;port?:number;to
     const input=req.method==='POST'?JSON.parse(await body(req) || '{}'):{};
     if(url.pathname==='/__lab/telemetry') {api.telemetry(input);return send(200,{ok:true});}
     if(url.pathname==='/__lab/goto-mode') {lab.gotoMode=input.mode;lab.gotoDelayMs=input.delayMs ?? 0;return send(200,{ok:true});}
+    if(url.pathname==='/__lab/stop-failures') {lab.stopFailures=Number(input.count ?? 0);return send(200,{ok:true});}
     if(url.pathname==='/__lab/unreachable') {lab.unreachable=Boolean(input.on);return send(200,{ok:true});}
-    if(url.pathname==='/__lab/reset') {Object.assign(robot,{status:'idle',flag:'none',x:2000,y:1500,mapRevision:'r1',goToTarget:undefined,error:undefined,noPose:false});lab.gotos=[];lab.stops=0;lab.gotoMode='accept';lab.unreachable=false;return send(200,{ok:true});}
+    if(url.pathname==='/__lab/reset') {Object.assign(robot,{status:'idle',flag:'none',x:2000,y:1500,mapRevision:'r1',goToTarget:undefined,error:undefined,noPose:false});lab.gotos=[];lab.stops=0;lab.stopFailures=0;lab.gotoMode='accept';lab.unreachable=false;return send(200,{ok:true});}
     if(url.pathname==='/__lab/counts') return send(200,{gotos:lab.gotos,stops:lab.stops});
     return send(404);
    }
@@ -105,7 +106,8 @@ export async function createValetudoServer(options:{host?:string;port?:number;to
    }
    if(req.method==='PUT'&&url.pathname==='/api/v2/robot/capabilities/BasicControlCapability') {
     const b=JSON.parse(await body(req));if(!['start','stop','pause','home'].includes(b.action)) return send(400);
-    if(b.action==='stop') lab.stops++;return send(200);
+    if(b.action==='stop') {lab.stops++;if(lab.stopFailures>0){lab.stopFailures--;return send(500);}} // stops counts every STOP received
+    return send(200);
    }
    send(404);
   } catch {if(!res.headersSent)send(500);}
@@ -140,19 +142,21 @@ export function valetudoProfile(transport:ValetudoProfile['transport'],endpoint:
  return {robotId:'valetudo-1',transport,endpoint,mqtt:{topicPrefix:'valetudo',identifier:'EmulatedRobot'},mapId:'valetudo-map',mapRevision:'r1',mapFingerprint:emulatorFingerprint(),frame:'valetudo',firmware:'protocol-emulator@valetudo-2026.10.0',validation:'integration_tested',capabilities:['delivery','guide'],maxLoadMinor:'5000',trays:1,offlineExecution:false,
   arriveToleranceM:0.4,goalToleranceCm:5,stationaryCm:5,stationaryMs:2000,freshMs:3000,tripTimeoutMs:120000,requestTimeoutMs:300,maxMapBytes:262144,...overrides};
 }
-export async function createValetudoRig(options:{transport?:'rest'|'mqtt';profile?:Partial<ValetudoProfile>}={}) {
+/** ackSafety (default true) plays the domain accepting each safety_state, as startNativeValetudoRuntime's forwarder does on acceptance. */
+export async function createValetudoRig(options:{transport?:'rest'|'mqtt';profile?:Partial<ValetudoProfile>;ackSafety?:boolean}={}) {
  const clock={ms:Date.parse('2026-11-01T00:00:00Z')},now=()=>clock.ms;
  const server=await createValetudoServer({now});
  const transportKind=options.transport ?? 'rest',profile=valetudoProfile(transportKind,server.url,options.profile);
  const transport=transportKind==='rest'?new RestTransport(profile,now,{allowLoopback:true}):new MqttTransport(server.broker.client(`${server.topic}/`),profile,now);
  const adapter=new ValetudoAdapter(profile,transport,now),events:RobotEvent[]=[];
- adapter.observe(event=>events.push(event));
+ adapter.observe(event=>{events.push(event);if(event.type==='safety_state'&&options.ackSafety!==false) adapter.safetyAccepted(String(event.payload.safetyState));});
  return {
   server,adapter,events,profile,clock,
   advance(ms:number){clock.ms+=ms;},
   /** Advance the clock then run one telemetry round. */
   async tick(ms=1000){clock.ms+=ms;await adapter.poll();},
-  types:()=>events.map(e=>e.type),
+  /** Goal events (robot-level safety_state excluded; assert those via `events`). */
+  types:()=>events.filter(e=>e.type!=='safety_state').map(e=>e.type),
   command(commandId:string,overrides:Partial<RobotCommand>={}):RobotCommand {
    return {schemaVersion:1,commandId,operationId:`op-${commandId}`,organizationId:'org-a',venueId:'venue-a',robotId:'valetudo-1',missionId:'mission-1',stopId:'stop-1',missionRevision:1,controlEpoch:1,issuerDeviceId:'device-a',issuedAt:new Date(clock.ms).toISOString(),expiresAt:new Date(clock.ms+60000).toISOString(),
     target:{waypointId:'table-1',mapId:'valetudo-map',mapRevision:'r1',frame:'valetudo',x:25,y:12,yaw:0},limits:{trays:1,maxLoadMinor:'5000'},...overrides};

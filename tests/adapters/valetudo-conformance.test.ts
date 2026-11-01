@@ -172,13 +172,29 @@ describe("valetudo REST conformance (protocol emulator, not a robot)", () => {
       expect(await rig.adapter.execute(rig.command("c-3",{stopId:"stop-3"}))).toMatchObject({accepted:true});
     } finally { await rig.close(); }
   });
-  test("robot error is failed plus a safety_state fault; recovery reports clear", async () => {
+  test("robot error is failed plus a safety_state fault; recovery reports clear; an erroring robot gets no goto", async () => {
     const rig = await createValetudoRig();
     try {
       await rig.adapter.execute(rig.command("c-1"));
       rig.server.driving();await rig.tick(1000);
       rig.server.telemetry({status:"error",error:"Wheel stuck"});await rig.tick(1000);
-      expect(rig.events.filter(e=>["safety_state","failed"].includes(e.type)).map(e=>[e.type,e.payload.safetyState ?? e.payload.reason])).toEqual([["safety_state","fault"],["failed","ROBOT_ERROR"]]);
+      expect(rig.events.filter(e=>["safety_state","failed"].includes(e.type)).map(e=>[e.type,e.payload.safetyState ?? e.payload.reason])).toEqual([["safety_state","clear"],["safety_state","fault"],["failed","ROBOT_ERROR"]]);
+      expect(rig.events.filter(e=>e.type==="safety_state").every(e=>e.commandId===""&&e.payload.controlEpoch===undefined)).toBe(true); // robot-level: the forwarder stamps the epoch
+      expect(await rig.adapter.execute(rig.command("c-2",{stopId:"stop-2"}))).toMatchObject({accepted:false,reason:"ROBOT_ERROR"});
+      expect(rig.server.gotoCount).toBe(1);
+      rig.server.telemetry({status:"idle"});await rig.tick(1000);
+      expect(rig.events.at(-1)).toMatchObject({type:"safety_state",payload:{safetyState:"clear"}});
+    } finally { await rig.close(); }
+  });
+  test("after a reload with no command, the current robot state is reported and re-emitted until the domain accepts it", async () => {
+    const rig = await createValetudoRig({ackSafety:false});
+    try {
+      rig.server.telemetry({status:"error",error:"Wheel stuck"});
+      await rig.tick(1000);await rig.tick(1000);
+      const faults=rig.events.filter(e=>e.type==="safety_state");
+      expect(faults.map(e=>e.payload.safetyState)).toEqual(["fault","fault"]); // not latched: nothing accepted it yet
+      rig.adapter.safetyAccepted("fault");await rig.tick(1000);
+      expect(rig.events.filter(e=>e.type==="safety_state")).toHaveLength(2);
       rig.server.telemetry({status:"idle"});await rig.tick(1000);
       expect(rig.events.at(-1)).toMatchObject({type:"safety_state",payload:{safetyState:"clear"}});
     } finally { await rig.close(); }
@@ -274,6 +290,19 @@ describe("valetudo MQTT conformance (in-process fake broker, no MQTT client libr
       expect(rig.events.at(-1)).toMatchObject({type:"unknown",payload:{reason:"TELEMETRY_GAP"}});
       const other=new MqttTransport(rig.server.broker.client(`${rig.server.topic}/`),{mqtt:{topicPrefix:"valetudo",identifier:"OtherRobot"},maxMapBytes:8192});
       expect(await other.goto(rig.command("x"),{x:1,y:1})).toMatchObject({ack:"unknown"});
+      expect(rig.server.gotoCount).toBe(1);
+    } finally { await rig.close(); }
+  });
+  test("an MQTT STOP is only delivered, never acknowledged; cancel still waits for stationary evidence", async () => {
+    const rig = await createValetudoRig({transport:"mqtt"});
+    try {
+      rig.server.telemetry({status:"idle"});
+      await rig.adapter.execute(rig.command("c-1"));
+      await rig.tick(1000);rig.server.driving();await rig.tick(1000);
+      expect(await rig.adapter.cancel("c-1")).toEqual({acknowledged:false,unknown:true});
+      expect(rig.server.stopCount).toBe(1);
+      expect(await rig.adapter.requestStop("operator")).toEqual({acknowledged:false,physicalStopConfirmed:false});
+      expect(await rig.adapter.execute(rig.command("c-2",{stopId:"stop-2"}))).toMatchObject({accepted:false});
       expect(rig.server.gotoCount).toBe(1);
     } finally { await rig.close(); }
   });

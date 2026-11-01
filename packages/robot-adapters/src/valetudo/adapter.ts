@@ -15,7 +15,8 @@ export interface ValetudoTransport {
  readonly kind:'rest'|'mqtt'|'native';
  capabilities():Promise<string[]>;
  goto(command:RobotCommand,goal:{x:number;y:number}):Promise<{ack:'accepted'|'delivered'|'rejected'|'unknown';reason?:string}>;
- stop(reason:string,commandId?:string):Promise<'acknowledged'|'rejected'|'unknown'>;
+ /** `acknowledged` only when the robot side answered (Valetudo REST 200); `delivered` = a broker took it (MQTT), never an acknowledgement. */
+ stop(reason:string,commandId?:string):Promise<'acknowledged'|'delivered'|'rejected'|'unknown'>;
  /** Samples received since `sinceMs`; REST takes one now, MQTT returns its current aggregate, native returns journaled observations. */
  samples(sinceMs:number,commandId?:string):Promise<ValetudoSample[]>;
  /** Native only: the durable journal row of a command this WebView instance never saw (reload). */
@@ -27,7 +28,7 @@ export class ValetudoAdapter implements RobotAdapter {
  private goals=new Map<string,GoalRecord>();
  private commands=new Map<string,RobotCommand>();
  private listeners=new Set<(event:RobotEvent)=>void>();
- private sequence=0n;private epoch=0;private caps?:string[];private last?:ValetudoSample;private stopAtMs?:number;private stopSamples:ValetudoSample[]=[];private fault=false;private seenMs=-Infinity;
+ private sequence=0n;private epoch=0;private caps?:string[];private last?:ValetudoSample;private stopAtMs?:number;private stopSamples:ValetudoSample[]=[];private reportedSafety?:string;private seenMs=-Infinity;
  private readonly bootId=`valetudo-${crypto.randomUUID()}`;
  constructor(private profile:ValetudoProfile,private readonly transport:ValetudoTransport,private now:()=>number=Date.now) {
   if(profile.transport!==transport.kind) throw new Error('TRANSPORT_MISMATCH');
@@ -52,7 +53,7 @@ export class ValetudoAdapter implements RobotAdapter {
  }
  private emit(type:RobotEvent['type'],commandId:string,extra:JsonObject={}):void {
   const c=this.commands.get(commandId);this.sequence++;
-  const event:RobotEvent={type,id:`${this.bootId}-${this.sequence}`,commandId,bootId:this.bootId,sequence:String(this.sequence),observedAt:new Date(this.now()).toISOString(),payload:{robotId:this.profile.robotId,...(c?{missionId:c.missionId,missionRevision:c.missionRevision,controlEpoch:c.controlEpoch}:{controlEpoch:this.epoch}),transport:this.transport.kind,...extra}};
+  const event:RobotEvent={type,id:`${this.bootId}-${this.sequence}`,commandId,bootId:this.bootId,sequence:String(this.sequence),observedAt:new Date(this.now()).toISOString(),payload:{robotId:this.profile.robotId,...(c?{missionId:c.missionId,missionRevision:c.missionRevision,controlEpoch:c.controlEpoch}:{}),transport:this.transport.kind,...extra}};
   for(const listener of this.listeners) listener(event);
  }
  private refuse(reason:string):NativeAcceptance {return {accepted:false,unknown:false,reason};}
@@ -78,6 +79,7 @@ export class ValetudoAdapter implements RobotAdapter {
    const pre=(await this.transport.samples(this.now()).catch(()=>[])).at(-1);if(pre)this.last=pre;
    if(!pre?.reachable||pre.retained||this.now()-pre.receivedAtMs>p.freshMs) return this.refuse('ROBOT_UNREACHABLE');
    if(pre.mapFingerprint!==p.mapFingerprint) return this.refuse('MAP_MISMATCH');
+   if(pre.status==='error') return this.refuse('ROBOT_ERROR');
   }
   this.epoch=Math.max(this.epoch,command.controlEpoch);
   const goal:GoalRecord={commandId:command.commandId,hash,goal:{x:target.x,y:target.y},state:'sending',samples:[]};
@@ -94,14 +96,18 @@ export class ValetudoAdapter implements RobotAdapter {
  /** One telemetry round: journal samples into active goals, assess, emit transitions (each at most once). Run by the runtime loop. */
  async poll():Promise<void> {
   const active=[...this.goals.values()].filter(g=>ACTIVE.includes(g.state)&&(g.ackAtMs!==undefined||g.stopAtMs!==undefined));
-  const since=Math.min(...active.map(g=>g.ackAtMs ?? g.stopAtMs!),this.stopAtMs ?? Infinity,this.now());
+  // With no goal, still read the robot's current state (robot-level safety): from the last sample seen, or one freshness window back.
+  const since=Math.min(...active.map(g=>g.ackAtMs ?? g.stopAtMs!),this.stopAtMs ?? Infinity,Number.isFinite(this.seenMs)?this.seenMs:this.now()-this.profile.freshMs);
   let samples:ValetudoSample[]=[];
   try{samples=await this.transport.samples(since,active[0]?.commandId);}catch{samples=[{receivedAtMs:this.now(),reachable:false}];}
   if(!samples.length&&this.transport.kind!=='native') samples=[{receivedAtMs:this.now(),reachable:false}];
   samples=samples.filter(s=>s.receivedAtMs>this.seenMs).sort((a,b)=>a.receivedAtMs-b.receivedAtMs); // native replays its journal: only new rows count
   const last=samples.at(-1);if(!last) {for(const goal of active) this.settle(goal);return;}
   this.last=last;this.seenMs=last.receivedAtMs;
-  if(last.reachable&&(last.status==='error')!==this.fault) {this.fault=last.status==='error';this.emit('safety_state',active[0]?.commandId ?? '',{safetyState:this.fault?'fault':'clear',...(last.error?{detail:last.error}:{})});}
+  // Robot-level safety (no command, no epoch: the forwarder stamps the robot's current epoch). Re-emitted every round until the domain
+  // accepted that state (safetyAccepted). A fault is reported from any reachable sample, a clear only from a fresh one.
+  const observed=last.reachable?last.status==='error'?'fault':this.now()-last.receivedAtMs<=this.profile.freshMs?'clear':undefined:undefined;
+  if(observed&&observed!==this.reportedSafety) this.emit('safety_state','',{safetyState:observed,...(last.error?{detail:last.error}:{})});
   for(const goal of active) {
    const lastAt=goal.samples.at(-1)?.receivedAtMs ?? -Infinity;
    goal.samples.push(...samples.filter(s=>s.receivedAtMs>lastAt));goal.samples.splice(0,Math.max(0,goal.samples.length-500));
@@ -125,14 +131,17 @@ export class ValetudoAdapter implements RobotAdapter {
    this.emit(verdict.state as RobotEvent['type'],goal.commandId,{...(verdict.reason?{reason:verdict.reason}:{}),...(verdict.distanceM!==undefined?{distanceM:verdict.distanceM}:{})});
   }
  }
+ /** The domain accepted this robot-level safety state (Robot.Observe); stop re-emitting it. */
+ safetyAccepted(state:string):void {this.reportedSafety=state;}
  async cancel(commandId:string):Promise<NativeCancellation> {
   const goal=this.goals.get(commandId);
   if(!goal) return {acknowledged:false,unknown:true};
   if(!ACTIVE.includes(goal.state)&&goal.state!=='unknown') return {acknowledged:false,unknown:false}; // An unknown goal may still be driving: stop it.
   const r=await this.transport.stop('cancel',commandId).catch(()=>'unknown' as const);
-  if(r!=='acknowledged') return {acknowledged:false,unknown:r==='unknown'};
+  if(r==='rejected') return {acknowledged:false,unknown:false};
+  // Delivered-only (MQTT) or unanswered STOPs may still have stopped the robot: cancel waits for stationary evidence either way.
   goal.state='cancelling';goal.stopAtMs=this.now();goal.ackAtMs??=goal.stopAtMs;this.stopAtMs=goal.stopAtMs;this.stopSamples=[];
-  return {acknowledged:true,unknown:false};
+  return {acknowledged:r==='acknowledged',unknown:r!=='acknowledged'};
  }
  /** A stop request is never a physical-stop proof; running goals become unknown and new goals wait for stationary evidence. */
  async requestStop(reason:string):Promise<StopAcknowledgement> {

@@ -46,7 +46,8 @@ export class MqttTransport implements ValetudoTransport {
  async goto(_command:RobotCommand,goal:{x:number;y:number}) {
   return await this.send('GoToLocationCapability/go/set',JSON.stringify({coordinates:{x:goal.x,y:goal.y}}))?{ack:'delivered' as const}:{ack:'unknown' as const,reason:'BROKER_UNAVAILABLE'};
  }
- async stop() {return await this.send('BasicControlCapability/operation/set','STOP')?'acknowledged' as const:'unknown' as const;}
+ /** A PUBACK is the broker's, not the robot's: `delivered`, never `acknowledged` (Valetudo sends no reply to a command). */
+ async stop() {return await this.send('BasicControlCapability/operation/set','STOP')?'delivered' as const:'unknown' as const;}
  async samples():Promise<ValetudoSample[]> {
   const s=this.status,m=this.map,gap:ValetudoSample[]=this.lostAt!==undefined?[{receivedAtMs:this.lostAt,reachable:false,error:'DEVICE_LOST'}]:[];
   this.lostAt=undefined;

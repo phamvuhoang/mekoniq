@@ -13,12 +13,12 @@ import org.json.JSONObject
 import java.time.Instant
 
 /** Provisioned by MDM app restrictions (`valetudoProfile`, JSON); never supplied by the WebView. Mirrors ValetudoProfile in TS. */
-data class ExecutorProfile(val robotId:String,val executorId:String,val transport:String,val endpoint:String,val mapId:String,val mapRevision:String,val mapFingerprint:String,val frame:String,
+data class ExecutorProfile(val robotId:String,val executorId:String,val controlEpoch:Long,val transport:String,val endpoint:String,val mapId:String,val mapRevision:String,val mapFingerprint:String,val frame:String,
   val leaseMs:Long,val pollMs:Long,val onLeaseLoss:String,val requestTimeoutMs:Int,val maxMapBytes:Int) {
   companion object {
-    fun parse(p:JSONObject)=ExecutorProfile(p.getString("robotId"),p.getString("executorId"),p.getString("transport"),p.getString("endpoint"),p.getString("mapId"),p.getString("mapRevision"),p.getString("mapFingerprint"),p.getString("frame"),
+    fun parse(p:JSONObject)=ExecutorProfile(p.getString("robotId"),p.getString("executorId"),p.getLong("controlEpoch"),p.getString("transport"),p.getString("endpoint"),p.getString("mapId"),p.getString("mapRevision"),p.getString("mapFingerprint"),p.getString("frame"),
       p.optLong("leaseMs",5000),p.optLong("pollMs",1000),p.optString("onLeaseLoss","stop"),p.optInt("requestTimeoutMs",2000),p.optInt("maxMapBytes",1 shl 20)).also {
-        require(it.onLeaseLoss in setOf("stop","continue")&&it.leaseMs>0&&it.pollMs>0) {"INVALID_PROFILE"}
+        require(it.onLeaseLoss in setOf("stop","continue")&&it.leaseMs>0&&it.pollMs>0&&it.controlEpoch>=0) {"INVALID_PROFILE"}
       }
     fun provisioned(context:Context):ExecutorProfile? = (context.getSystemService(Context.RESTRICTIONS_SERVICE) as RestrictionsManager).applicationRestrictions.getString("valetudoProfile")?.let { parse(JSONObject(it)) }
   }
@@ -33,7 +33,7 @@ class ValetudoExecutor(private val journal:ExecutorJournal,private val transport
   @Volatile private var leaseMs=clock()
   init {
     require(profile.transport=="rest") {"TRANSPORT_UNSUPPORTED"}
-    journal.bind(profile.robotId,profile.executorId)
+    journal.bind(profile.robotId,profile.executorId,profile.controlEpoch)
     journal.recoverUnfinished(clock())
   }
   private fun lease() { leaseMs=clock() }
@@ -50,7 +50,9 @@ class ValetudoExecutor(private val journal:ExecutorJournal,private val transport
     val hash=JournalDatabase.hash(command)
     journal.command(id)?.let { old -> require(old.hash==hash) {"IDEMPOTENCY_CONFLICT"};return acceptance(old) } // same command: what the journal knows, no resend
     if(command.optString("robotId")!=profile.robotId) return refuse("ROBOT_MISMATCH")
-    if(command.optLong("controlEpoch",-1)<journal.controlEpoch(profile.robotId)) return refuse("STALE_CONTROL_EPOCH")
+    val epoch=command.optLong("controlEpoch",-1);val current=journal.controlEpoch(profile.robotId)
+    if(epoch<current) return refuse("STALE_CONTROL_EPOCH")
+    if(epoch>current+1) return refuse("CONTROL_EPOCH_OUT_OF_RANGE") // at most one handoff ahead of the provisioned/persisted epoch
     val expires=runCatching { Instant.parse(command.getString("expiresAt")).toEpochMilli() }.getOrNull() ?: return refuse("INVALID_COMMAND")
     if(expires<=now) return refuse("EXPIRED_COMMAND")
     val limits=command.optJSONObject("limits") ?: return refuse("INVALID_COMMAND")
@@ -65,6 +67,7 @@ class ValetudoExecutor(private val journal:ExecutorJournal,private val transport
     val pre=transport.sample(clock());journal.observe(profile.robotId,pre)
     if(!pre.optBoolean("reachable")) return refuse("ROBOT_UNREACHABLE")
     if(pre.optString("mapFingerprint")!=profile.mapFingerprint) return refuse("MAP_MISMATCH")
+    if(pre.optString("status")=="error") return refuse("ROBOT_ERROR")
     // One goal at a time: an earlier open goal is superseded only when a fresh sample shows the robot is not driving one (STOP then retarget).
     if(journal.open(profile.robotId).isNotEmpty()&&(pre.optString("status")!="idle"||pre.has("goToTarget"))) return refuse("PREVIOUS_GOAL_ACTIVE")
     val row=try { journal.begin(command,hash,profile.transport,Math.round(x*100),Math.round(y*100),clock()) } catch(e:IllegalArgumentException) { return refuse(e.message ?: "REFUSED") }
@@ -79,7 +82,7 @@ class ValetudoExecutor(private val journal:ExecutorJournal,private val transport
     val status=when(r.state) { "cancelling"->"executing";"superseded"->"unknown";else->r.state }
     val since=r.ackAtMs ?: r.stopAtMs
     val evidence=JSONObject().put("transport","native").put("commandId",r.commandId).put("hash",r.hash).put("controlEpoch",r.controlEpoch).put("goal",JSONObject().put("x",r.goalX).put("y",r.goalY)).put("nativeState",r.state)
-      .put("reason",r.reason ?: JSONObject.NULL).put("ackAtMs",r.ackAtMs ?: JSONObject.NULL).put("stopAtMs",r.stopAtMs ?: JSONObject.NULL).put("samples",if(since==null) org.json.JSONArray() else journal.observations(r.robotId,since))
+      .put("reason",r.reason ?: JSONObject.NULL).put("ackAtMs",r.ackAtMs ?: JSONObject.NULL).put("stopAtMs",r.stopAtMs ?: JSONObject.NULL).put("stopState",r.stopState ?: JSONObject.NULL).put("samples",if(since==null) org.json.JSONArray() else journal.observations(r.robotId,since))
     return JSONObject().put("status",status).put("evidence",evidence)
   }
   @Synchronized fun observations(sinceMs:Long)=run { lease();journal.observations(profile.robotId,sinceMs) }
@@ -87,22 +90,28 @@ class ValetudoExecutor(private val journal:ExecutorJournal,private val transport
     lease()
     val r=journal.command(commandId)
     if(r==null||r.state !in setOf("executing","cancelling","unknown")) return JSONObject().put("acknowledged",false).put("unknown",r==null)
-    journal.stopping(profile.robotId,"cancelling","CANCEL_REQUESTED",clock())
-    val ack=transport.stop()
-    return JSONObject().put("acknowledged",ack=="acknowledged").put("unknown",ack=="unknown")
+    journal.stopping(profile.robotId,"cancelling","CANCEL_REQUESTED",clock(),commandId) // only the named command is cancelled
+    val ack=sendStop()
+    return JSONObject().put("acknowledged",ack=="acknowledged").put("unknown",ack!="acknowledged"&&ack!="rejected")
   }
   /** A stop request is acknowledged or not; it is never a physical-stop proof. */
   @Synchronized fun requestStop(reason:String):JSONObject {
     require(reason.isNotBlank()) {"STOP_REASON_REQUIRED"}
-    lease();journal.stopping(profile.robotId,"unknown","STOP_REQUESTED",clock())
-    return JSONObject().put("acknowledged",transport.stop()=="acknowledged").put("physicalStopConfirmed",false)
+    lease();journal.stopping(profile.robotId,"unknown","STOP_REQUESTED",clock()) // robot-wide: one robot, one physical motion
+    return JSONObject().put("acknowledged",sendStop()=="acknowledged").put("physicalStopConfirmed",false)
   }
-  /** Service loop body: journal one observation; if the UI lease lapsed during a trip and the profile says stop, journal then stop. */
+  /** Sends STOP and journals an acknowledgement; anything else leaves stop_state 'pending' and tick() resends it. */
+  private fun sendStop():String { val ack=transport.stop();if(ack=="acknowledged") journal.stopAcknowledged(profile.robotId,clock());return ack }
+  /**
+   * Service loop body: journal one observation. If the UI lease lapsed and any open goal (executing, cancelling or unknown — e.g. NO_ACK or
+   * CRASH_BEFORE_RECEIPT after a restart with no UI, exactly the goals that may be driving) was never stopped, journal the stop. Then resend
+   * STOP every tick while a journaled stop is not acknowledged. An already-ended goal the native side still holds open costs one harmless STOP.
+   */
   @Synchronized fun tick() {
     val now=clock();journal.observe(profile.robotId,transport.sample(now))
-    if(profile.onLeaseLoss=="stop"&&now-leaseMs>profile.leaseMs&&journal.open(profile.robotId).any { it.state in setOf("executing","cancelling")&&it.stopAtMs==null }) {
-      journal.stopping(profile.robotId,"unknown","LEASE_LOST_STOPPED",now);transport.stop()
-    }
+    if(profile.onLeaseLoss=="stop"&&now-leaseMs>profile.leaseMs&&journal.open(profile.robotId).any { it.stopState==null })
+      journal.stopping(profile.robotId,"unknown","LEASE_LOST_STOPPED",now)
+    if(journal.open(profile.robotId).any { it.stopState=="pending" }) sendStop()
   }
 }
 

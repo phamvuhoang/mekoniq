@@ -56,7 +56,10 @@ Anything short of that stays pending. At `tripTimeoutMs` it becomes `unknown` (`
 
 - No ACK (timeout, 5xx or a dropped connection) gives `unknown`. The same command ID is answered from the journal and never resent.
 - A robot `error` status gives `failed` plus `safety_state:fault`. A later non-error status gives `safety_state:clear`. While `robot.safetyState` is set and not `clear`, the domain refuses admission, holds the next leg (`SAFETY_NOT_CLEAR`) and refuses `Mission.Resume`.
-- **Cancel / STOP.** These send BasicControl `stop`, and the ACK only acknowledges the request (`physicalStopConfirmed:false`). A new goal is refused (`PREVIOUS_GOAL_ACTIVE` / `STOP_UNCONFIRMED`) until a fresh stationary idle stretch is observed after the stop. Waiting on a timer never counts.
+  - `safety_state` is robot-level: no command id and no epoch of its own. It is a fact about the physical robot, so the forwarder (`startNativeValetudoRuntime`) stamps the robot's current control epoch. Identity is bound by the owner device, the `executor:<robotId>` actor and a dispatchable profile; the epoch fences command ownership, not hardware observations.
+  - The adapter reports the current state on the first reachable sample (fault or clear), even with no command (for example after a WebView reload). It re-emits that state every round until the domain accepted it (`safetyAccepted`). A fault comes from any reachable sample, a clear only from a fresh one.
+  - The domain orders observations by `occurredAt`: one older than the recorded `safetyObservedAt` is `STALE_SAFETY_OBSERVATION`, and a `clear` must be strictly newer, so a replayed old clear never lifts a newer fault.
+- **Cancel / STOP.** These send BasicControl `stop`, and the ACK only acknowledges the request (`physicalStopConfirmed:false`). Over MQTT a STOP is only `delivered` (broker PUBACK) and never reported as acknowledged; the cancel still waits for stationary evidence. A new goal is refused (`PREVIOUS_GOAL_ACTIVE` / `STOP_UNCONFIRMED`) until a fresh stationary idle stretch is observed after the stop. Waiting on a timer never counts.
 
 The tolerances are calibration knobs to commission per robot, not values measured on hardware: `arriveToleranceM`, `goalToleranceCm`, `stationaryCm`, `stationaryMs`, `freshMs`, `tripTimeoutMs`, `requestTimeoutMs` and `maxMapBytes`. The emulator rig uses 0.40 m (the trial reference), 5 cm, 5 cm, 2 s, 3 s and 120 s.
 
@@ -64,14 +67,20 @@ The tolerances are calibration knobs to commission per robot, not values measure
 
 Only the native executor sends robot mutations from the tablet. The files are in `apps/tablet-android/android/app/src/main/java/io/mekoniq/tablet/executor/`, with the bridge in `apps/tablet-android/src/robot-executor-bridge.ts`.
 
-- **Provisioning.** The profile comes from the managed app restriction `valetudoProfile`. It is a JSON object with `robotId`, `executorId`, `transport:"rest"`, `endpoint`, `mapId`, `mapRevision`, `mapFingerprint`, `frame`, `leaseMs`, `pollMs`, `onLeaseLoss:"stop"|"continue"`, `requestTimeoutMs` and `maxMapBytes`.
+- **Provisioning.** The profile comes from the managed app restriction `valetudoProfile`. It is a JSON object with `robotId`, `executorId`, `controlEpoch` (the robot's current domain control epoch at provisioning), `transport:"rest"`, `endpoint`, `mapId`, `mapRevision`, `mapFingerprint`, `frame`, `leaseMs`, `pollMs`, `onLeaseLoss:"stop"|"continue"`, `requestTimeoutMs` and `maxMapBytes`.
   - Only one executor ID can be bound per robot (`EXECUTOR_ALREADY_BOUND`).
   - `transport:"mqtt"` is refused natively (`TRANSPORT_UNSUPPORTED`) because there is no MQTT client on the tablet.
 - **Journal** (`mekoniq-executor.db`, `synchronous=FULL`).
   - The executor records the command ID, hash, control epoch and the `sending` state **before** the goto. It records the receipt and observations after.
   - On open, a row still `sending` becomes `unknown/CRASH_BEFORE_RECEIPT` and is never resent.
-  - A control epoch older than the stored one is refused.
-- **Service.** The foreground `ExecutorService` keeps polling and journaling while the UI is suspended. If the UI lease (any bridge call) lapses mid-trip and the policy is `stop`, it journals the stop and then sends one BasicControl `stop`; the goal becomes `unknown/LEASE_LOST_STOPPED`. The native side never reports `completed`. Arrival is judged from the journaled evidence by the shared TypeScript rule once a live UI reconciles.
+  - A control epoch older than the stored one is refused (`STALE_CONTROL_EPOCH`). One more than the stored epoch is accepted as a handoff; anything further ahead is refused (`CONTROL_EPOCH_OUT_OF_RANGE`) and never persisted, so one bad client value cannot fence out later commands. Re-provisioning after handoffs raises the stored epoch, never lowers it.
+- **Service.** The foreground `ExecutorService` keeps polling and journaling while the UI is suspended.
+  - If the UI lease (any bridge call) lapses and the policy is `stop`, every open goal that was never stopped is stopped. That includes `unknown` goals (`NO_ACK`, or `CRASH_BEFORE_RECEIPT` after a START_STICKY restart with no UI), which are exactly the goals that may be driving. The stop is journaled (`stop_state='pending'`) before the STOP goes out; the goal becomes `unknown/LEASE_LOST_STOPPED`.
+  - A STOP that is not acknowledged stays `pending` and is resent on every tick until Valetudo answers 200. STOP is safe to resend; a goto never is.
+  - A goal the native side still holds open after the shared rule completed it costs one harmless STOP to an idle robot.
+  - The native side never reports `completed`. Arrival is judged from the journaled evidence by the shared TypeScript rule once a live UI reconciles.
+- **Cancel vs STOP.** `cancel(commandId)` marks only that command. An operator `requestStop` and the lease-loss stop are robot-wide, because a robot has one physical motion whichever row started it.
+- **Robot errors.** `submit` refuses a robot whose fresh status is `error` (`ROBOT_ERROR`) before any goto.
 - **Cleartext.** Valetudo serves plain HTTP. Release builds keep cleartext disabled. The debug build only permits `10.0.2.2` (the host protocol emulator) through `network_security_config_debug.xml`. **A venue deployment needs a decision here:** a release network-security config that lists the robot's provisioned host, or TLS in front of Valetudo. This is open.
 
 ## Supervised hardware proof (blocked_external)

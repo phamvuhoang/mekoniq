@@ -188,6 +188,10 @@ export function registerMissions(registry:ModuleRegistry):void {
    if(c.payload.controlEpoch!==robot.state.controlEpoch) return fail('STALE_CONTROL_EPOCH');
    const safetyState=text(c.payload.safetyState,'INVALID_SAFETY_STATE');
    if(!['clear','fault','estop'].includes(safetyState)) return fail('INVALID_SAFETY_STATE');
+   // Ordering: an observation older than the recorded one is stale, and a clear must be strictly newer, so a replayed old clear never
+   // lifts a newer fault.
+   const at=Date.parse(c.occurredAt),prior=typeof robot.state.safetyObservedAt==='string'?Date.parse(robot.state.safetyObservedAt):Number.NEGATIVE_INFINITY;
+   if(at<prior||(safetyState==='clear'&&at<=prior)) return fail('STALE_SAFETY_OBSERVATION');
    return done([changed('RobotSafetyObserved',robot,{safetyState,safetyObservedAt:c.occurredAt})],{robotId:robot.ref.id,safetyState});
   }
   const mission=requireState(s,'mission',text(c.payload.missionId));
