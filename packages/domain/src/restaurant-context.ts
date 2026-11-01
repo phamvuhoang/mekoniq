@@ -22,7 +22,18 @@ export const find = (snapshots: Snapshot[], kind: string, id: string): Snapshot 
 export const requireState = (snapshots: Snapshot[], kind: string, id: string): Snapshot => find(snapshots, kind, id) ?? fail('NOT_FOUND');
 export const stableId = (prefix: string, command: CommandEnvelope, suffix = ''): string => `${prefix}-${hashPayload({operationId:command.operationId,suffix}).slice(0,32)}`;
 /** External payment reference {provider,merchantId,transactionId}; its id is unique per scope, so one transaction is one payment aggregate. */
-export const externalReference = (value: JsonValue | undefined): JsonObject => { const r = value === undefined ? fail('REFERENCE_REQUIRED') : record(value); return { provider: text(r.provider, 'REFERENCE_REQUIRED'), merchantId: text(r.merchantId, 'REFERENCE_REQUIRED'), transactionId: text(r.transactionId, 'REFERENCE_REQUIRED') }; };
+/** Human-entered justification (reason, evidence reference): trimmed, never blank. */
+export const note = (value: JsonValue | undefined, code: string): string => text(typeof value === 'string' ? value.trim() : value, code);
+/**
+ * External payment reference {provider,merchantId,transactionId}, normalized before it becomes an id: references are typed by hand, so
+ * " VCB" / "vcb" and "ft 123" / "FT123" must be the same transaction. provider/merchantId: trimmed, inner whitespace collapsed, lower-cased.
+ * transactionId: all whitespace removed, upper-cased (a false match only blocks a second entry visibly; a missed match would collect twice).
+ */
+export const externalReference = (value: JsonValue | undefined): JsonObject => {
+  const r = value === undefined ? fail('REFERENCE_REQUIRED') : record(value), field = (v: JsonValue | undefined, fold: (s: string) => string) => text(typeof v === 'string' ? fold(v) : v, 'REFERENCE_REQUIRED');
+  const party = (s: string) => s.trim().replace(/\s+/g, ' ').toLowerCase();
+  return { provider: field(r.provider, party), merchantId: field(r.merchantId, party), transactionId: field(r.transactionId, s => s.replace(/\s+/g, '').toUpperCase()) };
+};
 export const externalPaymentId = (ref: JsonObject): string => `ext-${hashPayload({ provider: ref.provider!, merchantId: ref.merchantId!, transactionId: ref.transactionId! }).slice(0, 32)}`;
 export const updated = (snapshot: Snapshot, change: JsonObject): JsonObject => ({ ...snapshot.state, ...change, version: snapshot.version + 1 });
 export const changed = (type:string,snapshot:Snapshot,change:JsonObject):DomainEvent => stateEvent(type,snapshot.ref.kind,snapshot.ref.id,updated(snapshot,change));

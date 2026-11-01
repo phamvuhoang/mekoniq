@@ -1,5 +1,5 @@
 import type { ModuleRegistry } from '../modules';
-import { all, amount, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
+import { all, amount, changed, created, done, expectVersion, fail, find, handle, note, requireState, stableId, text } from '../restaurant-context';
 
 export function refundableMinor(captured: string, refunded: string) {
   return String(BigInt(captured) - BigInt(refunded));
@@ -18,7 +18,7 @@ export function registerRefunds(registry: ModuleRegistry): void {
   handle(registry, 'Refund.Record', (c, s) => {
     const payment = requireState(s, 'payment', text(c.payload.paymentId)); expectVersion(c, payment);
     if (payment.state.status !== 'captured') return fail('PAYMENT_NOT_CAPTURED');
-    const request = amount(c.payload.amountMinor, true), reason = text(c.payload.reason, 'REASON_REQUIRED');
+    const request = amount(c.payload.amountMinor, true), reason = note(c.payload.reason, 'REASON_REQUIRED');
     const captured = String(payment.state.capturedMinor ?? payment.state.appliedMinor), refunded = String(payment.state.refundedMinor ?? '0');
     if (!canRefund(captured, refunded, request)) return fail('REFUND_EXCEEDS_CAPTURED');
     const bill = requireState(s, 'bill', String(payment.state.billId));
@@ -31,7 +31,7 @@ export function registerRefunds(registry: ModuleRegistry): void {
     const shift = method !== 'cash' ? undefined : c.payload.shiftId !== undefined ? open(text(c.payload.shiftId)) ?? fail('SHIFT_NOT_OPEN')
       : open(payment.state.shiftId) ?? all(s, 'shift').find(x => x.state.cashierId === c.actorRef && x.state.status === 'open') ?? fail('ACTIVE_SHIFT_REQUIRED');
     if (shift && shift.state.currency !== currency) return fail('CURRENCY_MISMATCH');
-    const evidenceRef = c.payload.evidenceRef !== undefined || method !== 'cash' ? text(c.payload.evidenceRef, 'EVIDENCE_REQUIRED') : null;
+    const evidenceRef = c.payload.evidenceRef !== undefined || method !== 'cash' ? note(c.payload.evidenceRef, 'EVIDENCE_REQUIRED') : null;
     const req = BigInt(request), unapplied = BigInt(String(payment.state.unappliedMinor ?? '0')), fromUnapplied = req < unapplied ? req : unapplied, fromApplied = req - fromUnapplied;
     const billUnapplied = BigInt(String(bill.state.unappliedMinor ?? '0'));
     if (billUnapplied < fromUnapplied) return fail('BILL_BALANCE_CORRUPT');

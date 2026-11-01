@@ -1,5 +1,5 @@
 import type { ModuleRegistry } from '../modules';
-import { all, changed, done, expectVersion, fail, handle, requireState, text } from '../restaurant-context';
+import { all, changed, done, expectVersion, fail, handle, note, requireState, text } from '../restaurant-context';
 import { assertUncollected, billSessions } from './bill';
 
 /**
@@ -10,7 +10,7 @@ import { assertUncollected, billSessions } from './bill';
 export function registerBillVoid(registry: ModuleRegistry): void {
   handle(registry, 'Bill.Void', (c, s) => {
     const bill = requireState(s, 'bill', text(c.payload.billId)); expectVersion(c, bill); assertUncollected(s, bill);
-    const reason = text(c.payload.reason, 'REASON_REQUIRED'), sessions = billSessions(bill.state), orderIds = (bill.state.orderIds ?? []) as string[];
+    const reason = note(c.payload.reason, 'REASON_REQUIRED'), sessions = billSessions(bill.state), orderIds = (bill.state.orderIds ?? []) as string[];
     if (all(s, 'bill').some(b => b.ref.id !== bill.ref.id && ['prepared', 'closed'].includes(String(b.state.status)) && (billSessions(b.state).some(id => sessions.includes(id)) || ((b.state.orderIds ?? []) as string[]).some(id => orderIds.includes(id))))) return fail('SPLIT_SIBLINGS_OPEN');
     const orders = orderIds.map(id => requireState(s, 'order', id)).filter(o => o.state.status === 'billed');
     const open = sessions.map(id => requireState(s, 'session', id)).filter(x => x.state.status === 'open');

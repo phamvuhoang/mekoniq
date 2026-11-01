@@ -1,6 +1,6 @@
 import type { ModuleRegistry } from '../modules';
 import type { JsonObject, Snapshot } from '../../../contracts/src/index';
-import { all, amount, changed, created, done, expectVersion, externalPaymentId, externalReference, fail, find, handle, requireState, text } from '../restaurant-context';
+import { all, amount, changed, created, done, expectVersion, externalPaymentId, externalReference, fail, find, handle, note, requireState, text } from '../restaurant-context';
 import { assertCollectable } from './bill';
 import { dueMinor } from './settlement';
 
@@ -56,7 +56,7 @@ export function registerTenders(registry: ModuleRegistry): void {
     const { currency, reference, id, minor } = tenderBasics(c, bill), existing = find(s, 'payment', id);
     if (existing) return existing.state.method === 'transfer' && existing.state.billId === bill.ref.id && existing.state.amountMinor === minor ? done([], { paymentId: id, status: existing.state.status!, duplicate: true }) : fail('PAYMENT_REFERENCE_CONFLICT');
     expectVersion(c, bill); assertCollectable(s, bill);
-    const reason = text(c.payload.reason, 'REASON_REQUIRED'), evidenceRef = text(c.payload.evidenceRef, 'EVIDENCE_REQUIRED');
+    const reason = note(c.payload.reason, 'REASON_REQUIRED'), evidenceRef = note(c.payload.evidenceRef, 'EVIDENCE_REQUIRED');
     const claim = c.payload.claimId === undefined ? undefined : requireState(s, 'payment-observation', text(c.payload.claimId));
     if (claim && (claim.state.billId !== bill.ref.id || claim.state.status !== 'unverified')) return fail('CLAIM_MISMATCH');
     const { applied, unapplied } = capture(bill, BigInt(minor));

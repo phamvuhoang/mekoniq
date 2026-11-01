@@ -137,12 +137,15 @@ test("partial and mixed tenders across split children never double-collect; the 
     expect((await lab.command("cashier","Payment.VerifyManual",verify)).code).toBe("FORBIDDEN");
     expect((await lab.command("manager","Payment.VerifyManual",without(verify,"evidenceRef"))).code).toBe("EVIDENCE_REQUIRED");
     expect((await lab.command("manager","Payment.VerifyManual",{...verify,reason:""})).code).toBe("REASON_REQUIRED");
+    expect((await lab.command("manager","Payment.VerifyManual",{...verify,reason:"   "})).code).toBe("REASON_REQUIRED");
+    expect((await lab.command("manager","Payment.VerifyManual",{...verify,evidenceRef:" \t "})).code).toBe("EVIDENCE_REQUIRED");
     const verified = await lab.command("manager","Payment.VerifyManual",verify);
     accepted(verified);
     expect(await lab.state("payment",String(verified.value.paymentId))).toMatchObject({method:"transfer",verification:"manual",verifiedBy:"manager",reason:"seen in bank app",evidenceRef:"statement-0042",status:"captured",capturedMinor:childB.totalMinor,claimId});
     expect(await lab.state("payment-observation",claimId)).toMatchObject({status:"verified",paymentId:String(verified.value.paymentId)});
-    // the same bank transaction cannot pay a second bill
+    // the same bank transaction cannot pay a second bill, however it is typed
     expect((await lab.command("manager","Payment.VerifyManual",{...without(verify,"claimId"),billId:a!,expectedVersion:billA.version})).code).toBe("PAYMENT_REFERENCE_CONFLICT");
+    expect((await lab.command("manager","Payment.VerifyManual",{...without(verify,"claimId"),billId:a!,expectedVersion:billA.version,reference:{provider:"VCB ",merchantId:" Acct-1",transactionId:"ft 123"}})).code).toBe("PAYMENT_REFERENCE_CONFLICT");
     accepted(await lab.command("cashier","Bill.Close",{billId:b!,expectedVersion:childB.version+1}));
     expect(await lab.state("session","session-1")).toMatchObject({status:"closed"});
     expect(await lab.state("order",orderId)).toMatchObject({status:"closed"});
@@ -231,7 +234,15 @@ test("a card charge in unknown state blocks re-collection; duplicate observation
     expect((await observe("failed")).code).toBe("PAYMENT_ALREADY_FINAL");
     expect((await observe("captured",{amountMinor:"90000"})).code).toBe("PAYMENT_REFERENCE_CONFLICT");
     expect((await observe("captured",{billId:"bill-2"})).code).toBe("PAYMENT_REFERENCE_CONFLICT");
-    expect(await lab.state("payment",String(captured.value.paymentId))).toMatchObject({method:"card-terminal",reference,status:"captured",capturedMinor:"100000",refundedMinor:"0"});
+    // hand-typed variants of the same reference (case, spacing) are the same transaction: idempotent on its bill, a conflict elsewhere
+    const variant = {provider:" ACME-Terminal ",merchantId:"M-1",transactionId:" t- 9"};
+    const same = await observe("captured",{reference:variant});
+    accepted(same);
+    expect(same.value).toMatchObject({paymentId:captured.value.paymentId,duplicate:true});
+    expect((await observe("captured",{billId:"bill-2",reference:variant})).code).toBe("PAYMENT_REFERENCE_CONFLICT");
+    expect((await observe("captured",{reference:{...reference,transactionId:"   "}})).code).toBe("REFERENCE_REQUIRED");
+    expect(await lab.count("CardPaymentCaptured")).toBe(1);
+    expect(await lab.state("payment",String(captured.value.paymentId))).toMatchObject({method:"card-terminal",reference:{provider:"acme-terminal",merchantId:"m-1",transactionId:"T-9"},status:"captured",capturedMinor:"100000",refundedMinor:"0"});
     // the same transaction id at another merchant is a different payment
     accepted(await lab.command("cashier","Payment.RecordTerminal",{billId:"bill-2",amountMinor:"100000",currency:"VND",status:"failed",reference:{...reference,merchantId:"m-2"}}));
     expect(await lab.state("bill","bill-2")).toMatchObject({paidMinor:"0",externalPaymentState:null});
@@ -253,6 +264,7 @@ test("refunds take only the unrefunded captured part, record shift/reason/actor 
     const refund = (actor: string, payload: JsonObject) => lab.command(actor,"Refund.Record",{paymentId,...payload});
     expect((await refund("cashier",{amountMinor:"50000",reason:"cold",expectedVersion:1})).code).toBe("FORBIDDEN");
     expect((await refund("manager",{amountMinor:"50000",expectedVersion:1})).code).toBe("REASON_REQUIRED");
+    expect((await refund("manager",{amountMinor:"50000",reason:"  ",expectedVersion:1})).code).toBe("REASON_REQUIRED");
     expect((await refund("manager",{amountMinor:"0",reason:"cold",expectedVersion:1})).code).toBe("INVALID_AMOUNT");
     const r = await refund("manager",{amountMinor:"50000",reason:"cold food",expectedVersion:1});
     accepted(r);
@@ -280,6 +292,7 @@ test("void only an uncollected bill: it releases the orders for rebilling and ne
     const { billId, orderId } = await preparedBill(lab);
     expect((await lab.command("cashier","Bill.Void",{billId,reason:"wrong table",expectedVersion:1})).code).toBe("FORBIDDEN");
     expect((await lab.command("manager","Bill.Void",{billId,expectedVersion:1})).code).toBe("REASON_REQUIRED");
+    expect((await lab.command("manager","Bill.Void",{billId,reason:" ",expectedVersion:1})).code).toBe("REASON_REQUIRED");
     accepted(await lab.command("manager","Bill.Void",{billId,reason:"wrong table",expectedVersion:1}));
     expect(await lab.state("bill",billId)).toMatchObject({status:"voided",voidReason:"wrong table",voidedBy:"manager"});
     expect(await lab.state("session","session-1")).toMatchObject({status:"open",frozenBillId:null});
