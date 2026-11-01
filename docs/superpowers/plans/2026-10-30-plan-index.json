@@ -442,7 +442,8 @@
       "depends": "W06-T01, W00-T02",
       "testFile": "robotics/agent/tests/test_executor_recovery.py",
       "testCommand": "python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W06-T03.md"
     },
     {
       "wave": "W06",

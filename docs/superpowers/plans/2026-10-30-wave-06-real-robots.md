@@ -149,7 +149,7 @@ export function arrivalConfirmed(s:{fresh:boolean;mapMatches:boolean;goalMatches
 - Consumes: Generated JSON schema/ES256 verification, command IDs/epochs, SQLite store.
 - Produces: `Executor.submit(command)`, `.reconcile()`, `.request_stop()`; `NativeNavigation` port methods start/query/cancel; `FakeNativeNavigation` test only.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```python
 import pytest
@@ -169,9 +169,9 @@ def test_crash_after_native_accept_does_not_start_second_goal(tmp_path):
     assert recovered.status("c-1") in {"executing", "unknown"}
 ```
 
-- [ ] **2. Chạy RED.** Trong venv đã chuẩn bị ở W00-T02, chạy `python3 -m pip install -e robotics/agent` rồi `python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** Trong venv đã chuẩn bị ở W00-T02, chạy `python3 -m pip install -e robotics/agent` rồi `python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Write sending state and stable goal UUID before native call; if crash query by UUID/native state, do not resend uncertain. Validate command scope/expiry/controlEpoch; journal state machine atomic. No cloud direct ROS endpoint.
+- [x] **3. Hiện thực phần cốt lõi.** Write sending state and stable goal UUID before native call; if crash query by UUID/native state, do not resend uncertain. Validate command scope/expiry/controlEpoch; journal state machine atomic. No cloud direct ROS endpoint.
 
 ```python
 def can_submit(command, owner_epoch, now):
@@ -182,11 +182,11 @@ def can_submit(command, owner_epoch, now):
     )
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** `support/executor_fixtures.py` cung cấp fake native backend giữ accepted goals qua lần tạo lại Executor. Hook `fault="after_native_accept"` raise `SimulatedCrash` sau native ACK, đóng journal mà không ghi tiếp hoặc cancel goal; chỉ bật qua dependency injection của test. Thêm subprocess kill test để kiểm chứng crash thật. MQTT/WebSocket transport outbound/cloud/LAN with signer. Journal statuses accepted/sending/executing/unknown/terminal, startup recover before advertised ready.
+- [x] **4. Nối vào runtime và lưu trữ.** `support/executor_fixtures.py` cung cấp fake native backend giữ accepted goals qua lần tạo lại Executor. Hook `fault="after_native_accept"` raise `SimulatedCrash` sau native ACK, đóng journal mà không ghi tiếp hoặc cancel goal; chỉ bật qua dependency injection của test. Thêm subprocess kill test để kiểm chứng crash thật. MQTT/WebSocket transport outbound/cloud/LAN with signer. Journal statuses accepted/sending/executing/unknown/terminal, startup recover before advertised ready.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q`; kỳ vọng PASS. O10/O11/O20 real SQLite, duplicate/out-of-order, forged epoch, stale command, time skew and domain mismatch. Python/TS contract fixtures match. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q`; kỳ vọng PASS. O10/O11/O20 real SQLite, duplicate/out-of-order, forged epoch, stale command, time skew and domain mismatch. Python/TS contract fixtures match. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T03.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: persist robot execution and recover native action ownership"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T03.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: persist robot execution and recover native action ownership"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W06-T04: Nav2 action bridge, localization và nhà hàng Gazebo
 

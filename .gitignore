@@ -25,3 +25,4 @@ local.properties
 # Never commit signing keys.
 *.jks
 *.keystore
+*.egg-info/

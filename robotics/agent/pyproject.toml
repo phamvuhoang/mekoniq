@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mekoniq-agent"
+version = "0.1.0"
+description = "MEKONIQ onboard robot executor: durable journal and native navigation ownership (W06-T03)"
+requires-python = ">=3.11"
+# Stdlib plus the validators the contract tests already use. ROS / rclpy is NOT a dependency: the native port is injected.
+dependencies = ["jsonschema>=4.26", "rfc8785>=0.1.4"]
+
+[tool.setuptools]
+packages = ["mekoniq_agent"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
