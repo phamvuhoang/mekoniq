@@ -296,6 +296,39 @@ test("a table move holds an en-route mission instead of re-aiming a faulted robo
   }
 });
 
+test("a later leg rewritten to a too-narrow table is held, not dispatched; Resume refuses until the footprint fits", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    // Robot has arrived at the kitchen (load stop awaiting action); the hand-off to table-1 is a later, not-yet-issued leg.
+    await openWithOrder(lab,"s1","table-1",[{itemId:"rice",quantity:"1"}]);
+    const order = await lab.state<{lines:{id:string}[]}>("order",(await lab.state<{orderIds:string[]}>("session","s1")).orderIds[0]!);
+    const lineId = order.lines[0]!.id;
+    accepted(await lab.command("chef","Kitchen.Ready",{lineId,quantity:"1",stationId:"kitchen",expectedVersion:1}));
+    const allocation = await lab.command("cashier","Fulfillment.Allocate",{lineId,quantity:"1",expectedVersion:2,method:"robot"});
+    const missionId = String((await lab.command("cashier","Mission.Create",{allocationIds:[allocation.value.allocationId!],robotId:"sim-1"})).value.missionId);
+    const sim = await createSimulator(lab), events: RobotEvent[] = [], unsubscribe = sim.observe(e => events.push(e));
+    await dispatchRobotEffects(await lab.getStore("coordinator"),lab.scope,sim,lab.clock.nowMs);sim.advance(1000);
+    for (const e of events.splice(0)) accepted(await lab.command("simulator:sim-1","Robot.Observe",robotEventCommand(e),e.id));
+    await lab.seed("table","table-2",{...fixture.tables[1],clearanceM:0.4}); // robot footprint widthM 0.5
+    accepted(await lab.command("cashier","Session.Move",{sessionId:"s1",toTableId:"table-2",expectedVersion:(await lab.state<{version:number}>("session","s1")).version}));
+    const store = await lab.getStore("coordinator"), issued = await lab.count("RobotCommandIssued"), executes = (await store.effects(lab.scope,"robot.execute")).length;
+    const m = await lab.state<{version:number;revision:number;currentStopId:string}>("mission",missionId);
+    accepted(await lab.command("cashier","Mission.ConfirmStop",{missionId,expectedVersion:m.version,missionRevision:m.revision,stopId:m.currentStopId}));
+    const held = await lab.state<JsonObject & {version:number;stops:{action:string;targetId:string;status:string}[]}>("mission",missionId);
+    expect(held).toMatchObject({status:"needs_attention",attentionReason:"FOOTPRINT_TOO_LARGE"});
+    expect(held.stops.find(s => s.action === "handoff")).toMatchObject({targetId:"table-2",status:"pending"});
+    const unchanged = async () => {expect(await lab.count("RobotCommandIssued")).toBe(issued);expect((await store.effects(lab.scope,"robot.execute")).length).toBe(executes);};
+    await unchanged();
+    expect((await lab.command("manager","Mission.Resume",{missionId,expectedVersion:held.version})).code).toBe("FOOTPRINT_TOO_LARGE");
+    await unchanged();
+    await lab.seed("table","table-2",{...fixture.tables[1],clearanceM:0.6});
+    accepted(await lab.command("manager","Mission.Resume",{missionId,expectedVersion:held.version}));
+    const resumed = await lab.state<{commandId:string}>("mission",missionId);
+    expect(await lab.state("robot-command",resumed.commandId)).toMatchObject({target:{waypointId:"table-2"}});
+    unsubscribe();
+  } finally { await lab.close(); }
+});
+
 test("a table without a robot waypoint binding cannot receive an en-route delivery, and table names are irrelevant to bindings", async () => {
   const lab = await createRestaurantLab();
   try {

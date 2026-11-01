@@ -1,5 +1,5 @@
 import {encodeGuestToken} from '../../../../packages/domain/src/service/guest-token';
-import {el,panel,list,tr,button,act,type ScreenContext} from '../ui';
+import {el,panel,list,tr,button,act,featureShown,type ScreenContext} from '../ui';
 /** Staff view of guest service calls (acknowledging never touches a bill) and the per-seating guest links (QR/kiosk tokens). */
 export function GuestRequests(c:ScreenContext) {
  const root=el('div',undefined,'screen-grid'),tableName=(id:unknown)=>String(list(c,'table').find(t=>t.ref.id===id)?.state.name??id);
@@ -16,6 +16,12 @@ export function GuestRequests(c:ScreenContext) {
  }
  if(!root.children.length)root.append(el('p',tr(c,'Không có yêu cầu nào đang chờ.','No open guest requests.')));
  const links=el('div',undefined,'screen-grid');
+ if(featureShown(c,['sessions']))for(const table of list(c,'table').filter(t=>!t.state.activeSessionId)){
+  const row=el('article',undefined,'record');row.append(el('strong',tableName(table.ref.id)),button(tr(c,'Mở phiên bàn','Open table session'),async()=>{
+   const result=await act(c,'Session.Open',{tableId:table.ref.id,sessionId:crypto.randomUUID()});
+   if(result?.status!=='accepted')await c.refresh(); // a concurrent seating may have occupied the table
+  }));links.append(row);
+ }
  for(const session of list(c,'session').filter(s=>s.state.status==='open')){
   const row=el('article',undefined,'record'),tokens=list(c,'guest-token').filter(t=>t.state.sessionId===session.ref.id&&t.state.revision===(session.state.revision??0)&&t.state.signature);
   row.append(el('strong',tableName(session.state.tableId)));

@@ -1,3 +1,4 @@
+import {VENUE_MOVEMENT_ZONE} from '../../domain/src/fleet/reservations';
 import type { JsonObject, Scope, Snapshot } from '../../contracts/src/index';
 import { validateRobotCommand } from '../../contracts/src/validate';
 import type { NativeAcceptance, NativeExecutionState, RobotAdapter, RobotEvent } from './contract';
@@ -28,10 +29,15 @@ export async function dispatchRobotEffects(store:RobotEffectStore,scope:Scope,ad
   }
   if(row.type==='robot.execute') {
    const command=validateRobotCommand(payload);
+   const reservations=snapshots.filter(s=>s.ref.kind==='reservation'&&s.state.robotId===manifest.id);
+   // A missing right is a hold, never permission. Pending/unknown granular zones also gate the fallback boundary.
+   if(!reservations.some(s=>s.state.zoneId===VENUE_MOVEMENT_ZONE&&s.state.status==='granted')||reservations.some(s=>['pending','unknown'].includes(String(s.state.status))))continue;
    const mission=snapshots.find(s=>s.ref.kind==='mission'&&s.ref.id===command.missionId);
    if(command.organizationId!==scope.organizationId||command.venueId!==scope.venueId||command.issuerDeviceId!==robot.state.ownerDeviceId||Date.parse(command.expiresAt)<=nowMs||mission?.state.commandId!==command.commandId||!['assigned','executing'].includes(String(mission.state.status))) {
     await store.completeEffect(scope,id,'failed');continue;
    }
+   // A STOP acknowledgement is only request acceptance. Keep the original unsent row pending until stationary/cancellation evidence.
+   if(adapter.executionHold?.())continue;
    if(!await store.claimEffect(scope,id))continue;
    try {
     const result=await adapter.execute(command);

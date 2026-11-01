@@ -43,8 +43,8 @@ export async function guestSession(raw:unknown){
    session:!session?'unknown':live?'open':'expired',
    orders:rows.filter(r=>r.aggregate_type==='order').map(r=>({id:r.aggregate_id,status:String(r.state.status),currency:String(r.state.currency),totalMinor:String(r.state.totalMinor),lines:((r.state.lines??[]) as JsonObject[]).map(lineView)})),
    calls:rows.filter(r=>r.aggregate_type==='service-call').map(r=>({id:r.aggregate_id,kind:String(r.state.kind),status:String(r.state.status)})),
-   // 'unreachable': the venue never answered before the relay expired, so staff must take the order instead.
-   requests:relays.map(r=>({operationId:r.operation_id,type:r.type,status:r.status==='pending'&&Date.parse(r.expires_at)<=Date.now()?'unreachable':r.status,code:r.venue_receipt?.code??null})),
+   // Expiry proves no receipt arrived, not that the venue did not commit the order.
+   requests:relays.map(r=>({operationId:r.operation_id,type:r.type,status:r.status==='pending'&&Date.parse(r.expires_at)<=Date.now()?'unknown':r.status,code:r.venue_receipt?.code??null})),
   };
  });
 }

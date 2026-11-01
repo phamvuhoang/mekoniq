@@ -1,5 +1,5 @@
 import type { ModuleRegistry } from '../modules';
-import type { DomainEvent, JsonObject, Snapshot } from '../../../contracts/src/index';
+import type { CommandEnvelope, Decision, DomainEvent, JsonObject, Snapshot } from '../../../contracts/src/index';
 import { all, changed, created, done, fail, find, handle, note, requireState, text } from '../restaurant-context';
 import { enforcesZones } from './capabilities';
 const unknownRobot=(r:Snapshot|undefined)=>!r||r.state.availability==='unknown'||['unknown','stop_requested'].includes(String(r.state.goalState));
@@ -19,7 +19,7 @@ function admit(s:Snapshot[],zoneId:string,robot:Snapshot,at:string):{reason?:str
   if(h.state.status==='unknown'||unknownRobot(holder)) {unknown=true;if(h.state.status!=='unknown') events.push(changed('ZoneReservationUnknown',h,{status:'unknown'}));continue;}
   if(nowMs>Number(h.state.expiresAtMs)&&knownIdle(holder)) {events.push(changed('ZoneReservationLapsed',h,{status:'released',releaseReason:'ttl_lapsed',releasedAt:at}));continue;}
   if(holder!.state.driver!==robot.state.driver) mixed=true;
-  else if(!enforcesZones(holder!.state)||!enforcesZones(robot.state)) serial=true;
+  else if(zoneId===VENUE_MOVEMENT_ZONE||!enforcesZones(holder!.state)||!enforcesZones(robot.state)) serial=true;
  }
  return {reason:unknown?'ZONE_HELD_UNKNOWN':mixed?'MIXED_VENDOR_TRAFFIC':serial?'ZONE_SERIALIZED':undefined,events};
 }
@@ -31,8 +31,8 @@ function admit(s:Snapshot[],zoneId:string,robot:Snapshot,at:string):{reason?:str
  * Without evidence a granted zone is released only by its own robot's executor (`executor:<robotId>`), since another robot's executor also
  * holds robot.traffic; a release with evidence needs robot.configure (requiredPermissions) and records the evidence.
  */
-export function registerReservations(registry:ModuleRegistry):void {
- handle(registry,'Zone.Reserve',(c,s)=>{
+export const VENUE_MOVEMENT_ZONE='__venue_movement__';
+function reserveDecision(c:CommandEnvelope,s:Snapshot[]):Decision {
   const zoneId=text(c.payload.zoneId,'ZONE_REQUIRED'),robot=requireState(s,'robot',text(c.payload.robotId)),id=`${zoneId}@${robot.ref.id}`,old=find(s,'reservation',id);
   const ttlMs=c.payload.ttlMs ?? 60000;
   if(typeof ttlMs!=='number'||!Number.isInteger(ttlMs)||ttlMs<1000||ttlMs>600000) return fail('INVALID_TTL');
@@ -45,8 +45,8 @@ export function registerReservations(registry:ModuleRegistry):void {
   const state:JsonObject={zoneId,robotId:robot.ref.id,missionId:c.payload.missionId===undefined?null:text(c.payload.missionId),status:reason?'pending':'granted',reason:reason ?? null,ttlMs,expiresAtMs:Date.parse(c.recordedAt)+ttlMs,rank,requestedAt:pending?old.state.requestedAt!:c.recordedAt,releaseReason:null,evidence:null};
   const type=reason?'ZoneReservationPending':'ZoneReservationGranted';
   return done([...events,old?changed(type,old,state):created(type,'reservation',id,state)],{reservationId:id,status:String(state.status),...(reason?{reason}:{})});
- });
- handle(registry,'Zone.Release',(c,s)=>{
+}
+function release(c:CommandEnvelope,s:Snapshot[]):Decision {
   const r=requireState(s,'reservation',text(c.payload.reservationId));
   if(r.state.status==='released') return fail('RESERVATION_RELEASED');
   if(r.state.status==='granted'&&c.payload.evidence===undefined&&c.actorRef!==`executor:${String(r.state.robotId)}`) return fail('RESERVATION_NOT_BOUND');
@@ -62,5 +62,43 @@ export function registerReservations(registry:ModuleRegistry):void {
    work=apply(work,events);
   }
   return done(events,{reservationId:r.ref.id,promoted});
- });
+}
+export function registerReservations(registry:ModuleRegistry):void {
+ handle(registry,'Zone.Reserve',(c,s)=>reserve(c,s));
+ handle(registry,'Zone.Release',(c,s)=>release(c,s));
+}
+
+
+/** Every contender mutates the SAME aggregate, including the first two inserts into an empty zone. */
+function reserve(c:CommandEnvelope,s:Snapshot[]):Decision {
+ const result=reserveDecision(c,s);if(!result.ok)return result;
+ const zoneId=String(c.payload.zoneId),lock=find(s,'traffic-zone',zoneId);
+ return {...result,events:[...result.events,lock?changed('TrafficZoneChecked',lock,{operationId:c.operationId}):created('TrafficZoneChecked','traffic-zone',zoneId,{operationId:c.operationId})]};
+}
+/** All movement paths reserve before their effects commit. Routes without a proven zone mapping use an exclusive venue boundary. */
+export function reserveDecisionMovement(c:CommandEnvelope,s:Snapshot[],decision:Decision):Decision {
+ if(!decision.ok)return decision;
+ const events=[...decision.events];
+ // Overlay the decision so assignment/release and multiple effects are considered in the same transaction.
+ const view=()=>{
+  const work=apply(s,events);
+  for(const e of events)if(!work.some(x=>x.ref.kind===e.data.kind&&x.ref.id===e.data.id))work.push({ref:{organizationId:c.organizationId,venueId:c.venueId,kind:String(e.data.kind),id:String(e.data.id)},version:0,state:e.data.state as JsonObject});
+  return work;
+ };
+ for(const e of decision.events.filter(e=>e.data.kind==='robot')) {
+  const state=e.data.state as JsonObject;
+  if(state.availability==='idle'&&!state.missionId&&['completed','cancelled'].includes(String(state.goalState))) {
+   const work=view(),held=find(work,'reservation',`${VENUE_MOVEMENT_ZONE}@${String(e.data.id)}`);
+   if(held&&held.state.status!=='released'&&held.state.status!=='unknown') {
+    const released=release({...c,actorRef:`executor:${String(e.data.id)}`,payload:{reservationId:held.ref.id}},work);
+    if(released.ok)events.push(...released.events);
+   }
+  }
+ }
+ for(const effect of (decision.value.effects??[]) as JsonObject[])if(effect.type==='robot.execute') {
+  const p=effect.payload as JsonObject;
+  const reserved=reserve({...c,payload:{zoneId:VENUE_MOVEMENT_ZONE,robotId:p.robotId!,missionId:p.missionId!}},view());
+  if(!reserved.ok)return reserved;events.push(...reserved.events);
+ }
+ return {...decision,events};
 }

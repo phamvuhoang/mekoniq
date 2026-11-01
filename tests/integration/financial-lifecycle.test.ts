@@ -334,3 +334,40 @@ test("refunds and settling existing bills stay allowed with sales channels off; 
     expect((await lab.command("manager","Payment.VerifyManual",{billId:"bill-3",expectedVersion:1,amountMinor:"100000",currency:"VND",reason:"r",evidenceRef:"e",reference:{provider:"vcb",merchantId:"a",transactionId:"x"}})).code).toBe("FEATURE_DISABLED");
   } finally { await lab.close(); }
 });
+
+test("fully discounted quantity and equal splits keep every child nonnegative and conserve each coupon", async () => {
+  for (const mode of ['quantity','equal']) {
+    const lab=await createRestaurantLab();
+    try {
+      await lab.seed('catalog','current',{...fixture.menu,items:fixture.menu.items.map(i=>({...i,unitMinor:'100000'})),pricing:{discounts:[{id:'a',name:'A',kind:'fixed',amountMinor:'99999'},{id:'b',name:'B',kind:'fixed',amountMinor:'100001'}]}} as JsonObject);
+      accepted(await lab.command('cashier','Session.Open',{sessionId:'zero',tableId:'table-1'}));
+      const order=await lab.command('manager','Order.Place',{sessionId:'zero',tableId:'table-1',menuVersion:1,items:[{itemId:'rice',quantity:'2'}],discountIds:['a','b']});accepted(order);
+      const lineId=(order.value.lineIds as string[])[0]!;
+      const prepared=await lab.command('cashier','Bill.Prepare',{sessionId:'zero'});accepted(prepared);
+      const billId=String(prepared.value.billId),parent=await lab.state<Bill>('bill',billId);
+      expect(parent.totalMinor).toBe('0');
+      const split=await lab.command('cashier','Bill.Split',{billId,expectedVersion:parent.version,mode,parts:mode==='equal'?2:[{items:[{lineId,quantity:'1'}]},{items:[{lineId,quantity:'1'}]}]});accepted(split);
+      expect(split.value.totals).toEqual(['0','0']);
+      const ids=split.value.childBillIds as string[],children=await Promise.all(ids.map(id=>lab.state<Bill>('bill',id)));
+      parent.lines[0]!.charges.forEach((charge,k)=>expect(sum(children.map(c=>c.lines[0]!.charges[k]!.minor))).toBe(BigInt(charge.minor)));
+      for(const id of ids)accepted(await lab.command('cashier','Bill.Close',{billId:id,expectedVersion:1}));
+    }finally{await lab.close();}
+  }
+});
+
+test('mixed remainder-heavy discounted lines conserve every charge in quantity and equal splits',async()=>{
+ for(const mode of ['quantity','equal']){
+  const lab=await createRestaurantLab();try{
+   await lab.seed('catalog','current',{...fixture.menu,items:fixture.menu.items.map(i=>({...i,unitMinor:i.id==='rice'?'101':'103'})),pricing:{discounts:[{id:'a',name:'A',kind:'fixed',amountMinor:'199'},{id:'b',name:'B',kind:'fixed',amountMinor:'201'}],taxProfiles:[{id:'vat',name:'VAT',rateBps:777,inclusive:false}],defaultTaxProfileId:'vat',service:{rateBps:333,taxable:true}}} as JsonObject);
+   accepted(await lab.command('cashier','Session.Open',{sessionId:'mixed',tableId:'table-1'}));
+   const order=await lab.command('manager','Order.Place',{sessionId:'mixed',tableId:'table-1',menuVersion:1,items:[{itemId:'rice',quantity:'3'},{itemId:'tea',quantity:'2'}],discountIds:['a','b']});accepted(order);
+   const [rice,tea]=order.value.lineIds as string[];
+   const prepared=await lab.command('cashier','Bill.Prepare',{sessionId:'mixed'});accepted(prepared);const billId=String(prepared.value.billId),parent=await lab.state<Bill>('bill',billId);
+   const split=await lab.command('cashier','Bill.Split',{billId,expectedVersion:parent.version,mode,parts:mode==='equal'?3:[{items:[{lineId:rice!,quantity:'1'},{lineId:tea!,quantity:'1'}]},{items:[{lineId:rice!,quantity:'2'},{lineId:tea!,quantity:'1'}]}]});accepted(split);
+   const children=await Promise.all((split.value.childBillIds as string[]).map(id=>lab.state<Bill>('bill',id)));
+   expect(sum(children.map(c=>c.totalMinor))).toBe(BigInt(parent.totalMinor));
+   for(const child of children)for(const line of child.lines)expect(BigInt(line.totalMinor)).toBeGreaterThanOrEqual(0n);
+   for(const line of parent.lines)line.charges.forEach((charge,k)=>expect(sum(children.flatMap(c=>c.lines.filter(l=>l.id===line.id).map(l=>l.charges[k]!.minor)))).toBe(BigInt(charge.minor)));
+  }finally{await lab.close();}
+ }
+});

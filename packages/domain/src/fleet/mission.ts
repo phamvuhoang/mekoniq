@@ -1,8 +1,8 @@
 import type { ModuleRegistry } from '../modules';
 import type { CommandEnvelope, Decision, DomainEvent, JsonObject, Snapshot } from '../../../contracts/src/index';
 import { all, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
-import { missionDemand, selectRobot } from './scheduler';
-import { bindingReason, homeTarget } from './map-binding';
+import { legHoldReason, missionDemand, selectRobot } from './scheduler';
+import { homeTarget } from './map-binding';
 import { issueRobotCommand } from './command-journal';
 import type { MissionStop } from './stop';
 
@@ -58,8 +58,9 @@ function nextStop(c:CommandEnvelope,s:Snapshot[],mission:Snapshot,stops:MissionS
  }
  // Never journal coordinates from an old map: a robot that reports a new map (or lost the binding) mid-mission is held, not released, and the
  // leg stays pending until an operator rebinds and resumes it (Mission.Resume). Work already confirmed with this command still commits.
- // A robot whose safety state is set and not clear is held the same way (SAFETY_NOT_CLEAR) until a 'clear' observation and a Resume.
- const stale=robot.state.safetyState&&robot.state.safetyState!=='clear'?'SAFETY_NOT_CLEAR':bindingReason(robot.state,next.targetId);
+ // A robot whose safety state is set and not clear is held the same way (SAFETY_NOT_CLEAR) until a 'clear' observation and a Resume, and so
+ // is a leg whose target's clearance does not admit the robot's footprint (FOOTPRINT_*: a move/merge can rewrite a later stop).
+ const stale=legHoldReason(s,mission.state,robot,next.targetId);
  if(stale) return done([changed('MissionNeedsAttention',mission,{stops,status:'needs_attention',attentionReason:stale,loaded,currentStopId:next.id})],{missionId:mission.ref.id,status:'needs_attention',reason:stale});
  next.status='travelling';
  const issued=issueRobotCommand(c,robot,mission.ref.id,revision,next,mission.state.speedLimitMps);
@@ -175,8 +176,7 @@ export function registerMissions(registry:ModuleRegistry):void {
   if(mission.state.status!=='needs_attention'||!mission.state.attentionReason) return fail('MISSION_STATE_CONFLICT');
   const robot=requireState(s,'robot',String(mission.state.robotId)),stops=structuredClone(mission.state.stops) as MissionStop[];
   if(robot.state.availability==='unknown'||['unknown','stop_requested'].includes(String(robot.state.goalState))) return fail('ROBOT_STATE_UNKNOWN');
-  if(robot.state.safetyState&&robot.state.safetyState!=='clear') return fail('SAFETY_NOT_CLEAR');
-  const next=stops.find(stop=>stop.status==='pending') ?? fail('STOP_NOT_FOUND'),stale=bindingReason(robot.state,next.targetId);
+  const next=stops.find(stop=>stop.status==='pending') ?? fail('STOP_NOT_FOUND'),stale=legHoldReason(s,mission.state,robot,next.targetId);
   if(stale) return fail(stale);
   return nextStop(c,s,mission,stops,Boolean(mission.state.loaded));
  });

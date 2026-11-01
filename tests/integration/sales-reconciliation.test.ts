@@ -271,3 +271,19 @@ test("cash handed back for a card payment leaves the refunding actor's drawer, n
     expect(await lab.state<JsonObject>("shift","cashier-shift")).not.toHaveProperty("cashRefundedMinor");
   } finally { await lab.close(); }
 });
+
+test("a prepared bill tender reversal preserves revenue after replacement tender and close", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    const { billId } = await bill(lab, "s1", "table-1", [{itemId:"rice",quantity:"1"}], false);
+    ok(await lab.command("cashier","Shift.Open",{shiftId:"replacement",currency:"VND"}));
+    const cash=ok(await lab.command("cashier","Payment.RecordCash",{billId,expectedVersion:1,amountMinor:"50000",currency:"VND",shiftId:"replacement"}));
+    ok(await lab.command("manager","Refund.Record",{paymentId:String(cash.value.paymentId),amountMinor:"10000",reason:"replace tender",expectedVersion:1}));
+    ok(await lab.command("cashier","Payment.RecordTerminal",{billId,amountMinor:"10000",currency:"VND",status:"captured",reference:{provider:"acme",merchantId:"m",transactionId:"replacement"}}));
+    ok(await lab.command("cashier","Bill.Close",{billId,expectedVersion:(await lab.state<JsonObject>("bill",billId)).version}));
+    const report=await lab.report("sales","2026-10-30");
+    expect(report.totals).toMatchObject({netMinor:"50000",returnsMinor:"0"});
+    expect(report.refunds).toMatchObject([{method:"cash",amountMinor:"10000"}]);
+    expect(report.reconciliation).toMatchObject({expectedMinor:"50000",collectedMinor:"50000",differenceMinor:"0"});
+  } finally {await lab.close();}
+});

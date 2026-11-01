@@ -71,7 +71,7 @@ test('guest commands relay with guest-only rights and stay pending until the ven
  expect((await guestSession(t)).requests[0]).toMatchObject({status:'rejected',code:'SESSION_EXPIRED'});
  const later=await submitGuestCommand(t,'Guest.CallStaff',{},'client-op-2');
  await db.admin`UPDATE relay_command SET expires_at=now()-interval '1 second' WHERE organization_id=${scope.organizationId} AND operation_id=${later.operationId}`;
- expect((await guestSession(t)).requests.find(r=>r.operationId===later.operationId)?.status).toBe('unreachable');
+ expect((await guestSession(t)).requests.find(r=>r.operationId===later.operationId)?.status).toBe('unknown');
 });
 
 test('guest HTTP routes need no staff session and never serve non-menu assets',async()=>{
@@ -111,4 +111,28 @@ test('the venue pulls safety stops, then staff relays, before any guest relay',a
  for(const [id,type] of [['order-staff','Order.Place'],['order-stop','Robot.RequestStop']])await db.admin`INSERT INTO relay_command(organization_id,venue_id,operation_id,payload_hash,command,coordinator_epoch,expires_at) VALUES(${scope.organizationId},${scope.venueId},${id},'x',${db.admin.json(staff(id,type))},1,now()+interval '1 minute')`;
  const ids=(await pendingRelay(coordinator,scope)).map(q=>q.command.operationId).filter(id=>[guest.operationId,'order-staff','order-stop'].includes(id));
  expect(ids).toEqual(['order-stop','order-staff',guest.operationId]);
+});
+
+test('lost committed order receipt expires to unknown and recovers the original order exactly once',async()=>{
+ const {createRestaurantLab}=await import('../support/restaurant-lab');
+ const lab=await createRestaurantLab();
+ try{
+  lab.clock.nowMs=Date.now();const s=lab.scope;
+  await db.admin`INSERT INTO venue(organization_id,id,name) VALUES(${s.organizationId},${s.venueId},'Receipt loss')`;
+  await db.admin`INSERT INTO venue_ownership(organization_id,venue_id,resource_id,owner_device_id,owner_device_epoch,epoch,status) VALUES(${s.organizationId},${s.venueId},'coordinator','coordinator','epoch-1',1,'active')`;
+  await db.admin`INSERT INTO device_enrollment(organization_id,venue_id,device_id,device_epoch,public_jwk,status) VALUES(${s.organizationId},${s.venueId},'coordinator','epoch-1',${db.admin.json(testPublicJwk as JsonObject)},'active')`;
+  await db.admin`INSERT INTO authority(organization_id,venue_id,coordinator_epoch,policy_revision) VALUES(${s.organizationId},${s.venueId},1,1)`;
+  expect((await lab.command('cashier','Session.Open',{sessionId:'lost',tableId:'table-1'})).status).toBe('accepted');
+  const t=await lab.guestToken('lost'),payload={menuVersion:1,items:[{itemId:'tea',quantity:'1'}]};
+  const queued=await submitGuestCommand(t,'Order.Place',payload,'original');
+  const receipt=await lab.guestCommand(t,'Order.Place',payload,queued.operationId);expect(receipt.status).toBe('accepted');
+  await db.admin`UPDATE relay_command SET expires_at=now()-interval '1 second' WHERE organization_id=${s.organizationId}`;
+  expect((await guestSession(t)).requests[0]).toMatchObject({operationId:queued.operationId,status:'unknown'});
+  expect((await submitGuestCommand(t,'Order.Place',payload,'original')).duplicate).toBe(true);
+  await expect(submitGuestCommand(t,'Order.Place',payload,'replacement')).rejects.toThrow('GUEST_ORDER_PENDING');
+  await recordVenueReceipt({...coordinator,organizationId:s.organizationId,deviceEpoch:'epoch-1'},s,{coordinatorEpoch:1,result:receipt});
+  expect((await guestSession(t)).requests[0]).toMatchObject({operationId:queued.operationId,status:'accepted'});
+  expect((await lab.guestCommand(t,'Order.Place',payload,queued.operationId)).duplicate).toBe(true);
+  expect((await (await lab.getStore('coordinator')).snapshots(s)).filter(x=>x.ref.kind==='kitchen-ticket')).toHaveLength(1);
+ }finally{await lab.close();}
 });

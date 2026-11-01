@@ -1,5 +1,6 @@
 import {expect,test} from 'vitest';
 import {createContinuityLab} from '../support/continuity-lab';
+import {createRestaurantLab} from '../support/restaurant-lab';
 import {actors} from '../support/actors';
 test('full shutdown exposes unresolved cargo',async()=>{
  const lab=await createContinuityLab();try{
@@ -16,5 +17,19 @@ test('planned shutdown requires checkpoints and blocks new shared work',async()=
   expect((await lab.command('manager','Maintenance.Enter',{mode:'full_shutdown'})).status).toBe('accepted');
   const exported=await lab.command('manager','Continuity.Export',{});
   expect(exported.value.preserveOriginalIds).toBe(true);
+ }finally{await lab.close();}
+});
+
+test('full shutdown drains guest, guide, bus and additive amendment aliases before they create work',async()=>{
+ const lab=await createRestaurantLab();try{
+  expect((await lab.command('manager','Maintenance.Prepare',{mode:'full_shutdown'})).status).toBe('accepted');
+  for(const type of ['Guest.PlaceOrder','Mission.Guide','Mission.Bus','Order.Amend']) {
+   const result=await lab.command(type.startsWith('Guest.')?'guest':'manager',type,{items:[{itemId:'rice',quantity:'1'}]});
+   expect(result.code,type).toBe('MAINTENANCE_DRAINING');
+  }
+  expect((await lab.command('manager','Order.Amend',{lineId:'missing',cancelQuantity:'1',reason:'cancel',expectedVersion:1})).code).not.toBe('MAINTENANCE_DRAINING');
+  expect(await lab.count('RobotCommandIssued')).toBe(0);expect(await lab.count('KitchenTicketCreated')).toBe(0);
+  await lab.seed('maintenance','current',{status:'prepared',mode:'cloud_only'});
+  for(const type of ['Guest.PlaceOrder','Mission.Guide','Mission.Bus','Order.Amend','Robot.RequestStop'])expect((await lab.command(type.startsWith('Guest.')?'guest':'manager',type,{})).code).not.toBe('MAINTENANCE_DRAINING');
  }finally{await lab.close();}
 });

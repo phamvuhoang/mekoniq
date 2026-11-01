@@ -38,7 +38,11 @@ async function storeRelay(command:CommandEnvelope,expiresAt:string,pendingLimit?
   if(pendingLimit!==undefined){
    // Per-actor lock so concurrent requests with fresh operation ids cannot all pass the count.
    await sql`SELECT pg_advisory_xact_lock(hashtext(${JSON.stringify([command.organizationId,command.venueId,command.actorRef])}))`;
-   const [open]=await sql`SELECT count(*)::int AS n FROM relay_command WHERE organization_id=${command.organizationId} AND venue_id=${command.venueId} AND command->>'actorRef'=${command.actorRef} AND status='pending' AND expires_at>now()`;
+   if(command.type==='Guest.PlaceOrder'){
+    const [order]=await sql`SELECT operation_id FROM relay_command WHERE organization_id=${command.organizationId} AND venue_id=${command.venueId} AND command->>'actorRef'=${command.actorRef} AND command->>'type'='Guest.PlaceOrder' AND status IN ('pending','unknown') LIMIT 1`;
+    if(order)throw new Error('GUEST_ORDER_PENDING');
+   }
+   const [open]=await sql`SELECT count(*)::int AS n FROM relay_command WHERE organization_id=${command.organizationId} AND venue_id=${command.venueId} AND command->>'actorRef'=${command.actorRef} AND status IN ('pending','unknown')`;
    if(Number(open.n)>=pendingLimit)throw new Error('GUEST_RATE_LIMITED');
   }
   await sql`INSERT INTO relay_command(organization_id,venue_id,operation_id,payload_hash,command,coordinator_epoch,expires_at) VALUES(${command.organizationId},${command.venueId},${command.operationId},${command.payloadHash},${sql.json({...command})},${command.coordinatorEpoch},${new Date(expiry)})`;

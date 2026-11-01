@@ -4,6 +4,7 @@ import { stateEvent, type ModuleRegistry } from './modules';
 import { canonicalMinor } from './shared/money';
 import { evaluateFeature } from './policy/evaluate';
 import type { FeatureConfig } from './policy/registry';
+import {reserveDecisionMovement} from './fleet/reservations';
 import {runtimeReadiness} from './policy/readiness';
 export class DomainFault extends Error {}
 export const fail = (code: string): never => { throw new DomainFault(code); };
@@ -48,7 +49,7 @@ export function handle(registry:ModuleRegistry,type:string,handler:Handler):void
  registry.register(type,(command,snapshots)=>{
    try {
     guardFeature(command,snapshots);
-    return handler(command,snapshots);
+    return reserveDecisionMovement(command,snapshots,handler(command,snapshots));
    }
    catch(error) { if(error instanceof DomainFault) return {ok:false,code:error.message}; throw error; }
  });

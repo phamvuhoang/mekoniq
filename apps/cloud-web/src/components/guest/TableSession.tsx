@@ -5,7 +5,7 @@ import {Cart} from './Cart';
 type View={organizationId:string;venueId:string;tableName:string;expiresAt:string;session:'open'|'expired'|'unknown';orders:{id:string;status:string;currency:string;totalMinor:string;lines:{name:string;quantity:string;cancelledQuantity:string}[]}[];calls:{id:string;kind:string;status:string}[];requests:{operationId:string;type:string;status:string;code:string|null}[]};
 type MenuData={version:number;currency:string;items:GuestMenuItem[]};
 const labels:Record<string,string>={'Guest.PlaceOrder':'Gọi món / Order','Guest.CallStaff':'Gọi nhân viên / Staff call','Guest.RequestBill':'Yêu cầu thanh toán / Bill request','Guest.ReportIssue':'Báo sự cố / Issue'};
-const states:Record<string,string>={pending:'Đang chờ nhà hàng xác nhận / Waiting for the restaurant',accepted:'Nhà hàng đã nhận / Received by the restaurant',rejected:'Nhà hàng từ chối / Declined',unknown:'Chưa rõ, nhân viên sẽ kiểm tra / Unclear, staff will check',unreachable:'Nhà hàng chưa nhận được. Vui lòng báo nhân viên gọi món giúp bạn. / The restaurant did not receive this. Please ask staff to enter it for you.'};
+const states:Record<string,string>={pending:'Đang chờ nhà hàng xác nhận / Waiting for the restaurant',accepted:'Nhà hàng đã nhận / Received by the restaurant',rejected:'Nhà hàng từ chối / Declined',unknown:'Chưa rõ, nhân viên sẽ kiểm tra / Unclear, staff will check'};
 const post=async(path:string,body:object)=>{const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw new Error(data.code??'UNAVAILABLE');return data;};
 /** Guest table page. Everything is scoped by the signed token; an order shows as pending until the venue's receipt exists. */
 export function TableSession({token}:{token:string}){
@@ -29,7 +29,7 @@ export function TableSession({token}:{token:string}){
   if(await send('Order.Place',{menuVersion:menu.version,items:Object.entries(cart).filter(([,n])=>n>0).map(([itemId,n])=>({itemId,quantity:String(n)}))},id)){setCart({});setDraftId(null);}
  }
  if(!view)return <main style={{padding:16,maxWidth:720,margin:'auto'}}><p role="status">{message}</p></main>;
- const pendingOrder=view.requests.some(r=>r.type==='Guest.PlaceOrder'&&r.status==='pending');
+ const pendingOrder=view.requests.some(r=>r.type==='Guest.PlaceOrder'&&['pending','unknown'].includes(r.status));
  return <main style={{padding:16,maxWidth:720,margin:'auto',fontSize:18}}>
   <h1>{view.tableName}</h1>
   <p role="status">{message}</p>

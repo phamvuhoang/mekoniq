@@ -1,6 +1,6 @@
 import { registerPlugin } from '@capacitor/core';
 import { hashPayload } from '../../../packages/contracts/src/index';
-import type { CommandEnvelope, RobotCommand, Scope } from '../../../packages/contracts/src/index';
+import type { CommandEnvelope, JsonObject, RobotCommand, Scope } from '../../../packages/contracts/src/index';
 import type { NativeAcceptance, NativeCancellation, NativeExecutionState, RobotEvent, StopAcknowledgement } from '../../../packages/robot-adapters/src/contract';
 import { dispatchRobotEffects, robotEventCommand } from '../../../packages/robot-adapters/src/dispatch';
 import { ValetudoAdapter, type ValetudoTransport } from '../../../packages/robot-adapters/src/valetudo/adapter';
@@ -57,7 +57,7 @@ export function startNativeValetudoRuntime(options:{store:DurableStore;scope:Sco
  let stopped=false,timer:ReturnType<typeof setTimeout>|undefined,tail:Promise<unknown>=Promise.resolve();
  async function forward(event:RobotEvent) {
   const snapshots=await store.snapshots(scope),authority=snapshots.find(s=>s.ref.kind==='__scope__')?.state,robot=snapshots.find(s=>s.ref.kind==='robot'&&s.ref.id===profile.robotId);
-  if(!authority||!robot||robot.state.ownerDeviceId!==authority.ownerDeviceId) return;
+  if(!authority||!robot||robot.state.ownerDeviceId!==authority.ownerDeviceId) return false;
   // Robot-level safety/stop observations carry no command and no epoch of their own: they are facts about the physical robot, bound to identity
   // (owner device + this robot's executor actor + a dispatchable profile), so the robot's current epoch is stamped here, not the adapter's.
   const payload=robotEventCommand(event);
@@ -66,12 +66,31 @@ export function startNativeValetudoRuntime(options:{store:DurableStore;scope:Sco
   const command:CommandEnvelope={schemaVersion:1,...scope,operationId:hashPayload({robotId:profile.robotId,eventId:event.id,bootId:event.bootId}),type:'Robot.Observe',actorRef,deviceId:String(authority.ownerDeviceId),deviceEpoch:String(authority.deviceEpoch),coordinatorEpoch:Number(authority.coordinatorEpoch),policyRevision:Number(authority.policyRevision),occurredAt:event.observedAt,recordedAt:timestamp,payload,payloadHash:hashPayload(payload)};
   const result=await processCommand(store,command,(c,s)=>registry.decide(c,s),async c=>c.actorRef===actorRef&&c.deviceId===authority.ownerDeviceId&&robot.state.driver==='valetudo'&&profileReason(robot.state)===undefined);
   if(event.type==='safety_state'&&result.status==='accepted') adapter.safetyAccepted(String(event.payload.safetyState)); // latch only once recorded
+  // Retry transient failures with the same event identity. Stale/unsupported events have a definitive domain disposition.
+  // Recovery may rediscover acceptance after Mission.Cancel committed. That historical acceptance/progress can never advance a cancelling mission.
+  const supersededByCancellation=result.status==='rejected'&&result.code==='CANCELLATION_RECONCILIATION_REQUIRED'&&['accepted','progress'].includes(event.type);
+  return result.status==='accepted'||supersededByCancellation||(result.status==='rejected'&&['STALE_ROBOT_EVENT','STALE_CONTROL_EPOCH','UNSUPPORTED_ROBOT_EVENT','STALE_SAFETY_OBSERVATION','STALE_STOP_OBSERVATION'].includes(result.code??''));
  }
  async function runStep() {
   if(stopped) return;
+  const snapshots=await store.snapshots(scope),authority=snapshots.find(s=>s.ref.kind==='__scope__')?.state,robot=snapshots.find(s=>s.ref.kind==='robot'&&s.ref.id===profile.robotId);
+  if(!authority||!robot||robot.state.ownerDeviceId!==authority.ownerDeviceId||profileReason(robot.state)!==undefined)return;
+  const effects=await store.effects(scope,'robot.execute');
+  // Accepted effects disappear from dispatch's worklist, but their active native goals still need recovery after every WebView reload.
+  for(const effect of effects.filter(e=>['confirmed','dispatching','unknown'].includes(String(e.status)))) {
+   const command=effect.payload as unknown as RobotCommand;
+   if(command.robotId!==profile.robotId||command.controlEpoch!==robot.state.controlEpoch||command.issuerDeviceId!==authority.ownerDeviceId||command.organizationId!==scope.organizationId||command.venueId!==scope.venueId)continue;
+   const mission=snapshots.find(s=>s.ref.kind==='mission'&&s.ref.id===command.missionId);
+   const history=snapshots.find(s=>s.ref.kind==='robot-command'&&s.ref.id===command.commandId)?.state;
+   // An old cancellation matters only before its replacement was sent. Native superseded rows are historical once the current goto exists.
+   const replacement=effects.find(e=>(e.payload as JsonObject).commandId===mission?.state.commandId);
+   const superseded=history?.status==='superseded'&&history.supersededBy===mission?.state.commandId&&(!replacement||replacement.status==='pending');
+   if(mission&&['assigned','executing','cancelling','needs_attention'].includes(String(mission.state.status))&&(mission.state.commandId===command.commandId||superseded))await adapter.recover(command);
+  }
   await dispatchRobotEffects(store,scope,adapter,now());
   await adapter.poll();
-  for(const event of events.splice(0)) await forward(event);
+  // A failed forward leaves the event at the head of the queue; a retry uses its original operation identity.
+  while(events.length){if(!await forward(events[0]!))break;events.shift();}
  }
  function step(){const result=tail.then(runStep);tail=result.catch(()=>{});return result;}
  const interval=options.intervalMs ?? 1000;

@@ -43,7 +43,7 @@ export const routes=[
  * A screen that starts business for a feature is offered only while that feature is enabled or draining in the applied configuration (any of the listed).
  * Display only: the coordinator's feature guard is the enforcement. No configuration snapshot -> nothing is hidden. Reports are read-only and stay.
  */
-export const screenFeatures:Record<string,string[]>={'/pos':['pos.order'],'/kitchen':['kitchen'],'/fleet':['fleet'],'/robot':['fleet'],'/robot-setup':['fleet'],'/checkout':['billing'],'/cash':['cash.shift'],'/print':['printing'],'/guest-requests':['guest.call','guest.bill','qr.order','kiosk.order'],'/kiosk':['kiosk.order'],'/robot-screen':['robot.order','fleet']};
+export const screenFeatures:Record<string,string[]>={'/pos':['pos.order'],'/kitchen':['kitchen'],'/fleet':['fleet'],'/robot':['fleet'],'/robot-setup':['fleet'],'/checkout':['billing'],'/cash':['cash.shift'],'/print':['printing'],'/guest-requests':['guest.call','guest.bill','qr.order','kiosk.order','robot.order'],'/kiosk':['kiosk.order'],'/robot-screen':['robot.order','fleet']};
 export function featureOn(c:Pick<ScreenContext,'snapshots'>,path:string){const wanted=screenFeatures[path];return !wanted||featureShown(c,wanted);}
 export function canOpen(c:ScreenContext,permission:string){return !permission||c.session.permissions.includes('*')||c.session.permissions.includes(permission);}
 export function routeScreen(path:string,c:ScreenContext):HTMLElement {

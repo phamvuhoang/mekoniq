@@ -26,6 +26,7 @@ const ACTIVE=['sending','executing','cancelling'];
 export class ValetudoAdapter implements RobotAdapter {
  readonly executor:'native'|undefined;
  private goals=new Map<string,GoalRecord>();
+ private recoveryHolds=new Set<string>();
  private commands=new Map<string,RobotCommand>();
  private listeners=new Set<(event:RobotEvent)=>void>();
  private sequence=0n;private epoch=0;private caps?:string[];private last?:ValetudoSample;private stopAtMs?:number;private stopSamples:ValetudoSample[]=[];private reportedSafety?:string;private stopRejected=false;private seenMs=-Infinity;
@@ -57,6 +58,26 @@ export class ValetudoAdapter implements RobotAdapter {
   for(const listener of this.listeners) listener(event);
  }
  private refuse(reason:string):NativeAcceptance {return {accepted:false,unknown:false,reason};}
+ executionHold():string|undefined {
+  if(this.recoveryHolds.size)return 'RECOVERY_UNCONFIRMED';
+  if([...this.goals.values()].some(g=>ACTIVE.includes(g.state)||g.state==='unknown'))return 'PREVIOUS_GOAL_ACTIVE';
+  return this.stopAtMs!==undefined?'STOP_UNCONFIRMED':undefined;
+ }
+ /** Bind durable native evidence to the complete original command before it can emit any observation. Never sends a goto. */
+ async recover(raw:RobotCommand):Promise<boolean> {
+  let command:RobotCommand;try{command=validateRobotCommand(raw);}catch{return false;}
+  if(this.commands.has(command.commandId))return true;
+  this.recoveryHolds.add(command.commandId);
+  if(command.robotId!==this.profile.robotId||command.controlEpoch<this.epoch)return false;
+  let target:ResolvedTarget;try{target=await this.resolveTarget(command.target as unknown as TargetBinding);}catch{return false;}
+  const goal=await this.transport.restore?.(command.commandId);
+  if(!goal||goal.hash!==hashPayload(command as never)||target.kind!=='valetudo'||goal.goal.x!==target.x||goal.goal.y!==target.y||!['executing','cancelling'].includes(goal.state)||goal.ackAtMs===undefined)return false;
+  this.commands.set(command.commandId,structuredClone(command));this.goals.set(command.commandId,goal);
+  this.epoch=Math.max(this.epoch,command.controlEpoch);this.recoveryHolds.delete(command.commandId);
+  if(goal.stopAtMs!==undefined){this.stopAtMs=goal.stopAtMs;this.stopSamples=goal.samples.filter(s=>s.receivedAtMs>=goal.stopAtMs!&&!s.retained);}
+  if(goal.state==='executing')this.emit('accepted',command.commandId,{evidence:'native-journal'});
+  return true;
+ }
  async execute(raw:RobotCommand):Promise<NativeAcceptance> {
   let command:RobotCommand;try{command=validateRobotCommand(raw);}catch{return this.refuse('INVALID_COMMAND');}
   const hash=hashPayload(command as never),old=this.goals.get(command.commandId),p=this.profile;
@@ -156,8 +177,6 @@ export class ValetudoAdapter implements RobotAdapter {
  }
  observe(listener:(event:RobotEvent)=>void):()=>void {this.listeners.add(listener);return ()=>this.listeners.delete(listener);}
  async reconcile(commandId:string):Promise<NativeExecutionState> {
-  let goal=this.goals.get(commandId);
-  if(!goal&&this.transport.restore) {goal=await this.transport.restore(commandId);if(goal)this.goals.set(commandId,goal);}
-  return executionState(goal,this.transport.kind);
+  return executionState(this.goals.get(commandId),this.transport.kind);
  }
 }

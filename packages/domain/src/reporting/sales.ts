@@ -26,7 +26,7 @@ export const paymentAppliedAt = (p: Snapshot): JsonValue | undefined => p.state.
  * Sales for one business date, derived from ledger facts only:
  * - revenue: CLOSED bills (closedAt) — split parents, merged sources and voided bills never close, so nothing counts twice — plus historical receipts
  *   and their amendments on the receipt's own business date;
- * - money: payments (occurredAt) by method, refunds (occurredAt) by method; returns = the refunded APPLIED part (an overpayment refund is not a return);
+ * - money: payments (occurredAt) by method, refunds (occurredAt) by method; returns = the APPLIED part refunded after close (prepared-bill tender reversals and overpayment refunds are not revenue returns);
  * - units: from the orders of the closed bills (equal-split child lines keep full quantity + a portion), each order once, on its first closing day.
  * Totals carry no tax/service reallocation for refunds (refunds record money, not a charge breakdown): net = gross - discount - returns.
  */
@@ -41,7 +41,7 @@ export function salesReport(s: Snapshot[], date: string, tz: string): JsonObject
   const imported = sumOf(receipts, r => r.state.totalMinor), amended = sumOf(amendments, a => a.state.deltaMinor);
   const grossMinor = String(big(part('subtotalMinor')) + big(imported) + big(amended)), discountMinor = part('discountMinor');
   const salesTotalMinor = String(big(sumOf(closed, b => b.state.totalMinor)) + big(imported) + big(amended));
-  const returnsMinor = sumOf(refunds, r => r.state.appliedMinor ?? r.state.amountMinor), netMinor = netSales(grossMinor, discountMinor, returnsMinor);
+  const returnsMinor = sumOf(refunds.filter(r => r.state.billStatus === 'closed'), r => r.state.appliedMinor ?? r.state.amountMinor), netMinor = netSales(grossMinor, discountMinor, returnsMinor);
   const methods = [...new Set([...payments, ...refunds].map(x => String(x.state.method)))].sort();
   const byMethod = methods.flatMap(method => { const xs = captured.filter(p => p.state.method === method); return xs.length ? [{ method, count: xs.length,
     capturedMinor: sumOf(xs, p => p.state.capturedMinor ?? p.state.appliedMinor), appliedMinor: sumOf(xs, p => p.state.appliedMinor), unappliedMinor: sumOf(xs, p => p.state.unappliedMinor),

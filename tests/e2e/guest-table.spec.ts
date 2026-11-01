@@ -35,7 +35,10 @@ test('a QR guest order stays pending until the venue receipt and says so when th
  const rows=await db.admin`SELECT command FROM relay_command WHERE organization_id=${scope.organizationId}`;
  expect(rows).toHaveLength(1);expect(rows[0].command).toMatchObject({type:'Guest.PlaceOrder',actorRef:'guest:guest-token-browser'});
  await db.admin`UPDATE relay_command SET expires_at=now()-interval '1 second' WHERE organization_id=${scope.organizationId}`;
- await expect(page.getByLabel('Yêu cầu đã gửi / Sent requests')).toContainText('Vui lòng báo nhân viên gọi món giúp bạn',{timeout:10000});
+ await expect(page.getByLabel('Yêu cầu đã gửi / Sent requests')).toContainText('Chưa rõ, nhân viên sẽ kiểm tra',{timeout:10000});
+ await page.getByRole('button',{name:'Thêm Trà / Add Trà'}).click();
+ await expect(page.getByRole('button',{name:'Gửi món / Send order'})).toBeDisabled();
+ await expect(page.getByLabel('Yêu cầu đã gửi / Sent requests')).not.toContainText('did not receive');
  await page.screenshot({path:'.lab/guest-table.png',fullPage:true});
  await page.goto(`${api.url}/table/not-a-valid-token-value`);
  await expect(page.getByRole('status')).toContainText('Vui lòng gọi nhân viên');

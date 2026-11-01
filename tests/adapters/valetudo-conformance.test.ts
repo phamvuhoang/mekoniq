@@ -1,3 +1,4 @@
+import { hashPayload } from '../../packages/contracts/src/index';
 import { deflateSync } from 'node:zlib';
 import { describe, expect, test } from "vitest";
 import { createValetudoRig, createValetudoServer, valetudoProfile } from "../support/valetudo-rig";
@@ -348,7 +349,7 @@ describe("native executor transport (typed bridge, fake native side)", () => {
     const sample=(o:object)=>samples.push({receivedAtMs:ms,reachable:true,status:"idle",mapFingerprint:fp,uptimeS:100+ms/1000,...o});
     const journal=new Map<string,{hash:string;ackAtMs:number}>();
     const bridge={
-      async submit({command}:{command:import("../../packages/contracts/src/index").RobotCommand}){calls.push(`submit:${command.commandId}`);expect(Object.keys(command)).not.toContain("url");journal.set(command.commandId,{hash:"h",ackAtMs:ms});return {accepted:true,unknown:false};},
+      async submit({command}:{command:import("../../packages/contracts/src/index").RobotCommand}){calls.push(`submit:${command.commandId}`);expect(Object.keys(command)).not.toContain("url");journal.set(command.commandId,{hash:hashPayload(command as never),ackAtMs:ms});return {accepted:true,unknown:false};},
       async reconcile({commandId}:{commandId:string}):Promise<import("../../packages/robot-adapters/src/contract").NativeExecutionState>{const j=journal.get(commandId);return j?{status:"executing" as const,evidence:{transport:"native",nativeState:"executing",hash:j.hash,goal:{x:2500,y:1200},ackAtMs:j.ackAtMs,samples:samples.filter(s=>s.receivedAtMs>=j.ackAtMs) as never}}:{status:"unknown" as const,evidence:{reason:"NO_GOAL_QUERY"}};},
       async cancel(){return {acknowledged:true,unknown:false};},
       async requestStop(){return {acknowledged:true,physicalStopConfirmed:false};},
@@ -367,6 +368,7 @@ describe("native executor transport (typed bridge, fake native side)", () => {
       ms+=2500;sample({position:{x:2500,y:1200}});
       // WebView reload: a fresh adapter knows nothing, restores the goal from the native journal and judges the same evidence.
       const reloaded=new ValetudoAdapter(profile,new NativeExecutorTransport(bridge),now),after:string[]=[];reloaded.observe(e=>after.push(e.type));
+      expect(await reloaded.recover(c)).toBe(true);
       expect(await reloaded.reconcile("c-1")).toMatchObject({status:"executing"});
       await reloaded.poll();
       expect(after).toContain("completed");

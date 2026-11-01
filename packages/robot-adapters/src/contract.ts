@@ -19,6 +19,8 @@ export interface RobotAdapter {
  describe():Promise<RobotManifest>;
  resolveTarget(target:TargetBinding):Promise<ResolvedTarget>;
  estimateReachability(target:ResolvedTarget):Promise<Reachability>;
+ /** Local admission hold before claiming a never-sent outbox command; no physical I/O. */
+ executionHold?():string|undefined;
  execute(command:RobotCommand):Promise<NativeAcceptance>;
  cancel(commandId:string):Promise<NativeCancellation>;
  requestStop(reason:string):Promise<StopAcknowledgement>;
