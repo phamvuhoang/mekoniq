@@ -39,6 +39,15 @@ export const routes=[
  {path:'/import',key:'import',permission:'continuity.import.approve',screen:ImportHistory},
  {path:'/recovery',key:'recovery',permission:'continuity.resolve',screen:Recovery},
 ] as const;
+/**
+ * A screen that starts business for a feature is offered only while that feature is enabled or draining in the applied configuration (any of the listed).
+ * Display only: the coordinator's feature guard is the enforcement. No configuration snapshot -> nothing is hidden. Reports are read-only and stay.
+ */
+export const screenFeatures:Record<string,string[]>={'/pos':['pos.order'],'/kitchen':['kitchen'],'/fleet':['fleet'],'/robot':['fleet'],'/robot-setup':['fleet'],'/checkout':['billing'],'/cash':['cash.shift'],'/print':['printing'],'/guest-requests':['guest.call','guest.bill','qr.order','kiosk.order'],'/kiosk':['kiosk.order'],'/robot-screen':['robot.order']};
+export function featureOn(c:Pick<ScreenContext,'snapshots'>,path:string){
+ const wanted=screenFeatures[path],features=c.snapshots.find(s=>s.ref.kind==='configuration'&&s.ref.id==='applied')?.state.features as Record<string,{status?:string}>|undefined;
+ return !wanted||!features||wanted.some(key=>['enabled','draining'].includes(String(features[key]?.status)));
+}
 export function canOpen(c:ScreenContext,permission:string){return !permission||c.session.permissions.includes('*')||c.session.permissions.includes(permission);}
 export function routeScreen(path:string,c:ScreenContext):HTMLElement {
  if(path==='/settings'){
@@ -56,5 +65,6 @@ export function routeScreen(path:string,c:ScreenContext):HTMLElement {
  const route=routes.find(r=>r.path===path);
  if(!route)return panel(tr(c,'Không tìm thấy màn hình','Screen not found'));
  if(!canOpen(c,route.permission))return panel(tr(c,'Không có quyền truy cập','Access denied'),el('p',tr(c,'Liên hệ quản lý để cấp quyền phù hợp.','Ask a manager for the required permission.')));
+ if(!featureOn(c,path))return panel(tr(c,'Chức năng đang tắt','Feature is off'),el('p',tr(c,'Chức năng này chưa được bật trong cấu hình nhà hàng.','This function is not enabled in the venue configuration.')));
  return route.screen(c);
 }

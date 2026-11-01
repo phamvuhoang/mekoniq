@@ -485,9 +485,12 @@
         "tests/e2e/trial-service-preset.spec.ts"
       ],
       "additionalTestCommands": [
-        "pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts"
+        "pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts",
+        "pnpm test:e2e -- tests/e2e/pilot-service.spec.ts"
       ],
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W06-T06.md",
+      "remaining": "Gate B pilot is BLOCKED (docs/implementation/gates/B-pilot.md): no approved robot model/firmware, no signed commissioning or venue acceptance, no physical hardware, no real-device O01/O10/O11 runs on a supported Android pair and venue LAN, and no real map reported by a robot to bind. Trial configuration import, the trial-service preset spec (dev-lab fixture venue, not an empty-venue enrollment) and the software-checkable pilot spec are verified locally. Shadow-mode telemetry ingestion is documented only (W11); the actual cutover is W11 after the deploy result is reviewed."
     },
     {
       "wave": "W07",

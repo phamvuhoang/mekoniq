@@ -27,7 +27,7 @@ export async function startCoordinatorServer(port=3451) {
       if(req.method==='GET'&&path==='/session') {
         const localOnly=new URL(req.url??'/','http://localhost').searchParams.get('fixture')==='local-only';
         if(localOnly){await lab.partition('lan');await lab.command('device-a','Continuity.CaptureTicket',{id:'status-local',table:'table-1',totalMinor:'0'},'device-status-fixture');await lab.heal();}
-        res.end(JSON.stringify({actorId:actor,role:principal.role,permissions:principal.permissions,...lab.scope,deviceId:principal.deviceId,deviceEpoch:'epoch-1',coordinatorEpoch:1,policyRevision:1,level:localOnly?'local':'venue',mode:localOnly?'isolated':'coordinated',pendingCount:localOnly?await lab.pendingCount('device-a'):await lab.pendingCount(),lastSyncAt:null,ownerEndpoint:`http://127.0.0.1:${port}`}));return;
+        res.end(JSON.stringify({actorId:actor,role:principal.role,permissions:principal.permissions,...lab.scope,deviceId:principal.deviceId,deviceEpoch:'epoch-1',coordinatorEpoch:1,policyRevision:lab.policyRevision,level:localOnly?'local':'venue',mode:localOnly?'isolated':'coordinated',pendingCount:localOnly?await lab.pendingCount('device-a'):await lab.pendingCount(),lastSyncAt:null,ownerEndpoint:`http://127.0.0.1:${port}`}));return;
       }
       if(req.method==='GET'&&path==='/snapshots') {
         let snapshots=await(await lab.getStore('coordinator')).snapshots(lab.scope);

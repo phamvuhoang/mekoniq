@@ -4,9 +4,10 @@ import {registerRestaurantModules,commandPermissions} from './restaurant';
 import {registerContinuityModules,continuityHandlers} from './continuity/module';
 import {registerPolicyModule} from './policy/module';
 import {registerLayout} from './configuration/layout';
+import {registerTrialImport} from './configuration/trial-import';
 export const productionPermissions:Record<string,string>={...commandPermissions,
  'Policy.Check':'configuration.read','Configuration.Apply':'configuration.publish',
- 'Venue.Configure':'configuration.publish',
+ 'Venue.Configure':'configuration.publish','Trial.ImportPreview':'configuration.publish','Trial.ImportApply':'configuration.publish',
  ...Object.fromEntries(Object.keys(continuityHandlers).map(type=>[type,
    ['Continuity.CaptureTicket','Continuity.RecordPaymentObservation'].includes(type)?'continuity.capture':
    ['SettlementGrant.Use','SettlementGrant.Return'].includes(type)?'payment.cash':type.startsWith('Import.')?'continuity.import.approve':'continuity.resolve']))
@@ -25,7 +26,7 @@ export function requiredPermissions(type:string,payload:JsonObject):string[] {
  return couponCommands.has(type)&&ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?[base,'discount.apply']:[base];
 }
 export function createProductionRegistry() {
- const registry=new ModuleRegistry();registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);registerLayout(registry);return registry;
+ const registry=new ModuleRegistry();registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);registerLayout(registry);registerTrialImport(registry);return registry;
 }
 // This object comes from verified native grants/server identity, never the wire command.
 export type Principal={id:string;deviceId:string;scope:Scope;permissions:string[];expiresAtMs:number;stationIds:string[]};

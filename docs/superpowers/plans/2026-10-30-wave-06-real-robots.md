@@ -291,7 +291,7 @@ def deployment_status(report):
 - Consumes: User-exported trial configuration only; source baseline reference, scope and map-binding schemas.
 - Produces: Dry-run/import configuration report with unmapped fields; one-venue pilot acceptance dossier; bảng đối chiếu từng hành vi baseline trial với test và setting của preset `trial-service`.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 test("trial import cannot replay runtime missions or billing state", async () => {
@@ -304,9 +304,9 @@ test("trial import cannot replay runtime missions or billing state", async () =>
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/trial-config-import.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/trial-config-import.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Whitelist site/menu/robot/waypoints; runtime state rejected with explicit report. Legacy features map to new independent keys with preview, no reading other session's spec. Teaching points require map identity revalidation.
+- [x] **3. Hiện thực phần cốt lõi.** Whitelist site/menu/robot/waypoints; runtime state rejected with explicit report. Legacy features map to new independent keys with preview, no reading other session's spec. Teaching points require map identity revalidation.
 
 ```ts
 const importable = new Set(["name","points","robots","menu","timing","features"]);
@@ -314,11 +314,11 @@ const accepted = Object.fromEntries(Object.entries(input).filter(([key])=>import
 const rejectedFields = Object.keys(input).filter(key=>!importable.has(key));
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Pilot checklist uses one control source only, close/reconcile trial missions/bills before switch. Shadow mode telemetry-only. Preset E2E khởi tạo venue trống bằng luồng enrollment/configuration thật, chọn `trial-service`, cấu hình điểm/robot và tắt kho/CRM/booking/chuỗi/provider ngoài. Chạy giao nhiều bàn, xác nhận khay, hủy khi có tải, thu dọn, gọi/dẫn khách, menu–order–yêu cầu thanh toán theo từng cờ; kiểm UI chỉ hiện chức năng đã bật và API từ chối chức năng tắt. Nhánh pay kiểm receipt/quyền production, không dùng xác nhận của khách để tự settled. Dùng test/fixtures hiện có làm tham chiếu hành vi, không import runtime state. Future actual cutover in W11 after deploy result reviewed; no running trial deploy scripts.
+- [x] **4. Nối vào runtime và lưu trữ.** Pilot checklist uses one control source only, close/reconcile trial missions/bills before switch. Shadow mode telemetry-only. Preset E2E khởi tạo venue trống bằng luồng enrollment/configuration thật, chọn `trial-service`, cấu hình điểm/robot và tắt kho/CRM/booking/chuỗi/provider ngoài. Chạy giao nhiều bàn, xác nhận khay, hủy khi có tải, thu dọn, gọi/dẫn khách, menu–order–yêu cầu thanh toán theo từng cờ; kiểm UI chỉ hiện chức năng đã bật và API từ chối chức năng tắt. Nhánh pay kiểm receipt/quyền production, không dùng xác nhận của khách để tự settled. Dùng test/fixtures hiện có làm tham chiếu hành vi, không import runtime state. Future actual cutover in W11 after deploy result reviewed; no running trial deploy scripts.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/trial-config-import.test.ts`; kỳ vọng PASS. Chạy `pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts`; chỉ thay settings và fixture venue, không sửa code/build để làm preset pass. Old/current schema sample, duplicate import, stale point reference, unknown driver refused; full real-device O01/O10/O11 with approved robot. Gate B explicitly blocked if hardware absent. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/trial-config-import.test.ts`; kỳ vọng PASS. Chạy `pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts`; chỉ thay settings và fixture venue, không sửa code/build để làm preset pass. Old/current schema sample, duplicate import, stale point reference, unknown driver refused; full real-device O01/O10/O11 with approved robot. Gate B explicitly blocked if hardware absent. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware. (software part only; hardware blocked_external: no real-device O01/O10/O11, no approved commissioned robot; Gate B is BLOCKED)
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T06.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: migrate trial configuration into a controlled pilot"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T06.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: migrate trial configuration into a controlled pilot"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ## Wave acceptance
 

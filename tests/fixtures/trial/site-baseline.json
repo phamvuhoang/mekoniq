@@ -1,0 +1,99 @@
+{
+  "name": "MEKONIQ Serve S1",
+  "rev": 0,
+  "trays": 4,
+  "dishPoint": "dish",
+  "timing": {
+    "loadSec": 120,
+    "handoffSec": 60,
+    "remindSec": 15,
+    "standbySec": 180,
+    "lowBattery": 20,
+    "chargedBattery": 80
+  },
+  "roles": [
+    {
+      "id": "bep",
+      "name": "Bếp",
+      "home": "kitchen",
+      "tab": "deliver"
+    },
+    {
+      "id": "bar",
+      "name": "Quầy pha chế",
+      "home": "bar",
+      "tab": "deliver"
+    },
+    {
+      "id": "don",
+      "name": "Dọn bàn",
+      "home": "dish",
+      "tab": "bus"
+    },
+    {
+      "id": "ql",
+      "name": "Quản lý ca",
+      "home": null,
+      "tab": "summon"
+    }
+  ],
+  "robots": [
+    {
+      "id": "R1",
+      "dock": "D1",
+      "driver": "valetudo",
+      "valetudo": {
+        "topic": "",
+        "points": {}
+      }
+    }
+  ],
+  "points": {
+    "kitchen": {
+      "name": "Bếp",
+      "kind": "station"
+    },
+    "bar": {
+      "name": "Quầy pha chế",
+      "kind": "station"
+    },
+    "dish": {
+      "name": "Khu rửa chén",
+      "kind": "dish"
+    },
+    "D1": {
+      "name": "Sạc 1",
+      "kind": "dock"
+    }
+  },
+  "featurePolicyVersion": 2,
+  "serviceProfile": "custom",
+  "features": {
+    "callStaff": false,
+    "requestBill": false,
+    "guide": false,
+    "order": false,
+    "pay": false,
+    "busRobot": false
+  },
+  "customerCancel": "request",
+  "service": {
+    "requestStation": null
+  },
+  "notes": [
+    "Không hành",
+    "Ít cay",
+    "Món nóng",
+    "Thêm chén"
+  ],
+  "menu": {
+    "cats": [],
+    "items": []
+  },
+  "payment": {
+    "bank": "",
+    "account": "",
+    "name": "",
+    "verification": "staff"
+  }
+}

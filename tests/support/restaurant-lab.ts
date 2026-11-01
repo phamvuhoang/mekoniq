@@ -1,6 +1,7 @@
 import { createLab } from './lab';
 import { actors } from './actors';
 import {requiredPermissions} from '../../packages/domain/src/application';
+import { registerTrialImport } from '../../packages/domain/src/configuration/trial-import';
 import { registerPolicyModule } from '../../packages/domain/src/policy/module';
 import { registerContinuityModules } from '../../packages/domain/src/continuity/module';
 import { registerRestaurantModules } from '../../packages/domain/src/restaurant';
@@ -10,7 +11,7 @@ import type { CommandResult, JsonObject, Snapshot } from '../../packages/contrac
 import { encodeGuestToken, guestCommand as guestEnvelope } from '../../packages/domain/src/service/guest-token';
 import { dispatchPrintEffects, spoolEffectSnapshots, PrinterNotReached, type PrinterTransport } from '../../integrations/printing/src/spool';
 export async function createRestaurantLab() {
- const lab=await createLab(registry=>{registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);});
+ const lab=await createLab(registry=>{registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);registerTrialImport(registry);});
  lab.addAuthorization((actor,type,payload)=>{
   const principal=actors[actor],needed=requiredPermissions(type,payload);
   if(!principal||!needed.length) return false;
@@ -61,7 +62,16 @@ export async function createRestaurantLab() {
   try { built=guestEnvelope(token,type,payload); } catch(error) { return {status:'rejected',code:(error as Error).message,value:{},duplicate:false,ack:'none',operationId:operationId??''}; }
   return lab.command(actor,built.type,built.payload,operationId);
  };
- return Object.assign(lab,{printed,runSpool,autoSpool,guestToken,guestCommand});
+ // Plan W06-T06: the user-exported trial site through the production path: dry-run first, then apply with the preview's hash (a rejected report never reaches apply).
+ const importTrial=async(input:JsonObject,actor='manager')=>{
+  const preview=await lab.command(actor,'Trial.ImportPreview',{input});
+  if(preview.status!=='accepted') return {status:preview.status,code:preview.code,report:{} as JsonObject,value:{} as JsonObject};
+  const report=preview.value;
+  if(report.status!=='ready') return {status:'rejected' as const,code:String((report.blocking as {code:string}[])[0]?.code),report,value:{} as JsonObject};
+  const applied=await lab.command(actor,'Trial.ImportApply',{input,previewHash:report.previewHash as string});
+  return {status:applied.status,code:applied.code,report,value:applied.value};
+ };
+ return Object.assign(lab,{printed,runSpool,autoSpool,guestToken,guestCommand,importTrial});
 }
 
 /**
