@@ -89,6 +89,50 @@ class ValetudoExecutorRecoveryTest {
     }
   }
 
+  @Test fun operatorStopWithNoOpenRowIsJournaledAndResentUntilAcknowledged() {
+    executor().let { (e,j) -> j.use {
+      assertTrue(j.open("valetudo-1").isEmpty()) // fresh executor (robot moved by the vendor app): no command row to hang the stop on
+      lab("stop-failures",JSONObject().put("count",1))
+      val first=e.requestStop("operator")
+      assertFalse(first.getBoolean("acknowledged"));assertFalse(first.getBoolean("stopRejected"));assertEquals(1,stops())
+      assertEquals("pending",j.stop("valetudo-1")!!.state) // robot-level stop flag journaled anyway
+      now+=1000;e.tick()
+      assertEquals(2,stops());assertEquals("acknowledged",j.stop("valetudo-1")!!.state) // resent by the service loop, then acknowledged
+      now+=1000;e.tick();assertEquals(2,stops()) // no STOP per tick once acknowledged
+    } }
+    executor().let { (e,j) -> j.use { e.tick();assertEquals(2,stops());assertEquals("acknowledged",j.stop("valetudo-1")!!.state) } } // durable across reopen
+  }
+
+  @Test fun aStopTheRobotRefusesIsRetriedWithBackoffNotEveryTick() {
+    executor().let { (e,j) -> j.use {
+      lab("stop-failures",JSONObject().put("count",2).put("status",400))
+      val first=e.requestStop("operator")
+      assertFalse(first.getBoolean("acknowledged"));assertTrue(first.getBoolean("stopRejected"));assertEquals(1,stops())
+      assertTrue(e.requestStop("operator").getBoolean("stopRejected"));assertEquals(1,stops()) // a repeated request inside the backoff is not resent
+      now+=500;e.tick();assertEquals(1,stops())   // backoff pollMs (1 s) x 2^0
+      now+=500;e.tick();assertEquals(2,stops())   // refused again: next retry 2 s later
+      assertEquals("rejected",j.stop("valetudo-1")!!.state);assertEquals(2,j.stop("valetudo-1")!!.attempts)
+      now+=1000;e.tick();assertEquals(2,stops())
+      now+=1000;e.tick();assertEquals(3,stops());assertEquals("acknowledged",j.stop("valetudo-1")!!.state)
+      assertFalse(e.requestStop("operator").getBoolean("stopRejected"));assertEquals(4,stops()) // a new request after acknowledgement goes out at once
+    } }
+  }
+
+  @Test fun aVersionOneJournalMigratesPendingRowStopsOntoTheRobotLevelFlag() {
+    context.openOrCreateDatabase(db,0,null).use { d ->
+      d.execSQL("CREATE TABLE executor_binding(robot_id TEXT PRIMARY KEY,executor_id TEXT NOT NULL,control_epoch INTEGER NOT NULL)")
+      d.execSQL("CREATE TABLE executor_command(command_id TEXT PRIMARY KEY,robot_id TEXT NOT NULL,command_hash TEXT NOT NULL,control_epoch INTEGER NOT NULL,transport TEXT NOT NULL,goal_x INTEGER NOT NULL,goal_y INTEGER NOT NULL,state TEXT NOT NULL,reason TEXT,ack_at_ms INTEGER,stop_at_ms INTEGER,stop_state TEXT,command_json TEXT NOT NULL,updated_at_ms INTEGER NOT NULL)")
+      d.execSQL("CREATE TABLE executor_observation(id INTEGER PRIMARY KEY AUTOINCREMENT,robot_id TEXT NOT NULL,received_at_ms INTEGER NOT NULL,sample_json TEXT NOT NULL)")
+      d.execSQL("INSERT INTO executor_binding VALUES('valetudo-1','tablet-a',1)")
+      d.execSQL("INSERT INTO executor_command VALUES('c-1','valetudo-1','h',1,'rest',2500,1200,'unknown','STOP_REQUESTED',NULL,1,'pending','{}',1)")
+      d.version=1
+    }
+    executor().let { (e,j) -> j.use {
+      assertEquals("pending",j.stop("valetudo-1")!!.state)
+      e.tick();assertEquals(1,stops());assertEquals("acknowledged",j.command("c-1")!!.stopState)
+    } }
+  }
+
   @Test fun suspendedUiNeverAcknowledgesArrivalAndLeaseLossStopsTheRobot() {
     executor("continue").let { (e,j) -> j.use {
       assertTrue(e.submit(command("c-1")).getBoolean("accepted"))

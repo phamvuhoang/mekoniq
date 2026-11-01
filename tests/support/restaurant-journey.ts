@@ -18,7 +18,7 @@ export async function completeSimulatedTravel(lab:Lab,simulator:SimulatorAdapter
   void wire;
   await dispatchRobotEffects(await lab.getStore('coordinator'),lab.scope,simulator,lab.clock.nowMs);
   simulator.advance(1000);
-  for(const event of events) accepted(await lab.command('owner','Robot.Observe',robotEventCommand(event),event.id));
+  for(const event of events) accepted(await lab.command('simulator:sim-1','Robot.Observe',robotEventCommand(event),event.id));
  }finally{unsubscribe();}
 }
 export async function createSimulator(lab:Lab):Promise<SimulatorAdapter> {

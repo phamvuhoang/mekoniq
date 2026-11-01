@@ -19,10 +19,12 @@ export async function dispatchRobotEffects(store:RobotEffectStore,scope:Scope,ad
   const snapshots=await store.snapshots(scope);
   const robot=snapshots.find(s=>s.ref.kind==='robot'&&s.ref.id===manifest.id);
   if(!robot||payload.controlEpoch!==robot.state.controlEpoch) {await store.completeEffect(scope,id,'failed');continue;}
-  if(row.status==='dispatching'||row.status==='unknown') {
-   const state=await adapter.reconcile(String(payload.commandId));
-   await store.completeEffect(scope,id,state.status==='unknown'||state.status==='sending'?'unknown':'confirmed');
-   results.push({id,result:state});continue;
+  // An unresolved row: a goto is never resent, so an execute is settled by reconcile only. A cancel is settled only by a goal that ended,
+  // otherwise it is sent again; a STOP is always sent again until acknowledged (both are safe to resend; a STOP has no command to reconcile).
+  const retry=row.status==='dispatching'||row.status==='unknown';
+  if(retry&&row.type!=='robot.requestStop') {
+   const state=await adapter.reconcile(String(payload.commandId)),ended=['completed','cancelled','failed'].includes(state.status);
+   if(row.type==='robot.execute'||ended) {await store.completeEffect(scope,id,ended||state.status==='executing'?'confirmed':'unknown');results.push({id,result:state});continue;}
   }
   if(row.type==='robot.execute') {
    const command=validateRobotCommand(payload);
@@ -36,12 +38,13 @@ export async function dispatchRobotEffects(store:RobotEffectStore,scope:Scope,ad
     await store.completeEffect(scope,id,result.unknown?'unknown':result.accepted?'confirmed':'failed');results.push({id,result});
    } catch {await store.completeEffect(scope,id,'unknown');}
   } else if(row.type==='robot.cancel') {
-   if(!await store.claimEffect(scope,id))continue;
+   if(!retry&&!await store.claimEffect(scope,id))continue;
    const result=await adapter.cancel(String(payload.commandId));
    await store.completeEffect(scope,id,result.unknown?'unknown':result.acknowledged?'confirmed':'failed');results.push({id,result:{...result}});
   } else {
-   if(!await store.claimEffect(scope,id))continue;
-   const result=await adapter.requestStop(String(payload.reason));
+   // A rejected STOP (robot answered 400) stays unresolved too; the native executor backs off its resends and reports stopRejected.
+   if(!retry&&!await store.claimEffect(scope,id))continue;
+   const result=await adapter.requestStop(String(payload.reason)).catch(()=>({acknowledged:false,physicalStopConfirmed:false}));
    await store.completeEffect(scope,id,result.acknowledged?'confirmed':'unknown');results.push({id,result:{...result}});
   }
  }

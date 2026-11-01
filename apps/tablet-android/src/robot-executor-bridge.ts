@@ -34,7 +34,7 @@ export class NativeExecutorTransport implements ValetudoTransport {
  }
  async stop(reason:string,commandId?:string) {
   if(commandId) {const r=await this.bridge.cancel({commandId});return r.acknowledged?'acknowledged' as const:r.unknown?'unknown' as const:'rejected' as const;}
-  return (await this.bridge.requestStop({reason})).acknowledged?'acknowledged' as const:'unknown' as const;
+  const r=await this.bridge.requestStop({reason});return r.acknowledged?'acknowledged' as const:r.stopRejected?'rejected' as const:'unknown' as const;
  }
  async samples(sinceMs:number) {return (await this.bridge.observations({sinceMs:Number.isFinite(sinceMs)?sinceMs:0})).samples;}
  /** After a WebView reload: rebuild the goal from the native journal so the shared arrival rule can judge it; no journal row ⇒ unknown. */
@@ -58,10 +58,10 @@ export function startNativeValetudoRuntime(options:{store:DurableStore;scope:Sco
  async function forward(event:RobotEvent) {
   const snapshots=await store.snapshots(scope),authority=snapshots.find(s=>s.ref.kind==='__scope__')?.state,robot=snapshots.find(s=>s.ref.kind==='robot'&&s.ref.id===profile.robotId);
   if(!authority||!robot||robot.state.ownerDeviceId!==authority.ownerDeviceId) return;
-  // Robot-level safety observations carry no command and no epoch of their own: they are facts about the physical robot, bound to identity
+  // Robot-level safety/stop observations carry no command and no epoch of their own: they are facts about the physical robot, bound to identity
   // (owner device + this robot's executor actor + a dispatchable profile), so the robot's current epoch is stamped here, not the adapter's.
   const payload=robotEventCommand(event);
-  if(event.type==='safety_state') payload.controlEpoch=robot.state.controlEpoch ?? 0;
+  if(event.type==='safety_state'||event.type==='stop_state') payload.controlEpoch=robot.state.controlEpoch ?? 0;
   const actorRef=`executor:${profile.robotId}`,timestamp=new Date(now()).toISOString();
   const command:CommandEnvelope={schemaVersion:1,...scope,operationId:hashPayload({robotId:profile.robotId,eventId:event.id,bootId:event.bootId}),type:'Robot.Observe',actorRef,deviceId:String(authority.ownerDeviceId),deviceEpoch:String(authority.deviceEpoch),coordinatorEpoch:Number(authority.coordinatorEpoch),policyRevision:Number(authority.policyRevision),occurredAt:event.observedAt,recordedAt:timestamp,payload,payloadHash:hashPayload(payload)};
   const result=await processCommand(store,command,(c,s)=>registry.decide(c,s),async c=>c.actorRef===actorRef&&c.deviceId===authority.ownerDeviceId&&robot.state.driver==='valetudo'&&profileReason(robot.state)===undefined);

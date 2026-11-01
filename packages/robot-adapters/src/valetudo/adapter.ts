@@ -28,7 +28,7 @@ export class ValetudoAdapter implements RobotAdapter {
  private goals=new Map<string,GoalRecord>();
  private commands=new Map<string,RobotCommand>();
  private listeners=new Set<(event:RobotEvent)=>void>();
- private sequence=0n;private epoch=0;private caps?:string[];private last?:ValetudoSample;private stopAtMs?:number;private stopSamples:ValetudoSample[]=[];private reportedSafety?:string;private seenMs=-Infinity;
+ private sequence=0n;private epoch=0;private caps?:string[];private last?:ValetudoSample;private stopAtMs?:number;private stopSamples:ValetudoSample[]=[];private reportedSafety?:string;private stopRejected=false;private seenMs=-Infinity;
  private readonly bootId=`valetudo-${crypto.randomUUID()}`;
  constructor(private profile:ValetudoProfile,private readonly transport:ValetudoTransport,private now:()=>number=Date.now) {
   if(profile.transport!==transport.kind) throw new Error('TRANSPORT_MISMATCH');
@@ -149,7 +149,10 @@ export class ValetudoAdapter implements RobotAdapter {
   const r=await this.transport.stop(reason).catch(()=>'unknown' as const);
   this.stopAtMs=this.now();this.stopSamples=[];
   for(const goal of this.goals.values()) if(ACTIVE.includes(goal.state)) {goal.state='unknown';goal.reason='STOP_REQUESTED';this.emit('unknown',goal.commandId,{reason:'STOP_REQUESTED'});}
-  return {acknowledged:r==='acknowledged',physicalStopConfirmed:false};
+  // Robot-level, operator-visible: a refused STOP (400) is reported as stop_state 'rejected' until a STOP is acknowledged again.
+  const stopState=r==='rejected'?'rejected':r==='acknowledged'?'acknowledged':undefined;
+  if(stopState&&(stopState==='rejected')!==this.stopRejected) {this.stopRejected=stopState==='rejected';this.emit('stop_state','',{stopState});} // on change only
+  return {acknowledged:r==='acknowledged',physicalStopConfirmed:false,...(r==='rejected'?{stopRejected:true}:{})};
  }
  observe(listener:(event:RobotEvent)=>void):()=>void {this.listeners.add(listener);return ()=>this.listeners.delete(listener);}
  async reconcile(commandId:string):Promise<NativeExecutionState> {

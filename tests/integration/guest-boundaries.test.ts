@@ -229,7 +229,7 @@ test("a loaded bussing mission routes a cancel to unload instead of abandoning t
     let m=await lab.state<{version:number;loaded:boolean;status:string;stops:JsonObject[]}>("mission",missionId);
     expect(m.loaded).toBe(true);
     // Cancel while the robot is driving the dishes to the wash station: the goal is cancelled, the unload stop is kept.
-    const observe=async(type:string)=>{const x=await lab.state<{commandId:string;commandRevision:number}>("mission",missionId);return lab.command("owner","Robot.Observe",{robotId:"sim-1",missionId,controlEpoch:1,commandId:x.commandId,missionRevision:x.commandRevision,type});};
+    const observe=async(type:string)=>{const x=await lab.state<{commandId:string;commandRevision:number}>("mission",missionId);return lab.command("simulator:sim-1","Robot.Observe",{robotId:"sim-1",missionId,controlEpoch:1,commandId:x.commandId,missionRevision:x.commandRevision,type});};
     expect((await observe("accepted")).status).toBe("accepted");
     m=await lab.state("mission",missionId);
     const cancel=await lab.command("cashier","Mission.Cancel",{missionId,expectedVersion:m.version});

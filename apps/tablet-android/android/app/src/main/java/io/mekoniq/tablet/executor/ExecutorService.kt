@@ -91,28 +91,43 @@ class ValetudoExecutor(private val journal:ExecutorJournal,private val transport
     val r=journal.command(commandId)
     if(r==null||r.state !in setOf("executing","cancelling","unknown")) return JSONObject().put("acknowledged",false).put("unknown",r==null)
     journal.stopping(profile.robotId,"cancelling","CANCEL_REQUESTED",clock(),commandId) // only the named command is cancelled
-    val ack=sendStop()
+    val ack=sendStopIfDue()
     return JSONObject().put("acknowledged",ack=="acknowledged").put("unknown",ack!="acknowledged"&&ack!="rejected")
   }
-  /** A stop request is acknowledged or not; it is never a physical-stop proof. */
+  /**
+   * A stop request is acknowledged or not; it is never a physical-stop proof. The robot-level stop flag is journaled first, even with no
+   * open command row (fresh executor, robot moved by the vendor app), so tick() resends it until acknowledged. `stopRejected`: the robot
+   * answered 400 and the STOP waits out its backoff (operator-visible; a repeated call does not resend early).
+   */
   @Synchronized fun requestStop(reason:String):JSONObject {
     require(reason.isNotBlank()) {"STOP_REASON_REQUIRED"}
     lease();journal.stopping(profile.robotId,"unknown","STOP_REQUESTED",clock()) // robot-wide: one robot, one physical motion
-    return JSONObject().put("acknowledged",sendStop()=="acknowledged").put("physicalStopConfirmed",false)
+    val ack=sendStopIfDue()
+    return JSONObject().put("acknowledged",ack=="acknowledged").put("physicalStopConfirmed",false).put("stopRejected",journal.stop(profile.robotId)?.state=="rejected")
   }
-  /** Sends STOP and journals an acknowledgement; anything else leaves stop_state 'pending' and tick() resends it. */
-  private fun sendStop():String { val ack=transport.stop();if(ack=="acknowledged") journal.stopAcknowledged(profile.robotId,clock());return ack }
+  /**
+   * Sends STOP when one is due and journals the answer: acknowledged clears the flag; 400 is `rejected` with backoff; anything else stays
+   * pending and tick() resends it. A STOP still in its rejection backoff is not sent ("rejected").
+   */
+  private fun sendStopIfDue():String {
+    if(!journal.stopDue(profile.robotId,clock())) return if(journal.stop(profile.robotId)?.state=="rejected") "rejected" else "acknowledged"
+    val ack=transport.stop();val at=clock()
+    when(ack) { "acknowledged"->journal.stopAcknowledged(profile.robotId,at);"rejected"->journal.stopRejected(profile.robotId,at,profile.pollMs,STOP_BACKOFF_MAX_MS) }
+    return ack
+  }
   /**
    * Service loop body: journal one observation. If the UI lease lapsed and any open goal (executing, cancelling or unknown — e.g. NO_ACK or
    * CRASH_BEFORE_RECEIPT after a restart with no UI, exactly the goals that may be driving) was never stopped, journal the stop. Then resend
-   * STOP every tick while a journaled stop is not acknowledged. An already-ended goal the native side still holds open costs one harmless STOP.
+   * the robot-level STOP every tick while it is not acknowledged (a rejected one after its backoff). An already-ended goal the native side
+   * still holds open costs one harmless STOP.
    */
   @Synchronized fun tick() {
     val now=clock();journal.observe(profile.robotId,transport.sample(now))
     if(profile.onLeaseLoss=="stop"&&now-leaseMs>profile.leaseMs&&journal.open(profile.robotId).any { it.stopState==null })
       journal.stopping(profile.robotId,"unknown","LEASE_LOST_STOPPED",now)
-    if(journal.open(profile.robotId).any { it.stopState=="pending" }) sendStop()
+    sendStopIfDue()
   }
+  companion object { const val STOP_BACKOFF_MAX_MS=30_000L }
 }
 
 /** Foreground service: keeps the executor's observation journal and lease/stop policy running while the WebView is suspended. */

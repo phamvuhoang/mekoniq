@@ -49,7 +49,7 @@ export function createFakeBroker() {
 export async function createValetudoServer(options:{host?:string;port?:number;topic?:string;now?:()=>number}={}) {
  const now=options.now ?? Date.now,topic=options.topic ?? 'valetudo/EmulatedRobot',broker=createFakeBroker();
  const robot={status:'idle',flag:'none',x:2000,y:1500,angle:90,mapRevision:'r1',goToTarget:undefined as {x:number;y:number}|undefined,error:undefined as string|undefined,noPose:false};
- const lab={gotoMode:'accept' as 'accept'|'reject'|'fail'|'silent',gotoDelayMs:0,unreachable:false,mapPadBytes:0,gotos:[] as Goto[],stops:0,discardedRetained:0,capabilities:capabilitiesFixture as string[],bootAt:now()-3600000,stopFailures:0};
+ const lab={gotoMode:'accept' as 'accept'|'reject'|'fail'|'silent',gotoDelayMs:0,unreachable:false,mapPadBytes:0,gotos:[] as Goto[],stops:0,discardedRetained:0,capabilities:capabilitiesFixture as string[],bootAt:now()-3600000,stopFailures:0,stopFailureStatus:500};
  const attributes=()=>{const a=clone(attributesFixture) as Record<string,unknown>[];Object.assign(a[0]!,{value:robot.status,flag:robot.flag,...(robot.status==='error'?{error:{severity:{kind:'transient',level:'error'},subsystem:'motors',message:robot.error ?? 'Wheel stuck'}}:{})});return a;};
  const map=()=>{
   const m=clone(mapFixture) as typeof mapFixture & {entities:Record<string,unknown>[];layers:Record<string,unknown>[];metaData:Record<string,unknown>};
@@ -83,9 +83,9 @@ export async function createValetudoServer(options:{host?:string;port?:number;to
     const input=req.method==='POST'?JSON.parse(await body(req) || '{}'):{};
     if(url.pathname==='/__lab/telemetry') {api.telemetry(input);return send(200,{ok:true});}
     if(url.pathname==='/__lab/goto-mode') {lab.gotoMode=input.mode;lab.gotoDelayMs=input.delayMs ?? 0;return send(200,{ok:true});}
-    if(url.pathname==='/__lab/stop-failures') {lab.stopFailures=Number(input.count ?? 0);return send(200,{ok:true});}
+    if(url.pathname==='/__lab/stop-failures') {lab.stopFailures=Number(input.count ?? 0);lab.stopFailureStatus=Number(input.status ?? 500);return send(200,{ok:true});}
     if(url.pathname==='/__lab/unreachable') {lab.unreachable=Boolean(input.on);return send(200,{ok:true});}
-    if(url.pathname==='/__lab/reset') {Object.assign(robot,{status:'idle',flag:'none',x:2000,y:1500,mapRevision:'r1',goToTarget:undefined,error:undefined,noPose:false});lab.gotos=[];lab.stops=0;lab.stopFailures=0;lab.gotoMode='accept';lab.unreachable=false;return send(200,{ok:true});}
+    if(url.pathname==='/__lab/reset') {Object.assign(robot,{status:'idle',flag:'none',x:2000,y:1500,mapRevision:'r1',goToTarget:undefined,error:undefined,noPose:false});lab.gotos=[];lab.stops=0;lab.stopFailures=0;lab.stopFailureStatus=500;lab.gotoMode='accept';lab.unreachable=false;return send(200,{ok:true});}
     if(url.pathname==='/__lab/counts') return send(200,{gotos:lab.gotos,stops:lab.stops});
     return send(404);
    }
@@ -106,7 +106,7 @@ export async function createValetudoServer(options:{host?:string;port?:number;to
    }
    if(req.method==='PUT'&&url.pathname==='/api/v2/robot/capabilities/BasicControlCapability') {
     const b=JSON.parse(await body(req));if(!['start','stop','pause','home'].includes(b.action)) return send(400);
-    if(b.action==='stop') {lab.stops++;if(lab.stopFailures>0){lab.stopFailures--;return send(500);}} // stops counts every STOP received
+    if(b.action==='stop') {lab.stops++;if(lab.stopFailures>0){lab.stopFailures--;return send(lab.stopFailureStatus);}} // stops counts every STOP received
     return send(200);
    }
    send(404);
@@ -131,6 +131,8 @@ export async function createValetudoServer(options:{host?:string;port?:number;to
   /** Host reboot: uptime restarts, the GoTo is gone, the robot comes back docked (Homie $state goes lost then ready). */
   reboot(){lab.bootAt=now();broker.robotPublish(`${topic}/$state`,'lost');api.telemetry({status:'docked',flag:'none',goToTarget:null});},
   unreachable(on=true){lab.unreachable=on;},
+  /** The next `count` STOPs fail with HTTP `status` (500: no answer worth trusting; 400: the robot refused the STOP). */
+  failStops(count:number,status=500){lab.stopFailures=count;lab.stopFailureStatus=status;},
   get gotoCount(){return lab.gotos.length;},get stopCount(){return lab.stops;},
   close:()=>new Promise<void>(resolve=>{server.closeAllConnections();server.close(()=>resolve());}),
  };

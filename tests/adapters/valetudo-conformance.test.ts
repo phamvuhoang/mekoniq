@@ -172,6 +172,20 @@ describe("valetudo REST conformance (protocol emulator, not a robot)", () => {
       expect(await rig.adapter.execute(rig.command("c-3",{stopId:"stop-3"}))).toMatchObject({accepted:true});
     } finally { await rig.close(); }
   });
+  test("a STOP the robot refuses (400) is reported as stopRejected and a robot-level stop_state, cleared by the next acknowledged STOP", async () => {
+    const rig = await createValetudoRig();
+    try {
+      rig.server.failStops(1,400);
+      expect(await rig.adapter.requestStop("operator")).toEqual({acknowledged:false,physicalStopConfirmed:false,stopRejected:true});
+      expect(rig.events.at(-1)).toMatchObject({type:"stop_state",commandId:"",payload:{robotId:"valetudo-1",stopState:"rejected"}});
+      rig.server.failStops(1,500); // unanswered: not a refusal, nothing new to report
+      expect(await rig.adapter.requestStop("operator")).toEqual({acknowledged:false,physicalStopConfirmed:false});
+      expect(rig.events.filter(e=>e.type==="stop_state")).toHaveLength(1);
+      expect(await rig.adapter.requestStop("operator")).toEqual({acknowledged:true,physicalStopConfirmed:false});
+      expect(rig.events.at(-1)).toMatchObject({type:"stop_state",payload:{stopState:"acknowledged"}});
+      expect(rig.server.stopCount).toBe(3);
+    } finally { await rig.close(); }
+  });
   test("robot error is failed plus a safety_state fault; recovery reports clear; an erroring robot gets no goto", async () => {
     const rig = await createValetudoRig();
     try {
@@ -320,6 +334,12 @@ describe("valetudo MQTT conformance (in-process fake broker, no MQTT client libr
 });
 
 describe("native executor transport (typed bridge, fake native side)", () => {
+  test("a native STOP the robot refused is 'rejected', an unanswered one 'unknown'", async () => {
+    const { NativeExecutorTransport } = await import("../../apps/tablet-android/src/robot-executor-bridge");
+    const answers=[{acknowledged:false,physicalStopConfirmed:false,stopRejected:true},{acknowledged:false,physicalStopConfirmed:false},{acknowledged:true,physicalStopConfirmed:false}];
+    const transport=new NativeExecutorTransport({requestStop:async()=>answers.shift()!} as never);
+    expect([await transport.stop("operator"),await transport.stop("operator"),await transport.stop("operator")]).toEqual(["rejected","unknown","acknowledged"]);
+  });
   test("submits only commands, runs the shared arrival rule on native-journaled samples, and restores after a WebView reload", async () => {
     const { NativeExecutorTransport } = await import("../../apps/tablet-android/src/robot-executor-bridge");
     let ms=Date.parse('2026-11-01T00:00:00Z');const now=()=>ms;

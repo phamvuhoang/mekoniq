@@ -253,7 +253,7 @@ test("a loaded cancel whose return leg is on a stale binding issues no execute u
     const {missionId,simulator}=await deliveryAtKitchen(lab);
     expect((await confirm(lab,missionId)).status).toBe("accepted"); // cargo loaded; the hand-off leg is issued on the current map
     const events:RobotEvent[]=[],stop=simulator.observe(e=>events.push(e));
-    const post=async()=>{for(const e of events.splice(0)) expect((await lab.command("owner","Robot.Observe",robotEventCommand(e),e.id)).status).toBe("accepted");};
+    const post=async()=>{for(const e of events.splice(0)) expect((await lab.command("simulator:sim-1","Robot.Observe",robotEventCommand(e),e.id)).status).toBe("accepted");};
     await dispatchRobotEffects(await lab.getStore("coordinator"),lab.scope,simulator,lab.clock.nowMs);await post();
     const executing=await mission(lab,missionId);
     expect((await lab.command("cashier","Mission.Cancel",{missionId,expectedVersion:executing.version})).status).toBe("accepted");
@@ -376,5 +376,66 @@ test("robot-level safety observations are bound to the robot's executor on its o
     expect((await observe("executor:sim-1","sim-1","clear",2)).code).toBe("OBSERVER_NOT_BOUND");   // old owner device, even with the bumped epoch
     expect(await lab.state<JsonObject>("robot","sim-1")).toMatchObject({safetyState:"fault"});
     expect(await lab.count("RobotSafetyObserved")).toBe(1);
+  } finally { await lab.close(); }
+});
+
+test("mission events are bound to the robot's executor or simulator runtime on its owner device", async () => {
+  const lab=await createRestaurantLab();
+  try {
+    const created=await lab.command("cashier","Mission.Create",{robotId:"sim-1",target:"table-1"});expect(created.status).toBe("accepted");
+    const missionId=String(created.value.missionId),simulator=await createSimulator(lab),events:RobotEvent[]=[],stop=simulator.observe(e=>events.push(e));
+    await dispatchRobotEffects(await lab.getStore("coordinator"),lab.scope,simulator,lab.clock.nowMs);stop();
+    const accepted=events.find(e=>e.type==="accepted")!;
+    for(const actor of ["owner","executor","executor:sim-2"]) expect((await lab.command(actor,"Robot.Observe",robotEventCommand(accepted),`${accepted.id}-${actor}`)).code).toBe("OBSERVER_NOT_BOUND");
+    expect(await mission(lab,missionId)).toMatchObject({status:"assigned"});
+    // the old owner device after a handoff is not bound either
+    const r=await lab.state<JsonObject>("robot","sim-1");await lab.seed("robot","sim-1",{...r,ownerDeviceId:"device-b"});
+    expect((await lab.command("simulator:sim-1","Robot.Observe",robotEventCommand(accepted),`${accepted.id}-old-owner`)).code).toBe("OBSERVER_NOT_BOUND");
+    await lab.seed("robot","sim-1",{...r,version:(await lab.state<{version:number}>("robot","sim-1")).version});
+    expect((await lab.command("simulator:sim-1","Robot.Observe",robotEventCommand(accepted),accepted.id)).status).toBe("accepted");
+    expect(await mission(lab,missionId)).toMatchObject({status:"executing"});
+    // a simulator actor never observes a non-simulator robot
+    const v=await lab.state<JsonObject>("robot","sim-1");await lab.seed("robot","sim-1",{...v,driver:"valetudo",validation:"hardware_validated"});
+    const late={...robotEventCommand(accepted),type:"completed"};
+    expect((await lab.command("simulator:sim-1","Robot.Observe",late,"late-completed")).code).toBe("OBSERVER_NOT_BOUND");
+  } finally { await lab.close(); }
+});
+
+test("a refused STOP is an operator-visible stopRejected, set and cleared only by the robot's bound executor", async () => {
+  const lab=await createRestaurantLab();
+  try {
+    let seq=0;
+    const observe=(actor:string,stopState:string,controlEpoch=1)=>{seq++;const e:RobotEvent={type:"stop_state",id:`st-${seq}`,commandId:"",bootId:"b",sequence:String(seq),observedAt:new Date(lab.clock.nowMs).toISOString(),payload:{robotId:"sim-1",controlEpoch,stopState}};return lab.command(actor,"Robot.Observe",robotEventCommand(e),e.id);};
+    expect((await observe("owner","rejected")).code).toBe("OBSERVER_NOT_BOUND");
+    expect((await observe("simulator:sim-1","rejected")).code).toBe("OBSERVER_NOT_BOUND");
+    expect((await observe("executor:sim-1","rejected",0)).code).toBe("STALE_CONTROL_EPOCH");
+    expect((await observe("executor:sim-1","maybe")).code).toBe("INVALID_STOP_STATE");
+    expect((await observe("executor:sim-1","rejected")).status).toBe("accepted");
+    expect(await lab.state<JsonObject>("robot","sim-1")).toMatchObject({stopRejected:true});
+    await lab.advance(1000);
+    expect((await observe("executor:sim-1","acknowledged")).status).toBe("accepted");
+    expect(await lab.state<JsonObject>("robot","sim-1")).toMatchObject({stopRejected:false});
+  } finally { await lab.close(); }
+});
+
+test("after an ownership handoff the new owner's executor operates the robot under the new epoch", async () => {
+  const lab=await createRestaurantLab();
+  try {
+    // sim-1 starts on device-b; RobotOwnerFenced hands it to device-a and bumps controlEpoch (seeded as that event's resulting state).
+    const base=await lab.state<JsonObject>("robot","sim-1");await lab.seed("robot","sim-1",{...base,ownerDeviceId:"device-b"});
+    let seq=0;
+    const safety=(safetyState:string,controlEpoch:number)=>{seq++;const e:RobotEvent={type:"safety_state",id:`h-${seq}`,commandId:"",bootId:"b",sequence:String(seq),observedAt:new Date(lab.clock.nowMs).toISOString(),payload:{robotId:"sim-1",controlEpoch,safetyState}};return lab.command("executor:sim-1","Robot.Observe",robotEventCommand(e),e.id);};
+    expect((await safety("fault",1)).code).toBe("OBSERVER_NOT_BOUND"); // device-a is not the owner yet
+    const before=await lab.state<JsonObject>("robot","sim-1");await lab.seed("robot","sim-1",{...before,ownerDeviceId:"device-a",controlEpoch:2});
+    expect((await safety("fault",1)).code).toBe("STALE_CONTROL_EPOCH");
+    expect((await safety("fault",2)).status).toBe("accepted");
+    await lab.advance(1000);
+    expect((await safety("clear",2)).status).toBe("accepted");
+    const created=await lab.command("cashier","Mission.Create",{robotId:"sim-1",target:"table-1"});expect(created.status).toBe("accepted");
+    const missionId=String(created.value.missionId),m=await mission(lab,missionId);
+    expect(await lab.state("robot-command",String(m.commandId))).toMatchObject({controlEpoch:2,issuerDeviceId:"device-a"});
+    const simulator=await createSimulator(lab);
+    await completeSimulatedTravel(lab,simulator,missionId);
+    expect((await mission(lab,missionId)).stops[0]).toMatchObject({status:"awaiting_action"});
   } finally { await lab.close(); }
 });

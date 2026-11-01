@@ -28,6 +28,7 @@ export function Fleet(c:ScreenContext) {
  const mayPair=c.session.permissions.includes('*')||c.session.permissions.includes('device.enroll');
  for(const robot of list(c,'robot')){
   const row=summary(robot);row.append(el('p',String(robot.state.validation??'')+' · '+String(robot.state.goalState??'')));
+  if(robot.state.stopRejected===true)row.append(el('p',tr(c,'Robot từ chối lệnh dừng; đang tự gửi lại. Dùng nút dừng khẩn vật lý.','The robot refused the stop; it is being resent. Use the physical emergency stop.'),'warning'));
   if(mayPair){const device=field(tr(c,'Mã thiết bị màn hình robot','Robot screen device id'));row.append(device.node,button(tr(c,'Ghép màn hình robot','Pair robot screen'),()=>act(c,'Robot.PairDisplay',{deviceId:device.input.value.trim(),robotId:robot.ref.id}).then(()=>{}),'quiet'));}
   row.append(button(tr(c,'Yêu cầu dừng từ xa','Request remote stop'),()=>act(c,'Robot.RequestStop',{robotId:robot.ref.id,reason:'staff_request'}).then(()=>{}),'danger'));root.append(row);
  }

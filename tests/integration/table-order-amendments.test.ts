@@ -210,7 +210,7 @@ async function missionEnRoute(lab: Lab) {
     await dispatchRobotEffects(await lab.getStore("coordinator"),lab.scope,sim,lab.clock.nowMs);
     sim.advance(1000);
     const out = [];
-    for (const event of events.splice(0)) out.push({event,result:await lab.command("owner","Robot.Observe",robotEventCommand(event),event.id)});
+    for (const event of events.splice(0)) out.push({event,result:await lab.command("simulator:sim-1","Robot.Observe",robotEventCommand(event),event.id)});
     return out;
   };
   for (const r of await drive()) accepted(r.result);

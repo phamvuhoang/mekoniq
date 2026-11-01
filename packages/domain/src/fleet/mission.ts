@@ -183,19 +183,30 @@ export function registerMissions(registry:ModuleRegistry):void {
  handle(registry,'Robot.Observe',(c,s)=>{
   const robot=requireState(s,'robot',text(c.payload.robotId));
   // safety_state is robot-level (adapter hardware/firmware fault), with or without a mission. Only a later 'clear' observation clears it;
-  // admission, nextStop and Mission.Resume all refuse while it is set and not clear. Mission legs are handled by the adapter's other events.
-  // It has no command to fence it, so it is bound to the robot's executor: actor `executor:<robotId>` (the forwarder in
+  // admission, nextStop, retarget and Mission.Resume all refuse while it is set and not clear. stop_state is robot-level too: 'rejected'
+  // (the robot refused a STOP, which the executor keeps retrying with backoff) sets the operator-visible `stopRejected` until 'acknowledged'.
+  // Neither has a command to fence it, so both are bound to the robot's executor: actor `executor:<robotId>` (the forwarder in
   // robot-executor-bridge.ts) on the robot's current owner device. An owner/manager, another robot's executor, or the old owner device after
-  // a handoff (RobotOwnerFenced moves ownerDeviceId) is OBSERVER_NOT_BOUND. Mission events (accepted/completed/...) stay fenced by
-  // commandId + missionRevision + controlEpoch below; their submitters (owner in W03/W04 labs, `simulator:<id>`) are unchanged.
-  if(c.payload.type==='safety_state') {
-   if(c.actorRef!==`executor:${robot.ref.id}`||c.deviceId!==robot.state.ownerDeviceId) return fail('OBSERVER_NOT_BOUND');
+  // a handoff (RobotOwnerFenced moves ownerDeviceId) is OBSERVER_NOT_BOUND. Mission events (accepted/completed/...) are bound the same way
+  // to `executor:<robotId>`, or for a simulator robot to the app simulator runtime's `simulator:<robotId>` (robot-runtime.ts), and are also
+  // fenced by commandId + missionRevision + controlEpoch below.
+  const robotLevel=c.payload.type==='safety_state'||c.payload.type==='stop_state';
+  const observers=[`executor:${robot.ref.id}`,...(!robotLevel&&robot.state.driver==='simulator'?[`simulator:${robot.ref.id}`]:[])];
+  if(!observers.includes(c.actorRef)||c.deviceId!==robot.state.ownerDeviceId) return fail('OBSERVER_NOT_BOUND');
+  if(robotLevel) {
    if(c.payload.controlEpoch!==robot.state.controlEpoch) return fail('STALE_CONTROL_EPOCH');
+   const at=Date.parse(c.occurredAt);
+   if(c.payload.type==='stop_state') {
+    const stopState=text(c.payload.stopState,'INVALID_STOP_STATE');
+    if(!['acknowledged','rejected'].includes(stopState)) return fail('INVALID_STOP_STATE');
+    if(typeof robot.state.stopObservedAt==='string'&&at<Date.parse(robot.state.stopObservedAt)) return fail('STALE_STOP_OBSERVATION');
+    return done([changed('RobotStopObserved',robot,{stopRejected:stopState==='rejected',stopObservedAt:c.occurredAt})],{robotId:robot.ref.id,stopState});
+   }
    const safetyState=text(c.payload.safetyState,'INVALID_SAFETY_STATE');
    if(!['clear','fault','estop'].includes(safetyState)) return fail('INVALID_SAFETY_STATE');
    // Ordering: an observation older than the recorded one is stale, and a clear must be strictly newer, so a replayed old clear never
    // lifts a newer fault.
-   const at=Date.parse(c.occurredAt),prior=typeof robot.state.safetyObservedAt==='string'?Date.parse(robot.state.safetyObservedAt):Number.NEGATIVE_INFINITY;
+   const prior=typeof robot.state.safetyObservedAt==='string'?Date.parse(robot.state.safetyObservedAt):Number.NEGATIVE_INFINITY;
    if(at<prior||(safetyState==='clear'&&at<=prior)) return fail('STALE_SAFETY_OBSERVATION');
    return done([changed('RobotSafetyObserved',robot,{safetyState,safetyObservedAt:c.occurredAt})],{robotId:robot.ref.id,safetyState});
   }
