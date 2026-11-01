@@ -18,6 +18,8 @@ const approvalCommands=new Set(['Shift.Close','Cash.RecordMovement']);
 export function requiredPermissions(type:string,payload:JsonObject):string[] {
  const base=productionPermissions[type];
  if(!base)return [];
+ // Releasing a zone on written evidence (an `unknown` reservation: no proof the robot left) is a manager decision, not the executor's.
+ if(type==='Zone.Release'&&payload.evidence!==undefined)return [base,'robot.configure'];
  if(approvalCommands.has(type)&&(payload.approve===true||payload.adjustment===true))return [base,'shift.approve'];
  const ids=payload.discountIds;
  return couponCommands.has(type)&&ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?[base,'discount.apply']:[base];

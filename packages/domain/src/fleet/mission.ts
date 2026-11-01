@@ -2,7 +2,7 @@ import type { ModuleRegistry } from '../modules';
 import type { CommandEnvelope, Decision, DomainEvent, JsonObject, Snapshot } from '../../../contracts/src/index';
 import { all, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
 import { missionDemand, selectRobot } from './scheduler';
-import { homeTarget } from './map-binding';
+import { bindingReason, homeTarget } from './map-binding';
 import { issueRobotCommand } from './command-journal';
 import type { MissionStop } from './stop';
 
@@ -51,14 +51,18 @@ function nextStop(c:CommandEnvelope,s:Snapshot[],mission:Snapshot,stops:MissionS
    try{selectRobot([released],missionDemand(s,candidate.state,pending.map(stop=>stop.targetId),Math.max(((candidate.state.allocationIds??[]) as string[]).length,1)),robot.ref.id);}catch{continue;}
    const first=pending.find(stop=>stop.status==='pending');if(!first)continue;
    first.status='travelling';
-   const issued=issueRobotCommand(c,released,candidate.ref.id,1,first);
+   const issued=issueRobotCommand(c,released,candidate.ref.id,1,first,candidate.state.speedLimitMps);
    return done([completed,changed('QueuedMissionAssigned',candidate,{status:'assigned',robotId:robot.ref.id,stops:pending,currentStopId:first.id,revision:1,commandRevision:1,commandId:issued.commandId,controlEpoch:robot.state.controlEpoch!}),changed('RobotAssigned',robot,{availability:'busy',missionId:candidate.ref.id,goalState:'pending'}),issued.event],{missionId:mission.ref.id,status:cancelling?'cancelled':'completed',assignedMissionId:candidate.ref.id,effects:[issued.effect as unknown as JsonObject]});
   }
   return done([completed,changed('RobotReleased',robot,{availability:'idle',goalState:'completed',missionId:null})],{missionId:mission.ref.id,status:cancelling?'cancelled':'completed'});
  }
+ // Never journal coordinates from an old map: a robot that reports a new map (or lost the binding) mid-mission is held, not released, and the
+ // leg stays pending until an operator rebinds and resumes it (Mission.Resume). Work already confirmed with this command still commits.
+ const stale=bindingReason(robot.state,next.targetId);
+ if(stale) return done([changed('MissionNeedsAttention',mission,{stops,status:'needs_attention',attentionReason:stale,loaded,currentStopId:next.id})],{missionId:mission.ref.id,status:'needs_attention',reason:stale});
  next.status='travelling';
- const issued=issueRobotCommand(c,robot,mission.ref.id,revision,next);
- return done([changed('MissionStopAdvanced',mission,{stops,status:'executing',loaded,currentStopId:next.id,revision,commandRevision:revision,commandId:issued.commandId}),changed('RobotGoalAssigned',robot,{goalState:'pending',availability:'busy'}),issued.event],{missionId:mission.ref.id,commandId:issued.commandId,effects:[issued.effect as unknown as JsonObject]});
+ const issued=issueRobotCommand(c,robot,mission.ref.id,revision,next,mission.state.speedLimitMps);
+ return done([changed('MissionStopAdvanced',mission,{stops,status:'executing',loaded,currentStopId:next.id,revision,commandRevision:revision,commandId:issued.commandId,...(mission.state.attentionReason?{attentionReason:null}:{})}),changed('RobotGoalAssigned',robot,{goalState:'pending',availability:'busy'}),issued.event],{missionId:mission.ref.id,commandId:issued.commandId,effects:[issued.effect as unknown as JsonObject]});
 }
 /**
  * Mission.Create body; Mission.Guide/Mission.Bus build their stops and come through here, so robot selection stays one path (selectRobot over
@@ -68,6 +72,7 @@ function nextStop(c:CommandEnvelope,s:Snapshot[],mission:Snapshot,stops:MissionS
 export function createMission(c:CommandEnvelope,s:Snapshot[]):Decision {
   const missionId=c.payload.missionId ? text(c.payload.missionId) : stableId('mission',c);
   if(find(s,'mission',missionId)) return fail('MISSION_EXISTS');
+  if(c.payload.target!==undefined&&(c.payload.stops!==undefined||c.payload.allocationIds!==undefined)) return fail('AMBIGUOUS_MISSION');
   const rawIds=c.payload.allocationIds;
   const ids=Array.isArray(rawIds) ? rawIds.map(value=>text(value)) : [];
   if(new Set(ids).size!==ids.length) return fail('DUPLICATE_ALLOCATION');
@@ -82,7 +87,7 @@ export function createMission(c:CommandEnvelope,s:Snapshot[]):Decision {
     sources.set(source,[...(sources.get(source) ?? []),allocation.ref.id]); targets.set(target,[...(targets.get(target) ?? []),allocation.ref.id]);
    }
    stops=[...Array.from(sources,([targetId,allocationIds],index)=>({id:stableId('stop',c,`load-${index}`),action:'load',targetId,status:'pending',allocationIds})),...Array.from(targets,([targetId,allocationIds],index)=>({id:stableId('stop',c,`handoff-${index}`),action:'handoff',targetId,status:'pending',allocationIds}))];
-  } else if(c.payload.target!==undefined&&c.payload.stops===undefined) {
+  } else if(c.payload.target!==undefined) {
    const requested=typeof c.payload.robotId==='string'&&c.payload.robotId!=='any'?c.payload.robotId:undefined;
    const targetId=c.payload.target==='home'?homeTarget(requireState(s,'robot',requested ?? fail('ROBOT_REQUIRED')).state):text(c.payload.target,'INVALID_TARGET');
    stops=[{id:stableId('stop',c,'target'),action:'standby',targetId,status:'pending',allocationIds:[]}];
@@ -101,7 +106,7 @@ export function createMission(c:CommandEnvelope,s:Snapshot[]):Decision {
    return done([created('MissionQueued','mission',missionId,{...limits,kind,status:'queued',robotId:null,preferredRobotId:typeof c.payload.robotId==='string'&&c.payload.robotId!=='any'?c.payload.robotId:null,source:stops[0]!.targetId,loaded:false,stops,currentStopId:null,revision:0,allocationIds:ids,queueRank:rank}),{type:'FleetQueueAdvanced',data:{kind:'fleet-queue',id:'current',state:{rank}}},...allocations.map(a=>changed('AllocationAssigned',a,{missionId}))],{missionId,status:'queued'});
   }
   const first=stops[0]!;first.status='travelling';
-  const issued=issueRobotCommand(c,robot,missionId,1,first);
+  const issued=issueRobotCommand(c,robot,missionId,1,first,demand.speedLimitMps);
   return done([created('MissionCreated','mission',missionId,{...limits,kind,status:'assigned',robotId:robot.ref.id,source:first.targetId,loaded:false,stops,currentStopId:first.id,revision:1,commandRevision:1,commandId:issued.commandId,allocationIds:ids,controlEpoch:robot.state.controlEpoch!}),changed('RobotAssigned',robot,{availability:'busy',missionId,goalState:'pending'}),...allocations.map(a=>changed('AllocationAssigned',a,{missionId})),issued.event],{missionId,commandId:issued.commandId,effects:[issued.effect as unknown as JsonObject]});
 }
 export function registerMissions(registry:ModuleRegistry):void {
@@ -150,8 +155,8 @@ export function registerMissions(registry:ModuleRegistry):void {
   }
   const priorStop=(mission.state.stops as MissionStop[] | undefined)?.find(stop=>stop.id===mission.state.currentStopId);
   const robot=find(s,'robot',String(mission.state.robotId));
-  if(priorStop?.status==='awaiting_action'&&robot?.state.goalState==='completed') {
-   // Arrival is already durable native completion evidence. No running goal remains to cancel.
+  if((priorStop?.status==='awaiting_action'&&robot?.state.goalState==='completed')||(mission.state.attentionReason&&robot?.state.availability!=='unknown')) {
+   // Arrival is already durable native completion evidence (or the mission is held on a stale binding before its next leg). No running goal remains to cancel.
    const pending=allocations.filter(a=>a.state.status==='reserved');
    const released=adjustAllocations(s,pending,'release',c.recordedAt);
    const returning={...mission,state:{...mission.state,cancelRequestedAt:c.recordedAt}};
@@ -162,6 +167,16 @@ export function registerMissions(registry:ModuleRegistry):void {
   const revision=Number(mission.state.revision)+1;
   const effects=mission.state.commandId ? [{id:stableId('cancel',c),type:'robot.cancel',payload:{robotId:mission.state.robotId!,commandId:mission.state.commandId!,missionId:mission.ref.id,controlEpoch:mission.state.controlEpoch ?? c.coordinatorEpoch}}] : [];
   return done([changed('MissionCancellationRequested',mission,{status:'cancelling',stops,revision,loaded,cancelRequestedAt:c.recordedAt})],{missionId:mission.ref.id,effects});
+ });
+ // Mission.Resume {missionId,expectedVersion}: after Robot.BindMap made the held leg's binding current again, issue that leg (new revision/command).
+ handle(registry,'Mission.Resume',(c,s)=>{
+  const mission=requireState(s,'mission',text(c.payload.missionId));expectVersion(c,mission);
+  if(mission.state.status!=='needs_attention'||!mission.state.attentionReason) return fail('MISSION_STATE_CONFLICT');
+  const robot=requireState(s,'robot',String(mission.state.robotId)),stops=structuredClone(mission.state.stops) as MissionStop[];
+  if(robot.state.availability==='unknown'||['unknown','stop_requested'].includes(String(robot.state.goalState))) return fail('ROBOT_STATE_UNKNOWN');
+  const next=stops.find(stop=>stop.status==='pending') ?? fail('STOP_NOT_FOUND'),stale=bindingReason(robot.state,next.targetId);
+  if(stale) return fail(stale);
+  return nextStop(c,s,mission,stops,Boolean(mission.state.loaded));
  });
  handle(registry,'Robot.Observe',(c,s)=>{
   const robot=requireState(s,'robot',text(c.payload.robotId));

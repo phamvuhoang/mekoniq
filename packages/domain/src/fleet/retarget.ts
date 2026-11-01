@@ -34,7 +34,7 @@ export function retargetHandoffs(c:CommandEnvelope,s:Snapshot[],allocationIds:Se
   if(!current) {events.push(changed('MissionRetargeted',mission,{stops,targetRevision}));continue;}
   const liveGoal=current.status==='travelling';
   current.status='travelling';
-  const revision=Number(mission.state.revision)+1,issued=issueRobotCommand(c,robot,mission.ref.id,revision,current),old=find(s,'robot-command',String(mission.state.commandId));
+  const revision=Number(mission.state.revision)+1,issued=issueRobotCommand(c,robot,mission.ref.id,revision,current,mission.state.speedLimitMps),old=find(s,'robot-command',String(mission.state.commandId));
   events.push(changed('MissionRetargeted',mission,{stops,revision,commandRevision:revision,commandId:issued.commandId,targetRevision}),changed('RobotGoalRetargeted',robot,{goalState:'pending',availability:'busy'}),issued.event);
   if(old) events.push(changed('RobotCommandSuperseded',old,{status:'superseded',supersededBy:issued.commandId}));
   if(liveGoal&&mission.state.commandId) effects.push({id:stableId('retarget-cancel',c,mission.ref.id),type:'robot.cancel',payload:{robotId:robot.ref.id,commandId:String(mission.state.commandId),missionId:mission.ref.id,controlEpoch:mission.state.controlEpoch ?? c.coordinatorEpoch}});

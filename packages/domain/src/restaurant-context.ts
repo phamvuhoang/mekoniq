@@ -97,8 +97,9 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Guest.AcknowledgeCall':{feature:'guest.call',intent:'finish_existing'},
  'Mission.Guide':{feature:'robot.guide',intent:'new'},
  'Mission.Bus':{feature:'robot.bussing',intent:'new'},
- // Binding and releasing a zone never start business, so they work while the fleet drains; a reservation is new movement unless it serves an open mission.
+ // Binding and releasing a zone never start business, so they work while the fleet drains; a reservation is new movement unless it serves an open mission of that same robot.
  'Robot.BindMap':{feature:'fleet',intent:'finish_existing'},
+ 'Mission.Resume':{feature:'fleet',intent:'finish_existing'},
  'Zone.Reserve':{feature:'fleet',intent:'new'},
  'Zone.Release':{feature:'fleet',intent:'finish_existing'},
 };
@@ -107,7 +108,7 @@ const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',rob
 const guestOrderFeature=(payload:JsonObject):string=>{const token=payload.guestToken;return guestChannels[token&&typeof token==='object'&&!Array.isArray(token)?String(token.channel):'robot'] ?? 'qr.order';};
 /** Resolving a terminal charge already observed (pending/unknown -> final) finishes existing work; only a new reference is new business. */
 const knownTerminalCharge=(command:CommandEnvelope,snapshots:Snapshot[]):boolean=>{ try { return Boolean(find(snapshots,'payment',externalPaymentId(externalReference(command.payload.reference)))); } catch { return false; } };
-const openMission=(command:CommandEnvelope,snapshots:Snapshot[]):boolean=>{const m=typeof command.payload.missionId==='string'?find(snapshots,'mission',command.payload.missionId):undefined;return Boolean(m&&!['completed','cancelled','failed'].includes(String(m.state.status)));};
+const openMission=(command:CommandEnvelope,snapshots:Snapshot[]):boolean=>{const m=typeof command.payload.missionId==='string'?find(snapshots,'mission',command.payload.missionId):undefined;return Boolean(m&&m.state.robotId===command.payload.robotId&&!['completed','cancelled','failed'].includes(String(m.state.status)));};
 function guardFeature(command:CommandEnvelope,snapshots:Snapshot[]):void {
  const mapped=commandFeatures[command.type];
  if(!mapped) return;

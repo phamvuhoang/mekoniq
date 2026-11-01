@@ -177,7 +177,14 @@ export interface RobotCommand {
   issuedAt: string;
   expiresAt: string;
   target: JsonObject;
-  limits: JsonObject;
+  /**
+   * Validated limits the executor must apply: tray count, payload (grams, integer string) and the mission's admitted speed limit.
+   */
+  limits: {
+    trays: number;
+    maxLoadMinor: string;
+    speedLimitMps?: number;
+  };
 }
 export interface SyncAckEntry {
   entryId: string;
