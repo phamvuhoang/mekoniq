@@ -1,0 +1,529 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "projectId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "projectRevision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "const": "draft"
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "design": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "world": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "candidate": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "design",
+        "world",
+        "candidate"
+      ]
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "design": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "chassis": {
+              "enum": [
+                "service",
+                "valetudo"
+              ]
+            },
+            "trays": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "batteryAh": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "sensor": {
+              "enum": [
+                "lidar",
+                "depth"
+              ]
+            },
+            "payloadKg": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000
+            }
+          },
+          "required": [
+            "id",
+            "revision",
+            "chassis",
+            "trays",
+            "batteryAh",
+            "sensor",
+            "payloadKg"
+          ]
+        },
+        "profileCandidate": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "validation": {
+              "const": "simulated"
+            },
+            "provenance": {
+              "const": "illustrative"
+            },
+            "chassis": {
+              "enum": [
+                "service",
+                "valetudo"
+              ]
+            },
+            "footprint": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "widthM": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "lengthM": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    }
+                  },
+                  "required": [
+                    "widthM",
+                    "lengthM"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "payloadIntentKg": {
+              "type": "number",
+              "minimum": 0
+            },
+            "measuredPayloadLimitKg": {
+              "type": "null"
+            },
+            "nativeCapabilitiesVerified": {
+              "const": false
+            }
+          },
+          "required": [
+            "id",
+            "revision",
+            "validation",
+            "provenance",
+            "chassis",
+            "footprint",
+            "payloadIntentKg",
+            "measuredPayloadLimitKg",
+            "nativeCapabilitiesVerified"
+          ]
+        },
+        "venueLayout": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tables": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "id",
+                  "name"
+                ]
+              }
+            },
+            "stations": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "kind": {
+                    "enum": [
+                      "kitchen",
+                      "parking",
+                      "dock"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "kind"
+                ]
+              }
+            }
+          },
+          "required": [
+            "tables",
+            "stations"
+          ]
+        },
+        "world": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1000
+            },
+            "height": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1000
+            },
+            "points": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "pattern": "^[A-Za-z0-9_-]+$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "kind": {
+                    "enum": [
+                      "table",
+                      "kitchen",
+                      "parking",
+                      "dock"
+                    ]
+                  },
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "kind",
+                  "x",
+                  "y"
+                ]
+              }
+            },
+            "obstacles": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "pattern": "^[A-Za-z0-9_-]+$"
+                  },
+                  "x": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "width": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "id",
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ]
+              }
+            }
+          },
+          "required": [
+            "id",
+            "revision",
+            "width",
+            "height",
+            "points",
+            "obstacles"
+          ]
+        },
+        "bindingDrafts": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "mode": {
+                "enum": [
+                  "preview",
+                  "business_sim",
+                  "protocol_sim",
+                  "gazebo_sil",
+                  "shadow",
+                  "hardware_test",
+                  "replay"
+                ]
+              },
+              "hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "sourceCommit": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "trust": {
+                "const": "unverified"
+              }
+            },
+            "required": [
+              "id",
+              "mode",
+              "hash",
+              "sourceCommit",
+              "trust"
+            ]
+          }
+        }
+      },
+      "required": [
+        "design",
+        "profileCandidate",
+        "venueLayout",
+        "world",
+        "bindingDrafts",
+        "evidenceRefs"
+      ]
+    },
+    "readiness": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "status": {
+            "enum": [
+              "ready",
+              "pending",
+              "blocked_external"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "reasons"
+        ]
+      }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deployment.json": {
+          "type": "string",
+          "maxLength": 5000000
+        },
+        "robot-design.json": {
+          "type": "string",
+          "maxLength": 5000000
+        },
+        "robot-profile.json": {
+          "type": "string",
+          "maxLength": 5000000
+        },
+        "venue-layout.json": {
+          "type": "string",
+          "maxLength": 5000000
+        },
+        "world.json": {
+          "type": "string",
+          "maxLength": 5000000
+        },
+        "bindings.json": {
+          "type": "string",
+          "maxLength": 5000000
+        },
+        "evidence-index.json": {
+          "type": "string",
+          "maxLength": 5000000
+        },
+        "checksums.json": {
+          "type": "string",
+          "maxLength": 5000000
+        }
+      },
+      "required": [
+        "deployment.json",
+        "robot-design.json",
+        "robot-profile.json",
+        "venue-layout.json",
+        "world.json",
+        "bindings.json",
+        "evidence-index.json",
+        "checksums.json"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "projectId",
+    "projectRevision",
+    "createdAt",
+    "status",
+    "hashes",
+    "payload",
+    "readiness",
+    "files"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.lab-deployment.v1",
+  "title": "LabDeploymentCandidate"
+}

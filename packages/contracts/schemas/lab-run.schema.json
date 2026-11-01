@@ -1,0 +1,143 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "mode": {
+      "const": "business_sim"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "running",
+        "awaiting_load",
+        "awaiting_handoff",
+        "completed",
+        "cancelled",
+        "needs_attention"
+      ]
+    },
+    "stage": {
+      "enum": [
+        "idle",
+        "to_kitchen",
+        "load",
+        "to_table",
+        "handoff",
+        "to_parking",
+        "finished"
+      ]
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "robotPosition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ]
+    },
+    "target": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "served": {
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "loaded": {
+      "type": "boolean"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "type",
+          "at"
+        ]
+      }
+    },
+    "elapsedMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sourceCommit": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "scenarioId": {
+      "const": "S01"
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    }
+  },
+  "required": [
+    "id",
+    "mode",
+    "status",
+    "stage",
+    "revision",
+    "robotPosition",
+    "target",
+    "served",
+    "loaded",
+    "events",
+    "elapsedMs",
+    "sourceCommit",
+    "scenarioId",
+    "seed"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.lab-run.v1",
+  "title": "LabRunSnapshot"
+}

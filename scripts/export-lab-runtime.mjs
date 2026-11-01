@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+import {readFile,writeFile,mkdir,readdir} from 'node:fs/promises';
+import {resolve,join,dirname} from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const out=resolve(process.argv[2]??join(root,'packages/lab-runtime/dist'));
+if(out===root||out.startsWith(join(root,'packages/contracts')))throw new Error('UNSAFE_OUTPUT_DIRECTORY');
+const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8'}).trim();
+const dirty=git('status','--porcelain','--untracked-files=all');
+if(dirty&&!process.argv.includes('--allow-dirty'))throw new Error('CLEAN_SOURCE_CHECKOUT_REQUIRED');
+const sourceCommit=git('rev-parse','HEAD');
+const schemaDir=join(root,'packages/contracts/schemas');
+const names=(await readdir(schemaDir)).filter(n=>n.endsWith('.json')).sort();
+const hash=createHash('sha256');
+const schemas=[];
+for(const name of names){const bytes=await readFile(join(schemaDir,name));hash.update(name+'\n').update(bytes);schemas.push({name,bytes});}
+const schemaHash=hash.digest('hex');
+const localRequire=createRequire(join(root,'apps/tablet-web/package.json'));
+const viteRequire=createRequire(localRequire.resolve('vite/package.json'));
+const {build}=await import(pathToFileURL(viteRequire.resolve('esbuild')).href);
+await mkdir(join(out,'schemas'),{recursive:true});
+const migration=await readFile(join(root,'packages/sync/migrations/sqlite/001_journal.sql'),'utf8');
+await build({entryPoints:[join(root,'packages/lab-runtime/src/cli.ts')],outfile:join(out,'runtime.mjs'),bundle:true,platform:'node',format:'esm',target:'node24',packages:'bundle',banner:{js:"import {createRequire as __labCreateRequire} from 'node:module';const require=__labCreateRequire(import.meta.url);"},define:{__LAB_SOURCE_COMMIT__:JSON.stringify(sourceCommit),__LAB_SCHEMA_HASH__:JSON.stringify(schemaHash)},plugins:[{name:'embed-source-sqlite-migration',setup(builder){builder.onLoad({filter:/[/\\]sync[/\\]src[/\\]storage[/\\]sql-store\.ts$/},async({path})=>{const original=await readFile(path,'utf8');const needle="readFileSync(new URL('../../migrations/sqlite/001_journal.sql',import.meta.url),'utf8')";if(!original.includes(needle))throw new Error('SQLITE_MIGRATION_BUNDLE_HOOK_CHANGED');return {contents:original.replace(needle,JSON.stringify(migration)),loader:'ts'};});}}]});
+for(const {name,bytes}of schemas)await writeFile(join(out,'schemas',name),bytes);
+const artifactSha256=createHash('sha256').update(await readFile(join(out,'runtime.mjs'))).digest('hex');
+const pkg=JSON.parse(await readFile(join(root,'packages/lab-runtime/package.json'),'utf8'));
+const manifest={sourceCommit,schemaHash,protocolMajor:1,artifactSha256,entrypoint:'runtime.mjs',nodeMajor:24,packageVersion:pkg.version,dirty:Boolean(dirty),schemas:names,toolchain:{node:process.version}};
+await writeFile(join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+console.log(JSON.stringify({output:out,...manifest},null,2));
