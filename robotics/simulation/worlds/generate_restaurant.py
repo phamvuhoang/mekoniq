@@ -38,6 +38,9 @@ def mover_sdf(name, cx, cy, size, h, color):
       <collision name="c"><geometry><box><size>{size} {size} {h}</size></box></geometry></collision>
       <visual name="v"><geometry><box><size>{size} {size} {h}</size></box></geometry><material><ambient>{color}</ambient><diffuse>{color}</diffuse></material></visual></link>
       <plugin filename="gz-sim-velocity-control-system" name="gz::sim::systems::VelocityControl"/>
+      <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
+        <publish_model_pose>true</publish_model_pose><use_pose_vector_msg>true</use_pose_vector_msg><static_publisher>false</static_publisher>
+      </plugin>
     </model>"""
 
 

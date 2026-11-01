@@ -112,7 +112,7 @@ local_costmap:
       width: 3
       height: 3
       resolution: 0.05
-      footprint: "[[0.30, 0.225], [0.30, -0.225], [-0.30, -0.225], [-0.30, 0.225]]"
+      robot_radius: 0.375  # circumscribed radius of the 0.60 x 0.45 m sim chassis: a rectangular robot turning must not clip what a circle clears
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: nav2_costmap_2d::ObstacleLayer
@@ -131,7 +131,7 @@ local_costmap:
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
         cost_scaling_factor: 3.0
-        inflation_radius: 0.45
+        inflation_radius: 0.65
       always_send_full_costmap: true
 
 global_costmap:
@@ -142,7 +142,7 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      footprint: "[[0.30, 0.225], [0.30, -0.225], [-0.30, -0.225], [-0.30, 0.225]]"
+      robot_radius: 0.375  # circumscribed radius of the 0.60 x 0.45 m sim chassis: a rectangular robot turning must not clip what a circle clears
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
@@ -166,7 +166,7 @@ global_costmap:
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
         cost_scaling_factor: 3.0
-        inflation_radius: 0.45
+        inflation_radius: 0.65
       always_send_full_costmap: true
 
 map_server:

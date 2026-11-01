@@ -8,7 +8,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, GroupAction
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node, PushROSNamespace
 from launch_ros.descriptions import ParameterFile
 from nav2_common.launch import RewrittenYaml
@@ -20,9 +20,12 @@ NAVIGATION = ["controller_server", "smoother_server", "planner_server", "behavio
 def generate_launch_description():
     share = get_package_share_directory("mekoniq_navigation")
     namespace, use_sim_time, autostart = (LaunchConfiguration(k) for k in ("namespace", "use_sim_time", "autostart"))
+    # Costmap layers resolve a relative topic against their own sub-node namespace (/<ns>/global_costmap/scan), where nothing publishes: the scan
+    # topic of every observation source (key `topic`) is rewritten to the robot's absolute /<ns>/scan.
+    scan_topic = PythonExpression(["'/' + '", namespace, "'.strip('/') + '/scan' if '", namespace, "'.strip('/') else '/scan'"])
     params = ParameterFile(RewrittenYaml(source_file=LaunchConfiguration("params_file"), root_key=namespace,
-                                         param_rewrites={"use_sim_time": use_sim_time, "yaml_filename": LaunchConfiguration("map")}, convert_types=True),
-                           allow_substs=True)
+                                         param_rewrites={"use_sim_time": use_sim_time, "yaml_filename": LaunchConfiguration("map"), "topic": scan_topic},
+                                         convert_types=True), allow_substs=True)
     tf = [("/tf", "tf"), ("/tf_static", "tf_static")]
 
     def node(name, pkg, exe=None, remap=()):

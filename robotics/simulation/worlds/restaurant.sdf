@@ -57,12 +57,18 @@
       <collision name="c"><geometry><box><size>0.4 0.4 1.0</size></box></geometry></collision>
       <visual name="v"><geometry><box><size>0.4 0.4 1.0</size></box></geometry><material><ambient>0.9 0.3 0.1 1</ambient><diffuse>0.9 0.3 0.1 1</diffuse></material></visual></link>
       <plugin filename="gz-sim-velocity-control-system" name="gz::sim::systems::VelocityControl"/>
+      <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
+        <publish_model_pose>true</publish_model_pose><use_pose_vector_msg>true</use_pose_vector_msg><static_publisher>false</static_publisher>
+      </plugin>
     </model>
     <model name="blocker"><pose>9.0 0.6 0.52 0 0 0</pose><link name="link"><gravity>false</gravity>
       <inertial><mass>20</mass><inertia><ixx>1</ixx><iyy>1</iyy><izz>1</izz></inertia></inertial>
       <collision name="c"><geometry><box><size>0.8 0.8 1.0</size></box></geometry></collision>
       <visual name="v"><geometry><box><size>0.8 0.8 1.0</size></box></geometry><material><ambient>0.6 0.1 0.6 1</ambient><diffuse>0.6 0.1 0.6 1</diffuse></material></visual></link>
       <plugin filename="gz-sim-velocity-control-system" name="gz::sim::systems::VelocityControl"/>
+      <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
+        <publish_model_pose>true</publish_model_pose><use_pose_vector_msg>true</use_pose_vector_msg><static_publisher>false</static_publisher>
+      </plugin>
     </model>
   </world>
 </sdf>

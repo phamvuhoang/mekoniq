@@ -80,6 +80,9 @@
       <max_linear_velocity>${max_linear_speed}</max_linear_velocity><max_angular_velocity>1.0</max_angular_velocity>
       <max_linear_acceleration>1.0</max_linear_acceleration><max_angular_acceleration>2.0</max_angular_acceleration>
     </plugin>
+    <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">  <!-- sim ground truth for the scenario tests only -->
+      <publish_model_pose>true</publish_model_pose><use_pose_vector_msg>true</use_pose_vector_msg>
+    </plugin>
     <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
       <topic>/${ns}/joint_states</topic>
     </plugin>

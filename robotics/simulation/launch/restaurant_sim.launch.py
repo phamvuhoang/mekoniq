@@ -21,7 +21,9 @@ def _bridge(context):
     args = ["/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock", f"{p}/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist",
             f"{p}/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry", f"{p}/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V",
             f"{p}/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model", f"{p}/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan",
-            "/model/walker/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist"]
+            "/model/walker/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist",
+            # simulation-only ground truth (model pose, child_frame_id = model name) for the scenario tests; the robot stack never reads it
+            *[f"/model/{m}/pose@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V" for m in ("robot", "walker", "blocker")]]
     return [Node(package="ros_gz_bridge", executable="parameter_bridge", arguments=args, output="screen")]
 
 

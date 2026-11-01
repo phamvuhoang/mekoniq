@@ -6,10 +6,51 @@ agent can ask about a goal it no longer holds a handle for. Unavailable answers 
 import json
 import math
 import threading
+import time
 import uuid
+from types import SimpleNamespace
 from pathlib import Path
 
 from .nav2_adapter import Localization, Nav2Config, GoalState, Pose
+
+
+ACTIVE = (1, 2, 3)  # GoalStatus ACCEPTED, EXECUTING, CANCELING
+CANCEL_ERROR_NONE, CANCEL_ERROR_REJECTED = 0, 1  # action_msgs/srv/CancelGoal return codes (2 = UNKNOWN_GOAL_ID, 3 = GOAL_TERMINATED)
+
+
+class HandleBridge:
+    """Goal handles of goals THIS process just accepted. The status topic lags the accept reply, so a handle answers (ACCEPTED, or its own
+    status) only until the topic first lists the goal or `window_s` passes; then it is dropped. After that an unlisted goal is unlisted (None):
+    a Nav2 that restarted and forgot the goal must not be kept `executing` by a stale handle."""
+    def __init__(self, window_s=10.0, clock=time.monotonic):
+        self.window_s, self.clock, self._handles = window_s, clock, {}
+
+    def accepted(self, goal_id, handle):
+        self._handles[goal_id] = (handle, self.clock())
+
+    def holds(self, goal_id):
+        return goal_id in self._handles
+
+    def status(self, goal_id, listed):
+        """`listed`: status the topic reports for the goal, or None. Returns the status to use, or None (not listed)."""
+        entry = self._handles.get(goal_id)
+        if listed is not None:
+            self._handles.pop(goal_id, None)
+            return listed
+        if entry is None:
+            return None
+        if self.clock() - entry[1] > self.window_s:
+            del self._handles[goal_id]
+            return None
+        return int(entry[0].status) or 1  # the accept reply is the ACK; a fresh handle still reads UNKNOWN(0)
+
+
+def cancel_all_acknowledged(code, status_list):
+    """Cancel-all ack. ERROR_NONE = taken. A rejection counts as 'nothing to cancel' ONLY when a status list was received and shows no
+    active goal: no status yet (None) is NOT idle, so a rejected cancel is never acknowledged blind (an ACK stops the executor's STOP retry)."""
+    if code == CANCEL_ERROR_NONE:
+        return True
+    return code == CANCEL_ERROR_REJECTED and status_list is not None and not any(int(i.status) in ACTIVE for i in status_list)
 
 
 def _wait(future, timeout_s):
@@ -36,7 +77,8 @@ class RclpyActionClient:
         from rclpy.executors import SingleThreadedExecutor
         from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 
-        self.config, self.timeout_s, self._m = config, timeout_s, locals()
+        self.config, self.timeout_s = config, timeout_s
+        self._msg = SimpleNamespace(NavigateToPose=NavigateToPose, CancelGoal=CancelGoal, SpeedLimit=SpeedLimit, GetState=GetState, GetParameters=GetParameters)
         if not rclpy.ok():
             rclpy.init()
         ns = config.namespace.strip("/")
@@ -46,7 +88,7 @@ class RclpyActionClient:
         self._client = ActionClient(self.node, NavigateToPose, action)
         self._cancel = self.node.create_client(CancelGoal, f"{action}/_action/cancel_goal")
         self._result = self.node.create_client(NavigateToPose.Impl.GetResultService, f"{action}/_action/get_result")
-        self._status, self._pose, self._handles, self._status_seen = None, None, {}, threading.Event()
+        self._status, self._pose, self._handles, self._status_seen = None, None, HandleBridge(), threading.Event()
         self.node.create_subscription(GoalStatusArray, f"{action}/_action/status", self._on_status, latched)
         self.node.create_subscription(PoseWithCovarianceStamped, config.node_path("amcl_pose"), lambda m: setattr(self, "_pose", m), latched)
         self._speed = self.node.create_publisher(SpeedLimit, config.node_path("speed_limit"), 1)
@@ -82,27 +124,26 @@ class RclpyActionClient:
         o.x, o.y, o.z, o.w = pose.qx, pose.qy, pose.qz, pose.qw
         handle = _wait(self._client.send_goal_async(goal, goal_uuid=self._uuid_msg(goal_id)), self.timeout_s)  # TimeoutError = no ACK = unknown
         if handle.accepted:
-            self._handles[goal_id] = handle  # bridges the gap before the status topic lists the new goal; never used after a restart
+            self._handles.accepted(goal_id, handle)  # bridges only the gap before the status topic lists the new goal
         return bool(handle.accepted)
 
     def goal_state(self, goal_id):
         self._require_server()
-        want, status = uuid.UUID(goal_id).bytes, None
-        if goal_id not in self._handles:
+        want, listed = uuid.UUID(goal_id).bytes, None
+        if not self._handles.holds(goal_id):
             # A fresh client has not been handed the server's latched status yet. If none arrives while the server is up, the server has
             # published no goal at all: treated as empty (a slow discovery therefore yields not_found = unknown, never a guessed outcome).
             self._status_seen.wait(self.timeout_s)
         for item in (self._status.status_list if self._status else []):
             if bytes(item.goal_info.goal_id.uuid) == want:
-                status = int(item.status)
-        if status is None and goal_id in self._handles:
-            status = int(self._handles[goal_id].status) or 1  # accepted by this process a moment ago (the accept reply is the ACK); the status topic lags
+                listed = int(item.status)
+        status = self._handles.status(goal_id, listed)
         if status is None or status == 0:
             return None  # not listed (never existed, or expired from the server's retention): the adapter reports not_found
         error = None
         if status in (4, 5, 6):  # terminal: the server still holds the result for its retention window
             try:
-                req = self._m["NavigateToPose"].Impl.GetResultService.Request()
+                req = self._msg.NavigateToPose.Impl.GetResultService.Request()
                 req.goal_id = self._uuid_msg(goal_id)
                 error = int(_wait(self._result.call_async(req), self.timeout_s).result.error_code)
             except Exception:
@@ -110,7 +151,7 @@ class RclpyActionClient:
         return GoalState(status, error)
 
     def _cancel_request(self, goal_id):
-        req = self._m["CancelGoal"].Request()
+        req = self._msg.CancelGoal.Request()
         req.goal_info.goal_id = self._uuid_msg(goal_id)  # zero uuid + zero stamp = cancel every goal
         if not self._cancel.wait_for_service(timeout_sec=self.timeout_s):
             raise ConnectionError("cancel_goal service not available")
@@ -121,19 +162,18 @@ class RclpyActionClient:
 
     def cancel_all(self):
         code = self._cancel_request(str(uuid.UUID(int=0)))
-        idle = not any(int(i.status) in (1, 2, 3) for i in (self._status.status_list if self._status else []))
-        return code == 0 or (code == 1 and idle)  # UNKNOWN_GOAL_ID with nothing active: nothing to cancel
+        return cancel_all_acknowledged(code, self._status.status_list if self._status else None)
 
     def set_speed_limit(self, mps):
         if self._speed.get_subscription_count() < 1:
             raise RuntimeError("no speed_limit subscriber (controller_server not up)")
-        msg = self._m["SpeedLimit"]()
+        msg = self._msg.SpeedLimit()
         msg.header.stamp = self.node.get_clock().now().to_msg()
         msg.percentage, msg.speed_limit = False, float(mps)
         self._speed.publish(msg)
 
     def localization(self):
-        c, GetState = self.config, self._m["GetState"]
+        c, GetState = self.config, self._msg.GetState
         lifecycle = {}
         for name in c.required_nodes:
             cli = self.node.create_client(GetState, f"{c.node_path(name)}/get_state")
@@ -156,7 +196,7 @@ class RclpyActionClient:
     def _map_identity(self):
         """Identity of the map the map_server loaded: `<map>.identity.json` beside its yaml (id + revision), None when unreadable."""
         try:
-            GetParameters = self._m["GetParameters"]
+            GetParameters = self._msg.GetParameters
             cli = self.node.create_client(GetParameters, f"{self.config.node_path('map_server')}/get_parameters")
             req = GetParameters.Request()
             req.names = ["yaml_filename"]

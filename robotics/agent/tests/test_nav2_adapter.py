@@ -3,7 +3,8 @@ import uuid
 
 import pytest
 from mekoniq_agent.executor import Executor, NativeRejected
-from mekoniq_agent.nav2_adapter import (ABORTED, CANCELED, EXECUTING, SUCCEEDED, GoalState, Localization, Nav2Config, Nav2Navigation,
+from mekoniq_agent.nav2_rclpy import HandleBridge, cancel_all_acknowledged
+from mekoniq_agent.nav2_adapter import (ABORTED, ACCEPTED, CANCELED, CANCELING, EXECUTING, SUCCEEDED, GoalState, Localization, Nav2Config, Nav2Navigation,
                                         NavigationResult, quaternion_to_yaw, yaw_to_quaternion)
 from .support.executor_fixtures import NOW_MS, command_fixture, profile_fixture
 from .support.fake_action_client import FakeActionClient
@@ -271,3 +272,43 @@ def test_executor_refuses_a_rejected_nav2_goal_with_its_reason(tmp_path):
     command["target"]["yaw"] = 0
     result = ex.submit(command)
     assert result["accepted"] is False and result["reason"] == "NAV2_GOAL_REJECTED"
+
+
+# -- rclpy client decision helpers (pure; the rclpy glue itself is exercised by the Gazebo scenarios) ----------------------------------
+class _Handle:
+    def __init__(self, status=0):
+        self.status = status
+
+
+class _Item:
+    def __init__(self, status):
+        self.status = status
+
+
+def test_handle_bridges_only_until_the_status_topic_lists_the_goal():
+    now = [100.0]
+    bridge = HandleBridge(window_s=10.0, clock=lambda: now[0])
+    bridge.accepted(G, _Handle(0))
+    assert bridge.status(G, None) == ACCEPTED  # fresh accept: topic has not caught up, handle still reads UNKNOWN(0)
+    assert bridge.status(G, EXECUTING) == EXECUTING and not bridge.holds(G)  # topic lists it: handle dropped for good
+    assert bridge.status(G, None) is None  # Nav2 restarted and forgot the goal: NOT kept executing by a stale handle
+
+
+def test_handle_expires_after_the_window_and_unknown_goal_has_no_handle():
+    now = [0.0]
+    bridge = HandleBridge(window_s=10.0, clock=lambda: now[0])
+    bridge.accepted(G, _Handle(EXECUTING))
+    now[0] = 9.0
+    assert bridge.status(G, None) == EXECUTING
+    now[0] = 11.0
+    assert bridge.status(G, None) is None and not bridge.holds(G)
+    assert bridge.status("other", None) is None
+
+
+def test_rejected_cancel_all_is_not_acknowledged_without_a_status_list_or_with_active_goals():
+    assert cancel_all_acknowledged(0, None) is True  # ERROR_NONE
+    assert cancel_all_acknowledged(1, None) is False  # no status received yet is NOT idle
+    assert cancel_all_acknowledged(1, [_Item(EXECUTING)]) is False
+    assert cancel_all_acknowledged(1, [_Item(CANCELING)]) is False
+    assert cancel_all_acknowledged(1, []) is True and cancel_all_acknowledged(1, [_Item(SUCCEEDED), _Item(CANCELED)]) is True
+    assert cancel_all_acknowledged(2, []) is False and cancel_all_acknowledged(3, []) is False  # other codes never ack

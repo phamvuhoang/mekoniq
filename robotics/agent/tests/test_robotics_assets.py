@@ -1,6 +1,7 @@
 """Static checks on the ROS workspace assets (no ROS needed): well-formed XML, layout/world/map drift, illustrative-vs-measured geometry,
 single cmd_vel source, no motor publishing in the agent. They do NOT replace colcon build/test or the Gazebo scenarios."""
 import importlib.util
+import math
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -77,3 +78,24 @@ def test_ros_imports_are_lazy():
     for f in AGENT_SRC.glob("*.py"):
         top = [l for l in f.read_text(encoding="utf-8").splitlines() if re.match(r"^(import|from) (rclpy|nav2_msgs|action_msgs|geometry_msgs|lifecycle_msgs)", l)]
         assert not top, f"{f.name} imports ROS at module level: {top}"
+
+
+def test_footprint_gap_measures_clearance_not_centre_distance():
+    spec = importlib.util.spec_from_file_location("footprint", ROBOTICS / "simulation/tests/footprint.py")
+    fp = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(fp)
+    robot, walker = (0.30, 0.225), (0.20, 0.20)
+    box = lambda x, y, yaw, h: fp.corners(x, y, yaw, h)
+    assert fp.footprint_gap(box(0, 0, 0, robot), box(0.425, 0, 0, walker)) == 0.0   # touching side by side: the old centre test (> 0.35) passed this
+    assert fp.footprint_gap(box(0, 0, 0, robot), box(0.2, 0.1, 0, walker)) == 0.0   # overlapping
+    assert fp.footprint_gap(box(0, 0, 0, robot), box(0.75, 0, 0, walker)) == pytest.approx(0.25)
+    assert fp.footprint_gap(box(0, 0, math.pi / 2, robot), box(0.75, 0, 0, walker)) == pytest.approx(0.75 - 0.225 - 0.2)  # robot turned: narrow side faces it
+    assert fp.footprint_gap(box(0, 0, 0, robot), box(0.5, 0.6, 0.7, walker)) > 0
+    assert fp.footprint_gap(box(0, 0, 0, robot), box(0.5, 0, 0, (0.4, 0.4))) == 0.0  # blocker 0.8 m wide: centre distance 0.5 is contact
+
+
+def test_costmap_scan_topics_are_rewritten_to_the_robot_namespace():
+    launch = (ROBOTICS / "navigation/launch/navigation.launch.py").read_text(encoding="utf-8")
+    params = (ROBOTICS / "navigation/config/nav2_params.yaml").read_text(encoding="utf-8")
+    assert '"topic": scan_topic' in launch  # relative `scan` would resolve to /<ns>/<costmap>/scan, a topic nobody publishes
+    assert len(re.findall(r"^\s+topic: scan$", params, re.M)) == 3  # local obstacle layer, global obstacle layer, collision monitor: all rewritten
