@@ -470,7 +470,9 @@
       "depends": "W06-T01..W06-T04",
       "testFile": "tests/hardware/test_profile_validation.py",
       "testCommand": "python3 -m pytest tests/hardware/test_profile_validation.py -q",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W06-T05.md",
+      "remaining": "Supplier SDK/firmware/pinout and CAN/RS485 register maps for WHEELTEC S100 and ZLTECH; physical measurements (dimensions, mass, speeds, braking/turn, rated and tested payload, stop distances) on the named robot and firmware; supervised E-stop/bumper/cliff/independent-watchdog tests; a signed commissioning manifest from a real commissioning key and a signed venue acceptance. Schemas, validator and read-only CLI are verified locally with synthetic TEST-ONLY fixtures; both profiles stay integration_tested and non-dispatchable."
     },
     {
       "wave": "W06",

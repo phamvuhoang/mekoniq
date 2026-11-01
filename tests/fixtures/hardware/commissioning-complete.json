@@ -1,0 +1,33 @@
+{
+  "profile_id": "wheeltec-s100",
+  "schema_version": 1,
+  "vendor": {"model": "TEST-ONLY-SYNTHETIC-MODEL", "firmware": "TEST-ONLY-FW-0", "source": {"document": "TEST-ONLY-DOC", "revision": "0"}, "blocked_external": null},
+  "interfaces": {
+    "odom": {"topic": "/odom", "frame_id": "odom", "verified_on": "2000-01-01"},
+    "scan": {"topic": "/scan", "frame_id": "laser", "verified_on": "2000-01-01"},
+    "tf": {"topic": "/tf", "frame_id": "base_link", "verified_on": "2000-01-01"},
+    "encoder": {"unit": "tick", "source": {"document": "TEST-ONLY-DOC", "revision": "0"}},
+    "watchdog": {"independent_computer": true, "timeout_s": 1}
+  },
+  "control_bus": {"kind": null, "register_map": {"source": null, "entries": []}},
+  "geometry": {
+    "illustrative": false, "measured_by": "TEST-ONLY", "measured_on": "2000-01-01",
+    "chassis_length_m": 1, "chassis_width_m": 1, "chassis_height_m": 1, "chassis_mass_kg": 1,
+    "wheel_radius_m": 1, "wheel_width_m": 1, "wheel_separation_m": 1, "wheel_mass_kg": 1,
+    "ground_clearance_m": 1, "lidar_x_m": 1, "lidar_height_m": 1, "max_linear_speed_mps": 1, "max_angular_speed_radps": 1
+  },
+  "safety_evidence": {
+    "supervised_by": "TEST-ONLY", "observed_on": "2000-01-01", "firmware": "TEST-ONLY-FW-0",
+    "estop": {"result": "pass", "stop_distance_m": 1, "independent_of_software": true, "stop_time_s": 1},
+    "bumper": {"result": "pass", "stop_distance_m": 1},
+    "cliff": {"result": "pass", "stop_distance_m": 1}
+  },
+  "tested_payload_kg": 25,
+  "verified_capabilities": ["delivery"],
+  "venue_acceptance": null,
+  "manifest": {
+    "id": "TEST-ONLY-robot-1", "adapter": "ros2", "protocolVersion": "1", "firmware": "TEST-ONLY-FW-0",
+    "capabilities": ["delivery"], "mapId": "TEST-ONLY-map", "mapRevision": "1", "offlineExecution": true,
+    "maxLoadMinor": "30000", "trays": 1, "validation": "integration_tested", "targetKind": "ros", "units": "m"
+  }
+}

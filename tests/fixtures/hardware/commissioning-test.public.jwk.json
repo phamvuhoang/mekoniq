@@ -1,0 +1,13 @@
+{
+  "key_ops": [
+    "verify"
+  ],
+  "ext": true,
+  "kty": "EC",
+  "x": "9we09Tz53UbukDl1bfEFv-EEKdZYPozOtlmLqz-_KrQ",
+  "y": "QkTZ9tfz4JlR2uhDsjeHgeHzycbqKuJLOXwx4FbNMQU",
+  "crv": "P-256",
+  "alg": "ES256",
+  "use": "sig",
+  "kid": "TEST-ONLY-commissioning"
+}
