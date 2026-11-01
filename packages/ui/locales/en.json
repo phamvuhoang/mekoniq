@@ -4,6 +4,8 @@
   "kitchen": "Kitchen",
   "fleet": "Robots",
   "checkout": "Checkout",
+  "cash": "Cash shift",
+  "print": "Print queue",
   "settings": "Manage",
   "refresh": "Refresh",
   "submit": "Confirm",

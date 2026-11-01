@@ -70,6 +70,12 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Fulfillment.HandOff':{feature:'fulfillment',intent:'finish_existing'},
  'Mission.Create':{feature:'robot.delivery',intent:'new'},
  'Shift.Open':{feature:'cash.shift',intent:'new'},
+ // Closing and moving cash finish an existing shift (allowed while the feature drains); a new print attempt needs a ready printer, recording what the spool saw does not.
+ 'Shift.Close':{feature:'cash.shift',intent:'finish_existing'},
+ 'Cash.RecordMovement':{feature:'cash.shift',intent:'finish_existing'},
+ 'Print.Request':{feature:'printing',intent:'new'},
+ 'Print.ConfirmReprint':{feature:'printing',intent:'new'},
+ 'Print.Observe':{feature:'printing',intent:'finish_existing'},
  'Bill.Prepare':{feature:'billing',intent:'finish_existing'},
  'Payment.RecordCash':{feature:'payment.cash',intent:'finish_existing'},
  'Bill.Close':{feature:'billing',intent:'finish_existing'},

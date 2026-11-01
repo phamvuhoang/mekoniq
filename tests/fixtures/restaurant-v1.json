@@ -199,10 +199,24 @@
       "refund": {
         "status": "enabled",
         "revision": 1
+      },
+      "printing": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {
       "robot": true
     }
+  },
+  "printer": {
+    "id": "printer-fixture-1",
+    "label": "FIXTURE spool printer (software only, not a physical printer)",
+    "status": "installed",
+    "transport": "network",
+    "model": "fixture-escpos-80mm",
+    "profile": "escpos-generic",
+    "columns": 42,
+    "validation": "fixture"
   }
 }

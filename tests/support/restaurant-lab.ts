@@ -6,7 +6,8 @@ import { registerContinuityModules } from '../../packages/domain/src/continuity/
 import { registerRestaurantModules } from '../../packages/domain/src/restaurant';
 import fixture from '../fixtures/restaurant-v1.json';
 import {quoteOrder} from '../../packages/domain/src/pricing/quote';
-import type { JsonObject, Snapshot } from '../../packages/contracts/src/index';
+import type { CommandResult, JsonObject, Snapshot } from '../../packages/contracts/src/index';
+import { dispatchPrintEffects, PrinterNotReached, type PrinterTransport } from '../../integrations/printing/src/spool';
 export async function createRestaurantLab() {
  const lab=await createLab(registry=>{registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);});
  lab.addAuthorization((actor,type,payload)=>{
@@ -21,9 +22,29 @@ export async function createRestaurantLab() {
  for(const station of fixture.stations) await lab.seed('station',station.id,station);
  for(const table of fixture.tables) await lab.seed('table',table.id,table);
  await lab.seed('robot',fixture.robot.id,fixture.robot as JsonObject);
+ await lab.seed('printer',fixture.printer.id,fixture.printer as JsonObject);
  const seedAggregate=lab.seed.bind(lab);
  lab.seed=(kind,id,overrides)=>kind==='order-line'?seedOrderLine(lab,seedAggregate,id,overrides):kind==='payment'?seedPayment(lab,seedAggregate,id,overrides):seedAggregate(kind,id,overrides);
- return lab;
+ // The REAL spool dispatcher runs over the coordinator's outbox with an injected FIXTURE transport (no physical printer). Faults armed with lab.fault:
+ // 'printer-timeout' -> the transport hangs and the spool's timeout fires; 'printer-ack-lost' -> bytes were written but no ack came back; 'printer-unreachable' -> nothing sent.
+ const printed:{printerId:string;jobId:string;effectId:string;bytes:Uint8Array}[]=[];
+ const transport:PrinterTransport={async send(bytes,ctx){
+  if(lab.faults.consume('printer-timeout')) return new Promise<never>(()=>{});
+  if(lab.faults.consume('printer-unreachable')) throw new PrinterNotReached('FIXTURE_UNREACHABLE');
+  printed.push({printerId:ctx.printerId,jobId:ctx.jobId,effectId:ctx.effectId,bytes});
+  return {acknowledged:!lab.faults.consume('printer-ack-lost')};
+ }};
+ const runSpool=async()=>dispatchPrintEffects(await lab.getStore('coordinator'),lab.scope,transport,{timeoutMs:20,onOutcome:async o=>{
+  const r=await baseCommand('printer-spool','Print.Observe',{jobId:o.jobId,effectId:o.id,status:o.status,...(o.code?{code:o.code}:{})},`print-observe-${o.id}-${o.status}`);
+  if(r.status!=='accepted') throw new Error('PRINT_OBSERVE_REJECTED:'+(r.code??r.status));
+ }});
+ const autoSpool={on:true},baseCommand=lab.command.bind(lab);
+ lab.command=async(actor:string,type:string,payload:JsonObject,operationId?:string):Promise<CommandResult>=>{
+  const result=await baseCommand(actor,type,payload,operationId);
+  if(autoSpool.on&&result.status==='accepted'&&!result.duplicate&&['Print.Request','Print.ConfirmReprint'].includes(type)) await runSpool();
+  return result;
+ };
+ return Object.assign(lab,{printed,runSpool,autoSpool});
 }
 
 /**

@@ -12,14 +12,16 @@ import { registerHandOff } from './fulfillment/handoff';
 import { registerMissions } from './fleet/mission';
 import { registerBills } from './billing/bill';
 import { registerPayments } from './billing/payment-ledger';
-import { registerCashShifts } from './cash/basic-shift';
+import { registerCashShifts } from './cash/shift';
+import { registerCashbook } from './cash/cashbook';
+import { registerPrinting } from './printing/print';
 import { registerBillSplit } from './billing/split';
 import { registerBillMerge } from './billing/merge';
 import { registerTenders } from './billing/tenders';
 import { registerRefunds } from './billing/refund';
 import { registerBillVoid } from './billing/void';
 export function registerRestaurantModules(registry:ModuleRegistry):void {
- for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid]) register(registry);
+ for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid]) register(registry);
 }
 export const commandPermissions:Record<string,string>={
  'Catalog.Publish':'catalog.publish','Catalog.Quote':'catalog.read','Session.Open':'order.write',
@@ -29,7 +31,7 @@ export const commandPermissions:Record<string,string>={
  'Fulfillment.Allocate':'fulfillment.write','Fulfillment.HandOff':'fulfillment.write',
  'Mission.Create':'mission.write','Mission.ConfirmStop':'mission.write','Mission.Cancel':'mission.write',
  'Robot.Observe':'robot.observe','Robot.RequestStop':'robot.stop',
- 'Shift.Open':'shift.write','Bill.Prepare':'billing.write','Payment.Claim':'payment.claim',
+ 'Shift.Open':'shift.write','Shift.Close':'shift.write','Cash.RecordMovement':'shift.write','Print.Request':'print','Print.ConfirmReprint':'print','Print.Observe':'print.observe','Bill.Prepare':'billing.write','Payment.Claim':'payment.claim',
  'Payment.RecordCash':'payment.cash','Bill.Close':'billing.write',
  'Bill.Split':'billing.write','Bill.Merge':'billing.write','Bill.Void':'bill.void',
  'Payment.RecordTerminal':'payment.terminal','Payment.VerifyManual':'payment.verify','Refund.Record':'payment.refund',

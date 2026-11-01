@@ -88,7 +88,7 @@ class LanService : Service() {
             for(index in 0 until all.length()) {
               val snapshot=all.getJSONObject(index);val kind=snapshot.getJSONObject("ref").getString("kind")
               if(kind=="__scope__"){revision=snapshot.getInt("version");coordinatorEpoch=snapshot.getJSONObject("state").getInt("coordinatorEpoch")}
-              val visible=if("*" in allowed||"continuity.resolve" in allowed)true else if("billing.write" in allowed)kind in setOf("__scope__","configuration","catalog","table","session","order","fulfillment","allocation","mission","robot","bill","payment","refund","payment-observation","shift","cashier-shift","grant","device") else kind in setOf("__scope__","configuration","catalog","station","kitchen-ticket","kitchen-delta","kitchen-cancellation","fulfillment")
+              val visible=if("*" in allowed||"continuity.resolve" in allowed)true else if("billing.write" in allowed)kind in setOf("__scope__","configuration","catalog","table","session","order","fulfillment","allocation","mission","robot","bill","payment","refund","payment-observation","shift","cashier-shift","cash-movement","print-job","printer","grant","device") else kind in setOf("__scope__","configuration","catalog","station","kitchen-ticket","kitchen-delta","kitchen-cancellation","fulfillment")
               if(!visible)continue
               if("kitchen.write" in allowed && "billing.write" !in allowed && "*" !in allowed && snapshot.getJSONObject("state").has("stationId")) {
                 val stations=grant.optJSONArray("stationIds") ?: org.json.JSONArray()

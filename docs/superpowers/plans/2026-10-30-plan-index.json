@@ -391,7 +391,8 @@
       "depends": "W05-T03",
       "testFile": "tests/integration/cash-print.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/cash-print.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T04.md"
     },
     {
       "wave": "W05",

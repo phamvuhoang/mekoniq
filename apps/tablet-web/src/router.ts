@@ -12,6 +12,8 @@ import {Reconciliation} from './screens/Reconciliation';
 import {Maintenance} from './screens/Maintenance';
 import {ImportHistory} from './screens/ImportHistory';
 import {Recovery} from './screens/Recovery';
+import {CashShift} from './screens/CashShift';
+import {PrintQueue} from './screens/PrintQueue';
 export const routes=[
  {path:'/device',key:'device',permission:'',screen:DeviceStatus},
  {path:'/pos',key:'pos',permission:'order.write',screen:Pos},
@@ -19,6 +21,8 @@ export const routes=[
  {path:'/fleet',key:'fleet',permission:'mission.write',screen:Fleet},
  {path:'/robot',key:'fleet',permission:'mission.write',screen:Fleet},
  {path:'/checkout',key:'checkout',permission:'payment.cash',screen:Checkout},
+ {path:'/cash',key:'cash',permission:'shift.write',screen:CashShift},
+ {path:'/print',key:'print',permission:'print',screen:PrintQueue},
  {path:'/isolated',key:'isolated',permission:'continuity.capture',screen:IsolatedSales},
  {path:'/reconciliation',key:'reconciliation',permission:'continuity.resolve',screen:Reconciliation},
  {path:'/maintenance',key:'maintenance',permission:'continuity.resolve',screen:Maintenance},

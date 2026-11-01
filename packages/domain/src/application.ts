@@ -13,9 +13,12 @@ export const productionPermissions:Record<string,string>={...commandPermissions,
 };
 /** Commands whose payload may carry coupons; carrying any needs discount.apply on top of the per-type permission. */
 const couponCommands=new Set(['Catalog.Quote','Order.Place','Order.Amend']);
+/** Cash commands that act for someone else's shift, approve a variance or adjust a closed shift need a manager's shift.approve on top of shift.write. */
+const approvalCommands=new Set(['Shift.Close','Cash.RecordMovement']);
 export function requiredPermissions(type:string,payload:JsonObject):string[] {
  const base=productionPermissions[type];
  if(!base)return [];
+ if(approvalCommands.has(type)&&(payload.approve===true||payload.adjustment===true))return [base,'shift.approve'];
  const ids=payload.discountIds;
  return couponCommands.has(type)&&ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?[base,'discount.apply']:[base];
 }

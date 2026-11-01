@@ -191,7 +191,7 @@ export function canRefund(captured:string, refunded:string, request:string) {
 - Consumes: Cash ledger, payment source ID, side-effect receipt and printer profile.
 - Produces: `Shift.Open`, `.Close`, `Cash.RecordMovement`, `Print.Request`, `.ConfirmReprint`; printer states pending/sent/unknown/confirmed.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -208,9 +208,9 @@ test("printer timeout cannot undo the recorded sale", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/cash-print.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/cash-print.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Expected cash=opening+cash receipts+cash-in-cash-out-cash refunds-change; shift close records variance/approver. ESC/POS driver profile native network/USB tùy thiết bị đã kiểm, no guaranteed printer ACK.
+- [x] **3. Hiện thực phần cốt lõi.** Expected cash=opening+cash receipts+cash-in-cash-out-cash refunds-change; shift close records variance/approver. ESC/POS driver profile native network/USB tùy thiết bị đã kiểm, no guaranteed printer ACK.
 
 ```ts
 export function expectedCash(x:{opening:bigint;receipts:bigint;in:bigint;out:bigint;refunds:bigint;change:bigint}) {
@@ -218,11 +218,11 @@ export function expectedCash(x:{opening:bigint;receipts:bigint;in:bigint;out:big
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Durable local spool, ESC/POS render golden byte fixtures; uncertain send chuyển unknown, người dùng reprint tạo attempt mới có dấu bản in lại. KDS không phụ thuộc printer success.
+- [x] **4. Nối vào runtime và lưu trữ.** Durable local spool, ESC/POS render golden byte fixtures; uncertain send chuyển unknown, người dùng reprint tạo attempt mới có dấu bản in lại. KDS không phụ thuộc printer success.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/cash-print.test.ts`; kỳ vọng PASS. Shift multi-cashier permissions, reopened day adjustment, cash count mismatch, lost printer ACK, Bluetooth/USB unsupported clearly disabled; physical printer gate W11. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/cash-print.test.ts`; kỳ vọng PASS. Shift multi-cashier permissions, reopened day adjustment, cash count mismatch, lost printer ACK, Bluetooth/USB unsupported clearly disabled; physical printer gate W11. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T04.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: reconcile cash shifts and persist print attempts"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T04.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: reconcile cash shifts and persist print attempts"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W05-T05: Guest QR, kiosk và support/guide/bussing
 
