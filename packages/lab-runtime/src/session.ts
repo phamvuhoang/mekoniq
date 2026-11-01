@@ -26,7 +26,7 @@ export function validateProject(value:unknown):asserts value is LabProject {
  const d=p.design,w=p.world;
  if(!['service','valetudo'].includes(d.chassis)||!['lidar','depth'].includes(d.sensor)||!Number.isInteger(d.trays)||d.trays<1||d.trays>10||![d.batteryAh,d.payloadKg].every(n=>Number.isFinite(n)&&n>=0&&n<=1000)||!Number.isInteger(w.revision)||w.revision<1||![w.width,w.height].every(n=>Number.isFinite(n)&&n>0&&n<=1000)||!Array.isArray(w.points)||!Array.isArray(w.obstacles)||w.points.length+w.obstacles.length>200)throw new Error('INVALID_PROJECT');
  const ids=new Set<string>();
- for(const point of w.points){if(!point||typeof point.id!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(point.id)||ids.has(point.id)||!['table','kitchen','parking','dock'].includes(point.kind)||![point.x,point.y].every(Number.isFinite)||point.x<0||point.y<0||point.x>w.width||point.y>w.height||(point.kind==='table'&&point.x<0.8))throw new Error('INVALID_PROJECT');ids.add(point.id);}
+ for(const point of w.points){if(!point||typeof point.id!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(point.id)||ids.has(point.id)||!['table','kitchen','parking','dock'].includes(point.kind)||![point.x,point.y].every(Number.isFinite)||point.x<0||point.y<0||point.x>w.width||point.y>w.height)throw new Error('INVALID_PROJECT');ids.add(point.id);}
  if(!w.points.some(p=>p.id==='kitchen'&&p.kind==='kitchen')||!w.points.some(p=>p.id==='parking'&&p.kind==='parking')||!w.points.some(p=>p.id==='table-1'&&p.kind==='table'))throw new Error('INVALID_PROJECT');
  for(const o of w.obstacles)if(!o||typeof o.id!=='string'||![o.x,o.y,o.width,o.height].every(Number.isFinite)||o.x<0||o.y<0||o.width<=0||o.height<=0||o.x+o.width>w.width||o.y+o.height>w.height)throw new Error('INVALID_PROJECT');
 }

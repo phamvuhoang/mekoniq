@@ -12,7 +12,7 @@ export async function initializeFixture(store:DurableStore,scope:Scope,project:L
  await seed('station','kitchen',{id:'kitchen',name:'Simulation kitchen'});
  const bindings:JsonObject={};
  for(const p of project.world.points){
-  bindings[p.id]={waypointId:p.id,mapId:'lab-world',mapRevision:String(project.world.revision),frame:'map',x:p.kind==='table'?p.x-0.8:p.x,y:p.y,yaw:0};
+  bindings[p.id]={waypointId:p.id,mapId:'lab-world',mapRevision:String(project.world.revision),frame:'map',x:p.x,y:p.y,yaw:0};
   if(p.kind==='table')await seed('table',p.id,{id:p.id,name:p.name,activeSessionId:null});
  }
  await seed('robot','sim-1',{id:'sim-1',driver:'simulator',validation:'simulated',capabilities:['delivery'],trays:project.design.trays,maxLoadMinor:String(Math.round(project.design.payloadKg*1000)),battery:100,minBattery:20,availability:'idle',goalState:'idle',controlEpoch:1,ownerDeviceId:'lab-coordinator',mapId:'lab-world',mapRevision:String(project.world.revision),parkingPoint:'parking',offlineExecution:true,bindings,safetyState:'clear'});
