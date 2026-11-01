@@ -287,3 +287,29 @@ test("an admitted speed limit reaches every robot command: first leg, next leg a
     expect((await lab.command("cashier","Mission.Create",{target:"table-1",allocationIds:[]})).code).toBe("AMBIGUOUS_MISSION");
   } finally { await lab.close(); }
 });
+
+test("an adapter safety_state fault holds the next leg and blocks Mission.Resume until the robot reports clear", async () => {
+  const lab=await createRestaurantLab();
+  try {
+    const {missionId}=await deliveryAtKitchen(lab);
+    const safety=(safetyState:string,sequence:string,controlEpoch=1):RobotEvent=>({type:"safety_state",id:`valetudo-boot-${sequence}`,commandId:"",bootId:"valetudo-boot",sequence,observedAt:new Date(lab.clock.nowMs).toISOString(),payload:{robotId:"sim-1",controlEpoch,transport:"rest",safetyState}});
+    const observe=(e:RobotEvent)=>lab.command("owner","Robot.Observe",robotEventCommand(e),e.id);
+    expect((await observe(safety("fault","1",9))).code).toBe("STALE_CONTROL_EPOCH");
+    expect((await observe(safety("maybe","2"))).code).toBe("INVALID_SAFETY_STATE");
+    expect((await observe(safety("fault","3"))).status).toBe("accepted");
+    expect(await lab.state<JsonObject>("robot","sim-1")).toMatchObject({safetyState:"fault"});
+    const issued=await lab.count("RobotCommandIssued"),executes=await executeIntents(lab);
+    const confirmed=await confirm(lab,missionId);
+    expect(confirmed.status).toBe("accepted");
+    expect(confirmed.value).toMatchObject({status:"needs_attention",reason:"SAFETY_NOT_CLEAR"});
+    const held=await mission(lab,missionId);
+    expect(held).toMatchObject({status:"needs_attention",attentionReason:"SAFETY_NOT_CLEAR"});
+    expect((await lab.command("cashier","Mission.Resume",{missionId,expectedVersion:held.version})).code).toBe("SAFETY_NOT_CLEAR");
+    expect(await lab.count("RobotCommandIssued")).toBe(issued);
+    expect(await executeIntents(lab)).toBe(executes);
+    expect((await observe(safety("clear","4"))).status).toBe("accepted");
+    const resumed=await lab.command("cashier","Mission.Resume",{missionId,expectedVersion:held.version});
+    expect(resumed.status).toBe("accepted");
+    expect(await lab.count("RobotCommandIssued")).toBe(issued+1);
+  } finally { await lab.close(); }
+});

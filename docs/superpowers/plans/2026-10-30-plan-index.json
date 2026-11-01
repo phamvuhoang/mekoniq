@@ -431,7 +431,9 @@
       "depends": "W06-T01, W01-T03",
       "testFile": "tests/adapters/valetudo-conformance.test.ts",
       "testCommand": "pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W06-T02.md",
+      "remaining": "Supervised hardware proof on a physical Valetudo robot (named model + firmware, venue LAN): recorded fixtures, go_to_target behaviour, measured tolerances, STOP/cancel/AP loss/reboot/map reset without false arrival, and a release cleartext/TLS decision. Protocol-emulator and AVD results are integration_tested only; the valetudo profile is not hardware_validated."
     },
     {
       "wave": "W06",

@@ -13,6 +13,8 @@ export interface StopAcknowledgement {acknowledged:boolean;physicalStopConfirmed
 export interface NativeExecutionState {status:'sending'|'executing'|'completed'|'cancelled'|'failed'|'unknown';evidence:JsonObject}
 export interface RobotEvent {type:'accepted'|'rejected'|'progress'|'completed'|'failed'|'cancelled'|'unknown'|'safety_state';id:string;commandId:string;bootId:string;sequence:string;observedAt:string;payload:JsonObject}
 export interface RobotAdapter {
+ /** 'native': mutations leave the tablet only through the Android executor (journal before I/O). Required for any non-simulated robot. */
+ readonly executor?:'native';
  describe():Promise<RobotManifest>;
  resolveTarget(target:TargetBinding):Promise<ResolvedTarget>;
  estimateReachability(target:ResolvedTarget):Promise<Reachability>;

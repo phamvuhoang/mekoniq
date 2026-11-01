@@ -10,7 +10,7 @@ export interface RobotEffectStore {
 /** Only native adapters with durable command IDs may be used here; this is not an HTTP retry loop. */
 export async function dispatchRobotEffects(store:RobotEffectStore,scope:Scope,adapter:RobotAdapter,nowMs:number):Promise<{id:string;result:NativeAcceptance|NativeExecutionState|JsonObject}[]> {
  const manifest=await adapter.describe();
- if(manifest.validation!=='simulated') throw new Error('NATIVE_EXECUTOR_REQUIRED');
+ if(manifest.validation!=='simulated'&&adapter.executor!=='native') throw new Error('NATIVE_EXECUTOR_REQUIRED');
  const rows=(await store.effects(scope)).filter(e=>['robot.execute','robot.cancel','robot.requestStop'].includes(String(e.type))&&!['confirmed','failed'].includes(String(e.status)));
  const results:{id:string;result:NativeAcceptance|NativeExecutionState|JsonObject}[]=[];
  for(const row of rows) {

@@ -99,7 +99,7 @@ export function bindingCurrent(binding:{mapId:string;revision:string},
 - Consumes: RobotAdapter; official pinned Valetudo schema and test fixture server; native HTTP transport.
 - Produces: `ValetudoAdapter` implements adapter contract; protocol profile declares transport + tested firmware + offline availability. Native plugin `Executor.submit(command:RobotCommand):Promise<NativeAcceptance>`, `reconcile(commandId:string):Promise<NativeExecutionState>`, `requestStop(reason:string):Promise<StopAcknowledgement>` dùng chung schema; mỗi robot chỉ được bind một executor.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -115,9 +115,9 @@ test("HTTP 200 plus stale idle telemetry cannot mean arrival", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Pin official routes/capability version from supplied robot; REST LAN for no broker deployment. MQTT command no retain, per-robot ACL; do not switch transports mid-trip. Fresh position+matching goal/map+status needed; uncertainty becomes needs_attention.
+- [x] **3. Hiện thực phần cốt lõi.** Pin official routes/capability version from supplied robot; REST LAN for no broker deployment. MQTT command no retain, per-robot ACL; do not switch transports mid-trip. Fresh position+matching goal/map+status needed; uncertainty becomes needs_attention.
 
 ```ts
 export function arrivalConfirmed(s:{fresh:boolean;mapMatches:boolean;goalMatches:boolean;
@@ -127,11 +127,11 @@ export function arrivalConfirmed(s:{fresh:boolean;mapMatches:boolean;goalMatches
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** `createValetudoRig` starts protocol emulator with delayed/duplicate/status/map responses, uses real adapter. Trên Android, adapter TS gửi typed command qua ExecutorPlugin; chỉ NativeRobotTransport được phát REST/MQTT mutation tới endpoint đã provision. Không cho WebView truyền URL/request tùy ý hoặc mở một đường điều khiển thứ hai. ExecutorJournal lưu command ID/hash, control epoch, sending state trước I/O và receipt/observations sau I/O. Crash giữa hai bước phải reconcile; nếu firmware không có query goal ID đáng tin thì giữ unknown, không tự gửi lại. Native service giữ heartbeat/expiry/stop policy khi UI suspend; completion chưa đủ chứng cứ giữ pending. Parse compressed map with max inflated size; reject invalid endpoints/config. STOP then retarget waits evidence, not arbitrary sleep as success.
+- [x] **4. Nối vào runtime và lưu trữ.** `createValetudoRig` starts protocol emulator with delayed/duplicate/status/map responses, uses real adapter. Trên Android, adapter TS gửi typed command qua ExecutorPlugin; chỉ NativeRobotTransport được phát REST/MQTT mutation tới endpoint đã provision. Không cho WebView truyền URL/request tùy ý hoặc mở một đường điều khiển thứ hai. ExecutorJournal lưu command ID/hash, control epoch, sending state trước I/O và receipt/observations sau I/O. Crash giữa hai bước phải reconcile; nếu firmware không có query goal ID đáng tin thì giữ unknown, không tự gửi lại. Native service giữ heartbeat/expiry/stop policy khi UI suspend; completion chưa đủ chứng cứ giữ pending. Parse compressed map with max inflated size; reject invalid endpoints/config. STOP then retarget waits evidence, not arbitrary sleep as success.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts`; kỳ vọng PASS. Chạy `apps/tablet-android/android/gradlew -p apps/tablet-android/android connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=io.mekoniq.tablet.ValetudoExecutorRecoveryTest` với protocol server và kiểm native crash/reopen không phát goto lần hai, stale epoch bị từ chối, UI suspend không ACK arrival giả. Retained stale telemetry, no pose, no ACK, same goal resend, broker down, reboot recovery, unsupported speed; protocol tests + supervised hardware proof separate. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts`; kỳ vọng PASS. Chạy `apps/tablet-android/android/gradlew -p apps/tablet-android/android connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=io.mekoniq.tablet.ValetudoExecutorRecoveryTest` với protocol server và kiểm native crash/reopen không phát goto lần hai, stale epoch bị từ chối, UI suspend không ACK arrival giả. Retained stale telemetry, no pose, no ACK, same goal resend, broker down, reboot recovery, unsupported speed; protocol tests + supervised hardware proof separate. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T02.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: integrate valetudo through evidence-based navigation adapters"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T02.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: integrate valetudo through evidence-based navigation adapters"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W06-T03: ROS executor durable journal và native action ownership
 

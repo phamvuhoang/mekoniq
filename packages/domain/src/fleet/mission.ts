@@ -58,7 +58,8 @@ function nextStop(c:CommandEnvelope,s:Snapshot[],mission:Snapshot,stops:MissionS
  }
  // Never journal coordinates from an old map: a robot that reports a new map (or lost the binding) mid-mission is held, not released, and the
  // leg stays pending until an operator rebinds and resumes it (Mission.Resume). Work already confirmed with this command still commits.
- const stale=bindingReason(robot.state,next.targetId);
+ // A robot whose safety state is set and not clear is held the same way (SAFETY_NOT_CLEAR) until a 'clear' observation and a Resume.
+ const stale=robot.state.safetyState&&robot.state.safetyState!=='clear'?'SAFETY_NOT_CLEAR':bindingReason(robot.state,next.targetId);
  if(stale) return done([changed('MissionNeedsAttention',mission,{stops,status:'needs_attention',attentionReason:stale,loaded,currentStopId:next.id})],{missionId:mission.ref.id,status:'needs_attention',reason:stale});
  next.status='travelling';
  const issued=issueRobotCommand(c,robot,mission.ref.id,revision,next,mission.state.speedLimitMps);
@@ -174,12 +175,21 @@ export function registerMissions(registry:ModuleRegistry):void {
   if(mission.state.status!=='needs_attention'||!mission.state.attentionReason) return fail('MISSION_STATE_CONFLICT');
   const robot=requireState(s,'robot',String(mission.state.robotId)),stops=structuredClone(mission.state.stops) as MissionStop[];
   if(robot.state.availability==='unknown'||['unknown','stop_requested'].includes(String(robot.state.goalState))) return fail('ROBOT_STATE_UNKNOWN');
+  if(robot.state.safetyState&&robot.state.safetyState!=='clear') return fail('SAFETY_NOT_CLEAR');
   const next=stops.find(stop=>stop.status==='pending') ?? fail('STOP_NOT_FOUND'),stale=bindingReason(robot.state,next.targetId);
   if(stale) return fail(stale);
   return nextStop(c,s,mission,stops,Boolean(mission.state.loaded));
  });
  handle(registry,'Robot.Observe',(c,s)=>{
   const robot=requireState(s,'robot',text(c.payload.robotId));
+  // safety_state is robot-level (adapter hardware/firmware fault), with or without a mission. Only a later 'clear' observation clears it;
+  // admission, nextStop and Mission.Resume all refuse while it is set and not clear. Mission legs are handled by the adapter's other events.
+  if(c.payload.type==='safety_state') {
+   if(c.payload.controlEpoch!==robot.state.controlEpoch) return fail('STALE_CONTROL_EPOCH');
+   const safetyState=text(c.payload.safetyState,'INVALID_SAFETY_STATE');
+   if(!['clear','fault','estop'].includes(safetyState)) return fail('INVALID_SAFETY_STATE');
+   return done([changed('RobotSafetyObserved',robot,{safetyState,safetyObservedAt:c.occurredAt})],{robotId:robot.ref.id,safetyState});
+  }
   const mission=requireState(s,'mission',text(c.payload.missionId));
   if(c.payload.controlEpoch!==robot.state.controlEpoch||mission.state.robotId!==robot.ref.id) return fail('STALE_CONTROL_EPOCH');
   if(c.payload.commandId!==mission.state.commandId || c.payload.missionRevision!==(mission.state.commandRevision ?? mission.state.revision)) return fail('STALE_ROBOT_EVENT');
