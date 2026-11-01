@@ -452,7 +452,16 @@
       "depends": "W06-T03",
       "testFile": "robotics/agent/tests/test_nav2_adapter.py",
       "testCommand": "python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q",
-      "status": "planned"
+      "additionalTestFiles": [
+        "robotics/agent/tests/test_robotics_assets.py",
+        "robotics/simulation/tests/test_restaurant.py"
+      ],
+      "additionalTestCommands": [
+        "python3 -m pytest robotics/agent/tests/test_robotics_assets.py -q",
+        "colcon test --packages-select mekoniq_simulation (Linux, ROS 2 Jazzy + Gazebo Harmonic; see evidence)"
+      ],
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W06-T04.md"
     },
     {
       "wave": "W06",

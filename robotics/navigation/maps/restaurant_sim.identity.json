@@ -1,0 +1,37 @@
+{
+  "mapId": "map-a",
+  "mapRevision": "r1",
+  "illustrative": true,
+  "waypoints": {
+    "kitchen-pickup": [
+      1.5,
+      4.0,
+      0.0
+    ],
+    "table-1": [
+      7.0,
+      3.1,
+      -1.5708
+    ],
+    "table-2": [
+      7.0,
+      4.9,
+      1.5708
+    ],
+    "table-3": [
+      10.0,
+      3.1,
+      -1.5708
+    ],
+    "table-4": [
+      10.0,
+      4.9,
+      1.5708
+    ],
+    "dining-handoff": [
+      5.6,
+      4.0,
+      0.0
+    ]
+  }
+}

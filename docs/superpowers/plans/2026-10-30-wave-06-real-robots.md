@@ -204,7 +204,7 @@ def can_submit(command, owner_epoch, now):
 - Consumes: Jazzy NavigateToPose actual action/result; NativeNavigation port, map/odom/base frames.
 - Produces: `Nav2Navigation` port; launch `restaurant_sim.launch.py`; profile namespaces, localization readiness and result evidence.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```python
 def test_rejected_or_aborted_nav2_goal_never_completes():
@@ -215,9 +215,9 @@ def test_rejected_or_aborted_nav2_goal_never_completes():
     assert result.completed is False
 ```
 
-- [ ] **2. Chạy RED.** `python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Check action accepted + terminal SUCCEEDED + error_code; cancel confirmation separate. Namespace từng robot, SI units, quaternion yaw conversion, lifecycle/localization readiness. Profile measured geometry inputs required for hardware, sim geometry explicitly illustrative.
+- [x] **3. Hiện thực phần cốt lõi.** Check action accepted + terminal SUCCEEDED + error_code; cancel confirmation separate. Namespace từng robot, SI units, quaternion yaw conversion, lifecycle/localization readiness. Profile measured geometry inputs required for hardware, sim geometry explicitly illustrative.
 
 ```python
 if not goal_handle.accepted:
@@ -227,11 +227,11 @@ if terminal_status != GoalStatus.STATUS_SUCCEEDED or result.error_code != 0:
 return NavigationResult(status="completed", completed=True)
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** SDF world kitchen/tables/narrow corridor/moving obstacle; Nav2 + Gazebo Harmonic via distro-pinned ROS images Linux. Mac use supported Linux container/VM simulation, don't claim native mac robot runtime. cmd_vel arbitration one source; no platform direct motor control.
+- [x] **4. Nối vào runtime và lưu trữ.** SDF world kitchen/tables/narrow corridor/moving obstacle; Nav2 + Gazebo Harmonic via distro-pinned ROS images Linux. Mac use supported Linux container/VM simulation, don't claim native mac robot runtime. cmd_vel arbitration one source; no platform direct motor control.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q`; kỳ vọng PASS. colcon build/test Jazzy, six Gazebo scenarios navigate/load/obstacle/replan/handoff/return; blocked timeout, localization lost and map change. Unit fake does not satisfy Gazebo gate. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q`; kỳ vọng PASS. colcon build/test Jazzy, six Gazebo scenarios navigate/load/obstacle/replan/handoff/return; blocked timeout, localization lost and map change. Unit fake does not satisfy Gazebo gate. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T04.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: navigate restaurant missions through jazzy nav2"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T04.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: navigate restaurant missions through jazzy nav2"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W06-T05: Commission S100/ZLTECH profiles và safety boundary
 

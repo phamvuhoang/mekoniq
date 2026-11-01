@@ -1,0 +1,15 @@
+# ILLUSTRATIVE simulation geometry (SI units: metres, kilograms). Not measured from any real robot; never copy into a hardware profile.
+illustrative: true
+chassis_length_m: 0.60
+chassis_width_m: 0.45
+chassis_height_m: 0.25
+chassis_mass_kg: 20.0
+wheel_radius_m: 0.10
+wheel_width_m: 0.05
+wheel_separation_m: 0.42
+wheel_mass_kg: 1.0
+ground_clearance_m: 0.05
+lidar_x_m: 0.20
+lidar_height_m: 0.28
+max_linear_speed_mps: 0.6
+max_angular_speed_radps: 1.0
