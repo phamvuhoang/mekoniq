@@ -17,7 +17,7 @@ beforeAll(async()=>{
  await project('bill','b1',{status:'closed',totalMinor:'50000',paidMinor:'50000',refundedMinor:'0',currency:'VND',orderIds:['o1'],summary:{subtotalMinor:'50000',discountMinor:'0',serviceMinor:'0',taxMinor:'0',taxIncludedMinor:'0',totalMinor:'50000'},closedAt:'2026-10-30T18:30:00.000Z'});
  await project('order','o1',{status:'closed',lines:[{itemId:'rice',name:'Cơm',quantity:'1'}]});
  await project('payment','p1',{billId:'b1',method:'cash',status:'captured',capturedMinor:'50000',appliedMinor:'50000',unappliedMinor:'0',tenderedMinor:'50000',changeMinor:'0',feeMinor:'0',occurredAt:'2026-10-30T18:29:00.000Z'});
- await project('refund','r1',{paymentId:'p1',billId:'b1',method:'cash',amountMinor:'1000',appliedMinor:'1000',unappliedMinor:'0',reason:'@SUM(A1)',occurredAt:'2026-10-30T18:40:00.000Z',recordedAt:'2026-10-30T18:40:00.000Z'});
+ await project('refund','r1',{paymentId:'p1',billId:'b1',method:'cash',amountMinor:'1000',appliedMinor:'1000',unappliedMinor:'0',billStatus:'closed',reason:'@SUM(A1)',occurredAt:'2026-10-30T18:40:00.000Z',recordedAt:'2026-10-30T18:40:00.000Z'});
 });
 afterAll(async()=>{await manager?.cleanup();await cashier?.cleanup();if(db)await db.close();});
 
@@ -42,9 +42,13 @@ test('a projection with no applied sync shows no figures; once applied the venue
  expect((await (await get(`/v1/reports/sales?venueId=venue-a&businessDate=2026-10-30`,manager.accessToken)).json()).netMinor).toBe('0');
  const csv=await get(`/v1/reports/sales?venueId=venue-a&businessDate=2026-10-31&format=csv`,manager.accessToken);
  expect(csv.headers.get('Content-Type')).toContain('text/csv');expect(csv.headers.get('Content-Disposition')).toBe('attachment; filename="sales-2026-10-31.csv"');
- const text=await csv.text();expect(text).toContain(`"'@SUM(A1)"`);expect(text).not.toMatch(/,@SUM/);
+ const bytes=new Uint8Array(await csv.arrayBuffer());expect([...bytes.slice(0,3)]).toEqual([0xef,0xbb,0xbf]); // UTF-8 BOM so Excel reads Vietnamese
+ const text=new TextDecoder().decode(bytes);expect(text).toContain(`"'@SUM(A1)"`);expect(text).not.toMatch(/,@SUM/);
+ // a coordinator silent for longer than the threshold reads stale, not current
+ await db.admin`UPDATE sync_inbox SET received_at=now()-interval '2 hours' WHERE organization_id=${scope.organizationId}`;
+ expect(await (await get(`/v1/reports/sales?venueId=venue-a&businessDate=2026-10-31`,manager.accessToken)).json()).toMatchObject({status:'stale',statusReason:'no-recent-sync',timeZoneAssumed:false});
  // a backlog not yet applied marks the figures stale instead of silently current
  await inbox('pending');
- expect((await (await get(`/v1/reports/shifts?venueId=venue-a&businessDate=2026-10-31`,manager.accessToken)).json()).status).toBe('stale');
+ expect(await (await get(`/v1/reports/shifts?venueId=venue-a&businessDate=2026-10-31`,manager.accessToken)).json()).toMatchObject({status:'stale',statusReason:'backlog'});
  expect((await (await get(`/v1/reports/robot-kpi?venueId=venue-a&businessDate=2026-10-31`,manager.accessToken)).json()).totals).toMatchObject({missions:0});
 });

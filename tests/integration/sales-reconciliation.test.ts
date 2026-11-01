@@ -20,6 +20,8 @@ test("late historical receipt adjusts the original business day", async () => {
     expect(day.lateAdjustments).toMatchObject([{kind:"historical-receipt",amountMinor:"50000",businessDate:"2026-10-29",appliedBusinessDate:"2026-10-30"}]);
     expect(day.historical).toMatchObject({count:1,totalMinor:"50000",paidCashMinor:"50000"});
     expect(day.status).toBe("current");
+    // the fixture venue has no layout: the UTC zone is reported as assumed, never silently
+    expect(day).toMatchObject({timeZone:"UTC",timeZoneAssumed:true});
   } finally { await lab.close(); }
 });
 
@@ -95,6 +97,11 @@ test("a three-way split paid two ways with partial refunds reconciles to the bil
     const s = await lab.report("shifts","2026-10-30");
     expect(s.shifts).toMatchObject([{id:"shift-1",status:"closed",expectedMinor:expected,countedMinor:expected,varianceMinor:"0",reconciled:true,adjustmentMinor:"-1000",refundsMinor:"3000",changeMinor:"7000"}]);
     expect((s.shifts as JsonObject[])[0]!.adjustments).toMatchObject([{direction:"out",amountMinor:"1000",reason:"late bank fee"}]);
+    // per method, refunds included: the card captured by the cashier and refunded by a manager both land on the cashier's shift
+    expect((s.shifts as JsonObject[])[0]!.methods).toEqual([
+      {method:"card-terminal",payments:1,capturedMinor:B.totalMinor,appliedMinor:B.totalMinor,refunds:1,refundsMinor:"5000",netMinor:String(BigInt(B.totalMinor)-5000n),late:0},
+      {method:"cash",payments:2,capturedMinor:sum([A.totalMinor,C.totalMinor]),appliedMinor:sum([A.totalMinor,C.totalMinor]),refunds:1,refundsMinor:"3000",netMinor:String(BigInt(sum([A.totalMinor,C.totalMinor]))-3000n),late:0}]);
+    expect(s.unattributed).toEqual([]);
   } finally { await lab.close(); }
 });
 
@@ -126,7 +133,7 @@ test("business date follows the venue timezone: 18:30 UTC on Oct 30 is Oct 31 in
     ok(await lab.command("cashier","Payment.RecordCash",{billId,expectedVersion:1,amountMinor:"20000",currency:"VND",shiftId:"night"}));
     ok(await lab.command("cashier","Bill.Close",{billId,expectedVersion:2}));
     const vn = await lab.report("sales","2026-10-31"), utcDay = await lab.report("sales","2026-10-30");
-    expect(vn).toMatchObject({timeZone:"Asia/Ho_Chi_Minh",totals:{salesTotalMinor:"20000"}});
+    expect(vn).toMatchObject({timeZone:"Asia/Ho_Chi_Minh",timeZoneAssumed:false,totals:{salesTotalMinor:"20000"}});
     expect((utcDay.totals as JsonObject).salesTotalMinor).toBe("0");
     expect(((await lab.report("shifts","2026-10-31")).shifts as JsonObject[]).map(x => x.id)).toEqual(["night"]);
     expect((await lab.report("shifts","2026-10-30")).shifts).toEqual([]);
@@ -161,13 +168,73 @@ test("a projection that never synced shows no numbers instead of zeros, and CSV 
 test("wave acceptance: staff cannot change policy for themselves, and nobody changes it on a device cut off from the coordinator", async () => {
   const lab = await createRestaurantLab();
   try {
-    const before = await lab.state<JsonObject>("configuration","applied");
-    const features = Object.fromEntries(Object.keys(before.features as JsonObject).map(k => [k, { status: "enabled", revision: Number(before.revision) + 1 }]));
-    expect((await lab.command("cashier","Configuration.Apply",{revision:Number(before.revision)+1,features})).code).toBe("FORBIDDEN");
+    const before = await lab.state<JsonObject>("configuration","applied"), revision = Number(before.revision) + 1;
+    // the venue's own feature set, re-issued unchanged at the next revision: a valid payload (see the connected manager control below)
+    const features = Object.fromEntries(Object.entries(before.features as Record<string, JsonObject>).map(([k, f]) => [k, { status: f.status, revision }]));
+    expect((await lab.command("cashier","Configuration.Apply",{revision,features})).code).toBe("FORBIDDEN");
     await lab.partition("lan");
-    const offline = await lab.command("manager","Configuration.Apply",{revision:Number(before.revision)+1,features});
-    expect(offline.status).not.toBe("accepted");
+    expect(await lab.command("manager","Configuration.Apply",{revision,features},"policy-offline")).toMatchObject({status:"unknown",code:"COORDINATOR_UNAVAILABLE"});
     await lab.heal();
     expect(await lab.state<JsonObject>("configuration","applied")).toMatchObject({revision:before.revision,features:before.features});
+    // control: the same payload from a connected manager is accepted, so the refusals above were about authority, not validation
+    expect((await lab.command("manager","Configuration.Apply",{revision,features},"policy-online")).status).toBe("accepted");
+    expect((await lab.state<JsonObject>("configuration","applied")).revision).toBe(revision);
   } finally { await lab.close(); }
+});
+
+test("a payment at 23:50 on a bill closed at 00:10 reconciles on the closing day, and the payment-day view stays separate", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    lab.clock.nowMs = Date.parse("2026-10-30T23:40:00Z");
+    const { billId } = await bill(lab, "s1", "table-1", [{itemId:"tea",quantity:"1"}], false);
+    ok(await lab.command("cashier","Shift.Open",{shiftId:"late",currency:"VND"}));
+    lab.clock.nowMs = Date.parse("2026-10-30T23:50:00Z");
+    ok(await lab.command("cashier","Payment.RecordCash",{billId,expectedVersion:1,amountMinor:"20000",currency:"VND",shiftId:"late"}));
+    lab.clock.nowMs = Date.parse("2026-10-31T00:10:00Z");
+    ok(await lab.command("cashier","Bill.Close",{billId,expectedVersion:2}));
+    const before = await lab.report("sales","2026-10-30"), after = await lab.report("sales","2026-10-31");
+    expect(before.reconciliation).toMatchObject({expectedMinor:"0",collectedMinor:"0",differenceMinor:"0"});
+    expect(after.reconciliation).toMatchObject({expectedMinor:"20000",collectedMinor:"20000",differenceMinor:"0"});
+    // cash-flow view: the money arrived on the 30th
+    expect(before).toMatchObject({paymentsBasis:"occurredAt",payments:[{method:"cash",count:1,appliedMinor:"20000"}]});
+    expect(after.payments).toEqual([]);
+  } finally { await lab.close(); }
+});
+
+test("shift report per method: tenders and refunds follow the shift, late ones are flagged, unattributed ones are listed", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    const tea = await bill(lab, "s1", "table-1", [{itemId:"tea",quantity:"1"}], false), rice = await bill(lab, "s2", "table-2", [{itemId:"rice",quantity:"1"}], false);
+    ok(await lab.command("cashier","Shift.Open",{shiftId:"S",currency:"VND"}));
+    ok(await lab.command("cashier","Payment.RecordCash",{billId:tea.billId,expectedVersion:1,amountMinor:"20000",currency:"VND",shiftId:"S"}));
+    // card result unknown during the shift (cashier), drawer counted and closed, then the terminal confirms the capture later
+    const reference = {provider:"acme",merchantId:"m-1",transactionId:"t-9"};
+    const pending = ok(await lab.command("cashier","Payment.RecordTerminal",{billId:rice.billId,amountMinor:"50000",currency:"VND",status:"unknown",reference}));
+    expect(await lab.state<JsonObject>("payment",String(pending.value.paymentId))).toMatchObject({shiftId:"S"});
+    ok(await lab.command("cashier","Shift.Close",{shiftId:"S",countedMinor:"20000",expectedVersion:(await lab.state<JsonObject>("shift","S")).version}));
+    await lab.advance(60_000);
+    ok(await lab.command("cashier","Payment.RecordTerminal",{billId:rice.billId,amountMinor:"50000",currency:"VND",status:"captured",reference}));
+    ok(await lab.command("manager","Refund.Record",{paymentId:String(pending.value.paymentId),amountMinor:"10000",reason:"partial",evidenceRef:"rf-9",expectedVersion:(await lab.state<JsonObject>("payment",String(pending.value.paymentId))).version}));
+    // an older payment fact without a shift (recorded before shifts were stamped on non-cash tenders)
+    await lab.seed("payment","legacy",{billId:"legacy-bill",method:"transfer",shiftId:null,capturedMinor:"7000",appliedMinor:"7000"});
+    const r = await lab.report("shifts","2026-10-30"), S = (r.shifts as JsonObject[])[0]!;
+    expect(S).toMatchObject({id:"S",status:"closed",varianceMinor:"0",reconciled:true});
+    expect(S.methods).toEqual([
+      {method:"card-terminal",payments:1,capturedMinor:"50000",appliedMinor:"50000",refunds:1,refundsMinor:"10000",netMinor:"40000",late:2},
+      {method:"cash",payments:1,capturedMinor:"20000",appliedMinor:"20000",refunds:0,refundsMinor:"0",netMinor:"20000",late:0}]);
+    expect(r.unattributed).toMatchObject([{kind:"payment",id:"legacy",method:"transfer",amountMinor:"7000"}]);
+  } finally { await lab.close(); }
+});
+
+test("facts that cannot be dated, robot observations that do not parse and a silent cloud projection never yield silent numbers", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    await lab.seed("payment","offset-time",{billId:"x",occurredAt:"2026-10-30T10:00:00+07:00"});
+    await lab.seed("robot-command","bad-clock",{robotId:"sim-1",missionId:"m-x",status:"completed",issuedAt:"2026-10-30T01:00:00.000Z",observedAt:"not-a-time"});
+    expect((await lab.report("sales","2026-10-30")).undatedFacts).toEqual([{kind:"payment",id:"offset-time",at:"2026-10-30T10:00:00+07:00"}]);
+    expect((await lab.report("robot-kpi","2026-10-30")).totals).toMatchObject({commands:1,commandsCompleted:1,avgCommandMs:null,invalidObservations:1});
+  } finally { await lab.close(); }
+  const w = { source: "cloud-projection" as const, asOf: "2026-10-30T12:00:00.000Z", pending: 0, maxAgeMs: 15 * 60 * 1000 };
+  expect(buildReport("sales", [], { businessDate: "2026-10-30", timeZone: "UTC", watermark: { ...w, appliedAt: "2026-10-30T11:50:00.000Z" } })).toMatchObject({ status: "current", statusReason: null });
+  expect(buildReport("sales", [], { businessDate: "2026-10-30", timeZone: "UTC", watermark: { ...w, appliedAt: "2026-10-30T09:00:00.000Z" } })).toMatchObject({ status: "stale", statusReason: "no-recent-sync" });
 });

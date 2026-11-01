@@ -114,7 +114,7 @@ export function registerWave02Routes(register:(route:CloudRoute)=>void):void {
   const actor=actorRequired(c.actor),query=new URL(request.url).searchParams,businessDate=query.get('businessDate')??'';
   const report=await readReport(actor,actorScope(actor,query.get('venueId')??''),c.params.kind,businessDate);
   if(query.get('format')!=='csv')return Response.json(report);
-  return new Response(reportCsv(report),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="${c.params.kind}-${businessDate}.csv"`}}); // kind and date are validated by readReport
+  return new Response('\uFEFF'+reportCsv(report),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="${c.params.kind}-${businessDate}.csv"`}}); // kind and date are validated by readReport
  });
  // Guest web: no staff session. Scope comes from the venue-signed table token (or the public menu's own org/venue), never from a cookie.
  add('GET','/v1/guest/menu/:organizationId/:venueId',null,async(_request,c)=>Response.json(await guestMenu({organizationId:c.params.organizationId,venueId:c.params.venueId})));

@@ -129,9 +129,9 @@ export class Lab {
   }
   /** Plan §4: the actual report query over the coordinator's committed snapshots (the same pure reports the tablet and cloud route use). */
   async report(kind:string,businessDate:string):Promise<JsonObject> {
-    const {buildReport,venueTimeZone}=await import('../../packages/domain/src/reporting/report');
+    const {buildReport}=await import('../../packages/domain/src/reporting/report');
     const snapshots=await (await this.getStore('coordinator')).snapshots(this.scope),asOf=new Date(this.clock.nowMs).toISOString();
-    return buildReport(kind,snapshots,{businessDate,timeZone:venueTimeZone(snapshots),watermark:{source:'coordinator',asOf,appliedAt:asOf,pending:0}});
+    return buildReport(kind,snapshots,{businessDate,watermark:{source:'coordinator',asOf,appliedAt:asOf,pending:0}});
   }
   async unresolvedConflictCount(){return (await (await this.getStore('coordinator')).snapshots(this.scope)).filter(s=>s.ref.kind==='conflict'&&s.state.status==='open').length;}
   async close(){await Promise.all([...this.stores.values()].map(s=>s.close()));await rm(this.directory,{recursive:true,force:true});}

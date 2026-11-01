@@ -78,7 +78,8 @@ Khi một lần in ở trạng thái "Không rõ kết quả" (máy in không ph
 1. Đếm tiền trong két. Màn **Ca và sổ két** hiện "Tiền mặt cần có trong két" = đầu ca + tiền mặt khách đưa + nộp thêm − chi ra − hoàn tiền mặt − tiền thối.
 2. Nhập "Tiền mặt đếm được", bấm "Đóng ca và đối soát".
 3. Có chênh lệch: thu ngân không tự đóng được. Quản lý (không phải chính thu ngân của ca) đếm lại, nhập "Lý do chênh lệch" và duyệt.
-4. Ca đã đóng không sửa được. Sai sót phát hiện sau đó: quản lý ghi "Ghi điều chỉnh sau đóng ca" với lý do; điều chỉnh hiện riêng bên cạnh ca, không thay số đã chốt.
+4. Báo cáo ca còn liệt kê theo từng phương thức (tiền mặt, thẻ, chuyển khoản): số lần thu, số tiền, hoàn tiền và giao dịch ghi nhận sau khi đóng ca (ví dụ máy POS xác nhận muộn). Giao dịch thẻ/chuyển khoản thuộc ca đang mở của người ghi nhận; giao dịch không thuộc ca nào được liệt kê riêng là "Không thuộc ca nào" để quản lý kiểm tra.
+5. Ca đã đóng không sửa được. Sai sót phát hiện sau đó: quản lý ghi "Ghi điều chỉnh sau đóng ca" với lý do; điều chỉnh hiện riêng bên cạnh ca, không thay số đã chốt.
 
 ## 10. Báo cáo cuối ngày
 
@@ -87,12 +88,14 @@ Màn **Báo cáo** (quản lý/chủ; thu ngân không có quyền xem):
 1. Chọn "Ngày kinh doanh" và bấm "Xem báo cáo". Ngày tính theo **múi giờ nhà hàng** (ví dụ 01:30 sáng giờ Việt Nam thuộc ngày hôm đó, dù giờ UTC còn là ngày hôm trước).
 2. Đọc dòng trạng thái trước khi đọc số:
    - "Số liệu trên máy này lúc …": số liệu hiện tại.
-   - "Có thao tác chưa rõ kết quả": số liệu có thể thiếu; đối soát rồi làm mới.
+   - "Có thao tác chưa rõ kết quả hoặc chưa đồng bộ" / "Lâu chưa nhận dữ liệu mới": số liệu có thể thiếu; đối soát rồi làm mới. Báo cáo cloud chuyển sang trạng thái này khi quá 15 phút không nhận dữ liệu từ nhà hàng.
    - "Mất kết nối bộ điều phối": số liệu đã tải trước đó, có thể thiếu giao dịch của máy khác.
    - "Chưa có dữ liệu đồng bộ": không có số nào được hiện. Đây **không phải** doanh thu bằng 0.
 3. Doanh thu: gộp, giảm giá, trả hàng/hoàn tiền, thuần (= gộp − giảm giá − trả hàng), phí dịch vụ, thuế; thanh toán theo từng phương thức, tiền thối, phí thẻ, tiền nhận dư; số lượng món (đếm theo order, hóa đơn tách/gộp không bị đếm hai lần).
-4. "Đối soát sổ cái": phải thu và đã thu phải khớp. Nếu "Chưa khớp", kiểm tra thanh toán chưa rõ, phiếu nhập lịch sử hoặc điều chỉnh trễ. **Báo cáo không bao giờ sửa sổ cái**; sửa bằng nghiệp vụ (đối soát thanh toán, hoàn tiền, điều chỉnh có lý do).
+   - Nếu báo "Chưa cấu hình múi giờ nhà hàng", ngày đang tạm tính theo UTC: quản lý cấu hình múi giờ trong Bố trí nhà hàng trước khi chốt số.
+   - Nếu báo "giao dịch có thời điểm không hợp lệ", các giao dịch đó không được tính vào ngày nào; báo kỹ thuật kiểm tra.
+4. "Đối soát sổ cái" tính theo **hóa đơn đóng trong ngày**: thanh toán và hoàn tiền được ghép theo hóa đơn, dù phát sinh ngày nào (khách trả 23:50, đóng hóa đơn 00:10 thì tính cho ngày đóng). Mục "Thanh toán theo phương thức" là dòng tiền theo ngày phát sinh giao dịch. Phải thu và đã thu phải khớp. Nếu "Chưa khớp", kiểm tra thanh toán chưa rõ, phiếu nhập lịch sử hoặc điều chỉnh trễ. **Báo cáo không bao giờ sửa sổ cái**; sửa bằng nghiệp vụ (đối soát thanh toán, hoàn tiền, điều chỉnh có lý do).
 5. Phiếu nhập lại sau sự cố (nhập lịch sử) được tính vào **ngày phát sinh gốc**, hiện ở "Điều chỉnh ghi nhận trễ" với cả thời điểm phát sinh và thời điểm ghi nhận.
-6. "Xuất CSV" tải file mở được bằng Excel/Google Sheets; nội dung giống công thức (bắt đầu bằng = + − @) được thêm dấu ' để không chạy như công thức.
+6. "Xuất CSV" tải file mở được bằng Excel/Google Sheets (có BOM UTF-8 để hiện đúng tiếng Việt); nội dung giống công thức (bắt đầu bằng = + − @) được thêm dấu ' để không chạy như công thức.
 7. Báo cáo trên cloud (`GET /v1/reports/sales|shifts|robot-kpi?venueId=…&businessDate=YYYY-MM-DD[&format=csv]`) đọc dữ liệu đã đồng bộ và cũng ghi trạng thái hiện tại/chậm/chưa đồng bộ kèm thời điểm áp dụng.
 8. "Hiệu suất robot" với robot mô phỏng được ghi rõ là mô phỏng, không phải robot thật.
