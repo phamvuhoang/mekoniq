@@ -63,6 +63,8 @@ export function buildTrialImportReport(input:JsonValue|undefined,snapshots:Snaps
    if(existing) block(path,'POINT_KIND_CONFLICT');
   }
  }
+ // points already in the venue are kept as they are; say which, and where the venue's name differs from the trial's
+ const keptExisting=points.filter(p=>p.role!=='dock'&&find(snapshots,p.role,p.id)).map(p=>{const existing=String(find(snapshots,p.role,p.id)!.state.name??'');return {id:p.id,kind:p.role,venueName:existing,trialName:p.name,nameDiffers:existing!==p.name};});
  const isKind=(id:unknown,kinds:string[])=>typeof id==='string'&&kinds.includes(pointKinds.get(id)??'');
  // robots: identity and dock only. Teaching points (valetudo.points) and the topic are trial/vendor specific and are never bound.
  const robots:JsonObject[]=[];
@@ -150,7 +152,7 @@ export function buildTrialImportReport(input:JsonValue|undefined,snapshots:Snaps
  // the same plan applied before is reported as that, not as a pile of per-robot collisions with its own earlier import
  if(!blocking.some(b=>b.path===''&&b.code.endsWith('_REJECTED'))&&find(snapshots,'trial-import',importId(planHash))) blocking.splice(0,blocking.length,{path:'',code:'TRIAL_IMPORT_ALREADY_APPLIED'});
  const previewHash=blocking.length?null:planHash;
- const report:TrialImportReport={status:blocking.length?'rejected':'ready',liveEffects:'none',previewHash,schema,name,rejectedFields,unmappedFields,blocking,legacyFeatures,featurePlan,
+ const report:TrialImportReport={status:blocking.length?'rejected':'ready',liveEffects:'none',previewHash,schema,name,rejectedFields,unmappedFields,blocking,legacyFeatures,featurePlan,keptExisting,
   points:{stations:points.filter(p=>p.role==='station').map(p=>p.id),tables:points.filter(p=>p.role==='table').map(p=>p.id),docks:points.filter(p=>p.role==='dock').map(p=>p.id)},
   robots,menu:menuDraft?{status:'draft_not_published',categories:(menuDraft.categories as JsonObject[]).length,items:(menuDraft.items as JsonObject[]).length}:null,timing};
  return {report,blocking,plan};

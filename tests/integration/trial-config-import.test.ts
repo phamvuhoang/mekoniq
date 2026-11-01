@@ -195,3 +195,19 @@ test('the offline script is dry-run only: report on stdout, exit 0 ready / 2 rej
  expect(spawnSync(process.execPath,['scripts/import-trial-config.mjs'],{encoding:'utf8'}).status).toBe(1);
  expect(readdirSync(dir)).toEqual(['bad.json']);
 });
+
+test('points the venue already has are kept and listed, with name differences, in the report',async()=>{
+ const lab=await createRestaurantLab();
+ try {
+  const input=clone(baseline);((input.points as JsonObject).kitchen as JsonObject).name='Bếp trial';
+  const venueKitchen=String((await lab.state<JsonObject>('station','kitchen')).name);
+  const result=await lab.importTrial(input);
+  expect(result.status).toBe('accepted');
+  const kept=result.report.keptExisting as {id:string;kind:string;venueName:string;trialName:string;nameDiffers:boolean}[];
+  expect(kept.map(k=>k.id).sort()).toEqual(['bar','kitchen']);
+  expect(kept.find(k=>k.id==='kitchen')).toEqual({id:'kitchen',kind:'station',venueName:venueKitchen,trialName:'Bếp trial',nameDiffers:true});
+  // kept as they are: the venue's name wins, the new `dish` point is created
+  expect((await lab.state<JsonObject>('station','kitchen')).name).toBe(venueKitchen);
+  expect((await lab.state<JsonObject>('station','dish')).name).toBe('Khu rửa chén');
+ } finally { await lab.close(); }
+});

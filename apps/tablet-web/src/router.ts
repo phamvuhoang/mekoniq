@@ -1,7 +1,7 @@
 import {Capacitor} from '@capacitor/core';
 import type {JsonObject} from '../../../packages/contracts/src/index';
 import type {ScreenContext} from './ui';
-import {el,panel,tr,button} from './ui';
+import {el,panel,tr,button,featureShown} from './ui';
 import {DeviceStatus} from './screens/DeviceStatus';
 import {Pos} from './screens/Pos';
 import {Kitchen} from './screens/Kitchen';
@@ -43,11 +43,8 @@ export const routes=[
  * A screen that starts business for a feature is offered only while that feature is enabled or draining in the applied configuration (any of the listed).
  * Display only: the coordinator's feature guard is the enforcement. No configuration snapshot -> nothing is hidden. Reports are read-only and stay.
  */
-export const screenFeatures:Record<string,string[]>={'/pos':['pos.order'],'/kitchen':['kitchen'],'/fleet':['fleet'],'/robot':['fleet'],'/robot-setup':['fleet'],'/checkout':['billing'],'/cash':['cash.shift'],'/print':['printing'],'/guest-requests':['guest.call','guest.bill','qr.order','kiosk.order'],'/kiosk':['kiosk.order'],'/robot-screen':['robot.order']};
-export function featureOn(c:Pick<ScreenContext,'snapshots'>,path:string){
- const wanted=screenFeatures[path],features=c.snapshots.find(s=>s.ref.kind==='configuration'&&s.ref.id==='applied')?.state.features as Record<string,{status?:string}>|undefined;
- return !wanted||!features||wanted.some(key=>['enabled','draining'].includes(String(features[key]?.status)));
-}
+export const screenFeatures:Record<string,string[]>={'/pos':['pos.order'],'/kitchen':['kitchen'],'/fleet':['fleet'],'/robot':['fleet'],'/robot-setup':['fleet'],'/checkout':['billing'],'/cash':['cash.shift'],'/print':['printing'],'/guest-requests':['guest.call','guest.bill','qr.order','kiosk.order'],'/kiosk':['kiosk.order'],'/robot-screen':['robot.order','fleet']};
+export function featureOn(c:Pick<ScreenContext,'snapshots'>,path:string){const wanted=screenFeatures[path];return !wanted||featureShown(c,wanted);}
 export function canOpen(c:ScreenContext,permission:string){return !permission||c.session.permissions.includes('*')||c.session.permissions.includes(permission);}
 export function routeScreen(path:string,c:ScreenContext):HTMLElement {
  if(path==='/settings'){

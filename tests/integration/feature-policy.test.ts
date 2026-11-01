@@ -55,3 +55,11 @@ test('offline config catch-up serves each revision in order and has an explicit 
  expect((await signedConfiguration(owner,scope,1)).revision).toBe(2);expect((await signedConfiguration(owner,scope,2)).revision).toBe(3);
  expect((await signedConfiguration(owner,scope,3)).publication).toBeNull();
 });
+
+test('preset flags that alias one feature never depend on key order; conflicts are refused',()=>{
+ const a=preset('trial-service',{call:false,callStaff:false}),b=preset('trial-service',{callStaff:true,call:true});
+ expect(a.features['guest.call'].status).toBe('disabled');expect(b.features['guest.call'].status).toBe('enabled');
+ expect(()=>preset('trial-service',{call:true,callStaff:false})).toThrow('CONFLICTING_TRIAL_FLAGS');
+ expect(()=>preset('trial-service',{callStaff:false,call:true})).toThrow('CONFLICTING_TRIAL_FLAGS');
+ expect(preset('trial-service',{busRobot:false}).features['robot.bussing'].status).toBe('disabled');
+});

@@ -51,8 +51,16 @@ test('baseline site (all legacy flags off): only the core trial functions are of
  for(const off of ['/pos','/kitchen','/checkout','/cash','/print','/guest-requests','/kiosk','/robot-screen'])expect(paths,off).not.toContain(off);
  await h.screen('/pos');
  await expect(page.getByRole('heading',{name:'Chức năng đang tắt'})).toBeVisible();
+ // delivery-only venue (order=false): the robot's own screen stays (status and safety notice, as in the trial); only guest ordering is withheld
+ expect((await h.api('Robot.PairDisplay',{deviceId:'device-robot',robotId:'sim-1'})).status).toBe('accepted');
  await h.screen('/robot-screen','robot-display');
- expect(await navPaths(page)).not.toContain('/robot-screen');
+ expect(await navPaths(page)).toContain('/robot-screen');
+ await expect(page.getByRole('heading',{name:'Chức năng đang tắt'})).toHaveCount(0);
+ await expect(page.getByText('Robot đang chờ.')).toBeVisible();
+ const fault=await h.api('Robot.Observe',{type:'safety_state',robotId:'sim-1',safetyState:'fault',controlEpoch:1},'executor:sim-1');
+ expect(fault.status,JSON.stringify(fault)).toBe('accepted');
+ await h.screen('/robot-screen','robot-display');
+ await expect(page.getByText('Robot đang dừng an toàn. Vui lòng gọi nhân viên.')).toBeVisible();
  // API: the same refusals regardless of what the UI shows
  const refused:Record<string,[string,object,string]>={
   session:['Session.Open',{sessionId:'s-1',tableId:'table-1'},'cashier'],

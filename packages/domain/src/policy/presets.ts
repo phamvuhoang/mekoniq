@@ -12,11 +12,16 @@ const profiles: Record<string,string[]> = {
 export const trialFlagFeatures:Record<string,string>={call:'guest.call',callStaff:'guest.call',requestBill:'guest.bill',guide:'robot.guide',order:'robot.order',pay:'payment.transfer.manual',busRobot:'robot.bussing'};
 export function preset(name:string,flags:Record<string,boolean>={}) {
   const enabled=new Set(profiles[name]); if(!profiles[name])throw new Error('UNKNOWN_PRESET');
+  // aliases (call/callStaff) share a feature: conflicting values are refused so the result never depends on key order
+  const wanted=new Map<string,boolean>();
   for(const [key,value] of Object.entries(flags)) {
     if(!trialFlagFeatures[key]||typeof value!=='boolean')throw new Error('UNKNOWN_TRIAL_FLAG');
-    // an explicit false also switches off what the base profile enables (busRobot=false -> no bussing)
-    if(value)enabled.add(trialFlagFeatures[key]);else enabled.delete(trialFlagFeatures[key]);
+    const feature=trialFlagFeatures[key];
+    if(wanted.has(feature)&&wanted.get(feature)!==value)throw new Error('CONFLICTING_TRIAL_FLAGS');
+    wanted.set(feature,value);
   }
+  // an explicit false also switches off what the base profile enables (busRobot=false -> no bussing)
+  for(const [feature,value] of wanted)if(value)enabled.add(feature);else enabled.delete(feature);
   const added:string[]=[];
   function include(key:string) {for(const dep of featureRegistry[key].dependencies)if(!enabled.has(dep)){enabled.add(dep);added.push(dep);include(dep);}}
   for(const key of enabled)include(key);
