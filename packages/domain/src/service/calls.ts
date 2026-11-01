@@ -5,7 +5,7 @@ import { guestContext, trustedNowMs } from './guest-token';
 
 /** A repeat within this window adds nothing (no new alert); after it an open call is re-raised (count+1), a handled one starts a new call. */
 export const CALL_COOLDOWN_MS = 30000;
-const ISSUE_CATEGORIES = ['food', 'service', 'robot', 'cleanliness', 'other'];
+const ISSUE_CATEGORIES = ['food', 'service', 'robot', 'safety', 'cleanliness', 'other'];
 const note = (value: JsonValue | undefined): string | null => value === undefined ? null : typeof value === 'string' && value.trim().length > 0 && value.length <= 280 ? value.trim() : fail('INVALID_NOTE');
 /**
  * Guest.CallStaff / .RequestBill / .ReportIssue raise a service-call alert for the guest's own session only. Calls of one kind (and issue

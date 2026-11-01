@@ -190,6 +190,12 @@ test("service calls coalesce per session and kind, honour a cooldown and replay 
     await features(lab,{"guest.call":"disabled"});
     expect((await lab.guestCommand(token,"Guest.CallStaff",{})).code).toBe("FEATURE_DISABLED");
     expect((await lab.guestCommand(token,"Guest.RequestBill",{})).status).toBe("accepted");
+    // Robot/safety problem reports are not a commercial feature: the guest.call flag cannot silence them (coalescing still applies).
+    expect((await lab.guestCommand(token,"Guest.ReportIssue",{category:"food"})).code).toBe("FEATURE_DISABLED");
+    const robotIssue=await lab.guestCommand(token,"Guest.ReportIssue",{category:"robot",note:"robot blocked the aisle"});
+    expect(robotIssue.value).toMatchObject({coalesced:false});
+    expect((await lab.guestCommand(token,"Guest.ReportIssue",{category:"robot"})).value).toMatchObject({callId:robotIssue.value.callId,cooldown:true});
+    expect((await lab.guestCommand(token,"Guest.ReportIssue",{category:"safety"})).status).toBe("accepted");
   } finally { await lab.close(); }
 });
 

@@ -15,6 +15,6 @@ export function RobotDisplay(c:ScreenContext) {
  const root=panel(tr(c,'Màn hình robot','Robot screen'),el('p',`${tr(c,'Robot','Robot')}: ${String(robot?.state.name??robotId)}`,'badge'));
  if(robot?.state.safetyState&&robot.state.safetyState!=='clear')root.append(el('p',tr(c,'Robot đang dừng an toàn. Vui lòng gọi nhân viên.','The robot is in a safety stop. Please call staff.'),'warning'));
  if(!table?.state.activeSessionId){root.append(el('p',stop?tr(c,'Robot đang di chuyển. Vui lòng nhường đường.','The robot is moving. Please make way.'):tr(c,'Robot đang chờ.','The robot is waiting.')));return root;}
- root.append(el('h3',String(table.state.name??table.ref.id)),guestOrdering(c,async(type,payload)=>guestSubmit(c,type==='Order.Place'?'Guest.PlaceOrder':type,payload)));
+ root.append(el('h3',String(table.state.name??table.ref.id)),guestOrdering(c,`robot:${robotId}:${String(table.state.activeSessionId)}`,(type,payload,operationId)=>guestSubmit(c,type==='Order.Place'?'Guest.PlaceOrder':type,payload,operationId)));
  return root;
 }

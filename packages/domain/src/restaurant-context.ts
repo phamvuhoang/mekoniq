@@ -107,7 +107,8 @@ function guardFeature(command:CommandEnvelope,snapshots:Snapshot[]):void {
  const mapped=commandFeatures[command.type];
  if(!mapped) return;
  // Cancelling a line of an existing order finishes existing work; only adding items is new work.
- const intent=(command.type==='Order.Amend'&&command.payload.lineId!==undefined)||(command.type==='Payment.RecordTerminal'&&knownTerminalCharge(command,snapshots))?'finish_existing':mapped.intent;
+ // A robot/safety problem report is not a commercial feature (capability matrix §4): the guest.call flag cannot block it.
+ const intent=(command.type==='Order.Amend'&&command.payload.lineId!==undefined)||(command.type==='Guest.ReportIssue'&&['robot','safety'].includes(String(command.payload.category)))||(command.type==='Payment.RecordTerminal'&&knownTerminalCharge(command,snapshots))?'finish_existing':mapped.intent;
  requireFeature(command,snapshots,command.type==='Guest.PlaceOrder' ? guestOrderFeature(command.payload) : command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature,intent);
 }
 /** Same applied-policy check the per-command guard uses, for a feature a payload opts into (e.g. coupons). */

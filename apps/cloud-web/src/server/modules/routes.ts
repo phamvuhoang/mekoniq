@@ -29,7 +29,7 @@ function protectMutation(request:Request,actor:Actor){if(actor.deviceId)return;i
 function safe(handler:CloudRoute['handler']):CloudRoute['handler']{return async(request,context)=>{
  try{return await handler(request,context);}catch(error){
   const code=error instanceof Error?error.message:'SERVICE_UNAVAILABLE';
-  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE/.test(code)?400:/QUOTA/.test(code)?507:503;
+  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE/.test(code)?400:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
   return Response.json({code:status===503?'SERVICE_UNAVAILABLE':code},{status});
  }
 };}

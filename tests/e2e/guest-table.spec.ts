@@ -25,7 +25,8 @@ test('a QR guest order stays pending until the venue receipt and says so when th
  const now=Date.now(),capability={schemaVersion:1,id:'guest-token-browser',...scope,sessionId:'s1',tableId:'table-1',revision:0,channel:'qr',issuerDeviceId:'coordinator',issuerDeviceEpoch:'epoch-c',issuerEpoch:1,issuedAt:new Date(now).toISOString(),expiresAt:new Date(now+3600000).toISOString(),expiresAtMs:now+3600000};
  // Same wire form as encodeGuestToken (the domain module pulls JSON-schema imports Playwright's loader cannot read).
  const token=Buffer.from(JSON.stringify({...capability,signature:testSigner(canonicalBytes(capability))})).toString('base64url');
- await page.goto(`${api.url}/table/${token}`);
+ const landing=await page.goto(`${api.url}/table/${token}`);
+ expect(landing?.headers()['referrer-policy']).toBe('no-referrer'); // the token in the URL never leaks via Referer
  await expect(page.getByRole('heading',{name:'Bàn 01'})).toBeVisible({timeout:20000});
  await page.getByRole('button',{name:'Thêm Trà / Add Trà'}).click();
  const sent=page.waitForResponse(r=>r.url().endsWith('/v1/guest/commands'));

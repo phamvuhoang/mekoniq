@@ -64,7 +64,8 @@ test('guest commands relay with guest-only rights and stay pending until the ven
  expect(row.command).toMatchObject({type:'Guest.PlaceOrder',deviceId:'cloud-guest'});expect(row.command.actorRef).toMatch(/^guest:guest-token-/);
  expect(Object.keys(row.command.payload).sort()).toEqual(['guestToken','items','menuVersion']);
  const relayed=(await pendingRelay(coordinator,scope)).find(q=>q.command.operationId===sent.operationId)!;
- expect(relayed.authorization.grant).toMatchObject({receiptOnly:false,permissions:rolePermissions('guest')});
+ expect(relayed.authorization.grant).toMatchObject({receiptOnly:false,permissions:['guest.order','guest.call','guest.bill']});
+ expect(rolePermissions('guest')).toContain('payment.claim'); // the guest role keeps it; the relay grant does not
  expect((await guestSession(t)).requests).toEqual([{operationId:sent.operationId,type:'Guest.PlaceOrder',status:'pending',code:null}]);
  await recordVenueReceipt(coordinator,scope,{coordinatorEpoch:1,result:{status:'rejected',code:'SESSION_EXPIRED',value:{},duplicate:false,ack:'venue',operationId:sent.operationId}});
  expect((await guestSession(t)).requests[0]).toMatchObject({status:'rejected',code:'SESSION_EXPIRED'});
@@ -76,10 +77,38 @@ test('guest commands relay with guest-only rights and stay pending until the ven
 test('guest HTTP routes need no staff session and never serve non-menu assets',async()=>{
  const post=(path:string,body:JsonObject)=>dispatchRequest(new Request('http://localhost'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
  const accepted=await post('/v1/guest/commands',{token:token(),type:'Guest.RequestBill',payload:{},operationId:'route-op-1'});
- expect(accepted.status).toBe(202);
+ expect(accepted.status).toBe(202);expect(accepted.headers.get('Referrer-Policy')).toBe('no-referrer');expect(accepted.headers.get('Cache-Control')).toBe('no-store');
  expect((await post('/v1/guest/commands',{token:token(),type:'Bill.Close',payload:{},operationId:'route-op-2'})).status).toBe(403);
  expect((await post('/v1/guest/session',{token:'garbage-token-value-xx'})).status).toBe(400);
  expect((await dispatchRequest(new Request(`http://localhost/v1/guest/menu/${scope.organizationId}/${scope.venueId}`))).status).toBe(200);
  await expect(guestMenuImage(scope,'map-asset')).rejects.toThrow('ASSET_NOT_FOUND');
  expect((await dispatchRequest(new Request(`http://localhost/v1/guest/menu/${scope.organizationId}/${scope.venueId}/images/map-asset`))).status).toBe(404);
+});
+
+test('one token cannot flood the relay queue, and a synced ended seating cannot queue anything',async()=>{
+ const t=token();
+ for(let i=0;i<5;i++)expect((await submitGuestCommand(t,'Guest.CallStaff',{},'flood-'+i)).status).toBe('pending');
+ await expect(submitGuestCommand(t,'Guest.CallStaff',{},'flood-5')).rejects.toThrow('GUEST_RATE_LIMITED');
+ expect((await submitGuestCommand(t,'Guest.CallStaff',{},'flood-0')).duplicate).toBe(true); // a retry of an already queued request still answers
+ const post=await dispatchRequest(new Request('http://localhost/v1/guest/commands',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t,type:'Guest.CallStaff',payload:{},operationId:'flood-6'})}));
+ expect(post.status).toBe(429);expect(post.headers.get('Referrer-Policy')).toBe('no-referrer');
+ const [{n}]=await db.admin`SELECT count(*)::int AS n FROM relay_command WHERE organization_id=${scope.organizationId} AND command->>'actorRef'=${'guest:'+JSON.parse(Buffer.from(t,'base64url').toString()).id}`;expect(n).toBe(5);
+ // Once the venue answers, the token may send again.
+ const queued=await db.admin`SELECT operation_id FROM relay_command WHERE organization_id=${scope.organizationId} AND command->>'actorRef'=${'guest:'+JSON.parse(Buffer.from(t,'base64url').toString()).id} LIMIT 1`;
+ await recordVenueReceipt(coordinator,scope,{coordinatorEpoch:1,result:{status:'accepted',value:{},duplicate:false,ack:'venue',operationId:queued[0].operation_id}});
+ expect((await submitGuestCommand(t,'Guest.CallStaff',{},'flood-7')).status).toBe('pending');
+ // The venue closed/moved the seating (projection revision moved on): the cloud refuses before relaying.
+ await project('session','s9',{tableId:'table-9',status:'closed',revision:1});
+ await expect(submitGuestCommand(token({sessionId:'s9',tableId:'table-9'}),'Guest.CallStaff',{},'stale-1')).rejects.toThrow('SESSION_EXPIRED');
+ await expect(submitGuestCommand(token({sessionId:'s1',revision:1}),'Order.Place',{items:[{itemId:'tea',quantity:'1'}],menuVersion:1},'stale-2')).rejects.toThrow('SESSION_EXPIRED');
+ // A seating the cloud has not synced yet is left to the venue to judge.
+ expect((await submitGuestCommand(token({sessionId:'unsynced'}),'Guest.CallStaff',{},'unsynced-1')).status).toBe('pending');
+});
+
+test('the venue pulls safety stops, then staff relays, before any guest relay',async()=>{
+ const guest=await submitGuestCommand(token(),'Guest.RequestBill',{},'order-guest');
+ const staff=(operationId:string,type:string)=>({schemaVersion:1,...scope,operationId,type,actorRef:'owner',deviceId:'cloud-web',deviceEpoch:'cloud-web-v1',coordinatorEpoch:1,policyRevision:1,occurredAt:new Date().toISOString(),recordedAt:new Date().toISOString(),payload:{},payloadHash:'x'});
+ for(const [id,type] of [['order-staff','Order.Place'],['order-stop','Robot.RequestStop']])await db.admin`INSERT INTO relay_command(organization_id,venue_id,operation_id,payload_hash,command,coordinator_epoch,expires_at) VALUES(${scope.organizationId},${scope.venueId},${id},'x',${db.admin.json(staff(id,type))},1,now()+interval '1 minute')`;
+ const ids=(await pendingRelay(coordinator,scope)).map(q=>q.command.operationId).filter(id=>[guest.operationId,'order-staff','order-stop'].includes(id));
+ expect(ids).toEqual(['order-stop','order-staff',guest.operationId]);
 });

@@ -52,6 +52,9 @@ export async function submitGuestCommand(raw:unknown,type:string,payload:JsonObj
  const v=await verifiedToken(raw);
  if(typeof clientOperationId!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(clientOperationId))throw new Error('INVALID_OPERATION_ID');
  const built=guestCommand(raw as string,type,payload);
+ // A seating the venue already ended or moved (synced projection) cannot keep queueing work; an unsynced one is left for the venue to judge.
+ const [session]=await withTenant(v.scope,sql=>sql`SELECT state FROM sync_projection WHERE organization_id=${v.scope.organizationId} AND venue_id=${v.scope.venueId} AND aggregate_type='session' AND aggregate_id=${String(v.token.sessionId)}`);
+ if(session&&!guestSessionValid({sessionId:String(v.token.sessionId),revision:Number(v.token.revision)},{id:String(v.token.sessionId),revision:Number(session.state.revision??0),status:String(session.state.status)}))throw new Error('SESSION_EXPIRED');
  // Namespaced per token, so one guest can never collide with (or probe) another guest's operation ids.
  const operationId=`guest-${hashPayload({tokenId:built.tokenId,clientOperationId}).slice(0,40)}`,now=new Date().toISOString();
  const command:CommandEnvelope={schemaVersion:1,...v.scope,operationId,type:built.type,actorRef:`guest:${built.tokenId}`,...guestRelaySource,coordinatorEpoch:v.epoch,policyRevision:v.policyRevision,occurredAt:now,recordedAt:now,payload:built.payload,payloadHash:hashPayload(built.payload)};
