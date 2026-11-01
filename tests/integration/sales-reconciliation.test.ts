@@ -238,3 +238,25 @@ test("facts that cannot be dated, robot observations that do not parse and a sil
   expect(buildReport("sales", [], { businessDate: "2026-10-30", timeZone: "UTC", watermark: { ...w, appliedAt: "2026-10-30T11:50:00.000Z" } })).toMatchObject({ status: "current", statusReason: null });
   expect(buildReport("sales", [], { businessDate: "2026-10-30", timeZone: "UTC", watermark: { ...w, appliedAt: "2026-10-30T09:00:00.000Z" } })).toMatchObject({ status: "stale", statusReason: "no-recent-sync" });
 });
+
+test("cash handed back for a card payment leaves the refunding actor's drawer, never the capturing cashier's", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    const { billId } = await bill(lab, "s1", "table-1", [{itemId:"tea",quantity:"1"}], false);
+    ok(await lab.command("cashier","Shift.Open",{shiftId:"cashier-shift",currency:"VND",openingMinor:"100000"}));
+    const card = ok(await lab.command("cashier","Payment.RecordTerminal",{billId,amountMinor:"20000",currency:"VND",status:"captured",reference:{provider:"acme",merchantId:"m-1",transactionId:"t-cash-back"}}));
+    const paymentId = String(card.value.paymentId), version = async () => (await lab.state<JsonObject>("payment",paymentId)).version;
+    expect(await lab.state<JsonObject>("payment",paymentId)).toMatchObject({shiftId:"cashier-shift"});
+    const drawer = async () => (await lab.report("shifts","2026-10-30")).shifts as JsonObject[];
+    const expectedBefore = (await drawer()).find(x => x.id === "cashier-shift")!.expectedMinor;
+    // manager without an open shift: refusing is the only honest answer
+    expect((await lab.command("manager","Refund.Record",{paymentId,amountMinor:"5000",method:"cash",reason:"guest wants cash",expectedVersion:await version()})).code).toBe("ACTIVE_SHIFT_REQUIRED");
+    ok(await lab.command("manager","Shift.Open",{shiftId:"manager-shift",currency:"VND",openingMinor:"50000"}));
+    const refund = ok(await lab.command("manager","Refund.Record",{paymentId,amountMinor:"5000",method:"cash",reason:"guest wants cash",expectedVersion:await version()}));
+    expect(await lab.state<JsonObject>("refund",String(refund.value.refundId))).toMatchObject({method:"cash",shiftId:"manager-shift"});
+    const after = await drawer();
+    expect(after.find(x => x.id === "cashier-shift")).toMatchObject({expectedMinor:expectedBefore,refundsMinor:"0"});
+    expect(after.find(x => x.id === "manager-shift")).toMatchObject({expectedMinor:"45000",refundsMinor:"5000"});
+    expect(await lab.state<JsonObject>("shift","cashier-shift")).not.toHaveProperty("cashRefundedMinor");
+  } finally { await lab.close(); }
+});

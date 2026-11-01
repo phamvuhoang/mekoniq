@@ -29,7 +29,8 @@ export function registerRefunds(registry: ModuleRegistry): void {
     if (!METHODS.includes(method)) return fail('INVALID_METHOD');
     const open = (id: unknown) => { const x = typeof id === 'string' ? find(s, 'shift', id) : undefined; return x?.state.status === 'open' ? x : undefined; };
     const shift = method !== 'cash' ? undefined : c.payload.shiftId !== undefined ? open(text(c.payload.shiftId)) ?? fail('SHIFT_NOT_OPEN')
-      : open(payment.state.shiftId) ?? all(s, 'shift').find(x => x.state.cashierId === c.actorRef && x.state.status === 'open') ?? fail('ACTIVE_SHIFT_REQUIRED');
+      // the payment's own drawer only when that payment was cash; cash handed back for a card/transfer leaves the refunding actor's drawer
+      : (payment.state.method === 'cash' ? open(payment.state.shiftId) : undefined) ?? all(s, 'shift').find(x => x.state.cashierId === c.actorRef && x.state.status === 'open') ?? fail('ACTIVE_SHIFT_REQUIRED');
     if (shift && shift.state.currency !== currency) return fail('CURRENCY_MISMATCH');
     // non-cash money never touches a drawer; it is reported on the shift of the payment it reverses (else the actor's open shift, else unattributed)
     const shiftId = shift?.ref.id ?? (method === 'cash' ? null : typeof payment.state.shiftId === 'string' ? payment.state.shiftId : all(s, 'shift').find(x => x.state.cashierId === c.actorRef && x.state.status === 'open')?.ref.id ?? null);
