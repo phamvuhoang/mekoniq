@@ -134,13 +134,16 @@ test("traffic zones: non-enforcing robots are serialized, mixed vendors stay pen
     expect(await lab.count("RobotCommandIssued")).toBe(0);
     // a holder asking again only renews; it is not downgraded behind the robots waiting for it
     expect((await zone(lab,"sim-1")).value).toMatchObject({status:"granted"});
-    expect((await lab.command("executor","Zone.Release",{reservationId:String(first.value.reservationId)})).status).toBe("accepted");
+    // a granted zone is released only by its own robot's executor (another robot's executor, or an unbound one, cannot free it)
+    for(const actor of ["executor","executor:sim-2"]) expect((await lab.command(actor,"Zone.Release",{reservationId:String(first.value.reservationId)})).code).toBe("RESERVATION_NOT_BOUND");
+    expect((await lab.command("executor:sim-1","Zone.Release",{reservationId:String(first.value.reservationId)})).status).toBe("accepted");
     expect((await lab.state<{status:string}>("reservation","aisle@sim-2")).status).toBe("pending");
-    const third=await lab.command("executor","Zone.Release",{reservationId:"aisle@sim-3"});
+    const third=await lab.command("executor:sim-3","Zone.Release",{reservationId:"aisle@sim-3"});
     expect(third.value).toMatchObject({promoted:["aisle@sim-2"]});
     expect((await lab.state<{status:string}>("reservation","aisle@sim-2")).status).toBe("granted");
     expect((await lab.state<{status:string;reason:string}>("reservation","aisle@ros-1"))).toMatchObject({status:"pending",reason:"MIXED_VENDOR_TRAFFIC"});
-    expect((await lab.command("executor","Zone.Release",{reservationId:"aisle@sim-2"})).value).toMatchObject({promoted:["aisle@ros-1"]});
+    // with written evidence a manager (robot.configure) may release a granted zone too
+    expect((await lab.command("manager","Zone.Release",{reservationId:"aisle@sim-2",evidence:"manager saw sim-2 leave the aisle"})).value).toMatchObject({promoted:["aisle@ros-1"]});
   } finally { await lab.close(); }
 });
 
@@ -178,7 +181,7 @@ test("fleet draining blocks new reservations but not releases; binding is config
     // finishing an open mission may still reserve, but only for the robot that mission belongs to
     expect((await zone(lab,"sim-2","bar-lane",{missionId:String(open.value.missionId)})).code).toBe("FEATURE_DRAINING");
     expect((await zone(lab,"sim-1","bar-lane",{missionId:String(open.value.missionId)})).value).toMatchObject({status:"granted"});
-    expect((await lab.command("executor","Zone.Release",{reservationId:String(granted.value.reservationId)})).status).toBe("accepted");
+    expect((await lab.command("executor:sim-1","Zone.Release",{reservationId:String(granted.value.reservationId)})).status).toBe("accepted");
     const r=await lab.state<JsonObject>("robot","sim-1");
     expect((await lab.command("manager","Robot.BindMap",{robotId:"sim-1",mapId:"restaurant-map",mapRevision:"1",frame:"map",units:"m",waypoints:{"table-2":{x:4,y:0.5}},expectedVersion:r.version as number})).status).toBe("accepted");
   } finally { await lab.close(); }

@@ -28,6 +28,8 @@ function admit(s:Snapshot[],zoneId:string,robot:Snapshot,at:string):{reason?:str
  * error: the reservation stays `pending` with its reason until a release promotes it. Id `<zoneId>@<robotId>` (kind `reservation`, which robot
  * reconciliation and the recovery inventory already treat as held until released).
  * Zone.Release {reservationId,evidence?}: an `unknown` reservation needs evidence that the robot left the zone; then pending ones are promoted in order.
+ * Without evidence a granted zone is released only by its own robot's executor (`executor:<robotId>`), since another robot's executor also
+ * holds robot.traffic; a release with evidence needs robot.configure (requiredPermissions) and records the evidence.
  */
 export function registerReservations(registry:ModuleRegistry):void {
  handle(registry,'Zone.Reserve',(c,s)=>{
@@ -47,7 +49,8 @@ export function registerReservations(registry:ModuleRegistry):void {
  handle(registry,'Zone.Release',(c,s)=>{
   const r=requireState(s,'reservation',text(c.payload.reservationId));
   if(r.state.status==='released') return fail('RESERVATION_RELEASED');
-  const evidence=r.state.status==='unknown'?note(c.payload.evidence,'EVIDENCE_REQUIRED'):null;
+  if(r.state.status==='granted'&&c.payload.evidence===undefined&&c.actorRef!==`executor:${String(r.state.robotId)}`) return fail('RESERVATION_NOT_BOUND');
+  const evidence=r.state.status==='unknown'||c.payload.evidence!==undefined?note(c.payload.evidence,'EVIDENCE_REQUIRED'):null;
   const events=[changed('ZoneReservationReleased',r,{status:'released',releaseReason:evidence?'evidence':'released',evidence,releasedBy:c.actorRef,releasedAt:c.recordedAt})],promoted:string[]=[];
   let work=apply(s,events);
   for(const p of all(work,'reservation').filter(x=>x.state.zoneId===r.state.zoneId&&x.state.status==='pending').sort((a,b)=>Number(a.state.rank)-Number(b.state.rank))) {
