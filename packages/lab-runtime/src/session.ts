@@ -9,6 +9,7 @@ import {SimulatorAdapter} from '../../robot-adapters/src/simulator';
 import {dispatchRobotEffects,robotEventCommand} from '../../robot-adapters/src/dispatch';
 import type {RobotEvent} from '../../robot-adapters/src/contract';
 import {initializeFixture} from './fixture';
+import {simulationGeometry,validateTargetGeometry} from './geometry';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import projectSchema from '../../contracts/schemas/lab-project.schema.json';
@@ -17,7 +18,8 @@ import type {LabProject,RunSnapshot,RunAction} from './types';
 export type {LabProject,RunSnapshot,RunAction} from './types';
 const EPOCH=Date.parse('2026-11-01T00:00:00Z');
 const allowed=new Set(['Session.Open','Order.Place','Kitchen.Ready','Fulfillment.Allocate','Mission.Create','Mission.ConfirmStop','Mission.Cancel','Robot.Observe','Robot.RequestStop']);
-interface Checkpoint {id:string;project:LabProject;sourceCommit:string;scenarioId:string;seed:number;nowMs:number;revision:number;started:boolean;missionId?:string;parkingMissionId?:string;lineId?:string;attentionReason?:string;cancelled?:boolean;inFlight?:boolean;receipts:Record<string,{hash:string;snapshot:RunSnapshot}>;faults:string[];}
+interface IgnoredObservation {eventId:string;commandId:string;type:string;reason:'ALREADY_COMPLETED';observedAt:string;}
+interface Checkpoint {id:string;project:LabProject;sourceCommit:string;scenarioId:string;seed:number;nowMs:number;revision:number;started:boolean;missionId?:string;parkingMissionId?:string;lineId?:string;attentionReason?:string;cancelled?:boolean;inFlight?:boolean;receipts:Record<string,{hash:string;snapshot:RunSnapshot}>;faults:string[];ignoredObservations?:IgnoredObservation[];}
 export interface SessionOptions {directory:string;project:unknown;sourceCommit:string;scenarioId:string;seed:number;mode?:string;}
 export function validateProject(value:unknown):asserts value is LabProject {
  if(!projectValidator(value))throw new Error('INVALID_PROJECT');
@@ -29,6 +31,7 @@ export function validateProject(value:unknown):asserts value is LabProject {
  for(const point of w.points){if(!point||typeof point.id!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(point.id)||ids.has(point.id)||!['table','kitchen','parking','dock'].includes(point.kind)||![point.x,point.y].every(Number.isFinite)||point.x<0||point.y<0||point.x>w.width||point.y>w.height)throw new Error('INVALID_PROJECT');ids.add(point.id);}
  if(!w.points.some(p=>p.id==='kitchen'&&p.kind==='kitchen')||!w.points.some(p=>p.id==='parking'&&p.kind==='parking')||!w.points.some(p=>p.id==='table-1'&&p.kind==='table'))throw new Error('INVALID_PROJECT');
  for(const o of w.obstacles)if(!o||typeof o.id!=='string'||![o.x,o.y,o.width,o.height].every(Number.isFinite)||o.x<0||o.y<0||o.width<=0||o.height<=0||o.x+o.width>w.width||o.y+o.height>w.height)throw new Error('INVALID_PROJECT');
+ validateTargetGeometry(p);
 }
 export class LabSession {
  readonly scope:Scope;
@@ -94,7 +97,21 @@ export class LabSession {
  }
  private async read(kind:string,id:string){return this.store.readSnapshot({...this.scope,kind,id});}
  private async activeMission(){const id=this.checkpoint.parkingMissionId??this.checkpoint.missionId;return id?this.read('mission',id):undefined;}
- private async observe(){while(this.observations.length){const e=this.observations.shift()!;await this.command('Robot.Observe',robotEventCommand(e),e.id);}}
+ private async observe(){
+  while(this.observations.length){
+   const e=this.observations.shift()!;
+   const prior=await this.read('robot-command',e.commandId);
+   // Only an exact completion already accepted by source is a harmless duplicate.
+   // All other observations still undergo the production router's identity checks.
+   if(e.type==='completed'&&prior.state.status==='completed'&&['robotId','missionId','missionRevision','controlEpoch'].every(key=>e.payload[key]===prior.state[key])){
+    const ignored=this.checkpoint.ignoredObservations??=[];
+    ignored.push({eventId:e.id,commandId:e.commandId,type:e.type,reason:'ALREADY_COMPLETED',observedAt:e.observedAt});
+    if(ignored.length>1000)ignored.shift();
+    continue;
+   }
+   await this.command('Robot.Observe',robotEventCommand(e),e.id);
+  }
+ }
  private async dispatch(){await dispatchRobotEffects(this.store,this.scope,this.adapter,this.checkpoint.nowMs);await this.observe();const uncertain=(await this.store.effects(this.scope)).some(e=>e.status==='unknown');if(uncertain){this.checkpoint.attentionReason='EXECUTION_UNKNOWN';await this.markUnknown();}}
  private async markUnknown(){const m=await this.activeMission();if(!m||['completed','cancelled','needs_attention'].includes(String(m.state.status)))return;const command=await this.read('robot-command',String(m.state.commandId));await this.command('Robot.Observe',{robotId:'sim-1',missionId:m.ref.id,commandId:m.state.commandId!,missionRevision:command.state.missionRevision!,controlEpoch:1,type:'unknown',eventId:`recovery-${this.checkpoint.revision}`,bootId:'lab-recovery',sequence:String(this.checkpoint.revision)},`recovery-${this.checkpoint.revision}`);}
  async snapshot():Promise<RunSnapshot>{await this.queue;return this.buildSnapshot();}
@@ -124,7 +141,7 @@ export class LabSession {
   if(Object.keys(this.checkpoint.receipts).length>=1000)throw new Error('ACTION_LIMIT');
   if(a.expectedRevision!==this.checkpoint.revision)throw new Error('REVISION_CONFLICT');
   const before=await this.buildSnapshot();
-  if(a.kind==='start'&&this.checkpoint.started||a.kind==='confirm'&&!['awaiting_load','awaiting_handoff'].includes(before.status)||a.kind==='cancel'&&['completed','cancelled'].includes(before.status))throw new Error('INVALID_STATE');
+  if(['completed','cancelled'].includes(before.status)||a.kind==='start'&&before.status!=='ready'||a.kind==='confirm'&&!['awaiting_load','awaiting_handoff'].includes(before.status))throw new Error('INVALID_STATE');
   if(this.checkpoint.attentionReason&&a.kind!=='step')throw new Error('RECONCILIATION_REQUIRED');
   this.checkpoint.inFlight=true;await this.persist();
   try{
@@ -146,7 +163,7 @@ export class LabSession {
   const mission=await this.command('Mission.Create',{allocationIds:[allocation.value.allocationId!],robotId:'sim-1'});c.missionId=String(mission.value.missionId);c.started=true;await this.dispatch();
  }
  private async confirmMission(m:Snapshot){return this.command('Mission.ConfirmStop',{missionId:m.ref.id,expectedVersion:m.version,missionRevision:m.state.revision!,stopId:m.state.currentStopId!});}
- async report(){await this.queue;return {schemaVersion:1,mode:'business_sim',snapshot:await this.buildSnapshot(),project:structuredClone(this.checkpoint.project),sourceCommit:this.checkpoint.sourceCommit,events:await this.store.events(this.scope),journal:await this.store.journal(this.scope),effects:await this.store.effects(this.scope),faults:[...this.checkpoint.faults],coverage:{businessSimulation:true,nativeExecution:false,physicalStop:false,collisionAvoidance:false,sse:false},limitations:['Synthetic observations are software evidence only.','Blocked fault holds movement; no path planner or collision proof.','Gateway polling snapshots; SSE event stream is not implemented.','Adapter goals do not survive process restart; active travel remains unknown without resend.']};}
+ async report(){await this.queue;return {schemaVersion:1,mode:'business_sim',snapshot:await this.buildSnapshot(),project:structuredClone(this.checkpoint.project),geometry:simulationGeometry(this.checkpoint.project),sourceCommit:this.checkpoint.sourceCommit,events:await this.store.events(this.scope),journal:await this.store.journal(this.scope),effects:await this.store.effects(this.scope),faults:[...this.checkpoint.faults],ignoredObservations:structuredClone(this.checkpoint.ignoredObservations??[]),coverage:{businessSimulation:true,nativeExecution:false,physicalStop:false,collisionAvoidance:false,sse:false},limitations:['Synthetic observations are software evidence only.','Blocked fault holds movement; no path planner or collision proof.','Gateway polling snapshots; SSE event stream is not implemented.','Adapter goals do not survive process restart; active travel remains unknown without resend.']};}
  async close(){await this.queue;if(!this.closed){this.closed=true;await this.store.close();}}
 }
 export const createLabSession=(options:SessionOptions)=>LabSession.open(options);

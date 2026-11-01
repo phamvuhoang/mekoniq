@@ -23,6 +23,7 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
  let currentToken='',tokenExpiresAt=0;
  const sessions=new Map<string,{csrf:string;expiresAt:number}>();
  const runs=new Map<string,{owner:string;session:LabSession}>();
+ let creatingRuns=0;
  const issuePairingToken=()=>{currentToken=token();tokenExpiresAt=now()+(options.pairingTtlMs??300000);return currentToken;};
  const pairingToken=issuePairingToken();
  let port=options.port??4176;
@@ -60,9 +61,15 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
    const b=await body(request);
    if(b.sourceCommit!==options.sourceCommit)throw new GatewayError(409,'CONTRACT_MISMATCH');
    if(b.mode!==undefined&&b.mode!=='business_sim')throw new GatewayError(422,'BACKEND_UNAVAILABLE');
-   if(runs.size>=20)throw new GatewayError(429,'RUN_LIMIT');
-   const runtime=await createLabSession({directory:join(options.directory,randomUUID()),project:b.project,sourceCommit:options.sourceCommit,scenarioId:String(b.scenarioId),seed:b.seed as number,mode:'business_sim'});
-   const snapshot=await runtime.snapshot();runs.set(snapshot.id,{owner:sessionId,session:runtime});return send(response,201,snapshot);
+   if(runs.size+creatingRuns>=20)throw new GatewayError(429,'RUN_LIMIT');
+   // Reserve before any asynchronous fixture/storage work; failed admissions release the slot.
+   creatingRuns++;
+   let runtime:LabSession|undefined;
+   try{
+    runtime=await createLabSession({directory:join(options.directory,randomUUID()),project:b.project,sourceCommit:options.sourceCommit,scenarioId:String(b.scenarioId),seed:b.seed as number,mode:'business_sim'});
+    const snapshot=await runtime.snapshot();runs.set(snapshot.id,{owner:sessionId,session:runtime});return send(response,201,snapshot);
+   }catch(error){await runtime?.close();throw error;}
+   finally{creatingRuns--;}
   }
   const route=/^\/lab\/v1\/runs\/([0-9a-f-]{36})(?:\/(actions|report|events))?$/.exec(path),run=route?runs.get(route[1]!):undefined;
   if(!run||run.owner!==sessionId)throw new GatewayError(404,'RUN_NOT_FOUND');

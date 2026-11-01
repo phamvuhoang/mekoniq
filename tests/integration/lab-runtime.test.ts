@@ -31,3 +31,24 @@ test('offline before dispatch leaves exactly one uncertain send and never retrie
 test('cancel without cargo uses the source cancellation observation and preserves zero served',async()=>{const s=await setup();try{await act(s,'start');expect((await act(s,'cancel')).status).toBe('cancelled');expect((await s.snapshot()).served).toBe('0');expect((await s.report()).events.some(e=>e.type==='MissionCancelled')).toBe(true);}finally{await s.close();}});
 test('interrupted checkpoint recovers the durable robot mission identity and holds its resource',async()=>{const s=await setup();const directory=s.directory;await act(s,'start');await s.close();const {readFile,writeFile}=await import('node:fs/promises');const path=join(directory,'run.json'),saved=JSON.parse(await readFile(path,'utf8'));delete saved.missionId;saved.started=false;saved.inFlight=true;await writeFile(path,JSON.stringify(saved));const reopened=await createLabSession({directory,project,sourceCommit:'test-commit',scenarioId:'S01',seed:42});try{expect((await reopened.snapshot()).status).toBe('needs_attention');expect((await reopened.report()).events.some(e=>e.type==='MissionNeedsAttention')).toBe(true);expect((await reopened.report()).effects.filter(e=>e.type==='robot.execute').reduce((n,e)=>n+Number(e.attempts),0)).toBe(1);}finally{await reopened.close();}});
 test('authored table points are handoff waypoints and runtime preserves their exact coordinates',async()=>{const s=await setup();try{await act(s,'start');await act(s,'step',{ms:1000});expect((await act(s,'confirm')).target).toEqual({x:5,y:2});}finally{await s.close();}});
+test('cancelled ready runs reject every fresh mutation without any business event or movement send',async()=>{
+ const s=await setup();try{
+  await act(s,'cancel');const before=await s.report();
+  for(const [kind,payload]of [['start',{}],['step',{ms:1000}],['confirm',{}],['cancel',{}],['injectFault',{fault:'duplicate-completed'}]] as const)await expect(act(s,kind,payload)).rejects.toThrow('INVALID_STATE');
+  expect(await s.report()).toEqual(before);expect(before.effects.filter(e=>e.type==='robot.execute')).toHaveLength(0);expect(before.journal).toHaveLength(0);
+ }finally{await s.close();}
+});
+test('terminal duplicate completion injection is rejected without changing successful evidence',async()=>{
+ const s=await setup();try{for(const [kind,payload]of [['start',{}],['step',{ms:1000}],['confirm',{}],['step',{ms:1000}],['confirm',{}],['step',{ms:1000}]] as const)await act(s,kind,payload);const before=await s.report();expect(before.snapshot.status).toBe('completed');await expect(act(s,'injectFault',{fault:'duplicate-completed'})).rejects.toThrow('INVALID_STATE');expect(await s.report()).toEqual(before);}finally{await s.close();}
+});
+test('duplicate old completion during table and parking travel is classified without corrupting the active mission',async()=>{
+ const s=await setup();try{
+  await act(s,'start');await act(s,'step',{ms:1000});await act(s,'confirm');expect((await act(s,'injectFault',{fault:'duplicate-completed'})).stage).toBe('to_table');
+  expect((await act(s,'step',{ms:1000})).status).toBe('awaiting_handoff');await act(s,'confirm');expect((await act(s,'injectFault',{fault:'duplicate-completed'})).stage).toBe('to_parking');
+  expect((await act(s,'step',{ms:1000})).status).toBe('completed');const report=await s.report();expect(report.ignoredObservations.length).toBeGreaterThanOrEqual(3);expect(report.effects.filter(e=>e.type==='robot.execute').reduce((n,e)=>n+Number(e.attempts),0)).toBe(3);
+ }finally{await s.close();}
+});
+test('geometry evidence uses the conservative illustrative service circle and keeps Valetudo footprint unknown',async()=>{
+ const service=await setup();try{const geometry=(await service.report()).geometry;expect(geometry.footprint).toEqual({widthM:0.55,lengthM:0.6});expect(geometry.radiusM).toBeCloseTo(Math.hypot(.55,.6)/2);expect(geometry.nativeVerified).toBe(false);}finally{await service.close();}
+ const directory=await mkdtemp(join(tmpdir(),'lab-valetudo-'));dirs.push(directory);const s=await createLabSession({directory,project:{...project,design:{...project.design,chassis:'valetudo'}},sourceCommit:'test-commit',scenarioId:'S01',seed:42});try{expect((await s.report()).geometry).toEqual({footprint:null,radiusM:null,provenance:'unavailable',stationaryTargetCheck:'point_only_unknown_footprint',nativeVerified:false});}finally{await s.close();}
+});

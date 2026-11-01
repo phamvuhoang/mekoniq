@@ -15,3 +15,21 @@ test('gateway authenticates every scoped read, validates origin/host and consume
 test('sessions cannot cross runs, actions serialize revision and hardware modes stay blocked',async()=>{const g=await setup(),headers=await pair(g);const body={project,scenarioId:'S01',seed:1,sourceCommit:'test-commit'};expect((await fetch(g.url+'/lab/v1/runs',{method:'POST',headers,body:JSON.stringify({...body,mode:'hardware_test'})})).status).toBe(422);expect((await fetch(g.url+'/lab/v1/runs',{method:'POST',headers,body:JSON.stringify({...body,sourceCommit:'wrong'})})).status).toBe(409);const run=await (await fetch(g.url+'/lab/v1/runs',{method:'POST',headers,body:JSON.stringify(body)})).json() as {id:string};const token=g.issuePairingToken();const other=await fetch(g.url+'/lab/v1/sessions',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({token})});expect(other.status).toBe(201);expect((await fetch(g.url+'/lab/v1/runs/'+run.id+'/report',{headers:{Origin:origin,Cookie:other.headers.get('set-cookie')!.split(';')[0]!}})).status).toBe(404);const responses=await Promise.all(['a','b'].map(actionId=>fetch(g.url+'/lab/v1/runs/'+run.id+'/actions',{method:'POST',headers,body:JSON.stringify({actionId,expectedRevision:0,kind:'start'})})));expect(responses.map(r=>r.status).sort()).toEqual([200,409]);const report=await (await fetch(g.url+'/lab/v1/runs/'+run.id+'/report',{headers})).json() as {effects:{type:string;attempts:number}[]};expect(report.effects.filter(e=>e.type==='robot.execute').reduce((n,e)=>n+e.attempts,0)).toBe(1);});
 test('expired pairing and oversized JSON are refused before work begins',async()=>{let now=1000;const g=await setup({nowMs:()=>now,pairingTtlMs:100});now=1101;const r=await fetch(g.url+'/lab/v1/sessions',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({token:g.pairingToken})});expect(r.status).toBe(401);expect((await fetch(g.url+'/lab/v1/sessions',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({token:'x'.repeat(2*1024*1024)})})).status).toBe(413);});
 test('duplicate JSON keys cannot smuggle a second pairing token',async()=>{const g=await setup();const response=await fetch(g.url+'/lab/v1/sessions',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:'{"token":"wrong","token":'+JSON.stringify(g.pairingToken)+'}'});expect(response.status).toBe(400);});
+test('concurrent run admission reserves all in-flight slots and releases failed admissions',async()=>{
+ const g=await setup(),headers=await pair(g),body={project,scenarioId:'S01',seed:1,sourceCommit:'test-commit'};
+ for(let i=0;i<3;i++)expect((await fetch(g.url+'/lab/v1/runs',{method:'POST',headers,body:JSON.stringify({...body,project:{}})})).status).toBe(422);
+ const responses=await Promise.all(Array.from({length:22},()=>fetch(g.url+'/lab/v1/runs',{method:'POST',headers,body:JSON.stringify(body)})));
+ expect(responses.filter(r=>r.status===201)).toHaveLength(20);expect(responses.filter(r=>r.status===429)).toHaveLength(2);
+ for(const response of responses.filter(r=>r.status===201)){const run=await response.json() as {id:string};const report=await (await fetch(g.url+'/lab/v1/runs/'+run.id+'/report',{headers})).json() as {effects:{type:string}[]};expect(report.effects.filter(e=>e.type==='robot.execute')).toHaveLength(0);}
+});
+test('source geometry admission rejects furniture, footprint overlap, walls and cross-object IDs before creating a journal',async()=>{
+ const g=await setup(),headers=await pair(g);
+ const invalids=[
+  {...project,world:{...project.world,obstacles:[{id:'blocked-table',x:4,y:1,width:2,height:2}]}},
+  {...project,world:{...project.world,obstacles:[{id:'near-table',x:5.3,y:1.5,width:1,height:1}]}},
+  {...project,world:{...project.world,points:project.world.points.map(p=>p.id==='table-1'?{...p,x:0.2}:p)}},
+  {...project,world:{...project.world,obstacles:[{id:'table-1',x:8,y:1,width:1,height:1}]}},
+ ];
+ for(const candidate of invalids){const response=await fetch(g.url+'/lab/v1/runs',{method:'POST',headers,body:JSON.stringify({project:candidate,scenarioId:'S01',seed:1,sourceCommit:'test-commit'})});expect(response.status).toBe(422);}
+ const {readdir}=await import('node:fs/promises');expect(await readdir(directories[directories.length-1]!)).toEqual([]);
+});
