@@ -115,6 +115,11 @@ export class LabSession {
  private async dispatch(){await dispatchRobotEffects(this.store,this.scope,this.adapter,this.checkpoint.nowMs);await this.observe();const uncertain=(await this.store.effects(this.scope)).some(e=>e.status==='unknown');if(uncertain){this.checkpoint.attentionReason='EXECUTION_UNKNOWN';await this.markUnknown();}}
  private async markUnknown(){const m=await this.activeMission();if(!m||['completed','cancelled','needs_attention'].includes(String(m.state.status)))return;const command=await this.read('robot-command',String(m.state.commandId));await this.command('Robot.Observe',{robotId:'sim-1',missionId:m.ref.id,commandId:m.state.commandId!,missionRevision:command.state.missionRevision!,controlEpoch:1,type:'unknown',eventId:`recovery-${this.checkpoint.revision}`,bootId:'lab-recovery',sequence:String(this.checkpoint.revision)},`recovery-${this.checkpoint.revision}`);}
  async snapshot():Promise<RunSnapshot>{await this.queue;return this.buildSnapshot();}
+ private async orderedJournal(){
+  // The single Lab producer uses durable integer sequences stored as TEXT.
+  // Order the read model without modifying signed journal entries or causal ties.
+  return (await this.store.journal(this.scope)).sort((a,b)=>{const left=BigInt(a.sequence),right=BigInt(b.sequence);return left<right?-1:left>right?1:0;});
+ }
  private async buildSnapshot():Promise<RunSnapshot>{
   const c=this.checkpoint,m=await this.activeMission(),robot=await this.read('robot','sim-1');
   const stops=m?.state.stops as JsonObject[]|undefined,stop=stops?.find(s=>s.id===m!.state.currentStopId),bindings=robot.state.bindings as JsonObject;
@@ -125,7 +130,7 @@ export class LabSession {
   if(c.started){status='running';stage=c.parkingMissionId?'to_parking':stop?.action==='load'?'to_kitchen':'to_table';if(stop?.status==='awaiting_action'&&!c.parkingMissionId){stage=stop.action==='load'?'load':'handoff';status=stop.action==='load'?'awaiting_load':'awaiting_handoff';}if(c.parkingMissionId&&m?.state.status==='completed'){status='completed';stage='finished';}}
   if(c.cancelled||m?.state.status==='cancelled'){status='cancelled';stage='finished';}
   if(c.attentionReason||m?.state.status==='needs_attention')status='needs_attention';
-  const journal=await this.store.journal(this.scope);
+  const journal=await this.orderedJournal();
   const events=journal.flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({type:e.type,at:entry.recordedAt,...e.data})));
   return {id:c.id,mode:'business_sim',status,stage,revision:c.revision,robotPosition:position?{x:position.x,y:position.y}:{x:1,y:1},target:target?{x:target.x,y:target.y}:null,served:String(fulfillment?.state.served??'0'),loaded:Boolean(m?.state.loaded),events,elapsedMs:c.nowMs-EPOCH,sourceCommit:c.sourceCommit,scenarioId:c.scenarioId,seed:c.seed,...(c.attentionReason?{attentionReason:c.attentionReason}:{})};
  }
@@ -163,7 +168,7 @@ export class LabSession {
   const mission=await this.command('Mission.Create',{allocationIds:[allocation.value.allocationId!],robotId:'sim-1'});c.missionId=String(mission.value.missionId);c.started=true;await this.dispatch();
  }
  private async confirmMission(m:Snapshot){return this.command('Mission.ConfirmStop',{missionId:m.ref.id,expectedVersion:m.version,missionRevision:m.state.revision!,stopId:m.state.currentStopId!});}
- async report(){await this.queue;return {schemaVersion:1,mode:'business_sim',snapshot:await this.buildSnapshot(),project:structuredClone(this.checkpoint.project),geometry:simulationGeometry(this.checkpoint.project),sourceCommit:this.checkpoint.sourceCommit,events:await this.store.events(this.scope),journal:await this.store.journal(this.scope),effects:await this.store.effects(this.scope),faults:[...this.checkpoint.faults],ignoredObservations:structuredClone(this.checkpoint.ignoredObservations??[]),coverage:{businessSimulation:true,nativeExecution:false,physicalStop:false,collisionAvoidance:false,sse:false},limitations:['Synthetic observations are software evidence only.','Blocked fault holds movement; no path planner or collision proof.','Gateway polling snapshots; SSE event stream is not implemented.','Adapter goals do not survive process restart; active travel remains unknown without resend.']};}
+ async report(){await this.queue;return {schemaVersion:1,mode:'business_sim',snapshot:await this.buildSnapshot(),project:structuredClone(this.checkpoint.project),geometry:simulationGeometry(this.checkpoint.project),sourceCommit:this.checkpoint.sourceCommit,events:await this.store.events(this.scope),journal:await this.orderedJournal(),effects:await this.store.effects(this.scope),faults:[...this.checkpoint.faults],ignoredObservations:structuredClone(this.checkpoint.ignoredObservations??[]),coverage:{businessSimulation:true,nativeExecution:false,physicalStop:false,collisionAvoidance:false,sse:false},limitations:['Synthetic observations are software evidence only.','Blocked fault holds movement; no path planner or collision proof.','Gateway polling snapshots; SSE event stream is not implemented.','Adapter goals do not survive process restart; active travel remains unknown without resend.']};}
  async close(){await this.queue;if(!this.closed){this.closed=true;await this.store.close();}}
 }
 export const createLabSession=(options:SessionOptions)=>LabSession.open(options);

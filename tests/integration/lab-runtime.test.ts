@@ -52,3 +52,22 @@ test('geometry evidence uses the conservative illustrative service circle and ke
  const service=await setup();try{const geometry=(await service.report()).geometry;expect(geometry.footprint).toEqual({widthM:0.55,lengthM:0.6});expect(geometry.radiusM).toBeCloseTo(Math.hypot(.55,.6)/2);expect(geometry.nativeVerified).toBe(false);}finally{await service.close();}
  const directory=await mkdtemp(join(tmpdir(),'lab-valetudo-'));dirs.push(directory);const s=await createLabSession({directory,project:{...project,design:{...project.design,chassis:'valetudo'}},sourceCommit:'test-commit',scenarioId:'S01',seed:42});try{expect((await s.report()).geometry).toEqual({footprint:null,radiusM:null,provenance:'unavailable',stationaryTargetCheck:'point_only_unknown_footprint',nativeVerified:false});}finally{await s.close();}
 });
+
+test('S01 read models preserve numeric durable order and causal ties beyond sequence nine',async()=>{
+ const s=await setup();try{
+  for(const [kind,payload]of [['start',{}],['step',{ms:1000}],['step',{ms:2000}],['confirm',{}],['step',{ms:1000}],['step',{ms:3000}],['confirm',{}],['step',{ms:1000}]] as const)await act(s,kind,payload);
+  const report=await s.report();
+  expect(report.journal.length).toBeGreaterThan(10);
+  const sequences=report.journal.map(entry=>BigInt(entry.sequence));
+  for(let i=1;i<sequences.length;i++)expect(sequences[i]!).toBeGreaterThan(sequences[i-1]!);
+  const events=report.snapshot.events;
+  expect(events.map(e=>Date.parse(e.at))).toEqual(events.map(e=>Date.parse(e.at)).sort((a,b)=>a-b));
+  expect(events[0]!.type).toBe('SessionOpened');
+  const loaded=events.findIndex(e=>e.type==='CargoLoaded'),handedOff=events.findIndex(e=>e.type==='DeliveryHandedOff');
+  expect(events.slice(loaded+1).find(e=>e.type==='RobotCommandIssued')!.at).toBe(events[loaded]!.at);
+  expect(events.slice(handedOff+1).find(e=>e.type==='RobotCommandIssued')!.at).toBe(events[handedOff]!.at);
+  expect(report.snapshot).toMatchObject({status:'completed',served:'1',elapsedMs:8000});
+  expect((await s.snapshot()).events).toEqual(events);
+  expect(report.effects.filter(e=>e.type==='robot.execute').reduce((n,e)=>n+Number(e.attempts),0)).toBe(3);
+ }finally{await s.close();}
+});
