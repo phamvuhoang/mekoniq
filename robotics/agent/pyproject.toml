@@ -8,7 +8,8 @@ version = "0.1.0"
 description = "MEKONIQ onboard robot executor: durable journal and native navigation ownership (W06-T03)"
 requires-python = ">=3.11"
 # Stdlib plus the validators the contract tests already use. ROS / rclpy is NOT a dependency: the native port is injected.
-dependencies = ["jsonschema>=4.26", "rfc8785>=0.1.4"]
+# rfc3339-validator: without it jsonschema silently skips the date-time format check.
+dependencies = ["jsonschema>=4.26", "rfc8785>=0.1.4", "rfc3339-validator>=0.1.4"]
 
 [tool.setuptools]
 packages = ["mekoniq_agent"]
