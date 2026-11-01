@@ -184,7 +184,12 @@ export function registerMissions(registry:ModuleRegistry):void {
   const robot=requireState(s,'robot',text(c.payload.robotId));
   // safety_state is robot-level (adapter hardware/firmware fault), with or without a mission. Only a later 'clear' observation clears it;
   // admission, nextStop and Mission.Resume all refuse while it is set and not clear. Mission legs are handled by the adapter's other events.
+  // It has no command to fence it, so it is bound to the robot's executor: actor `executor:<robotId>` (the forwarder in
+  // robot-executor-bridge.ts) on the robot's current owner device. An owner/manager, another robot's executor, or the old owner device after
+  // a handoff (RobotOwnerFenced moves ownerDeviceId) is OBSERVER_NOT_BOUND. Mission events (accepted/completed/...) stay fenced by
+  // commandId + missionRevision + controlEpoch below; their submitters (owner in W03/W04 labs, `simulator:<id>`) are unchanged.
   if(c.payload.type==='safety_state') {
+   if(c.actorRef!==`executor:${robot.ref.id}`||c.deviceId!==robot.state.ownerDeviceId) return fail('OBSERVER_NOT_BOUND');
    if(c.payload.controlEpoch!==robot.state.controlEpoch) return fail('STALE_CONTROL_EPOCH');
    const safetyState=text(c.payload.safetyState,'INVALID_SAFETY_STATE');
    if(!['clear','fault','estop'].includes(safetyState)) return fail('INVALID_SAFETY_STATE');

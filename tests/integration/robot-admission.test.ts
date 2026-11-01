@@ -295,7 +295,7 @@ test("an adapter safety_state fault holds the next leg and blocks Mission.Resume
   try {
     const {missionId}=await deliveryAtKitchen(lab);
     const safety=(safetyState:string,sequence:string,controlEpoch=1):RobotEvent=>({type:"safety_state",id:`valetudo-boot-${sequence}`,commandId:"",bootId:"valetudo-boot",sequence,observedAt:new Date(lab.clock.nowMs).toISOString(),payload:{robotId:"sim-1",controlEpoch,transport:"rest",safetyState}});
-    const observe=(e:RobotEvent)=>lab.command("owner","Robot.Observe",robotEventCommand(e),e.id);
+    const observe=(e:RobotEvent)=>lab.command("executor:sim-1","Robot.Observe",robotEventCommand(e),e.id); // sim-1's bound executor on its owner device
     expect((await observe(safety("fault","1",9))).code).toBe("STALE_CONTROL_EPOCH");
     expect((await observe(safety("maybe","2"))).code).toBe("INVALID_SAFETY_STATE");
     expect((await observe(safety("fault","3"))).status).toBe("accepted");
@@ -321,7 +321,7 @@ test("safety observations are ordered: an older or same-instant clear never lift
   const lab=await createRestaurantLab();
   try {
     // The ordering key is the envelope's occurredAt (the forwarder sets it to the event's observedAt); the lab stamps it from its clock.
-    const observe=(safetyState:string,sequence:string)=>{const e:RobotEvent={type:"safety_state",id:`b-${sequence}`,commandId:"",bootId:"b",sequence,observedAt:new Date(lab.clock.nowMs).toISOString(),payload:{robotId:"sim-1",controlEpoch:1,safetyState}};return lab.command("owner","Robot.Observe",robotEventCommand(e),e.id);};
+    const observe=(safetyState:string,sequence:string)=>{const e:RobotEvent={type:"safety_state",id:`b-${sequence}`,commandId:"",bootId:"b",sequence,observedAt:new Date(lab.clock.nowMs).toISOString(),payload:{robotId:"sim-1",controlEpoch:1,safetyState}};return lab.command("executor:sim-1","Robot.Observe",robotEventCommand(e),e.id);};
     lab.clock.nowMs+=1000;expect((await observe("fault","1")).status).toBe("accepted");
     const fault=await lab.state<JsonObject>("robot","sim-1");
     expect(fault).toMatchObject({safetyState:"fault"});
@@ -355,4 +355,23 @@ test("after a WebView reload, a robot already in error with no command reaches t
     const held=await lab.state<{version:number}>("mission","m-held");
     expect((await lab.command("cashier","Mission.Resume",{missionId:"m-held",expectedVersion:held.version})).code).toBe("SAFETY_NOT_CLEAR");
   } finally { await runtime?.close();await lab.close(); }
+});
+
+test("robot-level safety observations are bound to the robot's executor on its owner device", async () => {
+  const lab=await createRestaurantLab();
+  try {
+    let seq=0;
+    const observe=(actor:string,robotId:string,safetyState:string,controlEpoch=1)=>{seq++;const e:RobotEvent={type:"safety_state",id:`s-${seq}`,commandId:"",bootId:"b",sequence:String(seq),observedAt:new Date(lab.clock.nowMs).toISOString(),payload:{robotId,controlEpoch,safetyState}};return lab.command(actor,"Robot.Observe",robotEventCommand(e),e.id);};
+    expect((await observe("executor:sim-1","sim-1","fault")).status).toBe("accepted");
+    await lab.advance(1000);
+    expect((await observe("owner","sim-1","clear")).code).toBe("OBSERVER_NOT_BOUND");           // robot.observe '*' is not the robot's executor
+    expect((await observe("executor","sim-1","clear")).code).toBe("OBSERVER_NOT_BOUND");        // an unbound executor principal
+    expect((await observe("executor:sim-2","sim-1","clear")).code).toBe("OBSERVER_NOT_BOUND");  // another robot's executor
+    expect(await lab.state<JsonObject>("robot","sim-1")).toMatchObject({safetyState:"fault"});
+    // Ownership handoff: RobotOwnerFenced moves ownerDeviceId and bumps controlEpoch (seeded here as that event's resulting state).
+    const r=await lab.state<JsonObject>("robot","sim-1");await lab.seed("robot","sim-1",{...r,ownerDeviceId:"device-b",controlEpoch:2});
+    expect((await observe("executor:sim-1","sim-1","clear",2)).code).toBe("OBSERVER_NOT_BOUND");   // old owner device, even with the bumped epoch
+    expect(await lab.state<JsonObject>("robot","sim-1")).toMatchObject({safetyState:"fault"});
+    expect(await lab.count("RobotSafetyObserved")).toBe(1);
+  } finally { await lab.close(); }
 });
