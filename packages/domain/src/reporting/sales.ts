@@ -58,11 +58,13 @@ export function salesReport(s: Snapshot[], date: string, tz: string): JsonObject
   }
   // Reconciliation is per bill, not per payment day: the bills closed on this date against every payment/refund on THOSE bills, whenever it happened
   // (a payment at 23:50 on a bill closed at 00:10 belongs to the closing day). At close a bill satisfies paid - refunded = total, so afterwards
-  // collected = total - refunds recorded after close; any other difference is a ledger inconsistency to investigate.
+  // collected = total - refunds recorded after close; any other difference is a ledger inconsistency to investigate. Historical receipts and
+  // amendments are outside both sides (no live payments back them; they keep their own `historical` block), so an imported transfer-paid
+  // or unpaid paper receipt is never reported as a difference.
   const closedIds = new Set(closed.map(b => b.ref.id)), onClosed = (x: Snapshot) => closedIds.has(String(x.state.billId));
   const billRefunds = ofKind(s, 'refund').filter(onClosed), applied = (r: Snapshot) => r.state.appliedMinor ?? r.state.amountMinor;
-  const expectedMinor = String(big(salesTotalMinor) - big(sumOf(billRefunds.filter(r => r.state.billStatus === 'closed'), applied)));
-  const collectedMinor = String(big(sumOf(ofKind(s, 'payment').filter(p => p.state.status === 'captured' && onClosed(p)), p => p.state.appliedMinor)) - big(sumOf(billRefunds, applied)) + big(sumOf(receipts, r => r.state.paidCashMinor)));
+  const expectedMinor = String(big(sumOf(closed, b => b.state.totalMinor)) - big(sumOf(billRefunds.filter(r => r.state.billStatus === 'closed'), applied)));
+  const collectedMinor = String(big(sumOf(ofKind(s, 'payment').filter(p => p.state.status === 'captured' && onClosed(p)), p => p.state.appliedMinor)) - big(sumOf(billRefunds, applied)));
   const late = (kind: string, x: Snapshot, amountMinor: unknown, businessDate: string, effectiveAt: unknown, appliedAt: unknown, reason?: unknown) => {
     const appliedBusinessDate = dayOf(appliedAt, tz);
     return appliedBusinessDate && appliedBusinessDate > businessDate ? [{ kind, id: x.ref.id, amountMinor: String(amountMinor), businessDate, effectiveAt: String(effectiveAt ?? ''), appliedAt: String(appliedAt), appliedBusinessDate, ...(reason ? { reason: String(reason) } : {}) }] : [];

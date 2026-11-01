@@ -25,6 +25,17 @@ test("late historical receipt adjusts the original business day", async () => {
   } finally { await lab.close(); }
 });
 
+test("an imported transfer-paid receipt counts in sales and its own historical block, never as a reconciliation difference", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    await lab.importApproved([{sourceType:"paper",sourceSeries:"M1",sourceNumber:"7",occurredAt:"2026-10-29T14:00:00Z",businessDate:"2026-10-29",totalMinor:"50000",paidCashMinor:"0",fulfilled:true}]);
+    const day = await lab.report("sales","2026-10-29");
+    expect(day.netMinor).toBe("50000");
+    expect(day.historical).toMatchObject({count:1,totalMinor:"50000",paidCashMinor:"0"});
+    expect(day.reconciliation).toMatchObject({expectedMinor:"0",collectedMinor:"0",differenceMinor:"0"});
+  } finally { await lab.close(); }
+});
+
 const ok = (r: { status: string; code?: string }) => { expect(r.code ?? r.status).toBe("accepted"); return r as { status: string; value: JsonObject }; };
 const pricing = { taxProfiles: [{ id: "vat8", name: "VAT 8%", rateBps: 800, inclusive: false }], defaultTaxProfileId: "vat8", service: { rateBps: 500, taxable: false }, discountOrder: "before_tax", discounts: [{ id: "ten", name: "10%", kind: "percent", valueBps: 1000 }] };
 type Bill = JsonObject & { totalMinor: string; paidMinor: string; refundedMinor: string; summary: Record<string, string>; version: number };
