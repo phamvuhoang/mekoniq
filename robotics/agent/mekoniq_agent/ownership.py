@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import math
 
+from rfc3339_validator import validate_rfc3339
+
 
 @dataclass(frozen=True)
 class Profile:
@@ -20,8 +22,8 @@ class Profile:
 
 
 def parse_utc_ms(value):
-    """Schema guarantees an RFC 3339 UTC `...Z` string; anything else is invalid."""
-    if not isinstance(value, str) or not value.endswith("Z"):
+    """An RFC 3339 UTC `...Z` string (the schema checks the same format); anything else is ValueError("INVALID_TIME")."""
+    if not isinstance(value, str) or not value.endswith("Z") or not validate_rfc3339(value):
         raise ValueError("INVALID_TIME")
     return round(datetime.fromisoformat(value[:-1] + "+00:00").astimezone(timezone.utc).timestamp() * 1000)
 
@@ -42,7 +44,10 @@ def epoch_reason(epoch, current):
 
 
 def time_reason(command, now_ms, p):
-    issued, expires = parse_utc_ms(command["issuedAt"]), parse_utc_ms(command["expiresAt"])
+    try:
+        issued, expires = parse_utc_ms(command["issuedAt"]), parse_utc_ms(command["expiresAt"])
+    except ValueError:
+        return "INVALID_COMMAND"  # a malformed time is a bad command, never an executor error
     if expires <= now_ms:
         return "EXPIRED_COMMAND"
     if expires <= issued:

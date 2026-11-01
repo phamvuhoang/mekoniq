@@ -301,3 +301,14 @@ def test_sigkill_after_native_accept_is_recovered_without_a_second_goal(tmp_path
     assert recovered.status("c-1") == "executing"
     assert recovered.submit(command_fixture(now_ms=NOW_MS))["accepted"] is True
     assert native.start_count == 1 and len(native.goals()) == 1
+
+
+@pytest.mark.parametrize("field,value", [("issuedAt", "2026-13-45T25:61:00Z"), ("expiresAt", "soonZ"), ("issuedAt", "2026-11-01T00:00:00+07:00")])
+def test_garbage_date_time_is_invalid_command_not_an_executor_error(tmp_path, field, value):
+    from mekoniq_agent import ownership
+    native = FakeNativeNavigation()
+    ex = make(tmp_path / "a.db", native)
+    command = {**at_now(), field: value}
+    assert ex.submit(command) == {"accepted": False, "unknown": False, "reason": "INVALID_COMMAND"}  # schema format check (rfc3339-validator)
+    assert ownership.time_reason(command, NOW_MS, PROFILE) == "INVALID_COMMAND"  # and the time window maps a bad value itself
+    assert native.start_count == 0

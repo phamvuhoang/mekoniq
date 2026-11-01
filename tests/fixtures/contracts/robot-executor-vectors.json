@@ -129,6 +129,18 @@
      "maxLoadMinor": "1.5"
     }
    }
+  },
+  {
+   "name": "garbage issuedAt",
+   "patch": {
+    "issuedAt": "2026-13-45T25:61:00Z"
+   }
+  },
+  {
+   "name": "garbage expiresAt",
+   "patch": {
+    "expiresAt": "soonZ"
+   }
   }
  ],
  "admission": [
@@ -328,6 +340,21 @@
       "accepted": false,
       "unknown": false,
       "reason": "PREVIOUS_GOAL_ACTIVE"
+     }
+    }
+   ]
+  },
+  {
+   "name": "garbage date-time is refused before any I/O",
+   "steps": [
+    {
+     "command": {
+      "issuedAt": "2026-13-45T25:61:00Z"
+     },
+     "expect": {
+      "accepted": false,
+      "unknown": false,
+      "reason": "INVALID_COMMAND"
      }
     }
    ]
