@@ -9,7 +9,7 @@
     "encoder": {"unit": "tick", "source": {"document": "TEST-ONLY-DOC", "revision": "0"}},
     "watchdog": {"independent_computer": true, "timeout_s": 1}
   },
-  "control_bus": {"kind": null, "register_map": {"source": null, "entries": []}},
+  "control_bus": {"kind": "can", "register_map": {"source": null, "entries": []}},
   "geometry": {
     "illustrative": false, "measured_by": "TEST-ONLY", "measured_on": "2000-01-01",
     "chassis_length_m": 1, "chassis_width_m": 1, "chassis_height_m": 1, "chassis_mass_kg": 1,

@@ -39,7 +39,7 @@
     }
   },
   "control_bus": {
-    "kind": null,
+    "kind": "can",
     "register_map": {
       "source": null,
       "entries": []
@@ -111,6 +111,6 @@
   "signature": {
     "keyId": "TEST-ONLY-commissioning",
     "alg": "ES256",
-    "value": "jZIGG4pTg7tqemuQyCwVsu5cVAw17x_TpSoLc5qW__680T-h5izye6zYZBGafX4_fgq_wzMdDmt4YqUW08IyRw"
+    "value": "c-5ckxYJqiTVBSh2tn4WGNUnH8b1lGCNoWH4J2xnVywxBcauYdUyPmlfM3yWQo4jPeQu1tX_CSWRnYURlXty6w"
   }
 }

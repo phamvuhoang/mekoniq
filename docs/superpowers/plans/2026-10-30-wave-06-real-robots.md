@@ -260,7 +260,7 @@ def test_profile_without_independent_stop_evidence_is_not_venue_approved():
 
 - [x] **2. Chạy RED.** `python3 -m pytest tests/hardware/test_profile_validation.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [x] **3. Hiện thực phần cốt lõi.** Validate actual robot vendor model/firmware, /odom /scan /tf, encoder units and watchdog independent computer. Register CAN/RS485 addresses only from supplied documentation, no invented hardware values. Measure braking/turn/load, E-stop/bumper/cliff paths with supervision.
+- [x] **3. Hiện thực phần cốt lõi.** Validate actual robot vendor model/firmware, /odom /scan /tf, encoder units and watchdog independent computer. Register CAN/RS485 addresses only from supplied documentation, no invented hardware values. Measure braking/turn/load, E-stop/bumper/cliff paths with supervision. (software part only; hardware blocked_external: no physical measurement, supervised E-stop/bumper/cliff test or hardware run was done)
 
 ```python
 def deployment_status(report):
@@ -271,7 +271,7 @@ def deployment_status(report):
 
 - [x] **4. Nối vào runtime và lưu trữ.** Commission tool read-only by default; active-motion suite needs explicit target/observer/test-area configuration at execution. Software requests STOP; hardware reset signal must come from controller. If supplier package absent, mark profile blocked_external and finish Nav2 simulator/contract work.
 
-- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest tests/hardware/test_profile_validation.py -q`; kỳ vọng PASS. Physical tests report actual payload/speed/distances and firmware. No claiming safety certification from a pass or substituting household vacuum for 20–30kg chassis. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest tests/hardware/test_profile_validation.py -q`; kỳ vọng PASS. Physical tests report actual payload/speed/distances and firmware. No claiming safety certification from a pass or substituting household vacuum for 20–30kg chassis. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware. (software part only; hardware blocked_external: no physical measurement, supervised E-stop/bumper/cliff test or hardware run was done)
 
 - [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T05.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "docs: define measurable robot commissioning and vendor profiles"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 

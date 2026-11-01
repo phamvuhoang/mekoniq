@@ -4,6 +4,7 @@ The software only ever REQUESTS stop; resetting a stopped robot is a hardware ac
 Run: .venv/bin/python tests/hardware/commissioning.py validate <record.json> --target-payload-kg 20 --key <commissioning-public.jwk.json>"""
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -70,11 +71,15 @@ def _evidence_reasons(r):
     out, vendor, g, i = [], r["vendor"], r["geometry"], r["interfaces"]
     if vendor["model"] is None: out.append("VENDOR_MODEL_MISSING")
     if vendor["firmware"] is None: out.append("VENDOR_FIRMWARE_MISSING")
+    if vendor["blocked_external"] is not None: out.append("VENDOR_BLOCKED_EXTERNAL")  # an open external blocker caps the profile
+    if vendor["source"] is None: out.append("VENDOR_UNSOURCED")
+    if r["control_bus"]["kind"] is None: out.append("CONTROL_BUS_UNSPECIFIED")
     if r["control_bus"]["register_map"]["entries"] and r["control_bus"]["register_map"]["source"] is None: out.append("REGISTER_MAP_UNSOURCED")
     if g["illustrative"]: out.append("GEOMETRY_ILLUSTRATIVE")
     if g["measured_by"] is None or g["measured_on"] is None or any(g[k] is None for k in GEOMETRY_KEYS): out.append("GEOMETRY_UNMEASURED")
     if any(None in i[t].values() for t in ("odom", "scan", "tf")): out.append("INTERFACES_UNVERIFIED")
     if i["encoder"]["unit"] is None: out.append("ENCODER_UNITS_MISSING")
+    if i["encoder"]["source"] is None: out.append("ENCODER_UNSOURCED")
     if i["watchdog"]["independent_computer"] is not True or i["watchdog"]["timeout_s"] is None: out.append("WATCHDOG_NOT_INDEPENDENT")
     s = r["safety_evidence"]
     if s is None:
@@ -106,17 +111,17 @@ def validate_commissioning(record, target_payload_kg=None, capability=None, comm
         if known and manifest["firmware"] != record["vendor"]["firmware"]: reasons.append("MANIFEST_FIRMWARE_MISMATCH")
         if capability is not None and capability not in manifest["capabilities"]: reasons.append("CAPABILITY_UNSUPPORTED")
         if known and any(c not in record["verified_capabilities"] for c in manifest["capabilities"]): reasons.append("CAPABILITY_UNVERIFIED")
-        if known and capability is not None and capability in manifest["capabilities"] and capability not in record["verified_capabilities"]: reasons.append("CAPABILITY_UNVERIFIED")
     else:
         reasons.append("MANIFEST_INVALID")
         if capability is not None: reasons.append("CAPABILITY_UNSUPPORTED")
     if known: reasons += _evidence_reasons(record)
     safety_verified = not reasons
     payload, tested = [], record.get("tested_payload_kg")
-    if not target_payload_kg or target_payload_kg <= 0: payload.append("TARGET_PAYLOAD_MISSING")
+    target_ok = isinstance(target_payload_kg, (int, float)) and not isinstance(target_payload_kg, bool) and math.isfinite(target_payload_kg) and target_payload_kg > 0
+    if not target_ok: payload.append("TARGET_PAYLOAD_MISSING")  # absent, NaN, infinite or non-positive: never a pass
     elif tested is None: payload.append("PAYLOAD_UNTESTED")
     elif tested < target_payload_kg: payload.append("TESTED_PAYLOAD_BELOW_TARGET")
-    if manifest_ok and target_payload_kg and int(manifest["maxLoadMinor"]) < target_payload_kg * 1000: payload.append("RATED_LOAD_BELOW_TARGET")  # grams
+    if manifest_ok and target_ok and int(manifest["maxLoadMinor"]) < target_payload_kg * 1000: payload.append("RATED_LOAD_BELOW_TARGET")  # grams
     reasons += payload
     problem = _signature_problem(record, commissioning_key)
     report = SimpleNamespace(safety_verified=safety_verified, payload_verified=not payload, venue_acceptance_signed=record.get("venue_acceptance") is not None and problem is None)
@@ -137,11 +142,18 @@ def run_active_motion(target=None, observer=None, test_area=None):
     raise ActiveMotionRefused("VENDOR_INTERFACE_NOT_PROVIDED: no vendor interface is available in this repository; nothing was moved")
 
 
+def _positive_finite(text):
+    value = float(text)
+    if not (math.isfinite(value) and value > 0):
+        raise argparse.ArgumentTypeError("TARGET_PAYLOAD_INVALID: must be a finite number > 0")
+    return value
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
     v = sub.add_parser("validate", help="read-only: print the verdict for a commissioning record")
-    v.add_argument("record"); v.add_argument("--target-payload-kg", type=float); v.add_argument("--capability"); v.add_argument("--key", help="commissioning public JWK file")
+    v.add_argument("record"); v.add_argument("--target-payload-kg", type=_positive_finite); v.add_argument("--capability"); v.add_argument("--key", help="commissioning public JWK file")
     m = sub.add_parser("active-motion", help="supervised motion suite; refuses without explicit config")
     m.add_argument("--target"); m.add_argument("--observer"); m.add_argument("--test-area")
     a = ap.parse_args(argv)

@@ -89,6 +89,19 @@ def test_tested_payload_below_target_is_refused_with_reason():
     assert "TARGET_PAYLOAD_MISSING" in validate_commissioning(profile_fixture()).reasons
 
 
+@pytest.mark.parametrize("target", [float("nan"), float("inf"), -1, 0, True, "20"])
+def test_non_finite_or_invalid_target_payload_is_refused(target):
+    result = validate_commissioning(profile_fixture(), target_payload_kg=target)
+    assert "TARGET_PAYLOAD_MISSING" in result.reasons and result.status == "integration_tested"
+    signed = validate_commissioning(load(FIX / "signed-venue-approved.json"), target_payload_kg=target, commissioning_key=KEY)
+    assert signed.status == "integration_tested" and not signed.manifest_accepted
+
+
+def test_capability_unverified_is_reported_once():
+    record = profile_fixture(verified_capabilities=[])
+    assert validate_commissioning(record, target_payload_kg=20, capability="delivery").reasons.count("CAPABILITY_UNVERIFIED") == 1
+
+
 def test_unsupported_capability_is_refused():
     signed = load(FIX / "signed-hardware-validated.json")
     result = validate_commissioning(signed, target_payload_kg=20, capability="bussing", commissioning_key=KEY)
@@ -116,6 +129,10 @@ def test_safety_and_vendor_gaps_each_have_a_reason():
         "INTERFACES_UNVERIFIED": lambda r: r["interfaces"]["scan"].update(verified_on=None),
         "VENDOR_FIRMWARE_MISSING": lambda r: r["vendor"].update(firmware=None),
         "MANIFEST_FIRMWARE_MISMATCH": lambda r: r["manifest"].update(firmware="other"),
+        "VENDOR_BLOCKED_EXTERNAL": lambda r: r["vendor"].update(blocked_external="supplier docs missing"),
+        "VENDOR_UNSOURCED": lambda r: r["vendor"].update(source=None),
+        "ENCODER_UNSOURCED": lambda r: r["interfaces"]["encoder"].update(source=None),
+        "CONTROL_BUS_UNSPECIFIED": lambda r: r["control_bus"].update(kind=None),
         "REGISTER_MAP_UNSOURCED": lambda r: r["control_bus"]["register_map"]["entries"].append({"name": "x", "address": 1, "unit": "u", "source_ref": "p1"}),
     }
     for code, mutate in cases.items():
@@ -155,4 +172,7 @@ def test_cli_is_read_only_by_default(tmp_path, capsys):
     assert main(["validate", str(path), "--target-payload-kg", "20", "--key", str(key)]) == 0
     assert json.loads(capsys.readouterr().out)["status"] == "hardware_validated"
     assert main(["validate", str(path), "--target-payload-kg", "40", "--key", str(key)]) == 1
+    for bad in ("nan", "inf", "0", "-5"):
+        with pytest.raises(SystemExit) as e: main(["validate", str(path), "--target-payload-kg", bad, "--key", str(key)])
+        assert e.value.code == 2
     assert main(["active-motion"]) == 2 and "ACTIVE_MOTION_CONFIG_MISSING" in capsys.readouterr().err
