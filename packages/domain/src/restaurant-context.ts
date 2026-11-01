@@ -97,18 +97,23 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Guest.AcknowledgeCall':{feature:'guest.call',intent:'finish_existing'},
  'Mission.Guide':{feature:'robot.guide',intent:'new'},
  'Mission.Bus':{feature:'robot.bussing',intent:'new'},
+ // Binding and releasing a zone never start business, so they work while the fleet drains; a reservation is new movement unless it serves an open mission.
+ 'Robot.BindMap':{feature:'fleet',intent:'finish_existing'},
+ 'Zone.Reserve':{feature:'fleet',intent:'new'},
+ 'Zone.Release':{feature:'fleet',intent:'finish_existing'},
 };
 /** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
 const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};
 const guestOrderFeature=(payload:JsonObject):string=>{const token=payload.guestToken;return guestChannels[token&&typeof token==='object'&&!Array.isArray(token)?String(token.channel):'robot'] ?? 'qr.order';};
 /** Resolving a terminal charge already observed (pending/unknown -> final) finishes existing work; only a new reference is new business. */
 const knownTerminalCharge=(command:CommandEnvelope,snapshots:Snapshot[]):boolean=>{ try { return Boolean(find(snapshots,'payment',externalPaymentId(externalReference(command.payload.reference)))); } catch { return false; } };
+const openMission=(command:CommandEnvelope,snapshots:Snapshot[]):boolean=>{const m=typeof command.payload.missionId==='string'?find(snapshots,'mission',command.payload.missionId):undefined;return Boolean(m&&!['completed','cancelled','failed'].includes(String(m.state.status)));};
 function guardFeature(command:CommandEnvelope,snapshots:Snapshot[]):void {
  const mapped=commandFeatures[command.type];
  if(!mapped) return;
  // Cancelling a line of an existing order finishes existing work; only adding items is new work.
  // A robot/safety problem report is not a commercial feature (capability matrix §4): the guest.call flag cannot block it.
- const intent=(command.type==='Order.Amend'&&command.payload.lineId!==undefined)||(command.type==='Guest.ReportIssue'&&['robot','safety'].includes(String(command.payload.category)))||(command.type==='Payment.RecordTerminal'&&knownTerminalCharge(command,snapshots))?'finish_existing':mapped.intent;
+ const intent=(command.type==='Order.Amend'&&command.payload.lineId!==undefined)||(command.type==='Guest.ReportIssue'&&['robot','safety'].includes(String(command.payload.category)))||(command.type==='Payment.RecordTerminal'&&knownTerminalCharge(command,snapshots))||(command.type==='Zone.Reserve'&&openMission(command,snapshots))?'finish_existing':mapped.intent;
  requireFeature(command,snapshots,command.type==='Guest.PlaceOrder' ? guestOrderFeature(command.payload) : command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature,intent);
 }
 /** Same applied-policy check the per-command guard uses, for a feature a payload opts into (e.g. coupons). */

@@ -21,5 +21,6 @@
   "guest-requests": "Guest requests",
   "kiosk": "Ordering kiosk",
   "reports": "Reports",
-  "robot-screen": "Robot screen"
+  "robot-screen": "Robot screen",
+  "robot-setup": "Robot setup"
 }

@@ -18,12 +18,14 @@ import {Kiosk} from './screens/Kiosk';
 import {RobotDisplay} from './screens/RobotDisplay';
 import {GuestRequests} from './screens/GuestRequests';
 import {Reports} from './screens/Reports';
+import {RobotSetup} from './screens/RobotSetup';
 export const routes=[
  {path:'/device',key:'device',permission:'',screen:DeviceStatus},
  {path:'/pos',key:'pos',permission:'order.write',screen:Pos},
  {path:'/kitchen',key:'kitchen',permission:'kitchen.write',screen:Kitchen},
  {path:'/fleet',key:'fleet',permission:'mission.write',screen:Fleet},
  {path:'/robot',key:'fleet',permission:'mission.write',screen:Fleet},
+ {path:'/robot-setup',key:'robot-setup',permission:'robot.configure',screen:RobotSetup},
  {path:'/checkout',key:'checkout',permission:'payment.cash',screen:Checkout},
  {path:'/cash',key:'cash',permission:'shift.write',screen:CashShift},
  {path:'/print',key:'print',permission:'print',screen:PrintQueue},

@@ -24,8 +24,10 @@ import { registerGuestTokens } from './service/guest-token';
 import { registerServiceCalls } from './service/calls';
 import { registerGuide } from './service/guide';
 import { registerBussing } from './service/bussing';
+import { registerMapBinding } from './fleet/map-binding';
+import { registerReservations } from './fleet/reservations';
 export function registerRestaurantModules(registry:ModuleRegistry):void {
- for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing]) register(registry);
+ for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations]) register(registry);
 }
 export const commandPermissions:Record<string,string>={
  'Catalog.Publish':'catalog.publish','Catalog.Quote':'catalog.read','Session.Open':'order.write',
@@ -43,4 +45,6 @@ export const commandPermissions:Record<string,string>={
  // Guest surfaces (QR via the cloud guest API, kiosk, paired robot screen) hold only guest.* permissions; the handler resolves their session.
  'Guest.PlaceOrder':'guest.order','Guest.CallStaff':'guest.call','Guest.ReportIssue':'guest.call','Guest.RequestBill':'guest.bill',
  'Mission.Guide':'mission.write','Mission.Bus':'mission.write',
+ // Map binding is venue robot configuration (manager); zone reservations are asked/released by the robot executor (manager may release with evidence).
+ 'Robot.BindMap':'robot.configure','Zone.Reserve':'robot.traffic','Zone.Release':'robot.traffic',
 };

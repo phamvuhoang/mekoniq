@@ -25,7 +25,8 @@ export async function createRestaurantLab() {
  await lab.seed('robot',fixture.robot.id,fixture.robot as JsonObject);
  await lab.seed('printer',fixture.printer.id,fixture.printer as JsonObject);
  const seedAggregate=lab.seed.bind(lab);
- lab.seed=(kind,id,overrides)=>kind==='order-line'?seedOrderLine(lab,seedAggregate,id,overrides):kind==='payment'?seedPayment(lab,seedAggregate,id,overrides):seedAggregate(kind,id,overrides);
+ // R-W06-T01: a partial seed of the fixture robot keeps the rest of the fixture robot (fixture defaults, not the current state).
+ lab.seed=(kind,id,overrides)=>kind==='order-line'?seedOrderLine(lab,seedAggregate,id,overrides):kind==='payment'?seedPayment(lab,seedAggregate,id,overrides):kind==='robot'&&id===fixture.robot.id?seedAggregate(kind,id,{...structuredClone(fixture.robot) as JsonObject,...overrides}):seedAggregate(kind,id,overrides);
  // The REAL spool dispatcher runs over the coordinator's outbox with an injected FIXTURE transport (no physical printer). Faults armed with lab.fault:
  // 'printer-timeout' -> the transport hangs and the spool's timeout fires; 'printer-ack-lost' -> bytes were written but no ack came back; 'printer-unreachable' -> nothing sent.
  const printed:{printerId:string;jobId:string;effectId:string;bytes:Uint8Array}[]=[];

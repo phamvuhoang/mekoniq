@@ -28,7 +28,8 @@ export type WireContract =
   | AuthorityProvision
   | SignedAuthorityProvision
   | PairingGrant
-  | SignedPairingGrant;
+  | SignedPairingGrant
+  | RobotManifest;
 export type JournalKind = 'intent' | 'accepted_fact' | 'observation' | 'historical_import';
 export type JsonValue =
   | null
@@ -381,4 +382,37 @@ export interface PairingGrant {
 export interface SignedPairingGrant {
   grant: PairingGrant;
   signature: string;
+}
+/**
+ * Versioned per-model robot capability evidence (spec 8.1). Optional traits default to unsupported; eligibility never infers them.
+ */
+export interface RobotManifest {
+  id: string;
+  adapter: string;
+  protocolVersion: string;
+  firmware: string;
+  capabilities: ('delivery' | 'bussing' | 'guide')[];
+  mapId: string;
+  mapRevision: string;
+  offlineExecution: boolean;
+  /**
+   * Maximum payload in grams, integer decimal string.
+   */
+  maxLoadMinor: string;
+  trays: number;
+  validation: 'simulated' | 'integration_tested' | 'hardware_validated' | 'venue_approved';
+  targetKind?: 'ros' | 'valetudo' | 'vendor';
+  /**
+   * Native length unit the adapter converts from domain metres.
+   */
+  units?: 'm' | 'cm' | 'mm';
+  frame?: string;
+  footprint?: {
+    widthM: number;
+    lengthM: number;
+  };
+  speedControl?: boolean;
+  maxSpeedMps?: number;
+  zoneEnforcement?: boolean;
+  docking?: boolean;
 }

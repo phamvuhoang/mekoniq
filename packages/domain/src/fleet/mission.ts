@@ -1,7 +1,8 @@
 import type { ModuleRegistry } from '../modules';
 import type { CommandEnvelope, Decision, DomainEvent, JsonObject, Snapshot } from '../../../contracts/src/index';
 import { all, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
-import { selectRobot } from './scheduler';
+import { missionDemand, selectRobot } from './scheduler';
+import { homeTarget } from './map-binding';
 import { issueRobotCommand } from './command-journal';
 import type { MissionStop } from './stop';
 
@@ -47,8 +48,7 @@ function nextStop(c:CommandEnvelope,s:Snapshot[],mission:Snapshot,stops:MissionS
   const queued=all(s,'mission').filter(m=>m.state.status==='queued'&&(!m.state.preferredRobotId||m.state.preferredRobotId===robot.ref.id)).sort((a,b)=>BigInt(String(a.state.queueRank))<BigInt(String(b.state.queueRank))?-1:1);
   for(const candidate of queued) {
    const pending=structuredClone(candidate.state.stops) as MissionStop[];
-   const cap=candidate.state.kind==='bus'?'bussing':candidate.state.kind==='guide'?'guide':'delivery';
-   try{selectRobot([released],pending.map(stop=>stop.targetId),Math.max(((candidate.state.allocationIds??[]) as string[]).length,1),robot.ref.id,cap);}catch{continue;}
+   try{selectRobot([released],missionDemand(s,candidate.state,pending.map(stop=>stop.targetId),Math.max(((candidate.state.allocationIds??[]) as string[]).length,1)),robot.ref.id);}catch{continue;}
    const first=pending.find(stop=>stop.status==='pending');if(!first)continue;
    first.status='travelling';
    const issued=issueRobotCommand(c,released,candidate.ref.id,1,first);
@@ -60,7 +60,11 @@ function nextStop(c:CommandEnvelope,s:Snapshot[],mission:Snapshot,stops:MissionS
  const issued=issueRobotCommand(c,robot,mission.ref.id,revision,next);
  return done([changed('MissionStopAdvanced',mission,{stops,status:'executing',loaded,currentStopId:next.id,revision,commandRevision:revision,commandId:issued.commandId}),changed('RobotGoalAssigned',robot,{goalState:'pending',availability:'busy'}),issued.event],{missionId:mission.ref.id,commandId:issued.commandId,effects:[issued.effect as unknown as JsonObject]});
 }
-/** Mission.Create body; Mission.Guide/Mission.Bus build their stops and come through here, so robot selection stays one path (selectRobot). */
+/**
+ * Mission.Create body; Mission.Guide/Mission.Bus build their stops and come through here, so robot selection stays one path (selectRobot over
+ * eligibleRobots). `target` is a one-stop standby shorthand; target 'home' (needs robotId) is that robot's dock, or its parking point without one.
+ * Optional loadMinor (grams, integer string) and speedLimitMps are part of admission and stay on a queued mission for its later assignment.
+ */
 export function createMission(c:CommandEnvelope,s:Snapshot[]):Decision {
   const missionId=c.payload.missionId ? text(c.payload.missionId) : stableId('mission',c);
   if(find(s,'mission',missionId)) return fail('MISSION_EXISTS');
@@ -78,6 +82,10 @@ export function createMission(c:CommandEnvelope,s:Snapshot[]):Decision {
     sources.set(source,[...(sources.get(source) ?? []),allocation.ref.id]); targets.set(target,[...(targets.get(target) ?? []),allocation.ref.id]);
    }
    stops=[...Array.from(sources,([targetId,allocationIds],index)=>({id:stableId('stop',c,`load-${index}`),action:'load',targetId,status:'pending',allocationIds})),...Array.from(targets,([targetId,allocationIds],index)=>({id:stableId('stop',c,`handoff-${index}`),action:'handoff',targetId,status:'pending',allocationIds}))];
+  } else if(c.payload.target!==undefined&&c.payload.stops===undefined) {
+   const requested=typeof c.payload.robotId==='string'&&c.payload.robotId!=='any'?c.payload.robotId:undefined;
+   const targetId=c.payload.target==='home'?homeTarget(requireState(s,'robot',requested ?? fail('ROBOT_REQUIRED')).state):text(c.payload.target,'INVALID_TARGET');
+   stops=[{id:stableId('stop',c,'target'),action:'standby',targetId,status:'pending',allocationIds:[]}];
   } else {
    if(!Array.isArray(c.payload.stops)||!c.payload.stops.length||c.payload.stops.length>20) return fail('ALLOCATIONS_REQUIRED');
    stops=(c.payload.stops as JsonObject[]).map((stop,index)=>{
@@ -86,14 +94,15 @@ export function createMission(c:CommandEnvelope,s:Snapshot[]):Decision {
     return {id:stableId('stop',c,`manual-${index}`),action,targetId:text(stop.targetId),status:'pending',allocationIds:[]};
    });
   }
-  const robot=selectRobot(s,stops.map(stop=>stop.targetId),Math.max(allocations.length,1),typeof c.payload.robotId==='string'?c.payload.robotId:undefined,kind==='bus'?'bussing':kind==='guide'?'guide':'delivery',true);
+  const demand=missionDemand(s,c.payload,stops.map(stop=>stop.targetId),Math.max(allocations.length,1)),limits={...(demand.loadMinor!==undefined?{loadMinor:demand.loadMinor}:{}),...(demand.speedLimitMps!==undefined?{speedLimitMps:demand.speedLimitMps}:{})};
+  const robot=selectRobot(all(s,'robot'),{...demand,allowBusy:true},typeof c.payload.robotId==='string'?c.payload.robotId:undefined);
   if(robot.state.availability!=='idle') {
    const counter=find(s,'fleet-queue','current'),rank=String(BigInt(String(counter?.state.rank??'0'))+1n);
-   return done([created('MissionQueued','mission',missionId,{kind,status:'queued',robotId:null,preferredRobotId:typeof c.payload.robotId==='string'&&c.payload.robotId!=='any'?c.payload.robotId:null,source:stops[0]!.targetId,loaded:false,stops,currentStopId:null,revision:0,allocationIds:ids,queueRank:rank}),{type:'FleetQueueAdvanced',data:{kind:'fleet-queue',id:'current',state:{rank}}},...allocations.map(a=>changed('AllocationAssigned',a,{missionId}))],{missionId,status:'queued'});
+   return done([created('MissionQueued','mission',missionId,{...limits,kind,status:'queued',robotId:null,preferredRobotId:typeof c.payload.robotId==='string'&&c.payload.robotId!=='any'?c.payload.robotId:null,source:stops[0]!.targetId,loaded:false,stops,currentStopId:null,revision:0,allocationIds:ids,queueRank:rank}),{type:'FleetQueueAdvanced',data:{kind:'fleet-queue',id:'current',state:{rank}}},...allocations.map(a=>changed('AllocationAssigned',a,{missionId}))],{missionId,status:'queued'});
   }
   const first=stops[0]!;first.status='travelling';
   const issued=issueRobotCommand(c,robot,missionId,1,first);
-  return done([created('MissionCreated','mission',missionId,{kind,status:'assigned',robotId:robot.ref.id,source:first.targetId,loaded:false,stops,currentStopId:first.id,revision:1,commandRevision:1,commandId:issued.commandId,allocationIds:ids,controlEpoch:robot.state.controlEpoch!}),changed('RobotAssigned',robot,{availability:'busy',missionId,goalState:'pending'}),...allocations.map(a=>changed('AllocationAssigned',a,{missionId})),issued.event],{missionId,commandId:issued.commandId,effects:[issued.effect as unknown as JsonObject]});
+  return done([created('MissionCreated','mission',missionId,{...limits,kind,status:'assigned',robotId:robot.ref.id,source:first.targetId,loaded:false,stops,currentStopId:first.id,revision:1,commandRevision:1,commandId:issued.commandId,allocationIds:ids,controlEpoch:robot.state.controlEpoch!}),changed('RobotAssigned',robot,{availability:'busy',missionId,goalState:'pending'}),...allocations.map(a=>changed('AllocationAssigned',a,{missionId})),issued.event],{missionId,commandId:issued.commandId,effects:[issued.effect as unknown as JsonObject]});
 }
 export function registerMissions(registry:ModuleRegistry):void {
  handle(registry,'Mission.Create',createMission);

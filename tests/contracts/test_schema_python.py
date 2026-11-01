@@ -52,3 +52,17 @@ def test_journal_sequence_is_decimal_string():
     assert v.is_valid('9007199254740993')
     for value in [1, '0', '-1', '01', '1.0']:
         assert not v.is_valid(value)
+
+
+def test_robot_manifest_schema_matches_typescript():
+    wrapper = json.loads((ROOT / 'packages/contracts/schemas/robot-manifest.schema.json').read_text())
+    assert wrapper['$ref'] == 'mekoniq.wire.v1#/definitions/RobotManifest'
+    manifest = {'id': 'ros-1', 'adapter': 'ros2', 'protocolVersion': 'nav2-jazzy-1', 'firmware': 'jazzy-2026.10',
+                'capabilities': ['delivery'], 'mapId': 'm', 'mapRevision': '1', 'offlineExecution': True,
+                'maxLoadMinor': '20000', 'trays': 2, 'validation': 'hardware_validated', 'targetKind': 'ros',
+                'units': 'm', 'frame': 'map', 'footprint': {'widthM': 0.5, 'lengthM': 0.6}, 'speedControl': True,
+                'maxSpeedMps': 0.8, 'zoneEnforcement': False, 'docking': False}
+    validator('RobotManifest').validate(manifest)
+    for change in [{'validation': 'assumed'}, {'units': 'inch'}, {'footprint': {'widthM': 0}}, {'extra': True},
+                   {'maxLoadMinor': '1.5'}, {'capabilities': ['delivery', 'delivery']}]:
+        assert not validator('RobotManifest').is_valid({**copy.deepcopy(manifest), **change})

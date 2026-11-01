@@ -421,7 +421,8 @@
       "depends": "W03-T04, W04-T05",
       "testFile": "tests/integration/robot-admission.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/robot-admission.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W06-T01.md"
     },
     {
       "wave": "W06",

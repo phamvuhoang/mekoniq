@@ -49,7 +49,7 @@
 - Consumes: RobotAdapter manifest và map identity, parking/charging distinct, footprint/load.
 - Produces: `eligibleRobots(mission,profiles):Eligibility[]`; `Robot.BindMap`, `Zone.Reserve`, `Zone.Release`.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -64,9 +64,9 @@ test("a known coordinate on a stale map is not dispatchable", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/robot-admission.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/robot-admission.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Match every stop, payload/footprint/trays/battery/capability before score. Opaque vendor map ID hoặc explicit operator binding epoch; same image size không chứng minh identity. Robot không enforce zones thì serialized conflicted movement.
+- [x] **3. Hiện thực phần cốt lõi.** Match every stop, payload/footprint/trays/battery/capability before score. Opaque vendor map ID hoặc explicit operator binding epoch; same image size không chứng minh identity. Robot không enforce zones thì serialized conflicted movement.
 
 ```ts
 export function bindingCurrent(binding:{mapId:string;revision:string},
@@ -75,11 +75,11 @@ export function bindingCurrent(binding:{mapId:string;revision:string},
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Setup taught waypoint per robot/map, unit/frame explicit mét/radian domain vs cm adapter. Missing dock uses parking. UI cannot bypass capability by picking specific robot.
+- [x] **4. Nối vào runtime và lưu trữ.** Setup taught waypoint per robot/map, unit/frame explicit mét/radian domain vs cm adapter. Missing dock uses parking. UI cannot bypass capability by picking specific robot.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/robot-admission.test.ts`; kỳ vọng PASS. Unknown driver rejected, overloaded robot, no speed support, map reset, reservation unknown no release on TTL. Mixed vendor traffic unsafe paths stay pending. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/robot-admission.test.ts`; kỳ vọng PASS. Unknown driver rejected, overloaded robot, no speed support, map reset, reservation unknown no release on TTL. Mixed vendor traffic unsafe paths stay pending. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: admit missions only to validated robot capabilities"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: admit missions only to validated robot capabilities"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W06-T02: Valetudo REST/MQTT transport và completion evidence
 

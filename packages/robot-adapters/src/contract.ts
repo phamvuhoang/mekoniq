@@ -1,9 +1,6 @@
-import type { JsonObject, RobotCommand } from '../../contracts/src/index';
-export interface RobotManifest {
- id:string; adapter:string; protocolVersion:string; firmware:string;
- capabilities:string[]; mapId:string; mapRevision:string; offlineExecution:boolean;
- maxLoadMinor:string; trays:number; validation:'simulated'|'integration_tested'|'hardware_validated'|'venue_approved';
-}
+import type { JsonObject, RobotCommand, RobotManifest } from '../../contracts/src/index';
+/** Schema: packages/contracts/schemas/robot-manifest.schema.json (validateRobotManifest). */
+export type { RobotManifest };
 export interface TargetBinding { waypointId:string; mapId:string; mapRevision:string; frame:string; x?:number; y?:number; yaw?:number; locationRef?:string }
 export type ResolvedTarget =
  | {kind:'ros';mapId:string;mapRevision:string;frame:string;x:number;y:number;yaw:number}
