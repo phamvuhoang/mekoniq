@@ -76,6 +76,7 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Print.Request':{feature:'printing',intent:'new'},
  'Print.ConfirmReprint':{feature:'printing',intent:'new'},
  'Print.Observe':{feature:'printing',intent:'finish_existing'},
+ 'Print.Resolve':{feature:'printing',intent:'finish_existing'},
  'Bill.Prepare':{feature:'billing',intent:'finish_existing'},
  'Payment.RecordCash':{feature:'payment.cash',intent:'finish_existing'},
  'Bill.Close':{feature:'billing',intent:'finish_existing'},

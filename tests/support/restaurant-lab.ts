@@ -7,7 +7,7 @@ import { registerRestaurantModules } from '../../packages/domain/src/restaurant'
 import fixture from '../fixtures/restaurant-v1.json';
 import {quoteOrder} from '../../packages/domain/src/pricing/quote';
 import type { CommandResult, JsonObject, Snapshot } from '../../packages/contracts/src/index';
-import { dispatchPrintEffects, PrinterNotReached, type PrinterTransport } from '../../integrations/printing/src/spool';
+import { dispatchPrintEffects, spoolEffectSnapshots, PrinterNotReached, type PrinterTransport } from '../../integrations/printing/src/spool';
 export async function createRestaurantLab() {
  const lab=await createLab(registry=>{registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);});
  lab.addAuthorization((actor,type,payload)=>{
@@ -35,7 +35,10 @@ export async function createRestaurantLab() {
   return {acknowledged:!lab.faults.consume('printer-ack-lost')};
  }};
  const runSpool=async()=>dispatchPrintEffects(await lab.getStore('coordinator'),lab.scope,transport,{timeoutMs:20,onOutcome:async o=>{
-  const r=await baseCommand('printer-spool','Print.Observe',{jobId:o.jobId,effectId:o.id,status:o.status,...(o.code?{code:o.code}:{})},`print-observe-${o.id}-${o.status}`);
+  if(lab.faults.consume('print-observe-crash')) throw new Error('INJECTED_CRASH_BEFORE_OBSERVE');
+  // the spool runner reads its own outbox and hands the handler that record; Print.Observe is rejected without it
+  lab.trustedSnapshots=spoolEffectSnapshots(lab.scope,await (await lab.getStore('coordinator')).effects(lab.scope,'printer.send'));
+  const r=await baseCommand('printer-spool','Print.Observe',{jobId:o.jobId,effectId:o.id,status:o.status,...(o.code?{code:o.code}:{})},`print-observe-${o.id}-${o.status}`).finally(()=>{lab.trustedSnapshots=[];});
   if(r.status!=='accepted') throw new Error('PRINT_OBSERVE_REJECTED:'+(r.code??r.status));
  }});
  const autoSpool={on:true},baseCommand=lab.command.bind(lab);

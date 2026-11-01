@@ -21,6 +21,8 @@ export class Lab {
   private mode:'coordinated'|'wan'|'lan'='coordinated';
   private cloudApplied=new Set<string>();
   private observedEffects=new Map<string,number>();
+  /** Read-only facts a device's own runtime adds while it submits one command (e.g. the spool's outbox record); never set by tests or reachable from the API. */
+  trustedSnapshots:import('../../packages/contracts/src/index').Snapshot[]=[];
   private authorizers:((actor:string,type:string,payload:JsonObject)=>boolean)[]=[];
   private genesis=new Map<string,{kind:string;id:string;version:number;state:JsonObject}>();
   constructor(readonly directory:string) {}
@@ -51,7 +53,7 @@ export class Lab {
     if(recipientLocal&&this.mode!=='lan')await this.cacheCoordinatorTo(identity.deviceId);
     const store=await this.getStore(this.mode==='lan'||recipientLocal?identity.deviceId:'coordinator');
     const can=async()=>this.authorizers.length?this.authorizers.some(fn=>fn(actor,type,payload)):type==='Journal.RecordNote';
-    const decide:Handler=(command,snapshots)=>this.registry.decide(command,snapshots);
+    const decide:Handler=(command,snapshots)=>this.registry.decide(command,[...snapshots,...this.trustedSnapshots]);
     const r=await processCommand(store,c,decide,can);
     if(this.faults.consume('drop-local-ack')&&r.status==='accepted')return {...r,status:'unknown',ack:'none'};
     return r;

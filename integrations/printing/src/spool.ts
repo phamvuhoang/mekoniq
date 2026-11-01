@@ -12,6 +12,13 @@ export interface PrintEffectStore {
 export interface PrinterTransport { send(bytes: Uint8Array, ctx: { printerId: string; jobId: string; effectId: string; attempt: number }): Promise<{ acknowledged: boolean }> }
 /** Thrown by a transport when it knows NO byte left the device (refused connection, unsupported): the only case a job may be marked failed after sending began. */
 export class PrinterNotReached extends Error {}
+/**
+ * What the store recorded for each `printer.send` effect, exposed to the handler as read-only `spool-effect` snapshots. Only the device's own spool runner
+ * adds them (it reads its own outbox right before it submits Print.Observe); a Print.Observe that arrives any other way (API, relay, sync) sees none and is
+ * rejected, and one whose status differs from the stored effect status is rejected too, so an outcome can only mirror what the outbox really holds.
+ */
+export const spoolEffectSnapshots = (scope: Scope, effects: JsonObject[]): Snapshot[] =>
+  effects.filter(e => e.type === 'printer.send').map(e => ({ ref: { ...scope, kind: 'spool-effect', id: String(e.id) }, version: 1, state: { status: String(e.status), attempts: Number(e.attempts ?? 0) } }));
 export type PrintOutcome = { id: string; jobId: string; status: 'confirmed' | 'unknown' | 'failed'; code?: string };
 /** Outbox status -> printer state shown to staff: pending -> pending, dispatching -> sent (bytes in flight / written, no ack), then unknown | confirmed (failed = nothing was sent). */
 export const printState = (effectStatus: string): string => effectStatus === 'dispatching' ? 'sent' : effectStatus;
@@ -23,11 +30,18 @@ const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> => { let t: Retur
  * - dispatching (claimed, outcome never recorded: crash mid-send) and unknown: NEVER sent again. A mid-send crash becomes unknown; staff decide on a reprint
  *   (Print.ConfirmReprint), which creates a new effect, so the same paper is never produced twice silently.
  * `onOutcome` runs after the outcome is stored (the caller records it on the print job via Print.Observe).
+ * Every run starts with a repair pass: an effect that is already final while its job attempt is still `pending` (the process died or onOutcome threw between
+ * completeEffect and Print.Observe) is re-reported with the stored status. Nothing is sent again.
  */
 export async function dispatchPrintEffects(store: PrintEffectStore, scope: Scope, transport: PrinterTransport, options: { timeoutMs?: number; onOutcome?: (o: PrintOutcome) => Promise<void> } = {}): Promise<PrintOutcome[]> {
   const out: PrintOutcome[] = [];
   const finish = async (id: string, jobId: string, status: PrintOutcome['status'], code?: string) => { await store.completeEffect(scope, id, status); const o: PrintOutcome = { id, jobId, status, ...(code ? { code } : {}) }; out.push(o); await options.onOutcome?.(o); };
-  for (const row of (await store.effects(scope, 'printer.send')).filter(e => ['pending', 'dispatching'].includes(String(e.status)))) {
+  const all = await store.effects(scope, 'printer.send'), jobs = (await store.snapshots(scope)).filter(s => s.ref.kind === 'print-job');
+  for (const row of all.filter(e => ['confirmed', 'unknown', 'failed'].includes(String(e.status)))) {
+    const jobId = String((row.payload as JsonObject).jobId ?? ''), attempt = ((jobs.find(j => j.ref.id === jobId)?.state.attempts ?? []) as JsonObject[]).find(a => a.effectId === row.id);
+    if (attempt?.status === 'pending') { const o: PrintOutcome = { id: String(row.id), jobId, status: row.status as PrintOutcome['status'], code: 'OBSERVATION_RECOVERED' }; out.push(o); await options.onOutcome?.(o); }
+  }
+  for (const row of all.filter(e => ['pending', 'dispatching'].includes(String(e.status)))) {
     const id = String(row.id), payload = row.payload as JsonObject, jobId = String(payload.jobId ?? '');
     if (row.status === 'dispatching') { await finish(id, jobId, 'unknown', 'INTERRUPTED_IN_FLIGHT'); continue; }
     const printer = (await store.snapshots(scope)).find(s => s.ref.kind === 'printer' && s.ref.id === payload.printerId);
@@ -35,10 +49,13 @@ export async function dispatchPrintEffects(store: PrintEffectStore, scope: Scope
     let bytes: Uint8Array;
     try { bytes = renderEscPos(payload.receipt as unknown as Receipt, { columns: Number(printer.state.columns), ...(payload.reprint ? { reprint: { number: Number(payload.reprintNumber) } } : {}) }); } catch { await finish(id, jobId, 'failed', 'RENDER_FAILED'); continue; }
     if (!await store.claimEffect(scope, id)) continue;
+    // only the send itself is guarded: a failure of onOutcome (recording) must not be mistaken for a send error
+    let status: PrintOutcome['status'], code: string | undefined;
     try {
       const { acknowledged } = await withTimeout(transport.send(bytes, { printerId: String(payload.printerId), jobId, effectId: id, attempt: Number(row.attempts ?? 0) + 1 }), options.timeoutMs ?? 5000);
-      await finish(id, jobId, acknowledged ? 'confirmed' : 'unknown', acknowledged ? undefined : 'NO_PRINTER_ACK');
-    } catch (error) { await finish(id, jobId, error instanceof PrinterNotReached ? 'failed' : 'unknown', error instanceof PrinterNotReached ? 'NOT_SENT' : error instanceof Error && error.message === 'PRINTER_TIMEOUT' ? 'PRINTER_TIMEOUT' : 'SEND_ERROR'); }
+      status = acknowledged ? 'confirmed' : 'unknown'; code = acknowledged ? undefined : 'NO_PRINTER_ACK';
+    } catch (error) { status = error instanceof PrinterNotReached ? 'failed' : 'unknown'; code = error instanceof PrinterNotReached ? 'NOT_SENT' : error instanceof Error && error.message === 'PRINTER_TIMEOUT' ? 'PRINTER_TIMEOUT' : 'SEND_ERROR'; }
+    await finish(id, jobId, status, code);
   }
   return out;
 }

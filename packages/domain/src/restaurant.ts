@@ -31,7 +31,7 @@ export const commandPermissions:Record<string,string>={
  'Fulfillment.Allocate':'fulfillment.write','Fulfillment.HandOff':'fulfillment.write',
  'Mission.Create':'mission.write','Mission.ConfirmStop':'mission.write','Mission.Cancel':'mission.write',
  'Robot.Observe':'robot.observe','Robot.RequestStop':'robot.stop',
- 'Shift.Open':'shift.write','Shift.Close':'shift.write','Cash.RecordMovement':'shift.write','Print.Request':'print','Print.ConfirmReprint':'print','Print.Observe':'print.observe','Bill.Prepare':'billing.write','Payment.Claim':'payment.claim',
+ 'Shift.Open':'shift.write','Shift.Close':'shift.write','Cash.RecordMovement':'shift.write','Print.Request':'print','Print.ConfirmReprint':'print','Print.Observe':'print.observe','Print.Resolve':'print.resolve','Bill.Prepare':'billing.write','Payment.Claim':'payment.claim',
  'Payment.RecordCash':'payment.cash','Bill.Close':'billing.write',
  'Bill.Split':'billing.write','Bill.Merge':'billing.write','Bill.Void':'bill.void',
  'Payment.RecordTerminal':'payment.terminal','Payment.VerifyManual':'payment.verify','Refund.Record':'payment.refund',

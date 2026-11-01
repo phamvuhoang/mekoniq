@@ -1,9 +1,9 @@
 import {el,field,panel,list,tr,summary,button,act,type ScreenContext} from '../ui';
 import {printerSupport} from '../../../../integrations/printing/src/profile';
-type Attempt={effectId:string;number:number;reprint:boolean;status:string;code?:string;reason:string|null};
+type Attempt={effectId:string;number:number;reprint:boolean;status:string;code?:string;reason:string|null;source?:string;resolution?:{outcome:string;by:string;reason:string}};
 export function PrintQueue(c:ScreenContext) {
- const root=el('div',undefined,'screen-grid'),done=()=>{};
- const state=(s:string)=>({pending:tr(c,'Đang chờ in','Pending'),unknown:tr(c,'Không rõ kết quả','Unknown'),confirmed:tr(c,'Máy in xác nhận','Confirmed by printer'),failed:tr(c,'Lỗi, chưa gửi lệnh','Failed, nothing sent')} as Record<string,string>)[s]??s;
+ const root=el('div',undefined,'screen-grid'),done=()=>{},can=(permission:string)=>c.session.permissions.includes('*')||c.session.permissions.includes(permission);
+ const state=(s:string)=>({pending:tr(c,'Đang chờ in','Pending'),unknown:tr(c,'Không rõ kết quả','Unknown'),confirmed:tr(c,'Máy in xác nhận','Confirmed by printer'),failed:tr(c,'Lỗi, chưa gửi lệnh','Failed, nothing sent'),not_printed:tr(c,'Quản lý xác nhận chưa in','Manager: not printed')} as Record<string,string>)[s]??s;
  for(const printer of list(c,'printer')){
   const support=printerSupport(printer.state),row=el('article',undefined,'record');
   row.append(el('strong',String(printer.state.label??printer.ref.id)),el('span',support.ready?tr(c,'Sẵn sàng','Ready'):tr(c,'Không hỗ trợ: ','Unsupported: ')+support.reason,'badge'),
@@ -19,9 +19,15 @@ export function PrintQueue(c:ScreenContext) {
  for(const job of list(c,'print-job')){
   const attempts=(job.state.attempts??[]) as Attempt[],row=el('article',undefined,'record'),reason=field(tr(c,'Lý do in lại (bắt buộc)','Reprint reason (required)'));
   row.append(el('strong',`${String(job.state.kind)} · ${String(job.state.billId)}`),el('span',state(String(job.state.status)),'badge'));
-  for(const a of attempts)row.append(el('p',`#${a.number} ${a.reprint?tr(c,'IN LẠI','REPRINT'):tr(c,'bản gốc','original')} · ${state(a.status)}${a.code?` (${a.code})`:''}${a.reason?` · ${a.reason}`:''}`,a.status==='unknown'?'warning':'muted'));
-  if(job.state.status==='unknown')row.append(el('p',tr(c,'Kết quả không rõ: hệ thống không tự in lại. Kiểm tra giấy in rồi chọn in lại nếu cần; doanh thu không bị ảnh hưởng.','Result unknown: the system never resends by itself. Check the paper, then reprint if needed; the sale is unaffected.'),'warning'));
-  if(job.state.status!=='pending')row.append(reason.node,button(tr(c,'Xác nhận in lại','Confirm reprint'),()=>act(c,'Print.ConfirmReprint',{jobId:job.ref.id,reason:reason.input.value}).then(done)));
+  for(const a of attempts)row.append(el('p',`#${a.number} ${a.reprint?tr(c,'IN LẠI','REPRINT'):tr(c,'bản gốc','original')} · ${state(a.status)}${a.code?` (${a.code})`:''}${a.source==='staff'?tr(c,' · nhân viên xác nhận',' · confirmed by staff'):''}${a.reason?` · ${a.reason}`:''}${a.resolution?` · ${a.resolution.outcome} (${a.resolution.by}): ${a.resolution.reason}`:''}`,a.status==='unknown'?'warning':'muted'));
+  const last=attempts[attempts.length-1],unresolved=job.state.status==='unknown'&&last&&!last.resolution;
+  if(unresolved){
+   row.append(el('p',tr(c,'Kết quả không rõ: hệ thống không tự in lại. Quản lý kiểm tra giấy in và đối soát trước khi in lại; doanh thu không bị ảnh hưởng.','Result unknown: the system never resends by itself. A manager checks the paper and reconciles before any reprint; the sale is unaffected.'),'warning'));
+   if(can('print.resolve')){
+    const why=field(tr(c,'Lý do đối soát (bắt buộc)','Reconciliation reason (required)')),resolve=(outcome:string)=>act(c,'Print.Resolve',{jobId:job.ref.id,effectId:last.effectId,outcome,reason:why.input.value}).then(done);
+    row.append(why.node,button(tr(c,'Đã in ra giấy','It was printed'),()=>resolve('printed')),button(tr(c,'Chưa in ra giấy','It was not printed'),()=>resolve('not_printed'),'quiet'));
+   }
+  } else if(job.state.status!=='pending')row.append(reason.node,button(tr(c,'Xác nhận in lại','Confirm reprint'),()=>act(c,'Print.ConfirmReprint',{jobId:job.ref.id,reason:reason.input.value}).then(done)));
   root.append(row);
  }
  return panel(tr(c,'Hàng đợi in','Print queue'),root);

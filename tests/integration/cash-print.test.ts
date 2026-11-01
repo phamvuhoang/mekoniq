@@ -3,6 +3,7 @@ import { createRestaurantLab } from "../support/restaurant-lab";
 import type { Lab } from "../support/lab";
 import fixture from "../fixtures/restaurant-v1.json";
 import type { JsonObject } from "../../packages/contracts/src/index";
+import { spoolEffectSnapshots } from "../../integrations/printing/src/spool";
 
 test("printer timeout cannot undo the recorded sale", async () => {
   const lab = await createRestaurantLab();
@@ -40,17 +41,100 @@ test("an unknown print is never retried; the user's reprint is a new marked atte
     const job = await lab.state<Job>("print-job",jobId);
     expect((await lab.command("cashier","Print.ConfirmReprint",{jobId,reason:"  "})).code).toBe("REASON_REQUIRED");
     expect((await lab.command("guest","Print.ConfirmReprint",{jobId,reason:"x"})).code).toBe("FORBIDDEN");
+    // unknown goes to reconciliation first: nobody can reprint an unresolved unknown attempt
+    expect((await lab.command("cashier","Print.ConfirmReprint",{jobId,reason:"paper jammed, nothing came out"})).code).toBe("UNKNOWN_UNRESOLVED");
+    const effectId = (await lab.state<Job>("print-job",jobId)).attempts[0]!.effectId;
+    ok(await lab.command("manager","Print.Resolve",{jobId,effectId,outcome:"not_printed",reason:"checked the printer: no paper came out"}));
     const again = await lab.command("cashier","Print.ConfirmReprint",{jobId,reason:"paper jammed, nothing came out"});
     ok(again);
     const after = await lab.state<Job>("print-job",jobId);
     expect(after.version).toBeGreaterThan(job.version);
     expect(after.attempts.map(a => [a.number,a.reprint,a.status])).toEqual([[1,false,"unknown"],[2,true,"confirmed"]]);
+    expect(after.attempts[0]).toMatchObject({ resolution: { outcome: "not_printed", by: "manager", reason: "checked the printer: no paper came out" } });
     expect(after.attempts[1]).toMatchObject({ reprintNumber: 1, reason: "paper jammed, nothing came out", by: "cashier" });
     expect(after.status).toBe("confirmed");
     expect(await lab.effectCount("printer.send")).toBe(2);
     expect(lab.printed).toHaveLength(1);
     expect(text(lab.printed[0]!.bytes)).toContain("REPRINT #1");
     expect((await lab.state<{status:string;paidMinor:string}>("bill","bill-1"))).toMatchObject({ status: "closed", paidMinor: "50000" });
+  } finally { await lab.close(); }
+});
+
+test("a crash between completeEffect and Print.Observe is repaired by the next spool run without sending again", async () => {
+  const lab = await printerLab();
+  try {
+    await lab.fault("print-observe-crash");
+    await expect(lab.command("cashier","Print.Request",{billId:"bill-1"})).rejects.toThrow("INJECTED_CRASH_BEFORE_OBSERVE");
+    const store = await lab.getStore("coordinator");
+    const [effect] = await store.effects(lab.scope,"printer.send");
+    expect(effect).toMatchObject({ status: "confirmed", attempts: 1 }); // sent and final in the outbox...
+    const jobId = String((effect!.payload as JsonObject).jobId);
+    expect((await lab.state<Job>("print-job",jobId)).status).toBe("pending"); // ...but the job never heard about it
+    expect((await lab.command("cashier","Print.ConfirmReprint",{jobId,reason:"x"})).code).toBe("ATTEMPT_IN_FLIGHT");
+    const sent = lab.printed.length;
+    await lab.runSpool();
+    expect(await lab.state<Job>("print-job",jobId)).toMatchObject({ status: "confirmed", attempts: [{ status: "confirmed", code: "OBSERVATION_RECOVERED" }] });
+    expect(await lab.effectCount("printer.send")).toBe(1);
+    expect(lab.printed).toHaveLength(sent);
+    await lab.runSpool(); // idempotent
+    expect(await lab.effectCount("printer.send")).toBe(1);
+    // an unknown outcome is repaired the same way and stays unknown (not turned into success)
+    await lab.seed("bill","bill-9",{status:"closed",totalMinor:"1",paidMinor:"1",currency:"VND"});
+    await lab.fault("printer-timeout"); await lab.fault("print-observe-crash");
+    await expect(lab.command("cashier","Print.Request",{billId:"bill-9"})).rejects.toThrow("INJECTED_CRASH_BEFORE_OBSERVE");
+    await lab.runSpool();
+    const job9 = (await (await lab.getStore("coordinator")).snapshots(lab.scope)).filter(j => j.ref.kind === "print-job").find(j => j.state.billId === "bill-9")!;
+    expect(job9.state).toMatchObject({ status: "unknown" });
+    expect(await lab.effectCount("printer.send")).toBe(2);
+  } finally { await lab.close(); }
+});
+
+test("Print.Observe cannot be forged: it needs the spool's own outbox record and must match it", async () => {
+  const lab = await printerLab();
+  try {
+    lab.autoSpool.on = false;
+    const r = await lab.command("cashier","Print.Request",{billId:"bill-1"});
+    const jobId = String(r.value.jobId), effectId = jobId;
+    // through the API (no spool record): rejected for the spooler and even for the owner
+    for (const actor of ["printer-spool","owner"]) for (const status of ["failed","confirmed","unknown"])
+      expect((await lab.command(actor,"Print.Observe",{jobId,effectId,status})).code).toBe("EFFECT_STATE_UNAVAILABLE");
+    expect((await lab.command("cashier","Print.Observe",{jobId,effectId,status:"failed"})).code).toBe("FORBIDDEN");
+    // even with a spool record, the status must be the one the outbox holds (the effect is still pending)
+    const store = await lab.getStore("coordinator");
+    lab.trustedSnapshots = spoolEffectSnapshots(lab.scope, await store.effects(lab.scope,"printer.send"));
+    expect((await lab.command("printer-spool","Print.Observe",{jobId,effectId,status:"failed"})).code).toBe("EFFECT_STATUS_MISMATCH");
+    lab.trustedSnapshots = [];
+    expect((await lab.state<Job>("print-job",jobId)).status).toBe("pending");
+    expect((await lab.command("cashier","Print.Request",{billId:"bill-1"})).code).toBe("ALREADY_PRINTED"); // no unmarked duplicate original
+  } finally { await lab.close(); }
+});
+
+test("Print.Resolve: a manager reconciles an unknown attempt with a reason; it sends nothing and printed closes it, not_printed only unlocks a marked reprint", async () => {
+  const lab = await printerLab();
+  try {
+    await lab.fault("printer-timeout");
+    const r = await lab.command("cashier","Print.Request",{billId:"bill-1"});
+    const jobId = String(r.value.jobId), effectId = jobId;
+    const sent = await lab.effectCount("printer.send");
+    expect((await lab.command("cashier","Print.Resolve",{jobId,effectId,outcome:"printed",reason:"saw it"})).code).toBe("FORBIDDEN");
+    expect((await lab.command("manager","Print.Resolve",{jobId,effectId,outcome:"printed",reason:"  "})).code).toBe("REASON_REQUIRED");
+    expect((await lab.command("manager","Print.Resolve",{jobId,effectId,outcome:"maybe",reason:"x"})).code).toBe("INVALID_OUTCOME");
+    expect((await lab.command("manager","Print.Resolve",{jobId,effectId:"nope",outcome:"printed",reason:"x"})).code).toBe("NOT_FOUND");
+    ok(await lab.command("manager","Print.Resolve",{jobId,effectId,outcome:"printed",reason:"receipt is in the customer's hand"}));
+    expect(await lab.state<Job>("print-job",jobId)).toMatchObject({ status: "confirmed", attempts: [{ status: "confirmed", source: "staff", resolution: { outcome: "printed", by: "manager", reason: "receipt is in the customer's hand" } }] });
+    expect((await lab.command("manager","Print.Resolve",{jobId,effectId,outcome:"not_printed",reason:"again"})).code).toBe("ATTEMPT_NOT_UNKNOWN");
+    expect(await lab.effectCount("printer.send")).toBe(sent);
+    expect(lab.printed).toHaveLength(0);
+    // not_printed: still no unmarked original (a stalled printer may print it later); only a marked reprint is possible
+    await lab.seed("bill","bill-2",{status:"closed",totalMinor:"1",paidMinor:"1",currency:"VND"});
+    await lab.fault("printer-timeout");
+    const j2 = await lab.command("cashier","Print.Request",{billId:"bill-2"});
+    ok(await lab.command("owner","Print.Resolve",{jobId:String(j2.value.jobId),effectId:String(j2.value.jobId),outcome:"not_printed",reason:"printer was out of paper"}));
+    expect((await lab.state<Job>("print-job",String(j2.value.jobId))).status).toBe("not_printed");
+    expect((await lab.command("cashier","Print.Request",{billId:"bill-2"})).code).toBe("ALREADY_PRINTED");
+    expect((await lab.command("manager","Print.Resolve",{jobId:String(j2.value.jobId),effectId:String(j2.value.jobId),outcome:"printed",reason:"again"})).code).toBe("ALREADY_RESOLVED");
+    ok(await lab.command("cashier","Print.ConfirmReprint",{jobId:String(j2.value.jobId),reason:"paper reloaded"}));
+    expect(text(lab.printed.at(-1)!.bytes)).toContain("REPRINT #1");
   } finally { await lab.close(); }
 });
 
