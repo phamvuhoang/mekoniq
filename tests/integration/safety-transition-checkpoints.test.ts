@@ -3,11 +3,12 @@ import {createContinuityLab} from '../support/continuity-lab';
 import {createRestaurantLab} from '../support/restaurant-lab';
 import {canonicalBytes} from '../../packages/contracts/src/index';
 import {testSigner,testPublicJwk} from '../support/storage-cases';
+import {actors} from '../support/actors';
 const transitions=['Ownership.Fence','Ownership.Activate','Maintenance.Enter'] as const;
 const changes=['expired','new-device','new-epoch'] as const;
 for(const transition of transitions)test.each(changes)('%s checkpoint change blocks '+transition+' after preparation',async(change)=>{
  const lab=await createContinuityLab();try {
-  for(const deviceId of ['device-a','device-b','device-kds','device-guest'])await lab.seed('device-checkpoint',deviceId,{deviceEpoch:'epoch-1',status:'complete',pendingCount:0,receivedCursor:'0',appliedCursor:'0',coveredSequence:'0',expiresAtMs:lab.clock.nowMs+30000});
+  for(const deviceId of new Set(Object.values(actors).map(a=>a.deviceId)))await lab.seed('device-checkpoint',deviceId,{deviceEpoch:'epoch-1',status:'complete',pendingCount:0,receivedCursor:'0',appliedCursor:'0',coveredSequence:'0',expiresAtMs:lab.clock.nowMs+30000});
   const maintenance=transition==='Maintenance.Enter';
   const prepared=await lab.command('manager',maintenance?'Maintenance.Prepare':'Ownership.PrepareHandoff',maintenance?{mode:'full_shutdown'}:{newDeviceId:'device-b'});
   expect(prepared.status).toBe('accepted');

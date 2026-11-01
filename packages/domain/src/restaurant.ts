@@ -20,8 +20,12 @@ import { registerBillMerge } from './billing/merge';
 import { registerTenders } from './billing/tenders';
 import { registerRefunds } from './billing/refund';
 import { registerBillVoid } from './billing/void';
+import { registerGuestTokens } from './service/guest-token';
+import { registerServiceCalls } from './service/calls';
+import { registerGuide } from './service/guide';
+import { registerBussing } from './service/bussing';
 export function registerRestaurantModules(registry:ModuleRegistry):void {
- for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid]) register(registry);
+ for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing]) register(registry);
 }
 export const commandPermissions:Record<string,string>={
  'Catalog.Publish':'catalog.publish','Catalog.Quote':'catalog.read','Session.Open':'order.write',
@@ -35,4 +39,8 @@ export const commandPermissions:Record<string,string>={
  'Payment.RecordCash':'payment.cash','Bill.Close':'billing.write',
  'Bill.Split':'billing.write','Bill.Merge':'billing.write','Bill.Void':'bill.void',
  'Payment.RecordTerminal':'payment.terminal','Payment.VerifyManual':'payment.verify','Refund.Record':'payment.refund',
+ 'Session.Close':'order.write','Guest.IssueToken':'order.write','Guest.AcknowledgeCall':'order.write','Robot.PairDisplay':'device.enroll',
+ // Guest surfaces (QR via the cloud guest API, kiosk, paired robot screen) hold only guest.* permissions; the handler resolves their session.
+ 'Guest.PlaceOrder':'guest.order','Guest.CallStaff':'guest.call','Guest.ReportIssue':'guest.call','Guest.RequestBill':'guest.bill',
+ 'Mission.Guide':'mission.write','Mission.Bus':'mission.write',
 };

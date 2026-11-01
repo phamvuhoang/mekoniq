@@ -240,7 +240,7 @@ export function expectedCash(x:{opening:bigint;receipts:bigint;in:bigint;out:big
 - Consumes: Guest session tokens, menu/order APIs, robot capability policy.
 - Produces: `Guest.CallStaff`, `.RequestBill`, `.ReportIssue`, `Mission.Guide`, `.Bus`; QR/kiosk/robot ordering flags riêng.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -258,9 +258,9 @@ test("an old QR token cannot order for the next table occupant", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/guest-boundaries.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/guest-boundaries.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Guest scopes chỉ session/table của mình, calls cooldown/coalesce idempotent. Guide require known destination/capability; bussing loaded không cancel bỏ dở. Robot màn hình paired với robot identity, không tin URL robotId.
+- [x] **3. Hiện thực phần cốt lõi.** Guest scopes chỉ session/table của mình, calls cooldown/coalesce idempotent. Guide require known destination/capability; bussing loaded không cancel bỏ dở. Robot màn hình paired với robot identity, không tin URL robotId.
 
 ```ts
 export function guestSessionValid(token:{sessionId:string;revision:number},
@@ -270,11 +270,11 @@ export function guestSessionValid(token:{sessionId:string;revision:number},
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Web guest Next.js dùng scoped HTTPS API, báo pending cho tới venue receipt; ảnh menu qua Storage, không lộ private map/chứng từ. Kiosk/màn robot là HTML bundle native để dùng LAN. Local guest HTTPS option cần trusted cert/DNS/static bundle độc lập Next.js server; mặc định cloud guest báo rõ khi venue unreachable, staff nhập thay. Voice cues VI/EN không làm source of truth; touch controls ≥48px.
+- [x] **4. Nối vào runtime và lưu trữ.** Web guest Next.js dùng scoped HTTPS API, báo pending cho tới venue receipt; ảnh menu qua Storage, không lộ private map/chứng từ. Kiosk/màn robot là HTML bundle native để dùng LAN. Local guest HTTPS option cần trusted cert/DNS/static bundle độc lập Next.js server; mặc định cloud guest báo rõ khi venue unreachable, staff nhập thay. Voice cues VI/EN không làm source of truth; touch controls ≥48px.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/guest-boundaries.test.ts`; kỳ vọng PASS. QR ordering disabled while staff POS enabled; robot ordering independent delivery; guests cannot settle/clear E-stop; service call alert acknowledgement never closes bill. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/guest-boundaries.test.ts`; kỳ vọng PASS. QR ordering disabled while staff POS enabled; robot ordering independent delivery; guests cannot settle/clear E-stop; service call alert acknowledgement never closes bill. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T05.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: serve scoped guest and robot-facing restaurant workflows"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T05.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: serve scoped guest and robot-facing restaurant workflows"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W05-T06: Báo cáo ca/doanh thu và UX end-to-end
 

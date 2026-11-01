@@ -18,7 +18,8 @@ import {syncActor,pushEntries,pullEntries,syncWatermark} from './sync/controller
 import {enqueueRelay,pendingRelay,recordVenueReceipt} from './relay/commands';
 import {createAssetUpload,createAssetDownload,type UploadInput} from './storage/signed-upload';
 import {finalizeAsset} from './storage/finalize';
-import type {CommandEnvelope,CommandResult} from '../../../../../packages/contracts/generated/wire';
+import {guestMenu,guestMenuImage,guestSession,submitGuestCommand} from './guest/api';
+import type {CommandEnvelope,CommandResult,JsonObject} from '../../../../../packages/contracts/generated/wire';
 export type CloudRouteContext={actor:Actor|null;params:Record<string,string>;body:unknown};
 export type CloudRoute={method:string;path:string;permission:string|null;bodyLimit:number;handler:(request:Request,context:CloudRouteContext)=>Promise<Response>};
 function object(value:unknown):Record<string,unknown>{if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('INVALID_BODY');return value as Record<string,unknown>;}
@@ -28,7 +29,7 @@ function protectMutation(request:Request,actor:Actor){if(actor.deviceId)return;i
 function safe(handler:CloudRoute['handler']):CloudRoute['handler']{return async(request,context)=>{
  try{return await handler(request,context);}catch(error){
   const code=error instanceof Error?error.message:'SERVICE_UNAVAILABLE';
-  const status=code==='UNAUTHENTICATED'?401:/DENIED|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE/.test(code)?400:/QUOTA/.test(code)?507:503;
+  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE/.test(code)?400:/QUOTA/.test(code)?507:503;
   return Response.json({code:status===503?'SERVICE_UNAVAILABLE':code},{status});
  }
 };}
@@ -107,4 +108,11 @@ export function registerWave02Routes(register:(route:CloudRoute)=>void):void {
  add('GET','/v1/assets/:id/download','assets.read',async(request,c)=>{
   const actor=actorRequired(c.actor);return Response.json(await createAssetDownload(actor,actorScope(actor,new URL(request.url).searchParams.get('venueId')??''),c.params.id));
  });
+ // Guest web: no staff session. Scope comes from the venue-signed table token (or the public menu's own org/venue), never from a cookie.
+ add('GET','/v1/guest/menu/:organizationId/:venueId',null,async(_request,c)=>Response.json(await guestMenu({organizationId:c.params.organizationId,venueId:c.params.venueId})));
+ add('GET','/v1/guest/menu/:organizationId/:venueId/images/:assetId',null,async(_request,c)=>new Response(null,{status:302,headers:{Location:await guestMenuImage({organizationId:c.params.organizationId,venueId:c.params.venueId},c.params.assetId)}}));
+ add('POST','/v1/guest/session',null,async(_request,c)=>Response.json(await guestSession(object(c.body).token)),8192);
+ add('POST','/v1/guest/commands',null,async(_request,c)=>{
+  const body=object(c.body),result=await submitGuestCommand(body.token,String(body.type),object(body.payload??{}) as JsonObject,body.operationId);return Response.json(result,{status:result.status==='pending'?202:200});
+ },16384);
 }

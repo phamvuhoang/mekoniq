@@ -17,5 +17,8 @@
   "isolated": "Isolated capture",
   "error": "Unable to process",
   "enroll": "Device enrollment required",
-  "retry": "Retry connection"
+  "retry": "Retry connection",
+  "guest-requests": "Guest requests",
+  "kiosk": "Ordering kiosk",
+  "robot-screen": "Robot screen"
 }

@@ -52,7 +52,7 @@ export function registerBills(registry:ModuleRegistry):void {
    if(others.some(b=>billSessions(b.state).includes(sessionId))) continue;
    const session=requireState(s,'session',sessionId);
    if(all(s,'order').some(o=>o.state.sessionId===session.ref.id && !orderIds.includes(o.ref.id)&&o.state.status==='open')) return fail('LATE_ORDER_UNRESOLVED');
-   events.push(changed('SessionClosed',session,{status:'closed'}));
+   events.push(changed('SessionClosed',session,{status:'closed',revision:Number(session.state.revision ?? 0)+1})); // guest tokens for this seating die
    const table=requireState(s,'table',String(session.state.tableId));
    events.push(changed('TableReleased',table,{activeSessionId:null}));
   }

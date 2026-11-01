@@ -7,6 +7,7 @@ import { registerRestaurantModules } from '../../packages/domain/src/restaurant'
 import fixture from '../fixtures/restaurant-v1.json';
 import {quoteOrder} from '../../packages/domain/src/pricing/quote';
 import type { CommandResult, JsonObject, Snapshot } from '../../packages/contracts/src/index';
+import { encodeGuestToken, guestCommand as guestEnvelope } from '../../packages/domain/src/service/guest-token';
 import { dispatchPrintEffects, spoolEffectSnapshots, PrinterNotReached, type PrinterTransport } from '../../integrations/printing/src/spool';
 export async function createRestaurantLab() {
  const lab=await createLab(registry=>{registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);});
@@ -47,7 +48,19 @@ export async function createRestaurantLab() {
   if(autoSpool.on&&result.status==='accepted'&&!result.duplicate&&['Print.Request','Print.ConfirmReprint'].includes(type)) await runSpool();
   return result;
  };
- return Object.assign(lab,{printed,runSpool,autoSpool});
+ // Plan §4 guest helpers. guestToken: staff issue a token through the production command and the coordinator store signs it at commit.
+ // guestCommand: the same token -> envelope builder the cloud guest API uses, then the guest principal's authorization and the venue's verification.
+ const guestToken=async(sessionId:string,channel='qr'):Promise<string>=>{
+  const issued=await baseCommand('cashier','Guest.IssueToken',{sessionId,channel});
+  if(issued.status!=='accepted') throw new Error('GUEST_TOKEN_REJECTED:'+(issued.code??issued.status));
+  return encodeGuestToken(await lab.state<JsonObject>('guest-token',String(issued.value.tokenId)));
+ };
+ const guestCommand=async(token:string,type:string,payload:JsonObject,operationId?:string,actor='guest'):Promise<CommandResult>=>{
+  let built:ReturnType<typeof guestEnvelope>;
+  try { built=guestEnvelope(token,type,payload); } catch(error) { return {status:'rejected',code:(error as Error).message,value:{},duplicate:false,ack:'none',operationId:operationId??''}; }
+  return lab.command(actor,built.type,built.payload,operationId);
+ };
+ return Object.assign(lab,{printed,runSpool,autoSpool,guestToken,guestCommand});
 }
 
 /**

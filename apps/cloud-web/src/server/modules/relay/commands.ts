@@ -7,11 +7,22 @@ import {validateEnvelope} from '../../../../../../packages/contracts/src/validat
 import {withTenant,type TenantScope} from '../identity/tenant-context';
 import {requirePermission,type Actor} from '../identity/rbac';
 import {validateOwnership} from '../devices/ownership';
+import {guestCommandTypes} from '../../../../../../packages/domain/src/service/guest-token';
 export async function enqueueRelay(actor:Actor,command:CommandEnvelope,expiresAt:string){
  validateEnvelope(command);requirePermission(actor,'relay.write',command);
  const needed=requiredPermissions(command.type,command.payload);if(!needed.length)throw new Error('UNKNOWN_COMMAND');for(const permission of needed)requirePermission(actor,permission,command);
  if(actor.deviceId?(command.deviceId!==actor.deviceId||command.deviceEpoch!==actor.deviceEpoch):(command.deviceId!=='cloud-web'||command.deviceEpoch!=='cloud-web-v1'))throw new Error('SOURCE_DEVICE_MISMATCH');
  if(command.actorRef!==actor.id)throw new Error('ACTOR_MISMATCH');
+ return storeRelay(command,expiresAt);
+}
+/** Cloud guest API source: an anonymous guest whose only authority is the venue-signed token inside the payload (verified again at the venue). */
+export const guestRelaySource={deviceId:'cloud-guest',deviceEpoch:'cloud-guest-v1'};
+export const isGuestRelay=(command:CommandEnvelope)=>command.actorRef.startsWith('guest:')&&command.deviceId===guestRelaySource.deviceId&&command.deviceEpoch===guestRelaySource.deviceEpoch&&guestCommandTypes.has(command.type);
+export async function enqueueGuestRelay(command:CommandEnvelope,expiresAt:string){
+ validateEnvelope(command);if(!isGuestRelay(command))throw new Error('GUEST_COMMAND_FORBIDDEN');
+ return storeRelay(command,expiresAt);
+}
+async function storeRelay(command:CommandEnvelope,expiresAt:string){
  const expiry=Date.parse(expiresAt);
  return withTenant(command,async sql=>{
   await sql`SELECT pg_advisory_xact_lock(hashtext(${JSON.stringify([command.organizationId,command.venueId,command.operationId])}))`;
@@ -37,7 +48,8 @@ export async function pendingRelay(actor:Actor,scope:TenantScope){
    const command=row.command as CommandEnvelope;
    const needed=requiredPermissions(command.type,command.payload);
    const member=/^[0-9a-f-]{36}$/i.test(command.actorRef)?(await sql`SELECT role,station_ids FROM venue_membership WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND user_id=${command.actorRef}::uuid AND active`)[0]:undefined;
-   const permissions=member?rolePermissions(member.role):[];
+   // A guest relay carries only guest.* rights; its session/table come from the venue's own verification of the token, never from the cloud.
+   const permissions=isGuestRelay(command)?rolePermissions('guest'):member?rolePermissions(member.role):[];
    const receiptOnly=Date.parse(row.expires_at)<=Date.now()||row.status==='unknown'||!needed.length||!needed.every(permission=>permissions.includes('*')||permissions.includes(permission));
    const nowMs=Date.now();const payload={schemaVersion:1,...scope,recipientDeviceId:actor.deviceId,recipientDeviceEpoch:actor.deviceEpoch!,coordinatorEpoch:Number(owner.epoch),commandHash:hashPayload({...command}),actorRef:command.actorRef,deviceId:command.deviceId,deviceEpoch:command.deviceEpoch,permissions:receiptOnly?[]:permissions,stationIds:receiptOnly?[]:member?.station_ids??[],receiptOnly,issuedAt:new Date(nowMs).toISOString(),expiresAt:new Date(receiptOnly?nowMs+60000:Math.min(Date.parse(row.expires_at),nowMs+60000)).toISOString()};
    const signed=signGrant(payload,signer);

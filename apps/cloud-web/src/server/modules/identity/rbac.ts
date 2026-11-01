@@ -7,6 +7,9 @@ const roles:Record<string,string[]>={
  executor:['robot.observe','robot.stop'],
  spooler:['print.observe'],
  guest:['guest.order','guest.call','guest.bill','payment.claim'],
+ // Guest-facing venue devices: a kiosk orders with a staff-issued kiosk token, a robot screen for the table its paired robot waits at.
+ kiosk:['guest.order','guest.call','guest.bill','catalog.read'],
+ 'robot-display':['guest.order','guest.call','guest.bill','catalog.read'],
 };
 export function rolePermissions(role:string){return [...(roles[role]??[])];}
 export function permissionsForVenue(actor:Actor,venueId:string){return actor.permissionsByVenue?(actor.permissionsByVenue[venueId]??[]):actor.permissions;}

@@ -25,6 +25,8 @@ export async function startCoordinatorServer(port=3451) {
         let snapshots=await(await lab.getStore('coordinator')).snapshots(lab.scope);
         if(principal.role==='chef')snapshots=snapshots.filter(s=>['station','kitchen-ticket','kitchen-delta','kitchen-cancellation','fulfillment'].includes(s.ref.kind)&&(!s.state.stationId||s.state.stationId==='kitchen'));
         if(principal.role==='guest')snapshots=[];
+        // Same visibility as LanService.kt for guest-facing devices: menu, tables and robots only, never another session's orders, bills, calls or tokens.
+        if(['kiosk','robot-display'].includes(principal.role))snapshots=snapshots.filter(s=>['configuration','catalog','table','robot','mission','robot-display'].includes(s.ref.kind));
         res.end(JSON.stringify(snapshots));return;
       }
       if(req.method==='POST') {

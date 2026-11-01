@@ -401,7 +401,8 @@
       "depends": "W05-T02, W03-T04, W02-T03",
       "testFile": "tests/integration/guest-boundaries.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/guest-boundaries.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T05.md"
     },
     {
       "wave": "W05",

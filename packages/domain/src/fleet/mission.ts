@@ -1,5 +1,5 @@
 import type { ModuleRegistry } from '../modules';
-import type { CommandEnvelope, DomainEvent, JsonObject, Snapshot } from '../../../contracts/src/index';
+import type { CommandEnvelope, Decision, DomainEvent, JsonObject, Snapshot } from '../../../contracts/src/index';
 import { all, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
 import { selectRobot } from './scheduler';
 import { issueRobotCommand } from './command-journal';
@@ -60,8 +60,8 @@ function nextStop(c:CommandEnvelope,s:Snapshot[],mission:Snapshot,stops:MissionS
  const issued=issueRobotCommand(c,robot,mission.ref.id,revision,next);
  return done([changed('MissionStopAdvanced',mission,{stops,status:'executing',loaded,currentStopId:next.id,revision,commandRevision:revision,commandId:issued.commandId}),changed('RobotGoalAssigned',robot,{goalState:'pending',availability:'busy'}),issued.event],{missionId:mission.ref.id,commandId:issued.commandId,effects:[issued.effect as unknown as JsonObject]});
 }
-export function registerMissions(registry:ModuleRegistry):void {
- handle(registry,'Mission.Create',(c,s)=>{
+/** Mission.Create body; Mission.Guide/Mission.Bus build their stops and come through here, so robot selection stays one path (selectRobot). */
+export function createMission(c:CommandEnvelope,s:Snapshot[]):Decision {
   const missionId=c.payload.missionId ? text(c.payload.missionId) : stableId('mission',c);
   if(find(s,'mission',missionId)) return fail('MISSION_EXISTS');
   const rawIds=c.payload.allocationIds;
@@ -94,7 +94,9 @@ export function registerMissions(registry:ModuleRegistry):void {
   const first=stops[0]!;first.status='travelling';
   const issued=issueRobotCommand(c,robot,missionId,1,first);
   return done([created('MissionCreated','mission',missionId,{kind,status:'assigned',robotId:robot.ref.id,source:first.targetId,loaded:false,stops,currentStopId:first.id,revision:1,commandRevision:1,commandId:issued.commandId,allocationIds:ids,controlEpoch:robot.state.controlEpoch!}),changed('RobotAssigned',robot,{availability:'busy',missionId,goalState:'pending'}),...allocations.map(a=>changed('AllocationAssigned',a,{missionId})),issued.event],{missionId,commandId:issued.commandId,effects:[issued.effect as unknown as JsonObject]});
- });
+}
+export function registerMissions(registry:ModuleRegistry):void {
+ handle(registry,'Mission.Create',createMission);
  handle(registry,'Mission.ConfirmStop',(c,s)=>{
   const mission=requireState(s,'mission',text(c.payload.missionId));expectVersion(c,mission);
   if(!['executing','cancelling'].includes(String(mission.state.status))) return fail('MISSION_STATE_CONFLICT');
@@ -125,10 +127,13 @@ export function registerMissions(registry:ModuleRegistry):void {
   if(mission.state.status==='queued')return done([changed('MissionCancelled',mission,{status:'cancelled',stops:(structuredClone(mission.state.stops) as MissionStop[]).map(stop=>({...stop,status:'skipped'}))}),...adjustAllocations(s,all(s,'allocation').filter(a=>a.state.missionId===mission.ref.id&&a.state.status==='reserved'),'release',c.recordedAt)],{missionId:mission.ref.id});
   if(mission.state.status==='cancelling') return fail('CANCELLATION_PENDING');
   const stops=structuredClone(mission.state.stops ?? []) as MissionStop[];
-  for(const stop of stops) if(stop.status!=='completed') stop.status='skipped';
   const allocations=all(s,'allocation').filter(a=>a.state.missionId===mission.ref.id);
   const loaded=onboardCargo(s,mission);
-  if(loaded) {
+  // Collected dishes are never abandoned or carried back to the table: a loaded bussing mission keeps its unload stop.
+  const unload=mission.state.kind==='bus'&&loaded?stops.find(stop=>stop.action==='unload'&&stop.status!=='completed'):undefined;
+  if(unload?.status==='awaiting_action') return fail('UNLOAD_PENDING');
+  for(const stop of stops) if(stop.status!=='completed') stop.status=stop===unload?'pending':'skipped';
+  if(loaded&&!unload) {
    const sources=new Map<string,string[]>();
    for(const a of allocations.filter(x=>x.state.status==='loaded')) {const source=String(a.state.stationId);sources.set(source,[...(sources.get(source) ?? []),a.ref.id]);}
    if(!sources.size) sources.set(String(mission.state.source ?? 'kitchen'),[]);

@@ -203,6 +203,26 @@
       "printing": {
         "status": "enabled",
         "revision": 1
+      },
+      "qr.order": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "kiosk.order": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "robot.order": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "guest.call": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "guest.bill": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {

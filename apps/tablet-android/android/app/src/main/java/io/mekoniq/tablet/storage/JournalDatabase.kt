@@ -410,6 +410,16 @@ class JournalDatabase(
             if(data.optString("kind")=="grant" && data.optString("id")==ref.getString("id"))data.put("state",next)
           }
         }
+        if(ref.getString("kind")=="guest-token") {
+          // Signed once at issue with the coordinator key, like a settlement grant; never rewritten (TS twin: sql-store.ts).
+          val next=mutation.getJSONObject("newState")
+          require(command.getString("type")=="Guest.IssueToken" && current==0 && next.getString("signature")=="" && next.getString("organizationId")==org && next.getString("venueId")==venue) { "INVALID_GUEST_TOKEN_MUTATION" }
+          next.put("signature",DeviceKeys.base64(signer(canonical(guestTokenCapability(next)))))
+          for(i in 0 until batch.getJSONArray("events").length()) {
+            val data=batch.getJSONArray("events").getJSONObject(i).getJSONObject("data")
+            if(data.optString("kind")=="guest-token" && data.optString("id")==ref.getString("id"))data.put("state",next)
+          }
+        }
         if(ref.getString("kind")=="grant-return") {
           val localReturn=command.getString("type")=="SettlementGrant.Return"
           require((localReturn||command.getString("type")=="Continuity.AcceptSettlementObservation")&&current==0) {"INVALID_GRANT_RETURN"}
@@ -786,6 +796,9 @@ class JournalDatabase(
     })
     fun grantCapability(grant:JSONObject):JSONObject = JSONObject().apply {
       for(key in listOf("schemaVersion","id","organizationId","venueId","billId","billVersion","billSnapshotHash","deviceId","deviceEpoch","issuerDeviceId","issuerDeviceEpoch","issuerEpoch","nonce","currency","amountMinor","methods","issuedAt","expiresAt","expiresAtMs"))put(key,grant.get(key))
+    }
+    fun guestTokenCapability(token:JSONObject):JSONObject = JSONObject().apply {
+      for(key in listOf("schemaVersion","id","organizationId","venueId","sessionId","tableId","revision","channel","issuerDeviceId","issuerDeviceEpoch","issuerEpoch","issuedAt","expiresAt","expiresAtMs"))put(key,token.get(key))
     }
     fun parseJsonStrict(text:String):JSONObject { JsonCanonicalizer(text);return JSONObject(text) }
     fun canonical(value: JSONObject): ByteArray = JsonCanonicalizer(value.toString()).encodedUTF8
