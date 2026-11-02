@@ -1,0 +1,4 @@
+[
+  {"__class":"StatusStateAttribute","metaData":{},"value":"idle","flag":"none"},
+  {"__class":"BatteryStateAttribute","metaData":{},"level":90,"flag":"none"}
+]

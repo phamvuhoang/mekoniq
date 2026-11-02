@@ -1,0 +1,11 @@
+{
+  "billId": "bill-7", "kind": "receipt", "currency": "VND",
+  "lines": [
+    { "name": "Cơm gà", "quantity": "2", "modifiers": ["Thêm trứng"], "totalMinor": "67500" },
+    { "name": "Trà đá", "quantity": "1", "modifiers": [], "totalMinor": "20000" }
+  ],
+  "charges": { "subtotalMinor": "87500", "discountMinor": "8750", "serviceMinor": "3938", "taxMinor": "6300", "taxIncludedMinor": "0" },
+  "totalMinor": "88988", "paidMinor": "88988", "refundedMinor": "0", "dueMinor": "0",
+  "payments": [{ "method": "cash", "capturedMinor": "88988", "tenderedMinor": "100000", "changeMinor": "11012", "refundedMinor": "0" }],
+  "refunds": []
+}

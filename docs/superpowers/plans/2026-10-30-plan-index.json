@@ -361,7 +361,8 @@
       "depends": "W03-T01, W00-T03",
       "testFile": "tests/unit/pricing.test.ts",
       "testCommand": "pnpm test:unit -- tests/unit/pricing.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T01.md"
     },
     {
       "wave": "W05",
@@ -370,7 +371,8 @@
       "depends": "W03-T02, W03-T03",
       "testFile": "tests/integration/table-order-amendments.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/table-order-amendments.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T02.md"
     },
     {
       "wave": "W05",
@@ -379,7 +381,8 @@
       "depends": "W05-T01, W04-T02",
       "testFile": "tests/integration/financial-lifecycle.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/financial-lifecycle.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T03.md"
     },
     {
       "wave": "W05",
@@ -388,7 +391,8 @@
       "depends": "W05-T03",
       "testFile": "tests/integration/cash-print.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/cash-print.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T04.md"
     },
     {
       "wave": "W05",
@@ -397,7 +401,8 @@
       "depends": "W05-T02, W03-T04, W02-T03",
       "testFile": "tests/integration/guest-boundaries.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/guest-boundaries.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T05.md"
     },
     {
       "wave": "W05",
@@ -406,7 +411,8 @@
       "depends": "W05-T01..W05-T05",
       "testFile": "tests/integration/sales-reconciliation.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/sales-reconciliation.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W05-T06.md"
     },
     {
       "wave": "W06",
@@ -415,7 +421,8 @@
       "depends": "W03-T04, W04-T05",
       "testFile": "tests/integration/robot-admission.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/robot-admission.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W06-T01.md"
     },
     {
       "wave": "W06",
@@ -424,7 +431,9 @@
       "depends": "W06-T01, W01-T03",
       "testFile": "tests/adapters/valetudo-conformance.test.ts",
       "testCommand": "pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W06-T02.md",
+      "remaining": "Supervised hardware proof on a physical Valetudo robot (named model + firmware, venue LAN): recorded fixtures, go_to_target behaviour, measured tolerances, STOP/cancel/AP loss/reboot/map reset without false arrival, and a release cleartext/TLS decision. Protocol-emulator and AVD results are integration_tested only; the valetudo profile is not hardware_validated."
     },
     {
       "wave": "W06",
@@ -433,7 +442,8 @@
       "depends": "W06-T01, W00-T02",
       "testFile": "robotics/agent/tests/test_executor_recovery.py",
       "testCommand": "python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W06-T03.md"
     },
     {
       "wave": "W06",
@@ -442,7 +452,16 @@
       "depends": "W06-T03",
       "testFile": "robotics/agent/tests/test_nav2_adapter.py",
       "testCommand": "python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q",
-      "status": "planned"
+      "additionalTestFiles": [
+        "robotics/agent/tests/test_robotics_assets.py",
+        "robotics/simulation/tests/test_restaurant.py"
+      ],
+      "additionalTestCommands": [
+        "python3 -m pytest robotics/agent/tests/test_robotics_assets.py -q",
+        "colcon test --packages-select mekoniq_simulation (Linux, ROS 2 Jazzy + Gazebo Harmonic; see evidence)"
+      ],
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W06-T04.md"
     },
     {
       "wave": "W06",
@@ -451,7 +470,9 @@
       "depends": "W06-T01..W06-T04",
       "testFile": "tests/hardware/test_profile_validation.py",
       "testCommand": "python3 -m pytest tests/hardware/test_profile_validation.py -q",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W06-T05.md",
+      "remaining": "Supplier SDK/firmware/pinout and CAN/RS485 register maps for WHEELTEC S100 and ZLTECH; physical measurements (dimensions, mass, speeds, braking/turn, rated and tested payload, stop distances) on the named robot and firmware; supervised E-stop/bumper/cliff/independent-watchdog tests; a signed commissioning manifest from a real commissioning key and a signed venue acceptance. Schemas, validator and read-only CLI are verified locally with synthetic TEST-ONLY fixtures; both profiles stay integration_tested and non-dispatchable."
     },
     {
       "wave": "W06",
@@ -464,9 +485,12 @@
         "tests/e2e/trial-service-preset.spec.ts"
       ],
       "additionalTestCommands": [
-        "pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts"
+        "pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts",
+        "pnpm test:e2e -- tests/e2e/pilot-service.spec.ts"
       ],
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W06-T06.md",
+      "remaining": "Gate B pilot is BLOCKED (docs/implementation/gates/B-pilot.md): no approved robot model/firmware, no signed commissioning or venue acceptance, no physical hardware, no real-device O01/O10/O11 runs on a supported Android pair and venue LAN, and no real map reported by a robot to bind. Trial configuration import, the trial-service preset spec (dev-lab fixture venue, not an empty-venue enrollment) and the software-checkable pilot spec are verified locally. Shadow-mode telemetry ingestion is documented only (W11); the actual cutover is W11 after the deploy result is reviewed."
     },
     {
       "wave": "W07",

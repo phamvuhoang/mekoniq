@@ -6,6 +6,7 @@ import {canonicalBytes,hashPayload,validateCommitBatch,verifyEs256,type PublicEc
 import type {AggregateRef,CommandEnvelope,CommandResult,CommitBatch,CommitReceipt,DomainEvent,JournalEntry,JsonObject,Scope,Snapshot,SyncAck} from '../../../contracts/src/index';
 import type {DurableStore,StoreOptions} from '../store';
 import {grantCapability,grantReturnCapability} from '../../../domain/src/billing/settlement-grant';
+import {guestTokenCapability} from '../../../domain/src/service/guest-token';
 import {businessDateAt} from '../../../domain/src/shared/clock';
 type Row=Record<string,string|number>;
 type Query=(sql:string,params?:(string|number)[])=>Promise<Row[]>;
@@ -125,6 +126,12 @@ export class SqlStore implements DurableStore {
         if(m.ref.kind==='grant'&&m.newState.signature===''&&m.newState.status==='issued') {
           if(!this.options.signer) throw new Error('SIGNER_REQUIRED');
           m.newState.signature=this.options.signer(canonicalBytes(grantCapability(m.newState)));
+        }
+        // Guest tokens are signed by the coordinator at issue (like settlement grants) and never rewritten afterwards.
+        if(m.ref.kind==='guest-token') {
+          if(c.type!=='Guest.IssueToken'||m.expectedVersion!==0||m.newState.signature!==''||m.newState.organizationId!==c.organizationId||m.newState.venueId!==c.venueId)throw new Error('INVALID_GUEST_TOKEN_MUTATION');
+          if(!this.options.signer)throw new Error('SIGNER_REQUIRED');
+          m.newState.signature=this.options.signer(canonicalBytes(guestTokenCapability(m.newState)));
         }
         if(m.ref.kind==='grant-return'&&m.newState.signature==='') {
           if(!this.options.signer)throw new Error('SIGNER_REQUIRED');

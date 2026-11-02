@@ -1,0 +1,668 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.hardware-profile.wheeltec-s100.v1",
+  "title": "WHEELTEC S100 commissioning profile",
+  "description": "Commissioning record for a WHEELTEC S100 chassis. Every vendor-specific value is null (or absent) until it comes from supplier documentation or a supervised measurement; null means unmeasured and caps the profile at integration_tested. No value here may be typed from memory.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile_id",
+    "schema_version",
+    "vendor",
+    "interfaces",
+    "control_bus",
+    "geometry",
+    "safety_evidence",
+    "tested_payload_kg",
+    "verified_capabilities",
+    "venue_acceptance",
+    "manifest"
+  ],
+  "properties": {
+    "profile_id": {
+      "const": "wheeltec-s100"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "vendor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "firmware",
+        "source",
+        "blocked_external"
+      ],
+      "properties": {
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Actual vendor model string read from the robot."
+        },
+        "firmware": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Actual firmware version read from the robot."
+        },
+        "source": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "document",
+            "revision"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "document": {
+              "type": "string",
+              "minLength": 1
+            },
+            "revision": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "description": "Supplier SDK/firmware document the values come from."
+        },
+        "blocked_external": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "What is missing from outside this repo (supplier package, measurements); null once nothing is missing."
+        }
+      }
+    },
+    "interfaces": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "odom",
+        "scan",
+        "tf",
+        "encoder",
+        "watchdog"
+      ],
+      "properties": {
+        "odom": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "topic",
+            "frame_id",
+            "verified_on"
+          ],
+          "properties": {
+            "topic": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "frame_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "verified_on": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date",
+              "description": "Date the topic was observed live on this robot."
+            }
+          }
+        },
+        "scan": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "topic",
+            "frame_id",
+            "verified_on"
+          ],
+          "properties": {
+            "topic": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "frame_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "verified_on": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date",
+              "description": "Date the topic was observed live on this robot."
+            }
+          }
+        },
+        "tf": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "topic",
+            "frame_id",
+            "verified_on"
+          ],
+          "properties": {
+            "topic": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "frame_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "verified_on": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date",
+              "description": "Date the topic was observed live on this robot."
+            }
+          }
+        },
+        "encoder": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "unit",
+            "source"
+          ],
+          "properties": {
+            "unit": {
+              "enum": [
+                "tick",
+                "rad",
+                "m",
+                null
+              ],
+              "description": "Native encoder unit as documented by the supplier."
+            },
+            "source": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "required": [
+                "document",
+                "revision"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "document": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "revision": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "watchdog": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "independent_computer",
+            "timeout_s"
+          ],
+          "properties": {
+            "independent_computer": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "True only when the watchdog runs on a computer independent of the navigation computer."
+            },
+            "timeout_s": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "exclusiveMinimum": 0
+            }
+          }
+        }
+      }
+    },
+    "control_bus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "register_map"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "can",
+            "rs485",
+            "usb_serial",
+            "ethernet",
+            null
+          ]
+        },
+        "register_map": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "entries"
+          ],
+          "properties": {
+            "source": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "required": [
+                "document",
+                "revision"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "document": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "revision": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "entries": {
+              "type": "array",
+              "description": "Only from supplied documentation; non-empty requires register_map.source.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "address",
+                  "unit",
+                  "source_ref"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "address": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "unit": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "source_ref": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Page/section of the supplier document."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Same keys as robotics/description/config/geometry_hardware.template.yaml.",
+      "required": [
+        "illustrative",
+        "measured_by",
+        "measured_on",
+        "chassis_length_m",
+        "chassis_width_m",
+        "chassis_height_m",
+        "chassis_mass_kg",
+        "wheel_radius_m",
+        "wheel_width_m",
+        "wheel_separation_m",
+        "wheel_mass_kg",
+        "ground_clearance_m",
+        "lidar_x_m",
+        "lidar_height_m",
+        "max_linear_speed_mps",
+        "max_angular_speed_radps"
+      ],
+      "properties": {
+        "illustrative": {
+          "type": "boolean",
+          "description": "True for simulation geometry; never hardware evidence."
+        },
+        "measured_by": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "measured_on": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "chassis_length_m": {
+          "description": "metres",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "chassis_width_m": {
+          "description": "metres",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "chassis_height_m": {
+          "description": "metres",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "chassis_mass_kg": {
+          "description": "kilograms",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "wheel_radius_m": {
+          "description": "metres",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "wheel_width_m": {
+          "description": "metres",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "wheel_separation_m": {
+          "description": "metres",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "wheel_mass_kg": {
+          "description": "kilograms",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "ground_clearance_m": {
+          "description": "metres",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "lidar_height_m": {
+          "description": "metres",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "max_linear_speed_mps": {
+          "description": "metres per second",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "max_angular_speed_radps": {
+          "description": "radians per second",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "lidar_x_m": {
+          "description": "metres, may be negative",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "safety_evidence": {
+      "description": "Supervised E-stop/bumper/cliff/watchdog results on the actual robot; null = none.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "supervised_by",
+        "observed_on",
+        "firmware",
+        "estop",
+        "bumper",
+        "cliff"
+      ],
+      "properties": {
+        "supervised_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "firmware": {
+          "type": "string",
+          "minLength": 1
+        },
+        "estop": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result",
+            "stop_distance_m"
+          ],
+          "properties": {
+            "result": {
+              "enum": [
+                "pass",
+                "fail"
+              ]
+            },
+            "stop_distance_m": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Measured stopping distance, metres."
+            },
+            "independent_of_software": {
+              "type": "boolean",
+              "description": "Hardware E-stop cuts motion without any software path."
+            },
+            "stop_time_s": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "bumper": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result",
+            "stop_distance_m"
+          ],
+          "properties": {
+            "result": {
+              "enum": [
+                "pass",
+                "fail"
+              ]
+            },
+            "stop_distance_m": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Measured stopping distance, metres."
+            }
+          }
+        },
+        "cliff": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result",
+            "stop_distance_m"
+          ],
+          "properties": {
+            "result": {
+              "enum": [
+                "pass",
+                "fail"
+              ]
+            },
+            "stop_distance_m": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Measured stopping distance, metres."
+            }
+          }
+        }
+      }
+    },
+    "tested_payload_kg": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Payload actually carried in a supervised test, kilograms."
+    },
+    "verified_capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "delivery",
+          "bussing",
+          "guide"
+        ]
+      },
+      "description": "Capabilities with commissioning evidence for this model."
+    },
+    "venue_acceptance": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "venue_id",
+        "accepted_by",
+        "accepted_on"
+      ],
+      "properties": {
+        "venue_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accepted_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accepted_on": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "manifest": {
+      "description": "RobotManifest per packages/contracts wire.schema.json (validated there, never forked); null while no manifest exists.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "signature": {
+      "description": "ES256 over the RFC 8785 canonical JSON of this record without `signature`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keyId",
+        "alg",
+        "value"
+      ],
+      "properties": {
+        "keyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "alg": {
+          "const": "ES256"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      }
+    }
+  }
+}

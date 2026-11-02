@@ -18,12 +18,12 @@ export async function completeSimulatedTravel(lab:Lab,simulator:SimulatorAdapter
   void wire;
   await dispatchRobotEffects(await lab.getStore('coordinator'),lab.scope,simulator,lab.clock.nowMs);
   simulator.advance(1000);
-  for(const event of events) accepted(await lab.command('owner','Robot.Observe',robotEventCommand(event),event.id));
+  for(const event of events) accepted(await lab.command('simulator:sim-1','Robot.Observe',robotEventCommand(event),event.id));
  }finally{unsubscribe();}
 }
 export async function createSimulator(lab:Lab):Promise<SimulatorAdapter> {
  const robot=await lab.state<JsonObject>('robot','sim-1');
- const manifest:RobotManifest={id:'sim-1',adapter:'simulator',protocolVersion:'1',firmware:'deterministic-fixture-1',capabilities:robot.capabilities as string[],mapId:String(robot.mapId),mapRevision:String(robot.mapRevision),offlineExecution:true,maxLoadMinor:String(robot.maxLoadMinor),trays:Number(robot.trays),validation:'simulated'};
+ const manifest:RobotManifest={id:'sim-1',adapter:'simulator',protocolVersion:'1',firmware:'deterministic-fixture-1',capabilities:robot.capabilities as RobotManifest['capabilities'],mapId:String(robot.mapId),mapRevision:String(robot.mapRevision),offlineExecution:true,maxLoadMinor:String(robot.maxLoadMinor),trays:Number(robot.trays),validation:'simulated'};
  return new SimulatorAdapter(manifest,lab.clock.nowMs);
 }
 export async function runRestaurantJourney(lab:Lab) {

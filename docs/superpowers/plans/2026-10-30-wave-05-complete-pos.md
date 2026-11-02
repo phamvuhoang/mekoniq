@@ -49,7 +49,7 @@
 - Consumes: Exact money allocateMinor, menu version, tax/service profiles.
 - Produces: `quoteOrder(input):Quote`; normalized immutable charge lines có order-of-operations explicit.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -62,9 +62,9 @@ test("discount cents remain conserved across a three-way split", () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:unit -- tests/unit/pricing.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:unit -- tests/unit/pricing.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Modifier min/max selection, size price, sold-out/time availability; discount trước/sau tax là profile versioned, không suy luật thuế. Basis points integer; rounding half-up positive, reversals reference exact original allocations.
+- [x] **3. Hiện thực phần cốt lõi.** Modifier min/max selection, size price, sold-out/time availability; discount trước/sau tax là profile versioned, không suy luật thuế. Basis points integer; rounding half-up positive, reversals reference exact original allocations.
 
 ```ts
 export function quoteTaxExclusive(baseMinor:string, rateBps:number) {
@@ -73,11 +73,11 @@ export function quoteTaxExclusive(baseMinor:string, rateBps:number) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** UI preview/server re-quote bằng same policy revision. Snapshot modifier names/prices/tax/service calculation trên order và prepared bill; changing menu không recompute lịch sử.
+- [x] **4. Nối vào runtime và lưu trữ.** UI preview/server re-quote bằng same policy revision. Snapshot modifier names/prices/tax/service calculation trên order và prepared bill; changing menu không recompute lịch sử.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:unit -- tests/unit/pricing.test.ts`; kỳ vọng PASS. Tax inclusive/exclusive, zero-price modifier, currencies mismatch, repeated coupon allocations, availability crossing day/timezone, stale cart explicit re-confirm. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:unit -- tests/unit/pricing.test.ts`; kỳ vọng PASS. Tax inclusive/exclusive, zero-price modifier, currencies mismatch, repeated coupon allocations, availability crossing day/timezone, stale cart explicit re-confirm. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: price configurable restaurant menus without rounding loss"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: price configurable restaurant menus without rounding loss"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W05-T02: Chuyển/gộp bàn và amendment xuống bếp
 
@@ -94,7 +94,7 @@ export function quoteTaxExclusive(baseMinor:string, rateBps:number) {
 - Consumes: Session/order version locks, KDS ready/allocated/served quantities.
 - Produces: `Session.Move`, `.Merge`, `Order.SendCourse`, `Order.Amend`; KDS delta tickets.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -110,9 +110,9 @@ test("prepared food cancellation does not erase kitchen work", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/table-order-amendments.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/table-order-amendments.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Lock cả session nguồn/đích theo sorted ID, expected versions cho cả hai. Gộp không xóa source session refs hoặc bill. Đồ đã chế biến tạo choice return/waste/manual disposition riêng; delta KDS phải ACK.
+- [x] **3. Hiện thực phần cốt lõi.** Lock cả session nguồn/đích theo sorted ID, expected versions cho cả hai. Gộp không xóa source session refs hoặc bill. Đồ đã chế biến tạo choice return/waste/manual disposition riêng; delta KDS phải ACK.
 
 ```ts
 const lockOrder = [sourceSessionId, targetSessionId].sort();
@@ -120,11 +120,11 @@ if (sourceSessionId === targetSessionId) return {ok:false,code:"SAME_SESSION"};
 if (sourceHasGrant || targetHasGrant) return {ok:false,code:"GRANT_UNRECONCILED"};
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Table occupancy phục vụ hoạt động độc lập identity waypoint robot; bàn đổi tên không đổi physical map binding. UI conflict giữ draft và chỉ rõ bản mới; guest token bị rotate khi session đóng/khách mới.
+- [x] **4. Nối vào runtime và lưu trữ.** Table occupancy phục vụ hoạt động độc lập identity waypoint robot; bàn đổi tên không đổi physical map binding. UI conflict giữ draft và chỉ rõ bản mới; guest token bị rotate khi session đóng/khách mới.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/table-order-amendments.test.ts`; kỳ vọng PASS. Concurrent merge, order added during split, stale guest link, transfer while mission en route retarget version, kitchen bar courses partial ready. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/table-order-amendments.test.ts`; kỳ vọng PASS. Concurrent merge, order added during split, stale guest link, transfer while mission en route retarget version, kitchen bar courses partial ready. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T02.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: preserve table and kitchen history through service changes"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T02.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: preserve table and kitchen history through service changes"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W05-T03: Split/mixed tender/refund và bill ledger
 
@@ -141,7 +141,7 @@ if (sourceHasGrant || targetHasGrant) return {ok:false,code:"GRANT_UNRECONCILED"
 - Consumes: Bill snapshot allocations, grant rights, applied/unapplied money.
 - Produces: `Bill.Split`, `.Merge`, `Payment.VerifyManual`, `Refund.Record`, `Bill.Void`; exact immutable financial ledger.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -157,9 +157,9 @@ test("concurrent refunds cannot exceed the captured balance", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/financial-lifecycle.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/financial-lifecycle.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Split by line/quantity/equal amounts với exact discount/tax apportionment. Cash/card-terminal observation/transfer manual đều typed, manual verified có người/lý do/evidence. Refund chỉ phần chưa hoàn, không void payment captured.
+- [x] **3. Hiện thực phần cốt lõi.** Split by line/quantity/equal amounts với exact discount/tax apportionment. Cash/card-terminal observation/transfer manual đều typed, manual verified có người/lý do/evidence. Refund chỉ phần chưa hoàn, không void payment captured.
 
 ```ts
 export function refundableMinor(captured:string, refunded:string) {
@@ -170,11 +170,11 @@ export function canRefund(captured:string, refunded:string, request:string) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Unique external payment references scoped provider+merchant+transaction; charge unknown chặn thu lại theo policy. Customer claim vẫn pending; full reconciliation giữ overpayment, fees/change riêng khỏi gross sales.
+- [x] **4. Nối vào runtime và lưu trữ.** Unique external payment references scoped provider+merchant+transaction; charge unknown chặn thu lại theo policy. Customer claim vẫn pending; full reconciliation giữ overpayment, fees/change riêng khỏi gross sales.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/financial-lifecycle.test.ts`; kỳ vọng PASS. Partial payment, mixed tender, duplicate webhook observations, closed bill amendments, refunds do not invent stock return, authorization matrix cashier/manager. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/financial-lifecycle.test.ts`; kỳ vọng PASS. Partial payment, mixed tender, duplicate webhook observations, closed bill amendments, refunds do not invent stock return, authorization matrix cashier/manager. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T03.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: complete auditable restaurant billing and refunds"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T03.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: complete auditable restaurant billing and refunds"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W05-T04: Ca, sổ két và hàng đợi in
 
@@ -191,7 +191,7 @@ export function canRefund(captured:string, refunded:string, request:string) {
 - Consumes: Cash ledger, payment source ID, side-effect receipt and printer profile.
 - Produces: `Shift.Open`, `.Close`, `Cash.RecordMovement`, `Print.Request`, `.ConfirmReprint`; printer states pending/sent/unknown/confirmed.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -208,9 +208,9 @@ test("printer timeout cannot undo the recorded sale", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/cash-print.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/cash-print.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Expected cash=opening+cash receipts+cash-in-cash-out-cash refunds-change; shift close records variance/approver. ESC/POS driver profile native network/USB tùy thiết bị đã kiểm, no guaranteed printer ACK.
+- [x] **3. Hiện thực phần cốt lõi.** Expected cash=opening+cash receipts+cash-in-cash-out-cash refunds-change; shift close records variance/approver. ESC/POS driver profile native network/USB tùy thiết bị đã kiểm, no guaranteed printer ACK.
 
 ```ts
 export function expectedCash(x:{opening:bigint;receipts:bigint;in:bigint;out:bigint;refunds:bigint;change:bigint}) {
@@ -218,11 +218,11 @@ export function expectedCash(x:{opening:bigint;receipts:bigint;in:bigint;out:big
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Durable local spool, ESC/POS render golden byte fixtures; uncertain send chuyển unknown, người dùng reprint tạo attempt mới có dấu bản in lại. KDS không phụ thuộc printer success.
+- [x] **4. Nối vào runtime và lưu trữ.** Durable local spool, ESC/POS render golden byte fixtures; uncertain send chuyển unknown, người dùng reprint tạo attempt mới có dấu bản in lại. KDS không phụ thuộc printer success.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/cash-print.test.ts`; kỳ vọng PASS. Shift multi-cashier permissions, reopened day adjustment, cash count mismatch, lost printer ACK, Bluetooth/USB unsupported clearly disabled; physical printer gate W11. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/cash-print.test.ts`; kỳ vọng PASS. Shift multi-cashier permissions, reopened day adjustment, cash count mismatch, lost printer ACK, Bluetooth/USB unsupported clearly disabled; physical printer gate W11. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T04.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: reconcile cash shifts and persist print attempts"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T04.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: reconcile cash shifts and persist print attempts"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W05-T05: Guest QR, kiosk và support/guide/bussing
 
@@ -240,7 +240,7 @@ export function expectedCash(x:{opening:bigint;receipts:bigint;in:bigint;out:big
 - Consumes: Guest session tokens, menu/order APIs, robot capability policy.
 - Produces: `Guest.CallStaff`, `.RequestBill`, `.ReportIssue`, `Mission.Guide`, `.Bus`; QR/kiosk/robot ordering flags riêng.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -258,9 +258,9 @@ test("an old QR token cannot order for the next table occupant", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/guest-boundaries.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/guest-boundaries.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Guest scopes chỉ session/table của mình, calls cooldown/coalesce idempotent. Guide require known destination/capability; bussing loaded không cancel bỏ dở. Robot màn hình paired với robot identity, không tin URL robotId.
+- [x] **3. Hiện thực phần cốt lõi.** Guest scopes chỉ session/table của mình, calls cooldown/coalesce idempotent. Guide require known destination/capability; bussing loaded không cancel bỏ dở. Robot màn hình paired với robot identity, không tin URL robotId.
 
 ```ts
 export function guestSessionValid(token:{sessionId:string;revision:number},
@@ -270,11 +270,11 @@ export function guestSessionValid(token:{sessionId:string;revision:number},
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Web guest Next.js dùng scoped HTTPS API, báo pending cho tới venue receipt; ảnh menu qua Storage, không lộ private map/chứng từ. Kiosk/màn robot là HTML bundle native để dùng LAN. Local guest HTTPS option cần trusted cert/DNS/static bundle độc lập Next.js server; mặc định cloud guest báo rõ khi venue unreachable, staff nhập thay. Voice cues VI/EN không làm source of truth; touch controls ≥48px.
+- [x] **4. Nối vào runtime và lưu trữ.** Web guest Next.js dùng scoped HTTPS API, báo pending cho tới venue receipt; ảnh menu qua Storage, không lộ private map/chứng từ. Kiosk/màn robot là HTML bundle native để dùng LAN. Local guest HTTPS option cần trusted cert/DNS/static bundle độc lập Next.js server; mặc định cloud guest báo rõ khi venue unreachable, staff nhập thay. Voice cues VI/EN không làm source of truth; touch controls ≥48px.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/guest-boundaries.test.ts`; kỳ vọng PASS. QR ordering disabled while staff POS enabled; robot ordering independent delivery; guests cannot settle/clear E-stop; service call alert acknowledgement never closes bill. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/guest-boundaries.test.ts`; kỳ vọng PASS. QR ordering disabled while staff POS enabled; robot ordering independent delivery; guests cannot settle/clear E-stop; service call alert acknowledgement never closes bill. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T05.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: serve scoped guest and robot-facing restaurant workflows"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T05.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: serve scoped guest and robot-facing restaurant workflows"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W05-T06: Báo cáo ca/doanh thu và UX end-to-end
 
@@ -291,7 +291,7 @@ export function guestSessionValid(token:{sessionId:string;revision:number},
 - Consumes: Ledger facts, business date/timezone, projection watermark.
 - Produces: `GET /v1/reports/sales`, `/shifts`, `/robot-kpi`; CSV escaped export, effective/applied timestamps.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -308,9 +308,9 @@ test("late historical receipt adjusts the original business day", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/sales-reconciliation.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/sales-reconciliation.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Ledger là nguồn tổng, materialized views rebuild được theo checkpoint. Report phân biệt revenue/payment/cash/change/refund, khung ca timezone và late adjustments. Không sửa ledger để khớp báo cáo.
+- [x] **3. Hiện thực phần cốt lõi.** Ledger là nguồn tổng, materialized views rebuild được theo checkpoint. Report phân biệt revenue/payment/cash/change/refund, khung ca timezone và late adjustments. Không sửa ledger để khớp báo cáo.
 
 ```ts
 export function netSales(gross:string, discount:string, returns:string) {
@@ -318,14 +318,14 @@ export function netSales(gross:string, discount:string, returns:string) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** E2E cover đầy đủ workflow mô tả demo, permissions, recovery UI, touch portrait/landscape, VI/EN. Loading/empty/error/stale/offline có rõ trạng thái, không hiển thị số zero thay missing sync.
+- [x] **4. Nối vào runtime và lưu trữ.** E2E cover đầy đủ workflow mô tả demo, permissions, recovery UI, touch portrait/landscape, VI/EN. Loading/empty/error/stale/offline có rõ trạng thái, không hiển thị số zero thay missing sync.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/sales-reconciliation.test.ts`; kỳ vọng PASS. Report sum reconciles bill/payment/refund ledger, UTC ngày khác VN, CSV injection escaping. Rerun continuity scenarios impacted by new billing handlers. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/sales-reconciliation.test.ts`; kỳ vọng PASS. Report sum reconciles bill/payment/refund ledger, UTC ngày khác VN, CSV injection escaping. Rerun continuity scenarios impacted by new billing handlers. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T06.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: reconcile operational reports and complete pos acceptance"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W05-T06.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: reconcile operational reports and complete pos acceptance"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ## Wave acceptance
 
-- [ ] Tổng tiền/số lượng bảo toàn qua tách/gộp/hoàn, không đưa float vào ledger.
-- [ ] QR chỉ đúng phiên bàn; nhân viên không được tự cấp quyền hoặc sửa policy offline.
-- [ ] In unknown và payment unknown đi reconciliation, không retry vô hạn.
+- [x] Tổng tiền/số lượng bảo toàn qua tách/gộp/hoàn, không đưa float vào ledger.
+- [x] QR chỉ đúng phiên bàn; nhân viên không được tự cấp quyền hoặc sửa policy offline.
+- [x] In unknown và payment unknown đi reconciliation, không retry vô hạn.

@@ -1,0 +1,25 @@
+{
+  "valetudoVersion": "2026.10.0",
+  "releasedAt": "2026-10-18T17:25:11Z",
+  "source": "https://github.com/Hypfer/Valetudo/tree/2026.10.0",
+  "pinnedFiles": [
+    "backend/lib/webserver/RobotRouter.js",
+    "backend/lib/webserver/doc/RobotRouter.openapi.json",
+    "backend/lib/webserver/CapabilitiesRouter.js",
+    "backend/lib/webserver/capabilityRouters/GoToLocationCapabilityRouter.js",
+    "backend/lib/webserver/capabilityRouters/doc/GoToLocationCapabilityRouter.openapi.json",
+    "backend/lib/webserver/capabilityRouters/BasicControlCapabilityRouter.js",
+    "backend/lib/entities/core/ValetudoGoToLocation.js",
+    "backend/lib/entities/state/attributes/StatusStateAttribute.js",
+    "backend/lib/entities/map/ValetudoMap.js",
+    "backend/lib/entities/map/MapLayer.js",
+    "backend/lib/entities/map/entities/PointMapEntity.js",
+    "backend/lib/mqtt/MqttController.js",
+    "backend/lib/mqtt/capabilities/GoToLocationCapabilityMqttHandle.js",
+    "backend/lib/mqtt/capabilities/BasicControlCapabilityMqttHandle.js",
+    "backend/lib/mqtt/handles/MapNodeMqttHandle.js",
+    "backend/lib/mqtt/status/StatusStateMqttHandle.js",
+    "backend/lib/mqtt/common/Commands.js"
+  ],
+  "note": "Shapes below are transcribed from those files at the tag, not recorded from a robot. No hardware recording exists yet."
+}

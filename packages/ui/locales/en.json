@@ -4,6 +4,8 @@
   "kitchen": "Kitchen",
   "fleet": "Robots",
   "checkout": "Checkout",
+  "cash": "Cash shift",
+  "print": "Print queue",
   "settings": "Manage",
   "refresh": "Refresh",
   "submit": "Confirm",
@@ -15,5 +17,10 @@
   "isolated": "Isolated capture",
   "error": "Unable to process",
   "enroll": "Device enrollment required",
-  "retry": "Retry connection"
+  "retry": "Retry connection",
+  "guest-requests": "Guest requests",
+  "kiosk": "Ordering kiosk",
+  "reports": "Reports",
+  "robot-screen": "Robot screen",
+  "robot-setup": "Robot setup"
 }

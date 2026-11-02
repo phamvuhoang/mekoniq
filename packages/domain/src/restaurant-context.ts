@@ -4,6 +4,7 @@ import { stateEvent, type ModuleRegistry } from './modules';
 import { canonicalMinor } from './shared/money';
 import { evaluateFeature } from './policy/evaluate';
 import type { FeatureConfig } from './policy/registry';
+import {reserveDecisionMovement} from './fleet/reservations';
 import {runtimeReadiness} from './policy/readiness';
 export class DomainFault extends Error {}
 export const fail = (code: string): never => { throw new DomainFault(code); };
@@ -21,6 +22,20 @@ export const all = (snapshots: Snapshot[], kind: string): Snapshot[] => snapshot
 export const find = (snapshots: Snapshot[], kind: string, id: string): Snapshot | undefined => snapshots.find(s => s.ref.kind === kind && s.ref.id === id);
 export const requireState = (snapshots: Snapshot[], kind: string, id: string): Snapshot => find(snapshots, kind, id) ?? fail('NOT_FOUND');
 export const stableId = (prefix: string, command: CommandEnvelope, suffix = ''): string => `${prefix}-${hashPayload({operationId:command.operationId,suffix}).slice(0,32)}`;
+/** External payment reference {provider,merchantId,transactionId}; its id is unique per scope, so one transaction is one payment aggregate. */
+/** Human-entered justification (reason, evidence reference): trimmed, never blank. */
+export const note = (value: JsonValue | undefined, code: string): string => text(typeof value === 'string' ? value.trim() : value, code);
+/**
+ * External payment reference {provider,merchantId,transactionId}, normalized before it becomes an id: references are typed by hand, so
+ * " VCB" / "vcb" and "ft 123" / "FT123" must be the same transaction. provider/merchantId: trimmed, inner whitespace collapsed, lower-cased.
+ * transactionId: all whitespace removed, upper-cased (a false match only blocks a second entry visibly; a missed match would collect twice).
+ */
+export const externalReference = (value: JsonValue | undefined): JsonObject => {
+  const r = value === undefined ? fail('REFERENCE_REQUIRED') : record(value), field = (v: JsonValue | undefined, fold: (s: string) => string) => text(typeof v === 'string' ? fold(v) : v, 'REFERENCE_REQUIRED');
+  const party = (s: string) => s.trim().replace(/\s+/g, ' ').toLowerCase();
+  return { provider: field(r.provider, party), merchantId: field(r.merchantId, party), transactionId: field(r.transactionId, s => s.replace(/\s+/g, '').toUpperCase()) };
+};
+export const externalPaymentId = (ref: JsonObject): string => `ext-${hashPayload({ provider: ref.provider!, merchantId: ref.merchantId!, transactionId: ref.transactionId! }).slice(0, 32)}`;
 export const updated = (snapshot: Snapshot, change: JsonObject): JsonObject => ({ ...snapshot.state, ...change, version: snapshot.version + 1 });
 export const changed = (type:string,snapshot:Snapshot,change:JsonObject):DomainEvent => stateEvent(type,snapshot.ref.kind,snapshot.ref.id,updated(snapshot,change));
 export const created = (type:string,kind:string,id:string,state:JsonObject):DomainEvent => stateEvent(type,kind,id,{...state,version:1});
@@ -34,7 +49,7 @@ export function handle(registry:ModuleRegistry,type:string,handler:Handler):void
  registry.register(type,(command,snapshots)=>{
    try {
     guardFeature(command,snapshots);
-    return handler(command,snapshots);
+    return reserveDecisionMovement(command,snapshots,handler(command,snapshots));
    }
    catch(error) { if(error instanceof DomainFault) return {ok:false,code:error.message}; throw error; }
  });
@@ -45,22 +60,68 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Session.Open':{feature:'sessions',intent:'new'},
  'Order.Place':{feature:'pos.order',intent:'new'},
  'Order.Amend':{feature:'pos.order',intent:'new'},
+ 'Session.Move':{feature:'sessions',intent:'finish_existing'},
+ 'Session.Merge':{feature:'sessions',intent:'finish_existing'},
+ 'Order.SendCourse':{feature:'pos.order',intent:'finish_existing'},
  'Kitchen.Accept':{feature:'kitchen',intent:'finish_existing'},
+ 'Kitchen.AckDelta':{feature:'kitchen',intent:'finish_existing'},
+ 'Kitchen.DisposePrepared':{feature:'kitchen',intent:'finish_existing'},
  'Kitchen.Ready':{feature:'kitchen',intent:'finish_existing'},
  'Fulfillment.Allocate':{feature:'fulfillment',intent:'finish_existing'},
  'Fulfillment.HandOff':{feature:'fulfillment',intent:'finish_existing'},
  'Mission.Create':{feature:'robot.delivery',intent:'new'},
  'Shift.Open':{feature:'cash.shift',intent:'new'},
+ // Closing and moving cash finish an existing shift (allowed while the feature drains); a new print attempt needs a ready printer, recording what the spool saw does not.
+ 'Shift.Close':{feature:'cash.shift',intent:'finish_existing'},
+ 'Cash.RecordMovement':{feature:'cash.shift',intent:'finish_existing'},
+ 'Print.Request':{feature:'printing',intent:'new'},
+ 'Print.ConfirmReprint':{feature:'printing',intent:'new'},
+ 'Print.Observe':{feature:'printing',intent:'finish_existing'},
+ 'Print.Resolve':{feature:'printing',intent:'finish_existing'},
  'Bill.Prepare':{feature:'billing',intent:'finish_existing'},
  'Payment.RecordCash':{feature:'payment.cash',intent:'finish_existing'},
  'Bill.Close':{feature:'billing',intent:'finish_existing'},
+ 'Bill.Split':{feature:'billing',intent:'finish_existing'},
+ 'Bill.Merge':{feature:'billing',intent:'finish_existing'},
+ 'Bill.Void':{feature:'billing',intent:'finish_existing'},
+ 'Payment.RecordTerminal':{feature:'payment.terminal',intent:'new'},
+ 'Payment.VerifyManual':{feature:'payment.transfer.manual',intent:'new'},
+ // Refunds settle money already received: allowed by permission even when the refund/sales features are off (capability matrix §4).
+ 'Refund.Record':{feature:'refund',intent:'finish_existing'},
+ // Closing a seating and handing out its guest link finish existing work; ordering channels are separate flags (qr/kiosk/robot.order).
+ 'Session.Close':{feature:'sessions',intent:'finish_existing'},
+ 'Guest.IssueToken':{feature:'sessions',intent:'finish_existing'},
+ 'Guest.PlaceOrder':{feature:'qr.order',intent:'new'},
+ 'Guest.CallStaff':{feature:'guest.call',intent:'new'},
+ 'Guest.ReportIssue':{feature:'guest.call',intent:'new'},
+ 'Guest.RequestBill':{feature:'guest.bill',intent:'new'},
+ 'Guest.AcknowledgeCall':{feature:'guest.call',intent:'finish_existing'},
+ 'Mission.Guide':{feature:'robot.guide',intent:'new'},
+ 'Mission.Bus':{feature:'robot.bussing',intent:'new'},
+ // Binding and releasing a zone never start business, so they work while the fleet drains; a reservation is new movement unless it serves an open mission of that same robot.
+ 'Robot.BindMap':{feature:'fleet',intent:'finish_existing'},
+ 'Mission.Resume':{feature:'fleet',intent:'finish_existing'},
+ 'Zone.Reserve':{feature:'fleet',intent:'new'},
+ 'Zone.Release':{feature:'fleet',intent:'finish_existing'},
 };
+/** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
+const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};
+const guestOrderFeature=(payload:JsonObject):string=>{const token=payload.guestToken;return guestChannels[token&&typeof token==='object'&&!Array.isArray(token)?String(token.channel):'robot'] ?? 'qr.order';};
+/** Resolving a terminal charge already observed (pending/unknown -> final) finishes existing work; only a new reference is new business. */
+const knownTerminalCharge=(command:CommandEnvelope,snapshots:Snapshot[]):boolean=>{ try { return Boolean(find(snapshots,'payment',externalPaymentId(externalReference(command.payload.reference)))); } catch { return false; } };
+const openMission=(command:CommandEnvelope,snapshots:Snapshot[]):boolean=>{const m=typeof command.payload.missionId==='string'?find(snapshots,'mission',command.payload.missionId):undefined;return Boolean(m&&m.state.robotId===command.payload.robotId&&!['completed','cancelled','failed'].includes(String(m.state.status)));};
 function guardFeature(command:CommandEnvelope,snapshots:Snapshot[]):void {
  const mapped=commandFeatures[command.type];
  if(!mapped) return;
+ // Cancelling a line of an existing order finishes existing work; only adding items is new work.
+ // A robot/safety problem report is not a commercial feature (capability matrix §4): the guest.call flag cannot block it.
+ const intent=(command.type==='Order.Amend'&&command.payload.lineId!==undefined)||(command.type==='Guest.ReportIssue'&&['robot','safety'].includes(String(command.payload.category)))||(command.type==='Payment.RecordTerminal'&&knownTerminalCharge(command,snapshots))||(command.type==='Zone.Reserve'&&openMission(command,snapshots))?'finish_existing':mapped.intent;
+ requireFeature(command,snapshots,command.type==='Guest.PlaceOrder' ? guestOrderFeature(command.payload) : command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature,intent);
+}
+/** Same applied-policy check the per-command guard uses, for a feature a payload opts into (e.g. coupons). */
+export function requireFeature(command:CommandEnvelope,snapshots:Snapshot[],feature:string,intent:'new'|'finish_existing'='new'):void {
  const policy=find(snapshots,'configuration','applied') ?? fail('CONFIGURATION_REQUIRED');
  const features=policy.state.features as unknown as FeatureConfig;
- const feature=command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature;
- const result=evaluateFeature({feature,status:features?.[feature]?.status ?? 'disabled',intent:mapped.intent,revision:Number(policy.state.revision),policyRevision:command.policyRevision,features,readiness:runtimeReadiness(snapshots)});
+ const result=evaluateFeature({feature,status:features?.[feature]?.status ?? 'disabled',intent,revision:Number(policy.state.revision),policyRevision:command.policyRevision,features,readiness:runtimeReadiness(snapshots)});
  if(!result.allowed) return fail(result.reason);
 }

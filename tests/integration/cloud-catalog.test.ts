@@ -23,6 +23,16 @@ test('catalog validates exact prices, known stations and scoped permissions',asy
  await expect(relayCatalogPublication(owner,scope,{...input,items:[{...menu.items[0],stationId:'unknown'}]})).rejects.toThrow('INVALID_CATALOG_ITEM');
  const chef={...owner,permissions:['catalog.read','relay.write'],role:'chef'};await expect(relayCatalogPublication(chef,scope,{...input,items:menu.items})).rejects.toThrow('PERMISSION_DENIED');
 });
+test('cloud menu publication relays modifiers, availability and tax profile and rejects invalid ones with domain codes',async()=>{
+ const pricing={taxProfiles:[{id:'vat',name:'VAT',rateBps:800,inclusive:true}],defaultTaxProfileId:'vat',service:{rateBps:500,taxable:false},discountOrder:'before_tax',discounts:[]};
+ const item={...menu.items[0],taxProfileId:'vat',modifierGroups:[{id:'size',name:'Size',kind:'size',min:1,max:1,options:[{id:'l',name:'L',priceMinor:'60000'}]}],availability:{windows:[{days:[5],from:'22:00',to:'02:00'}]}};
+ const sent=await relayCatalogPublication(owner,scope,{operationId:'catalog-pricing',version:2,currency:'VND',items:[item],pricing});expect(sent.status).toBe('pending');
+ const [row]=await db.admin`SELECT command FROM relay_command WHERE organization_id=${scope.organizationId} AND operation_id='catalog-pricing'`;
+ expect(row.command.payload.pricing.taxProfiles[0].rateBps).toBe(800);expect(row.command.payload.items[0].modifierGroups[0].options[0].priceMinor).toBe('60000');expect(row.command.payload.items[0].availability.windows[0].from).toBe('22:00');
+ await expect(relayCatalogPublication(owner,scope,{version:2,currency:'VND',items:[{...item,taxProfileId:'ghost'}],pricing})).rejects.toThrow('TAX_PROFILE_NOT_FOUND');
+ await expect(relayCatalogPublication(owner,scope,{version:2,currency:'VND',items:[{...item,modifierGroups:[{id:'g',name:'g',min:3,max:1,options:[]}]}],pricing})).rejects.toThrow('INVALID_MODIFIER_GROUP');
+ await expect(relayCatalogPublication(owner,scope,{version:2,currency:'VND',items:[item],pricing:{...pricing,service:{rateBps:500,taxable:true}}})).rejects.toThrow('INVALID_PRICING_PROFILE');
+});
 import {readVenueLayout,relayVenueLayout} from '../../apps/cloud-web/src/server/modules/configuration/venue-layout';
 test('fresh venue layout is a pending owner intent rather than fixture state',async()=>{
  const fresh=await readVenueLayout(owner,scope);expect(fresh.version).toBe(0);expect(fresh.tables).toHaveLength(0);

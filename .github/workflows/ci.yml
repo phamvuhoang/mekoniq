@@ -13,7 +13,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm supabase:start
       - run: pnpm contracts:check && pnpm typecheck && pnpm lint && pnpm build
-      - run: pnpm test:unit && pnpm test:contracts && pnpm test:integration
+      - run: pnpm test:unit && pnpm test:contracts && pnpm test:adapters && pnpm test:integration
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -21,3 +21,14 @@ jobs:
           path: test-results/
       - run: pnpm supabase:stop
         if: always()
+  python:
+    # Python robot executor, hardware profile validation and the cross-runtime schema contract. Target runtime is 3.12.
+    # robotics/simulation/tests is deliberately NOT run here: it needs Docker and ROS 2 Jazzy/Gazebo (see docs/implementation/evidence/W06-T04.md for the command).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt -e robotics/agent
+      - run: .venv/bin/python -m pytest robotics/agent/tests tests/hardware tests/contracts/test_schema_python.py -q

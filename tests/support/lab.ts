@@ -19,8 +19,12 @@ export class Lab {
   readonly faults=new FaultSwitch();
   private stores=new Map<string,DurableStore>();
   private mode:'coordinated'|'wan'|'lan'='coordinated';
+  /** The applied configuration revision a tablet carries on its commands (it follows an accepted Configuration.Apply, as a refreshed session does). */
+  policyRevision=1;
   private cloudApplied=new Set<string>();
   private observedEffects=new Map<string,number>();
+  /** Read-only facts a device's own runtime adds while it submits one command (e.g. the spool's outbox record); never set by tests or reachable from the API. */
+  trustedSnapshots:import('../../packages/contracts/src/index').Snapshot[]=[];
   private authorizers:((actor:string,type:string,payload:JsonObject)=>boolean)[]=[];
   private genesis=new Map<string,{kind:string;id:string;version:number;state:JsonObject}>();
   constructor(readonly directory:string) {}
@@ -43,7 +47,7 @@ export class Lab {
   async command(actor:string,type:string,payload:JsonObject,operationId:string=randomUUID()):Promise<CommandResult> {
     const identity=actors[actor];
     if(!identity) return {status:'rejected',code:'UNAUTHENTICATED',value:{},duplicate:false,ack:'none',operationId};
-    const c=makeCommand(operationId,payload,{...this.scope,type,actorRef:actor,deviceId:identity.deviceId,deviceEpoch:'epoch-1',occurredAt:new Date(this.clock.nowMs).toISOString(),recordedAt:new Date(this.clock.nowMs).toISOString(),...(typeof payload.expectedVersion==='number'?{expectedVersion:payload.expectedVersion}:{})});
+    const c=makeCommand(operationId,payload,{...this.scope,type,actorRef:actor,deviceId:identity.deviceId,deviceEpoch:'epoch-1',policyRevision:this.policyRevision,occurredAt:new Date(this.clock.nowMs).toISOString(),recordedAt:new Date(this.clock.nowMs).toISOString(),...(typeof payload.expectedVersion==='number'?{expectedVersion:payload.expectedVersion}:{})});
     // Read mode is an injected transport condition, never an alternate business implementation.
     const recipientLocal=['SettlementGrant.Use','SettlementGrant.Return'].includes(type);
     if(this.mode==='lan'&&!type.startsWith('Continuity.')&&!recipientLocal)return {status:'unknown',code:'COORDINATOR_UNAVAILABLE',value:{},duplicate:false,ack:'none',operationId};
@@ -51,8 +55,9 @@ export class Lab {
     if(recipientLocal&&this.mode!=='lan')await this.cacheCoordinatorTo(identity.deviceId);
     const store=await this.getStore(this.mode==='lan'||recipientLocal?identity.deviceId:'coordinator');
     const can=async()=>this.authorizers.length?this.authorizers.some(fn=>fn(actor,type,payload)):type==='Journal.RecordNote';
-    const decide:Handler=(command,snapshots)=>this.registry.decide(command,snapshots);
+    const decide:Handler=(command,snapshots)=>this.registry.decide(command,[...snapshots,...this.trustedSnapshots]);
     const r=await processCommand(store,c,decide,can);
+    if(type==='Configuration.Apply'&&r.status==='accepted'&&!r.duplicate&&typeof payload.revision==='number')this.policyRevision=payload.revision;
     if(this.faults.consume('drop-local-ack')&&r.status==='accepted')return {...r,status:'unknown',ack:'none'};
     return r;
   }
@@ -124,6 +129,12 @@ export class Lab {
       if(applied.status!=='accepted')break;
     }
     return applied;
+  }
+  /** Plan §4: the actual report query over the coordinator's committed snapshots (the same pure reports the tablet and cloud route use). */
+  async report(kind:string,businessDate:string):Promise<JsonObject> {
+    const {buildReport}=await import('../../packages/domain/src/reporting/report');
+    const snapshots=await (await this.getStore('coordinator')).snapshots(this.scope),asOf=new Date(this.clock.nowMs).toISOString();
+    return buildReport(kind,snapshots,{businessDate,watermark:{source:'coordinator',asOf,appliedAt:asOf,pending:0}});
   }
   async unresolvedConflictCount(){return (await (await this.getStore('coordinator')).snapshots(this.scope)).filter(s=>s.ref.kind==='conflict'&&s.state.status==='open').length;}
   async close(){await Promise.all([...this.stores.values()].map(s=>s.close()));await rm(this.directory,{recursive:true,force:true});}

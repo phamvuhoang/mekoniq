@@ -1,0 +1,14 @@
+{
+  "__class": "ValetudoMap",
+  "metaData": {"version": 2, "nonce": "00000000-0000-4000-8000-000000000000", "totalLayerArea": 100},
+  "size": {"x": 5120, "y": 5120},
+  "pixelSize": 5,
+  "layers": [
+    {"__class": "MapLayer", "metaData": {"segmentId": "1", "name": "Dining", "active": false, "area": 50}, "type": "segment", "pixels": [], "dimensions": {"x": {"min": 400, "max": 401, "mid": 400, "avg": 400}, "y": {"min": 300, "max": 300, "mid": 300, "avg": 300}, "pixelCount": 2}, "compressedPixels": [400, 300, 2]},
+    {"__class": "MapLayer", "metaData": {"segmentId": "2", "name": "Kitchen", "active": false, "area": 50}, "type": "segment", "pixels": [], "dimensions": {"x": {"min": 410, "max": 411, "mid": 410, "avg": 410}, "y": {"min": 300, "max": 300, "mid": 300, "avg": 300}, "pixelCount": 2}, "compressedPixels": [410, 300, 2]}
+  ],
+  "entities": [
+    {"__class": "PointMapEntity", "metaData": {"angle": 90}, "points": [2000, 1500], "type": "robot_position"},
+    {"__class": "PointMapEntity", "metaData": {}, "points": [1800, 1500], "type": "charger_location"}
+  ]
+}

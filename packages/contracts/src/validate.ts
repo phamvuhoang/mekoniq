@@ -2,7 +2,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import wireSchema from '../schemas/wire.schema.json';
 import { assertJson, hashPayload } from './canonical';
-import type { CommandEnvelope, JournalEntry, Money, SyncAck, CommitBatch, RobotCommand, JsonValue, SignedOfflineGrant, OwnershipGrant, AssetManifest, SettlementGrant, GrantReturnProof, SignedAuthorityProvision, SignedPairingGrant } from '../generated/wire';
+import type { CommandEnvelope, JournalEntry, Money, SyncAck, CommitBatch, RobotCommand, JsonValue, SignedOfflineGrant, OwnershipGrant, AssetManifest, SettlementGrant, GrantReturnProof, SignedAuthorityProvision, SignedPairingGrant, RobotManifest } from '../generated/wire';
 
 export const COMMAND_BYTE_LIMIT = 256 * 1024;
 export const SYNC_BYTE_LIMIT = 1024 * 1024;
@@ -118,3 +118,4 @@ export function validateGrantReturn(value:unknown):GrantReturnProof {return chec
 
 export function validateAuthorityProvision(value:unknown):SignedAuthorityProvision {return check<SignedAuthorityProvision>('SignedAuthorityProvision',value,4*1024*1024);}
 export function validatePairingGrant(value:unknown):SignedPairingGrant {return check<SignedPairingGrant>('SignedPairingGrant',value);}
+export function validateRobotManifest(value:unknown):RobotManifest {return check<RobotManifest>('RobotManifest',value);}

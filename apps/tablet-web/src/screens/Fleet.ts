@@ -1,5 +1,5 @@
 import type {JsonObject} from '../../../../packages/contracts/src/index';
-import {el,panel,list,tr,summary,button,act,type ScreenContext} from '../ui';
+import {el,field,select,panel,list,tr,summary,button,act,type ScreenContext} from '../ui';
 export function Fleet(c:ScreenContext) {
  const root=el('div',undefined,'screen-grid');
  for(const portion of list(c,'fulfillment')){
@@ -19,8 +19,17 @@ export function Fleet(c:ScreenContext) {
    if(!['completed','cancelled','failed'].includes(String(mission.state.status)))row.append(button(tr(c,'Hủy chuyến','Cancel delivery'),()=>act(c,'Mission.Cancel',{missionId:mission.ref.id},mission.version).then(()=>{}),'danger'));
    root.append(row);
  }
+ const tables=list(c,'table').map(t=>({id:t.ref.id,name:String(t.state.name??t.ref.id)}));
+ if(tables.length){
+  const guideTo=select(tr(c,'Dẫn khách tới bàn','Guide guests to table'),tables),busFrom=select(tr(c,'Thu dọn bàn','Bus table'),tables),row=el('article',undefined,'record');
+  row.append(guideTo.node,button(tr(c,'Robot dẫn khách','Robot guide'),()=>act(c,'Mission.Guide',{destinationId:guideTo.input.value}).then(()=>{}),'quiet'),busFrom.node,button(tr(c,'Robot thu dọn (về khu rửa)','Robot bussing (to wash)'),()=>act(c,'Mission.Bus',{tableId:busFrom.input.value}).then(()=>{}),'quiet'));
+  root.append(row);
+ }
+ const mayPair=c.session.permissions.includes('*')||c.session.permissions.includes('device.enroll');
  for(const robot of list(c,'robot')){
   const row=summary(robot);row.append(el('p',String(robot.state.validation??'')+' · '+String(robot.state.goalState??'')));
+  if(robot.state.stopRejected===true)row.append(el('p',tr(c,'Robot từ chối lệnh dừng; đang tự gửi lại. Dùng nút dừng khẩn vật lý.','The robot refused the stop; it is being resent. Use the physical emergency stop.'),'warning'));
+  if(mayPair){const device=field(tr(c,'Mã thiết bị màn hình robot','Robot screen device id'));row.append(device.node,button(tr(c,'Ghép màn hình robot','Pair robot screen'),()=>act(c,'Robot.PairDisplay',{deviceId:device.input.value.trim(),robotId:robot.ref.id}).then(()=>{}),'quiet'));}
   row.append(button(tr(c,'Yêu cầu dừng từ xa','Request remote stop'),()=>act(c,'Robot.RequestStop',{robotId:robot.ref.id,reason:'staff_request'}).then(()=>{}),'danger'));root.append(row);
  }
  if(!root.children.length)root.append(el('p',tr(c,'Chưa có robot hoặc phần món cần giao.','No robots or portions ready for delivery.')));

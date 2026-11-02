@@ -27,11 +27,11 @@ export async function dispatchRequest(request:Request) {
       const body=text?parseJsonStrict(text,route.bodyLimit):null;
       const params=Object.fromEntries(names.map((n,i)=>[n,decodeURIComponent(match[i+1])]));
       const response=await route.handler(request,{actor,params,body});
-      response.headers.set('Cache-Control','no-store');return response;
+      response.headers.set('Cache-Control','no-store');if(path.startsWith('/v1/guest/'))response.headers.set('Referrer-Policy','no-referrer');return response;
     } catch(error) {
       const code=error instanceof Error?error.message:'INTERNAL_ERROR';
       const status=code.includes('FORBIDDEN')?403:code.includes('PAYLOAD_TOO_LARGE')?413:code.startsWith('INVALID')||code==='DUPLICATE_JSON_KEY'?400:503;
-      return Response.json({code:status===503?'SERVICE_UNAVAILABLE':code},{status,headers:{'Cache-Control':'no-store'}});
+      return Response.json({code:status===503?'SERVICE_UNAVAILABLE':code},{status,headers:{'Cache-Control':'no-store','Referrer-Policy':'no-referrer'}});
     }
   }
   return Response.json({code:'NOT_FOUND'},{status:404});

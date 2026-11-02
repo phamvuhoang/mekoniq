@@ -1,3 +1,4 @@
+import {VENUE_MOVEMENT_ZONE} from '../../domain/src/fleet/reservations';
 import type { JsonObject, Scope, Snapshot } from '../../contracts/src/index';
 import { validateRobotCommand } from '../../contracts/src/validate';
 import type { NativeAcceptance, NativeExecutionState, RobotAdapter, RobotEvent } from './contract';
@@ -10,7 +11,7 @@ export interface RobotEffectStore {
 /** Only native adapters with durable command IDs may be used here; this is not an HTTP retry loop. */
 export async function dispatchRobotEffects(store:RobotEffectStore,scope:Scope,adapter:RobotAdapter,nowMs:number):Promise<{id:string;result:NativeAcceptance|NativeExecutionState|JsonObject}[]> {
  const manifest=await adapter.describe();
- if(manifest.validation!=='simulated') throw new Error('NATIVE_EXECUTOR_REQUIRED');
+ if(manifest.validation!=='simulated'&&adapter.executor!=='native') throw new Error('NATIVE_EXECUTOR_REQUIRED');
  const rows=(await store.effects(scope)).filter(e=>['robot.execute','robot.cancel','robot.requestStop'].includes(String(e.type))&&!['confirmed','failed'].includes(String(e.status)));
  const results:{id:string;result:NativeAcceptance|NativeExecutionState|JsonObject}[]=[];
  for(const row of rows) {
@@ -19,29 +20,37 @@ export async function dispatchRobotEffects(store:RobotEffectStore,scope:Scope,ad
   const snapshots=await store.snapshots(scope);
   const robot=snapshots.find(s=>s.ref.kind==='robot'&&s.ref.id===manifest.id);
   if(!robot||payload.controlEpoch!==robot.state.controlEpoch) {await store.completeEffect(scope,id,'failed');continue;}
-  if(row.status==='dispatching'||row.status==='unknown') {
-   const state=await adapter.reconcile(String(payload.commandId));
-   await store.completeEffect(scope,id,state.status==='unknown'||state.status==='sending'?'unknown':'confirmed');
-   results.push({id,result:state});continue;
+  // An unresolved row: a goto is never resent, so an execute is settled by reconcile only. A cancel is settled only by a goal that ended,
+  // otherwise it is sent again; a STOP is always sent again until acknowledged (both are safe to resend; a STOP has no command to reconcile).
+  const retry=row.status==='dispatching'||row.status==='unknown';
+  if(retry&&row.type!=='robot.requestStop') {
+   const state=await adapter.reconcile(String(payload.commandId)),ended=['completed','cancelled','failed'].includes(state.status);
+   if(row.type==='robot.execute'||ended) {await store.completeEffect(scope,id,ended||state.status==='executing'?'confirmed':'unknown');results.push({id,result:state});continue;}
   }
   if(row.type==='robot.execute') {
    const command=validateRobotCommand(payload);
+   const reservations=snapshots.filter(s=>s.ref.kind==='reservation'&&s.state.robotId===manifest.id);
+   // A missing right is a hold, never permission. Pending/unknown granular zones also gate the fallback boundary.
+   if(!reservations.some(s=>s.state.zoneId===VENUE_MOVEMENT_ZONE&&s.state.status==='granted')||reservations.some(s=>['pending','unknown'].includes(String(s.state.status))))continue;
    const mission=snapshots.find(s=>s.ref.kind==='mission'&&s.ref.id===command.missionId);
    if(command.organizationId!==scope.organizationId||command.venueId!==scope.venueId||command.issuerDeviceId!==robot.state.ownerDeviceId||Date.parse(command.expiresAt)<=nowMs||mission?.state.commandId!==command.commandId||!['assigned','executing'].includes(String(mission.state.status))) {
     await store.completeEffect(scope,id,'failed');continue;
    }
+   // A STOP acknowledgement is only request acceptance. Keep the original unsent row pending until stationary/cancellation evidence.
+   if(adapter.executionHold?.())continue;
    if(!await store.claimEffect(scope,id))continue;
    try {
     const result=await adapter.execute(command);
     await store.completeEffect(scope,id,result.unknown?'unknown':result.accepted?'confirmed':'failed');results.push({id,result});
    } catch {await store.completeEffect(scope,id,'unknown');}
   } else if(row.type==='robot.cancel') {
-   if(!await store.claimEffect(scope,id))continue;
+   if(!retry&&!await store.claimEffect(scope,id))continue;
    const result=await adapter.cancel(String(payload.commandId));
    await store.completeEffect(scope,id,result.unknown?'unknown':result.acknowledged?'confirmed':'failed');results.push({id,result:{...result}});
   } else {
-   if(!await store.claimEffect(scope,id))continue;
-   const result=await adapter.requestStop(String(payload.reason));
+   // A rejected STOP (robot answered 400) stays unresolved too; the native executor backs off its resends and reports stopRejected.
+   if(!retry&&!await store.claimEffect(scope,id))continue;
+   const result=await adapter.requestStop(String(payload.reason)).catch(()=>({acknowledged:false,physicalStopConfirmed:false}));
    await store.completeEffect(scope,id,result.acknowledged?'confirmed':'unknown');results.push({id,result:{...result}});
   }
  }
