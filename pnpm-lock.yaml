@@ -138,6 +138,8 @@ importers:
         specifier: workspace:*
         version: link:../contracts
 
+  packages/lab-runtime: {}
+
   packages/robot-adapters:
     dependencies:
       '@mekoniq/contracts':
