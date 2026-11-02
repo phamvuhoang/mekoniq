@@ -539,7 +539,8 @@
       "depends": "W05-T01, W04-T02",
       "testFile": "tests/integration/voucher-limits.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/voucher-limits.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W08-T01.md"
     },
     {
       "wave": "W08",

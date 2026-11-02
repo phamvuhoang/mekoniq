@@ -242,6 +242,10 @@
       "workforce": {
         "status": "enabled",
         "revision": 1
+      },
+      "promotion": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {

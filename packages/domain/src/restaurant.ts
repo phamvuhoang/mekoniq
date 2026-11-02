@@ -32,12 +32,15 @@ import { registerStocktake } from './inventory/stocktake';
 import { registerSchedule } from './workforce/schedule';
 import { registerAttendance } from './workforce/attendance';
 import { registerApproval } from './workforce/approval';
+import { registerPromotions } from './promotions/rules';
+import { registerVouchers } from './promotions/voucher';
+import { registerRedemption } from './promotions/redemption';
 import { registerSuppliers } from './procurement/supplier';
 import { registerPurchasing } from './procurement/purchase-order';
 import { registerReceiving } from './procurement/goods-receipt';
 import { registerReturns } from './procurement/return';
 export function registerRestaurantModules(registry:ModuleRegistry):void {
- for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake,registerSchedule,registerAttendance,registerApproval]) register(registry);
+ for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake,registerSchedule,registerAttendance,registerApproval,registerPromotions,registerVouchers,registerRedemption]) register(registry);
 }
 export const commandPermissions:Record<string,string>={
  'Catalog.Publish':'catalog.publish','Catalog.Quote':'catalog.read','Session.Open':'order.write',
@@ -65,4 +68,6 @@ export const commandPermissions:Record<string,string>={
  'Stocktake.Open':'inventory.count','Stocktake.Count':'inventory.count','Stocktake.Approve':'inventory.approve','Stocktake.Apply':'inventory.approve',
  // Workforce (W07-T04). Punching someone else's time is a manager's workforce.approve (see requiredPermissions); permissions themselves are an identity-workflow matter.
  'Staff.Schedule':'workforce.write','Staff.ClockIn':'workforce.clock','Staff.ClockOut':'workforce.clock','Staff.ApproveCorrection':'workforce.approve','Staff.SetPermissions':'identity.delegate',
+ // Promotions and vouchers (W08-T01): publishing rules and issuing/allocating vouchers is a manager's job; spending a voucher at the till is the cashier's.
+ 'Promotion.Publish':'promotion.write','Voucher.Issue':'promotion.write','Voucher.GrantEscrow':'promotion.write','Voucher.Reserve':'voucher.redeem','Voucher.Redeem':'voucher.redeem','Voucher.Release':'voucher.redeem',
 };

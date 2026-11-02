@@ -123,6 +123,13 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Staff.ClockIn':{feature:'workforce',intent:'new'},
  'Staff.ClockOut':{feature:'workforce',intent:'finish_existing'},
  'Staff.ApproveCorrection':{feature:'workforce',intent:'finish_existing'},
+ // New promotions/vouchers and new holds are new work; spending an existing hold, releasing or restoring one finishes existing work.
+ 'Promotion.Publish':{feature:'promotion',intent:'new'},
+ 'Voucher.Issue':{feature:'promotion',intent:'new'},
+ 'Voucher.GrantEscrow':{feature:'promotion',intent:'new'},
+ 'Voucher.Reserve':{feature:'promotion',intent:'new'},
+ 'Voucher.Redeem':{feature:'promotion',intent:'finish_existing'},
+ 'Voucher.Release':{feature:'promotion',intent:'finish_existing'},
 };
 /** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
 const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};

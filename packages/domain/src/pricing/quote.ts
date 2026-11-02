@@ -6,8 +6,9 @@ import { resolveModifiers } from '../catalog/modifier';
 import { fail, find, quantity, record, records, requireFeature, text } from '../restaurant-context';
 import { allocateDiscounts, validatedDiscounts } from './discount';
 import { extractTaxInclusive, quoteTaxExclusive } from './tax';
+import { resolvePromotions } from '../promotions/stacking';
 export type Quote = JsonObject & { menuVersion: number; currency: string; lines: JsonObject[]; totalMinor: string };
-export interface QuoteInput { menu: Snapshot; items: unknown; discountIds?: unknown; currency?: unknown; menuVersion?: unknown; at: string; timeZone: string; policyRevision: number }
+export interface QuoteInput { menu: Snapshot; items: unknown; discountIds?: unknown; currency?: unknown; menuVersion?: unknown; extraDiscounts?: JsonObject[]; at: string; timeZone: string; policyRevision: number }
 const bad = (): never => fail('INVALID_PRICING_PROFILE');
 const bps = (value: unknown): number => Number.isInteger(value) && (value as number) >= 0 && (value as number) <= 10000 ? value as number : bad();
 /** Tax/service/coupon profile published with the menu; its revision is the menu version. No jurisdiction rules live here. */
@@ -60,7 +61,7 @@ export function quoteOrder(i: QuoteInput): Quote {
   });
   const ids = i.discountIds === undefined ? [] : Array.isArray(i.discountIds) && i.discountIds.length <= 10 ? i.discountIds.map(d => text(d)) : fail('INVALID_DISCOUNT');
   if (new Set(ids).size !== ids.length) return fail('DUPLICATE_DISCOUNT');
-  const coupons = ids.map(id => (profile.discounts as JsonObject[]).find(d => d.id === id) ?? fail('DISCOUNT_NOT_FOUND'));
+  const coupons = ids.map(id => [...(profile.discounts as JsonObject[]), ...(i.extraDiscounts ?? [])].find(d => d.id === id) ?? fail('DISCOUNT_NOT_FOUND'));
   // Coupons always work on the pre-tax, pre-service gross (percent base = remaining eligible gross, capped at it) so tax/service
   // are never an input to a discount. before_tax: service and tax are then computed on gross - discount.
   // after_tax: service and tax are computed on the full gross and the discount only reduces the payable total (tax is NOT reduced).
@@ -92,6 +93,9 @@ export function quoteOrder(i: QuoteInput): Quote {
 export function quoteForCommand(c: CommandEnvelope, snapshots: Snapshot[]): Quote {
   const coupons = c.payload.discountIds;
   if (coupons !== undefined && !(Array.isArray(coupons) && coupons.length === 0)) requireFeature(c, snapshots, 'discount'); // permission discount.apply is checked by the authorizers (requiredPermissions)
-  const zone = find(snapshots, 'venue-layout', 'current')?.state.timezone;
-  return quoteOrder({ menu: currentMenu(snapshots), items: c.payload.items, discountIds: c.payload.discountIds, currency: c.payload.currency, menuVersion: c.payload.menuVersion, at: c.occurredAt, timeZone: typeof zone === 'string' ? zone : 'UTC', policyRevision: c.policyRevision });
+  const zone = find(snapshots, 'venue-layout', 'current')?.state.timezone, timeZone = typeof zone === 'string' ? zone : 'UTC';
+  // Promotions (W08) ride in the same discountIds list; they are resolved here into ordinary coupons in a deterministic order, so the allocator and the frozen charges stay one mechanism.
+  const items = Array.isArray(c.payload.items) ? c.payload.items as JsonObject[] : [];
+  const { discountIds, extraDiscounts } = resolvePromotions(c, snapshots, { at: c.occurredAt, timeZone, itemIds: items.map(x => String(x?.itemId)), channel: String(c.payload.channel ?? 'pos'), ...(typeof c.payload.customerId === 'string' ? { customerId: c.payload.customerId } : {}), venueId: c.venueId }, c.payload.discountIds);
+  return quoteOrder({ menu: currentMenu(snapshots), items: c.payload.items, discountIds, extraDiscounts, currency: c.payload.currency, menuVersion: c.payload.menuVersion, at: c.occurredAt, timeZone, policyRevision: c.policyRevision });
 }
