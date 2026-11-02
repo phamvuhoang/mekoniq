@@ -246,6 +246,10 @@
       "promotion": {
         "status": "enabled",
         "revision": 1
+      },
+      "loyalty": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {

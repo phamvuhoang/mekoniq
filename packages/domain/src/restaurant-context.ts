@@ -130,6 +130,14 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Voucher.Reserve':{feature:'promotion',intent:'new'},
  'Voucher.Redeem':{feature:'promotion',intent:'finish_existing'},
  'Voucher.Release':{feature:'promotion',intent:'finish_existing'},
+ // Enrolling a customer and spending points are new loyalty work; recording what a settlement earned, reversing it and the data-governance commands finish existing work (never blocked by the flag).
+ 'Customer.Upsert':{feature:'loyalty',intent:'new'},
+ 'Consent.Record':{feature:'loyalty',intent:'new'},
+ 'Loyalty.Redeem':{feature:'loyalty',intent:'new'},
+ 'Loyalty.Earn':{feature:'loyalty',intent:'finish_existing'},
+ 'Loyalty.Reverse':{feature:'loyalty',intent:'finish_existing'},
+ 'Customer.Merge':{feature:'loyalty',intent:'finish_existing'},
+ 'Customer.Erase':{feature:'loyalty',intent:'finish_existing'},
 };
 /** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
 const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};

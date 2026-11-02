@@ -9,9 +9,9 @@ import {enqueueRelay} from './commands';
  * (permission per command type is the same `requiredPermissions` the venue enforces) and the venue's coordinator accepts or rejects it. Add a type here only together with its
  * handler; tablets never depend on this path.
  */
-export const cloudCommandTypes=new Set<string>(['Promotion.Publish','Voucher.Issue','Voucher.GrantEscrow']);
+export const cloudCommandTypes=new Set<string>(['Promotion.Publish','Voucher.Issue','Voucher.GrantEscrow','Customer.Upsert','Consent.Record','Customer.Merge','Customer.Erase','Loyalty.Reverse']);
 /** Projection kinds the admin pages may read, with the permission each needs (customer data is personal data: it is not readable with a plain report right). */
-export const readableKinds:Record<string,string>={promotion:'promotion.write',voucher:'promotion.write','voucher-use':'promotion.write'};
+export const readableKinds:Record<string,string>={promotion:'promotion.write',voucher:'promotion.write','voucher-use':'promotion.write',customer:'customer.read','loyalty-account':'customer.read',consent:'customer.read'};
 export async function relayVenueCommand(actor:Actor,scope:TenantScope,input:{type:string;payload:JsonObject;operationId?:string}){
  if(!cloudCommandTypes.has(input.type))throw new Error('COMMAND_NOT_RELAYABLE');
  if(!input.payload||typeof input.payload!=='object'||Array.isArray(input.payload))throw new Error('INVALID_COMMAND');

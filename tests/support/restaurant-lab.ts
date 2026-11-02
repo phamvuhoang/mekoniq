@@ -5,6 +5,7 @@ import { registerTrialImport } from '../../packages/domain/src/configuration/tri
 import { registerPolicyModule } from '../../packages/domain/src/policy/module';
 import { registerContinuityModules } from '../../packages/domain/src/continuity/module';
 import { registerRestaurantModules } from '../../packages/domain/src/restaurant';
+import { consentId } from '../../packages/domain/src/customers/consent';
 import fixture from '../fixtures/restaurant-v1.json';
 import {quoteOrder} from '../../packages/domain/src/pricing/quote';
 import type { CommandResult, JsonObject, Snapshot } from '../../packages/contracts/src/index';
@@ -32,6 +33,9 @@ export async function createRestaurantLab() {
  for(const purchase of fixture.procurement.purchases) await lab.seed('purchase',purchase.id,purchase as JsonObject);
  const seedAggregate=lab.seed.bind(lab);
  // R-W06-T01: a partial seed of the fixture robot keeps the rest of the fixture robot (fixture defaults, not the current state).
+ // W08-T02 fixture: one enrolled customer who consented to the programme. The captured settlement `pay-1` to earn points from is created on the first Loyalty.* command (see below), so labs that assert "no live bill/payment exists" stay empty.
+ await seedAggregate('customer','customer-1',{name:'Khách mẫu',status:'active',possibleDuplicates:[]});
+ await seedAggregate('consent',consentId('customer-1','loyalty','program'),{customerId:'customer-1',purpose:'loyalty',channel:'program',granted:true,policyVersion:'fixture',history:[{granted:true,policyVersion:'fixture',at:'2026-01-01T00:00:00.000Z',actorRef:'fixture'}]});
  lab.seed=(kind,id,overrides)=>kind==='order-line'?seedOrderLine(lab,seedAggregate,id,overrides):kind==='payment'?seedPayment(lab,seedAggregate,id,overrides):kind==='robot'&&id===fixture.robot.id?seedAggregate(kind,id,{...structuredClone(fixture.robot) as JsonObject,...overrides}):seedAggregate(kind,id,overrides);
  // The REAL spool dispatcher runs over the coordinator's outbox with an injected FIXTURE transport (no physical printer). Faults armed with lab.fault:
  // 'printer-timeout' -> the transport hangs and the spool's timeout fires; 'printer-ack-lost' -> bytes were written but no ack came back; 'printer-unreachable' -> nothing sent.
@@ -49,8 +53,18 @@ export async function createRestaurantLab() {
   const r=await baseCommand('printer-spool','Print.Observe',{jobId:o.jobId,effectId:o.id,status:o.status,...(o.code?{code:o.code}:{})},`print-observe-${o.id}-${o.status}`).finally(()=>{lab.trustedSnapshots=[];});
   if(r.status!=='accepted') throw new Error('PRINT_OBSERVE_REJECTED:'+(r.code??r.status));
  }});
+
+ // Old captured settlement (dated before every test day) for loyalty tests; seeded lazily and never over a test's own pay-1.
+ let settlementReady=false;
+ const ensureSettlement=async()=>{
+  if(settlementReady)return;settlementReady=true;
+  if((await (await lab.getStore('coordinator')).readSnapshot({...lab.scope,kind:'payment',id:'pay-1'})).version!==0)return;
+  await seedAggregate('bill','bill-pay-1',{status:'closed',totalMinor:'100000',paidMinor:'100000',refundedMinor:'0',unappliedMinor:'0',currency:'VND',orderIds:[],lines:[],sessionId:null,closedAt:'2026-01-01T00:00:00.000Z',version:3});
+  await seedAggregate('payment','pay-1',{billId:'bill-pay-1',currency:'VND',method:'cash',status:'captured',capturedMinor:'100000',appliedMinor:'100000',unappliedMinor:'0',tenderedMinor:'100000',changeMinor:'0',refundedMinor:'0',feeMinor:'0',actorRef:'cashier',occurredAt:'2026-01-01T00:00:00.000Z'});
+ };
  const autoSpool={on:true},baseCommand=lab.command.bind(lab);
  lab.command=async(actor:string,type:string,payload:JsonObject,operationId?:string):Promise<CommandResult>=>{
+  if(type.startsWith('Loyalty.'))await ensureSettlement();
   const result=await baseCommand(actor,type,payload,operationId);
   if(autoSpool.on&&result.status==='accepted'&&!result.duplicate&&['Print.Request','Print.ConfirmReprint'].includes(type)) await runSpool();
   return result;

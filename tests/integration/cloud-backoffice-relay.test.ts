@@ -25,3 +25,10 @@ test('commands outside the allowlist, without the right permission, or for unrea
  await expect(readVenueRecords(actor('cashier'),scope,'promotion')).rejects.toThrow('PERMISSION_DENIED');
  await expect(readVenueRecords(actor('manager'),scope,'payment')).rejects.toThrow('KIND_NOT_READABLE');
 });
+test('customer records are personal data: not readable by a cashier or by another organisation',async()=>{
+ await db.admin`INSERT INTO sync_projection(organization_id,venue_id,aggregate_type,aggregate_id,version,state,entry_id) VALUES(${scope.organizationId},${scope.venueId},'customer','c1',1,'{"name":"An","status":"active"}','customer-fixture')`;
+ expect((await readVenueRecords(actor('manager'),scope,'customer')).records.map(r=>r.id)).toEqual(['c1']);
+ await expect(readVenueRecords(actor('cashier'),scope,'customer')).rejects.toThrow('PERMISSION_DENIED');
+ await expect(readVenueRecords({...actor('manager'),organizationId:'other-org'},scope,'customer')).rejects.toThrow('SCOPE_DENIED');
+ const sent=await relayVenueCommand(actor('manager'),scope,{type:'Customer.Erase',operationId:'erase-1',payload:{customerId:'c1',reason:'yêu cầu của khách'}});expect(sent.status).toBe('pending');
+});

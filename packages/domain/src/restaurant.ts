@@ -35,12 +35,15 @@ import { registerApproval } from './workforce/approval';
 import { registerPromotions } from './promotions/rules';
 import { registerVouchers } from './promotions/voucher';
 import { registerRedemption } from './promotions/redemption';
+import { registerConsent } from './customers/consent';
+import { registerCustomers } from './customers/profile';
+import { registerLoyalty } from './customers/loyalty';
 import { registerSuppliers } from './procurement/supplier';
 import { registerPurchasing } from './procurement/purchase-order';
 import { registerReceiving } from './procurement/goods-receipt';
 import { registerReturns } from './procurement/return';
 export function registerRestaurantModules(registry:ModuleRegistry):void {
- for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake,registerSchedule,registerAttendance,registerApproval,registerPromotions,registerVouchers,registerRedemption]) register(registry);
+ for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake,registerSchedule,registerAttendance,registerApproval,registerPromotions,registerVouchers,registerRedemption,registerConsent,registerCustomers,registerLoyalty]) register(registry);
 }
 export const commandPermissions:Record<string,string>={
  'Catalog.Publish':'catalog.publish','Catalog.Quote':'catalog.read','Session.Open':'order.write',
@@ -70,4 +73,6 @@ export const commandPermissions:Record<string,string>={
  'Staff.Schedule':'workforce.write','Staff.ClockIn':'workforce.clock','Staff.ClockOut':'workforce.clock','Staff.ApproveCorrection':'workforce.approve','Staff.SetPermissions':'identity.delegate',
  // Promotions and vouchers (W08-T01): publishing rules and issuing/allocating vouchers is a manager's job; spending a voucher at the till is the cashier's.
  'Promotion.Publish':'promotion.write','Voucher.Issue':'promotion.write','Voucher.GrantEscrow':'promotion.write','Voucher.Reserve':'voucher.redeem','Voucher.Redeem':'voucher.redeem','Voucher.Release':'voucher.redeem',
+ // CRM and loyalty (W08-T02): the till enrols, records consent and earns/spends points; merging people, erasing data and reversing points are a manager's customer.manage.
+ 'Customer.Upsert':'loyalty.write','Consent.Record':'loyalty.write','Loyalty.Earn':'loyalty.write','Loyalty.Redeem':'loyalty.write','Loyalty.Reverse':'customer.manage','Customer.Merge':'customer.manage','Customer.Erase':'customer.manage',
 };

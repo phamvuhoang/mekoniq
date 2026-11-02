@@ -549,7 +549,8 @@
       "depends": "W08-T01, W05-T03",
       "testFile": "tests/integration/loyalty.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/loyalty.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W08-T02.md"
     },
     {
       "wave": "W08",
