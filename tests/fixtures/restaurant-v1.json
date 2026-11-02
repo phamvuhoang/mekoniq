@@ -254,6 +254,10 @@
       "reservations": {
         "status": "enabled",
         "revision": 1
+      },
+      "service.models": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {

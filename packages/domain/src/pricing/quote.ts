@@ -3,12 +3,14 @@ import { canonicalMinor } from '../shared/money';
 import { currentMenu } from '../catalog/menu';
 import { availableAt } from '../catalog/availability';
 import { resolveModifiers } from '../catalog/modifier';
-import { fail, find, quantity, record, records, requireFeature, text } from '../restaurant-context';
+import { all, fail, find, quantity, record, records, requireFeature, text } from '../restaurant-context';
+import { weighedLine } from './weighed';
+import { comboComponents } from './combo';
 import { allocateDiscounts, validatedDiscounts } from './discount';
 import { extractTaxInclusive, quoteTaxExclusive } from './tax';
 import { resolvePromotions } from '../promotions/stacking';
 export type Quote = JsonObject & { menuVersion: number; currency: string; lines: JsonObject[]; totalMinor: string };
-export interface QuoteInput { menu: Snapshot; items: unknown; discountIds?: unknown; currency?: unknown; menuVersion?: unknown; extraDiscounts?: JsonObject[]; at: string; timeZone: string; policyRevision: number }
+export interface QuoteInput { menu: Snapshot; items: unknown; discountIds?: unknown; currency?: unknown; menuVersion?: unknown; extraDiscounts?: JsonObject[]; scaleIds?: string[]; actor?: string; at: string; timeZone: string; policyRevision: number }
 const bad = (): never => fail('INVALID_PRICING_PROFILE');
 const bps = (value: unknown): number => Number.isInteger(value) && (value as number) >= 0 && (value as number) <= 10000 ? value as number : bad();
 /** Tax/service/coupon profile published with the menu; its revision is the menu version. No jurisdiction rules live here. */
@@ -52,12 +54,14 @@ export function quoteOrder(i: QuoteInput): Quote {
     const entry = catalog.find(x => x.id === itemId) ?? fail('ITEM_NOT_FOUND');
     if (entry.available === false) return fail('ITEM_SOLD_OUT');
     if (!availableAt(entry.availability, i.at, i.timeZone)) return fail('ITEM_UNAVAILABLE_NOW');
-    const { unitMinor, modifiers } = resolveModifiers(entry, raw.modifiers);
-    const base = BigInt(canonicalMinor(unitMinor)) * BigInt(count);
+    if (raw.measure !== undefined && !entry.weighed) return fail('MEASURE_NOT_ALLOWED');
+    const weighed = entry.weighed ? weighedLine(entry, raw, count, i.scaleIds ?? [], i.actor) : undefined;
+    const { unitMinor, modifiers } = weighed ? { unitMinor: String(entry.unitMinor), modifiers: [] as JsonObject[] } : resolveModifiers(entry, raw.modifiers);
+    const base = weighed ? BigInt(canonicalMinor(weighed.priceMinor)) : BigInt(canonicalMinor(unitMinor)) * BigInt(count);
     const addOns = modifiers.filter(m => m.kind !== 'size').map(m => ({ kind: 'modifier', ref: `${m.groupId}/${m.optionId}`, name: m.name!, minor: money(BigInt(String(m.priceMinor)) * BigInt(count)), effect: 'add' }));
     const gross = base + addOns.reduce((a, c) => a + BigInt(c.minor), 0n);
     const taxId = entry.taxProfileId ?? profile.defaultTaxProfileId;
-    return { index, itemId, count, entry, unitMinor, modifiers, base, addOns, gross, tax: taxId ? taxProfiles.find(t => t.id === taxId) ?? fail('TAX_PROFILE_NOT_FOUND') : null };
+    return { index, itemId, count, entry, unitMinor, modifiers, measure: weighed?.measure, base, addOns, gross, tax: taxId ? taxProfiles.find(t => t.id === taxId) ?? fail('TAX_PROFILE_NOT_FOUND') : null };
   });
   const ids = i.discountIds === undefined ? [] : Array.isArray(i.discountIds) && i.discountIds.length <= 10 ? i.discountIds.map(d => text(d)) : fail('INVALID_DISCOUNT');
   if (new Set(ids).size !== ids.length) return fail('DUPLICATE_DISCOUNT');
@@ -84,6 +88,7 @@ export function quoteOrder(i: QuoteInput): Quote {
       charges: steps.flatMap(by), subtotalMinor: money(l.gross), discountMinor: money(discount), serviceMinor: money(serviceMinor), taxMinor: money(inclusive ? 0n : taxMinor), taxIncludedMinor: money(inclusive ? taxMinor : 0n),
       totalMinor: money(l.gross - discount + added),
       pricing: { profileRevision: Number(menu.version), policyRevision: i.policyRevision, steps, discountOrder: String(profile.discountOrder), tax: l.tax ? { id: l.tax.id!, name: l.tax.name!, rateBps: l.tax.rateBps!, inclusive } : null, service: service ? { rateBps: service.rateBps!, taxable: service.taxable === true } : null, discountIds: ids },
+      ...(l.measure ? { measure: l.measure } : {}), ...(l.entry.combo ? { components: comboComponents(l.entry, catalog, l.count, money(l.gross), money(discount)) as unknown as JsonObject[] } : {}),
       menuVersion: menu.version!, index: l.index,
     } satisfies JsonObject;
   });
@@ -97,5 +102,6 @@ export function quoteForCommand(c: CommandEnvelope, snapshots: Snapshot[]): Quot
   // Promotions (W08) ride in the same discountIds list; they are resolved here into ordinary coupons in a deterministic order, so the allocator and the frozen charges stay one mechanism.
   const items = Array.isArray(c.payload.items) ? c.payload.items as JsonObject[] : [];
   const { discountIds, extraDiscounts } = resolvePromotions(c, snapshots, { at: c.occurredAt, timeZone, itemIds: items.map(x => String(x?.itemId)), channel: String(c.payload.channel ?? 'pos'), ...(typeof c.payload.customerId === 'string' ? { customerId: c.payload.customerId } : {}), venueId: c.venueId }, c.payload.discountIds);
-  return quoteOrder({ menu: currentMenu(snapshots), items: c.payload.items, discountIds, extraDiscounts, currency: c.payload.currency, menuVersion: c.payload.menuVersion, at: c.occurredAt, timeZone, policyRevision: c.policyRevision });
+  const scaleIds = all(snapshots, 'scale').filter(x => x.state.validation === 'venue_approved').map(x => x.ref.id);
+  return quoteOrder({ menu: currentMenu(snapshots), items: c.payload.items, discountIds, extraDiscounts, scaleIds, actor: c.actorRef, currency: c.payload.currency, menuVersion: c.payload.menuVersion, at: c.occurredAt, timeZone, policyRevision: c.policyRevision });
 }

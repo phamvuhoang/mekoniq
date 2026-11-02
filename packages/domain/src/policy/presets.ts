@@ -1,5 +1,12 @@
 import {featureRegistry,validateDependencies,type FeatureConfig} from './registry';
-const profiles: Record<string,string[]> = {
+const CAFE=['catalog','sessions','pos.order','orders','kitchen','billing','cash.shift','payment.cash','payment.terminal','payment.transfer.manual','discount','refund','reporting'];
+/** Venue templates (capability matrix §3). Only the baseline groups are on; optional modules (QR, loyalty, inventory, booking, robots…) are switched on by the venue. */
+export const profiles: Record<string,string[]> = {
+  'cafe':CAFE,
+  'table-service':[...CAFE,'fulfillment'],
+  'buffet':[...CAFE,'fulfillment','service.models'],
+  // the chain-wide modules (shared menu rollout, consolidated reports) do not exist yet (W09): the template is one branch's table service and says what it is waiting for
+  'chain':[...CAFE,'fulfillment'],
   'trial-service':['fleet','fulfillment','robot.delivery','robot.bussing'],
   'cash-only':['catalog','sessions','pos.order','orders','kitchen','fulfillment','billing','cash.shift','payment.cash','discount'],
   'no-robot':['catalog','sessions','pos.order','orders','kitchen','fulfillment','billing','cash.shift','payment.cash','reporting','discount'],

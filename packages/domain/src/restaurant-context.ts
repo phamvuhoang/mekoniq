@@ -55,7 +55,7 @@ export function handle(registry:ModuleRegistry,type:string,handler:Handler):void
  });
 }
 
-const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existing'}>={
+export const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existing'}>={
  'Catalog.Quote':{feature:'catalog',intent:'new'},
  'Session.Open':{feature:'sessions',intent:'new'},
  'Order.Place':{feature:'pos.order',intent:'new'},
@@ -149,6 +149,11 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Booking.Cancel':{feature:'reservations',intent:'finish_existing'},
  'Deposit.Apply':{feature:'reservations',intent:'finish_existing'},
  'Deposit.Return':{feature:'reservations',intent:'finish_existing'},
+ // Pricing models (W08-T04): quoting a combo/weighed item is catalog work; a buffet is a package order plus a timer, and extending it finishes what was started.
+ 'Combo.Quote':{feature:'catalog',intent:'new'},
+ 'WeighedItem.Quote':{feature:'catalog',intent:'new'},
+ 'Buffet.Start':{feature:'service.models',intent:'new'},
+ 'Buffet.Extend':{feature:'service.models',intent:'finish_existing'},
 };
 /** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
 const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};

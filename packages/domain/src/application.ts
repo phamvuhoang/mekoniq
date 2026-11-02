@@ -13,7 +13,9 @@ export const productionPermissions:Record<string,string>={...commandPermissions,
    ['SettlementGrant.Use','SettlementGrant.Return'].includes(type)?'payment.cash':type.startsWith('Import.')?'continuity.import.approve':'continuity.resolve']))
 };
 /** Commands whose payload may carry coupons; carrying any needs discount.apply on top of the per-type permission. */
-const couponCommands=new Set(['Catalog.Quote','Order.Place','Order.Amend']);
+const couponCommands=new Set(['Catalog.Quote','Order.Place','Order.Amend','Combo.Quote','WeighedItem.Quote']);
+/** A keyed (not scale-read) weight sets the price of a line, so it is an approval: it needs weighed.manual on top of the command's own permission. */
+const manualWeight=(payload:JsonObject)=>[...(Array.isArray(payload.items)?payload.items as JsonObject[]:[]),...(payload.measure?[{measure:payload.measure} as JsonObject]:[])].some(i=>(i?.measure as JsonObject|undefined)?.source==='manual');
 /** Cash commands that act for someone else's shift, approve a variance or adjust a closed shift need a manager's shift.approve on top of shift.write. */
 const approvalCommands=new Set(['Shift.Close','Cash.RecordMovement']);
 export function requiredPermissions(type:string,payload:JsonObject):string[] {
@@ -26,8 +28,9 @@ export function requiredPermissions(type:string,payload:JsonObject):string[] {
  if((type==='Staff.ClockIn'||type==='Staff.ClockOut')&&payload.userId!==undefined)return [base,'workforce.approve'];
  // Forfeiting a no-show deposit is a money decision on top of recording the no-show.
  if(type==='Booking.NoShow'&&payload.forfeitDeposit===true)return [base,'deposit.manage'];
+ if(!couponCommands.has(type))return [base];
  const ids=payload.discountIds;
- return couponCommands.has(type)&&ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?[base,'discount.apply']:[base];
+ return [base,...(ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?['discount.apply']:[]),...(manualWeight(payload)?['weighed.manual']:[])];
 }
 export function createProductionRegistry() {
  const registry=new ModuleRegistry();registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);registerLayout(registry);registerTrialImport(registry);return registry;

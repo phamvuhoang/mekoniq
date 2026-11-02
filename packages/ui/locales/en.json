@@ -31,5 +31,6 @@
   "inventory-reports": "Stock reports",
   "promotions": "Promotions",
   "customers": "Customers",
-  "reservations": "Reservations"
+  "reservations": "Reservations",
+  "models": "Service models"
 }

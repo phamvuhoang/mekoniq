@@ -51,10 +51,12 @@ export function salesReport(s: Snapshot[], date: string, tz: string): JsonObject
   const firstClose = new Map<string, string | null>();
   for (const b of bills.filter(x => x.state.status === 'closed').sort((x, y) => String(x.state.closedAt).localeCompare(String(y.state.closedAt))))
     for (const id of (b.state.orderIds ?? []) as string[]) if (!firstClose.has(id)) firstClose.set(id, dayOf(b.state.closedAt, tz));
-  const units = new Map<string, { itemId: string; name: string; quantity: bigint }>();
+  const units = new Map<string, { itemId: string; name: string; quantity: bigint; basis: string; mass: bigint }>();
   for (const order of ofKind(s, 'order').filter(o => firstClose.get(o.ref.id) === date)) for (const l of (order.state.lines ?? []) as JsonObject[]) {
-    const id = String(l.itemId ?? l.name), u = units.get(id) ?? { itemId: id, name: String(l.name ?? id), quantity: 0n };
+    const id = String(l.itemId ?? l.name), u = units.get(id) ?? { itemId: id, name: String(l.name ?? id), quantity: 0n, basis: 'unit', mass: 0n };
     u.quantity += big(l.quantity) - big(l.cancelledQuantity); units.set(id, u);
+    // price basis: a weighed line is sold by measured mass, a combo as one price over frozen parts
+    if (l.measure) { u.basis = 'weighed'; u.mass += big((l.measure as JsonObject).mass); } else if (l.components) u.basis = 'combo';
   }
   // Reconciliation is per bill, not per payment day: the bills closed on this date against every payment/refund on THOSE bills, whenever it happened
   // (a payment at 23:50 on a bill closed at 00:10 belongs to the closing day). At close a bill satisfies paid - refunded = total, so afterwards
@@ -94,7 +96,7 @@ export function salesReport(s: Snapshot[], date: string, tz: string): JsonObject
     // pending/unknown external charges are real states, never counted as money; a guest's "I paid" claim is not a payment
     unresolved: { payments: payments.filter(p => ['pending', 'unknown'].includes(String(p.state.status))).map(p => ({ id: p.ref.id, method: String(p.state.method), status: String(p.state.status), amountMinor: String(p.state.amountMinor ?? '0') })), failedPayments: payments.filter(p => p.state.status === 'failed').length, unverifiedClaims: ofKind(s, 'payment-observation').filter(o => o.state.status === 'unverified' && on(o.state.occurredAt)).length },
     historical: { count: receipts.length, totalMinor: imported, paidCashMinor: sumOf(receipts, r => r.state.paidCashMinor), amendmentMinor: amended },
-    units: [...units.values()].filter(u => u.quantity !== 0n).sort((a, b) => a.itemId.localeCompare(b.itemId)).map(u => ({ ...u, quantity: String(u.quantity) })),
+    units: [...units.values()].filter(u => u.quantity !== 0n).sort((a, b) => a.itemId.localeCompare(b.itemId)).map(u => ({ itemId: u.itemId, name: u.name, quantity: String(u.quantity), ...(u.basis !== 'unit' ? { basis: u.basis } : {}), ...(u.basis === 'weighed' ? { mass: String(u.mass) } : {}) })),
     reconciliation: { basis: 'bills closed on this date, payments and refunds joined by bill', expectedMinor, collectedMinor, differenceMinor: String(big(expectedMinor) - big(collectedMinor)) },
     undatedFacts: [...undatedFacts(bills.filter(b => b.state.status === 'closed'), b => b.state.closedAt, tz), ...undatedFacts(ofKind(s, 'payment'), p => p.state.occurredAt, tz), ...undatedFacts(ofKind(s, 'refund'), r => r.state.occurredAt, tz),
       ...ofKind(s, 'historical-receipt').filter(r => receiptDay(r, tz) === null).map(r => ({ kind: r.ref.kind, id: r.ref.id, at: String(r.state.occurredAt ?? '') }))],

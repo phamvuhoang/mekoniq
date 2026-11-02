@@ -569,7 +569,16 @@
       "depends": "W08-T01..W08-T03, W07",
       "testFile": "tests/unit/restaurant-models.test.ts",
       "testCommand": "pnpm test:unit -- tests/unit/restaurant-models.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W08-T04.md",
+      "additionalTestFiles": [
+        "tests/integration/restaurant-models.test.ts",
+        "tests/e2e/restaurant-presets.spec.ts"
+      ],
+      "additionalTestCommands": [
+        "pnpm test:integration -- tests/integration/restaurant-models.test.ts",
+        "pnpm test:e2e -- tests/e2e/restaurant-presets.spec.ts"
+      ]
     },
     {
       "wave": "W09",

@@ -41,12 +41,13 @@ import { registerLoyalty } from './customers/loyalty';
 import { registerBookings } from './reservations/booking';
 import { registerWaitlist } from './reservations/waitlist';
 import { registerDeposits } from './reservations/deposit';
+import { registerServiceModels } from './pricing/buffet';
 import { registerSuppliers } from './procurement/supplier';
 import { registerPurchasing } from './procurement/purchase-order';
 import { registerReceiving } from './procurement/goods-receipt';
 import { registerReturns } from './procurement/return';
 export function registerRestaurantModules(registry:ModuleRegistry):void {
- for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake,registerSchedule,registerAttendance,registerApproval,registerPromotions,registerVouchers,registerRedemption,registerConsent,registerCustomers,registerLoyalty,registerBookings,registerWaitlist,registerDeposits]) register(registry);
+ for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake,registerSchedule,registerAttendance,registerApproval,registerPromotions,registerVouchers,registerRedemption,registerConsent,registerCustomers,registerLoyalty,registerBookings,registerWaitlist,registerDeposits,registerServiceModels]) register(registry);
 }
 export const commandPermissions:Record<string,string>={
  'Catalog.Publish':'catalog.publish','Catalog.Quote':'catalog.read','Session.Open':'order.write',
@@ -80,4 +81,6 @@ export const commandPermissions:Record<string,string>={
  'Customer.Upsert':'loyalty.write','Consent.Record':'loyalty.write','Loyalty.Earn':'loyalty.write','Loyalty.Redeem':'loyalty.write','Loyalty.Reverse':'customer.manage','Customer.Merge':'customer.manage','Customer.Erase':'customer.manage',
  // Reservations (W08-T03): front-of-house staff take, confirm, seat and cancel bookings and take deposits; returning a deposit or forfeiting one for a no-show is a manager's deposit.manage.
  'Booking.Create':'reservation.write','Booking.Confirm':'reservation.write','Booking.CheckIn':'reservation.write','Booking.NoShow':'reservation.write','Booking.Cancel':'reservation.write','Waitlist.Join':'reservation.write','Waitlist.Promote':'reservation.write','Deposit.Receive':'reservation.write','Deposit.Apply':'reservation.write','Deposit.Return':'deposit.manage',
+ // Service models (W08-T04): quotes are catalog reads (a manual weight additionally needs weighed.manual, see requiredPermissions); a buffet start/extension is ordering.
+ 'Combo.Quote':'catalog.read','WeighedItem.Quote':'catalog.read','Buffet.Start':'order.write','Buffet.Extend':'order.write',
 };
