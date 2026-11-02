@@ -103,6 +103,11 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Mission.Resume':{feature:'fleet',intent:'finish_existing'},
  'Zone.Reserve':{feature:'fleet',intent:'new'},
  'Zone.Release':{feature:'fleet',intent:'finish_existing'},
+ // Recipes and ingredients are new inventory configuration; consuming/wasting stock records what the kitchen already did, so it never waits on the flag.
+ 'Ingredient.Upsert':{feature:'inventory',intent:'new'},
+ 'Recipe.Publish':{feature:'inventory',intent:'new'},
+ 'Inventory.Consume':{feature:'inventory',intent:'finish_existing'},
+ 'Inventory.RecordWaste':{feature:'inventory',intent:'finish_existing'},
 };
 /** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
 const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};

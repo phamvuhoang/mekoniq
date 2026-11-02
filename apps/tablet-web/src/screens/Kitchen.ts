@@ -1,4 +1,5 @@
 import {el,field,panel,list,tr,summary,button,act,type ScreenContext} from '../ui';
+import type {Snapshot} from '../../../../packages/contracts/src/index';
 export function Kitchen(c:ScreenContext) {
  const root=el('div',undefined,'screen-grid');
  // Delta tickets (cancelled-before-cooking) stay on screen until the station acknowledges them.
@@ -23,9 +24,16 @@ export function Kitchen(c:ScreenContext) {
    const row=summary(ticket);row.append(el('p',String(ticket.state.stationId)+' · '+String(ticket.state.prepared??'0')+'/'+String(ticket.state.quantity)));
    if(ticket.state.status==='held'){row.append(el('p',tr(c,'Đang giữ, chờ gọi món đợt này.','Held until this course is fired.'),'muted'));root.append(row);continue;}
    if(ticket.state.status==='queued')row.append(button(tr(c,'Nhận làm','Start preparation'),()=>act(c,'Kitchen.Accept',{lineId:ticket.ref.id,stationId:ticket.state.stationId!},ticket.version).then(()=>{})));
-   row.append(quantity.node,button(tr(c,'Sẵn sàng','Ready'),()=>act(c,'Kitchen.Ready',{lineId:ticket.ref.id,stationId:ticket.state.stationId!,quantity:quantity.input.value},ticket.version).then(()=>{})));
+   row.append(quantity.node,button(tr(c,'Sẵn sàng','Ready'),()=>act(c,'Kitchen.Ready',{lineId:ticket.ref.id,stationId:ticket.state.stationId!,quantity:quantity.input.value},ticket.version).then(r=>r?.status==='accepted'?consumeStock(c,ticket,quantity.input.value):undefined)));
    root.append(row);
  }
  if(!root.children.length)root.append(el('p',tr(c,'Không có phiếu cần chuẩn bị.','No tickets awaiting preparation.')));
  return panel(tr(c,'Bếp và quầy','Kitchen and bar'),root);
+}
+/** Stock leaves once per ready event: the source id is the ticket and the cumulative prepared count, so a retried tap cannot deduct twice. Items without a recipe are skipped. */
+async function consumeStock(c:ScreenContext,ticket:Snapshot,quantity:string){
+ const itemId=String(ticket.state.itemId??'');
+ if(!itemId||!c.snapshots.some(s=>s.ref.kind==='recipe-pointer'&&s.ref.id===itemId))return;
+ const prepared=BigInt(String(ticket.state.prepared??'0'))+BigInt(quantity);
+ try{await c.command('Inventory.Consume',{sourceEventId:`ready:${ticket.ref.id}:${prepared}`,itemId,quantity});}catch(error){c.notify(error instanceof Error?error.message:'UNAVAILABLE',true);}
 }

@@ -499,7 +499,8 @@
       "depends": "W03-T03, W04-T04",
       "testFile": "tests/integration/stock-consumption.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/stock-consumption.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W07-T01.md"
     },
     {
       "wave": "W07",

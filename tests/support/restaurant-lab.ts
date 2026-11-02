@@ -25,6 +25,9 @@ export async function createRestaurantLab() {
  for(const table of fixture.tables) await lab.seed('table',table.id,table);
  await lab.seed('robot',fixture.robot.id,fixture.robot as JsonObject);
  await lab.seed('printer',fixture.printer.id,fixture.printer as JsonObject);
+ for(const item of fixture.inventory.items) await lab.seed('stock-item',item.id,item as JsonObject);
+ for(const recipe of fixture.inventory.recipes) await lab.seed('recipe',recipe.id,recipe as JsonObject);
+ await lab.seed('recipe-pointer','rice',{recipeVersion:'rice-v1'});
  const seedAggregate=lab.seed.bind(lab);
  // R-W06-T01: a partial seed of the fixture robot keeps the rest of the fixture robot (fixture defaults, not the current state).
  lab.seed=(kind,id,overrides)=>kind==='order-line'?seedOrderLine(lab,seedAggregate,id,overrides):kind==='payment'?seedPayment(lab,seedAggregate,id,overrides):kind==='robot'&&id===fixture.robot.id?seedAggregate(kind,id,{...structuredClone(fixture.robot) as JsonObject,...overrides}):seedAggregate(kind,id,overrides);

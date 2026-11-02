@@ -230,6 +230,10 @@
       "guest.bill": {
         "status": "enabled",
         "revision": 1
+      },
+      "inventory": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {
@@ -245,5 +249,38 @@
     "profile": "escpos-generic",
     "columns": 42,
     "validation": "fixture"
+  },
+  "inventory": {
+    "items": [
+      {
+        "id": "rice-raw",
+        "name": "Gạo",
+        "baseUnit": "g",
+        "conversions": {
+          "bag": "25000"
+        },
+        "negativePolicy": "allow",
+        "currency": "VND",
+        "onHand": "10000",
+        "valueMinor": "200000",
+        "movementSeq": 0
+      }
+    ],
+    "recipes": [
+      {
+        "id": "rice-v1",
+        "itemId": "rice",
+        "lines": [
+          {
+            "ingredientId": "rice-raw",
+            "quantity": "200",
+            "unit": "g",
+            "baseQuantity": "200"
+          }
+        ],
+        "publishedBy": "fixture",
+        "publishedAt": "2026-01-01T00:00:00.000Z"
+      }
+    ]
   }
 }

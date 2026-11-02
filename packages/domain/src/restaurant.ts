@@ -26,8 +26,10 @@ import { registerGuide } from './service/guide';
 import { registerBussing } from './service/bussing';
 import { registerMapBinding } from './fleet/map-binding';
 import { registerReservations } from './fleet/reservations';
+import { registerRecipes } from './inventory/recipe';
+import { registerConsumption } from './inventory/consumption';
 export function registerRestaurantModules(registry:ModuleRegistry):void {
- for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations]) register(registry);
+ for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption]) register(registry);
 }
 export const commandPermissions:Record<string,string>={
  'Catalog.Publish':'catalog.publish','Catalog.Quote':'catalog.read','Session.Open':'order.write',
@@ -47,4 +49,6 @@ export const commandPermissions:Record<string,string>={
  'Mission.Guide':'mission.write','Mission.Bus':'mission.write','Mission.Resume':'mission.write',
  // Map binding is venue robot configuration (manager); zone reservations are asked/released by the robot executor (manager may release with evidence).
  'Robot.BindMap':'robot.configure','Zone.Reserve':'robot.traffic','Zone.Release':'robot.traffic',
+ // Inventory (W07): recipes and the ingredient master are manager decisions; the kitchen records consumption/waste it caused.
+ 'Ingredient.Upsert':'inventory.write','Recipe.Publish':'inventory.write','Inventory.Consume':'inventory.consume','Inventory.RecordWaste':'inventory.consume',
 };
