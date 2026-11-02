@@ -24,6 +24,8 @@ export function requiredPermissions(type:string,payload:JsonObject):string[] {
  if(approvalCommands.has(type)&&(payload.approve===true||payload.adjustment===true))return [base,'shift.approve'];
  // Punching for somebody else (explicit userId) is a manager's call on top of the plain clock permission.
  if((type==='Staff.ClockIn'||type==='Staff.ClockOut')&&payload.userId!==undefined)return [base,'workforce.approve'];
+ // Forfeiting a no-show deposit is a money decision on top of recording the no-show.
+ if(type==='Booking.NoShow'&&payload.forfeitDeposit===true)return [base,'deposit.manage'];
  const ids=payload.discountIds;
  return couponCommands.has(type)&&ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?[base,'discount.apply']:[base];
 }

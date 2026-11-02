@@ -559,7 +559,8 @@
       "depends": "W05-T02, W05-T03",
       "testFile": "tests/integration/reservations.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/reservations.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W08-T03.md"
     },
     {
       "wave": "W08",

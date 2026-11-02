@@ -250,6 +250,10 @@
       "loyalty": {
         "status": "enabled",
         "revision": 1
+      },
+      "reservations": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {

@@ -138,6 +138,17 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Loyalty.Reverse':{feature:'loyalty',intent:'finish_existing'},
  'Customer.Merge':{feature:'loyalty',intent:'finish_existing'},
  'Customer.Erase':{feature:'loyalty',intent:'finish_existing'},
+ // New bookings, waitlist entries/promotions and deposits are new reservation work; confirming, seating, cancelling, applying or returning what exists finishes existing work.
+ 'Booking.Create':{feature:'reservations',intent:'new'},
+ 'Waitlist.Join':{feature:'reservations',intent:'new'},
+ 'Waitlist.Promote':{feature:'reservations',intent:'new'},
+ 'Deposit.Receive':{feature:'reservations',intent:'new'},
+ 'Booking.Confirm':{feature:'reservations',intent:'finish_existing'},
+ 'Booking.CheckIn':{feature:'reservations',intent:'finish_existing'},
+ 'Booking.NoShow':{feature:'reservations',intent:'finish_existing'},
+ 'Booking.Cancel':{feature:'reservations',intent:'finish_existing'},
+ 'Deposit.Apply':{feature:'reservations',intent:'finish_existing'},
+ 'Deposit.Return':{feature:'reservations',intent:'finish_existing'},
 };
 /** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
 const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};

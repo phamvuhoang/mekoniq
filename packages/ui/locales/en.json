@@ -30,5 +30,6 @@
   "staff": "Staff",
   "inventory-reports": "Stock reports",
   "promotions": "Promotions",
-  "customers": "Customers"
+  "customers": "Customers",
+  "reservations": "Reservations"
 }
