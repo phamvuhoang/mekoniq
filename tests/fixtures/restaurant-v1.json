@@ -238,6 +238,10 @@
       "procurement": {
         "status": "enabled",
         "revision": 1
+      },
+      "workforce": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {

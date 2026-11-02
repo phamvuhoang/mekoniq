@@ -2,6 +2,9 @@ import type { JsonObject, Snapshot } from '../../../contracts/src/index';
 import { salesReport } from './sales';
 import { shiftReport } from './shift';
 import { robotKpiReport } from './robot-kpi';
+import { stockReport } from './stock';
+import { foodCostReport } from './food-cost';
+import { attendanceReport } from './attendance';
 /**
  * Where a report's facts come from and how far they reach. appliedAt: newest fact this projection has applied (null: it never received any);
  * pending: facts known to exist but not yet applied (cloud inbox backlog, a tablet's unacknowledged journal); mode 'isolated': the device lost its coordinator.
@@ -10,9 +13,9 @@ export type Watermark = { source: 'coordinator' | 'tablet' | 'cloud-projection';
 /** The cloud projection is stale when no fact has arrived for this long (a coordinator silent for hours must not read as current). */
 export const CLOUD_STALE_AFTER_MS = 15 * 60 * 1000;
 export type ReportStatus = 'current' | 'stale' | 'offline' | 'unsynced';
-export const REPORT_KINDS = ['sales', 'shifts', 'robot-kpi'] as const;
+export const REPORT_KINDS = ['sales', 'shifts', 'robot-kpi', 'stock', 'food-cost', 'attendance'] as const;
 /** Snapshot kinds the reports read (the cloud route loads only these from its projection). */
-export const REPORT_SOURCE_KINDS = ['bill', 'payment', 'refund', 'order', 'historical-receipt', 'historical-amendment', 'payment-observation', 'shift', 'cash-movement', 'mission', 'robot-command', 'robot', 'venue-layout'];
+export const REPORT_SOURCE_KINDS = ['bill', 'payment', 'refund', 'order', 'historical-receipt', 'historical-amendment', 'payment-observation', 'shift', 'cash-movement', 'mission', 'robot-command', 'robot', 'venue-layout', 'stock-item', 'stock-movement', 'consumption', 'stock-waste', 'attendance', 'attendance-correction', 'shift-schedule'];
 export function freshness(w: Watermark): ReportStatus {
   return staleness(w).status;
 }
@@ -42,7 +45,7 @@ export function buildReport(kind: string, s: Snapshot[], o: { businessDate: stri
   // without an explicit zone the venue layout decides; a missing layout is reported as an assumed zone, never silently
   const zone = o.timeZone ? { timeZone: o.timeZone, assumed: false } : venueZone(s), timeZone = zone.timeZone;
   try { new Intl.DateTimeFormat('en', { timeZone }).format(0); } catch { throw new Error('INVALID_TIMEZONE'); }
-  const make = kind === 'sales' ? salesReport : kind === 'shifts' ? shiftReport : kind === 'robot-kpi' ? robotKpiReport : undefined;
+  const make = kind === 'sales' ? salesReport : kind === 'shifts' ? shiftReport : kind === 'robot-kpi' ? robotKpiReport : kind === 'stock' ? stockReport : kind === 'food-cost' ? foodCostReport : kind === 'attendance' ? attendanceReport : undefined;
   if (!make) throw new Error('UNKNOWN_REPORT');
   const { status, reason } = staleness(o.watermark), body = make(s, o.businessDate, timeZone);
   const head = { kind, businessDate: o.businessDate, timeZone, timeZoneAssumed: zone.assumed, status, statusReason: reason, watermark: o.watermark as unknown as JsonObject, columns: body.columns! };

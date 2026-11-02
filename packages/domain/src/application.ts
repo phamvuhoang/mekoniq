@@ -22,6 +22,8 @@ export function requiredPermissions(type:string,payload:JsonObject):string[] {
  // Releasing a zone on written evidence (an `unknown` reservation: no proof the robot left) is a manager decision, not the executor's.
  if(type==='Zone.Release'&&payload.evidence!==undefined)return [base,'robot.configure'];
  if(approvalCommands.has(type)&&(payload.approve===true||payload.adjustment===true))return [base,'shift.approve'];
+ // Punching for somebody else (explicit userId) is a manager's call on top of the plain clock permission.
+ if((type==='Staff.ClockIn'||type==='Staff.ClockOut')&&payload.userId!==undefined)return [base,'workforce.approve'];
  const ids=payload.discountIds;
  return couponCommands.has(type)&&ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?[base,'discount.apply']:[base];
 }

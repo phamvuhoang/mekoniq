@@ -26,5 +26,7 @@
   "inventory": "Inventory",
   "recipes": "Recipes",
   "purchasing": "Purchasing",
-  "stocktake": "Stocktake"
+  "stocktake": "Stocktake",
+  "staff": "Staff",
+  "inventory-reports": "Stock reports"
 }

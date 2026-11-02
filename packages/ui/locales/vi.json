@@ -26,5 +26,7 @@
   "inventory": "Kho",
   "recipes": "Công thức",
   "purchasing": "Mua hàng",
-  "stocktake": "Kiểm kê"
+  "stocktake": "Kiểm kê",
+  "staff": "Ca làm",
+  "inventory-reports": "Báo cáo kho"
 }

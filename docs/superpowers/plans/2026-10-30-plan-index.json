@@ -529,7 +529,8 @@
       "depends": "W02-T01, W05-T06, W07-T01..W07-T03",
       "testFile": "tests/integration/workforce-reporting.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/workforce-reporting.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W07-T04.md"
     },
     {
       "wave": "W08",

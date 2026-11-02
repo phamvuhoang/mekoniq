@@ -119,6 +119,10 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Stocktake.Count':{feature:'inventory',intent:'finish_existing'},
  'Stocktake.Approve':{feature:'inventory',intent:'finish_existing'},
  'Stocktake.Apply':{feature:'inventory',intent:'finish_existing'},
+ 'Staff.Schedule':{feature:'workforce',intent:'new'},
+ 'Staff.ClockIn':{feature:'workforce',intent:'new'},
+ 'Staff.ClockOut':{feature:'workforce',intent:'finish_existing'},
+ 'Staff.ApproveCorrection':{feature:'workforce',intent:'finish_existing'},
 };
 /** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
 const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};
