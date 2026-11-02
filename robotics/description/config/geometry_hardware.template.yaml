@@ -1,0 +1,18 @@
+# Template for a hardware robot profile. Every value must be MEASURED on the physical robot (W06-T05 commissioning) and `measured_by` /
+# `measured_on` filled; `null` means "not measured" and the profile must not be used to enable navigation on a robot.
+illustrative: false
+measured_by: null
+measured_on: null
+chassis_length_m: null
+chassis_width_m: null
+chassis_height_m: null
+chassis_mass_kg: null
+wheel_radius_m: null
+wheel_width_m: null
+wheel_separation_m: null
+wheel_mass_kg: null
+ground_clearance_m: null
+lidar_x_m: null
+lidar_height_m: null
+max_linear_speed_mps: null
+max_angular_speed_radps: null

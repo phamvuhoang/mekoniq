@@ -1,15 +1,17 @@
 import { createLab } from './lab';
 import { actors } from './actors';
 import {requiredPermissions} from '../../packages/domain/src/application';
+import { registerTrialImport } from '../../packages/domain/src/configuration/trial-import';
 import { registerPolicyModule } from '../../packages/domain/src/policy/module';
 import { registerContinuityModules } from '../../packages/domain/src/continuity/module';
 import { registerRestaurantModules } from '../../packages/domain/src/restaurant';
 import fixture from '../fixtures/restaurant-v1.json';
 import {quoteOrder} from '../../packages/domain/src/pricing/quote';
 import type { CommandResult, JsonObject, Snapshot } from '../../packages/contracts/src/index';
+import { encodeGuestToken, guestCommand as guestEnvelope } from '../../packages/domain/src/service/guest-token';
 import { dispatchPrintEffects, spoolEffectSnapshots, PrinterNotReached, type PrinterTransport } from '../../integrations/printing/src/spool';
 export async function createRestaurantLab() {
- const lab=await createLab(registry=>{registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);});
+ const lab=await createLab(registry=>{registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);registerTrialImport(registry);});
  lab.addAuthorization((actor,type,payload)=>{
   const principal=actors[actor],needed=requiredPermissions(type,payload);
   if(!principal||!needed.length) return false;
@@ -24,7 +26,8 @@ export async function createRestaurantLab() {
  await lab.seed('robot',fixture.robot.id,fixture.robot as JsonObject);
  await lab.seed('printer',fixture.printer.id,fixture.printer as JsonObject);
  const seedAggregate=lab.seed.bind(lab);
- lab.seed=(kind,id,overrides)=>kind==='order-line'?seedOrderLine(lab,seedAggregate,id,overrides):kind==='payment'?seedPayment(lab,seedAggregate,id,overrides):seedAggregate(kind,id,overrides);
+ // R-W06-T01: a partial seed of the fixture robot keeps the rest of the fixture robot (fixture defaults, not the current state).
+ lab.seed=(kind,id,overrides)=>kind==='order-line'?seedOrderLine(lab,seedAggregate,id,overrides):kind==='payment'?seedPayment(lab,seedAggregate,id,overrides):kind==='robot'&&id===fixture.robot.id?seedAggregate(kind,id,{...structuredClone(fixture.robot) as JsonObject,...overrides}):seedAggregate(kind,id,overrides);
  // The REAL spool dispatcher runs over the coordinator's outbox with an injected FIXTURE transport (no physical printer). Faults armed with lab.fault:
  // 'printer-timeout' -> the transport hangs and the spool's timeout fires; 'printer-ack-lost' -> bytes were written but no ack came back; 'printer-unreachable' -> nothing sent.
  const printed:{printerId:string;jobId:string;effectId:string;bytes:Uint8Array}[]=[];
@@ -47,7 +50,28 @@ export async function createRestaurantLab() {
   if(autoSpool.on&&result.status==='accepted'&&!result.duplicate&&['Print.Request','Print.ConfirmReprint'].includes(type)) await runSpool();
   return result;
  };
- return Object.assign(lab,{printed,runSpool,autoSpool});
+ // Plan §4 guest helpers. guestToken: staff issue a token through the production command and the coordinator store signs it at commit.
+ // guestCommand: the same token -> envelope builder the cloud guest API uses, then the guest principal's authorization and the venue's verification.
+ const guestToken=async(sessionId:string,channel='qr'):Promise<string>=>{
+  const issued=await baseCommand('cashier','Guest.IssueToken',{sessionId,channel});
+  if(issued.status!=='accepted') throw new Error('GUEST_TOKEN_REJECTED:'+(issued.code??issued.status));
+  return encodeGuestToken(await lab.state<JsonObject>('guest-token',String(issued.value.tokenId)));
+ };
+ const guestCommand=async(token:string,type:string,payload:JsonObject,operationId?:string,actor='guest'):Promise<CommandResult>=>{
+  let built:ReturnType<typeof guestEnvelope>;
+  try { built=guestEnvelope(token,type,payload); } catch(error) { return {status:'rejected',code:(error as Error).message,value:{},duplicate:false,ack:'none',operationId:operationId??''}; }
+  return lab.command(actor,built.type,built.payload,operationId);
+ };
+ // Plan W06-T06: the user-exported trial site through the production path: dry-run first, then apply with the preview's hash (a rejected report never reaches apply).
+ const importTrial=async(input:JsonObject,actor='manager')=>{
+  const preview=await lab.command(actor,'Trial.ImportPreview',{input});
+  if(preview.status!=='accepted') return {status:preview.status,code:preview.code,report:{} as JsonObject,value:{} as JsonObject};
+  const report=preview.value;
+  if(report.status!=='ready') return {status:'rejected' as const,code:String((report.blocking as {code:string}[])[0]?.code),report,value:{} as JsonObject};
+  const applied=await lab.command(actor,'Trial.ImportApply',{input,previewHash:report.previewHash as string});
+  return {status:applied.status,code:applied.code,report,value:applied.value};
+ };
+ return Object.assign(lab,{printed,runSpool,autoSpool,guestToken,guestCommand,importTrial});
 }
 
 /**

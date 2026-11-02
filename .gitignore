@@ -25,3 +25,8 @@ local.properties
 # Never commit signing keys.
 *.jks
 *.keystore
+*.egg-info/
+
+# colcon workspace output (robotics/ is the workspace root)
+robotics/install/
+robotics/log/

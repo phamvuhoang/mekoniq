@@ -29,15 +29,18 @@ export function registerRefunds(registry: ModuleRegistry): void {
     if (!METHODS.includes(method)) return fail('INVALID_METHOD');
     const open = (id: unknown) => { const x = typeof id === 'string' ? find(s, 'shift', id) : undefined; return x?.state.status === 'open' ? x : undefined; };
     const shift = method !== 'cash' ? undefined : c.payload.shiftId !== undefined ? open(text(c.payload.shiftId)) ?? fail('SHIFT_NOT_OPEN')
-      : open(payment.state.shiftId) ?? all(s, 'shift').find(x => x.state.cashierId === c.actorRef && x.state.status === 'open') ?? fail('ACTIVE_SHIFT_REQUIRED');
+      // the payment's own drawer only when that payment was cash; cash handed back for a card/transfer leaves the refunding actor's drawer
+      : (payment.state.method === 'cash' ? open(payment.state.shiftId) : undefined) ?? all(s, 'shift').find(x => x.state.cashierId === c.actorRef && x.state.status === 'open') ?? fail('ACTIVE_SHIFT_REQUIRED');
     if (shift && shift.state.currency !== currency) return fail('CURRENCY_MISMATCH');
+    // non-cash money never touches a drawer; it is reported on the shift of the payment it reverses (else the actor's open shift, else unattributed)
+    const shiftId = shift?.ref.id ?? (method === 'cash' ? null : typeof payment.state.shiftId === 'string' ? payment.state.shiftId : all(s, 'shift').find(x => x.state.cashierId === c.actorRef && x.state.status === 'open')?.ref.id ?? null);
     const evidenceRef = c.payload.evidenceRef !== undefined || method !== 'cash' ? note(c.payload.evidenceRef, 'EVIDENCE_REQUIRED') : null;
     const req = BigInt(request), unapplied = BigInt(String(payment.state.unappliedMinor ?? '0')), fromUnapplied = req < unapplied ? req : unapplied, fromApplied = req - fromUnapplied;
     const billUnapplied = BigInt(String(bill.state.unappliedMinor ?? '0'));
     if (billUnapplied < fromUnapplied) return fail('BILL_BALANCE_CORRUPT');
     const refundId = stableId('refund', c);
     return done([
-      created('RefundRecorded', 'refund', refundId, { paymentId: payment.ref.id, billId: bill.ref.id, currency, amountMinor: request, appliedMinor: String(fromApplied), unappliedMinor: String(fromUnapplied), method, shiftId: shift?.ref.id ?? null, reason, evidenceRef, actorRef: c.actorRef, billStatus: bill.state.status!, occurredAt: c.occurredAt, recordedAt: c.recordedAt }),
+      created('RefundRecorded', 'refund', refundId, { paymentId: payment.ref.id, billId: bill.ref.id, currency, amountMinor: request, appliedMinor: String(fromApplied), unappliedMinor: String(fromUnapplied), method, shiftId, reason, evidenceRef, actorRef: c.actorRef, billStatus: bill.state.status!, occurredAt: c.occurredAt, recordedAt: c.recordedAt }),
       changed('PaymentRefunded', payment, { refundedMinor: String(BigInt(refunded) + req), unappliedMinor: String(unapplied - fromUnapplied), refundIds: [...((payment.state.refundIds ?? []) as string[]), refundId] }),
       changed('BillRefunded', bill, { refundedMinor: String(BigInt(String(bill.state.refundedMinor ?? '0')) + fromApplied), unappliedMinor: String(billUnapplied - fromUnapplied) }),
       ...(shift ? [changed('ShiftCashRefunded', shift, { cashRefundedMinor: String(BigInt(String(shift.state.cashRefundedMinor ?? '0')) + req) })] : []),

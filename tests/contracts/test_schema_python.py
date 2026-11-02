@@ -52,3 +52,31 @@ def test_journal_sequence_is_decimal_string():
     assert v.is_valid('9007199254740993')
     for value in [1, '0', '-1', '01', '1.0']:
         assert not v.is_valid(value)
+
+
+def test_robot_manifest_schema_matches_typescript():
+    wrapper = json.loads((ROOT / 'packages/contracts/schemas/robot-manifest.schema.json').read_text())
+    assert wrapper['$ref'] == 'mekoniq.wire.v1#/definitions/RobotManifest'
+    manifest = {'id': 'ros-1', 'adapter': 'ros2', 'protocolVersion': 'nav2-jazzy-1', 'firmware': 'jazzy-2026.10',
+                'capabilities': ['delivery'], 'mapId': 'm', 'mapRevision': '1', 'offlineExecution': True,
+                'maxLoadMinor': '20000', 'trays': 2, 'validation': 'hardware_validated', 'targetKind': 'ros',
+                'units': 'm', 'frame': 'map', 'footprint': {'widthM': 0.5, 'lengthM': 0.6}, 'speedControl': True,
+                'maxSpeedMps': 0.8, 'zoneEnforcement': False, 'docking': False}
+    validator('RobotManifest').validate(manifest)
+    for change in [{'validation': 'assumed'}, {'units': 'inch'}, {'footprint': {'widthM': 0}}, {'extra': True},
+                   {'maxLoadMinor': '1.5'}, {'capabilities': ['delivery', 'delivery']}]:
+        assert not validator('RobotManifest').is_valid({**copy.deepcopy(manifest), **change})
+
+
+def test_robot_command_limits_carry_the_admitted_speed_limit():
+    wrapper = json.loads((ROOT / 'packages/contracts/schemas/robot-command.schema.json').read_text())
+    assert wrapper['$ref'] == 'mekoniq.wire.v1#/definitions/RobotCommand'
+    command = {'schemaVersion': 1, 'commandId': 'c-1', 'operationId': 'op-1', 'organizationId': 'org', 'venueId': 'venue',
+               'robotId': 'sim-1', 'missionId': 'm-1', 'stopId': 's-1', 'missionRevision': 1, 'controlEpoch': 1,
+               'issuerDeviceId': 'device-a', 'issuedAt': '2026-10-30T00:00:00Z', 'expiresAt': '2026-10-30T00:01:00Z',
+               'target': {'mapId': 'm', 'mapRevision': '1', 'frame': 'map', 'x': 0, 'y': 0},
+               'limits': {'trays': 2, 'maxLoadMinor': '20000', 'speedLimitMps': 0.3}}
+    validator('RobotCommand').validate(command)
+    for limits in [{'trays': 2, 'maxLoadMinor': '20000', 'speedLimitMps': 0}, {'trays': 2, 'maxLoadMinor': '20000', 'speed': 1},
+                   {'trays': 2}, {'trays': 2, 'maxLoadMinor': '1.5'}]:
+        assert not validator('RobotCommand').is_valid({**copy.deepcopy(command), 'limits': limits})

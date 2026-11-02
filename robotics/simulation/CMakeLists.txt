@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.8)
+project(mekoniq_simulation)
+find_package(ament_cmake REQUIRED)
+install(DIRECTORY worlds launch DESTINATION share/${PROJECT_NAME})
+if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
+  # Skips (with an explicit message) when rclpy/gz are unavailable; the agent package is imported from ../agent by the test itself.
+  ament_add_pytest_test(restaurant_scenarios tests/test_restaurant.py TIMEOUT 1800 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+ament_package()

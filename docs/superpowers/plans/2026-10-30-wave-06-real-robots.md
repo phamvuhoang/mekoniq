@@ -49,7 +49,7 @@
 - Consumes: RobotAdapter manifest và map identity, parking/charging distinct, footprint/load.
 - Produces: `eligibleRobots(mission,profiles):Eligibility[]`; `Robot.BindMap`, `Zone.Reserve`, `Zone.Release`.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -64,9 +64,9 @@ test("a known coordinate on a stale map is not dispatchable", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/robot-admission.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/robot-admission.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Match every stop, payload/footprint/trays/battery/capability before score. Opaque vendor map ID hoặc explicit operator binding epoch; same image size không chứng minh identity. Robot không enforce zones thì serialized conflicted movement.
+- [x] **3. Hiện thực phần cốt lõi.** Match every stop, payload/footprint/trays/battery/capability before score. Opaque vendor map ID hoặc explicit operator binding epoch; same image size không chứng minh identity. Robot không enforce zones thì serialized conflicted movement.
 
 ```ts
 export function bindingCurrent(binding:{mapId:string;revision:string},
@@ -75,11 +75,11 @@ export function bindingCurrent(binding:{mapId:string;revision:string},
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Setup taught waypoint per robot/map, unit/frame explicit mét/radian domain vs cm adapter. Missing dock uses parking. UI cannot bypass capability by picking specific robot.
+- [x] **4. Nối vào runtime và lưu trữ.** Setup taught waypoint per robot/map, unit/frame explicit mét/radian domain vs cm adapter. Missing dock uses parking. UI cannot bypass capability by picking specific robot.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/robot-admission.test.ts`; kỳ vọng PASS. Unknown driver rejected, overloaded robot, no speed support, map reset, reservation unknown no release on TTL. Mixed vendor traffic unsafe paths stay pending. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/robot-admission.test.ts`; kỳ vọng PASS. Unknown driver rejected, overloaded robot, no speed support, map reset, reservation unknown no release on TTL. Mixed vendor traffic unsafe paths stay pending. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: admit missions only to validated robot capabilities"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: admit missions only to validated robot capabilities"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W06-T02: Valetudo REST/MQTT transport và completion evidence
 
@@ -99,7 +99,7 @@ export function bindingCurrent(binding:{mapId:string;revision:string},
 - Consumes: RobotAdapter; official pinned Valetudo schema and test fixture server; native HTTP transport.
 - Produces: `ValetudoAdapter` implements adapter contract; protocol profile declares transport + tested firmware + offline availability. Native plugin `Executor.submit(command:RobotCommand):Promise<NativeAcceptance>`, `reconcile(commandId:string):Promise<NativeExecutionState>`, `requestStop(reason:string):Promise<StopAcknowledgement>` dùng chung schema; mỗi robot chỉ được bind một executor.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -115,9 +115,9 @@ test("HTTP 200 plus stale idle telemetry cannot mean arrival", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Pin official routes/capability version from supplied robot; REST LAN for no broker deployment. MQTT command no retain, per-robot ACL; do not switch transports mid-trip. Fresh position+matching goal/map+status needed; uncertainty becomes needs_attention.
+- [x] **3. Hiện thực phần cốt lõi.** Pin official routes/capability version from supplied robot; REST LAN for no broker deployment. MQTT command no retain, per-robot ACL; do not switch transports mid-trip. Fresh position+matching goal/map+status needed; uncertainty becomes needs_attention. (software part only; hardware blocked_external: routes/capabilities are pinned to upstream Valetudo 2026.10.0, not read from a supplied robot)
 
 ```ts
 export function arrivalConfirmed(s:{fresh:boolean;mapMatches:boolean;goalMatches:boolean;
@@ -127,11 +127,11 @@ export function arrivalConfirmed(s:{fresh:boolean;mapMatches:boolean;goalMatches
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** `createValetudoRig` starts protocol emulator with delayed/duplicate/status/map responses, uses real adapter. Trên Android, adapter TS gửi typed command qua ExecutorPlugin; chỉ NativeRobotTransport được phát REST/MQTT mutation tới endpoint đã provision. Không cho WebView truyền URL/request tùy ý hoặc mở một đường điều khiển thứ hai. ExecutorJournal lưu command ID/hash, control epoch, sending state trước I/O và receipt/observations sau I/O. Crash giữa hai bước phải reconcile; nếu firmware không có query goal ID đáng tin thì giữ unknown, không tự gửi lại. Native service giữ heartbeat/expiry/stop policy khi UI suspend; completion chưa đủ chứng cứ giữ pending. Parse compressed map with max inflated size; reject invalid endpoints/config. STOP then retarget waits evidence, not arbitrary sleep as success.
+- [x] **4. Nối vào runtime và lưu trữ.** `createValetudoRig` starts protocol emulator with delayed/duplicate/status/map responses, uses real adapter. Trên Android, adapter TS gửi typed command qua ExecutorPlugin; chỉ NativeRobotTransport được phát REST/MQTT mutation tới endpoint đã provision. Không cho WebView truyền URL/request tùy ý hoặc mở một đường điều khiển thứ hai. ExecutorJournal lưu command ID/hash, control epoch, sending state trước I/O và receipt/observations sau I/O. Crash giữa hai bước phải reconcile; nếu firmware không có query goal ID đáng tin thì giữ unknown, không tự gửi lại. Native service giữ heartbeat/expiry/stop policy khi UI suspend; completion chưa đủ chứng cứ giữ pending. Parse compressed map with max inflated size; reject invalid endpoints/config. STOP then retarget waits evidence, not arbitrary sleep as success.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts`; kỳ vọng PASS. Chạy `apps/tablet-android/android/gradlew -p apps/tablet-android/android connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=io.mekoniq.tablet.ValetudoExecutorRecoveryTest` với protocol server và kiểm native crash/reopen không phát goto lần hai, stale epoch bị từ chối, UI suspend không ACK arrival giả. Retained stale telemetry, no pose, no ACK, same goal resend, broker down, reboot recovery, unsupported speed; protocol tests + supervised hardware proof separate. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:adapters -- tests/adapters/valetudo-conformance.test.ts`; kỳ vọng PASS. Chạy `apps/tablet-android/android/gradlew -p apps/tablet-android/android connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=io.mekoniq.tablet.ValetudoExecutorRecoveryTest` với protocol server và kiểm native crash/reopen không phát goto lần hai, stale epoch bị từ chối, UI suspend không ACK arrival giả. Retained stale telemetry, no pose, no ACK, same goal resend, broker down, reboot recovery, unsupported speed; protocol tests + supervised hardware proof separate. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T02.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: integrate valetudo through evidence-based navigation adapters"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T02.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: integrate valetudo through evidence-based navigation adapters"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W06-T03: ROS executor durable journal và native action ownership
 
@@ -149,7 +149,7 @@ export function arrivalConfirmed(s:{fresh:boolean;mapMatches:boolean;goalMatches
 - Consumes: Generated JSON schema/ES256 verification, command IDs/epochs, SQLite store.
 - Produces: `Executor.submit(command)`, `.reconcile()`, `.request_stop()`; `NativeNavigation` port methods start/query/cancel; `FakeNativeNavigation` test only.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```python
 import pytest
@@ -169,9 +169,9 @@ def test_crash_after_native_accept_does_not_start_second_goal(tmp_path):
     assert recovered.status("c-1") in {"executing", "unknown"}
 ```
 
-- [ ] **2. Chạy RED.** Trong venv đã chuẩn bị ở W00-T02, chạy `python3 -m pip install -e robotics/agent` rồi `python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** Trong venv đã chuẩn bị ở W00-T02, chạy `python3 -m pip install -e robotics/agent` rồi `python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Write sending state and stable goal UUID before native call; if crash query by UUID/native state, do not resend uncertain. Validate command scope/expiry/controlEpoch; journal state machine atomic. No cloud direct ROS endpoint.
+- [x] **3. Hiện thực phần cốt lõi.** Write sending state and stable goal UUID before native call; if crash query by UUID/native state, do not resend uncertain. Validate command scope/expiry/controlEpoch; journal state machine atomic. No cloud direct ROS endpoint.
 
 ```python
 def can_submit(command, owner_epoch, now):
@@ -182,11 +182,11 @@ def can_submit(command, owner_epoch, now):
     )
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** `support/executor_fixtures.py` cung cấp fake native backend giữ accepted goals qua lần tạo lại Executor. Hook `fault="after_native_accept"` raise `SimulatedCrash` sau native ACK, đóng journal mà không ghi tiếp hoặc cancel goal; chỉ bật qua dependency injection của test. Thêm subprocess kill test để kiểm chứng crash thật. MQTT/WebSocket transport outbound/cloud/LAN with signer. Journal statuses accepted/sending/executing/unknown/terminal, startup recover before advertised ready.
+- [x] **4. Nối vào runtime và lưu trữ.** `support/executor_fixtures.py` cung cấp fake native backend giữ accepted goals qua lần tạo lại Executor. Hook `fault="after_native_accept"` raise `SimulatedCrash` sau native ACK, đóng journal mà không ghi tiếp hoặc cancel goal; chỉ bật qua dependency injection của test. Thêm subprocess kill test để kiểm chứng crash thật. MQTT/WebSocket transport outbound/cloud/LAN with signer. Journal statuses accepted/sending/executing/unknown/terminal, startup recover before advertised ready.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q`; kỳ vọng PASS. O10/O11/O20 real SQLite, duplicate/out-of-order, forged epoch, stale command, time skew and domain mismatch. Python/TS contract fixtures match. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest robotics/agent/tests/test_executor_recovery.py -q`; kỳ vọng PASS. O10/O11/O20 real SQLite, duplicate/out-of-order, forged epoch, stale command, time skew and domain mismatch. Python/TS contract fixtures match. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T03.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: persist robot execution and recover native action ownership"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T03.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: persist robot execution and recover native action ownership"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W06-T04: Nav2 action bridge, localization và nhà hàng Gazebo
 
@@ -204,7 +204,7 @@ def can_submit(command, owner_epoch, now):
 - Consumes: Jazzy NavigateToPose actual action/result; NativeNavigation port, map/odom/base frames.
 - Produces: `Nav2Navigation` port; launch `restaurant_sim.launch.py`; profile namespaces, localization readiness and result evidence.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```python
 def test_rejected_or_aborted_nav2_goal_never_completes():
@@ -215,9 +215,9 @@ def test_rejected_or_aborted_nav2_goal_never_completes():
     assert result.completed is False
 ```
 
-- [ ] **2. Chạy RED.** `python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Check action accepted + terminal SUCCEEDED + error_code; cancel confirmation separate. Namespace từng robot, SI units, quaternion yaw conversion, lifecycle/localization readiness. Profile measured geometry inputs required for hardware, sim geometry explicitly illustrative.
+- [x] **3. Hiện thực phần cốt lõi.** Check action accepted + terminal SUCCEEDED + error_code; cancel confirmation separate. Namespace từng robot, SI units, quaternion yaw conversion, lifecycle/localization readiness. Profile measured geometry inputs required for hardware, sim geometry explicitly illustrative.
 
 ```python
 if not goal_handle.accepted:
@@ -227,11 +227,11 @@ if terminal_status != GoalStatus.STATUS_SUCCEEDED or result.error_code != 0:
 return NavigationResult(status="completed", completed=True)
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** SDF world kitchen/tables/narrow corridor/moving obstacle; Nav2 + Gazebo Harmonic via distro-pinned ROS images Linux. Mac use supported Linux container/VM simulation, don't claim native mac robot runtime. cmd_vel arbitration one source; no platform direct motor control.
+- [x] **4. Nối vào runtime và lưu trữ.** SDF world kitchen/tables/narrow corridor/moving obstacle; Nav2 + Gazebo Harmonic via distro-pinned ROS images Linux. Mac use supported Linux container/VM simulation, don't claim native mac robot runtime. cmd_vel arbitration one source; no platform direct motor control.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q`; kỳ vọng PASS. colcon build/test Jazzy, six Gazebo scenarios navigate/load/obstacle/replan/handoff/return; blocked timeout, localization lost and map change. Unit fake does not satisfy Gazebo gate. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest robotics/agent/tests/test_nav2_adapter.py -q`; kỳ vọng PASS. colcon build/test Jazzy, six Gazebo scenarios navigate/load/obstacle/replan/handoff/return; blocked timeout, localization lost and map change. Unit fake does not satisfy Gazebo gate. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T04.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: navigate restaurant missions through jazzy nav2"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T04.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: navigate restaurant missions through jazzy nav2"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W06-T05: Commission S100/ZLTECH profiles và safety boundary
 
@@ -248,7 +248,7 @@ return NavigationResult(status="completed", completed=True)
 - Consumes: Supplier SDK/firmware pinout, measured dimensions/load/stop distance, navigation driver outputs.
 - Produces: Signed commissioning manifest with `integration_tested/hardware_validated/venue_approved`; driver integration per provided vendor ROS interface.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```python
 def test_profile_without_independent_stop_evidence_is_not_venue_approved():
@@ -258,9 +258,9 @@ def test_profile_without_independent_stop_evidence_is_not_venue_approved():
     assert "SAFETY_EVIDENCE_MISSING" in result.reasons
 ```
 
-- [ ] **2. Chạy RED.** `python3 -m pytest tests/hardware/test_profile_validation.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `python3 -m pytest tests/hardware/test_profile_validation.py -q`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Validate actual robot vendor model/firmware, /odom /scan /tf, encoder units and watchdog independent computer. Register CAN/RS485 addresses only from supplied documentation, no invented hardware values. Measure braking/turn/load, E-stop/bumper/cliff paths with supervision.
+- [x] **3. Hiện thực phần cốt lõi.** Validate actual robot vendor model/firmware, /odom /scan /tf, encoder units and watchdog independent computer. Register CAN/RS485 addresses only from supplied documentation, no invented hardware values. Measure braking/turn/load, E-stop/bumper/cliff paths with supervision. (software part only; hardware blocked_external: no physical measurement, supervised E-stop/bumper/cliff test or hardware run was done)
 
 ```python
 def deployment_status(report):
@@ -269,11 +269,11 @@ def deployment_status(report):
     return "venue_approved" if report.venue_acceptance_signed else "hardware_validated"
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Commission tool read-only by default; active-motion suite needs explicit target/observer/test-area configuration at execution. Software requests STOP; hardware reset signal must come from controller. If supplier package absent, mark profile blocked_external and finish Nav2 simulator/contract work.
+- [x] **4. Nối vào runtime và lưu trữ.** Commission tool read-only by default; active-motion suite needs explicit target/observer/test-area configuration at execution. Software requests STOP; hardware reset signal must come from controller. If supplier package absent, mark profile blocked_external and finish Nav2 simulator/contract work.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest tests/hardware/test_profile_validation.py -q`; kỳ vọng PASS. Physical tests report actual payload/speed/distances and firmware. No claiming safety certification from a pass or substituting household vacuum for 20–30kg chassis. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `python3 -m pytest tests/hardware/test_profile_validation.py -q`; kỳ vọng PASS. Physical tests report actual payload/speed/distances and firmware. No claiming safety certification from a pass or substituting household vacuum for 20–30kg chassis. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware. (software part only; hardware blocked_external: no physical measurement, supervised E-stop/bumper/cliff test or hardware run was done)
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T05.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "docs: define measurable robot commissioning and vendor profiles"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T05.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "docs: define measurable robot commissioning and vendor profiles"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W06-T06: Import trial read-only và gate pilot B
 
@@ -291,7 +291,7 @@ def deployment_status(report):
 - Consumes: User-exported trial configuration only; source baseline reference, scope and map-binding schemas.
 - Produces: Dry-run/import configuration report with unmapped fields; one-venue pilot acceptance dossier; bảng đối chiếu từng hành vi baseline trial với test và setting của preset `trial-service`.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 test("trial import cannot replay runtime missions or billing state", async () => {
@@ -304,9 +304,9 @@ test("trial import cannot replay runtime missions or billing state", async () =>
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/trial-config-import.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/trial-config-import.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Whitelist site/menu/robot/waypoints; runtime state rejected with explicit report. Legacy features map to new independent keys with preview, no reading other session's spec. Teaching points require map identity revalidation.
+- [x] **3. Hiện thực phần cốt lõi.** Whitelist site/menu/robot/waypoints; runtime state rejected with explicit report. Legacy features map to new independent keys with preview, no reading other session's spec. Teaching points require map identity revalidation.
 
 ```ts
 const importable = new Set(["name","points","robots","menu","timing","features"]);
@@ -314,11 +314,11 @@ const accepted = Object.fromEntries(Object.entries(input).filter(([key])=>import
 const rejectedFields = Object.keys(input).filter(key=>!importable.has(key));
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Pilot checklist uses one control source only, close/reconcile trial missions/bills before switch. Shadow mode telemetry-only. Preset E2E khởi tạo venue trống bằng luồng enrollment/configuration thật, chọn `trial-service`, cấu hình điểm/robot và tắt kho/CRM/booking/chuỗi/provider ngoài. Chạy giao nhiều bàn, xác nhận khay, hủy khi có tải, thu dọn, gọi/dẫn khách, menu–order–yêu cầu thanh toán theo từng cờ; kiểm UI chỉ hiện chức năng đã bật và API từ chối chức năng tắt. Nhánh pay kiểm receipt/quyền production, không dùng xác nhận của khách để tự settled. Dùng test/fixtures hiện có làm tham chiếu hành vi, không import runtime state. Future actual cutover in W11 after deploy result reviewed; no running trial deploy scripts.
+- [x] **4. Nối vào runtime và lưu trữ.** Pilot checklist uses one control source only, close/reconcile trial missions/bills before switch. Shadow mode telemetry-only. Preset E2E khởi tạo venue trống bằng luồng enrollment/configuration thật, chọn `trial-service`, cấu hình điểm/robot và tắt kho/CRM/booking/chuỗi/provider ngoài. Chạy giao nhiều bàn, xác nhận khay, hủy khi có tải, thu dọn, gọi/dẫn khách, menu–order–yêu cầu thanh toán theo từng cờ; kiểm UI chỉ hiện chức năng đã bật và API từ chối chức năng tắt. Nhánh pay kiểm receipt/quyền production, không dùng xác nhận của khách để tự settled. Dùng test/fixtures hiện có làm tham chiếu hành vi, không import runtime state. Future actual cutover in W11 after deploy result reviewed; no running trial deploy scripts.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/trial-config-import.test.ts`; kỳ vọng PASS. Chạy `pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts`; chỉ thay settings và fixture venue, không sửa code/build để làm preset pass. Old/current schema sample, duplicate import, stale point reference, unknown driver refused; full real-device O01/O10/O11 with approved robot. Gate B explicitly blocked if hardware absent. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/trial-config-import.test.ts`; kỳ vọng PASS. Chạy `pnpm test:e2e -- tests/e2e/trial-service-preset.spec.ts`; chỉ thay settings và fixture venue, không sửa code/build để làm preset pass. Old/current schema sample, duplicate import, stale point reference, unknown driver refused; full real-device O01/O10/O11 with approved robot. Gate B explicitly blocked if hardware absent. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware. (software part only; hardware blocked_external: no real-device O01/O10/O11, no approved commissioned robot; Gate B is BLOCKED)
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T06.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: migrate trial configuration into a controlled pilot"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W06-T06.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: migrate trial configuration into a controlled pilot"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ## Wave acceptance
 

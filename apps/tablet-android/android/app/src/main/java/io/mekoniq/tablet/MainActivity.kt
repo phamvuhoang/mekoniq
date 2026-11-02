@@ -6,12 +6,14 @@ import com.getcapacitor.BridgeActivity
 import io.mekoniq.tablet.storage.JournalPlugin
 import io.mekoniq.tablet.identity.IdentityPlugin
 import io.mekoniq.tablet.lan.LanPlugin
+import io.mekoniq.tablet.executor.ExecutorPlugin
 
 class MainActivity : BridgeActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     registerPlugin(JournalPlugin::class.java)
     registerPlugin(IdentityPlugin::class.java)
     registerPlugin(LanPlugin::class.java)
+    registerPlugin(ExecutorPlugin::class.java)
     super.onCreate(savedInstanceState)
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
   }

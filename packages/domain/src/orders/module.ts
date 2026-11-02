@@ -1,25 +1,27 @@
 import type { ModuleRegistry } from '../modules';
-import type { JsonObject } from '../../../contracts/src/index';
+import type { CommandEnvelope, Decision, JsonObject, Snapshot } from '../../../contracts/src/index';
 import { currentMenu } from '../catalog/menu';
 import { quoteForCommand, summarize } from '../pricing/quote';
 import { assertMutableOrder, lineReferences } from './order';
 import { newOrderLines, sessionForOrder } from './commands';
 import { cancelOrderLine } from './amendment';
 import { amount, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
+/** Order.Place for a session/table the caller already resolved; `extra` (e.g. guest channel) is recorded on the order. */
+export function placeOrder(c:CommandEnvelope,s:Snapshot[],extra:JsonObject={}):Decision {
+ const sessionId=text(c.payload.sessionId), session=requireState(s,'session',sessionId);
+ if(session.state.status!=='open') return fail('SESSION_CLOSED');
+ if(session.state.frozenBillId) return fail('SESSION_FROZEN');
+ if(c.payload.tableId!==session.state.tableId) return fail('TABLE_SESSION_MISMATCH');
+ const menu=currentMenu(s);
+ if(c.payload.menuVersion!==menu.state.version) return fail('STALE_QUOTE');
+ const quoted=quoteForCommand(c,s), orderId=c.payload.orderId ? text(c.payload.orderId) : stableId('order',c);
+ if(find(s,'order',orderId)) return fail('ORDER_EXISTS');
+ const materialized=newOrderLines(c,quoted.lines as JsonObject[],orderId,sessionId);
+ const state={sessionId,tableId:session.state.tableId!,menuVersion:menu.state.version!,currency:quoted.currency!,lines:materialized.lines,totalMinor:quoted.totalMinor,summary:summarize(materialized.lines),status:'open',policyRevision:c.policyRevision,occurredAt:c.occurredAt,...extra};
+ return done([created('OrderAccepted','order',orderId,state),changed('SessionOrderAdded',session,{orderIds:[...((session.state.orderIds ?? []) as string[]),orderId]}),...materialized.events],{orderId,lineIds:materialized.lines.map(l=>l.id),sessionId});
+}
 export function registerOrders(registry:ModuleRegistry):void {
- handle(registry,'Order.Place',(c,s)=>{
-  const sessionId=text(c.payload.sessionId), session=requireState(s,'session',sessionId);
-  if(session.state.status!=='open') return fail('SESSION_CLOSED');
-  if(session.state.frozenBillId) return fail('SESSION_FROZEN');
-  if(c.payload.tableId!==session.state.tableId) return fail('TABLE_SESSION_MISMATCH');
-  const menu=currentMenu(s);
-  if(c.payload.menuVersion!==menu.state.version) return fail('STALE_QUOTE');
-  const quoted=quoteForCommand(c,s), orderId=c.payload.orderId ? text(c.payload.orderId) : stableId('order',c);
-  if(find(s,'order',orderId)) return fail('ORDER_EXISTS');
-  const materialized=newOrderLines(c,quoted.lines as JsonObject[],orderId,sessionId);
-  const state={sessionId,tableId:session.state.tableId!,menuVersion:menu.state.version!,currency:quoted.currency!,lines:materialized.lines,totalMinor:quoted.totalMinor,summary:summarize(materialized.lines),status:'open',policyRevision:c.policyRevision,occurredAt:c.occurredAt};
-  return done([created('OrderAccepted','order',orderId,state),changed('SessionOrderAdded',session,{orderIds:[...((session.state.orderIds ?? []) as string[]),orderId]}),...materialized.events],{orderId,lineIds:materialized.lines.map(l=>l.id),sessionId});
- });
+ handle(registry,'Order.Place',(c,s)=>placeOrder(c,s));
  handle(registry,'Order.Amend',(c,s)=>{
   if(c.payload.lineId!==undefined) return cancelOrderLine(c,s); // line-cancel branch; otherwise add items
   const order=requireState(s,'order',text(c.payload.orderId)); expectVersion(c,order); assertMutableOrder(order.state);

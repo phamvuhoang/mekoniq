@@ -210,7 +210,7 @@ async function missionEnRoute(lab: Lab) {
     await dispatchRobotEffects(await lab.getStore("coordinator"),lab.scope,sim,lab.clock.nowMs);
     sim.advance(1000);
     const out = [];
-    for (const event of events.splice(0)) out.push({event,result:await lab.command("owner","Robot.Observe",robotEventCommand(event),event.id)});
+    for (const event of events.splice(0)) out.push({event,result:await lab.command("simulator:sim-1","Robot.Observe",robotEventCommand(event),event.id)});
     return out;
   };
   for (const r of await drive()) accepted(r.result);
@@ -261,6 +261,70 @@ test("a mission whose robot state is unknown blocks the move instead of being re
     const session = await lab.state<{version:number}>("session","s1");
     expect((await lab.command("cashier","Session.Move",{sessionId:"s1",toTableId:"table-2",expectedVersion:session.version})).code).toBe("MISSION_UNRESOLVED");
     expect(await lab.state("session","s1")).toMatchObject({tableId:"table-1"});
+    unsubscribe();
+  } finally { await lab.close(); }
+});
+
+test("a table move holds an en-route mission instead of re-aiming a faulted robot or one too wide for the new table", async () => {
+  for (const hazard of ["fault","footprint"] as const) {
+    const lab = await createRestaurantLab();
+    try {
+      const { missionId, before, unsubscribe } = await missionEnRoute(lab);
+      if (hazard === "fault") await lab.seed("robot","sim-1",{...await lab.state<JsonObject>("robot","sim-1"),safetyState:"fault"});
+      else await lab.seed("table","table-2",{...fixture.tables[1],clearanceM:0.4}); // robot footprint widthM 0.5
+      const store = await lab.getStore("coordinator"), issued = await lab.count("RobotCommandIssued"), executes = (await store.effects(lab.scope,"robot.execute")).length;
+      const session = await lab.state<{version:number}>("session","s1");
+      accepted(await lab.command("cashier","Session.Move",{sessionId:"s1",toTableId:"table-2",expectedVersion:session.version}));
+      expect(await lab.state("session","s1")).toMatchObject({tableId:"table-2"});
+      expect(await lab.count("RobotCommandIssued")).toBe(issued);
+      expect((await store.effects(lab.scope,"robot.execute")).length).toBe(executes);
+      const held = await lab.state<JsonObject & {version:number;stops:{action:string;targetId:string;status:string}[]}>("mission",missionId);
+      expect(held).toMatchObject({status:"needs_attention",attentionReason:hazard === "fault" ? "SAFETY_NOT_CLEAR" : "FOOTPRINT_TOO_LARGE",currentStopId:before.currentStopId,commandId:null});
+      expect(held.stops.find(s => s.action === "handoff")).toMatchObject({targetId:"table-2",status:"pending"});
+      // the old live goal is superseded and cancelled, so the robot does not keep driving to the old table
+      expect(await lab.state("robot-command",before.commandId)).toMatchObject({status:"superseded"});
+      expect((await store.effects(lab.scope,"robot.cancel")).length).toBe(1);
+      if (hazard === "fault") {
+        expect((await lab.command("manager","Mission.Resume",{missionId,expectedVersion:held.version})).code).toBe("SAFETY_NOT_CLEAR");
+        await lab.seed("robot","sim-1",{...await lab.state<JsonObject>("robot","sim-1"),safetyState:"clear"});
+        accepted(await lab.command("manager","Mission.Resume",{missionId,expectedVersion:held.version}));
+        const resumed = await lab.state<{commandId:string}>("mission",missionId);
+        expect(await lab.state("robot-command",resumed.commandId)).toMatchObject({target:{waypointId:"table-2"}});
+      }
+      unsubscribe();
+    } finally { await lab.close(); }
+  }
+});
+
+test("a later leg rewritten to a too-narrow table is held, not dispatched; Resume refuses until the footprint fits", async () => {
+  const lab = await createRestaurantLab();
+  try {
+    // Robot has arrived at the kitchen (load stop awaiting action); the hand-off to table-1 is a later, not-yet-issued leg.
+    await openWithOrder(lab,"s1","table-1",[{itemId:"rice",quantity:"1"}]);
+    const order = await lab.state<{lines:{id:string}[]}>("order",(await lab.state<{orderIds:string[]}>("session","s1")).orderIds[0]!);
+    const lineId = order.lines[0]!.id;
+    accepted(await lab.command("chef","Kitchen.Ready",{lineId,quantity:"1",stationId:"kitchen",expectedVersion:1}));
+    const allocation = await lab.command("cashier","Fulfillment.Allocate",{lineId,quantity:"1",expectedVersion:2,method:"robot"});
+    const missionId = String((await lab.command("cashier","Mission.Create",{allocationIds:[allocation.value.allocationId!],robotId:"sim-1"})).value.missionId);
+    const sim = await createSimulator(lab), events: RobotEvent[] = [], unsubscribe = sim.observe(e => events.push(e));
+    await dispatchRobotEffects(await lab.getStore("coordinator"),lab.scope,sim,lab.clock.nowMs);sim.advance(1000);
+    for (const e of events.splice(0)) accepted(await lab.command("simulator:sim-1","Robot.Observe",robotEventCommand(e),e.id));
+    await lab.seed("table","table-2",{...fixture.tables[1],clearanceM:0.4}); // robot footprint widthM 0.5
+    accepted(await lab.command("cashier","Session.Move",{sessionId:"s1",toTableId:"table-2",expectedVersion:(await lab.state<{version:number}>("session","s1")).version}));
+    const store = await lab.getStore("coordinator"), issued = await lab.count("RobotCommandIssued"), executes = (await store.effects(lab.scope,"robot.execute")).length;
+    const m = await lab.state<{version:number;revision:number;currentStopId:string}>("mission",missionId);
+    accepted(await lab.command("cashier","Mission.ConfirmStop",{missionId,expectedVersion:m.version,missionRevision:m.revision,stopId:m.currentStopId}));
+    const held = await lab.state<JsonObject & {version:number;stops:{action:string;targetId:string;status:string}[]}>("mission",missionId);
+    expect(held).toMatchObject({status:"needs_attention",attentionReason:"FOOTPRINT_TOO_LARGE"});
+    expect(held.stops.find(s => s.action === "handoff")).toMatchObject({targetId:"table-2",status:"pending"});
+    const unchanged = async () => {expect(await lab.count("RobotCommandIssued")).toBe(issued);expect((await store.effects(lab.scope,"robot.execute")).length).toBe(executes);};
+    await unchanged();
+    expect((await lab.command("manager","Mission.Resume",{missionId,expectedVersion:held.version})).code).toBe("FOOTPRINT_TOO_LARGE");
+    await unchanged();
+    await lab.seed("table","table-2",{...fixture.tables[1],clearanceM:0.6});
+    accepted(await lab.command("manager","Mission.Resume",{missionId,expectedVersion:held.version}));
+    const resumed = await lab.state<{commandId:string}>("mission",missionId);
+    expect(await lab.state("robot-command",resumed.commandId)).toMatchObject({target:{waypointId:"table-2"}});
     unsubscribe();
   } finally { await lab.close(); }
 });

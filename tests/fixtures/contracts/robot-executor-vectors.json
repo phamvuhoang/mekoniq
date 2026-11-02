@@ -1,0 +1,363 @@
+{
+ "version": 1,
+ "description": "W06-T03 shared RobotCommand/executor conformance vectors. Consumed by robotics/agent/tests/test_protocol.py (Python executor) and tests/contracts/robot-executor-vectors.test.ts (TS contracts + ValetudoAdapter). A patch is a shallow top-level merge; \"$delete\" lists keys to remove. Commands are issued at nowMs.",
+ "nowMs": 1793491200000,
+ "profile": {
+  "organizationId": "org-a",
+  "venueId": "venue-a",
+  "robotId": "robot-1",
+  "controlEpoch": 1,
+  "mapId": "map-a",
+  "mapRevision": "r1",
+  "frame": "map"
+ },
+ "baseCommand": {
+  "schemaVersion": 1,
+  "commandId": "c-1",
+  "operationId": "op-c-1",
+  "organizationId": "org-a",
+  "venueId": "venue-a",
+  "robotId": "robot-1",
+  "missionId": "mission-1",
+  "stopId": "stop-1",
+  "missionRevision": 1,
+  "controlEpoch": 1,
+  "issuerDeviceId": "device-a",
+  "issuedAt": "2026-11-01T00:00:00.000Z",
+  "expiresAt": "2026-11-01T00:01:00.000Z",
+  "target": {
+   "waypointId": "table-1",
+   "mapId": "map-a",
+   "mapRevision": "r1",
+   "frame": "map",
+   "x": 25,
+   "y": 12,
+   "yaw": 0
+  },
+  "limits": {
+   "trays": 1,
+   "maxLoadMinor": "5000"
+  }
+ },
+ "baseHash": "a41608d11ca7fbfef4177e183e882efb3e2dc87eb724402e23177fcdeb18c3f3",
+ "signed": {
+  "keyId": "vector-key-1",
+  "publicJwk": {
+   "kty": "EC",
+   "x": "ATjYRDZ0pbnhCrtBwiwD9nc30EBWsUGUZs-u5AvfHOM",
+   "y": "8t9aOvNXh_9XYPZbHaSm1nXWWYM-b7Mof5zkRn_75jM",
+   "crv": "P-256"
+  },
+  "signature": "2293HeK7zEAAhQLbzNF6n168N7nkYN_1NhlpHt9CDgDvtQ82MlGIFqEXaREaTzLKAoVeMeNFAbw4eE6iMTML5w",
+  "tampered": [
+   {
+    "name": "changed coordinate",
+    "patch": {
+     "target": {
+      "waypointId": "table-1",
+      "mapId": "map-a",
+      "mapRevision": "r1",
+      "frame": "map",
+      "x": 26,
+      "y": 12,
+      "yaw": 0
+     }
+    }
+   },
+   {
+    "name": "changed epoch",
+    "patch": {
+     "controlEpoch": 2
+    }
+   },
+   {
+    "name": "changed command id",
+    "patch": {
+     "commandId": "c-2"
+    }
+   }
+  ]
+ },
+ "invalidCommands": [
+  {
+   "name": "schemaVersion 2",
+   "patch": {
+    "schemaVersion": 2
+   }
+  },
+  {
+   "name": "missing target",
+   "patch": {
+    "$delete": [
+     "target"
+    ]
+   }
+  },
+  {
+   "name": "extra field",
+   "patch": {
+    "kind": "navigate"
+   }
+  },
+  {
+   "name": "controlEpoch 0",
+   "patch": {
+    "controlEpoch": 0
+   }
+  },
+  {
+   "name": "non-UTC expiry",
+   "patch": {
+    "expiresAt": "2026-11-01T07:01:00+07:00"
+   }
+  },
+  {
+   "name": "zero speed limit",
+   "patch": {
+    "limits": {
+     "trays": 1,
+     "maxLoadMinor": "5000",
+     "speedLimitMps": 0
+    }
+   }
+  },
+  {
+   "name": "float load",
+   "patch": {
+    "limits": {
+     "trays": 1,
+     "maxLoadMinor": "1.5"
+    }
+   }
+  },
+  {
+   "name": "garbage issuedAt",
+   "patch": {
+    "issuedAt": "2026-13-45T25:61:00Z"
+   }
+  },
+  {
+   "name": "garbage expiresAt",
+   "patch": {
+    "expiresAt": "soonZ"
+   }
+  }
+ ],
+ "admission": [
+  {
+   "name": "accept then identical duplicate answers from the journal",
+   "steps": [
+    {
+     "command": {},
+     "expect": {
+      "accepted": true,
+      "unknown": false
+     }
+    },
+    {
+     "command": {},
+     "expect": {
+      "accepted": true,
+      "unknown": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "same command id with a different payload is an idempotency conflict",
+   "steps": [
+    {
+     "command": {},
+     "expect": {
+      "accepted": true,
+      "unknown": false
+     }
+    },
+    {
+     "command": {
+      "limits": {
+       "trays": 1,
+       "maxLoadMinor": "5001"
+      }
+     },
+     "expect": {
+      "throws": "IDEMPOTENCY_CONFLICT"
+     }
+    }
+   ]
+  },
+  {
+   "name": "wrong robot",
+   "steps": [
+    {
+     "command": {
+      "robotId": "robot-2"
+     },
+     "expect": {
+      "accepted": false,
+      "unknown": false,
+      "reason": "ROBOT_MISMATCH"
+     }
+    }
+   ]
+  },
+  {
+   "name": "expired command",
+   "steps": [
+    {
+     "command": {
+      "issuedAt": "2026-10-31T23:58:00.000Z",
+      "expiresAt": "2026-10-31T23:59:00.000Z"
+     },
+     "expect": {
+      "accepted": false,
+      "unknown": false,
+      "reason": "EXPIRED_COMMAND"
+     }
+    }
+   ]
+  },
+  {
+   "name": "expiry instant is exclusive",
+   "steps": [
+    {
+     "command": {
+      "issuedAt": "2026-10-31T23:59:00.000Z",
+      "expiresAt": "2026-11-01T00:00:00.000Z"
+     },
+     "expect": {
+      "accepted": false,
+      "unknown": false,
+      "reason": "EXPIRED_COMMAND"
+     }
+    }
+   ]
+  },
+  {
+   "name": "map revision mismatch",
+   "steps": [
+    {
+     "command": {
+      "target": {
+       "waypointId": "table-1",
+       "mapId": "map-a",
+       "mapRevision": "r2",
+       "frame": "map",
+       "x": 25,
+       "y": 12,
+       "yaw": 0
+      }
+     },
+     "expect": {
+      "accepted": false,
+      "unknown": false,
+      "reason": "MAP_MISMATCH"
+     }
+    }
+   ]
+  },
+  {
+   "name": "frame mismatch",
+   "steps": [
+    {
+     "command": {
+      "target": {
+       "waypointId": "table-1",
+       "mapId": "map-a",
+       "mapRevision": "r1",
+       "frame": "odom",
+       "x": 25,
+       "y": 12,
+       "yaw": 0
+      }
+     },
+     "expect": {
+      "accepted": false,
+      "unknown": false,
+      "reason": "FRAME_MISMATCH"
+     }
+    }
+   ]
+  },
+  {
+   "name": "schema-invalid command is refused before any I/O",
+   "steps": [
+    {
+     "command": {
+      "schemaVersion": 2
+     },
+     "expect": {
+      "accepted": false,
+      "unknown": false,
+      "reason": "INVALID_COMMAND"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stale control epoch after a newer one was accepted",
+   "steps": [
+    {
+     "command": {
+      "commandId": "c-1",
+      "controlEpoch": 2
+     },
+     "expect": {
+      "accepted": true,
+      "unknown": false
+     }
+    },
+    {
+     "command": {
+      "commandId": "c-2",
+      "controlEpoch": 1
+     },
+     "expect": {
+      "accepted": false,
+      "unknown": false,
+      "reason": "STALE_CONTROL_EPOCH"
+     }
+    }
+   ]
+  },
+  {
+   "name": "one goal at a time",
+   "steps": [
+    {
+     "command": {
+      "commandId": "c-1"
+     },
+     "expect": {
+      "accepted": true,
+      "unknown": false
+     }
+    },
+    {
+     "command": {
+      "commandId": "c-2"
+     },
+     "expect": {
+      "accepted": false,
+      "unknown": false,
+      "reason": "PREVIOUS_GOAL_ACTIVE"
+     }
+    }
+   ]
+  },
+  {
+   "name": "garbage date-time is refused before any I/O",
+   "steps": [
+    {
+     "command": {
+      "issuedAt": "2026-13-45T25:61:00Z"
+     },
+     "expect": {
+      "accepted": false,
+      "unknown": false,
+      "reason": "INVALID_COMMAND"
+     }
+    }
+   ]
+  }
+ ]
+}

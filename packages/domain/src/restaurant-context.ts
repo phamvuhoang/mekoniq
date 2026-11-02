@@ -4,6 +4,7 @@ import { stateEvent, type ModuleRegistry } from './modules';
 import { canonicalMinor } from './shared/money';
 import { evaluateFeature } from './policy/evaluate';
 import type { FeatureConfig } from './policy/registry';
+import {reserveDecisionMovement} from './fleet/reservations';
 import {runtimeReadiness} from './policy/readiness';
 export class DomainFault extends Error {}
 export const fail = (code: string): never => { throw new DomainFault(code); };
@@ -48,7 +49,7 @@ export function handle(registry:ModuleRegistry,type:string,handler:Handler):void
  registry.register(type,(command,snapshots)=>{
    try {
     guardFeature(command,snapshots);
-    return handler(command,snapshots);
+    return reserveDecisionMovement(command,snapshots,handler(command,snapshots));
    }
    catch(error) { if(error instanceof DomainFault) return {ok:false,code:error.message}; throw error; }
  });
@@ -87,15 +88,35 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Payment.VerifyManual':{feature:'payment.transfer.manual',intent:'new'},
  // Refunds settle money already received: allowed by permission even when the refund/sales features are off (capability matrix §4).
  'Refund.Record':{feature:'refund',intent:'finish_existing'},
+ // Closing a seating and handing out its guest link finish existing work; ordering channels are separate flags (qr/kiosk/robot.order).
+ 'Session.Close':{feature:'sessions',intent:'finish_existing'},
+ 'Guest.IssueToken':{feature:'sessions',intent:'finish_existing'},
+ 'Guest.PlaceOrder':{feature:'qr.order',intent:'new'},
+ 'Guest.CallStaff':{feature:'guest.call',intent:'new'},
+ 'Guest.ReportIssue':{feature:'guest.call',intent:'new'},
+ 'Guest.RequestBill':{feature:'guest.bill',intent:'new'},
+ 'Guest.AcknowledgeCall':{feature:'guest.call',intent:'finish_existing'},
+ 'Mission.Guide':{feature:'robot.guide',intent:'new'},
+ 'Mission.Bus':{feature:'robot.bussing',intent:'new'},
+ // Binding and releasing a zone never start business, so they work while the fleet drains; a reservation is new movement unless it serves an open mission of that same robot.
+ 'Robot.BindMap':{feature:'fleet',intent:'finish_existing'},
+ 'Mission.Resume':{feature:'fleet',intent:'finish_existing'},
+ 'Zone.Reserve':{feature:'fleet',intent:'new'},
+ 'Zone.Release':{feature:'fleet',intent:'finish_existing'},
 };
+/** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
+const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};
+const guestOrderFeature=(payload:JsonObject):string=>{const token=payload.guestToken;return guestChannels[token&&typeof token==='object'&&!Array.isArray(token)?String(token.channel):'robot'] ?? 'qr.order';};
 /** Resolving a terminal charge already observed (pending/unknown -> final) finishes existing work; only a new reference is new business. */
 const knownTerminalCharge=(command:CommandEnvelope,snapshots:Snapshot[]):boolean=>{ try { return Boolean(find(snapshots,'payment',externalPaymentId(externalReference(command.payload.reference)))); } catch { return false; } };
+const openMission=(command:CommandEnvelope,snapshots:Snapshot[]):boolean=>{const m=typeof command.payload.missionId==='string'?find(snapshots,'mission',command.payload.missionId):undefined;return Boolean(m&&m.state.robotId===command.payload.robotId&&!['completed','cancelled','failed'].includes(String(m.state.status)));};
 function guardFeature(command:CommandEnvelope,snapshots:Snapshot[]):void {
  const mapped=commandFeatures[command.type];
  if(!mapped) return;
  // Cancelling a line of an existing order finishes existing work; only adding items is new work.
- const intent=(command.type==='Order.Amend'&&command.payload.lineId!==undefined)||(command.type==='Payment.RecordTerminal'&&knownTerminalCharge(command,snapshots))?'finish_existing':mapped.intent;
- requireFeature(command,snapshots,command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature,intent);
+ // A robot/safety problem report is not a commercial feature (capability matrix §4): the guest.call flag cannot block it.
+ const intent=(command.type==='Order.Amend'&&command.payload.lineId!==undefined)||(command.type==='Guest.ReportIssue'&&['robot','safety'].includes(String(command.payload.category)))||(command.type==='Payment.RecordTerminal'&&knownTerminalCharge(command,snapshots))||(command.type==='Zone.Reserve'&&openMission(command,snapshots))?'finish_existing':mapped.intent;
+ requireFeature(command,snapshots,command.type==='Guest.PlaceOrder' ? guestOrderFeature(command.payload) : command.type==='Mission.Create' ? command.payload.kind==='bus'?'robot.bussing':command.payload.kind==='guide'?'robot.guide':mapped.feature : mapped.feature,intent);
 }
 /** Same applied-policy check the per-command guard uses, for a feature a payload opts into (e.g. coupons). */
 export function requireFeature(command:CommandEnvelope,snapshots:Snapshot[],feature:string,intent:'new'|'finish_existing'='new'):void {

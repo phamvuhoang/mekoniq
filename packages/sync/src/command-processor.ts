@@ -10,7 +10,7 @@ export async function processCommand(store:DurableStore,raw:CommandEnvelope,deci
     if(old) return {...old,duplicate:true};
     const snapshots=await store.snapshots(command);
     const maintenance=snapshots.find(s=>s.ref.kind==='maintenance'&&s.ref.id==='current');
-    if(maintenance?.state.status==='prepared'&&maintenance.state.mode==='full_shutdown'&&/^(Session\.Open|Order\.Place|Catalog\.Publish|Mission\.Create|Fulfillment\.Allocate|SettlementGrant\.Issue|Shift\.Open)$/.test(command.type))return rejected('MAINTENANCE_DRAINING');
+    if(maintenance?.state.status==='prepared'&&maintenance.state.mode==='full_shutdown'&&(/^(Session\.Open|Order\.Place|Guest\.PlaceOrder|Catalog\.Publish|Mission\.(Create|Guide|Bus)|Fulfillment\.Allocate|SettlementGrant\.Issue|Shift\.Open)$/.test(command.type)||(command.type==='Order.Amend'&&command.payload.lineId===undefined)))return rejected('MAINTENANCE_DRAINING');
     if(maintenance?.state.status==='active'&&maintenance.state.mode==='full_shutdown'&&!/^(Maintenance\.|Continuity\.|Import\.|Ownership\.|SettlementGrant\.Reconcile|Robot\.Reconcile)/.test(command.type))return rejected('MAINTENANCE_ACTIVE');
     const handoff=snapshots.find(s=>s.ref.kind==='ownership'&&['preparing','fenced'].includes(String(s.state.status)));
     if(handoff&&!/^(Ownership\.|Continuity\.|SettlementGrant\.Reconcile|Robot\.Reconcile)/.test(command.type))return rejected('HANDOFF_IN_PROGRESS');

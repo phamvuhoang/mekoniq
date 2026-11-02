@@ -26,7 +26,7 @@ export function startSimulatedRobotRuntime(options:{store:DurableStore;scope:Sco
    let sim=sims.get(robot.ref.id);
    if(!sim) {
     const state=robot.state;
-    const manifest:RobotManifest={id:robot.ref.id,adapter:'simulator',protocolVersion:'1',firmware:'app-simulator-1',capabilities:Array.isArray(state.capabilities)?state.capabilities as string[]:[],mapId:String(state.mapId),mapRevision:String(state.mapRevision),offlineExecution:state.offlineExecution===true,maxLoadMinor:String(state.maxLoadMinor),trays:Number(state.trays),validation:'simulated'};
+    const manifest:RobotManifest={id:robot.ref.id,adapter:'simulator',protocolVersion:'1',firmware:'app-simulator-1',capabilities:Array.isArray(state.capabilities)?state.capabilities as RobotManifest['capabilities']:[],mapId:String(state.mapId),mapRevision:String(state.mapRevision),offlineExecution:state.offlineExecution===true,maxLoadMinor:String(state.maxLoadMinor),trays:Number(state.trays),validation:'simulated'};
     const adapter=new SimulatorAdapter(manifest,now()),events:RobotEvent[]=[];
     sim={adapter,events,bootId:crypto.randomUUID(),lastTick:now(),unsubscribe:adapter.observe(event=>events.push(event))};sims.set(robot.ref.id,sim);
     // A fresh fake process has no native goal journal. Existing attempts become unknown,

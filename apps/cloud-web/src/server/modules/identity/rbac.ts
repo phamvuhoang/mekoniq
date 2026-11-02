@@ -1,12 +1,15 @@
 import type {TenantScope} from './tenant-context';
 export type Actor={id:string;organizationId:string;venueIds:string[];permissions:string[];permissionsByVenue?:Record<string,string[]>;stationIdsByVenue?:Record<string,string[]>;role:string;deviceId?:string;deviceEpoch?:string};
 const roles:Record<string,string[]>={
- owner:['*'],manager:['identity.delegate','discount.apply','fulfillment.write','continuity.capture','robot.stop','configuration.publish','configuration.read','catalog.publish','catalog.read','device.enroll','sync.write','sync.read','relay.write','assets.write','assets.read','order.read','order.write','kitchen.write','mission.write','billing.write','payment.cash','payment.terminal','payment.verify','payment.refund','bill.void','shift.write','shift.approve','print','print.resolve','continuity.import.approve','continuity.resolve','report.read'],
+ owner:['*'],manager:['identity.delegate','discount.apply','fulfillment.write','continuity.capture','robot.stop','configuration.publish','configuration.read','catalog.publish','catalog.read','device.enroll','sync.write','sync.read','relay.write','assets.write','assets.read','order.read','order.write','kitchen.write','mission.write','robot.configure','robot.traffic','billing.write','payment.cash','payment.terminal','payment.verify','payment.refund','bill.void','shift.write','shift.approve','print','print.resolve','continuity.import.approve','continuity.resolve','report.read'],
  cashier:['relay.write','continuity.capture','robot.stop','catalog.read','order.read','order.write','billing.write','payment.cash','payment.terminal','shift.write','print','fulfillment.write','mission.write','sync.read'],
  chef:['relay.write','robot.stop','catalog.read','order.read','kitchen.write','sync.read'],
- executor:['robot.observe','robot.stop'],
+ executor:['robot.observe','robot.stop','robot.traffic'],
  spooler:['print.observe'],
  guest:['guest.order','guest.call','guest.bill','payment.claim'],
+ // Guest-facing venue devices: a kiosk orders with a staff-issued kiosk token, a robot screen for the table its paired robot waits at.
+ kiosk:['guest.order','guest.call','guest.bill','catalog.read'],
+ 'robot-display':['guest.order','guest.call','guest.bill','catalog.read'],
 };
 export function rolePermissions(role:string){return [...(roles[role]??[])];}
 export function permissionsForVenue(actor:Actor,venueId:string){return actor.permissionsByVenue?(actor.permissionsByVenue[venueId]??[]):actor.permissions;}

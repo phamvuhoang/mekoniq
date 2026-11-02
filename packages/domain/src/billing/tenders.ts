@@ -17,6 +17,12 @@ function externalState(s: Snapshot[], billId: string, paymentId: string, status:
   const states = [...all(s, 'payment').filter(p => p.state.billId === billId && p.ref.id !== paymentId).map(p => String(p.state.status)), status];
   return states.includes('unknown') ? 'unknown' : states.includes('pending') ? 'pending' : null;
 }
+/** Shift a non-cash tender belongs to: the one it already carries, else the recording actor's open shift at capture time, else null (reported as unattributed). */
+const tenderShift = (s: Snapshot[], actorRef: string, existing?: Snapshot): string | null => {
+  if (typeof existing?.state.shiftId === 'string') return existing.state.shiftId;
+  const shift = all(s, 'shift').find(x => x.state.cashierId === actorRef && x.state.status === 'open');
+  return shift ? shift.ref.id : null;
+};
 function tenderBasics(c: { payload: JsonObject }, bill: Snapshot) {
   const currency = String(bill.state.currency ?? 'VND');
   if (c.payload.currency !== undefined && c.payload.currency !== currency) return fail('CURRENCY_MISMATCH');
@@ -42,7 +48,7 @@ export function registerTenders(registry: ModuleRegistry): void {
     const { applied, unapplied } = status === 'captured' ? capture(bill, BigInt(minor)) : { applied: 0n, unapplied: 0n };
     const state: JsonObject = {
       billId: bill.ref.id, method: 'card-terminal', reference, currency, amountMinor: minor, capturedMinor: status === 'captured' ? minor : '0', appliedMinor: String(applied), unappliedMinor: String(unapplied),
-      refundedMinor: '0', feeMinor: c.payload.feeMinor === undefined ? String(existing?.state.feeMinor ?? '0') : amount(c.payload.feeMinor), status, actorRef: c.actorRef, occurredAt: c.occurredAt,
+      refundedMinor: '0', feeMinor: c.payload.feeMinor === undefined ? String(existing?.state.feeMinor ?? '0') : amount(c.payload.feeMinor), status, shiftId: tenderShift(s, c.actorRef, existing), actorRef: c.actorRef, occurredAt: c.occurredAt,
       observations: [...((existing?.state.observations ?? []) as JsonObject[]), { status, by: c.actorRef, at: c.recordedAt, operationId: c.operationId }],
     };
     const type = `CardPayment${status[0]!.toUpperCase()}${status.slice(1)}`;
@@ -63,7 +69,7 @@ export function registerTenders(registry: ModuleRegistry): void {
     return done([
       created('ManualTransferVerified', 'payment', id, {
         billId: bill.ref.id, method: 'transfer', verification: 'manual', reference, currency, amountMinor: minor, capturedMinor: minor, appliedMinor: String(applied), unappliedMinor: String(unapplied), refundedMinor: '0',
-        feeMinor: c.payload.feeMinor === undefined ? '0' : amount(c.payload.feeMinor), status: 'captured', verifiedBy: c.actorRef, reason, evidenceRef, claimId: claim?.ref.id ?? null, actorRef: c.actorRef, occurredAt: c.occurredAt, verifiedAt: c.recordedAt,
+        feeMinor: c.payload.feeMinor === undefined ? '0' : amount(c.payload.feeMinor), status: 'captured', verifiedBy: c.actorRef, reason, evidenceRef, claimId: claim?.ref.id ?? null, shiftId: tenderShift(s, c.actorRef), actorRef: c.actorRef, occurredAt: c.occurredAt, verifiedAt: c.recordedAt,
       }),
       changed('BillTenderVerified', bill, billMoney(bill, applied, unapplied)),
       ...(claim ? [changed('PaymentClaimVerified', claim, { status: 'verified', paymentId: id, verifiedBy: c.actorRef })] : []),

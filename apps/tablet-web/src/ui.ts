@@ -13,6 +13,11 @@ export function button(text:string,action:()=>void|Promise<void>,className=''):H
 export function field(label:string,initial='',type='text'):{node:HTMLLabelElement;input:HTMLInputElement}{const node=el('label');node.append(el('span',label));const input=el('input');input.type=type;input.value=initial;node.append(input);return {node,input};}
 export function select(label:string,options:{id:string;name:string}[],initial=''):{node:HTMLLabelElement;input:HTMLSelectElement}{const node=el('label');node.append(el('span',label));const input=el('select');for(const option of options){const n=el('option',option.name);n.value=option.id;input.append(n);}input.value=initial||options[0]?.id||'';node.append(input);return {node,input};}
 export function panel(title:string,...children:Node[]):HTMLElement {const node=el('section',undefined,'panel');node.append(el('h2',title),...children);return node;}
+/** True while any of `keys` is enabled or draining in the applied configuration; true when no configuration snapshot is known (display only, the API guard enforces). */
+export function featureShown(c:Pick<ScreenContext,'snapshots'>,keys:string[]){
+ const features=c.snapshots.find(s=>s.ref.kind==='configuration'&&s.ref.id==='applied')?.state.features as Record<string,{status?:string}>|undefined;
+ return !features||keys.some(key=>['enabled','draining'].includes(String(features[key]?.status)));
+}
 export function list(c:ScreenContext,kind:string){return c.snapshots.filter(s=>s.ref.kind===kind);}
 export function money(minor:unknown,currency='VND'){try{return new Intl.NumberFormat('vi-VN',{style:'currency',currency,maximumFractionDigits:0}).format(BigInt(String(minor)));}catch{return String(minor)+' '+currency;}}
 export function summary(snapshot:Snapshot):HTMLElement {const row=el('article',undefined,'record');row.append(el('strong',String(snapshot.state.name??snapshot.ref.id)),el('span',String(snapshot.state.status??snapshot.state.availability??''),'badge'));return row;}

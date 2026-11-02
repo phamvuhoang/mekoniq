@@ -69,6 +69,7 @@
     "ownerDeviceId": "device-a",
     "mapId": "restaurant-map",
     "mapRevision": "1",
+    "bindingRevision": "1",
     "parkingPoint": "parking",
     "offlineExecution": true,
     "bindings": {
@@ -127,7 +128,13 @@
         "yaw": 0
       }
     },
-    "safetyState": "clear"
+    "safetyState": "clear",
+    "speedControl": true,
+    "zoneEnforcement": false,
+    "footprint": {
+      "widthM": 0.5,
+      "lengthM": 0.55
+    }
   },
   "configuration": {
     "revision": 1,
@@ -201,6 +208,26 @@
         "revision": 1
       },
       "printing": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "qr.order": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "kiosk.order": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "robot.order": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "guest.call": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "guest.bill": {
         "status": "enabled",
         "revision": 1
       }

@@ -5,7 +5,7 @@ import type {CommandEnvelope,CommandResult,JsonObject,Snapshot} from '../../../p
 import type {TabletTransport,TabletSession} from './transport/session';
 import {developmentTransport} from './transport/http';
 import {el,field,button,dictionaries,type Language,type ScreenContext} from './ui';
-import {routeScreen,canOpen} from './router';
+import {routeScreen,canOpen,featureOn} from './router';
 import {SyncStatus} from '../../../packages/ui/src/SyncStatus';
 import {OfflineBanner} from '../../../packages/ui/src/OfflineBanner';
 declare const __DEV_LAB__:boolean;
@@ -36,7 +36,7 @@ function render(){
  const lang=button(language==='vi'?'EN':'VI',()=>{language=language==='vi'?'en':'vi';localStorage.setItem('mekoniq-language',language);render();},'quiet');lang.setAttribute('aria-label',language==='vi'?'Switch to English':'Chuyển sang tiếng Việt');
  right.append(SyncStatus({level:session.level,language}),lang);header.append(brand,right);
  const nav=el('nav',undefined,'main-nav');nav.setAttribute('aria-label',language==='vi'?'Điều hướng chính':'Primary navigation');
- for(const [path,key,permission] of [['/device','device',''],['/pos','pos','order.write'],['/kitchen','kitchen','kitchen.write'],['/fleet','fleet','mission.write'],['/checkout','checkout','payment.cash'],['/cash','cash','shift.write'],['/print','print','print'],['/settings','settings','']] as const){if(!canOpen(c,permission))continue;const a=el('a',words[key]);a.href=path;if(location.pathname===path)a.setAttribute('aria-current','page');nav.append(a);}
+ for(const [path,key,permission] of [['/device','device',''],['/pos','pos','order.write'],['/kitchen','kitchen','kitchen.write'],['/fleet','fleet','mission.write'],['/robot-setup','robot-setup','robot.configure'],['/checkout','checkout','payment.cash'],['/cash','cash','shift.write'],['/print','print','print'],['/reports','reports','report.read'],['/guest-requests','guest-requests','order.write'],['/kiosk','kiosk','guest.order'],['/robot-screen','robot-screen','guest.order'],['/settings','settings','']] as const){if(!canOpen(c,permission)||!featureOn(c,path))continue;const a=el('a',words[key]);a.href=path;if(location.pathname===path)a.setAttribute('aria-current','page');nav.append(a);}
  const main=el('main');main.id='main';main.tabIndex=-1;
  const path=location.pathname==='/'?'/device':location.pathname;
  const heading=el('div',undefined,'page-heading');const title=path==='/settings'?words.settings:(words as Record<string,string>)[path.slice(1)]??words.device;

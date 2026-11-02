@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!-- Differential-drive delivery robot. ALL DIMENSIONS ARE ILLUSTRATIVE SIMULATION VALUES (see config/geometry_sim.yaml); a hardware robot
+     needs measured values (config/geometry_hardware.template.yaml, W06-T05). Frames: base_link (root), lidar_link; odom->base_link comes from
+     the Gazebo DiffDrive plugin (sim) or the real odometry source. Motion commands: the robot subscribes to ONE cmd_vel topic, published only
+     by Nav2 collision_monitor; nothing else in the platform publishes motor commands. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="mekoniq_delivery">
+  <xacro:arg name="namespace" default="robot_1"/>
+  <!-- illustrative sim geometry; keep in sync with config/geometry_sim.yaml (a unit test checks) -->
+  <xacro:property name="chassis_length" value="0.60"/>
+  <xacro:property name="chassis_width" value="0.45"/>
+  <xacro:property name="chassis_height" value="0.25"/>
+  <xacro:property name="chassis_mass" value="20.0"/>
+  <xacro:property name="wheel_radius" value="0.10"/>
+  <xacro:property name="wheel_width" value="0.05"/>
+  <xacro:property name="wheel_separation" value="0.42"/>
+  <xacro:property name="wheel_mass" value="1.0"/>
+  <xacro:property name="ground_clearance" value="0.05"/>
+  <xacro:property name="lidar_x" value="0.20"/>
+  <xacro:property name="lidar_height" value="0.28"/>
+  <xacro:property name="max_linear_speed" value="0.6"/>
+  <xacro:property name="ns" value="$(arg namespace)"/>
+
+  <link name="base_link">
+    <visual><origin xyz="0 0 ${ground_clearance + chassis_height / 2}"/><geometry><box size="${chassis_length} ${chassis_width} ${chassis_height}"/></geometry>
+      <material name="body"><color rgba="0.2 0.4 0.8 1"/></material></visual>
+    <collision><origin xyz="0 0 ${ground_clearance + chassis_height / 2}"/><geometry><box size="${chassis_length} ${chassis_width} ${chassis_height}"/></geometry></collision>
+    <inertial><origin xyz="0 0 ${ground_clearance + chassis_height / 2}"/><mass value="${chassis_mass}"/>
+      <inertia ixx="${chassis_mass * (chassis_width**2 + chassis_height**2) / 12}" iyy="${chassis_mass * (chassis_length**2 + chassis_height**2) / 12}"
+               izz="${chassis_mass * (chassis_length**2 + chassis_width**2) / 12}" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+
+  <xacro:macro name="wheel" params="name side">
+    <link name="${name}_wheel">
+      <visual><origin rpy="${pi/2} 0 0"/><geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry></visual>
+      <collision><origin rpy="${pi/2} 0 0"/><geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry></collision>
+      <inertial><mass value="${wheel_mass}"/>
+        <inertia ixx="${wheel_mass * (3 * wheel_radius**2 + wheel_width**2) / 12}" iyy="${wheel_mass * wheel_radius**2 / 2}"
+                 izz="${wheel_mass * (3 * wheel_radius**2 + wheel_width**2) / 12}" ixy="0" ixz="0" iyz="0"/></inertial>
+    </link>
+    <joint name="${name}_wheel_joint" type="continuous">
+      <parent link="base_link"/><child link="${name}_wheel"/><origin xyz="0 ${side * wheel_separation / 2} ${wheel_radius}" rpy="0 0 0"/><axis xyz="0 1 0"/>
+    </joint>
+  </xacro:macro>
+  <xacro:wheel name="left" side="1"/>
+  <xacro:wheel name="right" side="-1"/>
+
+  <xacro:macro name="caster" params="name x">
+    <link name="${name}_caster">
+      <collision><geometry><sphere radius="${wheel_radius}"/></geometry></collision>
+      <visual><geometry><sphere radius="${wheel_radius}"/></geometry></visual>
+      <inertial><mass value="0.5"/><inertia ixx="0.001" iyy="0.001" izz="0.001" ixy="0" ixz="0" iyz="0"/></inertial>
+    </link>
+    <joint name="${name}_caster_joint" type="fixed"><parent link="base_link"/><child link="${name}_caster"/><origin xyz="${x} 0 ${wheel_radius}"/></joint>
+  </xacro:macro>
+  <gazebo reference="front_caster"><mu1>0.0</mu1><mu2>0.0</mu2></gazebo>
+  <gazebo reference="rear_caster"><mu1>0.0</mu1><mu2>0.0</mu2></gazebo>
+  <xacro:caster name="front" x="${chassis_length / 2 - 0.1}"/>
+  <xacro:caster name="rear" x="${-chassis_length / 2 + 0.1}"/>
+
+  <link name="lidar_link">
+    <visual><geometry><cylinder radius="0.04" length="0.05"/></geometry></visual>
+    <inertial><mass value="0.2"/><inertia ixx="0.0002" iyy="0.0002" izz="0.0002" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+  <joint name="lidar_joint" type="fixed"><parent link="base_link"/><child link="lidar_link"/><origin xyz="${lidar_x} 0 ${lidar_height}"/></joint>
+
+  <gazebo reference="lidar_link">
+    <sensor name="lidar" type="gpu_lidar">
+      <topic>/${ns}/scan</topic><gz_frame_id>lidar_link</gz_frame_id><update_rate>10</update_rate><always_on>true</always_on>
+      <lidar><scan><horizontal><samples>360</samples><min_angle>-3.14159</min_angle><max_angle>3.14159</max_angle></horizontal></scan>
+        <range><min>0.12</min><max>8.0</max><resolution>0.01</resolution></range></lidar>
+    </sensor>
+  </gazebo>
+
+  <gazebo>
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>left_wheel_joint</left_joint><right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>${wheel_separation}</wheel_separation><wheel_radius>${wheel_radius}</wheel_radius>
+      <topic>/${ns}/cmd_vel</topic><odom_topic>/${ns}/odom</odom_topic><tf_topic>/${ns}/tf</tf_topic>
+      <frame_id>odom</frame_id><child_frame_id>base_link</child_frame_id><odom_publish_frequency>30</odom_publish_frequency>
+      <max_linear_velocity>${max_linear_speed}</max_linear_velocity><max_angular_velocity>1.0</max_angular_velocity>
+      <max_linear_acceleration>1.0</max_linear_acceleration><max_angular_acceleration>2.0</max_angular_acceleration>
+    </plugin>
+    <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">  <!-- sim ground truth for the scenario tests only -->
+      <publish_model_pose>true</publish_model_pose><use_pose_vector_msg>true</use_pose_vector_msg>
+    </plugin>
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <topic>/${ns}/joint_states</topic>
+    </plugin>
+  </gazebo>
+</robot>

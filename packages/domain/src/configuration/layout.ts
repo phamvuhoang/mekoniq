@@ -30,7 +30,7 @@ export function configureVenue(c:CommandEnvelope,s:Snapshot[]) {
   const authority=find(s,'__scope__','authority')?.state;if(!authority)throw new Error('AUTHORITY_REQUIRED');
   const mapId='simulated-layout-v1',mapRevision='1';
   const bindings=Object.fromEntries([...ids,'parking'].map((point,index)=>[point,{waypointId:point,mapId,mapRevision,frame:'map',x:index%5,y:Math.floor(index/5),yaw:0}]));
-  events.push(change('SimulatedRobotConfigured','robot',id,{id,driver:'simulator',validation:'simulated',capabilities:['delivery','bussing','guide'],trays,maxLoadMinor,battery:100,minBattery:20,availability:'idle',goalState:'idle',controlEpoch:old?.state.controlEpoch??1,ownerDeviceId:authority.ownerDeviceId,offlineExecution:true,mapId,mapRevision,parkingPoint:'parking',bindings}));
+  events.push(change('SimulatedRobotConfigured','robot',id,{id,driver:'simulator',validation:'simulated',capabilities:['delivery','bussing','guide'],trays,maxLoadMinor,battery:100,minBattery:20,availability:'idle',goalState:'idle',controlEpoch:old?.state.controlEpoch??1,ownerDeviceId:authority.ownerDeviceId,offlineExecution:true,mapId,mapRevision,bindingRevision:mapRevision,parkingPoint:'parking',bindings}));
  }
  return ok(events,{version:(current?.version??0)+1,simulatedRobotCount:robots.length});
 }

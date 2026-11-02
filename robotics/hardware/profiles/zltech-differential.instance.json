@@ -1,0 +1,65 @@
+{
+  "profile_id": "zltech-differential",
+  "schema_version": 1,
+  "vendor": {
+    "model": null,
+    "firmware": null,
+    "source": null,
+    "blocked_external": "Supplier SDK/firmware docs, pinout and CAN/RS485 register map not supplied; no physical robot measured."
+  },
+  "interfaces": {
+    "odom": {
+      "topic": null,
+      "frame_id": null,
+      "verified_on": null
+    },
+    "scan": {
+      "topic": null,
+      "frame_id": null,
+      "verified_on": null
+    },
+    "tf": {
+      "topic": null,
+      "frame_id": null,
+      "verified_on": null
+    },
+    "encoder": {
+      "unit": null,
+      "source": null
+    },
+    "watchdog": {
+      "independent_computer": null,
+      "timeout_s": null
+    }
+  },
+  "control_bus": {
+    "kind": null,
+    "register_map": {
+      "source": null,
+      "entries": []
+    }
+  },
+  "geometry": {
+    "illustrative": false,
+    "measured_by": null,
+    "measured_on": null,
+    "chassis_length_m": null,
+    "chassis_width_m": null,
+    "chassis_height_m": null,
+    "chassis_mass_kg": null,
+    "wheel_radius_m": null,
+    "wheel_width_m": null,
+    "wheel_separation_m": null,
+    "wheel_mass_kg": null,
+    "ground_clearance_m": null,
+    "lidar_x_m": null,
+    "lidar_height_m": null,
+    "max_linear_speed_mps": null,
+    "max_angular_speed_radps": null
+  },
+  "safety_evidence": null,
+  "tested_payload_kg": null,
+  "verified_capabilities": [],
+  "venue_acceptance": null,
+  "manifest": null
+}

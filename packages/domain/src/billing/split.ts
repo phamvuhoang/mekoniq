@@ -61,13 +61,25 @@ function splitWeights(mode: JsonValue | undefined, parts: JsonValue | undefined,
 function apportion(lines: JsonObject[], weights: bigint[][], n: number, equal: boolean): JsonObject[][] {
   const out = Array.from({ length: n }, () => [] as JsonObject[]), running = Array<bigint>(n).fill(0n);
   lines.forEach((line, li) => {
-    const w = weights[li]!, per = Array.from({ length: n }, () => [] as JsonObject[]);
-    for (const ch of line.charges as JsonObject[]) {
+    const w = weights[li]!, per = Array.from({ length: n }, () => [] as JsonObject[]), capacity = Array<bigint>(n).fill(0n);
+    const charges = line.charges as JsonObject[];
+    // Allocate positive capacity first, then constrain reversals to each child's remaining line value.
+    for (const index of charges.map((_, i) => i).sort((a, b) => Number(signOf(charges[b]!) - signOf(charges[a]!)))) {
+      const ch = charges[index]!;
       // equal: remainders go to the parts with the lowest running total (the highest, for a discount), so equal parts stay within a unit or so
       const sign = signOf(ch), order = equal ? [...Array(n).keys()].sort((a, b) => sign === 0n || running[a] === running[b] ? a - b : (running[a]! < running[b]!) === (sign > 0n) ? -1 : 1) : [...Array(n).keys()];
       const alloc = allocateMinor(String(ch.minor), order.map(j => w[j]!)), shares: string[] = [];
       order.forEach((j, k) => { shares[j] = alloc[k]!; });
-      shares.forEach((m, j) => { per[j]!.push({ ...ch, minor: m }); running[j] = running[j]! + signOf(ch) * BigInt(m); });
+      if (sign < 0n) {
+        let overflow = 0n;
+        shares.forEach((m, j) => { if (BigInt(m) > capacity[j]!) { overflow += BigInt(m) - capacity[j]!; shares[j] = String(capacity[j]); } });
+        for (const j of order) {
+          const spare = capacity[j]! - BigInt(shares[j]!); const move = spare < overflow ? spare : overflow;
+          shares[j] = String(BigInt(shares[j]!) + move); overflow -= move;
+        }
+        if (overflow !== 0n) fail('BILL_SNAPSHOT_CORRUPT');
+      }
+      shares.forEach((m, j) => { per[j]![index] = { ...ch, minor: m }; capacity[j] = capacity[j]! + sign * BigInt(m); running[j] = running[j]! + sign * BigInt(m); });
     }
     per.forEach((charges, j) => { if (w[j]! > 0n) out[j]!.push({ ...line, quantity: equal ? line.quantity! : String(w[j]), ...(equal ? { portion: { part: j + 1, parts: n } } : {}), charges, ...amountsOf(charges) }); });
   });
