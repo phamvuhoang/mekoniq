@@ -28,12 +28,13 @@ import { registerMapBinding } from './fleet/map-binding';
 import { registerReservations } from './fleet/reservations';
 import { registerRecipes } from './inventory/recipe';
 import { registerConsumption } from './inventory/consumption';
+import { registerStocktake } from './inventory/stocktake';
 import { registerSuppliers } from './procurement/supplier';
 import { registerPurchasing } from './procurement/purchase-order';
 import { registerReceiving } from './procurement/goods-receipt';
 import { registerReturns } from './procurement/return';
 export function registerRestaurantModules(registry:ModuleRegistry):void {
- for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns]) register(registry);
+ for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake]) register(registry);
 }
 export const commandPermissions:Record<string,string>={
  'Catalog.Publish':'catalog.publish','Catalog.Quote':'catalog.read','Session.Open':'order.write',
@@ -57,4 +58,6 @@ export const commandPermissions:Record<string,string>={
  'Ingredient.Upsert':'inventory.write','Recipe.Publish':'inventory.write','Inventory.Consume':'inventory.consume','Inventory.RecordWaste':'inventory.consume',
  // Procurement (W07-T02): raising and approving an order and booking a delivery are separate permissions.
  'Supplier.Upsert':'procurement.write','Purchase.Create':'procurement.write','Purchase.Approve':'procurement.approve','Purchase.Close':'procurement.approve','Goods.Receive':'procurement.receive','Goods.Return':'procurement.receive',
+ // Stocktake (W07-T03): counting is a floor task, approving and applying the difference is not.
+ 'Stocktake.Open':'inventory.count','Stocktake.Count':'inventory.count','Stocktake.Approve':'inventory.approve','Stocktake.Apply':'inventory.approve',
 };

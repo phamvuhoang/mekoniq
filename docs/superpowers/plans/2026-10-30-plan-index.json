@@ -519,7 +519,8 @@
       "depends": "W07-T01, W07-T02",
       "testFile": "tests/integration/stocktake.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/stocktake.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W07-T03.md"
     },
     {
       "wave": "W07",

@@ -25,5 +25,6 @@
   "robot-setup": "Robot setup",
   "inventory": "Inventory",
   "recipes": "Recipes",
-  "purchasing": "Purchasing"
+  "purchasing": "Purchasing",
+  "stocktake": "Stocktake"
 }

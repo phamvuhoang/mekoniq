@@ -25,5 +25,6 @@
   "robot-setup": "Cài đặt robot",
   "inventory": "Kho",
   "recipes": "Công thức",
-  "purchasing": "Mua hàng"
+  "purchasing": "Mua hàng",
+  "stocktake": "Kiểm kê"
 }
