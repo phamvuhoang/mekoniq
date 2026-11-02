@@ -234,6 +234,10 @@
       "inventory": {
         "status": "enabled",
         "revision": 1
+      },
+      "procurement": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {
@@ -280,6 +284,37 @@
         ],
         "publishedBy": "fixture",
         "publishedAt": "2026-01-01T00:00:00.000Z"
+      }
+    ]
+  },
+  "procurement": {
+    "suppliers": [
+      {
+        "id": "supplier-1",
+        "name": "Nhà cung cấp gạo",
+        "currency": "VND"
+      }
+    ],
+    "purchases": [
+      {
+        "id": "po-1",
+        "supplierId": "supplier-1",
+        "currency": "VND",
+        "status": "approved",
+        "createdBy": "fixture",
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "lines": [
+          {
+            "ingredientId": "rice-raw",
+            "unit": "g",
+            "ordered": "5000",
+            "received": "0",
+            "returned": "0",
+            "tolerance": "0",
+            "unitCostMinor": "20",
+            "perBase": "1"
+          }
+        ]
       }
     ]
   }

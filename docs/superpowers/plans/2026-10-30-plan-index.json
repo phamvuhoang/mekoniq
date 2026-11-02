@@ -509,7 +509,8 @@
       "depends": "W07-T01",
       "testFile": "tests/integration/procurement.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/procurement.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W07-T02.md"
     },
     {
       "wave": "W07",

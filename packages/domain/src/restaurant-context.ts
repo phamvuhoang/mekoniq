@@ -108,6 +108,13 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Recipe.Publish':{feature:'inventory',intent:'new'},
  'Inventory.Consume':{feature:'inventory',intent:'finish_existing'},
  'Inventory.RecordWaste':{feature:'inventory',intent:'finish_existing'},
+ // Suppliers and new purchase orders are new procurement work; approving, closing and booking what physically arrived finish existing work.
+ 'Supplier.Upsert':{feature:'procurement',intent:'new'},
+ 'Purchase.Create':{feature:'procurement',intent:'new'},
+ 'Purchase.Approve':{feature:'procurement',intent:'finish_existing'},
+ 'Purchase.Close':{feature:'procurement',intent:'finish_existing'},
+ 'Goods.Receive':{feature:'procurement',intent:'finish_existing'},
+ 'Goods.Return':{feature:'procurement',intent:'finish_existing'},
 };
 /** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
 const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};
