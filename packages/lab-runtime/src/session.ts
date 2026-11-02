@@ -89,8 +89,10 @@ export class LabSession {
  private async command(type:string,payload:JsonObject,operationId:string= randomUUID()){
   if(!allowed.has(type))throw new Error('COMMAND_NOT_ALLOWED');
   const at=new Date(this.checkpoint.nowMs).toISOString();
-  const c:CommandEnvelope={schemaVersion:1,...this.scope,type,operationId,actorRef:'lab-scenario',deviceId:'lab-coordinator',deviceEpoch:'lab-epoch-1',coordinatorEpoch:1,policyRevision:1,occurredAt:at,recordedAt:at,payload,payloadHash:hashPayload(payload),...(typeof payload.expectedVersion==='number'?{expectedVersion:payload.expectedVersion}:{})};
-  const principal={id:'lab-scenario',deviceId:'lab-coordinator',scope:this.scope,permissions:[...new Set([...allowed].flatMap(t=>requiredPermissions(t,{})))],expiresAtMs:this.checkpoint.nowMs+60000,stationIds:['kitchen']};
+  // Observations originate from this server-owned simulator on its owner device, never from a browser-selected actor.
+  const actorRef=type==='Robot.Observe'?'simulator:sim-1':'lab-scenario';
+  const c:CommandEnvelope={schemaVersion:1,...this.scope,type,operationId,actorRef,deviceId:'lab-coordinator',deviceEpoch:'lab-epoch-1',coordinatorEpoch:1,policyRevision:1,occurredAt:at,recordedAt:at,payload,payloadHash:hashPayload(payload),...(typeof payload.expectedVersion==='number'?{expectedVersion:payload.expectedVersion}:{})};
+  const principal={id:actorRef,deviceId:'lab-coordinator',scope:this.scope,permissions:[...new Set([...allowed].flatMap(t=>requiredPermissions(t,{})))],expiresAtMs:this.checkpoint.nowMs+60000,stationIds:['kitchen']};
   const result=await processCommand(this.store,c,(command,snapshots)=>this.registry.decide(command,snapshots),async command=>authorizeVenueCommand(principal,command,this.checkpoint.nowMs));
   if(result.status!=='accepted')throw new Error(`SOURCE_${result.code??result.status}`);
   return result;

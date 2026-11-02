@@ -2,6 +2,8 @@
 
 This package is a **development-only** local business simulator. It reuses `createProductionRegistry`, `authorizeVenueCommand`, `processCommand`, the production SQLite journal, outbox dispatcher, and `SimulatorAdapter`. It does not import `tests/support`, connect to robot endpoints, or provide physical safety evidence.
 
+The runtime is integrated with the W05/W06 code on `source/main`. Synthetic waypoints and the robot's `bindingRevision` come from the same Lab world revision. Observations use the server-owned `simulator:sim-1` identity on `lab-coordinator`, as required by W06 observer ownership checks. Production admission and observation checks remain unchanged. The presence of native adapters in source does not enable native Lab backends; this gateway still exposes only S01 business simulation.
+
 Use Node 24. From a clean source checkout:
 
 ```sh

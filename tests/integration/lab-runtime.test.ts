@@ -31,6 +31,19 @@ test('offline before dispatch leaves exactly one uncertain send and never retrie
 test('cancel without cargo uses the source cancellation observation and preserves zero served',async()=>{const s=await setup();try{await act(s,'start');expect((await act(s,'cancel')).status).toBe('cancelled');expect((await s.snapshot()).served).toBe('0');expect((await s.report()).events.some(e=>e.type==='MissionCancelled')).toBe(true);}finally{await s.close();}});
 test('interrupted checkpoint recovers the durable robot mission identity and holds its resource',async()=>{const s=await setup();const directory=s.directory;await act(s,'start');await s.close();const {readFile,writeFile}=await import('node:fs/promises');const path=join(directory,'run.json'),saved=JSON.parse(await readFile(path,'utf8'));delete saved.missionId;saved.started=false;saved.inFlight=true;await writeFile(path,JSON.stringify(saved));const reopened=await createLabSession({directory,project,sourceCommit:'test-commit',scenarioId:'S01',seed:42});try{expect((await reopened.snapshot()).status).toBe('needs_attention');expect((await reopened.report()).events.some(e=>e.type==='MissionNeedsAttention')).toBe(true);expect((await reopened.report()).effects.filter(e=>e.type==='robot.execute').reduce((n,e)=>n+Number(e.attempts),0)).toBe(1);}finally{await reopened.close();}});
 test('authored table points are handoff waypoints and runtime preserves their exact coordinates',async()=>{const s=await setup();try{await act(s,'start');await act(s,'step',{ms:1000});expect((await act(s,'confirm')).target).toEqual({x:5,y:2});}finally{await s.close();}});
+test('a revised Lab world remains admissible under W06 map binding checks for every S01 stop',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'lab-world-revision-'));dirs.push(directory);
+ const revised={...project,world:{...project.world,revision:7}};
+ const s=await createLabSession({directory,project:revised,sourceCommit:'test-commit',scenarioId:'S01',seed:42});
+ try{
+  for(const [kind,payload]of [['start',{}],['step',{ms:1000}],['confirm',{}],['step',{ms:1000}],['confirm',{}],['step',{ms:1000}]] as const)await act(s,kind,payload);
+  const report=await s.report();
+  expect(report.snapshot).toMatchObject({status:'completed',served:'1',robotPosition:{x:1,y:1}});
+  const commands=report.effects.filter(e=>e.type==='robot.execute');
+  expect(commands).toHaveLength(3);
+  for(const effect of commands)expect(effect.payload).toMatchObject({target:{mapId:'lab-world',mapRevision:'7'}});
+ }finally{await s.close();}
+});
 test('cancelled ready runs reject every fresh mutation without any business event or movement send',async()=>{
  const s=await setup();try{
   await act(s,'cancel');const before=await s.report();
