@@ -35,7 +35,7 @@ export function resolvePromotions(c: CommandEnvelope, snapshots: Snapshot[], ctx
     const ref = order ? order.state.sessionId : typeof c.payload.sessionId === 'string' ? c.payload.sessionId : c.payload.voucherRef;
     const held = all(snapshots, 'voucher-use').find(u => u.state.voucherId === voucher.ref.id && ['reserved', 'redeemed'].includes(String(u.state.status)) && (u.state.ref === ref || u.state.billId === ref));
     if (!held) return fail('VOUCHER_NOT_HELD');
-    if (uses) { if (held.state.orderId !== undefined) return fail('VOUCHER_ALREADY_APPLIED'); uses.push(held); } // one use discounts one order
+    if (uses) { if (typeof held.state.orderId === 'string') return fail('VOUCHER_ALREADY_APPLIED'); uses.push(held); } // one use discounts one order
   }
   const extraDiscounts = selectPromotions(promotions, promoIds, ctx);
   return { discountIds: [...ids.filter(id => !promoIds.includes(id)), ...extraDiscounts.map(d => String(d.id))], extraDiscounts };

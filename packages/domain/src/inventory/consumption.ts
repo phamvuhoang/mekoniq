@@ -69,8 +69,16 @@ export function registerConsumption(registry: ModuleRegistry): void {
     if (disposition !== 'consume' && disposition !== 'waive') return fail('INVALID_DISPOSITION');
     const close = { status: 'resolved', disposition, resolvedBy: c.actorRef, resolvedAt: c.occurredAt, resolveReason: reason };
     if (disposition === 'waive') return done([changed('StockExceptionResolved', exc, close)], { exceptionId: exc.ref.id });
-    const { sourceEventId, recipeVersion, quantity, status: _s, openedAt: _o, reason: _r, version: _v, ...meta } = exc.state; void [_s, _o, _r, _v];
+    const { sourceEventId, recipeVersion, quantity, status: _s, openedAt: _o, reason: _r, version: _v, wasteClaims: _w, ...meta } = exc.state; void [_s, _o, _r, _v, _w];
     const levels: Levels = new Map(), r = consumeCore(c, s, levels, { source: String(sourceEventId), version: String(recipeVersion), portions: BigInt(String(quantity)), historical: false, meta: meta as JsonObject });
+    // food thrown away while its stock was still unbooked is classified as waste now, in the same decision that books the consumption (a consumption is created once, so this runs once)
+    const claims = (exc.state.wasteClaims ?? []) as JsonObject[], booked = r.events[0];
+    if (claims.length && booked && booked.type === 'StockConsumed') {
+      const cons = { ref: { kind: 'consumption', id: sourceId('cons', String(sourceEventId)) }, state: (booked.data as { state: JsonObject }).state, version: 1 } as unknown as Snapshot;
+      const wasted = claims.map(x => preparedWaste(c, cons, BigInt(String(x.portionsMilli)), String(x.source), String(x.reason)).events[0]!);
+      (booked.data as { state: JsonObject }).state.wastedMilli = String(claims.reduce((a, x) => a + BigInt(String(x.portionsMilli)), 0n));
+      r.events.push(...wasted);
+    }
     return done([...r.events, ...levelEvents(s, levels), changed('StockExceptionResolved', exc, { ...close, consumptionId: sourceId('cons', String(sourceEventId)) })], { exceptionId: exc.ref.id });
   });
   // Inventory.RecordWaste: (a) {sourceEventId,ingredientId,quantity,unit?,reason}: raw loss (spoilage) deducts stock; (b) {sourceEventId,consumedSourceEventId,quantity:portions,reason}:

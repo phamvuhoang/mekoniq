@@ -18,7 +18,7 @@ export function registerKitchen(registry:ModuleRegistry):void {
   const prepared=preparedQuantity(String(ticket.state.prepared),quantity(c.payload.quantity),String(ticket.state.quantity));
   // a line may be made at several stations: the guest-facing ready count is what EVERY station has finished (the minimum), added to the fulfillment only as it grows
   const root=String(ticket.state.lineId??ticket.ref.id), portion=requireState(s,'fulfillment',root), group=ticketsFor(s,root);
-  const after=(t:Snapshot)=>BigInt(t.ref.id===ticket.ref.id?prepared:String(t.state.prepared)), before=(t:Snapshot)=>BigInt(String(t.state.prepared));
+  const gone=(t:Snapshot)=>BigInt(String(t.state.cancelledPrepared??'0')), after=(t:Snapshot)=>BigInt(t.ref.id===ticket.ref.id?prepared:String(t.state.prepared))-gone(t), before=(t:Snapshot)=>BigInt(String(t.state.prepared))-gone(t); // food already cancelled at a station is not ready for the guest
   const min=(f:(t:Snapshot)=>bigint)=>group.map(f).reduce((m,v)=>v<m?v:m), grown=min(after)-min(before);
   return done([changed('KitchenPortionsReady',ticket,{prepared,status:prepared===ticket.state.quantity?'ready':'partially_ready'}),changed('ReadyQuantityAdded',portion,{ready:String(BigInt(String(portion.state.ready))+grown)}),...consumeOnReady(c,s,ticket,BigInt(quantity(c.payload.quantity)),BigInt(prepared))],{lineId:ticket.ref.id,prepared});
  });

@@ -25,7 +25,8 @@ export function cancelledAmounts(line: JsonObject, cancelled: bigint): JsonObjec
  */
 export function cancelOrderLine(c: CommandEnvelope, s: Snapshot[]): Decision {
   if (c.payload.items !== undefined || c.payload.discountIds !== undefined) return fail('AMBIGUOUS_AMENDMENT');
-  const lineId = text(c.payload.lineId), portion = requireState(s, 'fulfillment', lineId), ticket = requireState(s, 'kitchen-ticket', lineId), siblings = ticketsFor(s, lineId).filter(t => t.ref.id !== lineId);
+  const lineId = text(c.payload.lineId), portion = requireState(s, 'fulfillment', lineId), ticket = requireState(s, 'kitchen-ticket', lineId);
+  const group = [ticket, ...ticketsFor(s, lineId).filter(t => t.ref.id !== lineId).sort((a, b) => a.ref.id.localeCompare(b.ref.id))];
   const order = requireState(s, 'order', String(portion.state.orderId));
   if (c.payload.orderId !== undefined && c.payload.orderId !== order.ref.id) return fail('NOT_FOUND');
   expectVersion(c, order); assertMutableOrder(order.state);
@@ -36,12 +37,14 @@ export function cancelOrderLine(c: CommandEnvelope, s: Snapshot[]): Decision {
   const before = BigInt(String(line.cancelledQuantity ?? '0')), after = before + n;
   if (after > BigInt(String(line.quantity))) return fail('CANCEL_EXCEEDS_ORDER');
   const big = (state: JsonObject, key: string): bigint => BigInt(String(state[key] ?? '0'));
-  const free = big(portion.state, 'ready') - big(portion.state, 'allocated');
-  if (free < 0n) return fail('ALLOCATION_CORRUPT');
-  const prepared = n < free ? n : free, unprepared = n - prepared;
-  if (unprepared > big(ticket.state, 'quantity') - big(ticket.state, 'prepared')) return fail('FULFILLMENT_ACTIVE');
-  // every other station of a combo must still be able to drop those combos too (one that already made them must first say what happens to the food)
-  if (siblings.some(t => unprepared > big(t.state, 'quantity') - big(t.state, 'prepared'))) return fail('FULFILLMENT_ACTIVE');
+  const allocated = big(portion.state, 'allocated'), eff = (t: Snapshot): bigint => big(t.state, 'prepared') - big(t.state, 'cancelledPrepared');
+  if (big(portion.state, 'ready') - allocated < 0n) return fail('ALLOCATION_CORRUPT');
+  // Each station decides for itself: what it already made (and nobody took) comes off first and needs a disposition from THAT station; the rest leaves its queue.
+  // The guest-facing counts follow the stations' minimum, so a combo done at one station only is still "not ready" yet its food can be disposed of.
+  const plan = group.map(t => { const free = eff(t) - allocated, p = free <= 0n ? 0n : free < n ? free : n; return { t, p, u: n - p }; });
+  if (plan.some(x => x.u > big(x.t.state, 'quantity') - big(x.t.state, 'prepared'))) return fail('FULFILLMENT_ACTIVE');
+  const least = (xs: bigint[]) => xs.reduce((m, v) => v < m ? v : m), prepared = least(plan.map(x => x.p)), unprepared = n - prepared;
+  const readyDrop = least(group.map(eff)) - least(plan.map(x => eff(x.t) - x.p)), held = plan.reduce((a, x) => a + x.p, 0n);
 
   const now = cancelledAmounts(line, after), then = cancelledAmounts(line, before);
   const reduced = BigInt(String(now.totalMinor)) - BigInt(String(then.totalMinor));
@@ -52,26 +55,23 @@ export function cancelOrderLine(c: CommandEnvelope, s: Snapshot[]): Decision {
   const emptied = next.every(l => BigInt(String(l.cancelledQuantity ?? '0')) === BigInt(String(l.quantity)));
   const total = amount(String(summarize(next).totalMinor));
 
-  const kitchenQuantity = big(ticket.state, 'quantity') - unprepared, cancelledPrepared = big(ticket.state, 'cancelledPrepared') + prepared;
   const wanted = BigInt(String(line.quantity)) - after;
-  const held = ticket.state.status === 'held';
   const events = [
     changed('OrderLineCancelled', order, { lines: next, totalMinor: total, summary: summarize(next), ...(emptied ? { status: 'cancelled', cancellationReason: reason } : {}) }),
     changed(emptied ? 'SessionOrderCancelled' : 'SessionOrderAmended', session, {}),
-    changed('KitchenTicketReduced', ticket, { quantity: String(kitchenQuantity), cancelledQuantity: String(big(ticket.state, 'cancelledQuantity') + n), cancelledPrepared: String(cancelledPrepared), status: wanted === 0n ? 'cancelled' : big(ticket.state, 'prepared') === kitchenQuantity ? 'ready' : ticket.state.status }),
-    changed('FulfillmentLineReduced', portion, { quantity: String(big(portion.state, 'quantity') - unprepared), ready: String(big(portion.state, 'ready') - prepared), held: String(big(portion.state, 'held') + prepared), cancelledQuantity: String(big(portion.state, 'cancelledQuantity') + n), ...(wanted === 0n ? { status: 'cancelled' } : {}) }),
+    changed('FulfillmentLineReduced', portion, { quantity: String(big(portion.state, 'quantity') - unprepared), ready: String(big(portion.state, 'ready') - readyDrop), held: String(big(portion.state, 'held') + held), cancelledQuantity: String(big(portion.state, 'cancelledQuantity') + n), ...(wanted === 0n ? { status: 'cancelled' } : {}) }),
   ];
-  // the other stations' tickets of a combo shrink with it, and each station that has not seen the cancellation gets its own delta ticket
-  for (const t of siblings) {
-    const q = big(t.state, 'quantity') - unprepared;
-    events.push(changed('KitchenTicketReduced', t, { quantity: String(q), cancelledQuantity: String(big(t.state, 'cancelledQuantity') + n), cancelledPrepared: String(big(t.state, 'cancelledPrepared') + prepared), status: wanted === 0n ? 'cancelled' : big(t.state, 'prepared') === q ? 'ready' : t.state.status }));
-    if (unprepared > 0n && t.state.status !== 'held') events.push(created('KitchenDeltaCreated', 'kitchen-delta', stableId('delta', c, t.ref.id), { lineId, orderId: order.ref.id, sessionId: String(order.state.sessionId), stationId: t.state.stationId!, name: line.name!, reason, kind: 'cancel', quantity: String(unprepared), status: 'pending', createdBy: c.actorRef, createdAt: c.recordedAt }));
+  const requests: { stationId: string; id: string; quantity: bigint }[] = [];
+  for (const { t, p, u } of plan) {
+    const q = big(t.state, 'quantity') - u, primary = t.ref.id === lineId, stationId = String(t.state.stationId);
+    events.push(changed('KitchenTicketReduced', t, { quantity: String(q), cancelledQuantity: String(big(t.state, 'cancelledQuantity') + n), cancelledPrepared: String(big(t.state, 'cancelledPrepared') + p), status: wanted === 0n ? 'cancelled' : big(t.state, 'prepared') === q ? 'ready' : t.state.status }));
+    const base = { lineId, orderId: order.ref.id, sessionId: String(order.state.sessionId), stationId, ticketId: t.ref.id, name: line.name!, reason };
+    // A held (not yet fired) ticket never reached the station, so there is nothing to acknowledge.
+    if (u > 0n && t.state.status !== 'held') events.push(created('KitchenDeltaCreated', 'kitchen-delta', primary ? deltaId : stableId('delta', c, t.ref.id), { ...base, kind: 'cancel', quantity: String(u), status: 'pending', createdBy: c.actorRef, createdAt: c.recordedAt }));
+    if (p > 0n) { const id = primary ? cancellationId : stableId('cancellation', c, t.ref.id); requests.push({ stationId, id, quantity: p }); events.push(created('KitchenCancellationRequested', 'kitchen-cancellation', id, { ...base, quantity: String(p), status: 'requested', disposition: null, requestedBy: c.actorRef, requestedAt: c.recordedAt })); }
   }
-  const base = { lineId, orderId: order.ref.id, sessionId: String(order.state.sessionId), stationId: ticket.state.stationId!, name: line.name!, reason };
-  // A held (not yet fired) ticket never reached the station, so there is nothing to acknowledge.
-  if (unprepared > 0n && !held) events.push(created('KitchenDeltaCreated', 'kitchen-delta', deltaId, { ...base, kind: 'cancel', quantity: String(unprepared), status: 'pending', createdBy: c.actorRef, createdAt: c.recordedAt }));
-  if (prepared > 0n) events.push(created('KitchenCancellationRequested', 'kitchen-cancellation', cancellationId, { ...base, quantity: String(prepared), status: 'requested', disposition: null, requestedBy: c.actorRef, requestedAt: c.recordedAt }));
-  return done(events, { orderId: order.ref.id, lineId, cancelledQuantity: String(n), unprepared: String(unprepared), prepared: String(prepared), reducedMinor: String(reduced), totalMinor: total, ...(unprepared > 0n && !held ? { deltaId } : {}), ...(prepared > 0n ? { cancellationId } : {}) });
+  const primaryPlan = plan[0]!;
+  return done(events, { orderId: order.ref.id, lineId, cancelledQuantity: String(n), unprepared: String(unprepared), prepared: String(prepared), reducedMinor: String(reduced), totalMinor: total, ...(primaryPlan.u > 0n && primaryPlan.t.state.status !== 'held' ? { deltaId } : {}), ...(requests.length ? { cancellationId: requests[0]!.id, cancellations: requests.map(r => ({ ...r, quantity: String(r.quantity) })) } : {}) });
 }
 
 const DISPOSITIONS: Record<string, string> = { return: 'PreparedFoodReturned', waste: 'PreparedFoodDiscarded', manual: 'PreparedFoodManuallyHandled' };
@@ -95,6 +95,6 @@ export function registerAmendments(registry: ModuleRegistry): void {
     disposed[disposition] = String(BigInt(String(disposed[disposition] ?? '0')) + count);
     return done([changed(eventType, request, { status: 'resolved', disposition, note, resolvedBy: c.actorRef, resolvedAt: c.recordedAt }), changed('HeldPortionsDisposed', portion, { held: String(held - count), disposed }),
       // thrown-away cooked food is waste in the stock ledger in the same decision (never a restock, never a second deduction)
-      ...(disposition === 'waste' ? wasteOnDispose(c, s, String(request.state.lineId), count, request.ref.id, note ?? 'prepared food discarded') : [])], { cancellationId: request.ref.id, disposition });
+      ...(disposition === 'waste' ? wasteOnDispose(c, s, String(request.state.lineId), count, request.ref.id, note ?? 'prepared food discarded', typeof request.state.ticketId === 'string' ? request.state.ticketId : undefined) : [])], { cancellationId: request.ref.id, disposition });
   });
 }

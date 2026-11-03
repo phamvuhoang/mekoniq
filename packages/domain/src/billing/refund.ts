@@ -1,6 +1,6 @@
 import type { ModuleRegistry } from '../modules';
 import type { JsonObject } from '../../../contracts/src/index';
-import { componentRefundMinor, liveComponents } from '../pricing/combo';
+import { refundableComponents } from '../pricing/combo';
 import { all, amount, changed, created, done, expectVersion, fail, find, handle, note, record, requireState, stableId, text } from '../restaurant-context';
 
 export function refundableMinor(captured: string, refunded: string) {
@@ -30,8 +30,7 @@ export function registerRefunds(registry: ModuleRegistry): void {
     let component: JsonObject | undefined;
     if (c.payload.component !== undefined) {
       const r = record(c.payload.component), lineId = text(r.lineId), itemId = text(r.itemId);
-      const line = ((bill.state.lines ?? []) as JsonObject[]).find(l => l.id === lineId && Array.isArray(l.components)) ?? fail('COMPONENT_NOT_FOUND');
-      let expected: string; try { expected = componentRefundMinor({ components: liveComponents(line) }, itemId); } catch { return fail('COMPONENT_NOT_FOUND'); }
+      const expected = refundableComponents((bill.state.lines ?? []) as JsonObject[]).find(p => p.lineId === lineId && p.itemId === itemId)?.minor ?? fail('COMPONENT_NOT_FOUND');
       if (request !== expected) return fail('COMPONENT_AMOUNT_MISMATCH');
       if (all(s, 'refund').some(x => x.state.billId === bill.ref.id && (x.state.component as JsonObject | undefined)?.lineId === lineId && (x.state.component as JsonObject | undefined)?.itemId === itemId)) return fail('COMPONENT_ALREADY_REFUNDED');
       component = { lineId, itemId };

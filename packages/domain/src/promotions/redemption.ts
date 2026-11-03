@@ -48,7 +48,8 @@ export function registerRedemption(registry: ModuleRegistry): void {
   handle(registry, 'Voucher.Reserve', (c, s) => {
     const v = find(s, 'voucher', text(c.payload.voucherId)) ?? fail('NOT_FOUND'), ref = text(c.payload.ref), customerId = typeof c.payload.customerId === 'string' ? c.payload.customerId : undefined, prior = useOf(s, v.ref.id, ref);
     if (prior && prior.state.status !== 'released') return done([], { useId: prior.ref.id, duplicate: true });
-    const t = take(c, s, v, customerId), state = { ...base(c, v, ref, customerId, t.mode), status: 'reserved', reservedAt: c.occurredAt };
+    // a new hold starts clean: the order the old hold discounted is history (kept in previousOrderIds), not a binding on this hold
+    const t = take(c, s, v, customerId), state = { ...base(c, v, ref, customerId, t.mode), status: 'reserved', reservedAt: c.occurredAt, ...(prior ? { orderId: null, previousOrderIds: [...((prior.state.previousOrderIds ?? []) as string[]), ...(typeof prior.state.orderId === 'string' ? [prior.state.orderId] : [])] } : {}) };
     return done([prior ? changed('VoucherReserved', prior, state) : created('VoucherReserved', 'voucher-use', useId(v.ref.id, ref), state), changed('VoucherBalanceChanged', v, t.change)], { useId: prior?.ref.id ?? useId(v.ref.id, ref) });
   });
   // Voucher.Redeem {voucherId,billId,reservedRef?,customerId?,grantRevision?}: the use is spent once per voucher+bill. With `reservedRef` the existing hold becomes the redemption (no
@@ -71,7 +72,7 @@ export function registerRedemption(registry: ModuleRegistry): void {
     const status = String(use.state.status), source = typeof c.payload.reversalSource === 'string' ? c.payload.reversalSource : undefined;
     if (status === 'released') return done([], { duplicate: true });
     // A hold that already discounted an order is spent with it: it comes back only if that order was cancelled (otherwise release + re-reserve would discount twice).
-    if (status === 'reserved' && use.state.orderId !== undefined && find(s, 'order', String(use.state.orderId))?.state.status !== 'cancelled') return fail('VOUCHER_APPLIED_TO_ORDER');
+    if (status === 'reserved' && typeof use.state.orderId === 'string' && find(s, 'order', String(use.state.orderId))?.state.status !== 'cancelled') return fail('VOUCHER_APPLIED_TO_ORDER');
     if (status === 'reserved') return done([changed('VoucherReleased', use, { status: 'released', releasedAt: c.occurredAt, releaseReason: reason }), changed('VoucherBalanceChanged', v, restore(v, use))], { useId: use.ref.id });
     if (status === 'reversed') return source && use.state.reversalSource === source ? done([], { duplicate: true }) : fail('ALREADY_REVERSED');
     if (!source) return fail('ALREADY_REDEEMED');

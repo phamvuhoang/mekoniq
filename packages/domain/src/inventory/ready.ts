@@ -1,5 +1,5 @@
 import type { CommandEnvelope, DomainEvent, JsonObject, Snapshot } from '../../../contracts/src/index';
-import { all, created, DomainFault, find, requireFeature } from '../restaurant-context';
+import { all, changed, created, DomainFault, find, requireFeature } from '../restaurant-context';
 import { consumeCore, levelEvents, preparedWaste, type Levels } from './consumption';
 import { sourceId } from './movement';
 const big = (v: unknown): bigint => BigInt(String(v ?? '0'));
@@ -32,17 +32,23 @@ export function consumeOnReady(c: CommandEnvelope, s: Snapshot[], ticket: Snapsh
   return [...events, ...levelEvents(s, levels)];
 }
 /**
- * Cooked food on a cancelled line was discarded: `count` line units are reclassified as prepared-food waste, newest ready batches first, in every consumption the line made
- * (the item itself and each combo part). Never restocks and never deducts again; a batch that was never consumed (no recipe, exception) simply has nothing to reclassify.
+ * Cooked food on a cancelled line was discarded: `count` line units are reclassified as prepared-food waste, newest ready batches first, in every consumption the line (or one station's
+ * ticket, when given) made: the item itself and each combo part. Never restocks and never deducts again. A batch whose stock could not be booked yet (an open stock exception) cannot be
+ * reclassified now, so the discard is noted on the exception (wasteClaims) and booked as waste in the same decision that books the consumption (Inventory.ResolveException).
  */
-export function wasteOnDispose(c: CommandEnvelope, s: Snapshot[], lineId: string, count: bigint, cancellationId: string, reason: string): DomainEvent[] {
-  const consumptions = all(s, 'consumption').filter(x => x.state.lineId === lineId).sort((a, b) => Number(b.state.preparedAfter) - Number(a.state.preparedAfter) || a.ref.id.localeCompare(b.ref.id));
+export function wasteOnDispose(c: CommandEnvelope, s: Snapshot[], lineId: string, count: bigint, cancellationId: string, reason: string, ticketId?: string): DomainEvent[] {
+  const mine = (x: Snapshot) => x.state.lineId === lineId && (ticketId === undefined || x.state.ticketId === ticketId);
+  const batches = [...all(s, 'consumption').filter(mine), ...all(s, 'stock-exception').filter(x => mine(x) && x.state.status === 'open')]
+    .sort((a, b) => Number(b.state.preparedAfter) - Number(a.state.preparedAfter) || a.ref.id.localeCompare(b.ref.id));
   const left = new Map<string, bigint>(), events: DomainEvent[] = [];
-  for (const cons of consumptions) {
-    const key = String(cons.state.componentOf ?? ''), units = big(cons.state.unitsMilli), perUnit = units > 0n ? big(cons.state.portionsMilli) / units : 1n;
-    const want = left.get(key) ?? count * 1000n * perUnit, room = big(cons.state.portionsMilli) - big(cons.state.wastedMilli), take = want < room ? want : room;
+  for (const batch of batches) {
+    const booked = batch.ref.kind === 'consumption', key = String(batch.state.componentOf ?? ''), units = big(batch.state.unitsMilli), size = big(booked ? batch.state.portionsMilli : batch.state.quantity);
+    const perUnit = units > 0n ? size / units : 1n, claims = (batch.state.wasteClaims ?? []) as JsonObject[];
+    const want = left.get(key) ?? count * 1000n * perUnit, room = size - (booked ? big(batch.state.wastedMilli) : claims.reduce((a, x) => a + big(x.portionsMilli), 0n)), take = want < room ? want : room;
     left.set(key, want - take);
-    if (take > 0n) events.push(...preparedWaste(c, cons, take, `dispose:${cancellationId}:${String(cons.state.sourceEventId)}`, reason).events);
+    if (take <= 0n) continue;
+    const source = `dispose:${cancellationId}:${String(batch.state.sourceEventId)}`;
+    events.push(...(booked ? preparedWaste(c, batch, take, source, reason).events : [changed('StockExceptionWasteNoted', batch, { wasteClaims: [...claims, { source, portionsMilli: String(take), reason, cancellationId }] })]));
   }
   return events;
 }

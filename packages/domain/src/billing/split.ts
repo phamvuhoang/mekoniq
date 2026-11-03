@@ -2,6 +2,7 @@ import type { ModuleRegistry } from '../modules';
 import type { JsonObject, JsonValue } from '../../../contracts/src/index';
 import { allocateMinor } from '../shared/money';
 import { netOf, summarize } from '../pricing/quote';
+import { liveComponents, splitComponents, type ComboPart } from '../pricing/combo';
 import { changed, created, done, expectVersion, fail, find, handle, requireState, text } from '../restaurant-context';
 import { assertUncollected } from './bill';
 
@@ -29,7 +30,9 @@ export function netLine(l: JsonObject): JsonObject {
     idx.forEach((i, k) => { charges[i] = { ...gross[i]!, minor: shares[k]! }; });
   }
   const rest = Object.fromEntries(Object.entries(l).filter(([k]) => !['cancelled', 'cancelledQuantity', 'cancellations'].includes(k))) as JsonObject;
-  return { ...rest, quantity: String(big(l.quantity) - big(l.cancelledQuantity)), charges, ...amountsOf(charges) };
+  const quantity = String(big(l.quantity) - big(l.cancelledQuantity));
+  // a combo's parts are netted with the line, so every later split deals out what is really still sold
+  return { ...rest, quantity, charges, ...amountsOf(charges), ...(Array.isArray(l.components) && l.components.length ? { components: liveComponents(l) as unknown as JsonObject[], comboCount: quantity } : {}) };
 }
 /** weights[line][part]: units of each net line per part (equal mode: 1 each, every part takes a portion of every line). */
 function splitWeights(mode: JsonValue | undefined, parts: JsonValue | undefined, lines: JsonObject[]): bigint[][] {
@@ -81,7 +84,10 @@ function apportion(lines: JsonObject[], weights: bigint[][], n: number, equal: b
       }
       shares.forEach((m, j) => { per[j]![index] = { ...ch, minor: m }; capacity[j] = capacity[j]! + sign * BigInt(m); running[j] = running[j]! + sign * BigInt(m); });
     }
-    per.forEach((charges, j) => { if (w[j]! > 0n) out[j]!.push({ ...line, quantity: equal ? line.quantity! : String(w[j]), ...(equal ? { portion: { part: j + 1, parts: n } } : {}), charges, ...amountsOf(charges) }); });
+    const amounts = per.map(charges => amountsOf(charges)), parts = Array.isArray(line.components) && line.components.length ? (line.components as unknown as ComboPart[]) : undefined;
+    // the line's frozen part money is dealt out ONCE here (never re-rounded per child), so a part adds up across the children and each child's parts add up to its line
+    const comps = parts ? splitComponents(parts, amounts.map(a => big(a.subtotalMinor)), amounts.map(a => big(a.discountMinor)), (p, j) => equal ? p.quantity : String(big(p.quantity) * w[j]! / big(line.quantity))) ?? fail('SPLIT_NOT_CONSERVED') : undefined;
+    per.forEach((charges, j) => { if (w[j]! > 0n) out[j]!.push({ ...line, quantity: equal ? line.quantity! : String(w[j]), ...(equal ? { portion: { part: j + 1, parts: n } } : {}), charges, ...amounts[j]!, ...(comps ? { components: comps[j] as unknown as JsonObject[], comboCount: equal ? line.quantity! : String(w[j]) } : {}) }); });
   });
   return out;
 }
