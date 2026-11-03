@@ -21,8 +21,14 @@ export function issue(item: JsonObject, qty: bigint): { costMinor: bigint; costK
   const costMinor = covered === 0n ? 0n : covered === onHand ? value : (value * covered * 2n + onHand) / (2n * onHand);
   return { costMinor, costKnown: covered === qty, next: { onHand: String(onHand - qty), valueMinor: String(value - costMinor), movementSeq: Number(item.movementSeq ?? 0) + 1 } };
 }
-/** Stock enters with the value that came with it (receipts, positive adjustments); value is never stranded on a negative balance. */
+/**
+ * Stock enters with the value that came with it (receipts, positive adjustments). Units that only repay a negative balance were already sold, so their share of the incoming
+ * value is not stock value: only the units that remain on the shelf carry value, at the incoming unit cost. A balance still <= 0 afterwards holds no value.
+ */
 export function receive(item: JsonObject, qty: bigint, valueMinor: bigint): JsonObject {
-  const onHand = big(item.onHand);
-  return { onHand: String(onHand + qty), valueMinor: String((onHand < 0n ? 0n : big(item.valueMinor)) + valueMinor), movementSeq: Number(item.movementSeq ?? 0) + 1 };
+  const onHand = big(item.onHand), after = onHand + qty;
+  const owed = onHand < 0n ? (qty < -onHand ? qty : -onHand) : 0n;
+  const backfill = qty === 0n ? 0n : (valueMinor * owed * 2n + qty) / (2n * qty);
+  const value = after <= 0n ? 0n : (onHand < 0n ? 0n : big(item.valueMinor)) + valueMinor - backfill;
+  return { onHand: String(after), valueMinor: String(value), movementSeq: Number(item.movementSeq ?? 0) + 1 };
 }

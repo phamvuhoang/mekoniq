@@ -1,6 +1,7 @@
 import type { ModuleRegistry } from '../modules';
 import type { DomainEvent, Snapshot } from '../../../contracts/src/index';
 import { amount, changed, created, done, expectVersion, fail, find, handle, note, requireState, stableId, text } from '../restaurant-context';
+import { liability } from './deposit';
 import { MAX_BOOKING_MS, instant, paidDeposits, party, policyOf, tableBusy, tableFor, touchCalendar } from './resource';
 const big = (v: unknown): bigint => BigInt(String(v ?? '0'));
 const live = (b: Snapshot, ...statuses: string[]): void => { if (!statuses.includes(String(b.state.status))) fail('BOOKING_STATE_CONFLICT'); };
@@ -19,14 +20,14 @@ export function registerBookings(registry: ModuleRegistry): void {
     if (!isolated && tableBusy(s, tableId, start, end, now)) return fail('TABLE_UNAVAILABLE');
     const name = text(typeof c.payload.name === 'string' ? c.payload.name.trim() : c.payload.name, 'NAME_REQUIRED');
     return done([created('BookingRequested', 'booking', id, { tableId, startsAt: new Date(start).toISOString(), endsAt: new Date(end).toISOString(), startMs: start, endMs: end, partySize: size, name, ...(typeof c.payload.phone === 'string' ? { phone: c.payload.phone } : {}), ...(typeof c.payload.customerId === 'string' ? { customerId: c.payload.customerId } : {}),
-      depositRequiredMinor: c.payload.depositRequiredMinor === undefined ? '0' : amount(c.payload.depositRequiredMinor), status: 'requested', provisional: isolated, holdUntilMs: isolated ? 0 : now + hold * 60_000, channel: String(c.payload.channel ?? 'venue'), createdBy: c.actorRef, createdAt: c.occurredAt }),
+      depositRequiredMinor: c.payload.depositRequiredMinor === undefined ? '0' : amount(c.payload.depositRequiredMinor), depositCurrency: typeof c.payload.currency === 'string' ? c.payload.currency : 'VND', status: 'requested', provisional: isolated, holdUntilMs: isolated ? 0 : now + hold * 60_000, channel: String(c.payload.channel ?? 'venue'), createdBy: c.actorRef, createdAt: c.occurredAt }),
       touchCalendar(s, c, tableId)], { bookingId: id });
   });
   // Booking.Confirm {bookingId,expectedVersion}: the venue accepts the booking. Re-checks the table (a lapsed hold or an isolated booking may have lost its slot) and that the required
-  // deposit has actually been PAID in full across receipts (pending/unknown money does not count).
+  // deposit is still HELD in full across receipts of the booking's currency: paid and not since returned, applied or forfeited (pending/unknown money does not count).
   handle(registry, 'Booking.Confirm', (c, s) => {
     const b = requireState(s, 'booking', text(c.payload.bookingId)); live(b, 'requested'); expectVersion(c, b);
-    const paid = paidDeposits(s, b.ref.id).reduce((a, d) => a + big(d.state.paidMinor), 0n);
+    const cur = String(b.state.depositCurrency ?? 'VND'), paid = paidDeposits(s, b.ref.id).filter(d => String(d.state.currency ?? 'VND') === cur).reduce((a, d) => a + liability(d), 0n);
     if (paid < big(b.state.depositRequiredMinor)) return fail('DEPOSIT_REQUIRED');
     if (tableBusy(s, String(b.state.tableId), Number(b.state.startMs), Number(b.state.endMs), Date.parse(c.occurredAt), b.ref.id)) return fail('TABLE_UNAVAILABLE');
     return done([changed('BookingConfirmed', b, { status: 'confirmed', provisional: false, confirmedBy: c.actorRef, confirmedAt: c.occurredAt }), touchCalendar(s, c, String(b.state.tableId))], { bookingId: b.ref.id });

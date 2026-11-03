@@ -5,6 +5,7 @@ import { summarize } from '../pricing/quote';
 import { amount, changed, created, done, expectVersion, fail, handle, quantity, requireState, stableId, text } from '../restaurant-context';
 import { assertMutableOrder, lineReferences } from './order';
 import { sessionForOrder } from './commands';
+import { wasteOnDispose } from '../inventory/ready';
 
 const AMOUNT_KEYS = ['subtotalMinor', 'discountMinor', 'serviceMinor', 'taxMinor', 'taxIncludedMinor'] as const;
 /** Cumulative share of a priced amount for `part` of `whole` units. Two-bucket largest remainder = round half up, so shares are monotone in `part`, and part===whole is exactly `total`. */
@@ -84,6 +85,8 @@ export function registerAmendments(registry: ModuleRegistry): void {
     if (held < count) return fail('ALLOCATION_CORRUPT');
     const disposed = { ...((portion.state.disposed ?? {}) as JsonObject) };
     disposed[disposition] = String(BigInt(String(disposed[disposition] ?? '0')) + count);
-    return done([changed(eventType, request, { status: 'resolved', disposition, note, resolvedBy: c.actorRef, resolvedAt: c.recordedAt }), changed('HeldPortionsDisposed', portion, { held: String(held - count), disposed })], { cancellationId: request.ref.id, disposition });
+    return done([changed(eventType, request, { status: 'resolved', disposition, note, resolvedBy: c.actorRef, resolvedAt: c.recordedAt }), changed('HeldPortionsDisposed', portion, { held: String(held - count), disposed }),
+      // thrown-away cooked food is waste in the stock ledger in the same decision (never a restock, never a second deduction)
+      ...(disposition === 'waste' ? wasteOnDispose(c, s, String(request.state.lineId), count, request.ref.id, note ?? 'prepared food discarded') : [])], { cancellationId: request.ref.id, disposition });
   });
 }

@@ -53,14 +53,17 @@ export function registerLoyalty(registry: ModuleRegistry): void {
   // Loyalty.Reverse {customerId,refundId}: a refund of the settlement takes back the proportional points, never more than that settlement earned in total. One refund reverses once.
   // The balance may go below zero if the points were already spent; the ledger says so rather than hiding it.
   handle(registry, 'Loyalty.Reverse', (c, s) => {
-    const customerId = text(c.payload.customerId), refundId = text(c.payload.refundId), refund = find(s, 'refund', refundId) ?? fail('REFUND_NOT_FOUND'), id = entryId(customerId, refundId, 'reverse');
+    const customerId = text(c.payload.customerId), refundId = text(c.payload.refundId), refund = find(s, 'refund', refundId) ?? fail('REFUND_NOT_FOUND');
+    // A merge moves the balance to the surviving customer, so the points of a settlement are taken back from whoever holds them NOW: follow the merge links from the earner.
+    const holderOf = (id: string): string => { let cur = id; for (let hop = 0; hop < 20; hop++) { const cu = find(s, 'customer', cur); if (cu?.state.status === 'merged' && typeof cu.state.mergedInto === 'string') cur = cu.state.mergedInto; else break; } return cur; };
+    const earn = all(s, 'loyalty-entry').find(e => e.state.kind === 'earn' && e.state.settlementId === refund.state.paymentId && holderOf(String(e.state.customerId)) === holderOf(customerId)) ?? fail('REFUND_NOT_FOR_SETTLEMENT');
+    const holder = holderOf(String(earn.state.customerId)), id = entryId(String(earn.state.customerId), refundId, 'reverse');
     if (find(s, 'loyalty-entry', id)) return done([], { entryId: id, duplicate: true });
-    const earn = all(s, 'loyalty-entry').find(e => e.state.kind === 'earn' && e.state.customerId === customerId && e.state.settlementId === refund.state.paymentId) ?? fail('REFUND_NOT_FOR_SETTLEMENT');
     const pay = find(s, 'payment', String(refund.state.paymentId)) ?? fail('SETTLEMENT_NOT_FOUND'), earned = BigInt(earn.state.points as string), applied = BigInt(String(pay.state.appliedMinor ?? '0'));
-    const done_ = all(s, 'loyalty-entry').filter(e => e.state.kind === 'reverse' && e.state.customerId === customerId && e.state.settlementId === earn.state.settlementId).reduce((a, e) => a - BigInt(e.state.points as string), 0n);
+    const done_ = all(s, 'loyalty-entry').filter(e => e.state.kind === 'reverse' && e.state.settlementId === earn.state.settlementId).reduce((a, e) => a - BigInt(e.state.points as string), 0n);
     const proportional = applied > 0n ? earned * BigInt(String(refund.state.appliedMinor ?? refund.state.amountMinor)) / applied : earned, r = (proportional < earned - done_ ? proportional : earned - done_);
-    const acc = accountOf(s, customerId), pending = earn.state.status === 'pending';
-    return done([entry(c, id, { event: 'LoyaltyReversed', customerId, kind: 'reverse', points: String(-r), sourceEventId: refundId, settlementId: earn.state.settlementId as string, status: 'posted' }),
+    const acc = accountOf(s, holder), pending = earn.state.status === 'pending';
+    return done([entry(c, id, { event: 'LoyaltyReversed', customerId: holder, originCustomerId: earn.state.customerId as string, reversesEntryId: earn.ref.id, kind: 'reverse', points: String(-r), sourceEventId: refundId, settlementId: earn.state.settlementId as string, status: 'posted' }),
       saveAccount(acc, pending ? { pending: String(BigInt(String(acc.state.pending ?? '0')) - r) } : { balance: String(BigInt(acc.state.balance as string) - r), earned: String(BigInt(acc.state.earned as string) - r) })], { entryId: id, reversed: String(r) });
   });
 }

@@ -1,5 +1,5 @@
 import type { ModuleRegistry } from '../modules';
-import type { JsonObject, Snapshot } from '../../../contracts/src/index';
+import type { CommandEnvelope, DomainEvent, JsonObject, Snapshot } from '../../../contracts/src/index';
 import { changed, created, done, fail, find, handle, note, text } from '../restaurant-context';
 import { issue, movementId, sourceId, toBase } from './movement';
 import { milli } from './uom';
@@ -11,6 +11,40 @@ function scaled(baseQuantity: string, portionsMilli: bigint): bigint {
   if (total % 1000n !== 0n) return fail('INEXACT_QUANTITY');
   return total / 1000n;
 }
+/** Running stock levels of one decision: several consumptions in it (a combo's parts) may share an ingredient, and each ingredient is written back once. */
+export type Levels = Map<string, JsonObject>;
+export const levelEvents = (s: Snapshot[], levels: Levels): DomainEvent[] => [...levels].map(([id, next]) => changed('StockLevelChanged', find(s, 'stock-item', id)!, next));
+export type ConsumeArgs = { source: string; version: string; portions: bigint; historical: boolean; meta?: JsonObject };
+/**
+ * One consumption: stock leaves at each recipe line's weighted-average cost. Throws DomainFault on a refusal. A historical source whose recipe is gone opens an exception
+ * instead (today's recipe is never substituted for a past sale). The ingredient levels it changes are left in `levels`; the caller writes them back (levelEvents).
+ */
+export function consumeCore(c: CommandEnvelope, s: Snapshot[], levels: Levels, a: ConsumeArgs): { events: DomainEvent[]; value: JsonObject } {
+  const { source, version, portions, historical } = a, id = sourceId('cons', source), existing = find(s, 'consumption', id);
+  if (existing) return existing.state.recipeVersion === version && existing.state.portionsMilli === String(portions) ? { events: [], value: { consumptionId: id, duplicate: true } } : fail('SOURCE_CONSUMED_DIFFERENTLY');
+  const exceptionId = sourceId('exc', source), recipe = version ? find(s, 'recipe', version) : undefined;
+  const except = (reason: string): { events: DomainEvent[]; value: JsonObject } => find(s, 'stock-exception', exceptionId) ? { events: [], value: { exception: true, duplicate: true } } : { events: [created('StockExceptionOpened', 'stock-exception', exceptionId, { sourceEventId: source, recipeVersion: version, quantity: String(portions), reason, status: 'open', openedAt: c.occurredAt, ...(a.meta ?? {}) })], value: { exception: true, exceptionId } };
+  if (!recipe) return historical ? except('RECIPE_VERSION_MISSING') : fail('RECIPE_NOT_FOUND');
+  const lines = (recipe.state.lines as JsonObject[]).map(line => ({ line, item: find(s, 'stock-item', String(line.ingredientId)) }));
+  if (lines.some(l => !l.item)) return historical ? except('INGREDIENT_MISSING') : fail('INGREDIENT_UNKNOWN');
+  const events: DomainEvent[] = [], out: JsonObject[] = [], work = new Map(levels);
+  for (const { line, item } of lines as { line: JsonObject; item: Snapshot }[]) {
+    const qty = scaled(String(line.baseQuantity), portions), r = issue({ ...item.state, ...(work.get(item.ref.id) ?? {}) }, qty), mid = movementId(source, version, String(line.ingredientId), 'consume');
+    out.push({ ingredientId: line.ingredientId, baseQuantity: String(qty), costMinor: String(r.costMinor), costKnown: r.costKnown, movementId: mid });
+    events.push(created('StockMovementRecorded', 'stock-movement', mid, { kind: 'consume', ingredientId: line.ingredientId, sourceEventId: source, recipeVersion: version, deltaBase: String(-qty), costMinor: String(r.costMinor), costKnown: r.costKnown, seq: r.next.movementSeq!, negative: BigInt(String(r.next.onHand)) < 0n, actorRef: c.actorRef, occurredAt: c.occurredAt }));
+    work.set(item.ref.id, r.next);
+  }
+  for (const [k, v] of work) levels.set(k, v); // only a fully costed consumption touches the shared levels
+  events.unshift(created('StockConsumed', 'consumption', id, { sourceEventId: source, recipeVersion: version, itemId: recipe.state.itemId, portionsMilli: String(portions), portions: portionsOf(portions), wastedMilli: '0', lines: out, historical, actorRef: c.actorRef, occurredAt: c.occurredAt, ...(a.meta ?? {}) }));
+  return { events, value: { consumptionId: id } };
+}
+/** Prepared food thrown away: reclassifies `qty` portions of a consumption as waste at the cost it left with. Nothing goes back on the shelf. */
+export function preparedWaste(c: CommandEnvelope, cons: Snapshot, qty: bigint, source: string, reason: string): { events: DomainEvent[]; value: JsonObject } {
+  const id = sourceId('wst', source), total = BigInt(String(cons.state.portionsMilli)), wasted = BigInt(String(cons.state.wastedMilli));
+  const lines = (cons.state.lines as JsonObject[]).map(l => ({ ingredientId: l.ingredientId, baseQuantity: String(BigInt(String(l.baseQuantity)) * qty / total), costMinor: String((BigInt(String(l.costMinor)) * qty * 2n + total) / (2n * total)), costKnown: l.costKnown }));
+  return { events: [created('StockWasted', 'stock-waste', id, { kind: 'prepared', sourceEventId: source, consumedSourceEventId: cons.state.sourceEventId, recipeVersion: cons.state.recipeVersion, quantityMilli: String(qty), lines: lines as JsonObject[], reason, actorRef: c.actorRef, occurredAt: c.occurredAt }),
+    changed('ConsumptionWasteRecorded', cons, { wastedMilli: String(wasted + qty) })], value: { wasteId: id } };
+}
 export function registerConsumption(registry: ModuleRegistry): void {
   // Inventory.Consume {sourceEventId,recipeVersion|itemId,quantity:portions,historical?}: stock leaves once per source event (the kitchen-prepared event). The same source
   // replayed is a no-op; the same source with another recipe version / quantity is SOURCE_CONSUMED_DIFFERENTLY (never a second deduction). A historical source whose recipe
@@ -18,22 +52,9 @@ export function registerConsumption(registry: ModuleRegistry): void {
   handle(registry, 'Inventory.Consume', (c, s) => {
     const source = text(c.payload.sourceEventId), portions = parse(c.payload.quantity), historical = c.payload.historical === true;
     if (portions <= 0n) return fail('INVALID_QUANTITY');
-    const version = typeof c.payload.recipeVersion === 'string' ? c.payload.recipeVersion : String(find(s, 'recipe-pointer', text(c.payload.itemId, 'RECIPE_REQUIRED'))?.state.recipeVersion ?? '');
-    const id = sourceId('cons', source), existing = find(s, 'consumption', id);
-    if (existing) return existing.state.recipeVersion === version && existing.state.portionsMilli === String(portions) ? done([], { consumptionId: id, duplicate: true }) : fail('SOURCE_CONSUMED_DIFFERENTLY');
-    const exceptionId = sourceId('exc', source);
-    const recipe = version ? find(s, 'recipe', version) : undefined;
-    const except = (reason: string) => find(s, 'stock-exception', exceptionId) ? done([], { exception: true, duplicate: true }) : done([created('StockExceptionOpened', 'stock-exception', exceptionId, { sourceEventId: source, recipeVersion: version, quantity: String(portions), reason, status: 'open', openedAt: c.occurredAt })], { exception: true, exceptionId });
-    if (!recipe) return historical ? except('RECIPE_VERSION_MISSING') : fail('RECIPE_NOT_FOUND');
-    const lines = (recipe.state.lines as JsonObject[]).map(line => ({ line, item: find(s, 'stock-item', String(line.ingredientId)) }));
-    if (lines.some(l => !l.item)) return historical ? except('INGREDIENT_MISSING') : fail('INGREDIENT_UNKNOWN');
-    const events = [], out: JsonObject[] = [];
-    for (const { line, item } of lines as { line: JsonObject; item: Snapshot }[]) {
-      const qty = scaled(String(line.baseQuantity), portions), r = issue(item.state, qty), mid = movementId(source, version, String(line.ingredientId), 'consume');
-      out.push({ ingredientId: line.ingredientId, baseQuantity: String(qty), costMinor: String(r.costMinor), costKnown: r.costKnown, movementId: mid });
-      events.push(created('StockMovementRecorded', 'stock-movement', mid, { kind: 'consume', ingredientId: line.ingredientId, sourceEventId: source, recipeVersion: version, deltaBase: String(-qty), costMinor: String(r.costMinor), costKnown: r.costKnown, seq: r.next.movementSeq!, negative: BigInt(String(r.next.onHand)) < 0n, actorRef: c.actorRef, occurredAt: c.occurredAt }), changed('StockLevelChanged', item, r.next));
-    }
-    return done([created('StockConsumed', 'consumption', id, { sourceEventId: source, recipeVersion: version, itemId: recipe.state.itemId, portionsMilli: String(portions), portions: portionsOf(portions), wastedMilli: '0', lines: out, historical, actorRef: c.actorRef, occurredAt: c.occurredAt }), ...events], { consumptionId: id });
+    const version = typeof c.payload.recipeVersion === 'string' ? c.payload.recipeVersion : String(find(s, 'recipe-pointer', text(c.payload.itemId, 'RECIPE_REQUIRED'))?.state.recipeVersion ?? ''), levels: Levels = new Map();
+    const r = consumeCore(c, s, levels, { source, version, portions, historical });
+    return done([...r.events, ...levelEvents(s, levels)], r.value);
   });
   // Inventory.RecordWaste: (a) {sourceEventId,ingredientId,quantity,unit?,reason}: raw loss (spoilage) deducts stock; (b) {sourceEventId,consumedSourceEventId,quantity:portions,reason}:
   // a dish that was already prepared is cancelled/thrown away. The stock left at preparation, so this reclassifies cost as waste and NEVER puts anything back.
@@ -45,11 +66,9 @@ export function registerConsumption(registry: ModuleRegistry): void {
       if (qty <= 0n) return fail('INVALID_QUANTITY');
       const prior = find(s, 'stock-waste', id);
       if (prior) return prior.state.quantityMilli === String(qty) && prior.state.consumedSourceEventId === c.payload.consumedSourceEventId ? done([], { wasteId: id, duplicate: true }) : fail('SOURCE_CONSUMED_DIFFERENTLY');
-      const total = BigInt(String(cons.state.portionsMilli)), wasted = BigInt(String(cons.state.wastedMilli));
-      if (wasted + qty > total) return fail('WASTE_EXCEEDS_CONSUMED');
-      const lines = (cons.state.lines as JsonObject[]).map(l => ({ ingredientId: l.ingredientId, baseQuantity: String(BigInt(String(l.baseQuantity)) * qty / total), costMinor: String((BigInt(String(l.costMinor)) * qty * 2n + total) / (2n * total)), costKnown: l.costKnown }));
-      return done([created('StockWasted', 'stock-waste', id, { kind: 'prepared', sourceEventId: source, consumedSourceEventId: c.payload.consumedSourceEventId, recipeVersion: cons.state.recipeVersion, quantityMilli: String(qty), lines: lines as JsonObject[], reason, actorRef: c.actorRef, occurredAt: c.occurredAt }),
-        changed('ConsumptionWasteRecorded', cons, { wastedMilli: String(wasted + qty) })], { wasteId: id });
+      if (BigInt(String(cons.state.wastedMilli)) + qty > BigInt(String(cons.state.portionsMilli))) return fail('WASTE_EXCEEDS_CONSUMED');
+      const r = preparedWaste(c, cons, qty, source, reason);
+      return done(r.events, r.value);
     }
     const ingredientId = text(c.payload.ingredientId), item = find(s, 'stock-item', ingredientId) ?? fail('INGREDIENT_UNKNOWN');
     const mid = movementId(source, 'raw', ingredientId, 'waste'), base = toBase(item.state, text(c.payload.quantity, 'INVALID_QUANTITY'), c.payload.unit === undefined ? undefined : text(c.payload.unit, 'UNKNOWN_UNIT'));

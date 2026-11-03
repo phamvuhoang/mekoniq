@@ -19,7 +19,7 @@ export function selectPromotions(promotions: Snapshot[], ids: string[], ctx: Eli
     .map(p => Object.fromEntries(COUPON_KEYS.filter(k => p.state[k] !== undefined).map(k => [k, p.state[k]!])) as JsonObject);
 }
 /** Pricing hook: split the requested discount ids into menu coupons (kept as given) and promotions (resolved here), returning the ids in application order. */
-export function resolvePromotions(c: CommandEnvelope, snapshots: Snapshot[], ctx: EligibilityContext, requested: unknown): { discountIds: unknown; extraDiscounts: JsonObject[] } {
+export function resolvePromotions(c: CommandEnvelope, snapshots: Snapshot[], ctx: EligibilityContext, requested: unknown, uses?: Snapshot[]): { discountIds: unknown; extraDiscounts: JsonObject[] } {
   if (!Array.isArray(requested) || !requested.length) return { discountIds: requested, extraDiscounts: [] };
   const promotions = all(snapshots, 'promotion'), ids = requested as string[], promoIds = ids.filter(id => promotions.some(p => p.ref.id === id));
   if (!promoIds.length) return { discountIds: requested, extraDiscounts: [] };
@@ -29,8 +29,12 @@ export function resolvePromotions(c: CommandEnvelope, snapshots: Snapshot[], ctx
     const voucher = typeof c.payload.voucherId === 'string' ? find(snapshots, 'voucher', c.payload.voucherId) : undefined;
     if (!voucher) return fail('PROMOTION_REQUIRES_VOUCHER');
     if (gated.some(id => voucher.state.promotionId !== id)) return fail('PROMOTION_REQUIRES_VOUCHER');
-    const held = all(snapshots, 'voucher-use').some(u => u.state.voucherId === voucher.ref.id && ['reserved', 'redeemed'].includes(String(u.state.status)) && (u.state.ref === c.payload.voucherRef || u.state.billId === c.payload.voucherRef));
+    // The hold must be the one of THIS transaction: an order names its session (or, on an amendment, its order's session); only a price preview, which has neither, takes the caller's voucherRef.
+    const orderSession = typeof c.payload.orderId === 'string' ? find(snapshots, 'order', c.payload.orderId)?.state.sessionId : undefined;
+    const ref = typeof c.payload.sessionId === 'string' ? c.payload.sessionId : typeof orderSession === 'string' ? orderSession : c.payload.voucherRef;
+    const held = all(snapshots, 'voucher-use').find(u => u.state.voucherId === voucher.ref.id && ['reserved', 'redeemed'].includes(String(u.state.status)) && (u.state.ref === ref || u.state.billId === ref));
     if (!held) return fail('VOUCHER_NOT_HELD');
+    if (uses) { if (held.state.orderId !== undefined) return fail('VOUCHER_ALREADY_APPLIED'); uses.push(held); } // one use discounts one order
   }
   const extraDiscounts = selectPromotions(promotions, promoIds, ctx);
   return { discountIds: [...ids.filter(id => !promoIds.includes(id)), ...extraDiscounts.map(d => String(d.id))], extraDiscounts };

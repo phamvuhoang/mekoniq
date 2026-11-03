@@ -1,5 +1,5 @@
 import type { JsonObject, Snapshot } from '../../../contracts/src/index';
-import { attendanceDuration } from '../workforce/attendance';
+import { attendanceDuration, effectiveTimes } from '../workforce/attendance';
 import { dayOf, ofKind, undatedFacts } from './sales';
 const COLUMNS = ['kind', 'id', 'businessDate', 'userId', 'status', 'clockInAt', 'clockOutAt', 'durationMs', 'lateMs', 'corrected', 'sourceClockInAt', 'sourceClockOutAt', 'deviceMismatch'];
 /**
@@ -8,8 +8,7 @@ const COLUMNS = ['kind', 'id', 'businessDate', 'userId', 'status', 'clockInAt', 
  * Hours here are an operations figure — this is not payroll and carries no pay, tax or overtime rules.
  */
 export function attendanceReport(s: Snapshot[], date: string, tz: string): JsonObject {
-  const fixes = ofKind(s, 'attendance-correction').sort((a, b) => String(a.state.approvedAt).localeCompare(String(b.state.approvedAt)) || a.ref.id.localeCompare(b.ref.id));
-  const eff = (a: Snapshot) => { let inAt = String(a.state.clockInAt), out = (a.state.clockOutAt ?? null) as string | null, corrected = false; for (const f of fixes.filter(x => x.state.attendanceId === a.ref.id)) { corrected = true; if (f.state.clockInAt) inAt = String(f.state.clockInAt); if (f.state.clockOutAt) out = String(f.state.clockOutAt); } return { inAt, out, corrected }; };
+  const eff = (a: Snapshot) => effectiveTimes(s, a);
   const schedules = ofKind(s, 'shift-schedule').filter(x => dayOf(x.state.startsAt, tz) === date);
   const mine = ofKind(s, 'attendance').map(a => ({ a, ...eff(a) })).filter(x => dayOf(x.inAt, tz) === date).sort((x, y) => x.inAt.localeCompare(y.inAt) || x.a.ref.id.localeCompare(y.a.ref.id));
   const rows = mine.map(({ a, inAt, out, corrected }) => {

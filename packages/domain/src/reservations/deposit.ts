@@ -24,6 +24,9 @@ export function registerDeposits(registry: ModuleRegistry): void {
     const bookingId = c.payload.bookingId === undefined ? undefined : text(c.payload.bookingId);
     if (bookingId && !['requested', 'confirmed'].includes(String(requireState(s, 'booking', bookingId).state.status))) return fail('BOOKING_STATE_CONFLICT');
     const reference = method === 'transfer_manual' ? note(c.payload.reference, 'REFERENCE_REQUIRED') : undefined, existing = find(s, 'deposit', id);
+    // one bank transfer is one deposit: the reference is typed by hand, so compare it folded (case, spaces and separators); a failed receipt frees its reference
+    const refKey = reference === undefined ? undefined : reference.replace(/[^0-9a-z]/gi, '').toUpperCase();
+    if (!existing && refKey && all(s, 'deposit').some(d => d.state.method === 'transfer_manual' && d.state.referenceKey === refKey && d.state.status !== 'failed')) return fail('DEPOSIT_REFERENCE_REUSED');
     if (existing) {
       if (existing.state.amountMinor !== minor || existing.state.method !== method || existing.state.bookingId !== bookingId) return fail('DEPOSIT_CONFLICT');
       if (existing.state.status === status) return done([], { depositId: id, duplicate: true });
@@ -33,7 +36,7 @@ export function registerDeposits(registry: ModuleRegistry): void {
       return done([changed('DepositResolved', existing, { status, paidMinor: status === 'paid' ? minor : '0', ...(late ? { shiftId: late.ref.id } : {}) }), ...(late ? drawer(s, late, c, 'in', minor, `deposit ${id}`, id) : [])], { depositId: id, status });
     }
     const shift = method === 'cash' ? all(s, 'shift').find(x => x.state.cashierId === c.actorRef && x.state.status === 'open') ?? fail('ACTIVE_SHIFT_REQUIRED') : undefined;
-    const events: DomainEvent[] = [created('DepositReceived', 'deposit', id, { ...(bookingId ? { bookingId } : {}), method, ...(reference ? { reference } : {}), currency: String(shift?.state.currency ?? c.payload.currency ?? 'VND'), amountMinor: minor, paidMinor: status === 'paid' ? minor : '0', appliedMinor: '0', returnedMinor: '0', forfeitedMinor: '0', status, ...(shift ? { shiftId: shift.ref.id } : {}), receivedBy: c.actorRef, occurredAt: c.occurredAt })];
+    const events: DomainEvent[] = [created('DepositReceived', 'deposit', id, { ...(bookingId ? { bookingId } : {}), method, ...(reference ? { reference, referenceKey: refKey } : {}), currency: String(shift?.state.currency ?? c.payload.currency ?? 'VND'), amountMinor: minor, paidMinor: status === 'paid' ? minor : '0', appliedMinor: '0', returnedMinor: '0', forfeitedMinor: '0', status, ...(shift ? { shiftId: shift.ref.id } : {}), receivedBy: c.actorRef, occurredAt: c.occurredAt })];
     if (shift && status === 'paid') events.push(...drawer(s, shift, c, 'in', minor, `deposit ${id}`, id));
     return done(events, { depositId: id, status });
   });

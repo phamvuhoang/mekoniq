@@ -3,7 +3,7 @@ import type { JsonValue } from '../../../contracts/src/index';
 import { hashPayload } from '../../../contracts/src/canonical';
 import { created, done, fail, find, handle, note, text } from '../restaurant-context';
 import { utcEpochMs } from '../shared/clock';
-import { attendanceDuration } from './attendance';
+import { attendanceDuration, effectiveTimes } from './attendance';
 const instant = (v: JsonValue | undefined): string => { try { const s = text(v, 'INVALID_TIME'); utcEpochMs(s); return new Date(s).toISOString(); } catch { return fail('INVALID_TIME'); } };
 export function registerApproval(registry: ModuleRegistry): void {
   // Staff.ApproveCorrection {attendanceId,clockInAt?,clockOutAt?,reason}: a manager amends a late/forgotten punch. The source punch is never edited — the amendment is a separate
@@ -13,7 +13,7 @@ export function registerApproval(registry: ModuleRegistry): void {
     if (c.payload.clockInAt === undefined && c.payload.clockOutAt === undefined) return fail('NOTHING_TO_CORRECT');
     if (att.state.userId === c.actorRef) return fail('SELF_APPROVAL_FORBIDDEN');
     const clockInAt = c.payload.clockInAt === undefined ? undefined : instant(c.payload.clockInAt), clockOutAt = c.payload.clockOutAt === undefined ? undefined : instant(c.payload.clockOutAt);
-    const start = clockInAt ?? String(att.state.clockInAt), end = clockOutAt ?? (att.state.clockOutAt as string | undefined);
+    const now = effectiveTimes(s, att), start = clockInAt ?? now.inAt, end = clockOutAt ?? now.out ?? undefined;
     if (end) { try { attendanceDuration(Date.parse(start), Date.parse(end)); } catch { return fail('NEGATIVE_DURATION'); } }
     const id = `corr-${hashPayload({ attendanceId: att.ref.id, clockInAt: clockInAt ?? null, clockOutAt: clockOutAt ?? null }).slice(0, 32)}`;
     if (find(s, 'attendance-correction', id)) return done([], { correctionId: id, duplicate: true });

@@ -95,13 +95,17 @@ export function quoteOrder(i: QuoteInput): Quote {
   return { menuVersion: menu.version as number, currency: menu.currency as string, lines, ...summarize(lines), totalMinor: money(sumOf(lines, 'totalMinor')) };
 }
 /** Server-side entry used by every pricing command: time comes from the command, zone from the applied venue layout. */
-export function quoteForCommand(c: CommandEnvelope, snapshots: Snapshot[]): Quote {
+/** `uses`, when given, collects the voucher holds the quote spent, so an order command can bind each to the order it discounts. */
+export function quoteForCommand(c: CommandEnvelope, snapshots: Snapshot[], uses?: Snapshot[]): Quote {
   const coupons = c.payload.discountIds;
   if (coupons !== undefined && !(Array.isArray(coupons) && coupons.length === 0)) requireFeature(c, snapshots, 'discount'); // permission discount.apply is checked by the authorizers (requiredPermissions)
   const zone = find(snapshots, 'venue-layout', 'current')?.state.timezone, timeZone = typeof zone === 'string' ? zone : 'UTC';
   // Promotions (W08) ride in the same discountIds list; they are resolved here into ordinary coupons in a deterministic order, so the allocator and the frozen charges stay one mechanism.
   const items = Array.isArray(c.payload.items) ? c.payload.items as JsonObject[] : [];
-  const { discountIds, extraDiscounts } = resolvePromotions(c, snapshots, { at: c.occurredAt, timeZone, itemIds: items.map(x => String(x?.itemId)), channel: String(c.payload.channel ?? 'pos'), ...(typeof c.payload.customerId === 'string' ? { customerId: c.payload.customerId } : {}), venueId: c.venueId }, c.payload.discountIds);
+  // Weighed, combo and buffet items are the service.models feature wherever they are sold (POS, QR, kiosk, amend), not only on their own screen.
+  const catalog = currentMenu(snapshots).state.items as JsonObject[];
+  if (items.some(x => { const e = catalog.find(i => i.id === x?.itemId); return !!e && !!(e.combo || e.weighed || e.buffet); })) requireFeature(c, snapshots, 'service.models');
+  const { discountIds, extraDiscounts } = resolvePromotions(c, snapshots, { at: c.occurredAt, timeZone, itemIds: items.map(x => String(x?.itemId)), channel: String(c.payload.channel ?? 'pos'), ...(typeof c.payload.customerId === 'string' ? { customerId: c.payload.customerId } : {}), venueId: c.venueId }, c.payload.discountIds, uses);
   const scaleIds = all(snapshots, 'scale').filter(x => x.state.validation === 'venue_approved').map(x => x.ref.id);
   return quoteOrder({ menu: currentMenu(snapshots), items: c.payload.items, discountIds, extraDiscounts, scaleIds, actor: c.actorRef, currency: c.payload.currency, menuVersion: c.payload.menuVersion, at: c.occurredAt, timeZone, policyRevision: c.policyRevision });
 }

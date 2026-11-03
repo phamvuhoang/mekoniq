@@ -1,10 +1,18 @@
 import type { ModuleRegistry } from '../modules';
 import type { JsonValue } from '../../../contracts/src/index';
 import { hashPayload } from '../../../contracts/src/canonical';
+import type { Snapshot } from '../../../contracts/src/index';
 import { changed, created, done, fail, find, handle, note, text, all } from '../restaurant-context';
 export function attendanceDuration(startMs: number, endMs: number) {
   if (endMs < startMs) throw new Error('NEGATIVE_DURATION');
   return endMs - startMs;
+}
+/** The times that count for a punch: the source times with every approved amendment applied in approval order (the latest amendment of a time wins; the source is never edited). */
+export function effectiveTimes(s: Snapshot[], a: Snapshot): { inAt: string; out: string | null; corrected: boolean } {
+  let inAt = String(a.state.clockInAt), out = (a.state.clockOutAt ?? null) as string | null, corrected = false;
+  const fixes = all(s, 'attendance-correction').filter(x => x.state.attendanceId === a.ref.id).sort((x, y) => String(x.state.approvedAt).localeCompare(String(y.state.approvedAt)) || x.ref.id.localeCompare(y.ref.id));
+  for (const f of fixes) { corrected = true; if (f.state.clockInAt) inAt = String(f.state.clockInAt); if (f.state.clockOutAt) out = String(f.state.clockOutAt); }
+  return { inAt, out, corrected };
 }
 /** The user a punch is for: oneself, or — with the extra permission requiredPermissions adds for any explicit userId — someone else, on the record with a reason. */
 export function punchUser(c: { actorRef: string; payload: { userId?: JsonValue; reason?: JsonValue } }): { userId: string; reason?: string } {

@@ -14,11 +14,11 @@ export function placeOrder(c:CommandEnvelope,s:Snapshot[],extra:JsonObject={}):D
  if(c.payload.tableId!==session.state.tableId) return fail('TABLE_SESSION_MISMATCH');
  const menu=currentMenu(s);
  if(c.payload.menuVersion!==menu.state.version) return fail('STALE_QUOTE');
- const quoted=quoteForCommand(c,s), orderId=c.payload.orderId ? text(c.payload.orderId) : stableId('order',c);
+ const uses:Snapshot[]=[], quoted=quoteForCommand(c,s,uses), orderId=c.payload.orderId ? text(c.payload.orderId) : stableId('order',c);
  if(find(s,'order',orderId)) return fail('ORDER_EXISTS');
  const materialized=newOrderLines(c,quoted.lines as JsonObject[],orderId,sessionId);
  const state={sessionId,tableId:session.state.tableId!,menuVersion:menu.state.version!,currency:quoted.currency!,lines:materialized.lines,totalMinor:quoted.totalMinor,summary:summarize(materialized.lines),status:'open',policyRevision:c.policyRevision,occurredAt:c.occurredAt,...extra};
- return done([created('OrderAccepted','order',orderId,state),changed('SessionOrderAdded',session,{orderIds:[...((session.state.orderIds ?? []) as string[]),orderId]}),...materialized.events],{orderId,lineIds:materialized.lines.map(l=>l.id),sessionId});
+ return done([created('OrderAccepted','order',orderId,state),...uses.map(u=>changed('VoucherAppliedToOrder',u,{orderId})),changed('SessionOrderAdded',session,{orderIds:[...((session.state.orderIds ?? []) as string[]),orderId]}),...materialized.events],{orderId,lineIds:materialized.lines.map(l=>l.id),sessionId});
 }
 export function registerOrders(registry:ModuleRegistry):void {
  handle(registry,'Order.Place',(c,s)=>placeOrder(c,s));
@@ -29,11 +29,11 @@ export function registerOrders(registry:ModuleRegistry):void {
   if(session.state.status!=='open' || session.state.frozenBillId) return fail('SESSION_FROZEN');
   const menu=currentMenu(s);
   if(c.payload.menuVersion!==undefined && c.payload.menuVersion!==menu.state.version) return fail('STALE_QUOTE');
-  const quoted=quoteForCommand(c,s);
+  const uses:Snapshot[]=[], quoted=quoteForCommand(c,s,uses);
   if(quoted.currency!==order.state.currency) return fail('CURRENCY_MISMATCH');
   const materialized=newOrderLines(c,quoted.lines as JsonObject[],order.ref.id,String(order.state.sessionId));
   const total=amount(String(BigInt(String(order.state.totalMinor))+BigInt(String(quoted.totalMinor)))), lines=[...lineReferences(order.state),...materialized.lines];
-  return done([changed('OrderAmended',order,{lines,totalMinor:total,summary:summarize(lines)}),changed('SessionOrderAmended',session,{}),...materialized.events],{orderId:order.ref.id,lineIds:materialized.lines.map(l=>l.id)});
+  return done([changed('OrderAmended',order,{lines,totalMinor:total,summary:summarize(lines)}),...uses.map(u=>changed('VoucherAppliedToOrder',u,{orderId:order.ref.id})),changed('SessionOrderAmended',session,{}),...materialized.events],{orderId:order.ref.id,lineIds:materialized.lines.map(l=>l.id)});
  });
  handle(registry,'Order.Cancel',(c,s)=>{
   const order=requireState(s,'order',text(c.payload.orderId)); expectVersion(c,order); assertMutableOrder(order.state);
