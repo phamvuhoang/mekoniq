@@ -199,3 +199,38 @@ test("R5-2b dealing a combo's money to split children is non-negative and exact 
     }
   }
 });
+
+test("R6-1 an equal split of a taxed, after-tax-discounted combo keeps each child's discount within its goods", () => lab$(async lab => {
+  const its: JsonObject[] = [{ id: "rice", name: "Cơm", stationId: "kitchen", unitMinor: "1", available: true }, { id: "a", name: "A", stationId: "kitchen", unitMinor: "1", available: true }, { id: "b", name: "B", stationId: "kitchen", unitMinor: "1", available: true },
+    { id: "set", name: "Combo", stationId: "kitchen", unitMinor: "10001", taxProfileId: "vat", available: true, combo: { components: [{ itemId: "a", quantity: "1" }, { itemId: "b", quantity: "1" }] } }];
+  const pricing = { taxProfiles: [{ id: "vat", name: "VAT", rateBps: 800, inclusive: false }], defaultTaxProfileId: null, service: null, discountOrder: "after_tax", discounts: [{ id: "d", name: "Giảm", kind: "fixed", amountMinor: "10001", itemIds: ["set"] }] };
+  expect((await lab.command("manager", "Catalog.Publish", { version: 2, currency: "VND", items: its, pricing })).status).toBe("accepted");
+  await lab.command("cashier", "Session.Open", { sessionId: "s1", tableId: "table-1" });
+  const placed = await place(lab, "s1", "table-1", [{ itemId: "rice", quantity: "1" }, { itemId: "set", quantity: "1" }], { discountIds: ["d"] });
+  expect(placed.status, String(placed.code)).toBe("accepted");
+  const prep = await lab.command("cashier", "Bill.Prepare", { sessionId: "s1" }), billId = String(prep.value.billId);
+  expect((await bill$(lab, billId)).state.totalMinor).toBe("801");
+  const split = await lab.command("cashier", "Bill.Split", { billId, expectedVersion: (await bill$(lab, billId)).version, mode: "equal", parts: 2 });
+  expect(split.status, String(split.code)).toBe("accepted");
+  const kids = await Promise.all([1, 2].map(async n => (await bill$(lab, `${billId}.${n}`)).state.lines as JsonObject[]));
+  for (const lines of kids) for (const l of lines) if (l.components) expect(BigInt(String(l.discountMinor))).toBeLessThanOrEqual(BigInt(String(l.subtotalMinor)));
+  expect(kids.flatMap(ls => refundableComponents(ls)).reduce((a, p) => a + BigInt(p.minor), 0n)).toBe(0n); // the combo's goods were fully discounted
+}));
+
+test("R6-2 equal splits of discounted, taxed combos beside plain lines always succeed and conserve the parts", async () => {
+  for (const [price, rice, order, parts, off] of [["3", "1", "before_tax", 2, "2"], ["3", "4", "before_tax", 2, "2"], ["10001", "1", "after_tax", 2, "10001"], ["10001", "1", "before_tax", 3, "10001"], ["7", "5", "after_tax", 3, "7"], ["101", "1", "after_tax", 2, "50"], ["9", "2", "before_tax", 3, "4"]] as const) await lab$(async lab => {
+    const its: JsonObject[] = [{ id: "rice", name: "Cơm", stationId: "kitchen", unitMinor: rice, available: true }, { id: "a", name: "A", stationId: "kitchen", unitMinor: "1", available: true }, { id: "b", name: "B", stationId: "kitchen", unitMinor: "2", available: true },
+      { id: "set", name: "Combo", stationId: "kitchen", unitMinor: price, taxProfileId: "vat", available: true, combo: { components: [{ itemId: "a", quantity: "1" }, { itemId: "b", quantity: "1" }] } }];
+    const pricing = { taxProfiles: [{ id: "vat", name: "VAT", rateBps: 800, inclusive: false }], defaultTaxProfileId: null, service: null, discountOrder: order, discounts: [{ id: "d", name: "Giảm", kind: "fixed", amountMinor: off, itemIds: ["set"] }] };
+    expect((await lab.command("manager", "Catalog.Publish", { version: 2, currency: "VND", items: its, pricing })).status).toBe("accepted");
+    await lab.command("cashier", "Session.Open", { sessionId: "s1", tableId: "table-1" });
+    const tag = `${price}/${rice}/${order}/${parts}/${off}`;
+    expect((await place(lab, "s1", "table-1", [{ itemId: "rice", quantity: "1" }, { itemId: "set", quantity: "1" }], { discountIds: ["d"] })).status, tag).toBe("accepted");
+    const billId = String((await lab.command("cashier", "Bill.Prepare", { sessionId: "s1" })).value.billId), whole = refundableComponents((await bill$(lab, billId)).state.lines as JsonObject[]);
+    const split = await lab.command("cashier", "Bill.Split", { billId, expectedVersion: (await bill$(lab, billId)).version, mode: "equal", parts });
+    expect(split.status, `${tag} ${String(split.code)}`).toBe("accepted");
+    const kids = await Promise.all(Array.from({ length: parts }, async (_, n) => refundableComponents((await bill$(lab, `${billId}.${n + 1}`)).state.lines as JsonObject[])));
+    for (const w of whole) expect(kids.reduce((a, k) => a + BigInt(k.find(p => p.itemId === w.itemId)?.minor ?? "0"), 0n), tag).toBe(BigInt(w.minor));
+    for (const p of kids.flat()) expect(BigInt(p.minor) >= 0n, tag).toBe(true);
+  });
+});
