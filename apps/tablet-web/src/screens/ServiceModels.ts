@@ -19,21 +19,23 @@ export function ServiceModels(c:ScreenContext) {
   root.append(ses.node,pkg.node,guests.node,button(tr(c,'Bắt đầu buffet','Start buffet'),()=>{const s=list(c,'session').find(x=>x.ref.id===ses.input.value);return act(c,'Buffet.Start',{sessionId:ses.input.value,tableId:String(s?.state.tableId??''),menuVersion:Number(menu?.state.version),packageItemId:pkg.input.value,guests:Number(guests.input.value)}).then(()=>{});}));
  }
  const out=el('p',undefined,'total');out.setAttribute('role','status');
+ // Quotes write no events, so they skip act(): its refresh re-renders the screen and would drop the node the answer is written to.
+ const quote=async(type:string,payload:JsonObject)=>{try{const r=await c.command(type,payload);if(r.status==='accepted')return r;c.notify(r.code??r.status,true);}catch(error){c.notify(error instanceof Error?error.message:'UNAVAILABLE',true);}return undefined;};
  const weighed=items.filter(i=>i.weighed);
  if(weighed.length){
   const item=select(tr(c,'Món bán theo cân','Weighed item'),opt(weighed)),mass=field(tr(c,'Khối lượng (g/ml)','Mass (g/ml)'),'','number');
   root.append(item.node,mass.node,button(tr(c,'Tính tiền theo cân','Price by weight'),async()=>{
-   const r=await act(c,'WeighedItem.Quote',{itemId:item.input.value,measure:{mass:mass.input.value,source:'manual'}});
-   out.textContent=r?.status==='accepted'?`${tr(c,'Thành tiền','Price')}: ${money(r.value.totalMinor,String(r.value.currency))}`:'';
+   const r=await quote('WeighedItem.Quote',{itemId:item.input.value,measure:{mass:mass.input.value,source:'manual'}});
+   out.textContent=r?`${tr(c,'Thành tiền','Price')}: ${money(r.value.totalMinor,String(r.value.currency))}`:'';
   }),el('p',tr(c,'Nhập tay cần quyền quản lý; chưa có cân được duyệt thì không có chế độ "đọc từ cân".','Keyed weights need manager approval; without an approved scale there is no "read from scale" mode.'),'muted'));
  }
  const combos=items.filter(i=>i.combo);
  if(combos.length){
   const combo=select(tr(c,'Combo','Combo'),opt(combos)),qty=field(tr(c,'Số lượng','Quantity'),'1','number');
   root.append(combo.node,qty.node,button(tr(c,'Xem thành phần combo','Show combo parts'),async()=>{
-   const r=await act(c,'Combo.Quote',{comboItemId:combo.input.value,quantity:qty.input.value});
+   const r=await quote('Combo.Quote',{comboItemId:combo.input.value,quantity:qty.input.value});
    const parts=((r?.value.lines as JsonObject[]|undefined)?.[0]?.components??[]) as JsonObject[];
-   out.textContent=r?.status==='accepted'?parts.map(p=>`${String(p.name)} ×${String(p.quantity)} = ${money(p.shareMinor)}`).join(' · '):'';
+   out.textContent=r?parts.map(p=>`${String(p.name)} ×${String(p.quantity)} = ${money(p.shareMinor)}`).join(' · '):'';
   }));
  }
  root.append(out);
