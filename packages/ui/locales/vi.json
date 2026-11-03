@@ -22,5 +22,15 @@
   "kiosk": "Kiosk gọi món",
   "reports": "Báo cáo",
   "robot-screen": "Màn hình robot",
-  "robot-setup": "Cài đặt robot"
+  "robot-setup": "Cài đặt robot",
+  "inventory": "Kho",
+  "recipes": "Công thức",
+  "purchasing": "Mua hàng",
+  "stocktake": "Kiểm kê",
+  "staff": "Ca làm",
+  "inventory-reports": "Báo cáo kho",
+  "promotions": "Khuyến mãi",
+  "customers": "Khách hàng",
+  "reservations": "Đặt bàn",
+  "models": "Mô hình phục vụ"
 }

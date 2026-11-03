@@ -2,6 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {hashPayload} from '../../../../../../packages/contracts/src/canonical';
 import type {CommandEnvelope,JsonObject} from '../../../../../../packages/contracts/generated/wire';
 import {validatedAvailability} from '../../../../../../packages/domain/src/catalog/availability';
+import {validatedModels} from '../../../../../../packages/domain/src/catalog/models';
 import {validatedModifierGroups} from '../../../../../../packages/domain/src/catalog/modifier';
 import {validatedPricing} from '../../../../../../packages/domain/src/pricing/quote';
 import {requirePermission,type Actor} from '../identity/rbac';
@@ -29,8 +30,8 @@ export async function relayCatalogPublication(actor:Actor,scope:TenantScope,inpu
   if(typeof item.id!=='string'||!item.id||item.id.length>128||ids.has(item.id)||typeof item.name!=='string'||!item.name.trim()||item.name.length>120||typeof item.stationId!=='string'||!knownStations.has(item.stationId)||typeof item.unitMinor!=='string'||!/^(0|[1-9][0-9]{0,29})$/.test(item.unitMinor)||typeof item.available!=='boolean')throw new Error('INVALID_CATALOG_ITEM');
   const groups=validatedModifierGroups(item.modifierGroups),availability=validatedAvailability(item.availability);
   if(item.taxProfileId!==undefined&&(typeof item.taxProfileId!=='string'||!taxIds.has(item.taxProfileId)))throw new Error('TAX_PROFILE_NOT_FOUND');
-  ids.add(item.id);return {id:item.id,name:item.name.trim(),stationId:item.stationId,unitMinor:item.unitMinor,available:item.available,...(typeof item.imageManifestId==='string'?{imageManifestId:item.imageManifestId}:{}),...(groups.length?{modifierGroups:groups}:{}),...(typeof item.taxProfileId==='string'?{taxProfileId:item.taxProfileId}:{}),...(availability?{availability}:{})};
- });
+  ids.add(item.id);return {id:item.id,name:item.name.trim(),stationId:item.stationId,unitMinor:item.unitMinor,available:item.available,...(typeof item.imageManifestId==='string'?{imageManifestId:item.imageManifestId}:{}),...(groups.length?{modifierGroups:groups}:{}),...(typeof item.taxProfileId==='string'?{taxProfileId:item.taxProfileId}:{}),...(availability?{availability}:{}),...(item.weighed!==undefined?{weighed:item.weighed}:{}),...(item.combo!==undefined?{combo:item.combo}:{}),...(item.buffet!==undefined?{buffet:item.buffet}:{})};
+ }).map((item,_i,all)=>({...(Object.fromEntries(Object.entries(item).filter(([k])=>!['weighed','combo','buffet'].includes(k))) as typeof item),...validatedModels(item as JsonObject,all as JsonObject[])}));
  const context=await withTenant(scope,async sql=>{
   for(const item of items)if(item.imageManifestId){const ready=await sql`SELECT id FROM asset_manifest WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND id=${item.imageManifestId} AND status='ready'`;if(ready.length!==1)throw new Error('ASSET_NOT_READY');}
 

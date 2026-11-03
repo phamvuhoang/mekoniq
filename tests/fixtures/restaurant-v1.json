@@ -230,6 +230,34 @@
       "guest.bill": {
         "status": "enabled",
         "revision": 1
+      },
+      "inventory": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "procurement": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "workforce": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "promotion": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "loyalty": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "reservations": {
+        "status": "enabled",
+        "revision": 1
+      },
+      "service.models": {
+        "status": "enabled",
+        "revision": 1
       }
     },
     "readiness": {
@@ -245,5 +273,69 @@
     "profile": "escpos-generic",
     "columns": 42,
     "validation": "fixture"
+  },
+  "inventory": {
+    "items": [
+      {
+        "id": "rice-raw",
+        "name": "Gạo",
+        "baseUnit": "g",
+        "conversions": {
+          "bag": "25000"
+        },
+        "negativePolicy": "allow",
+        "currency": "VND",
+        "onHand": "10000",
+        "valueMinor": "200000",
+        "movementSeq": 0
+      }
+    ],
+    "recipes": [
+      {
+        "id": "rice-v1",
+        "itemId": "rice",
+        "lines": [
+          {
+            "ingredientId": "rice-raw",
+            "quantity": "200",
+            "unit": "g",
+            "baseQuantity": "200"
+          }
+        ],
+        "publishedBy": "fixture",
+        "publishedAt": "2026-01-01T00:00:00.000Z"
+      }
+    ]
+  },
+  "procurement": {
+    "suppliers": [
+      {
+        "id": "supplier-1",
+        "name": "Nhà cung cấp gạo",
+        "currency": "VND"
+      }
+    ],
+    "purchases": [
+      {
+        "id": "po-1",
+        "supplierId": "supplier-1",
+        "currency": "VND",
+        "status": "approved",
+        "createdBy": "fixture",
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "lines": [
+          {
+            "ingredientId": "rice-raw",
+            "unit": "g",
+            "ordered": "5000",
+            "received": "0",
+            "returned": "0",
+            "tolerance": "0",
+            "unitCostMinor": "20",
+            "perBase": "1"
+          }
+        ]
+      }
+    ]
   }
 }

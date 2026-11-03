@@ -16,6 +16,7 @@ import {publishConfiguration,readConfiguration,applyConfiguration,signedConfigur
 import type {FeatureConfig} from '../../../../../packages/domain/src/policy/registry';
 import {syncActor,pushEntries,pullEntries,syncWatermark} from './sync/controller';
 import {enqueueRelay,pendingRelay,recordVenueReceipt} from './relay/commands';
+import {relayVenueCommand,readVenueRecords} from './relay/venue-command';
 import {createAssetUpload,createAssetDownload,type UploadInput} from './storage/signed-upload';
 import {finalizeAsset} from './storage/finalize';
 import {guestMenu,guestMenuImage,guestSession,submitGuestCommand} from './guest/api';
@@ -65,6 +66,8 @@ export function registerWave02Routes(register:(route:CloudRoute)=>void):void {
  add('POST','/v1/venues/:venueId/layout','configuration.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await relayVenueLayout(actor,actorScope(actor,c.params.venueId),body as unknown as Parameters<typeof relayVenueLayout>[2]),{status:202});});
  add('GET','/v1/venues/:venueId/catalog','catalog.read',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await readCatalog(actor,actorScope(actor,c.params.venueId)));});
  add('POST','/v1/venues/:venueId/catalog','catalog.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await relayCatalogPublication(actor,actorScope(actor,c.params.venueId),body as unknown as Parameters<typeof relayCatalogPublication>[2]),{status:202});});
+ add('POST','/v1/venues/:venueId/commands','relay.write',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);const result=await relayVenueCommand(actor,actorScope(actor,c.params.venueId),{type:String(body.type),payload:object(body.payload) as Parameters<typeof relayVenueCommand>[2]['payload'],...(typeof body.operationId==='string'?{operationId:body.operationId}:{})});return Response.json(result,{status:result.status==='pending'?202:200});});
+ add('GET','/v1/venues/:venueId/records/:kind','configuration.read',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await readVenueRecords(actor,actorScope(actor,c.params.venueId),c.params.kind));});
  add('POST','/v1/venues/:venueId/configuration/pull',null,async(request,c)=>{
   const actor=actorRequired(await syncActor(request,c.body,c.actor));const body=object(c.body);return Response.json(await signedConfiguration(actor,actorScope(actor,c.params.venueId),Number(body.afterRevision??0)));
  });

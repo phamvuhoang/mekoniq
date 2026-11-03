@@ -49,7 +49,7 @@
 - Consumes: KitchenPrepared source event, quantity scaled integer, recipe version snapshot.
 - Produces: `Recipe.Publish`, `Inventory.Consume`, `Inventory.RecordWaste`; idempotency source+recipe line.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -65,20 +65,20 @@ test("replayed preparation consumes stock once", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/stock-consumption.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/stock-consumption.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Recipe conversions có dimension/scale; reject kg→piece thiếu conversion. Consumption tại kitchen-prepared theo policy đã snapshot, cancel đồ đã chế biến tạo waste/disposition, không tự restock.
+- [x] **3. Hiện thực phần cốt lõi.** Recipe conversions có dimension/scale; reject kg→piece thiếu conversion. Consumption tại kitchen-prepared theo policy đã snapshot, cancel đồ đã chế biến tạo waste/disposition, không tự restock.
 
 ```sql
 CREATE UNIQUE INDEX stock_source_recipe
 ON stock_movement(venue_id, source_event_id, recipe_version, ingredient_id, movement_kind);
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Recipes UI version publish; native same commands offline. Historical import recipe missing mở exception thay vì dùng current recipe. FIFO hoặc weighted-average policy được version; bản đầu weighted-average được đo với exact quantities.
+- [x] **4. Nối vào runtime và lưu trữ.** Recipes UI version publish; native same commands offline. Historical import recipe missing mở exception thay vì dùng current recipe. FIFO hoặc weighted-average policy được version; bản đầu weighted-average được đo với exact quantities.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/stock-consumption.test.ts`; kỳ vọng PASS. Unit conversion, fractional quantity, recipe updated mid-order, returned uncooked ingredient requires explicit receipt, duplicate historical source. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/stock-consumption.test.ts`; kỳ vọng PASS. Unit conversion, fractional quantity, recipe updated mid-order, returned uncooked ingredient requires explicit receipt, duplicate historical source. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W07-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: derive stock consumption from versioned recipes"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W07-T01.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: derive stock consumption from versioned recipes"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W07-T02: Nhà cung cấp, mua hàng, nhận/trả và giá vốn
 
@@ -95,7 +95,7 @@ ON stock_movement(venue_id, source_event_id, recipe_version, ingredient_id, move
 - Consumes: Stock movement ledger, purchase order versions and supplier refs.
 - Produces: `Purchase.Create`, `.Approve`, `Goods.Receive`, `.Return`; partial receipts, moving weighted cost.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -111,9 +111,9 @@ test("repeated delivery note does not receive twice", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/procurement.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/procurement.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Supplier external receipt scoped supplier+venue+number; qty receiving bounded remaining unless explicit approved tolerance. Cost layers/weighted numerator use integer scales; returns reference original receipt cost.
+- [x] **3. Hiện thực phần cốt lõi.** Supplier external receipt scoped supplier+venue+number; qty receiving bounded remaining unless explicit approved tolerance. Cost layers/weighted numerator use integer scales; returns reference original receipt cost.
 
 ```ts
 export function receivable(ordered:string, received:string, tolerance:string) {
@@ -121,11 +121,11 @@ export function receivable(ordered:string, received:string, tolerance:string) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Procurement UI create→approve→receive partial→close; API ownership venue, inventory postings same transaction; AP accounting outside scope, export payable summary only.
+- [x] **4. Nối vào runtime và lưu trữ.** Procurement UI create→approve→receive partial→close; API ownership venue, inventory postings same transaction; AP accounting outside scope, export payable summary only.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/procurement.test.ts`; kỳ vọng PASS. Concurrent receive, overreceive, supplier note reused altered payload, return exceeds receipt, currency/UOM mismatch and offline receipt reconciliation. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/procurement.test.ts`; kỳ vọng PASS. Concurrent receive, overreceive, supplier note reused altered payload, return exceeds receipt, currency/UOM mismatch and offline receipt reconciliation. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W07-T02.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: track purchasing receipts returns and ingredient cost"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W07-T02.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: track purchasing receipts returns and ingredient cost"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W07-T03: Kiểm kê, hao hụt và lịch sử điều chỉnh
 
@@ -141,7 +141,7 @@ export function receivable(ordered:string, received:string, tolerance:string) {
 - Consumes: Stock ledger checkpoint/time, counted values, manager permission.
 - Produces: `Stocktake.Open`, `.Count`, `.Approve`, `.Apply`; delta at count checkpoint, never absolute overwrite.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -153,9 +153,9 @@ test("stocktake preserves movements after the counted checkpoint", () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/stocktake.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/stocktake.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Count sheet snapshot ledger watermark; adjustment tính counted-minus-checkpoint then append to current stock. Missing clock confidence requires review, không last-write-wins quantity.
+- [x] **3. Hiện thực phần cốt lõi.** Count sheet snapshot ledger watermark; adjustment tính counted-minus-checkpoint then append to current stock. Missing clock confidence requires review, không last-write-wins quantity.
 
 ```ts
 export function stocktakeAdjustment(s:{atCheckpoint:string;counted:string}) {
@@ -166,11 +166,11 @@ export function applyAdjustment(s:{current:string;delta:string}) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Reason codes waste/spoilage/count correction, evidence photos optional, approval separation configurable. Reports show estimated/missing cost explicitly.
+- [x] **4. Nối vào runtime và lưu trữ.** Reason codes waste/spoilage/count correction, evidence photos optional, approval separation configurable. Reports show estimated/missing cost explicitly.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/stocktake.test.ts`; kỳ vọng PASS. Concurrent sales during count, count duplicate/changed import, stock negative policy, stale approval and partial apply recovery. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/stocktake.test.ts`; kỳ vọng PASS. Concurrent sales during count, count duplicate/changed import, stock negative policy, stale approval and partial apply recovery. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W07-T03.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: apply auditable inventory adjustments without overwriting movement"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W07-T03.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: apply auditable inventory adjustments without overwriting movement"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ### W07-T04: Lịch ca, chấm công và báo cáo vận hành
 
@@ -188,7 +188,7 @@ export function applyAdjustment(s:{current:string;delta:string}) {
 - Consumes: Staff identities/roles, business date, ledger watermark.
 - Produces: `Staff.Schedule`, `.ClockIn`, `.ClockOut`, `.ApproveCorrection`; inventory/cost/attendance report projections.
 
-- [ ] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
+- [x] **1. Viết test hành vi và fixture cụ thể.** Tạo test dưới đây trong file đã chỉ định; helper chỉ dùng hợp đồng ở plan tổng. Bổ sung các ca trong mục kiểm chứng của task.
 
 ```ts
 import { expect, test } from "vitest";
@@ -202,9 +202,9 @@ test("a kitchen actor cannot grant itself refund permission", async () => {
 });
 ```
 
-- [ ] **2. Chạy RED.** `pnpm test:integration -- tests/integration/workforce-reporting.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
+- [x] **2. Chạy RED.** `pnpm test:integration -- tests/integration/workforce-reporting.test.ts`. Kỳ vọng: test mới thất bại ở invariant chưa có; nếu lỗi toolchain/fixture thì sửa nguyên nhân đó trước, không coi là RED hợp lệ.
 
-- [ ] **3. Hiện thực phần cốt lõi.** Clock-in/out event sources immutable; late attendance changes manager amendment, overlap/night shift rules timezone aware. Report joins are projections, not updates to source ledgers.
+- [x] **3. Hiện thực phần cốt lõi.** Clock-in/out event sources immutable; late attendance changes manager amendment, overlap/night shift rules timezone aware. Report joins are projections, not updates to source ledgers.
 
 ```ts
 export function attendanceDuration(startMs:number,endMs:number) {
@@ -213,14 +213,14 @@ export function attendanceDuration(startMs:number,endMs:number) {
 }
 ```
 
-- [ ] **4. Nối vào runtime và lưu trữ.** Staff UI controls station assignment/permission via cloud identity workflow; offline grant revocation pending explicit. Stock/food-cost report costs matched recipe/purchase version, CSV escaped.
+- [x] **4. Nối vào runtime và lưu trữ.** Staff UI controls station assignment/permission via cloud identity workflow; offline grant revocation pending explicit. Stock/food-cost report costs matched recipe/purchase version, CSV escaped.
 
-- [ ] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/workforce-reporting.test.ts`; kỳ vọng PASS. Overnight shift, duplicate offline punch, different device identity, concurrent permission change, report ledger reconciliation and no payroll claims. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
+- [x] **5. Chạy GREEN và kiểm tra hồi quy.** Chạy lại `pnpm test:integration -- tests/integration/workforce-reporting.test.ts`; kỳ vọng PASS. Overnight shift, duplicate offline punch, different device identity, concurrent permission change, report ledger reconciliation and no payroll claims. Chạy `pnpm typecheck` và `pnpm lint` cho workspace đã tạo; không chạy test phần cứng với fake rồi ghi đạt hardware.
 
-- [ ] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W07-T04.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: manage staff operations and inventory reporting"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
+- [x] **6. Ghi bằng chứng và commit.** Cập nhật `docs/implementation/evidence/W07-T04.md`: commit, command, runtime, kết quả, giới hạn. Review diff chỉ chứa task; stage các file trong **Files**, test và evidence, rồi `git commit -m "feat: manage staff operations and inventory reporting"`. Chỉ đánh dấu checkbox khi bước tương ứng đã chạy.
 
 ## Wave acceptance
 
-- [ ] Source ID idempotency và recipe snapshot giữ đúng cả khi import lịch sử.
-- [ ] Stocktake không ghi đè movements giữa thời điểm đếm và apply.
-- [ ] Nhân sự vận hành không biến thành module tính lương/thuế ngoài scope.
+- [x] Source ID idempotency và recipe snapshot giữ đúng cả khi import lịch sử.
+- [x] Stocktake không ghi đè movements giữa thời điểm đếm và apply.
+- [x] Nhân sự vận hành không biến thành module tính lương/thuế ngoài scope.

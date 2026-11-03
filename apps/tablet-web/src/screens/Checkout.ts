@@ -1,5 +1,6 @@
 import {el,field,select,panel,list,tr,money,summary,button,act,type ScreenContext} from '../ui';
 import type {JsonObject,Snapshot} from '../../../../packages/contracts/src/index';
+import {refundableComponents} from '../../../../packages/domain/src/pricing/combo';
 const big=(v:unknown)=>BigInt(String(v??'0'));
 const dueOf=(b:Snapshot)=>big(b.state.totalMinor)-big(b.state.paidMinor)+big(b.state.refundedMinor);
 export function Checkout(c:ScreenContext) {
@@ -61,6 +62,12 @@ export function Checkout(c:ScreenContext) {
     if(can('payment.refund')&&payment.state.status==='captured'&&refundable>0n){
      const amount=field(tr(c,'Số tiền hoàn','Refund amount'),String(refundable),'number'),reason=field(tr(c,'Lý do hoàn tiền','Refund reason')),evidence=field(tr(c,'Tham chiếu hoàn (thẻ/chuyển khoản)','Refund reference (card/transfer)'));
      row.append(amount.node,reason.node,...(payment.state.method==='cash'?[]:[evidence.node]),button(tr(c,'Hoàn tiền','Record refund'),()=>act(c,'Refund.Record',{paymentId:payment.ref.id,amountMinor:amount.input.value,reason:reason.input.value,...(payment.state.method==='cash'?{}:{evidenceRef:evidence.input.value})},payment.version).then(done)));
+     // one part of a combo goes back at the domain's live share (after cancellations, split and merge), once
+     const refunded=new Set(list(c,'refund').filter(r=>r.state.billId===bill.ref.id&&r.state.component).map(r=>{const k=r.state.component as {lineId:string;itemId:string};return k.lineId+'\u0000'+k.itemId;}));
+     for(const part of refundableComponents((bill.state.lines??[]) as JsonObject[])){
+      const share=big(part.minor);
+      if(share>0n&&share<=refundable&&!refunded.has(part.lineId+'\u0000'+part.itemId))row.append(button(`${tr(c,'Hoàn phần combo','Refund combo part')}: ${part.name} (${money(share)})`,()=>act(c,'Refund.Record',{paymentId:payment.ref.id,amountMinor:String(share),component:{lineId:part.lineId,itemId:part.itemId},reason:reason.input.value,...(payment.state.method==='cash'?{}:{evidenceRef:evidence.input.value})},payment.version).then(done),'quiet'));
+     }
     }
    }
    const grant=list(c,'grant').find(g=>g.state.billId===bill.ref.id&&g.state.status!=='reconciled');

@@ -55,7 +55,7 @@ export function handle(registry:ModuleRegistry,type:string,handler:Handler):void
  });
 }
 
-const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existing'}>={
+export const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existing'}>={
  'Catalog.Quote':{feature:'catalog',intent:'new'},
  'Session.Open':{feature:'sessions',intent:'new'},
  'Order.Place':{feature:'pos.order',intent:'new'},
@@ -103,6 +103,58 @@ const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_existin
  'Mission.Resume':{feature:'fleet',intent:'finish_existing'},
  'Zone.Reserve':{feature:'fleet',intent:'new'},
  'Zone.Release':{feature:'fleet',intent:'finish_existing'},
+ // Recipes and ingredients are new inventory configuration; consuming/wasting stock records what the kitchen already did, so it never waits on the flag.
+ 'Ingredient.Upsert':{feature:'inventory',intent:'new'},
+ 'Recipe.Publish':{feature:'inventory',intent:'new'},
+ 'Inventory.Consume':{feature:'inventory',intent:'finish_existing'},
+ 'Inventory.RecordWaste':{feature:'inventory',intent:'finish_existing'},
+ 'Inventory.ResolveException':{feature:'inventory',intent:'finish_existing'},
+ // Suppliers and new purchase orders are new procurement work; approving, closing and booking what physically arrived finish existing work.
+ 'Supplier.Upsert':{feature:'procurement',intent:'new'},
+ 'Purchase.Create':{feature:'procurement',intent:'new'},
+ 'Purchase.Approve':{feature:'procurement',intent:'finish_existing'},
+ 'Purchase.Close':{feature:'procurement',intent:'finish_existing'},
+ 'Goods.Receive':{feature:'procurement',intent:'finish_existing'},
+ 'Goods.Return':{feature:'procurement',intent:'finish_existing'},
+ 'Stocktake.Open':{feature:'inventory',intent:'new'},
+ 'Stocktake.Count':{feature:'inventory',intent:'finish_existing'},
+ 'Stocktake.Approve':{feature:'inventory',intent:'finish_existing'},
+ 'Stocktake.Apply':{feature:'inventory',intent:'finish_existing'},
+ 'Staff.Schedule':{feature:'workforce',intent:'new'},
+ 'Staff.ClockIn':{feature:'workforce',intent:'new'},
+ 'Staff.ClockOut':{feature:'workforce',intent:'finish_existing'},
+ 'Staff.ApproveCorrection':{feature:'workforce',intent:'finish_existing'},
+ // New promotions/vouchers and new holds are new work; spending an existing hold, releasing or restoring one finishes existing work.
+ 'Promotion.Publish':{feature:'promotion',intent:'new'},
+ 'Voucher.Issue':{feature:'promotion',intent:'new'},
+ 'Voucher.GrantEscrow':{feature:'promotion',intent:'new'},
+ 'Voucher.Reserve':{feature:'promotion',intent:'new'},
+ 'Voucher.Redeem':{feature:'promotion',intent:'finish_existing'},
+ 'Voucher.Release':{feature:'promotion',intent:'finish_existing'},
+ // Enrolling a customer and spending points are new loyalty work; recording what a settlement earned, reversing it and the data-governance commands finish existing work (never blocked by the flag).
+ 'Customer.Upsert':{feature:'loyalty',intent:'new'},
+ 'Consent.Record':{feature:'loyalty',intent:'new'},
+ 'Loyalty.Redeem':{feature:'loyalty',intent:'new'},
+ 'Loyalty.Earn':{feature:'loyalty',intent:'finish_existing'},
+ 'Loyalty.Reverse':{feature:'loyalty',intent:'finish_existing'},
+ 'Customer.Merge':{feature:'loyalty',intent:'finish_existing'},
+ 'Customer.Erase':{feature:'loyalty',intent:'finish_existing'},
+ // New bookings, waitlist entries/promotions and deposits are new reservation work; confirming, seating, cancelling, applying or returning what exists finishes existing work.
+ 'Booking.Create':{feature:'reservations',intent:'new'},
+ 'Waitlist.Join':{feature:'reservations',intent:'new'},
+ 'Waitlist.Promote':{feature:'reservations',intent:'new'},
+ 'Deposit.Receive':{feature:'reservations',intent:'new'},
+ 'Booking.Confirm':{feature:'reservations',intent:'finish_existing'},
+ 'Booking.CheckIn':{feature:'reservations',intent:'finish_existing'},
+ 'Booking.NoShow':{feature:'reservations',intent:'finish_existing'},
+ 'Booking.Cancel':{feature:'reservations',intent:'finish_existing'},
+ 'Deposit.Apply':{feature:'reservations',intent:'finish_existing'},
+ 'Deposit.Return':{feature:'reservations',intent:'finish_existing'},
+ // Pricing models (W08-T04): quoting a combo/weighed item is catalog work; a buffet is a package order plus a timer, and extending it finishes what was started.
+ 'Combo.Quote':{feature:'catalog',intent:'new'},
+ 'WeighedItem.Quote':{feature:'catalog',intent:'new'},
+ 'Buffet.Start':{feature:'service.models',intent:'new'},
+ 'Buffet.Extend':{feature:'service.models',intent:'finish_existing'},
 };
 /** Ordering channel flags; a guest token's channel is signed (verified in service/guest-token.ts), a tokenless guest order is a paired robot screen. */
 const guestChannels:Record<string,string>={qr:'qr.order',kiosk:'kiosk.order',robot:'robot.order'};

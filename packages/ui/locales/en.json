@@ -22,5 +22,15 @@
   "kiosk": "Ordering kiosk",
   "reports": "Reports",
   "robot-screen": "Robot screen",
-  "robot-setup": "Robot setup"
+  "robot-setup": "Robot setup",
+  "inventory": "Inventory",
+  "recipes": "Recipes",
+  "purchasing": "Purchasing",
+  "stocktake": "Stocktake",
+  "staff": "Staff",
+  "inventory-reports": "Stock reports",
+  "promotions": "Promotions",
+  "customers": "Customers",
+  "reservations": "Reservations",
+  "models": "Service models"
 }
