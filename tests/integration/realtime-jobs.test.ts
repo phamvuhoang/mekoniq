@@ -1,4 +1,4 @@
-import {beforeAll,afterAll,expect,test} from 'vitest';
+import {beforeAll,afterAll,expect,test,vi} from 'vitest';
 import {randomUUID,randomBytes} from 'node:crypto';
 import {setupWave02} from '../support/wave02-db';
 import {withTenant} from '../../apps/cloud-web/src/server/modules/identity/tenant-context';
@@ -10,7 +10,14 @@ let db:Awaited<ReturnType<typeof setupWave02>>;const scope={organizationId:'jobs
 beforeAll(async()=>{db=await setupWave02();await db.admin`INSERT INTO venue(organization_id,id,name) VALUES(${scope.organizationId},${scope.venueId},'Jobs venue')`;});afterAll(async()=>{if(db)await db.close();});
 test('two claimers never own the same lease',async()=>{
  await withTenant(scope,async sql=>{for(let i=0;i<3;i++)await sql`INSERT INTO cloud_job(organization_id,venue_id,id,type,payload) VALUES(${scope.organizationId},${scope.venueId},${'claim-'+i},'test.effect','{}')`;});
- const [a,b]=await Promise.all([claimJobs(scope,'worker-a'),claimJobs(scope,'worker-b')]);expect(a.length+b.length).toBe(3);expect(new Set([...a,...b].map(j=>j.id)).size).toBe(3);
+ const at=Date.now()+1000,[a,b]=await Promise.all([claimJobs(scope,'worker-a',20,at),claimJobs(scope,'worker-b',20,at)]);expect(a.length+b.length).toBe(3);expect(new Set([...a,...b].map(j=>j.id)).size).toBe(3);
+});
+test('claiming without a caller clock follows the database clock, not the app clock',async()=>{
+ await withTenant(scope,async sql=>{await sql`INSERT INTO cloud_job(organization_id,venue_id,id,type,payload) VALUES(${scope.organizationId},${scope.venueId},'skew-0','test.effect','{}')`;});
+ // the app clock runs 5s behind the database: a job stamped by the database must still be due
+ const spy=vi.spyOn(Date,'now').mockReturnValue(Date.now()-5000);let jobs;try{jobs=await claimJobs(scope,'worker-skew');}finally{spy.mockRestore();}
+ expect(jobs.map(j=>j.id)).toEqual(['skew-0']);
+ const [row]=await withTenant(scope,sql=>sql`SELECT lease_until>now()+interval '29 seconds' AS leased FROM cloud_job WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND id='skew-0'`);expect(row!.leased).toBe(true);
 });
 test('expired sending lease reconciles instead of repeating execution',async()=>{
  await withTenant(scope,sql=>sql`INSERT INTO cloud_job(organization_id,venue_id,id,type,payload,status,lease_until,due_at) VALUES(${scope.organizationId},${scope.venueId},'unknown-effect','test.reconcile','{}','sending',now()-interval '1 minute',now()-interval '1 minute')`);

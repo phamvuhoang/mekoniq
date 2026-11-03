@@ -4,7 +4,7 @@ import {claimJobs} from './claim';
 import {defaultJobRegistry,type JobRegistry,type JobResult} from './registry';
 export async function runJobBatch(scope:TenantScope,registry:JobRegistry=defaultJobRegistry(),options:{now?:()=>number;budgetMs?:number}={}){
  const now=options.now??Date.now;const budgetMs=Math.min(options.budgetMs??20000,20000);const started=now();const workerId=randomUUID();
- const jobs=await claimJobs(scope,workerId,20,started);let processed=0;
+ const jobs=await claimJobs(scope,workerId,20,options.now?started:undefined);let processed=0;
  for(const job of jobs){
   const remaining=budgetMs-(now()-started);if(remaining<=0)break;
   const handler=registry.get(job.type);let result:JobResult;
