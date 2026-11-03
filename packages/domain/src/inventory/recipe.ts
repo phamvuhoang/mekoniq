@@ -31,7 +31,7 @@ export function registerRecipes(registry: ModuleRegistry): void {
       if (seen.has(ingredientId)) return fail('DUPLICATE_INGREDIENT');
       seen.add(ingredientId);
       const quantity = text(line.quantity, 'INVALID_QUANTITY'), unit = line.unit === undefined ? String(item.state.baseUnit) : text(line.unit, 'UNKNOWN_UNIT');
-      if (parseDecimal(quantity).n === 0n) return fail('INVALID_QUANTITY');
+      try { if (parseDecimal(quantity).n === 0n) return fail('INVALID_QUANTITY'); } catch { return fail('INVALID_QUANTITY'); }
       return { ingredientId, quantity, unit, baseQuantity: toBase(item.state, quantity, unit) };
     });
     const pointer = find(s, 'recipe-pointer', itemId);

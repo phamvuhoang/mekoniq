@@ -47,8 +47,8 @@ test("a refund restores usage only under the snapshot policy and only once per r
   for (const v of ["V5", "V6"]) await lab.command("cashier", "Voucher.Redeem", { voucherId: v, billId: "b-" + v });
   const restore = (v: string, source: string) => lab.command("manager", "Voucher.Release", { voucherId: v, ref: "b-" + v, reason: "hoàn tiền", reversalSource: source });
   expect((await restore("V5", "refund-1")).code).toBe("REFUND_NOT_FOUND");
-  await lab.seed("refund", "refund-1", { paymentId: "p", amountMinor: "1" });
-  await lab.seed("refund", "refund-2", { paymentId: "p", amountMinor: "1" });
+  await lab.seed("refund", "refund-1", { paymentId: "p", billId: "b-V5", amountMinor: "1" });
+  await lab.seed("refund", "refund-2", { paymentId: "p", billId: "b-V5", amountMinor: "1" });
   expect((await restore("V6", "refund-1")).code).toBe("RESTORE_NOT_ALLOWED");
   expect((await restore("V5", "refund-1")).status).toBe("accepted");
   expect((await restore("V5", "refund-1")).status).toBe("accepted"); // same refund again: nothing more is restored

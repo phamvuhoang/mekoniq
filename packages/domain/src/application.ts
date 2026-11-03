@@ -18,7 +18,12 @@ const couponCommands=new Set(['Catalog.Quote','Order.Place','Order.Amend','Combo
 const manualWeight=(payload:JsonObject)=>[...(Array.isArray(payload.items)?payload.items as JsonObject[]:[]),...(payload.measure?[{measure:payload.measure} as JsonObject]:[])].some(i=>(i?.measure as JsonObject|undefined)?.source==='manual');
 /** Cash commands that act for someone else's shift, approve a variance or adjust a closed shift need a manager's shift.approve on top of shift.write. */
 const approvalCommands=new Set(['Shift.Close','Cash.RecordMovement']);
+/** Any command that carries a keyed weight needs weighed.manual on top of its own rights — including guest ordering, which must never price a line by a number the guest typed. */
 export function requiredPermissions(type:string,payload:JsonObject):string[] {
+ const needed=commandPermissions_(type,payload);
+ return needed.length&&manualWeight(payload)&&!needed.includes('weighed.manual')?[...needed,'weighed.manual']:needed;
+}
+function commandPermissions_(type:string,payload:JsonObject):string[] {
  const base=productionPermissions[type];
  if(!base)return [];
  // Releasing a zone on written evidence (an `unknown` reservation: no proof the robot left) is a manager decision, not the executor's.
@@ -30,7 +35,7 @@ export function requiredPermissions(type:string,payload:JsonObject):string[] {
  if(type==='Booking.NoShow'&&payload.forfeitDeposit===true)return [base,'deposit.manage'];
  if(!couponCommands.has(type))return [base];
  const ids=payload.discountIds;
- return [base,...(ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?['discount.apply']:[]),...(manualWeight(payload)?['weighed.manual']:[])];
+ return [base,...(ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?['discount.apply']:[]),];
 }
 export function createProductionRegistry() {
  const registry=new ModuleRegistry();registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);registerLayout(registry);registerTrialImport(registry);return registry;

@@ -21,6 +21,8 @@ export function registerStocktake(registry: ModuleRegistry): void {
     if (find(s, 'stocktake', id)) return fail('STOCKTAKE_EXISTS');
     const wanted = Array.isArray(c.payload.ingredientIds) ? c.payload.ingredientIds.map(v => text(v)) : all(s, 'stock-item').map(i => i.ref.id);
     if (!wanted.length) return fail('NO_INGREDIENTS');
+    const busy = all(s, 'stocktake').filter(o => o.state.status === 'open' || o.state.status === 'approved').flatMap(o => (o.state.items as unknown as SheetItem[]).filter(i => i.counted === undefined || !i.applied).map(i => i.ingredientId));
+    if (wanted.some(w => busy.includes(w))) return fail('STOCKTAKE_IN_PROGRESS');
     const items = wanted.map((ingredientId): JsonObject => { const i = find(s, 'stock-item', ingredientId) ?? fail('INGREDIENT_UNKNOWN'); return { ingredientId, atCheckpoint: String(i.state.onHand), checkpointSeq: Number(i.state.movementSeq) }; });
     return done([created('StocktakeOpened', 'stocktake', id, { status: 'open', items, openedBy: c.actorRef, openedAt: c.occurredAt })], { stocktakeId: id });
   });

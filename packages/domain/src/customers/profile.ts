@@ -43,6 +43,7 @@ export function registerCustomers(registry: ModuleRegistry): void {
     if (customer.state.status === 'erased') return done([], { customerId: customer.ref.id, duplicate: true });
     const { phone: _p, email: _e, possibleDuplicates: _d, ...rest } = customer.state; void [_p, _e, _d];
     const consents = all(s, 'consent').filter(x => x.state.customerId === customer.ref.id && x.state.granted === true).map(x => changed('ConsentWithdrawn', x, { granted: false, policyVersion: 'erasure', history: [...((x.state.history ?? []) as JsonObject[]), { granted: false, policyVersion: 'erasure', at: c.occurredAt, actorRef: c.actorRef }].slice(-50) }));
-    return done([stateEvent('CustomerErased', 'customer', customer.ref.id, { ...rest, name: '(đã xóa)', status: 'erased', erasedAt: c.occurredAt, erasedBy: c.actorRef, eraseReason: reason, version: customer.version + 1 }), ...consents], { customerId: customer.ref.id });
+    const masked = all(s, 'booking').filter(b => b.state.customerId === customer.ref.id).map(b => { const { phone: _bp, ...kept } = b.state; void _bp; return stateEvent('BookingPersonalDataErased', 'booking', b.ref.id, { ...kept, name: '(đã xóa)', version: b.version + 1 }); });
+    return done([stateEvent('CustomerErased', 'customer', customer.ref.id, { ...rest, name: '(đã xóa)', status: 'erased', erasedAt: c.occurredAt, erasedBy: c.actorRef, eraseReason: reason, version: customer.version + 1 }), ...consents, ...masked], { customerId: customer.ref.id });
   });
 }

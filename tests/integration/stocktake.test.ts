@@ -89,14 +89,14 @@ test("a positive adjustment is valued at the average and flagged as an estimate"
   expect(rows.find(r => r.ingredientId === "rice-raw")).toMatchObject({ onHand: "10500", valueMinor: "210000", avgCostMinorPerBase: "20", costKnown: true });
 }));
 
-test("an adjustment that would push a blocked ingredient below zero is refused", () => lab$(async lab => {
+test("a count adjustment follows the shelf even for an ingredient that blocks negative sales", () => lab$(async lab => {
   await lab.seed("stock-item", "saffron", { name: "Saffron", baseUnit: "g", conversions: {}, negativePolicy: "block", currency: "VND", onHand: "100", valueMinor: "1000", movementSeq: 0 });
   await lab.command("manager", "Stocktake.Open", { stocktakeId: "st-2", ingredientIds: ["saffron"] });
   await lab.command("chef", "Stocktake.Count", { stocktakeId: "st-2", ingredientId: "saffron", counted: "0", expectedVersion: 1 }); // shelf is empty at the checkpoint
   await lab.command("manager", "Inventory.RecordWaste", { sourceEventId: "w", ingredientId: "saffron", quantity: "50", reason: "rơi vãi" }); // 50 g go after it
   await lab.command("owner", "Stocktake.Approve", { stocktakeId: "st-2", expectedVersion: 2 });
-  expect((await lab.command("owner", "Stocktake.Apply", { stocktakeId: "st-2", expectedVersion: 3 })).code).toBe("INSUFFICIENT_STOCK");
-  expect((await lab.state<Item>("stock-item", "saffron")).onHand).toBe("50"); // nothing half-applied
+  expect((await lab.command("owner", "Stocktake.Apply", { stocktakeId: "st-2", expectedVersion: 3 })).status).toBe("accepted");
+  expect((await lab.state<Item>("stock-item", "saffron")).onHand).toBe("-50"); // the books say what the count found
 }));
 
 test("partial apply is recoverable: applied items are skipped when the apply is run again", () => lab$(async lab => {

@@ -74,7 +74,8 @@ export function registerRedemption(registry: ModuleRegistry): void {
     if (status === 'reversed') return source && use.state.reversalSource === source ? done([], { duplicate: true }) : fail('ALREADY_REVERSED');
     if (!source) return fail('ALREADY_REDEEMED');
     if (use.state.restoreOnRefund !== true) return fail('RESTORE_NOT_ALLOWED');
-    if (!find(s, 'refund', source)) return fail('REFUND_NOT_FOUND');
+    const refund = find(s, 'refund', source) ?? fail('REFUND_NOT_FOUND');
+    if (refund.state.billId !== use.state.billId) return fail('REFUND_NOT_FOR_BILL');
     return done([changed('VoucherReversed', use, { status: 'reversed', reversalSource: source, reversedAt: c.occurredAt, releaseReason: reason }), changed('VoucherBalanceChanged', v, restore(v, use))], { useId: use.ref.id });
   });
 }
