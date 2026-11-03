@@ -2,7 +2,7 @@ import type { ModuleRegistry } from '../modules';
 import type { JsonObject } from '../../../contracts/src/index';
 import { hashPayload } from '../../../contracts/src/canonical';
 import { changed, created, done, fail, find, handle, records, text } from '../restaurant-context';
-import { movementId, receive, toBase } from '../inventory/movement';
+import { backfillOf, movementId, receive, toBase } from '../inventory/movement';
 import { lineValue } from './cost';
 import { receivable, type PoLine } from './purchase-order';
 export function registerReceiving(registry: ModuleRegistry): void {
@@ -29,9 +29,9 @@ export function registerReceiving(registry: ModuleRegistry): void {
     for (const l of lines) if (BigInt(l.base) > BigInt(receivable(l.po.ordered, l.po.received, l.po.tolerance))) return fail('OVER_RECEIVED');
     const events = [], out: JsonObject[] = [];
     for (const l of lines) {
-      const value = lineValue(BigInt(l.base), BigInt(l.po.unitCostMinor), BigInt(l.po.perBase)), mid = movementId(id, l.ingredientId, 'receipt'), next = receive(l.item.state, BigInt(l.base), value);
+      const value = lineValue(BigInt(l.base), BigInt(l.po.unitCostMinor), BigInt(l.po.perBase)), mid = movementId(id, l.ingredientId, 'receipt'), next = receive(l.item.state, BigInt(l.base), value), backfill = backfillOf(l.item.state, BigInt(l.base), value);
       out.push({ ingredientId: l.ingredientId, baseQuantity: l.base, valueMinor: String(value), returned: '0', movementId: mid });
-      events.push(created('StockMovementRecorded', 'stock-movement', mid, { kind: 'receipt', ingredientId: l.ingredientId, sourceEventId: id, deltaBase: l.base, valueMinor: String(value), seq: next.movementSeq!, actorRef: c.actorRef, occurredAt: c.occurredAt }), changed('StockLevelChanged', l.item, next));
+      events.push(created('StockMovementRecorded', 'stock-movement', mid, { kind: 'receipt', ingredientId: l.ingredientId, sourceEventId: id, deltaBase: l.base, valueMinor: String(value), ...(backfill > 0n ? { backfillMinor: String(backfill) } : {}), seq: next.movementSeq!, actorRef: c.actorRef, occurredAt: c.occurredAt }), changed('StockLevelChanged', l.item, next));
     }
     const updated = poLines.map(p => { const l = lines.find(x => x.ingredientId === p.ingredientId); return l ? { ...p, received: String(BigInt(p.received) + BigInt(l.base)) } : p; });
     const full = updated.every(p => BigInt(p.received) >= BigInt(p.ordered));

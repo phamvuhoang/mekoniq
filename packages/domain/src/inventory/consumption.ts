@@ -56,6 +56,23 @@ export function registerConsumption(registry: ModuleRegistry): void {
     const r = consumeCore(c, s, levels, { source, version, portions, historical });
     return done([...r.events, ...levelEvents(s, levels)], r.value);
   });
+  // Inventory.ResolveException {exceptionId,disposition:'consume'|'waive',reason,expectedVersion}: closes a stock exception (cooked food whose stock could not be booked). `consume` books the
+  // consumption now from the SAME source and recipe version (it fails again, visibly, while the stock is still short); `waive` closes it without any stock movement. Either way the
+  // exception keeps its source, recipe and quantity, plus who closed it, why, and the consumption it became.
+  handle(registry, 'Inventory.ResolveException', (c, s) => {
+    const exc = find(s, 'stock-exception', text(c.payload.exceptionId)) ?? fail('NOT_FOUND'), reason = note(c.payload.reason, 'REASON_REQUIRED');
+    const expected = c.expectedVersion ?? c.payload.expectedVersion;
+    if (expected === undefined) return fail('VERSION_REQUIRED');
+    if (expected !== exc.version) return fail('VERSION_CONFLICT');
+    if (exc.state.status !== 'open') return fail('EXCEPTION_RESOLVED');
+    const disposition = c.payload.disposition;
+    if (disposition !== 'consume' && disposition !== 'waive') return fail('INVALID_DISPOSITION');
+    const close = { status: 'resolved', disposition, resolvedBy: c.actorRef, resolvedAt: c.occurredAt, resolveReason: reason };
+    if (disposition === 'waive') return done([changed('StockExceptionResolved', exc, close)], { exceptionId: exc.ref.id });
+    const { sourceEventId, recipeVersion, quantity, status: _s, openedAt: _o, reason: _r, version: _v, ...meta } = exc.state; void [_s, _o, _r, _v];
+    const levels: Levels = new Map(), r = consumeCore(c, s, levels, { source: String(sourceEventId), version: String(recipeVersion), portions: BigInt(String(quantity)), historical: false, meta: meta as JsonObject });
+    return done([...r.events, ...levelEvents(s, levels), changed('StockExceptionResolved', exc, { ...close, consumptionId: sourceId('cons', String(sourceEventId)) })], { exceptionId: exc.ref.id });
+  });
   // Inventory.RecordWaste: (a) {sourceEventId,ingredientId,quantity,unit?,reason}: raw loss (spoilage) deducts stock; (b) {sourceEventId,consumedSourceEventId,quantity:portions,reason}:
   // a dish that was already prepared is cancelled/thrown away. The stock left at preparation, so this reclassifies cost as waste and NEVER puts anything back.
   handle(registry, 'Inventory.RecordWaste', (c, s) => {

@@ -70,6 +70,8 @@ export function registerRedemption(registry: ModuleRegistry): void {
     const reason = note(c.payload.reason, 'REASON_REQUIRED'), v = find(s, 'voucher', text(c.payload.voucherId)) ?? fail('NOT_FOUND'), use = useOf(s, v.ref.id, text(c.payload.ref)) ?? fail('VOUCHER_NOT_HELD');
     const status = String(use.state.status), source = typeof c.payload.reversalSource === 'string' ? c.payload.reversalSource : undefined;
     if (status === 'released') return done([], { duplicate: true });
+    // A hold that already discounted an order is spent with it: it comes back only if that order was cancelled (otherwise release + re-reserve would discount twice).
+    if (status === 'reserved' && use.state.orderId !== undefined && find(s, 'order', String(use.state.orderId))?.state.status !== 'cancelled') return fail('VOUCHER_APPLIED_TO_ORDER');
     if (status === 'reserved') return done([changed('VoucherReleased', use, { status: 'released', releasedAt: c.occurredAt, releaseReason: reason }), changed('VoucherBalanceChanged', v, restore(v, use))], { useId: use.ref.id });
     if (status === 'reversed') return source && use.state.reversalSource === source ? done([], { duplicate: true }) : fail('ALREADY_REVERSED');
     if (!source) return fail('ALREADY_REDEEMED');

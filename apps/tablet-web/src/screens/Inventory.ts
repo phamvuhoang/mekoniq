@@ -4,7 +4,12 @@ export function Inventory(c:ScreenContext) {
  const root=el('div',undefined,'screen-grid'),can=(p:string)=>c.session.permissions.includes('*')||c.session.permissions.includes(p);
  // Cooked food whose stock could not be booked (blocked ingredient, missing ingredient/recipe line) stays visible here until someone resolves it by counting or receiving stock.
  for(const x of list(c,'stock-exception').filter(e=>e.state.status==='open')){
-  const row=summary(x);row.append(el('p',`${tr(c,'Chưa trừ được kho','Stock not booked')}: ${String(x.state.reason)} · ${String(x.state.sourceEventId)}`,'warning'));root.append(row);
+  const row=summary(x);row.append(el('p',`${tr(c,'Chưa trừ được kho','Stock not booked')}: ${String(x.state.reason)} · ${String(x.state.sourceEventId)}`,'warning'));
+  if(can('inventory.write')){
+   const why=field(tr(c,'Lý do xử lý (bắt buộc)','Reason (required)')),resolve=(disposition:string)=>act(c,'Inventory.ResolveException',{exceptionId:x.ref.id,disposition,reason:why.input.value},x.version).then(()=>{});
+   row.append(why.node,button(tr(c,'Trừ kho bây giờ','Book the stock now'),()=>resolve('consume')),button(tr(c,'Bỏ qua, không trừ','Close without booking'),()=>resolve('waive'),'quiet'));
+  }
+  root.append(row);
  }
  const items=list(c,'stock-item').sort((a,b)=>a.ref.id.localeCompare(b.ref.id));
  for(const item of items){

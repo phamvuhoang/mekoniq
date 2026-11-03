@@ -25,10 +25,13 @@ export function issue(item: JsonObject, qty: bigint): { costMinor: bigint; costK
  * Stock enters with the value that came with it (receipts, positive adjustments). Units that only repay a negative balance were already sold, so their share of the incoming
  * value is not stock value: only the units that remain on the shelf carry value, at the incoming unit cost. A balance still <= 0 afterwards holds no value.
  */
+/** The part of the incoming value that only pays for units already sold (the cost those sales could not know): it goes to the cost ledger, not to the shelf. */
+export function backfillOf(item: JsonObject, qty: bigint, valueMinor: bigint): bigint {
+  const onHand = big(item.onHand), owed = onHand < 0n ? (qty < -onHand ? qty : -onHand) : 0n;
+  return qty === 0n ? 0n : (valueMinor * owed * 2n + qty) / (2n * qty);
+}
 export function receive(item: JsonObject, qty: bigint, valueMinor: bigint): JsonObject {
-  const onHand = big(item.onHand), after = onHand + qty;
-  const owed = onHand < 0n ? (qty < -onHand ? qty : -onHand) : 0n;
-  const backfill = qty === 0n ? 0n : (valueMinor * owed * 2n + qty) / (2n * qty);
+  const onHand = big(item.onHand), after = onHand + qty, backfill = backfillOf(item, qty, valueMinor);
   const value = after <= 0n ? 0n : (onHand < 0n ? 0n : big(item.valueMinor)) + valueMinor - backfill;
   return { onHand: String(after), valueMinor: String(value), movementSeq: Number(item.movementSeq ?? 0) + 1 };
 }

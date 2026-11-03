@@ -88,7 +88,7 @@ export function quoteOrder(i: QuoteInput): Quote {
       charges: steps.flatMap(by), subtotalMinor: money(l.gross), discountMinor: money(discount), serviceMinor: money(serviceMinor), taxMinor: money(inclusive ? 0n : taxMinor), taxIncludedMinor: money(inclusive ? taxMinor : 0n),
       totalMinor: money(l.gross - discount + added),
       pricing: { profileRevision: Number(menu.version), policyRevision: i.policyRevision, steps, discountOrder: String(profile.discountOrder), tax: l.tax ? { id: l.tax.id!, name: l.tax.name!, rateBps: l.tax.rateBps!, inclusive } : null, service: service ? { rateBps: service.rateBps!, taxable: service.taxable === true } : null, discountIds: ids },
-      ...(l.measure ? { measure: l.measure } : {}), ...(l.entry.combo ? { components: comboComponents(l.entry, catalog, l.count, money(l.gross), money(discount)) as unknown as JsonObject[] } : {}),
+      ...(l.measure ? { measure: l.measure } : {}), ...(l.entry.combo ? { components: comboComponents(l.entry, catalog, l.count, money(l.gross), money(discount)) as unknown as JsonObject[], comboCount: l.count, comboStockMode: (l.entry.combo as JsonObject).stockMode === 'whole' ? 'whole' : 'parts' } : {}),
       menuVersion: menu.version!, index: l.index,
     } satisfies JsonObject;
   });

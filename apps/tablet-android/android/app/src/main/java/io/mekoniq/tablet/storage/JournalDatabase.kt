@@ -720,6 +720,16 @@ class JournalDatabase(
         require(version>=existing.getInt("version")) { "STALE_AGGREGATE_PROJECTION" }
         db.execSQL("INSERT OR REPLACE INTO aggregate_snapshot VALUES(?,?,?,?,?,?)",arrayOf<Any>(org,venue,kind,aggregateId,version,state.toString()))
       }
+      // A projection is the complete set this device may see now. Personal-data records the coordinator no longer sends (the right was revoked) are removed from the local copy too,
+      // unless they carry unsynced local edits (those stay until they sync or are quarantined).
+      val sent=projected.map {it.getJSONObject("ref").getString("kind")+"/"+it.getJSONObject("ref").getString("id")}.toSet()
+      val personal=listOf("customer","consent","loyalty-account","booking","waitlist","deposit","deposit-application")
+      val stale=ArrayList<Pair<String,String>>()
+      db.rawQuery("SELECT kind,id FROM aggregate_snapshot WHERE organization_id=? AND venue_id=? AND kind IN (${personal.joinToString(",") {"?"}})",arrayOf(org,venue)+personal.toTypedArray()).use {while(it.moveToNext())if(it.getString(0)+"/"+it.getString(1) !in sent)stale.add(it.getString(0) to it.getString(1))}
+      for((kind,aggregateId) in stale) {
+        val dirty=db.rawQuery("SELECT 1 FROM local_dirty WHERE kind=? AND id=?",arrayOf(kind,aggregateId)).use {it.moveToFirst()}
+        if(!dirty)db.execSQL("DELETE FROM aggregate_snapshot WHERE organization_id=? AND venue_id=? AND kind=? AND id=?",arrayOf(org,venue,kind,aggregateId))
+      }
       db.execSQL("UPDATE authority SET policy_revision=? WHERE organization_id=? AND venue_id=?",arrayOf(policy,org,venue))
       db.execSQL("INSERT OR REPLACE INTO projection_cursor VALUES(?,?,?,?)",arrayOf(org,venue,bundle.getInt("coordinatorEpoch"),bundle.getInt("revision")))
       db.execSQL("UPDATE authority SET snapshot_revision=snapshot_revision+1 WHERE organization_id=? AND venue_id=?",arrayOf(org,venue))

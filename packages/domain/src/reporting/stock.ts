@@ -3,7 +3,7 @@ import { stockValuation } from '../inventory/valuation';
 import { big, dayOf, ofKind, undatedFacts } from './sales';
 const COLUMNS = ['kind', 'id', 'businessDate', 'effectiveAt', 'ingredientId', 'movementKind', 'deltaBase', 'valueMinor', 'costKnown', 'costEstimated', 'reference'];
 /** Signed stock value of a movement: receipts/returns/adjustments carry `valueMinor`, consumption and waste carry the cost that left (`costMinor`). */
-export const movementValue = (m: Snapshot): string => String(m.state.valueMinor ?? (m.state.costMinor === undefined ? '0' : -big(m.state.costMinor)));
+export const movementValue = (m: Snapshot): string => String(m.state.valueMinor === undefined ? (m.state.costMinor === undefined ? 0n : -big(m.state.costMinor)) : big(m.state.valueMinor) - big(m.state.backfillMinor)); // value that only repaid sold units is cost, not shelf value
 /**
  * Stock movements of the business date, current balances at weighted-average value, and a ledger check per ingredient: onHand must equal the sum of ALL its movements
  * (`driftBase` ≠ 0 means a balance has no movement behind it — e.g. an opening balance loaded without a receipt — and is shown, never hidden).

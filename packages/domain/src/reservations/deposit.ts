@@ -29,6 +29,9 @@ export function registerDeposits(registry: ModuleRegistry): void {
     if (!existing && refKey && all(s, 'deposit').some(d => d.state.method === 'transfer_manual' && d.state.referenceKey === refKey && d.state.status !== 'failed')) return fail('DEPOSIT_REFERENCE_REUSED');
     if (existing) {
       if (existing.state.amountMinor !== minor || existing.state.method !== method || existing.state.bookingId !== bookingId) return fail('DEPOSIT_CONFLICT');
+      // a resolve confirms the receipt as it was recorded: another reference or currency would skip the uniqueness check of a new receipt
+      if (refKey !== undefined && refKey !== existing.state.referenceKey) return fail('DEPOSIT_CONFLICT');
+      if (c.payload.currency !== undefined && c.payload.currency !== (existing.state.currency ?? 'VND')) return fail('DEPOSIT_CONFLICT');
       if (existing.state.status === status) return done([], { depositId: id, duplicate: true });
       if (!['pending', 'unknown'].includes(String(existing.state.status))) return fail('DEPOSIT_CONFLICT');
       // a cash deposit that turns out paid enters the drawer now, exactly as if it had been paid at once
@@ -68,6 +71,7 @@ export function registerDeposits(registry: ModuleRegistry): void {
     if (method === 'cash') {
       const open = (id: unknown) => all(s, 'shift').find(x => x.ref.id === id && x.state.status === 'open');
       const shift = open(dep.state.shiftId) ?? all(s, 'shift').find(x => x.state.cashierId === c.actorRef && x.state.status === 'open') ?? fail('ACTIVE_SHIFT_REQUIRED');
+      if (String(shift.state.currency ?? 'VND') !== String(dep.state.currency ?? 'VND')) return fail('CURRENCY_MISMATCH'); // a USD obligation is not paid out of a VND drawer
       if (big(minor) > big(shiftLedger(s, shift).expectedMinor)) return fail('INSUFFICIENT_CASH');
       events.push(...drawer(s, shift, c, 'out', minor, `deposit return ${dep.ref.id}`, dep.ref.id));
     }

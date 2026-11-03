@@ -30,8 +30,9 @@ export function resolvePromotions(c: CommandEnvelope, snapshots: Snapshot[], ctx
     if (!voucher) return fail('PROMOTION_REQUIRES_VOUCHER');
     if (gated.some(id => voucher.state.promotionId !== id)) return fail('PROMOTION_REQUIRES_VOUCHER');
     // The hold must be the one of THIS transaction: an order names its session (or, on an amendment, its order's session); only a price preview, which has neither, takes the caller's voucherRef.
-    const orderSession = typeof c.payload.orderId === 'string' ? find(snapshots, 'order', c.payload.orderId)?.state.sessionId : undefined;
-    const ref = typeof c.payload.sessionId === 'string' ? c.payload.sessionId : typeof orderSession === 'string' ? orderSession : c.payload.voucherRef;
+    const order = typeof c.payload.orderId === 'string' ? find(snapshots, 'order', c.payload.orderId) : undefined;
+    if (order && c.payload.sessionId !== undefined && c.payload.sessionId !== order.state.sessionId) return fail('SESSION_MISMATCH'); // an amendment belongs to its order's session, whatever the payload says
+    const ref = order ? order.state.sessionId : typeof c.payload.sessionId === 'string' ? c.payload.sessionId : c.payload.voucherRef;
     const held = all(snapshots, 'voucher-use').find(u => u.state.voucherId === voucher.ref.id && ['reserved', 'redeemed'].includes(String(u.state.status)) && (u.state.ref === ref || u.state.billId === ref));
     if (!held) return fail('VOUCHER_NOT_HELD');
     if (uses) { if (held.state.orderId !== undefined) return fail('VOUCHER_ALREADY_APPLIED'); uses.push(held); } // one use discounts one order

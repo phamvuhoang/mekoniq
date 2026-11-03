@@ -3,7 +3,7 @@ import type { CommandEnvelope, Decision, JsonObject, Snapshot } from '../../../c
 import { currentMenu } from '../catalog/menu';
 import { quoteForCommand, summarize } from '../pricing/quote';
 import { assertMutableOrder, lineReferences } from './order';
-import { newOrderLines, sessionForOrder } from './commands';
+import { newOrderLines, sessionForOrder, ticketsFor } from './commands';
 import { cancelOrderLine } from './amendment';
 import { amount, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
 /** Order.Place for a session/table the caller already resolved; `extra` (e.g. guest channel) is recorded on the order. */
@@ -39,11 +39,12 @@ export function registerOrders(registry:ModuleRegistry):void {
   const order=requireState(s,'order',text(c.payload.orderId)); expectVersion(c,order); assertMutableOrder(order.state);
   const reason=text(c.payload.reason,'REASON_REQUIRED');
   const lines=lineReferences(order.state);
-  const portions=lines.map(line=>requireState(s,'fulfillment',String(line.id)));
+  const portions=lines.map(line=>requireState(s,'fulfillment',String(line.id))), tickets=lines.flatMap(line=>ticketsFor(s,String(line.id)));
+  if(tickets.some(t=>BigInt(String(t.state.prepared??'0'))>0n)) return fail('REQUIRES_DISPOSITION'); // food a station already made, even a part of a combo, needs an explicit decision
   if(portions.some(p=>BigInt(String(p.state.allocated))>0n)) return fail('FULFILLMENT_ACTIVE');
   if(portions.some(p=>BigInt(String(p.state.ready))+BigInt(String(p.state.served))+BigInt(String(p.state.held ?? '0'))>0n)) return fail('REQUIRES_DISPOSITION');
   const session=sessionForOrder(s,order.state);
-  const events=[changed('OrderCancelled',order,{status:'cancelled',cancellationReason:reason}),...portions.map(p=>changed('FulfillmentCancelled',p,{status:'cancelled'})),...lines.map(line=>changed('KitchenTicketCancelled',requireState(s,'kitchen-ticket',String(line.id)),{status:'cancelled'}))];
+  const events=[changed('OrderCancelled',order,{status:'cancelled',cancellationReason:reason}),...portions.map(p=>changed('FulfillmentCancelled',p,{status:'cancelled'})),...tickets.map(t=>changed('KitchenTicketCancelled',t,{status:'cancelled'}))];
   if(session) events.push(changed('SessionOrderCancelled',session,{}));
   return done(events,{orderId:order.ref.id});
  });

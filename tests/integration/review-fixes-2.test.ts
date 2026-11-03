@@ -95,7 +95,9 @@ test("#6 a combo's ticket names its parts and the parts' recipes are consumed", 
   const placed = await lab.command("cashier", "Order.Place", { sessionId: "s1", tableId: "table-1", menuVersion: 2, items: [{ itemId: "set", quantity: "2" }] });
   expect(placed.status, String(placed.code)).toBe("accepted");
   const line = String((placed.value.lineIds as string[])[0]);
-  expect((await lab.state<{ components: { itemId: string; quantity: string }[] }>("kitchen-ticket", line)).components.map(p => [p.itemId, p.quantity])).toEqual([["burger", "2"], ["tea", "4"]]);
+  // the combo is made at two stations: each station's ticket names its own parts (burger at the kitchen, tea at the bar)
+  const parts = (await (await lab.getStore("coordinator")).snapshots(lab.scope)).filter(t => t.ref.kind === "kitchen-ticket" && t.state.lineId === line).flatMap(t => t.state.components as { itemId: string; quantity: string }[]);
+  expect(parts.map(p => [p.itemId, p.quantity]).sort()).toEqual([["burger", "2"], ["tea", "4"]]);
   expect((await lab.command("chef", "Kitchen.Ready", { lineId: line, stationId: "kitchen", quantity: "2", expectedVersion: 1 })).status).toBe("accepted");
   expect((await lab.state<Item>("stock-item", "patty")).onHand).toBe("98");
 }));

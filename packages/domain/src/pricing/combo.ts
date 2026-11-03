@@ -20,3 +20,18 @@ export function componentRefundMinor(line: { components: ComboPart[] }, itemId: 
   if (!part) throw new Error('COMPONENT_NOT_FOUND');
   return String(BigInt(part.shareMinor) - BigInt(part.discountMinor));
 }
+
+const nonNeg = (v: unknown): bigint => BigInt(String(v ?? '0'));
+/**
+ * The parts of a combo line AS SOLD NOW: the frozen parts are for `comboCount` combos at the quoted price; what is live is the line's net value (cancellations removed, a split child's
+ * share) and its live quantity. Part shares and discounts are re-allocated over the frozen proportions by largest remainder, so the live parts always add up to the live line.
+ */
+export function liveComponents(line: JsonObject): ComboPart[] {
+  const parts = (line.components ?? []) as unknown as ComboPart[];
+  if (!parts.length) return [];
+  const count = nonNeg(line.comboCount ?? line.quantity) || 1n, live = nonNeg(line.quantity) - nonNeg(line.cancelledQuantity);
+  const net = (key: string, fallback?: string) => nonNeg(line[key] ?? (fallback ? line[fallback] : 0)) - nonNeg((line.cancelled as JsonObject | undefined)?.[key]);
+  const weights = parts.map(p => nonNeg(p.shareMinor)), w = weights.some(x => x > 0n) ? weights : parts.map(() => 1n);
+  const shares = allocateMinor(String(net('subtotalMinor', 'totalMinor')), w), discounts = allocateMinor(String(net('discountMinor')), shares.some(x => BigInt(x) > 0n) ? shares.map(BigInt) : w);
+  return parts.map((p, i) => ({ ...p, quantity: String(nonNeg(p.quantity) * live / count), shareMinor: shares[i]!, discountMinor: discounts[i]! }));
+}

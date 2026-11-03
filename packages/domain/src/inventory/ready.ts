@@ -11,20 +11,22 @@ const inventoryOn = (c: CommandEnvelope, s: Snapshot[]): boolean => { try { requ
  */
 export function consumeOnReady(c: CommandEnvelope, s: Snapshot[], ticket: Snapshot, ready: bigint, prepared: bigint): DomainEvent[] {
   if (!inventoryOn(c, s)) return [];
-  const itemId = String(ticket.state.itemId ?? ''), ordered = big(ticket.state.quantity), base = `ready:${ticket.ref.id}:${prepared}`;
-  const parts = ((ticket.state.components ?? []) as JsonObject[]).map(p => ({ itemId: String(p.itemId), perUnit: big(p.quantity) / (ordered || 1n) }));
+  const itemId = String(ticket.state.itemId ?? ''), root = String(ticket.state.lineId ?? ticket.ref.id), base = `ready:${ticket.ref.id}:${prepared}`;
+  // The parts' quantity per ONE combo is frozen on the ticket (perUnit), so cancelling some combos later never changes what one combo uses.
+  const whole = ticket.state.stockMode === 'whole';
+  const parts = whole ? [] : ((ticket.state.components ?? []) as JsonObject[]).map(p => ({ itemId: String(p.itemId), perUnit: big(p.perUnit ?? 1) }));
   const targets = [{ itemId, source: base, perUnit: 1n, componentOf: undefined as string | undefined }, ...parts.map(p => ({ ...p, source: `${base}:${p.itemId}`, componentOf: p.itemId }))].filter(t => t.itemId);
   const levels: Levels = new Map(), events: DomainEvent[] = [];
   for (const t of targets) {
     const pointer = find(s, 'recipe-pointer', t.itemId);
-    if (!pointer) continue; // an item without a recipe is not tracked
-    const portions = ready * t.perUnit * 1000n;
+    if (!pointer) continue; // an item without a recipe is not tracked (that is different from a recipe that failed: see the exception below)
+    const portions = ready * t.perUnit * 1000n, meta: JsonObject = { lineId: root, ticketId: ticket.ref.id, ticketItemId: t.itemId, ...(t.componentOf ? { componentOf: t.componentOf } : {}), unitsMilli: String(ready * 1000n), preparedAfter: String(prepared) };
     try {
-      events.push(...consumeCore(c, s, levels, { source: t.source, version: String(pointer.state.recipeVersion), portions, historical: false, meta: { lineId: ticket.ref.id, ticketItemId: itemId, ...(t.componentOf ? { componentOf: t.componentOf } : {}), unitsMilli: String(ready * 1000n), preparedAfter: String(prepared) } }).events);
+      events.push(...consumeCore(c, s, levels, { source: t.source, version: String(pointer.state.recipeVersion), portions, historical: false, meta }).events);
     } catch (e) {
       if (!(e instanceof DomainFault)) throw e;
       const id = sourceId('exc', t.source);
-      if (!find(s, 'stock-exception', id)) events.push(created('StockExceptionOpened', 'stock-exception', id, { sourceEventId: t.source, recipeVersion: String(pointer.state.recipeVersion), quantity: String(portions), reason: e.message, status: 'open', openedAt: c.occurredAt, lineId: ticket.ref.id }));
+      if (!find(s, 'stock-exception', id)) events.push(created('StockExceptionOpened', 'stock-exception', id, { sourceEventId: t.source, recipeVersion: String(pointer.state.recipeVersion), quantity: String(portions), reason: e.message, status: 'open', openedAt: c.occurredAt, ...meta }));
     }
   }
   return [...events, ...levelEvents(s, levels)];

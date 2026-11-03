@@ -68,7 +68,7 @@ export const commandPermissions:Record<string,string>={
  // Map binding is venue robot configuration (manager); zone reservations are asked/released by the robot executor (manager may release with evidence).
  'Robot.BindMap':'robot.configure','Zone.Reserve':'robot.traffic','Zone.Release':'robot.traffic',
  // Inventory (W07): recipes and the ingredient master are manager decisions; the kitchen records consumption/waste it caused.
- 'Ingredient.Upsert':'inventory.write','Recipe.Publish':'inventory.write','Inventory.Consume':'inventory.consume','Inventory.RecordWaste':'inventory.consume',
+ 'Ingredient.Upsert':'inventory.write','Recipe.Publish':'inventory.write','Inventory.Consume':'inventory.consume','Inventory.RecordWaste':'inventory.consume','Inventory.ResolveException':'inventory.write',
  // Procurement (W07-T02): raising and approving an order and booking a delivery are separate permissions.
  'Supplier.Upsert':'procurement.write','Purchase.Create':'procurement.write','Purchase.Approve':'procurement.approve','Purchase.Close':'procurement.approve','Goods.Receive':'procurement.receive','Goods.Return':'procurement.receive',
  // Stocktake (W07-T03): counting is a floor task, approving and applying the difference is not.

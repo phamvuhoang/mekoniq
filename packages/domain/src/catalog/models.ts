@@ -23,7 +23,9 @@ export function validatedModels(item: JsonObject, items: JsonObject[]): JsonObje
       if (!target || target.id === item.id || target.combo !== undefined || target.weighed !== undefined || target.buffet !== undefined || !/^[1-9][0-9]{0,3}$/.test(String(p.quantity))) return bad();
       return { itemId: String(p.itemId), quantity: String(p.quantity) };
     });
-    return new Set(components.map(p => p.itemId)).size === components.length ? { combo: { components } } : bad();
+    // stockMode says what the combo's OWN recipe means: 'parts' (default) = the parts' recipes are consumed and the combo recipe only declares extras (packaging); 'whole' = the combo recipe is the whole dish and the parts' recipes are not consumed.
+    if (c.stockMode !== undefined && c.stockMode !== 'parts' && c.stockMode !== 'whole') return bad();
+    return new Set(components.map(p => p.itemId)).size === components.length ? { combo: { components, stockMode: c.stockMode === 'whole' ? 'whole' : 'parts' } } : bad();
   }
   if (item.buffet !== undefined) {
     const b = record(item.buffet), extra = ref(b.extendItemId);

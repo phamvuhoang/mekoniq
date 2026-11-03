@@ -30,12 +30,15 @@ export function registerCustomers(registry: ModuleRegistry): void {
     if (sourceId === targetId) return fail('INVALID_MERGE');
     const source = live(find(s, 'customer', sourceId) ?? fail('CUSTOMER_NOT_FOUND'));
     live(find(s, 'customer', targetId) ?? fail('CUSTOMER_NOT_FOUND'));
-    const from = accountOf(s, sourceId), to = accountOf(s, targetId), moved = BigInt(from.state.balance as string), events: DomainEvent[] = [];
-    if (moved !== 0n) {
-      const e = (customerId: string, kind: string, points: bigint) => created('LoyaltyTransferred', 'loyalty-entry', entryId(customerId, `merge:${sourceId}>${targetId}`, kind), { customerId, kind, points: String(points), sourceEventId: `merge:${sourceId}>${targetId}`, status: 'posted', actorRef: c.actorRef, occurredAt: c.occurredAt });
-      events.push(e(sourceId, 'transfer_out', -moved), e(targetId, 'transfer_in', moved), saveAccount(from, { balance: '0' }), saveAccount(to, { balance: String(BigInt(to.state.balance as string) + moved), earned: String(BigInt(to.state.earned as string) + moved) }));
+    const from = accountOf(s, sourceId), to = accountOf(s, targetId), moved = BigInt(from.state.balance as string), movedPending = BigInt(String(from.state.pending ?? '0')), events: DomainEvent[] = [];
+    // Both the spendable balance and any chain-pending points move: a later refund reverses against whoever holds them now (Loyalty.Reverse follows the merge link).
+    if (moved !== 0n || movedPending !== 0n) {
+      const e = (customerId: string, kind: string, points: bigint, status: string) => created('LoyaltyTransferred', 'loyalty-entry', entryId(customerId, `merge:${sourceId}>${targetId}:${status}`, kind), { customerId, kind, points: String(points), sourceEventId: `merge:${sourceId}>${targetId}`, status, actorRef: c.actorRef, occurredAt: c.occurredAt });
+      if (moved !== 0n) events.push(e(sourceId, 'transfer_out', -moved, 'posted'), e(targetId, 'transfer_in', moved, 'posted'));
+      if (movedPending !== 0n) events.push(e(sourceId, 'transfer_out', -movedPending, 'pending'), e(targetId, 'transfer_in', movedPending, 'pending'));
+      events.push(saveAccount(from, { balance: '0', pending: '0' }), saveAccount(to, { balance: String(BigInt(to.state.balance as string) + moved), earned: String(BigInt(to.state.earned as string) + moved), pending: String(BigInt(String(to.state.pending ?? '0')) + movedPending), ...(to.version === 0 ? { scope: String(from.state.scope ?? 'venue') } : {}) }));
     }
-    return done([changed('CustomersMerged', source, { status: 'merged', mergedInto: targetId, mergedAt: c.occurredAt, mergedBy: c.actorRef, mergeReason: reason }), ...events], { sourceId, targetId, movedPoints: String(moved) });
+    return done([changed('CustomersMerged', source, { status: 'merged', mergedInto: targetId, mergedAt: c.occurredAt, mergedBy: c.actorRef, mergeReason: reason }), ...events], { sourceId, targetId, movedPoints: String(moved), movedPending: String(movedPending) });
   });
   // Customer.Erase {customerId,reason}: a data-subject request. Personal data and consents go; the loyalty ledger and balance stay as financial history under the customer id alone.
   handle(registry, 'Customer.Erase', (c, s) => {

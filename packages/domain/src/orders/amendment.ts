@@ -4,7 +4,7 @@ import { allocateMinor } from '../shared/money';
 import { summarize } from '../pricing/quote';
 import { amount, changed, created, done, expectVersion, fail, handle, quantity, requireState, stableId, text } from '../restaurant-context';
 import { assertMutableOrder, lineReferences } from './order';
-import { sessionForOrder } from './commands';
+import { sessionForOrder, ticketsFor } from './commands';
 import { wasteOnDispose } from '../inventory/ready';
 
 const AMOUNT_KEYS = ['subtotalMinor', 'discountMinor', 'serviceMinor', 'taxMinor', 'taxIncludedMinor'] as const;
@@ -25,7 +25,7 @@ export function cancelledAmounts(line: JsonObject, cancelled: bigint): JsonObjec
  */
 export function cancelOrderLine(c: CommandEnvelope, s: Snapshot[]): Decision {
   if (c.payload.items !== undefined || c.payload.discountIds !== undefined) return fail('AMBIGUOUS_AMENDMENT');
-  const lineId = text(c.payload.lineId), portion = requireState(s, 'fulfillment', lineId), ticket = requireState(s, 'kitchen-ticket', lineId);
+  const lineId = text(c.payload.lineId), portion = requireState(s, 'fulfillment', lineId), ticket = requireState(s, 'kitchen-ticket', lineId), siblings = ticketsFor(s, lineId).filter(t => t.ref.id !== lineId);
   const order = requireState(s, 'order', String(portion.state.orderId));
   if (c.payload.orderId !== undefined && c.payload.orderId !== order.ref.id) return fail('NOT_FOUND');
   expectVersion(c, order); assertMutableOrder(order.state);
@@ -40,6 +40,8 @@ export function cancelOrderLine(c: CommandEnvelope, s: Snapshot[]): Decision {
   if (free < 0n) return fail('ALLOCATION_CORRUPT');
   const prepared = n < free ? n : free, unprepared = n - prepared;
   if (unprepared > big(ticket.state, 'quantity') - big(ticket.state, 'prepared')) return fail('FULFILLMENT_ACTIVE');
+  // every other station of a combo must still be able to drop those combos too (one that already made them must first say what happens to the food)
+  if (siblings.some(t => unprepared > big(t.state, 'quantity') - big(t.state, 'prepared'))) return fail('FULFILLMENT_ACTIVE');
 
   const now = cancelledAmounts(line, after), then = cancelledAmounts(line, before);
   const reduced = BigInt(String(now.totalMinor)) - BigInt(String(then.totalMinor));
@@ -59,6 +61,12 @@ export function cancelOrderLine(c: CommandEnvelope, s: Snapshot[]): Decision {
     changed('KitchenTicketReduced', ticket, { quantity: String(kitchenQuantity), cancelledQuantity: String(big(ticket.state, 'cancelledQuantity') + n), cancelledPrepared: String(cancelledPrepared), status: wanted === 0n ? 'cancelled' : big(ticket.state, 'prepared') === kitchenQuantity ? 'ready' : ticket.state.status }),
     changed('FulfillmentLineReduced', portion, { quantity: String(big(portion.state, 'quantity') - unprepared), ready: String(big(portion.state, 'ready') - prepared), held: String(big(portion.state, 'held') + prepared), cancelledQuantity: String(big(portion.state, 'cancelledQuantity') + n), ...(wanted === 0n ? { status: 'cancelled' } : {}) }),
   ];
+  // the other stations' tickets of a combo shrink with it, and each station that has not seen the cancellation gets its own delta ticket
+  for (const t of siblings) {
+    const q = big(t.state, 'quantity') - unprepared;
+    events.push(changed('KitchenTicketReduced', t, { quantity: String(q), cancelledQuantity: String(big(t.state, 'cancelledQuantity') + n), cancelledPrepared: String(big(t.state, 'cancelledPrepared') + prepared), status: wanted === 0n ? 'cancelled' : big(t.state, 'prepared') === q ? 'ready' : t.state.status }));
+    if (unprepared > 0n && t.state.status !== 'held') events.push(created('KitchenDeltaCreated', 'kitchen-delta', stableId('delta', c, t.ref.id), { lineId, orderId: order.ref.id, sessionId: String(order.state.sessionId), stationId: t.state.stationId!, name: line.name!, reason, kind: 'cancel', quantity: String(unprepared), status: 'pending', createdBy: c.actorRef, createdAt: c.recordedAt }));
+  }
   const base = { lineId, orderId: order.ref.id, sessionId: String(order.state.sessionId), stationId: ticket.state.stationId!, name: line.name!, reason };
   // A held (not yet fired) ticket never reached the station, so there is nothing to acknowledge.
   if (unprepared > 0n && !held) events.push(created('KitchenDeltaCreated', 'kitchen-delta', deltaId, { ...base, kind: 'cancel', quantity: String(unprepared), status: 'pending', createdBy: c.actorRef, createdAt: c.recordedAt }));

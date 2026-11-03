@@ -108,6 +108,7 @@ export const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_
  'Recipe.Publish':{feature:'inventory',intent:'new'},
  'Inventory.Consume':{feature:'inventory',intent:'finish_existing'},
  'Inventory.RecordWaste':{feature:'inventory',intent:'finish_existing'},
+ 'Inventory.ResolveException':{feature:'inventory',intent:'finish_existing'},
  // Suppliers and new purchase orders are new procurement work; approving, closing and booking what physically arrived finish existing work.
  'Supplier.Upsert':{feature:'procurement',intent:'new'},
  'Purchase.Create':{feature:'procurement',intent:'new'},

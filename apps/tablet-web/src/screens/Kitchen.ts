@@ -22,6 +22,7 @@ export function Kitchen(c:ScreenContext) {
    if(courses.size>1&&course!==shown){shown=course;root.append(el('h3',tr(c,`Đợt ${course}`,`Course ${course}`)));}
    const quantity=field(tr(c,'Số phần vừa xong','Newly prepared portions'),'1','number');quantity.input.min='1';quantity.input.step='1';
    const row=summary(ticket);row.append(el('p',String(ticket.state.stationId)+' · '+String(ticket.state.prepared??'0')+'/'+String(ticket.state.quantity)));
+   if(ticket.state.parentTicket)row.append(el('p',tr(c,'Phần của combo; chỉ giao khách khi mọi quầy xong.','Part of a combo; served only when every station is done.'),'muted'));
    // a combo ticket names its parts (frozen at order time); the parts' stations and recipes follow from them
    const parts=(ticket.state.components??[]) as JsonObject[];if(parts.length)row.append(el('p',parts.map(p=>`${String(p.name)} ×${String(p.quantity)} (${String(p.stationId)})`).join(' · '),'muted'));
    if(ticket.state.status==='held'){row.append(el('p',tr(c,'Đang giữ, chờ gọi món đợt này.','Held until this course is fired.'),'muted'));root.append(row);continue;}
