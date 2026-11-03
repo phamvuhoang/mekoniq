@@ -37,8 +37,9 @@ export function cancelOrderLine(c: CommandEnvelope, s: Snapshot[]): Decision {
   const before = BigInt(String(line.cancelledQuantity ?? '0')), after = before + n;
   if (after > BigInt(String(line.quantity))) return fail('CANCEL_EXCEEDS_ORDER');
   const big = (state: JsonObject, key: string): bigint => BigInt(String(state[key] ?? '0'));
-  const allocated = big(portion.state, 'allocated'), eff = (t: Snapshot): bigint => big(t.state, 'prepared') - big(t.state, 'cancelledPrepared');
-  if (big(portion.state, 'ready') - allocated < 0n) return fail('ALLOCATION_CORRUPT');
+  const allocated = big(portion.state, 'allocated') + big(portion.state, 'served'), eff = (t: Snapshot): bigint => big(t.state, 'prepared') - big(t.state, 'cancelledPrepared');
+  if (big(portion.state, 'ready') - big(portion.state, 'allocated') < 0n) return fail('ALLOCATION_CORRUPT');
+  // `allocated` below is everything the guest side already took (reserved or handed over); it is never cancellable here.
   // Each station decides for itself: what it already made (and nobody took) comes off first and needs a disposition from THAT station; the rest leaves its queue.
   // The guest-facing counts follow the stations' minimum, so a combo done at one station only is still "not ready" yet its food can be disposed of.
   const plan = group.map(t => { const free = eff(t) - allocated, p = free <= 0n ? 0n : free < n ? free : n; return { t, p, u: n - p }; });

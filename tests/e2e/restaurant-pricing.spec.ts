@@ -20,8 +20,9 @@ test('POS shows the server quote for modifiers, tax and a coupon and the placed 
  await expect(page.getByText('Thuế: 6.030 ₫')).toBeVisible();
  await page.getByRole('button',{name:'Gửi bếp',exact:true}).click();
  await expect(page.locator('.toast')).toHaveText('Đã ghi nhận');
- const snapshots=await (await page.request.get('/snapshots')).json();
- const order=snapshots.find((s:{ref:{kind:string};state:{tableId:string}})=>s.ref.kind==='order'&&s.state.tableId==='table-2');
+ const find=async()=>(await (await page.request.get('/snapshots')).json()).find((s:{ref:{kind:string};state:{tableId:string}})=>s.ref.kind==='order'&&s.state.tableId==='table-2');
+ await expect.poll(async()=>Boolean(await find())).toBe(true); // the toast can show before the order is readable
+ const order=await find();
  expect(order.state.totalMinor).toBe('66330');
  expect(order.state.lines[0].charges.map((c:{kind:string})=>c.kind)).toEqual(['base','modifier','discount','service','tax'].filter(k=>k!=='service'));
  expect(order.state.lines[0].pricing).toMatchObject({profileRevision:2,steps:['base','modifier','discount','service','tax']});

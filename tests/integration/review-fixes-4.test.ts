@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { createRestaurantLab } from "../support/restaurant-lab";
-import { refundableComponents } from "../../packages/domain/src/pricing/combo";
+import { comboComponents, refundableComponents, splitComponents, type ComboPart } from "../../packages/domain/src/pricing/combo";
 import type { JsonObject, Snapshot } from "../../packages/contracts/src/index";
 type Lab = Awaited<ReturnType<typeof createRestaurantLab>>;
 type Item = { onHand: string; valueMinor: string };
@@ -144,3 +144,58 @@ test("R4-4b after one station's food was cancelled, the remaining combo is ready
   expect((await ready("kitchen", "chef")).status).toBe("accepted");
   expect((await guest()).ready).toBe("1");
 }));
+
+test("R5-1 cancelling what is left after part of a line was handed over never takes ready below zero", () => lab$(async lab => {
+  await menu(lab);
+  await lab.command("cashier", "Session.Open", { sessionId: "s1", tableId: "table-1" });
+  const placed = await place(lab, "s1", "table-1", [{ itemId: "rice", quantity: "2" }], {}, "cashier"), line = String((placed.value.lineIds as string[])[0]);
+  expect((await lab.command("chef", "Kitchen.Ready", { lineId: line, stationId: "kitchen", quantity: "1", expectedVersion: 1 })).status).toBe("accepted");
+  const alloc = await lab.command("cashier", "Fulfillment.Allocate", { lineId: line, quantity: "1", expectedVersion: (await lab.state<V>("fulfillment", line)).version });
+  expect(alloc.status, String(alloc.code)).toBe("accepted");
+  const hand = await lab.command("cashier", "Fulfillment.HandOff", { allocationId: String(alloc.value.allocationId), expectedVersion: 1 });
+  expect(hand.status, String(hand.code)).toBe("accepted");
+  const amend = await lab.command("manager", "Order.Amend", { lineId: line, cancelQuantity: "1", reason: "khách đi", expectedVersion: (await lab.state<V>("order", String(placed.value.orderId))).version });
+  expect(amend.status, String(amend.code)).toBe("accepted");
+  expect(await lab.state<JsonObject>("fulfillment", line)).toMatchObject({ ready: "0", served: "1", held: "0", quantity: "1" });
+  expect(await lab.state<JsonObject>("kitchen-ticket", line)).toMatchObject({ quantity: "1", prepared: "1" });
+  expect((await snaps(lab)).filter(s => s.ref.kind === "kitchen-cancellation")).toHaveLength(0); // nothing made is left to dispose of
+  expect((await snaps(lab)).find(s => s.ref.kind === "kitchen-delta")?.state).toMatchObject({ quantity: "1", kind: "cancel" });
+}));
+
+test("R5-2 splitting a discounted combo never lets a part refund more than it paid, nor the parts more than the combo", () => lab$(async lab => {
+  const its: JsonObject[] = [{ id: "rice", name: "Cơm", stationId: "kitchen", unitMinor: "4", available: true }, { id: "a", name: "A", stationId: "kitchen", unitMinor: "1", available: true }, { id: "b", name: "B", stationId: "kitchen", unitMinor: "1", available: true },
+    { id: "set", name: "Combo", stationId: "kitchen", unitMinor: "3", available: true, combo: { components: [{ itemId: "a", quantity: "1" }, { itemId: "b", quantity: "1" }] } }];
+  expect((await lab.command("manager", "Catalog.Publish", { version: 2, currency: "VND", items: its, pricing: { taxProfiles: [], defaultTaxProfileId: null, service: null, discountOrder: "before_tax", discounts: [] } })).status).toBe("accepted");
+  expect((await lab.command("manager", "Promotion.Publish", { promotionId: "fix2", name: "Giảm 2", kind: "fixed", amountMinor: "2", itemIds: ["set"], priority: 1 })).status).toBe("accepted");
+  await lab.command("cashier", "Session.Open", { sessionId: "s1", tableId: "table-1" });
+  const placed = await place(lab, "s1", "table-1", [{ itemId: "set", quantity: "1" }, { itemId: "rice", quantity: "1" }], { discountIds: ["fix2"] });
+  expect(placed.status, String(placed.code)).toBe("accepted");
+  const billId = String((await lab.command("cashier", "Bill.Prepare", { sessionId: "s1" })).value.billId);
+  const parts = async (id: string) => { const lines = (await bill$(lab, id)).state.lines as JsonObject[]; return { net: refundableComponents(lines), raw: lines.flatMap(l => (l.components ?? []) as JsonObject[]) }; };
+  const whole = await parts(billId);
+  expect(whole.net.reduce((a, p) => a + BigInt(p.minor), 0n)).toBe(1n); // 3 - 2
+  const split = await lab.command("cashier", "Bill.Split", { billId, expectedVersion: (await bill$(lab, billId)).version, mode: "equal", parts: 2 });
+  expect(split.status, String(split.code)).toBe("accepted");
+  const kids = await Promise.all([1, 2].map(n => parts(`${billId}.${n}`)));
+  for (const k of kids) for (const p of k.raw) { expect(BigInt(String(p.discountMinor))).toBeGreaterThanOrEqual(0n); expect(BigInt(String(p.shareMinor)) - BigInt(String(p.discountMinor))).toBeGreaterThanOrEqual(0n); }
+  expect(kids.flatMap(k => k.net).reduce((a, p) => a + BigInt(p.minor), 0n)).toBe(1n); // the combo took 1 in all, and that is all its parts can ever get back
+}));
+
+test("R5-2b dealing a combo's money to split children is non-negative and exact for every small split", () => {
+  const catalog = [{ id: "a", unitMinor: "1" }, { id: "b", unitMinor: "1" }, { id: "c", unitMinor: "2" }], combo = { combo: { components: [{ itemId: "a", quantity: "1" }, { itemId: "b", quantity: "1" }, { itemId: "c", quantity: "1" }] } };
+  for (let gross = 0; gross <= 9; gross++) for (let disc = 0; disc <= gross; disc++) {
+    const parts = comboComponents(combo, catalog, 1, String(gross), String(disc));
+    for (const p of parts) expect(BigInt(p.shareMinor) - BigInt(p.discountMinor) >= 0n && BigInt(p.discountMinor) >= 0n).toBe(true);
+    for (let t1 = 0; t1 <= gross; t1++) for (let d1 = 0; d1 <= Math.min(disc, t1); d1++) {
+      if (gross - t1 < disc - d1) continue;
+      const kids = splitComponents(parts as ComboPart[], [BigInt(t1), BigInt(gross - t1)], [BigInt(d1), BigInt(disc - d1)], p => p.quantity)!;
+      expect(kids).not.toBeNull();
+      kids.forEach((k, j) => {
+        expect(k.reduce((a, p) => a + BigInt(p.shareMinor), 0n)).toBe(BigInt(j ? gross - t1 : t1));
+        expect(k.reduce((a, p) => a + BigInt(p.discountMinor), 0n)).toBe(BigInt(j ? disc - d1 : d1));
+        for (const p of k) expect(BigInt(p.shareMinor) - BigInt(p.discountMinor) >= 0n && BigInt(p.discountMinor) >= 0n).toBe(true);
+      });
+      parts.forEach((p, i) => expect(BigInt(kids[0]![i]!.shareMinor) + BigInt(kids[1]![i]!.shareMinor)).toBe(BigInt(p.shareMinor)));
+    }
+  }
+});

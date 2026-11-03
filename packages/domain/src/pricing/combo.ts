@@ -2,6 +2,14 @@ import type { JsonObject } from '../../../contracts/src/index';
 import { allocateMinor } from '../shared/money';
 export type ComboPart = { itemId: string; name: string; stationId: string; quantity: string; shareMinor: string; discountMinor: string };
 /**
+ * Splits a combo's price and discount over its parts TOGETHER: the discount over `dw`, the net (price - discount) over `nw`, and a part's price share is its net plus its discount. So no part
+ * ever has a discount above its price share (a negative refund), and the sums are exact.
+ */
+function dealParts(gross: bigint, discount: bigint, nw: bigint[], dw: bigint[]): [string[], string[]] {
+  const positive = (w: bigint[]) => w.some(x => x > 0n) ? w : w.map(() => 1n), disc = allocateMinor(String(discount), positive(dw)), net = allocateMinor(String(gross - discount), positive(nw));
+  return [net.map((n, i) => String(BigInt(n) + BigInt(disc[i]!))), disc];
+}
+/**
  * The parts of a combo line, frozen at quote time: the line's price and its discount are each split across the components in proportion to their standalone list price (largest
  * remainder, so both sums are exact); zero list prices split evenly. Stock mapping, station routing and a single-part refund all read these shares, never today's menu.
  */
@@ -11,7 +19,7 @@ export function comboComponents(combo: JsonObject, catalog: JsonObject[], count:
     return { itemId: String(c.itemId), name: String(item.name ?? c.itemId), stationId: String(item.stationId ?? ''), quantity, weight: BigInt(String(item.unitMinor ?? '0')) * quantity };
   });
   const weights = parts.every(p => p.weight === 0n) ? parts.map(() => 1n) : parts.map(p => p.weight);
-  const shares = allocateMinor(grossMinor, weights), shareWeights = shares.map(BigInt), discounts = allocateMinor(discountMinor, shareWeights.some(x => x > 0n) ? shareWeights : weights);
+  const [shares, discounts] = dealParts(BigInt(grossMinor), BigInt(discountMinor), weights, weights);
   return parts.map((p, i) => ({ itemId: p.itemId, name: p.name, stationId: p.stationId, quantity: String(p.quantity), shareMinor: shares[i]!, discountMinor: discounts[i]! }));
 }
 /** What refunding one component of a combo line returns: its share of the price after its share of the discount. */
@@ -35,8 +43,7 @@ export function liveComponents(line: JsonObject): ComboPart[] {
   const sub = net('subtotalMinor', 'totalMinor'), disc = net('discountMinor'), sum = (key: 'shareMinor' | 'discountMinor') => parts.reduce((a, p) => a + nonNeg(p[key]), 0n);
   const scale = (p: ComboPart) => String(nonNeg(p.quantity) * live / count);
   if (sum('shareMinor') === sub && sum('discountMinor') === disc) return parts.map(p => ({ ...p, quantity: scale(p) }));
-  const weights = parts.map(p => nonNeg(p.shareMinor)), w = weights.some(x => x > 0n) ? weights : parts.map(() => 1n);
-  const shares = allocateMinor(String(sub), w), discounts = allocateMinor(String(disc), shares.some(x => BigInt(x) > 0n) ? shares.map(BigInt) : w);
+  const [shares, discounts] = dealParts(sub, disc, parts.map(p => nonNeg(p.shareMinor) - nonNeg(p.discountMinor)), parts.map(p => nonNeg(p.discountMinor)));
   return parts.map((p, i) => ({ ...p, quantity: scale(p), shareMinor: shares[i]!, discountMinor: discounts[i]! }));
 }
 /** What refunding one combo part returns: its share of the price after its share of the discount. Lines that share an id (a split-then-merged bill) are one source: their parts add up. */
@@ -50,18 +57,19 @@ export function refundableComponents(lines: JsonObject[]): RefundablePart[] {
   return [...out.values()];
 }
 /**
- * Hands a line's live parts to its split children. Child j receives `subtotals[j]` of price and `discounts[j]` of discount in total; the parts' money is dealt out child by child over what
- * is still unassigned (the last child takes the remainder), so each part adds up across the children AND each child's parts add up to its own line. Never re-rounded afterwards.
+ * Hands a line's live parts to its split children. Child j receives `subtotals[j]` of price and `discounts[j]` of discount in total. Each part's NET (price - discount) and its DISCOUNT are
+ * dealt out child by child over what is still unassigned (the last child takes the remainder); a part's price in a child is its net plus its discount there. Every figure is therefore
+ * non-negative, each part adds up across the children and each child's parts add up to its own line. Never re-rounded afterwards. null when the figures cannot be conserved.
  */
 export function splitComponents(parts: ComboPart[], subtotals: bigint[], discounts: bigint[], quantityOf: (p: ComboPart, j: number) => string): ComboPart[][] | null {
-  const total = (xs: bigint[]) => xs.reduce((a, b) => a + b, 0n);
-  if (total(subtotals) !== parts.reduce((a, p) => a + nonNeg(p.shareMinor), 0n) || total(discounts) !== parts.reduce((a, p) => a + nonNeg(p.discountMinor), 0n)) return null;
-  const left = parts.map(p => [nonNeg(p.shareMinor), nonNeg(p.discountMinor)] as [bigint, bigint]), out: ComboPart[][] = [];
+  const total = (xs: bigint[]) => xs.reduce((a, b) => a + b, 0n), nets = subtotals.map((x, j) => x - discounts[j]!);
+  if (nets.some(x => x < 0n) || total(nets) !== parts.reduce((a, p) => a + nonNeg(p.shareMinor) - nonNeg(p.discountMinor), 0n) || total(discounts) !== parts.reduce((a, p) => a + nonNeg(p.discountMinor), 0n)) return null;
+  const left = parts.map(p => [nonNeg(p.shareMinor) - nonNeg(p.discountMinor), nonNeg(p.discountMinor)] as [bigint, bigint]), out: ComboPart[][] = [];
   const deal = (amount: bigint, from: bigint[], last: boolean): bigint[] => last ? from : amount === 0n ? from.map(() => 0n) : allocateMinor(String(amount), from).map(BigInt);
-  subtotals.forEach((sub, j) => {
-    const last = j === subtotals.length - 1, shares = deal(sub, left.map(x => x[0]), last), disc = deal(discounts[j]!, left.map(x => x[1]), last);
-    left.forEach((x, i) => { x[0] -= shares[i]!; x[1] -= disc[i]!; });
-    out.push(parts.map((p, i) => ({ ...p, quantity: quantityOf(p, j), shareMinor: String(shares[i]), discountMinor: String(disc[i]) })));
+  subtotals.forEach((_, j) => {
+    const last = j === subtotals.length - 1, net = deal(nets[j]!, left.map(x => x[0]), last), disc = deal(discounts[j]!, left.map(x => x[1]), last);
+    left.forEach((x, i) => { x[0] -= net[i]!; x[1] -= disc[i]!; });
+    out.push(parts.map((p, i) => ({ ...p, quantity: quantityOf(p, j), shareMinor: String(net[i]! + disc[i]!), discountMinor: String(disc[i]) })));
   });
   return out;
 }
