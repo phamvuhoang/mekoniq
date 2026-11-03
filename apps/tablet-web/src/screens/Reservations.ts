@@ -27,6 +27,12 @@ export function Reservations(c:ScreenContext) {
   const left=BigInt(String(d.state.paidMinor))-BigInt(String(d.state.appliedMinor??'0'))-BigInt(String(d.state.returnedMinor??'0'))-BigInt(String(d.state.forfeitedMinor??'0')),row=el('article',undefined,'record');
   row.append(el('strong',`${tr(c,'Cọc còn phải trả/áp vào hóa đơn','Deposit still owed')}: ${money(left)}`),el('p',`${d.ref.id} · ${String(d.state.bookingId??'—')} · ${tr(c,'khoản phải trả, không phải doanh thu','a liability, not sales')}`,'muted'));
   if(can('deposit.manage')){const amt=field(tr(c,'Số tiền hoàn','Amount to return'),'','number'),why=field(tr(c,'Lý do hoàn','Reason'));row.append(amt.node,why.node,button(tr(c,'Hoàn cọc (tiền mặt)','Return deposit (cash)'),()=>act(c,'Deposit.Return',{depositId:d.ref.id,amountMinor:amt.input.value,method:'cash',reason:why.input.value}).then(()=>{})));}
+  // A deposit pays part of a prepared bill (a tender on that bill; the money came in when the deposit was taken, so no drawer movement and no second sale).
+  const bills=list(c,'bill').filter(b=>!['closed','void','voided'].includes(String(b.state.status))).map(b=>({b,due:BigInt(String(b.state.totalMinor??'0'))-BigInt(String(b.state.paidMinor??'0'))-BigInt(String(b.state.refundedMinor??'0'))})).filter(x=>x.due>0n);
+  if(can('reservation.write')&&bills.length){
+   const bill=select(tr(c,'Hóa đơn','Bill'),bills.map(x=>({id:x.b.ref.id,name:`${x.b.ref.id} · ${money(x.due)}`}))),amt=field(tr(c,'Số tiền áp (VND)','Amount to apply (VND)'),String(left),'number');
+   row.append(bill.node,amt.node,button(tr(c,'Áp cọc vào hóa đơn','Apply deposit to bill'),()=>act(c,'Deposit.Apply',{depositId:d.ref.id,billId:bill.input.value,amountMinor:amt.input.value}).then(()=>{})));
+  }
   root.append(row);
  }
  const waiting=list(c,'waitlist').filter(w=>w.state.status==='waiting').sort((a,b)=>Number(a.state.joinedMs)-Number(b.state.joinedMs)),tables=list(c,'table').map(t=>({id:t.ref.id,name:String(t.state.name??t.ref.id)}));

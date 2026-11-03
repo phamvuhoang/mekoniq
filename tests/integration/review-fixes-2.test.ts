@@ -140,3 +140,24 @@ test("#9 with service.models off, combo items cannot be sold through the order p
   expect(String(again.code)).not.toBe("accepted");
   expect((await lab.command("cashier", "Order.Place", { sessionId: "s1", tableId: "table-1", menuVersion: 2, items: [{ itemId: "rice", quantity: "1" }] })).status).toBe("accepted"); // plain items still sell
 }));
+
+test("a single part of a combo can be refunded at its frozen share, once", () => lab$(async lab => {
+  await menu(lab);
+  await lab.command("cashier", "Shift.Open", { shiftId: "s1", currency: "VND", openingMinor: "0" });
+  await lab.command("cashier", "Session.Open", { sessionId: "s1", tableId: "table-1" });
+  const placed = await lab.command("cashier", "Order.Place", { sessionId: "s1", tableId: "table-1", menuVersion: 2, items: [{ itemId: "set", quantity: "1" }] });
+  const prep = await lab.command("cashier", "Bill.Prepare", { sessionId: "s1" });
+  expect(prep.status, String(prep.code)).toBe("accepted");
+  const billId = String(prep.value.billId), bill = await lab.state<{ lines: JsonObject[]; version: number }>("bill", billId);
+  const paid = await lab.command("cashier", "Payment.RecordCash", { billId, expectedVersion: bill.version, amountMinor: "80000", currency: "VND" });
+  expect(paid.status, String(paid.code)).toBe("accepted");
+  const lineId = String(bill.lines[0]!.id), parts = bill.lines[0]!.components as { itemId: string; shareMinor: string; discountMinor: string }[];
+  const tea = parts.find(p => p.itemId === "tea")!, share = String(BigInt(tea.shareMinor) - BigInt(tea.discountMinor));
+  const refund = async (extra: JsonObject) => lab.command("manager", "Refund.Record", { paymentId: String(paid.value.paymentId), reason: "trà hỏng", expectedVersion: (await lab.state<{ version: number }>("payment", String(paid.value.paymentId))).version, ...extra });
+  expect((await refund({ amountMinor: "1", component: { lineId, itemId: "tea" } })).code).toBe("COMPONENT_AMOUNT_MISMATCH");
+  expect((await refund({ amountMinor: share, component: { lineId, itemId: "ghost" } })).code).toBe("COMPONENT_NOT_FOUND");
+  const ok = await refund({ amountMinor: share, component: { lineId, itemId: "tea" } });
+  expect(ok.status, String(ok.code)).toBe("accepted");
+  expect((await refund({ amountMinor: share, component: { lineId, itemId: "tea" } })).code).toBe("COMPONENT_ALREADY_REFUNDED");
+  void placed;
+}));

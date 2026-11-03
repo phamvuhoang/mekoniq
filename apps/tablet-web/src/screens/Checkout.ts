@@ -61,6 +61,11 @@ export function Checkout(c:ScreenContext) {
     if(can('payment.refund')&&payment.state.status==='captured'&&refundable>0n){
      const amount=field(tr(c,'Số tiền hoàn','Refund amount'),String(refundable),'number'),reason=field(tr(c,'Lý do hoàn tiền','Refund reason')),evidence=field(tr(c,'Tham chiếu hoàn (thẻ/chuyển khoản)','Refund reference (card/transfer)'));
      row.append(amount.node,reason.node,...(payment.state.method==='cash'?[]:[evidence.node]),button(tr(c,'Hoàn tiền','Record refund'),()=>act(c,'Refund.Record',{paymentId:payment.ref.id,amountMinor:amount.input.value,reason:reason.input.value,...(payment.state.method==='cash'?{}:{evidenceRef:evidence.input.value})},payment.version).then(done)));
+     // one part of a combo goes back at its frozen share (price share minus its share of the discount), once
+     for(const line of ((bill.state.lines??[]) as {id?:unknown;components?:unknown}[]).filter(l=>Array.isArray(l.components)))for(const part of line.components as Record<string,unknown>[]){
+      const share=big(part.shareMinor)-big(part.discountMinor);
+      if(share>0n&&share<=refundable)row.append(button(`${tr(c,'Hoàn phần combo','Refund combo part')}: ${String(part.name)} (${money(share)})`,()=>act(c,'Refund.Record',{paymentId:payment.ref.id,amountMinor:String(share),component:{lineId:String(line.id),itemId:String(part.itemId)},reason:reason.input.value,...(payment.state.method==='cash'?{}:{evidenceRef:evidence.input.value})},payment.version).then(done),'quiet'));
+     }
     }
    }
    const grant=list(c,'grant').find(g=>g.state.billId===bill.ref.id&&g.state.status!=='reconciled');

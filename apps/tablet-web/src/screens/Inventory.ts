@@ -2,6 +2,10 @@ import {el,field,select,panel,list,tr,button,act,summary,type ScreenContext} fro
 const big=(v:unknown)=>BigInt(String(v??'0'));
 export function Inventory(c:ScreenContext) {
  const root=el('div',undefined,'screen-grid'),can=(p:string)=>c.session.permissions.includes('*')||c.session.permissions.includes(p);
+ // Cooked food whose stock could not be booked (blocked ingredient, missing ingredient/recipe line) stays visible here until someone resolves it by counting or receiving stock.
+ for(const x of list(c,'stock-exception').filter(e=>e.state.status==='open')){
+  const row=summary(x);row.append(el('p',`${tr(c,'Chưa trừ được kho','Stock not booked')}: ${String(x.state.reason)} · ${String(x.state.sourceEventId)}`,'warning'));root.append(row);
+ }
  const items=list(c,'stock-item').sort((a,b)=>a.ref.id.localeCompare(b.ref.id));
  for(const item of items){
   const row=summary(item),negative=big(item.state.onHand)<0n,unit=String(item.state.baseUnit);

@@ -1,11 +1,12 @@
 import type {JsonObject} from '../../../../packages/contracts/src/index';
 import {el,field,select,panel,list,tr,money,button,act,type ScreenContext} from '../ui';
+import {priceByMass} from '../../../../packages/domain/src/pricing/weighed';
 type Pick={groupId:string;optionId:string};
-type CartLine={itemId:string;quantity:string;modifiers:Pick[]};
+type CartLine={itemId:string;quantity:string;modifiers:Pick[];measure?:JsonObject};
 type Draft={tableId:string;lines:CartLine[];discountIds:string[];operationId:string;quote?:JsonObject;stale:boolean};
 const fresh=(tableId=''):Draft=>({tableId,lines:[],discountIds:[],operationId:crypto.randomUUID(),stale:false});
 let draft=fresh();
-const sameLine=(a:CartLine,b:CartLine)=>a.itemId===b.itemId&&JSON.stringify(a.modifiers)===JSON.stringify(b.modifiers);
+const sameLine=(a:CartLine,b:CartLine)=>!a.measure&&!b.measure&&a.itemId===b.itemId&&JSON.stringify(a.modifiers)===JSON.stringify(b.modifiers);
 /** Unsent edits survive a re-render and a VERSION_CONFLICT: a conflict only records which newer version was found. */
 type Edit={quantity:string;reason:string;target:string};
 const edits=new Map<string,Edit>(),conflicts=new Map<string,number>();
@@ -55,7 +56,7 @@ export function Pos(c:ScreenContext) {
  const items=(Array.isArray(menu?.state.items)?menu.state.items:[]) as JsonObject[];
  const mayDiscount=c.session.permissions.includes('*')||c.session.permissions.includes('discount.apply');
  const coupons=(mayDiscount?((menu?.state.pricing as JsonObject|undefined)?.discounts??[]):[]) as JsonObject[]; // the server enforces discount.apply and the discount feature; hiding is only UX
- const payload=(extra:JsonObject={}):JsonObject=>({tableId:table.input.value,menuVersion:menu?.state.version??0,items:draft.lines.map(l=>({itemId:l.itemId,quantity:l.quantity,...(l.modifiers.length?{modifiers:l.modifiers}:{})})),...(draft.discountIds.length?{discountIds:draft.discountIds}:{}),...extra});
+ const payload=(extra:JsonObject={}):JsonObject=>({tableId:table.input.value,menuVersion:menu?.state.version??0,items:draft.lines.map(l=>({itemId:l.itemId,quantity:l.quantity,...(l.modifiers.length?{modifiers:l.modifiers}:{}),...(l.measure?{measure:l.measure}:{})})),...(draft.discountIds.length?{discountIds:draft.discountIds}:{}),...extra});
  const changeCart=()=>{draft.quote=undefined;draft.operationId=crypto.randomUUID();renderCart();};
  const noteStale=(code?:string)=>{if(code!=='STALE_QUOTE')return false;draft.stale=true;draft.operationId=crypto.randomUUID();c.notify(tr(c,'Thực đơn đã thay đổi. Kiểm tra giỏ rồi bấm "Tính giá" để xác nhận lại.','The menu changed. Review the cart and press "Get price" to re-confirm.'),true);return true;};
  const getQuote=button(tr(c,'Tính giá','Get price'),async()=>{
@@ -92,9 +93,10 @@ export function Pos(c:ScreenContext) {
    draft.lines.forEach((line,index)=>{
      const item=items.find(i=>i.id===line.itemId);if(!item)return;
      const row=el('div',undefined,'cart-line'),detail=line.modifiers.map(p=>{const o=(((item.modifierGroups as JsonObject[]|undefined)??[]).find(g=>g.id===p.groupId)?.options as JsonObject[]|undefined)?.find(x=>x.id===p.optionId);return String(o?.name??p.optionId);});
+     if(line.measure)detail.push(`${String(line.measure.mass)} ${String((item.weighed as JsonObject).unit)}`);
      row.append(el('span',String(item.name)+(detail.length?` (${detail.join(', ')})`:'')),el('strong',line.quantity));
      row.append(button(tr(c,'Bớt ','Remove ')+String(item.name),()=>{const left=BigInt(line.quantity)-1n;if(left>0n)line.quantity=String(left);else draft.lines.splice(index,1);changeCart();},'quiet'));
-     cart.append(row);estimate+=BigInt(String(item.unitMinor))*BigInt(line.quantity);
+     cart.append(row);estimate+=line.measure?BigInt(priceByMass(String(item.unitMinor),String(line.measure.mass),String((item.weighed as JsonObject).unitMass))):BigInt(String(item.unitMinor))*BigInt(line.quantity);
    });
    if(coupons.length){const box=el('div',undefined,'coupons');for(const coupon of coupons){const label=el('label'),input=el('input');input.type='checkbox';input.checked=draft.discountIds.includes(String(coupon.id));input.addEventListener('change',()=>{draft.discountIds=input.checked?[...draft.discountIds,String(coupon.id)]:draft.discountIds.filter(id=>id!==coupon.id);changeCart();});label.append(input,el('span',String(coupon.name)));box.append(label);}cart.append(box);}
    cart.append(el('p',tr(c,'Tạm tính (chưa gồm tùy chọn, thuế, phí) · ','Estimate (before options, tax, fees) · ')+money(estimate),'total'),getQuote);
@@ -118,7 +120,12 @@ export function Pos(c:ScreenContext) {
    }
    chooser.append(button(tr(c,'Thêm vào giỏ','Add to cart'),()=>addLine({itemId:String(item.id),quantity:'1',modifiers:[...picks].flatMap(([groupId,ids])=>ids.map(optionId=>({groupId,optionId})))})),button(tr(c,'Hủy','Cancel'),()=>{chooser.replaceChildren();},'quiet'));
  };
- for(const item of items){const card=button(String(item.name),()=>{if((item.modifierGroups as unknown[]|undefined)?.length)choose(item);else addLine({itemId:String(item.id),quantity:'1',modifiers:[]});},'menu-item');card.append(el('span',money(item.unitMinor),'price'));card.disabled=item.available===false;grid.append(card);}
+ // A weighed item enters the cart with the weight the manager keyed (there is no approved scale to read); the measure travels to Order.Place, which prices it and checks weighed.manual.
+ const weigh=(item:JsonObject)=>{
+   chooser.replaceChildren();const mass=field(`${String(item.name)} · ${tr(c,'khối lượng','weight')} (${String((item.weighed as JsonObject).unit)})`,'','number');mass.input.min='1';mass.input.step='1';
+   chooser.append(mass.node,button(tr(c,'Thêm vào giỏ','Add to cart'),()=>{const m=mass.input.value;if(!/^[1-9][0-9]{0,11}$/.test(m)){c.notify(tr(c,'Nhập khối lượng là số nguyên dương.','Enter the weight as a positive whole number.'),true);return;}chooser.replaceChildren();addLine({itemId:String(item.id),quantity:'1',modifiers:[],measure:{mass:m,source:'manual'}});}),button(tr(c,'Hủy','Cancel'),()=>{chooser.replaceChildren();},'quiet'));
+ };
+ for(const item of items){const card=button(String(item.name),()=>{if(item.weighed){weigh(item);return;}if((item.modifierGroups as unknown[]|undefined)?.length)choose(item);else addLine({itemId:String(item.id),quantity:'1',modifiers:[]});},'menu-item');card.append(el('span',money(item.unitMinor),'price'));card.disabled=item.available===false;grid.append(card);}
  if(!items.length)grid.append(el('p',tr(c,'Chưa có thực đơn được áp dụng tại nhà hàng.','No menu has been applied to this venue.')));
  root.append(panel(tr(c,'Thực đơn','Menu'),grid,chooser),panel(tr(c,'Đơn mới','New order'),table.node,cart,quoteBox,orderButton,el('p',tr(c,'Giỏ được giữ đến khi nhà hàng xác nhận. Giá cuối cùng do bộ điều phối tính.','The cart stays until restaurant acceptance. The coordinator calculates final prices.'),'muted')));renderCart();const page=el('div');page.append(root,panel(tr(c,'Bàn đang phục vụ','Open tables'),tables(c)));return page;
 }

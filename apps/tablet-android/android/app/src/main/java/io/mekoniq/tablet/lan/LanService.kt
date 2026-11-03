@@ -88,13 +88,18 @@ class LanService : Service() {
             for(index in 0 until all.length()) {
               val snapshot=all.getJSONObject(index);val kind=snapshot.getJSONObject("ref").getString("kind")
               if(kind=="__scope__"){revision=snapshot.getInt("version");coordinatorEpoch=snapshot.getJSONObject("state").getInt("coordinatorEpoch")}
-              val visible=if("*" in allowed||"continuity.resolve" in allowed)true else if("billing.write" in allowed)kind in setOf("__scope__","configuration","catalog","table","session","order","fulfillment","allocation","mission","robot","bill","payment","refund","payment-observation","shift","cashier-shift","cash-movement","print-job","printer","staff-clock","attendance","promotion","voucher","voucher-use","customer","consent","loyalty-account","booking","deposit","deposit-application","waitlist","grant","device","service-call","guest-token","robot-display") else if("guest.order" in allowed)kind in setOf("__scope__","configuration","catalog","table","robot","mission","robot-display") /* kiosk / robot screen: no orders, bills, calls or tokens of any session */ else kind in setOf("__scope__","configuration","catalog","station","kitchen-ticket","kitchen-delta","kitchen-cancellation","fulfillment","stock-item","recipe","recipe-pointer","staff-clock","attendance")
+              val visible=if("*" in allowed||"continuity.resolve" in allowed)true else if("billing.write" in allowed)kind in setOf("__scope__","configuration","catalog","table","session","order","fulfillment","allocation","mission","robot","bill","payment","refund","payment-observation","shift","cashier-shift","cash-movement","print-job","printer","staff-clock","attendance","stock-exception","promotion","voucher","voucher-use","customer","consent","loyalty-account","booking","deposit","deposit-application","waitlist","grant","device","service-call","guest-token","robot-display") else if("guest.order" in allowed)kind in setOf("__scope__","configuration","catalog","table","robot","mission","robot-display") /* kiosk / robot screen: no orders, bills, calls or tokens of any session */ else kind in setOf("__scope__","configuration","catalog","station","kitchen-ticket","kitchen-delta","kitchen-cancellation","fulfillment","stock-item","stock-exception","recipe","recipe-pointer","staff-clock","attendance")
               if(!visible)continue
+              // Personal data is not part of "can bill": customer, consent, points and booking records need their own right; a customer's e-mail and duplicate hints need customer.manage.
+              val guarded=mapOf("customer" to setOf("loyalty.write","customer.manage"),"consent" to setOf("loyalty.write","customer.manage"),"loyalty-account" to setOf("loyalty.write","customer.manage"),"booking" to setOf("reservation.write"),"waitlist" to setOf("reservation.write"),"deposit" to setOf("reservation.write","deposit.manage"),"deposit-application" to setOf("reservation.write","deposit.manage"))
+              val privileged="*" in allowed||"continuity.resolve" in allowed
+              if(!privileged && guarded[kind]?.none {it in allowed}==true)continue
               if("kitchen.write" in allowed && "billing.write" !in allowed && "*" !in allowed && snapshot.getJSONObject("state").has("stationId")) {
                 val stations=grant.optJSONArray("stationIds") ?: org.json.JSONArray()
                 if((0 until stations.length()).none {stations.getString(it)==snapshot.getJSONObject("state").getString("stationId")})continue
               }
-              selected.put(snapshot)
+              val shown=if(kind=="customer" && !privileged && "customer.manage" !in allowed) JSONObject(snapshot.toString()).also {it.getJSONObject("state").remove("email");it.getJSONObject("state").remove("possibleDuplicates")} else snapshot
+              selected.put(shown)
             }
             val config=(context.getSystemService(Context.RESTRICTIONS_SERVICE) as RestrictionsManager).applicationRestrictions
             val keys=DeviceKeys(context)

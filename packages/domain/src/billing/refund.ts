@@ -1,5 +1,7 @@
 import type { ModuleRegistry } from '../modules';
-import { all, amount, changed, created, done, expectVersion, fail, find, handle, note, requireState, stableId, text } from '../restaurant-context';
+import type { JsonObject } from '../../../contracts/src/index';
+import { componentRefundMinor, type ComboPart } from '../pricing/combo';
+import { all, amount, changed, created, done, expectVersion, fail, find, handle, note, record, requireState, stableId, text } from '../restaurant-context';
 
 export function refundableMinor(captured: string, refunded: string) {
   return String(BigInt(captured) - BigInt(refunded));
@@ -24,6 +26,16 @@ export function registerRefunds(registry: ModuleRegistry): void {
     const bill = requireState(s, 'bill', String(payment.state.billId));
     // an offline grant holds exclusive collection on the bill and pins its version; money moves only after it is reconciled
     if (bill.state.collectionLocked === true || all(s, 'grant').some(g => g.state.billId === bill.ref.id && g.state.status !== 'reconciled')) return fail('GRANT_UNRECONCILED');
+    // component {lineId,itemId}: refunding ONE part of a combo line returns exactly its frozen share (price share minus its share of the discount), once
+    let component: JsonObject | undefined;
+    if (c.payload.component !== undefined) {
+      const r = record(c.payload.component), lineId = text(r.lineId), itemId = text(r.itemId);
+      const line = ((bill.state.lines ?? []) as JsonObject[]).find(l => l.id === lineId && Array.isArray(l.components)) ?? fail('COMPONENT_NOT_FOUND');
+      let expected: string; try { expected = componentRefundMinor({ components: line.components as unknown as ComboPart[] }, itemId); } catch { return fail('COMPONENT_NOT_FOUND'); }
+      if (request !== expected) return fail('COMPONENT_AMOUNT_MISMATCH');
+      if (all(s, 'refund').some(x => x.state.billId === bill.ref.id && (x.state.component as JsonObject | undefined)?.lineId === lineId && (x.state.component as JsonObject | undefined)?.itemId === itemId)) return fail('COMPONENT_ALREADY_REFUNDED');
+      component = { lineId, itemId };
+    }
     const currency = String(payment.state.currency ?? bill.state.currency ?? 'VND');
     const method = c.payload.method === undefined ? String(payment.state.method) : text(c.payload.method);
     if (!METHODS.includes(method)) return fail('INVALID_METHOD');
@@ -40,7 +52,7 @@ export function registerRefunds(registry: ModuleRegistry): void {
     if (billUnapplied < fromUnapplied) return fail('BILL_BALANCE_CORRUPT');
     const refundId = stableId('refund', c);
     return done([
-      created('RefundRecorded', 'refund', refundId, { paymentId: payment.ref.id, billId: bill.ref.id, currency, amountMinor: request, appliedMinor: String(fromApplied), unappliedMinor: String(fromUnapplied), method, shiftId, reason, evidenceRef, actorRef: c.actorRef, billStatus: bill.state.status!, occurredAt: c.occurredAt, recordedAt: c.recordedAt }),
+      created('RefundRecorded', 'refund', refundId, { paymentId: payment.ref.id, billId: bill.ref.id, currency, amountMinor: request, ...(component ? { component } : {}), appliedMinor: String(fromApplied), unappliedMinor: String(fromUnapplied), method, shiftId, reason, evidenceRef, actorRef: c.actorRef, billStatus: bill.state.status!, occurredAt: c.occurredAt, recordedAt: c.recordedAt }),
       changed('PaymentRefunded', payment, { refundedMinor: String(BigInt(refunded) + req), unappliedMinor: String(unapplied - fromUnapplied), refundIds: [...((payment.state.refundIds ?? []) as string[]), refundId] }),
       changed('BillRefunded', bill, { refundedMinor: String(BigInt(String(bill.state.refundedMinor ?? '0')) + fromApplied), unappliedMinor: String(billUnapplied - fromUnapplied) }),
       ...(shift ? [changed('ShiftCashRefunded', shift, { cashRefundedMinor: String(BigInt(String(shift.state.cashRefundedMinor ?? '0')) + req) })] : []),

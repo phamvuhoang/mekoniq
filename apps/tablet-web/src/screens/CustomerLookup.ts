@@ -1,4 +1,4 @@
-import {el,field,panel,list,tr,button,act,summary,type ScreenContext} from '../ui';
+import {el,field,select,panel,list,tr,button,act,summary,money,type ScreenContext} from '../ui';
 import {hasConsent} from '../../../../packages/domain/src/customers/consent';
 import {normalizePhone} from '../../../../packages/domain/src/customers/profile';
 /** Minimal local projection: customers, consent and the points account this venue holds. Works offline; shared chain balances are shown as not spendable here. */
@@ -16,6 +16,13 @@ export function CustomerLookup(c:ScreenContext) {
    if(cust.state.status==='active'){
     row.append(el('p',consented?tr(c,'Đã đồng ý chương trình khách hàng thân thiết','Loyalty programme consent given'):tr(c,'Chưa đồng ý chương trình','No programme consent'),consented?'muted':'warning'));
     if(!consented&&can('loyalty.write'))row.append(button(tr(c,'Ghi nhận khách đồng ý','Record consent'),()=>act(c,'Consent.Record',{customerId:cust.ref.id,purpose:'loyalty',channel:'program',granted:true,policyVersion:'v1'}).then(()=>{})));
+    // Points come from a captured settlement, never from the customer's say-so; the coordinator caps them at the policy rate and refuses a settlement already claimed.
+    const paid=list(c,'payment').filter(p=>p.state.status==='captured'&&BigInt(String(p.state.appliedMinor??'0'))>0n).sort((a,b)=>String(b.state.occurredAt).localeCompare(String(a.state.occurredAt))).slice(0,20);
+    if(consented&&can('loyalty.write')&&paid.length){
+     const pay=select(tr(c,'Thanh toán đã nhận','Captured payment'),paid.map(p=>({id:p.ref.id,name:`${p.ref.id} · ${money(p.state.appliedMinor)}`}))),earn=field(tr(c,'Điểm cộng','Points to award'),'','number');
+     const suggest=()=>{const p=paid.find(x=>x.ref.id===pay.input.value);earn.input.value=p?String(BigInt(String(p.state.appliedMinor))/1000n):'';};pay.input.addEventListener('change',suggest);suggest();
+     row.append(pay.node,earn.node,button(tr(c,'Cộng điểm từ thanh toán','Award points for payment'),()=>act(c,'Loyalty.Earn',{customerId:cust.ref.id,settlementId:pay.input.value,points:earn.input.value}).then(()=>{})));
+    }
     if(consented&&can('loyalty.write')){const pts=field(tr(c,'Điểm đổi','Points to redeem'),'','number');row.append(pts.node,button(tr(c,'Đổi điểm','Redeem points'),()=>act(c,'Loyalty.Redeem',{customerId:cust.ref.id,sourceEventId:crypto.randomUUID(),points:pts.input.value}).then(()=>{})));}
    }
    results.append(row);
