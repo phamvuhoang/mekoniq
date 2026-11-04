@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm --filter @mekoniq/cloud-web... build",
+  "regions": ["sin1"],
+  "functions": {
+    "src/app/v1/**/route.ts": { "maxDuration": 30 },
+    "src/app/internal/jobs/**/route.ts": { "maxDuration": 25 }
+  }
+}

@@ -1,0 +1,11 @@
+# Cloud deployment (Next.js on Vercel, Supabase)
+
+**State: prepared, never executed.** No Vercel, Supabase or signing account was used; `pnpm release:dry-run` builds and judges a manifest locally.
+
+1. **Targets.** preview/staging use their own Supabase project and secrets and never the production database (`checkRelease` refuses it). Production: a Vercel plan that allows commercial use (Pro or better; Hobby is non-commercial) and a Supabase **Free-compatible** setup — nothing in the release may require a paid Supabase feature (`requiredPaidFeatures` must be empty).
+2. **Region.** Put the Vercel function region next to the Supabase project (`deploy/vercel/regions.json`; `apps/cloud-web/vercel.json` pins `sin1` and must be changed with the Supabase region; the manifest records both and the pair must be listed). Use the transaction pooler for `DATABASE_URL`; `maxDuration` is 30 s for API routes and 25 s for the job runner (the job batch budget is 20 s).
+3. **Secrets** (names in `docs/operations/secrets.md`) are set per Vercel environment. A missing production secret blocks the release (`secretsPresent`); readiness refuses to serve rather than skip.
+4. **Build → manifest.** `pnpm build && pnpm release:dry-run -- --env production --database production --ci ci.json`; the manifest holds the commit, the Next.js build digest, the signed-APK digest, every migration's sha256, the contract schemas' digests, the feature-registry digest, adapter/provider profile states, gates, the secret inventory (names only) and the rollback pointers. `pnpm release:verify` (or `node scripts/verify-release.mjs`) is the single decision function the workflow also calls.
+5. **Order.** expand-only migrations (`pnpm exec supabase db push`) → deploy → smoke (`/health/ready`) → record `vercelDeploymentId`. A failing migration stops before the deploy.
+6. **Production gates** that the manifest must carry as `accepted` with evidence: hosted Free functional acceptance, hosted Free capacity, production recovery drill. They are `not_verified` in a dry run and a production check fails on them — correctly.
+7. The GitHub workflow (`.github/workflows/release.yml`) deploys only when `RELEASE_DEPLOY_ENABLED=true`, a protected environment approves, and `verify-release` passes.

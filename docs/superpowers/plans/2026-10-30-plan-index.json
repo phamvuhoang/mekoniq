@@ -733,7 +733,9 @@
       "depends": "W11-T01..W11-T03",
       "testFile": "tests/acceptance/release-manifest.test.ts",
       "testCommand": "pnpm test:acceptance -- release-manifest",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W11-T04.md",
+      "remaining": "Nothing was deployed: needs a Vercel plan allowing commercial use and project, a Supabase project (Free-compatible), production secrets, a signed release APK (keystore), a protected GitHub environment with RELEASE_DEPLOY_ENABLED, and the hosted Free functional/capacity and production recovery drill evidence the production manifest requires. Staging install from clean artifacts, bad-migration stop and old-app-still-syncs have not been run on a hosted staging."
     },
     {
       "wave": "W11",

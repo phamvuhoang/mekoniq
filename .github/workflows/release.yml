@@ -1,0 +1,63 @@
+name: release
+# DRY RUN BY DEFAULT. This workflow builds, tests and writes a release manifest; it deploys NOTHING unless the repository variable RELEASE_DEPLOY_ENABLED is "true" AND the
+# protected GitHub environment approves AND `verify-release` passes. It was written without a Vercel/Supabase/Android-signing account and has never been executed against one.
+on:
+  workflow_dispatch:
+    inputs:
+      environment: { description: 'preview | staging | production', required: true, default: 'staging' }
+      database: { description: 'local | preview | staging | production (must match the environment)', required: true, default: 'staging' }
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    outputs: { ci: ${{ steps.ci.outputs.ci }} }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .node-version, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm supabase:start
+      - id: ci
+        run: |
+          set +e; res() { if "$@" >/dev/null 2>&1; then echo passed; else echo failed; fi; }
+          contracts=$(res pnpm contracts:check); type=$(res pnpm typecheck); lint=$(res pnpm lint); build=$(res pnpm build)
+          unit=$(res pnpm test:unit); ctr=$(res pnpm test:contracts); integ=$(res pnpm test:integration); sec=$(res pnpm test:security)
+          scan=$(res node scripts/release-security.mjs)
+          echo "ci={\"build\":\"$build\",\"typecheck\":\"$type\",\"lint\":\"$lint\",\"unit\":\"$unit\",\"contracts\":\"$ctr\",\"integration\":\"$integ\",\"security\":\"$sec\",\"bundleScan\":\"$scan\"}" >> "$GITHUB_OUTPUT"
+      - run: pnpm supabase:stop
+        if: always()
+  manifest:
+    needs: gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .node-version, cache: pnpm }
+      - run: pnpm install --frozen-lockfile && pnpm build
+      - run: echo '${{ needs.gates.outputs.ci }}' > ci.json
+      - name: Build the manifest and judge it (dry run; a blocked release exits non-zero and is still uploaded for inspection)
+        run: node scripts/release.mjs --env "${{ inputs.environment }}" --database "${{ inputs.database }}" --ci ci.json --out release-manifest.json
+        continue-on-error: true
+      - run: node scripts/verify-release.mjs release-manifest.json
+        id: verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: release-manifest, path: release-manifest.json }
+  deploy:
+    needs: manifest
+    if: ${{ vars.RELEASE_DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}   # protected environment = a person approves
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: release-manifest }
+      - run: node scripts/verify-release.mjs release-manifest.json   # same function again: a blocked manifest never deploys
+      - name: Migrations (expand-only unless cleared), then deploy; a failing migration stops here and nothing is deployed
+        run: |
+          pnpm exec supabase db push --linked
+          npx vercel pull --yes --environment="${{ inputs.environment }}" --token "$VERCEL_TOKEN"
+          npx vercel build --prod --token "$VERCEL_TOKEN"
+          npx vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
+        env: { VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}', SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}' }
