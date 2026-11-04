@@ -3,7 +3,9 @@ import {readFileSync} from 'node:fs';
 import postgres from 'postgres';
 import {closeCloudDatabase} from '../../apps/cloud-web/src/server/modules/identity/tenant-context';
 export async function setupWave02() {
- const url=process.env.DATABASE_ADMIN_URL??'postgresql://postgres:postgres@127.0.0.1:57422/postgres';
+ // MEKONIQ_TEST_DB lets the restore rehearsals point the whole cloud stack at a scratch database on the same local server; it defaults to the normal one.
+ const database=process.env.MEKONIQ_TEST_DB??'postgres';
+ const url=process.env.DATABASE_ADMIN_URL??`postgresql://postgres:postgres@127.0.0.1:57422/${database}`;
  const parsed=new URL(url);if(!['127.0.0.1','localhost'].includes(parsed.hostname)||parsed.port!=='57422')throw new Error('TEST_DATABASE_NOT_LOCAL_MEKONIQ');
  const admin=postgres(url,{max:1,prepare:false,connect_timeout:3,connection:{application_name:'mekoniq-wave02-tests'}});
  try {
@@ -26,7 +28,7 @@ export async function setupWave02() {
   const exists=column?await admin`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name=${t!} AND column_name=${column}`:await admin`SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name=${t!}`;
   if(!exists.length)await admin.begin(sql=>sql.unsafe(readFileSync(`supabase/migrations/${filename}`,'utf8')));
  }
- process.env.DATABASE_URL='postgresql://mekoniq_app:local_test_only@127.0.0.1:57422/postgres';
+ process.env.DATABASE_URL=`postgresql://mekoniq_app:local_test_only@127.0.0.1:57422/${database}`;
  if(!process.env.SUPABASE_SERVICE_ROLE_KEY){
   let status;try{status=JSON.parse(execFileSync('pnpm',['exec','supabase','status','--output','json'],{encoding:'utf8',timeout:15000,stdio:['ignore','pipe','ignore']}));}catch{throw new Error('LOCAL_SUPABASE_STATUS_UNAVAILABLE');}
   process.env.NEXT_PUBLIC_SUPABASE_URL=status.API_URL;process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=status.ANON_KEY;process.env.SUPABASE_SERVICE_ROLE_KEY=status.SERVICE_ROLE_KEY;

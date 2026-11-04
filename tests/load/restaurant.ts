@@ -42,7 +42,7 @@ try {
     if (again.status === 'accepted' && !again.duplicate) duplicates++;
     await timed(tablet, 'Bill.Close', { billId, expectedVersion: 2 }, id('close'));
   }
-  const seconds = (performance.now() - started) / 1000, events = await lab.count('CashPaymentRecorded');
+  const seconds = (performance.now() - started) / 1000, events = await lab.count('CashRecorded');
   const report: LoadReport & Record<string, unknown> = {
     profile: 'lan-scale', localAckP95Ms: Number(p95(ack).toFixed(2)), kitchenDeliveryP95Ms: Number(p95(kitchen).toFixed(2)), duplicateFinancialEffects: duplicates + Math.max(0, events - cashRecorded), durationSeconds: Number(seconds.toFixed(1)),
     tabletModel: 'none: in-process lab, no device', appCommit: currentCommit(), networkProfile: 'none: in-process, no LAN/WebSocket/Wi-Fi', measuredAt: new Date().toISOString(),

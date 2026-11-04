@@ -722,7 +722,9 @@
       "depends": "W04-T03..W04-T06, all release data modules",
       "testFile": "tests/integration/upgrade-recovery.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/upgrade-recovery.test.ts",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W11-T03.md",
+      "remaining": "Local tooling and rehearsals only. Still needed: a restore drill on the real project measuring RPO <= 5 min / RTO <= 30 min, an independent encrypted backup target with key custody, platform-level Auth restore and login after restore, a real Storage object copy/restore, and native Android export/import with device epochs. Free functional use does not depend on these; production recovery acceptance does."
     },
     {
       "wave": "W11",
