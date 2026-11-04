@@ -1,0 +1,6 @@
+{
+  "name": "supabase-free-fixture-1",
+  "note": "A workload chosen by MEKONIQ for the Free-compatibility check. It is not a level of load any venue has been shown to sustain.",
+  "venues": 1, "tablets": 3, "simulatedRobots": 1, "tables": 20, "ordersPerDay": 100, "days": 7, "projectionDays": 30,
+  "commandsPerOrder": 7
+}

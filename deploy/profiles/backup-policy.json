@@ -1,0 +1,12 @@
+{
+  "id": "backup-policy-free-1",
+  "status": "not_configured",
+  "note": "Declared policy, not evidence. A Free Supabase project has no managed daily backup / PITR to rely on: the logical export below is the backup. Nothing here is verified until a restore drill report exists.",
+  "targets": { "rpoMinutes": 5, "rtoMinutes": 30, "appliesTo": "production recovery gate (measured separately from Free functional acceptance)" },
+  "schedule": { "logicalExport": "every 6 hours and before every migration", "storageManifest": "with every logical export", "storageObjectCopy": "daily", "restoreDrill": "monthly, and after every major migration" },
+  "contents": ["public schema (structure + data) of the app database", "migration checksums and the list applied", "Auth inventory: user ids, emails, provider, created_at (no password hashes, no tokens)", "Storage object manifest: bucket, path, size, sha256, plus the object copies", "configuration revisions and the device key inventory (public keys only)", "a list of the secret NAMES needed to run (never values)"],
+  "excluded": ["secrets and private keys (kept in the secret store, rotated per docs/operations/secrets.md)", "live sessions and refresh tokens (restored sessions grant nothing)", "provider-managed schemas (auth, storage, realtime, vault, cron)"],
+  "encryption": { "required": true, "method": "age or GPG to a key held outside the cloud project", "keyRecovery": "two named custodians; recovery tested at each drill" },
+  "target": { "location": "independent object storage chosen by the operator (not the same Supabase project)", "chosen": null, "costNote": "storage + egress are the operator's; none is required to start the Free profile" },
+  "afterRestore": ["pending relay commands are expired", "in-flight jobs become 'unknown' and are reconciled by querying the other side, never replayed", "refresh tokens are not restored; users sign in again", "tablets re-sync from their own journals; gaps are repaired by the devices"]
+}

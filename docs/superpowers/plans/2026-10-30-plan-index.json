@@ -703,7 +703,7 @@
       "depends": "W05, W06 software gate, W09 selected",
       "testFile": "tests/acceptance/load-budget.test.ts",
       "testCommand": "pnpm test:load",
-      "status": "planned",
+      "status": "blocked_external",
       "additionalTestFiles": [
         "tests/acceptance/supabase-free-capacity.test.ts",
         "tests/integration/cloud-unavailable.test.ts"
@@ -711,7 +711,9 @@
       "additionalTestCommands": [
         "pnpm test:load:free",
         "pnpm test:integration -- tests/integration/cloud-unavailable.test.ts"
-      ]
+      ],
+      "evidence": "../../implementation/evidence/W11-T02.md",
+      "remaining": "Local in-process measurements only (no tablet, radio, WebSocket, battery/thermal, robot mission traffic, 24 h soak or spike). Still needed: the same load profile on physical supported tablets over the venue Wi-Fi, a 24 h soak and spike, and hosted Supabase Free measurements (database baseline, Storage, egress, Realtime messages, cached egress, MAU) read from the provider with their source and time. Free capacity here is a projection from measured local bytes per order."
     },
     {
       "wave": "W11",

@@ -31,7 +31,8 @@
     "dev:coordinator": "node scripts/dev-coordinator.mjs",
     "test:adapters": "node scripts/test-runner.mjs adapters",
     "test:providers": "node scripts/test-runner.mjs providers",
-    "test:load": "node scripts/test-runner.mjs load"
+    "test:load": "node scripts/test-runner.mjs load",
+    "test:load:free": "node scripts/test-runner.mjs load --free"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

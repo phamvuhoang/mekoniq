@@ -1,0 +1,15 @@
+{
+  "schema": "mekoniq-dashboards-1",
+  "dashboards": [
+    { "id": "operations", "title": "Operations", "panels": [
+      { "title": "Sync health", "alerts": ["sync-backlog", "sync-lag-seconds"] },
+      { "title": "Venue commands", "alerts": ["relay-expired-unanswered"] },
+      { "title": "Background work", "alerts": ["jobs-dead-letter", "jobs-unknown"] },
+      { "title": "Capacity (Free profile)", "alerts": ["database-quota-ratio"] } ] },
+    { "id": "money-and-documents", "title": "Money and documents", "panels": [
+      { "title": "Payments", "alerts": ["payments-unknown", "unapplied-funds"] },
+      { "title": "E-invoices", "alerts": ["invoices-unknown"] },
+      { "title": "Channels", "alerts": ["channel-orders-awaiting"] } ] }
+  ],
+  "providerStates": { "pausedOrQuotaExceeded": "Shown as 'cloud unavailable' with the operator action: resume the project in the Supabase dashboard. LAN operation continues; no ping is sent to avoid a pause." }
+}

@@ -9,6 +9,13 @@ if (!suites.has(suite) || !existsSync(`tests/${suite}`)) {
   console.error(`PREREQUISITE: suite ${suite} is not implemented`); process.exit(2);
 }
 if (suite === 'acceptance' && args[0] === 'continuity') args[0] = 'tests/acceptance/continuity-suite.test.ts';
+else if (suite === 'acceptance' && ['release-manifest', 'first-shift'].includes(args[0])) args[0] = `tests/acceptance/${args[0]}.test.ts`;
+if (suite === 'load') {
+  // the load suite MEASURES first (a fresh artifact for this commit), then asserts the budget on that artifact
+  const free = args.includes('--free'), measured = spawnSync(process.execPath, ['scripts/run-load.mjs', ...(free ? ['--free'] : [])], { stdio: 'inherit' });
+  if (measured.status !== 0) process.exit(measured.status ?? 1);
+  args.splice(0, args.length, free ? 'tests/acceptance/supabase-free-capacity.test.ts' : 'tests/acceptance/load-budget.test.ts');
+}
 const command = suite === 'e2e' ? ['playwright','test'] : ['vitest','run'];
 const child = spawnSync('pnpm', ['exec', ...command, ...(args.length ? args : [`tests/${suite}`])], {stdio:'inherit'});
 process.exit(child.status ?? 1);
