@@ -6,7 +6,7 @@ import {parseVietQr,vietQrPayload,crc16ccitt} from '../../integrations/payments/
 import {matchesPayment,judge,refundable} from '../../integrations/payments/src/reconciliation';
 import {IMPLEMENTED_SCHEMES,verifyPaymentWebhook} from '../../integrations/payments/src/provider-adapter';
 import {catalog} from '../../integrations/core/src/profile';
-import {createPaymentIntent,receivePaymentWebhook,requestProviderRefund,setPaymentProviderResolver,resolvePaymentProvider} from '../../apps/cloud-web/src/server/modules/payments/provider';
+import {createPaymentIntent,receivePaymentWebhook,requestProviderRefund,unappliedFunds,setPaymentProviderResolver,resolvePaymentProvider} from '../../apps/cloud-web/src/server/modules/payments/provider';
 import {rolePermissions,type Actor} from '../../apps/cloud-web/src/server/modules/identity/rbac';
 const rows=<T>(rig:Awaited<ReturnType<typeof createProviderRig<'payment'>>>,sql:string)=>rig.admin.unsafe(sql) as unknown as Promise<T[]>;
 test('provider callback for a different amount cannot settle the bill',async()=>{
@@ -203,5 +203,39 @@ test('a refund whose call never reached the provider is re-sent under the SAME i
     // the limit holds even if a stale read lets two requests start: the claim itself re-checks it
     await expect(Promise.all([requestProviderRefund(rig.owner, rig.scope, { intentId, amountMinor: '40000', reason: 'a', refundId: 'r-a' }), requestProviderRefund(rig.owner, rig.scope, { intentId, amountMinor: '40000', reason: 'b', refundId: 'r-b' })])).rejects.toThrow(/REFUND_EXCEEDS_CAPTURED|REFUND_IN_PROGRESS/);
     const [end] = await rows<{ refunded_minor: string }>(rig, `SELECT refunded_minor FROM payment_intent WHERE intent_id='${intentId}'`); expect(Number(end!.refunded_minor)).toBeLessThanOrEqual(100000);
+  } finally { await rig.close(); }
+});
+test('refund ledger: a retried older refund id is not counted again, and a sweeper that confirms first is not counted twice by the late HTTP answer', async () => {
+  const rig = await createProviderRig('payment');
+  try {
+    await rig.deliverFixture('signed-exact'); const intentId = rig.currentIntent()!, ask = (amountMinor: string, refundId: string) => requestProviderRefund(rig.owner, rig.scope, { intentId, amountMinor, reason: 'x', refundId });
+    await ask('10000', 'ref-A'); await ask('10000', 'ref-B');
+    const again = await ask('10000', 'ref-A'); // the client retries A after B went through
+    expect(again.refundedMinor).toBe('20000'); expect(rig.sim.calls.refund).toBe(2); // the provider was not asked again and nothing was added
+    const original = rig.sim.provider.refund!;
+    rig.sim.provider.refund = async input => { const r = await original(input); await rig.reconcile(); return r; }; // the sweeper confirms while our own HTTP answer is still on its way
+    const racing = await ask('30000', 'ref-C'); expect(racing.refundedMinor).toBe('50000');
+    const [end] = await rows<{ refunded_minor: string }>(rig, `SELECT refunded_minor FROM payment_intent WHERE intent_id='${intentId}'`); expect(end!.refunded_minor).toBe('50000');
+  } finally { await rig.close(); }
+});
+test('money the provider took after our intent closed is found by reconciliation alone, no webhook needed', async () => {
+  const rig = await createProviderRig('payment');
+  try {
+    const intentId = await rig.newIntent();
+    await rig.admin`UPDATE payment_intent SET status='expired' WHERE intent_id=${intentId}::uuid`;
+    rig.sim.program(intentId, { status: 'captured', amountMinor: '100000', currency: 'VND', merchantId: 'merchant-1', transactionId: 'TX-LATE', capturedAt: new Date().toISOString() });
+    await rig.reconcile();
+    const [i] = await rows<{ status: string; attention: string; captured_minor: string }>(rig, `SELECT status,attention,captured_minor FROM payment_intent WHERE intent_id='${intentId}'`);
+    expect(i).toMatchObject({ status: 'unapplied', attention: 'LATE_CAPTURE', captured_minor: '100000' });
+    const calls = rig.sim.calls.query!; await rig.reconcile(); expect(rig.sim.calls.query).toBe(calls); // an unapplied intent is not asked again
+  } finally { await rig.close(); }
+});
+test('the amount and currency the provider actually took are kept apart from the ones we expected', async () => {
+  const rig = await createProviderRig('payment');
+  try {
+    await rig.deliverFixture('signed-wrong-currency'); const intentId = rig.currentIntent()!;
+    const [i] = await rows<{ currency: string; amount_minor: string; captured_minor: string; captured_currency: string }>(rig, `SELECT currency,amount_minor,captured_minor,captured_currency FROM payment_intent WHERE intent_id='${intentId}'`);
+    expect(i!.currency).toBe('VND'); expect(i!.captured_currency).not.toBe('VND'); expect(Number(i!.captured_minor)).toBeGreaterThan(0);
+    const [view] = (await unappliedFunds(rig.owner, rig.scope)).intents; expect(view).toMatchObject({ currency: 'VND', capturedCurrency: i!.captured_currency, capturedMinor: i!.captured_minor });
   } finally { await rig.close(); }
 });
