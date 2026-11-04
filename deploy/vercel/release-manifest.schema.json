@@ -2,32 +2,348 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "MEKONIQ release manifest",
   "type": "object",
-  "required": ["schema", "createdAt", "commit", "dirty", "environment", "cloud", "android", "supabase", "contracts", "featureRegistrySha256", "profiles", "requiredProfiles", "gates", "secretsPresent", "databaseRef", "requiredPaidFeatures", "rollback"],
+  "required": [
+    "schema",
+    "createdAt",
+    "commit",
+    "dirty",
+    "environment",
+    "cloud",
+    "android",
+    "supabase",
+    "contracts",
+    "featureRegistrySha256",
+    "profiles",
+    "requiredProfiles",
+    "gates",
+    "secretsPresent",
+    "databaseRef",
+    "requiredPaidFeatures",
+    "rollback"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schema": { "const": "mekoniq-release-1" },
-    "createdAt": { "type": "string", "format": "date-time" },
-    "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
-    "dirty": { "type": "boolean" },
-    "environment": { "enum": ["preview", "staging", "production"] },
-    "cloud": { "type": "object", "required": ["nextBuildId", "nextBuildSha256", "vercelDeploymentId", "vercelPlan", "vercelRegion", "supabaseRegion", "nodeMajor"], "additionalProperties": false,
-      "properties": { "nextBuildId": { "type": "string" }, "nextBuildSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "vercelDeploymentId": { "type": ["string", "null"] }, "vercelPlan": { "enum": ["hobby", "pro", "enterprise", null] }, "vercelRegion": { "type": ["string", "null"] }, "supabaseRegion": { "type": ["string", "null"] }, "nodeMajor": { "type": "integer" } } },
-    "android": { "type": "object", "required": ["apkSha256", "signed", "versionCode"], "additionalProperties": false,
-      "properties": { "apkSha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" }, "signed": { "type": "boolean" }, "versionCode": { "type": ["integer", "null"] } } },
-    "supabase": { "type": "object", "required": ["majorVersion", "migrations", "expandOnly", "schemaRange", "projectProfile"], "additionalProperties": false,
-      "properties": { "majorVersion": { "type": "integer" }, "migrations": { "type": "array", "items": { "type": "object", "required": ["file", "sha256"], "properties": { "file": { "type": "string" }, "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } } } }, "expandOnly": { "type": "boolean" },
-        "schemaRange": { "type": "object", "required": ["minClient", "maxClient"], "properties": { "minClient": { "type": "integer" }, "maxClient": { "type": "integer" } } }, "projectProfile": { "const": "supabase-free-compatible" } } },
-    "contracts": { "type": "array", "items": { "type": "object", "required": ["file", "sha256"], "properties": { "file": { "type": "string" }, "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } } } },
-    "featureRegistrySha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-    "profiles": { "type": "object", "additionalProperties": { "type": "object", "required": ["status", "hardwareRequired"], "properties": { "status": { "type": "string" }, "hardwareRequired": { "type": "boolean" }, "evidence": { "type": ["string", "null"] } } } },
-    "requiredProfiles": { "type": "array", "items": { "type": "string" } },
-    "gates": { "type": "object", "required": ["ci", "freeFunctionalHosted", "freeCapacityHosted", "recoveryDrill"], "additionalProperties": false,
-      "properties": { "ci": { "type": "object", "additionalProperties": { "enum": ["passed", "failed", "not_run"] } },
-        "freeFunctionalHosted": { "$ref": "#/definitions/gate" }, "freeCapacityHosted": { "$ref": "#/definitions/gate" }, "recoveryDrill": { "$ref": "#/definitions/gate" } } },
-    "secretsPresent": { "type": "object", "additionalProperties": { "type": "boolean" }, "description": "NAMES only, never values" },
-    "databaseRef": { "enum": ["local", "preview", "staging", "production"] },
-    "requiredPaidFeatures": { "type": "array", "items": { "type": "string" } },
-    "rollback": { "type": "object", "required": ["previousDeploymentId", "previousSchemaRange"], "additionalProperties": false, "properties": { "previousDeploymentId": { "type": ["string", "null"] }, "previousSchemaRange": { "type": ["object", "null"] } } }
+    "schema": {
+      "const": "mekoniq-release-1"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "dirty": {
+      "type": "boolean"
+    },
+    "environment": {
+      "enum": [
+        "preview",
+        "staging",
+        "production"
+      ]
+    },
+    "cloud": {
+      "type": "object",
+      "required": [
+        "nextBuildId",
+        "nextBuildSha256",
+        "vercelDeploymentId",
+        "vercelPlan",
+        "vercelRegion",
+        "supabaseRegion",
+        "nodeMajor"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "nextBuildId": {
+          "type": "string"
+        },
+        "nextBuildSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "vercelDeploymentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vercelPlan": {
+          "enum": [
+            "hobby",
+            "pro",
+            "enterprise",
+            null
+          ]
+        },
+        "vercelRegion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supabaseRegion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nodeMajor": {
+          "type": "integer"
+        }
+      }
+    },
+    "android": {
+      "type": "object",
+      "required": [
+        "apkSha256",
+        "signed",
+        "versionCode"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "apkSha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "signed": {
+          "type": "boolean"
+        },
+        "versionCode": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "supabase": {
+      "type": "object",
+      "required": [
+        "majorVersion",
+        "migrations",
+        "expandOnly",
+        "schemaRange",
+        "projectProfile"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "majorVersion": {
+          "type": "integer"
+        },
+        "migrations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "file",
+              "sha256"
+            ],
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        "expandOnly": {
+          "type": "boolean"
+        },
+        "schemaRange": {
+          "type": "object",
+          "required": [
+            "minClient",
+            "maxClient"
+          ],
+          "properties": {
+            "minClient": {
+              "type": "integer"
+            },
+            "maxClient": {
+              "type": "integer"
+            }
+          }
+        },
+        "projectProfile": {
+          "const": "supabase-free-compatible"
+        }
+      }
+    },
+    "contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "file",
+          "sha256"
+        ],
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "featureRegistrySha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "status",
+          "hardwareRequired"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "hardwareRequired": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "requiredProfiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "gates": {
+      "type": "object",
+      "required": [
+        "ci",
+        "freeFunctionalHosted",
+        "freeCapacityHosted",
+        "recoveryDrill"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "ci": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "passed",
+              "failed",
+              "not_run"
+            ]
+          },
+          "required": [
+            "build",
+            "typecheck",
+            "lint",
+            "unit",
+            "contracts",
+            "integration",
+            "security"
+          ]
+        },
+        "freeFunctionalHosted": {
+          "$ref": "#/definitions/gate"
+        },
+        "freeCapacityHosted": {
+          "$ref": "#/definitions/gate"
+        },
+        "recoveryDrill": {
+          "$ref": "#/definitions/gate"
+        }
+      }
+    },
+    "secretsPresent": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "description": "NAMES only, never values",
+      "required": [
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "DATABASE_URL",
+        "JOB_HMAC_SECRET",
+        "DEVICE_GRANT_PRIVATE_KEY",
+        "CHANNEL_SECRET_MASTER"
+      ]
+    },
+    "databaseRef": {
+      "enum": [
+        "local",
+        "preview",
+        "staging",
+        "production"
+      ]
+    },
+    "requiredPaidFeatures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "required": [
+        "previousDeploymentId",
+        "previousSchemaRange"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "previousDeploymentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "previousSchemaRange": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    }
   },
-  "definitions": { "gate": { "type": "object", "required": ["status", "evidence"], "properties": { "status": { "enum": ["accepted", "not_verified", "failed"] }, "evidence": { "type": ["string", "null"] } } } }
+  "definitions": {
+    "gate": {
+      "type": "object",
+      "required": [
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "accepted",
+            "not_verified",
+            "failed"
+          ]
+        },
+        "evidence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
 }

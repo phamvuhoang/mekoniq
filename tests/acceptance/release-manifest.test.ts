@@ -1,12 +1,12 @@
 import { expect, test } from 'vitest';
-import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 // @ts-expect-error plain ESM script without types
 import { checkRelease, hardwareProfileReady, rollbackAllowed } from '../../scripts/verify-release.mjs';
 // @ts-expect-error plain ESM script without types
-import { buildManifest, validateManifest, apkSigned, findApk } from '../../scripts/release.mjs';
+import { buildManifest, validateManifest, apkSigned, findApk, nextBuildDigest } from '../../scripts/release.mjs';
 type Manifest = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 test('release refuses an unverified required adapter', () => {
   expect(checkRelease({ requiredProfiles: ['valetudo-r1'], profiles: { 'valetudo-r1': { status: 'integration_tested', hardwareRequired: true } } }).ok).toBe(false);
@@ -51,6 +51,25 @@ test('a complete production manifest passes; removing any single obligation bloc
   blocked(m => ({ ...m, gates: { ...m.gates, freeFunctionalHosted: { status: 'not_verified', evidence: null } } }), /Free functional acceptance on a hosted project is not_verified/);
   blocked(m => ({ ...m, gates: { ...m.gates, freeCapacityHosted: { status: 'accepted', evidence: null } } }), /Free capacity measured on a hosted project/);
   blocked(m => ({ ...m, gates: { ...m.gates, recoveryDrill: { status: 'failed', evidence: 'x' } } }), /production recovery drill/);
+});
+test('what a release requires is its own list: a gate or secret that is simply absent blocks too, in the schema and in the verdict', () => {
+  const m = good(), without = (path: (x: Manifest) => void) => { const c = structuredClone(m); path(c); return c; };
+  const ci = without(c => { c.gates.ci = {}; }), secrets = without(c => { c.secretsPresent = { DATABASE_URL: true }; });
+  for (const [bad, re] of [[ci, /CI gate build is missing/], [secrets, /production secret JOB_HMAC_SECRET is missing/]] as const) {
+    expect(verdict(bad).ok).toBe(false); expect(verdict(bad).reasons.join(' | ')).toMatch(re); expect(validateManifest(bad).length).toBeGreaterThan(0);
+  }
+  expect(verdict(without(c => { delete c.gates.ci.security; })).reasons.join()).toMatch(/CI gate security is missing/);
+  expect(verdict(without(c => { delete c.gates.recoveryDrill; })).ok).toBe(false); // an absent hosted gate is a reason, not a crash
+  expect(verdict({ ...m, environment: 'staging', databaseRef: 'staging', secretsPresent: {} }).reasons.join()).not.toMatch(/secret/); // preview/staging are not held to production secrets
+});
+test('the Next build digest covers the files that run, not only its metadata', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'next-')); mkdirSync(join(dir, 'server', 'app'), { recursive: true }); mkdirSync(join(dir, 'cache'), { recursive: true });
+  writeFileSync(join(dir, 'BUILD_ID'), 'b1'); writeFileSync(join(dir, 'server', 'app', 'page.js'), 'run(1)');
+  const before = nextBuildDigest(dir); expect(before).toMatch(/^[0-9a-f]{64}$/);
+  writeFileSync(join(dir, 'cache', 'x'), 'build cache is not deployed'); expect(nextBuildDigest(dir)).toBe(before);
+  writeFileSync(join(dir, 'server', 'app', 'page.js'), 'run(2)'); expect(nextBuildDigest(dir)).not.toBe(before);
+  writeFileSync(join(dir, 'server', 'app', 'page.js'), 'run(1)'); expect(nextBuildDigest(dir)).toBe(before);
+  expect(nextBuildDigest(join(dir, 'absent'))).toBe('');
 });
 test('preview and staging never touch the production database; they are not held to the production-only gates', () => {
   const staging = good({ environment: 'staging', databaseRef: 'staging' });

@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { checkRelease, rollbackAllowed } from './verify-release.mjs';
+import { REQUIRED_SECRETS, checkRelease, rollbackAllowed } from './verify-release.mjs';
 import { planMigrations } from './migrate-release.mjs';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); return i >= 0 ? process.argv[i + 1] : fallback; };
@@ -20,12 +20,19 @@ export function findApk(root = 'apps/tablet-android/android/app/build/outputs/ap
 }
 /** A signed APK is one `apksigner verify` accepts. Without the tool, or with an unsigned file, it is NOT signed — never assumed. */
 export function apkSigned(path) { return !!path && !/unsigned/.test(path) && spawnSync('apksigner', ['verify', path], { stdio: 'ignore' }).status === 0; }
+/** Digest of what a deployment actually runs: every file of the build output (path + bytes, sorted) except the build cache and tracing/diagnostic files, which are not deployed. '' when there is no build. */
+export function nextBuildDigest(root) {
+  if (!existsSync(root)) return '';
+  const skip = new Set(['cache', 'trace', 'diagnostics', 'dev']), files = [];
+  const walk = (dir, rel) => { for (const e of readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) { const r = rel ? `${rel}/${e.name}` : e.name; if (!rel && skip.has(e.name)) continue; if (e.isDirectory()) walk(join(dir, e.name), r); else if (e.isFile()) files.push(r); } };
+  walk(root, '');
+  const h = createHash('sha256'); for (const f of files) { h.update(f); h.update('\0'); h.update(sha(readFileSync(join(root, f)))); h.update('\n'); } return h.digest('hex');
+}
 export function buildManifest({ environment = 'staging', databaseRef = 'local', ci = {}, requiredProfiles = [], previous = null } = {}) {
-  const next = 'apps/cloud-web/.next', buildId = existsSync(join(next, 'BUILD_ID')) ? readFileSync(join(next, 'BUILD_ID'), 'utf8') : null;
-  const nextDigest = buildId ? sha(Buffer.concat(['BUILD_ID', 'build-manifest.json', 'app-path-routes-manifest.json'].map(f => existsSync(join(next, f)) ? readFileSync(join(next, f)) : Buffer.alloc(0)))) : '';
+  const next = 'apps/cloud-web/.next', buildId = existsSync(join(next, 'BUILD_ID')) ? readFileSync(join(next, 'BUILD_ID'), 'utf8') : null, nextDigest = buildId ? nextBuildDigest(next) : '';
   const apk = findApk(), plan = planMigrations(), catalog = JSON.parse(readFileSync('integrations/profiles/catalog.json', 'utf8')), free = JSON.parse(readFileSync('deploy/profiles/supabase-free.json', 'utf8'));
   const dir = 'packages/contracts/schemas', schemas = readdirSync(dir).filter(f => f.endsWith('.json')).sort();
-  const secretNames = ['SUPABASE_SERVICE_ROLE_KEY', 'DATABASE_URL', 'JOB_HMAC_SECRET', 'DEVICE_GRANT_PRIVATE_KEY', 'CHANNEL_SECRET_MASTER'];
+  const secretNames = REQUIRED_SECRETS;
   return {
     schema: 'mekoniq-release-1', createdAt: new Date().toISOString(), commit: git('rev-parse', 'HEAD'), dirty: git('status', '--porcelain').length > 0, environment,
     cloud: { nextBuildId: buildId ?? 'none', nextBuildSha256: nextDigest, vercelDeploymentId: null, vercelPlan: process.env.VERCEL_PLAN ?? null, vercelRegion: process.env.VERCEL_REGION ?? null, supabaseRegion: process.env.SUPABASE_REGION ?? null, nodeMajor: Number(process.versions.node.split('.')[0]) },

@@ -5,6 +5,9 @@ import { pathToFileURL } from 'node:url';
 const regions = JSON.parse(readFileSync(new URL('../deploy/vercel/regions.json', import.meta.url), 'utf8')).pairs;
 /** Plan function: hardware needs venue approval. */
 export function hardwareProfileReady(p) { return !p.hardwareRequired || p.status === 'venue_approved'; }
+/** What a release requires is fixed here, not read from the manifest: an entry the manifest leaves out is as blocking as one it marks failed. The manifest schema lists the same names. */
+export const REQUIRED_CI_GATES = ['build', 'typecheck', 'lint', 'unit', 'contracts', 'integration', 'security'];
+export const REQUIRED_SECRETS = ['SUPABASE_SERVICE_ROLE_KEY', 'DATABASE_URL', 'JOB_HMAC_SECRET', 'DEVICE_GRANT_PRIVATE_KEY', 'CHANNEL_SECRET_MASTER'];
 const READY_NON_HARDWARE = new Set(['production_approved', 'venue_approved', 'hardware_validated']);
 /** input: { requiredProfiles, profiles, manifest? }  — profiles alone is enough to judge adapters; with a manifest the whole release is judged. */
 export function checkRelease(input) {
@@ -16,7 +19,7 @@ export function checkRelease(input) {
   }
   const m = input.manifest; if (!m) return { ok: reasons.length === 0, reasons };
   const prod = m.environment === 'production';
-  for (const [name, state] of Object.entries(m.gates.ci)) if (state !== 'passed') reasons.push(`CI gate ${name} is ${state}`);
+  for (const name of new Set([...REQUIRED_CI_GATES, ...Object.keys(m.gates?.ci ?? {})])) { const state = m.gates?.ci?.[name]; if (state !== 'passed') reasons.push(`CI gate ${name} is ${state ?? 'missing'}`); }
   if (m.dirty && prod) reasons.push('production release from a dirty working tree');
   if (m.supabase.majorVersion !== 17) reasons.push(`Supabase PostgreSQL major ${m.supabase.majorVersion}, 17 is required`);
   if (!m.supabase.expandOnly && !m.supabase.clearance) reasons.push('a destructive migration is present without clearance (unknown clients / pending journals)');
@@ -28,10 +31,10 @@ export function checkRelease(input) {
   if (prod) {
     if (m.cloud.vercelPlan === 'hobby' || !m.cloud.vercelPlan) reasons.push('commercial use needs a Vercel plan that allows it (Hobby is non-commercial)');
     if (!m.cloud.supabaseRegion || !m.cloud.vercelRegion || !regions.some(r => r.supabase === m.cloud.supabaseRegion && r.vercel === m.cloud.vercelRegion)) reasons.push(`Vercel region ${m.cloud.vercelRegion} is not paired with Supabase region ${m.cloud.supabaseRegion}`);
-    for (const [name, present] of Object.entries(m.secretsPresent)) if (!present) reasons.push(`production secret ${name} is missing (readiness would refuse; no silent skip)`);
-    if (!Object.keys(m.secretsPresent).length) reasons.push('no secret inventory recorded');
+    if (!Object.keys(m.secretsPresent ?? {}).length) reasons.push('no secret inventory recorded');
+    for (const name of new Set([...REQUIRED_SECRETS, ...Object.keys(m.secretsPresent ?? {})])) if (!m.secretsPresent?.[name]) reasons.push(`production secret ${name} is missing (readiness would refuse; no silent skip)`);
     for (const [gate, label] of [['freeFunctionalHosted', 'Free functional acceptance on a hosted project'], ['freeCapacityHosted', 'Free capacity measured on a hosted project'], ['recoveryDrill', 'production recovery drill (RPO/RTO)']])
-      if (m.gates[gate].status !== 'accepted' || !m.gates[gate].evidence) reasons.push(`${label} is ${m.gates[gate].status}`);
+      if (m.gates?.[gate]?.status !== 'accepted' || !m.gates[gate].evidence) reasons.push(`${label} is ${m.gates?.[gate]?.status ?? 'missing'}`);
   }
   return { ok: reasons.length === 0, reasons };
 }
