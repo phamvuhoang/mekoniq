@@ -1,0 +1,218 @@
+[
+  {
+    "id": "tab",
+    "type": "tab",
+    "label": "MEKONIQ: ready fulfillment -> delivery request",
+    "disabled": false,
+    "info": "Uses only the automation API with a scoped service-account token. No database, MQTT or robot connection."
+  },
+  {
+    "id": "tick",
+    "type": "inject",
+    "z": "tab",
+    "name": "poll every 5 s",
+    "repeat": "5",
+    "once": false,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 140,
+    "y": 80,
+    "wires": [
+      [
+        "robots"
+      ]
+    ]
+  },
+  {
+    "id": "robots",
+    "type": "function",
+    "z": "tab",
+    "name": "request robots",
+    "func": "// Step 1: ask which robots the venue reports (read-only). Credentials come from the Node-RED environment, never from this file.\nconst base = env.get('MEKONIQ_BASE_URL'), venue = env.get('MEKONIQ_VENUE_ID'), token = env.get('MEKONIQ_TOKEN');\nif (!base || !venue || !token) { node.error('MEKONIQ_BASE_URL, MEKONIQ_VENUE_ID and MEKONIQ_TOKEN must be set in the environment'); return null; }\nmsg.method = 'GET';\nmsg.url = base + '/v1/automation/venues/' + encodeURIComponent(venue) + '/events?kind=robot';\nmsg.headers = { Authorization: 'Bearer ' + token };\nreturn msg;",
+    "outputs": 1,
+    "x": 330,
+    "y": 80,
+    "wires": [
+      [
+        "getRobots"
+      ]
+    ]
+  },
+  {
+    "id": "getRobots",
+    "type": "http request",
+    "z": "tab",
+    "name": "GET robots",
+    "method": "use",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "authType": "",
+    "x": 520,
+    "y": 80,
+    "wires": [
+      [
+        "storeRobots"
+      ]
+    ]
+  },
+  {
+    "id": "storeRobots",
+    "type": "function",
+    "z": "tab",
+    "name": "remember robots",
+    "func": "// Remember the robots (with the age of the data) for the next step.\nflow.set('robots', (msg.payload && msg.payload.records) || []);\nmsg.method = 'GET';\nmsg.url = env.get('MEKONIQ_BASE_URL') + '/v1/automation/venues/' + encodeURIComponent(env.get('MEKONIQ_VENUE_ID')) + '/events?kind=allocation';\nmsg.headers = { Authorization: 'Bearer ' + env.get('MEKONIQ_TOKEN') };\nreturn msg;",
+    "outputs": 1,
+    "x": 720,
+    "y": 80,
+    "wires": [
+      [
+        "getAllocations"
+      ]
+    ]
+  },
+  {
+    "id": "getAllocations",
+    "type": "http request",
+    "z": "tab",
+    "name": "GET allocations",
+    "method": "use",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "authType": "",
+    "x": 330,
+    "y": 160,
+    "wires": [
+      [
+        "decide"
+      ]
+    ]
+  },
+  {
+    "id": "decide",
+    "type": "function",
+    "z": "tab",
+    "name": "capability check + group",
+    "func": "// Fulfillment ready -> request ONE delivery per session. Explicit capability check first: no capable robot (trays, current map) means leave it to staff.\nconst venue = env.get('MEKONIQ_VENUE_ID'), mapRevision = env.get('MEKONIQ_MAP_REVISION');\nconst robots = (flow.get('robots') || []).filter(r => Number(r.state.trays) >= 1 && r.state.mapRevision === mapRevision && r.state.status !== 'offline' && r.state.driver !== undefined);\nconst groups = {};\nfor (const a of (msg.payload && msg.payload.records) || []) {\n  if (a.state.status === 'reserved' && !a.state.missionId) (groups[a.state.sessionId] = groups[a.state.sessionId] || []).push(a.id);\n}\nconst out = [], skipped = [];\nfor (const [groupId, ids] of Object.entries(groups)) {\n  if (!robots.length) { skipped.push({ payload: { groupId, reason: 'NO_CAPABLE_ROBOT' } }); continue; }\n  // The ids derive from the session, so a replayed poll or a restarted flow asks for the same mission, not another.\n  const operationId = 'delivery-' + groupId;\n  out.push({ operationId, payload: { type: 'Mission.Create', operationId, payload: { missionId: operationId, kind: 'delivery', allocationIds: ids.sort() } } });\n}\nreturn [out, skipped];",
+    "outputs": 2,
+    "x": 540,
+    "y": 160,
+    "wires": [
+      [
+        "submit"
+      ],
+      [
+        "left"
+      ]
+    ]
+  },
+  {
+    "id": "left",
+    "type": "debug",
+    "z": "tab",
+    "name": "left for staff",
+    "active": true,
+    "tosidebar": true,
+    "complete": "payload",
+    "x": 760,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "submit",
+    "type": "function",
+    "z": "tab",
+    "name": "build request",
+    "func": "msg.method = 'POST';\nmsg.url = env.get('MEKONIQ_BASE_URL') + '/v1/automation/venues/' + encodeURIComponent(env.get('MEKONIQ_VENUE_ID')) + '/commands';\nmsg.headers = { Authorization: 'Bearer ' + env.get('MEKONIQ_TOKEN'), 'Content-Type': 'application/json' };\nreturn msg;",
+    "outputs": 1,
+    "x": 330,
+    "y": 240,
+    "wires": [
+      [
+        "post"
+      ]
+    ]
+  },
+  {
+    "id": "post",
+    "type": "http request",
+    "z": "tab",
+    "name": "POST command",
+    "method": "use",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "authType": "",
+    "x": 520,
+    "y": 240,
+    "wires": [
+      [
+        "handle"
+      ]
+    ]
+  },
+  {
+    "id": "handle",
+    "type": "function",
+    "z": "tab",
+    "name": "pending? same operationId",
+    "func": "// pending / unknown: keep the SAME operationId and ask again later. Never mint a new one.\nconst r = msg.payload || {};\nif (r.status === 'pending' || r.status === 'unknown') {\n  const tries = (msg.tries || 0) + 1;\n  if (tries > 6) { node.warn('still ' + r.status + ' after ' + tries + ' checks: ' + msg.operationId); return [null, msg]; }\n  msg.tries = tries;\n  msg.method = 'GET';\n  msg.url = env.get('MEKONIQ_BASE_URL') + '/v1/automation/venues/' + encodeURIComponent(env.get('MEKONIQ_VENUE_ID')) + '/commands/' + encodeURIComponent(msg.operationId);\n  msg.headers = { Authorization: 'Bearer ' + env.get('MEKONIQ_TOKEN') };\n  return [msg, null];\n}\nreturn [null, msg];",
+    "outputs": 2,
+    "x": 740,
+    "y": 240,
+    "wires": [
+      [
+        "wait"
+      ],
+      [
+        "result"
+      ]
+    ]
+  },
+  {
+    "id": "wait",
+    "type": "delay",
+    "z": "tab",
+    "name": "wait 10 s",
+    "pauseType": "delay",
+    "timeout": "10",
+    "timeoutUnits": "seconds",
+    "rate": "1",
+    "nbRateUnits": "1",
+    "rateUnits": "second",
+    "randomFirst": "1",
+    "randomLast": "5",
+    "randomUnits": "seconds",
+    "drop": false,
+    "x": 520,
+    "y": 320,
+    "wires": [
+      [
+        "post"
+      ]
+    ]
+  },
+  {
+    "id": "result",
+    "type": "debug",
+    "z": "tab",
+    "name": "venue answer",
+    "active": true,
+    "tosidebar": true,
+    "complete": "payload",
+    "x": 760,
+    "y": 320,
+    "wires": []
+  }
+]

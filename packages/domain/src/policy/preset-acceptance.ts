@@ -8,6 +8,8 @@ export const IMPLEMENTED_FEATURES: ReadonlySet<string> = new Set([
   'catalog', 'sessions', 'pos.order', 'qr.order', 'kiosk.order', 'robot.order', 'orders', 'kitchen', 'fulfillment', 'robot.delivery', 'robot.bussing', 'fleet', 'discount', 'billing',
   'payment.cash', 'payment.transfer.manual', 'payment.terminal', 'refund', 'cash.shift', 'printing', 'guest.call', 'guest.bill', 'robot.guide',
   'reservations', 'promotion', 'loyalty', 'inventory', 'procurement', 'workforce', 'reporting', 'service.models',
+  // W09-T03: external channel orders (ExternalOrder.* commands, gated by this feature). `chain` is organisation-level cloud management, not a per-venue switch, so it stays out of this list.
+  'online',
 ]);
 export const PRESET_NAMES = Object.keys(profiles);
 /** What the capability matrix wants for a venue type beyond what the template can enable yet. */

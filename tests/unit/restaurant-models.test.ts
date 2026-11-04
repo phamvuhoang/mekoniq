@@ -57,7 +57,7 @@ test("every preset template only enables implemented modules, with dependencies 
 test("the implemented-module list covers every feature a command is gated by, and never claims a missing one", () => {
   const gated = new Set(Object.values(commandFeatures).map(f => f.feature));
   for (const f of gated) expect(IMPLEMENTED_FEATURES.has(f), f).toBe(true);
-  for (const f of ["chain", "online", "einvoice", "integrations", "payment.provider", "payment.transfer"]) expect(IMPLEMENTED_FEATURES.has(f), f).toBe(false);
+  for (const f of ["chain", "einvoice", "integrations", "payment.provider", "payment.transfer"]) expect(IMPLEMENTED_FEATURES.has(f), f).toBe(false);
   for (const f of IMPLEMENTED_FEATURES) expect(featureRegistry[f], f).toBeDefined();
 });
 

@@ -36,7 +36,7 @@ export const featureRegistry: Record<string,FeatureDefinition> = {
   'workforce':{id:'workforce',group:'F21',dependencies:[],permission:'workforce.write'},
   'reporting':{id:'reporting',group:'F22',dependencies:[],permission:'report.read'},
   'chain':{id:'chain',group:'F23',dependencies:[],permission:'chain.write'},
-  'online':{id:'online',group:'F24',dependencies:['catalog','orders'],permission:'channel.write'},
+  'online':{id:'online',group:'F24',dependencies:['catalog','orders'],permission:'channel.accept'},
   'einvoice':{id:'einvoice',group:'F25',dependencies:['billing'],permission:'invoice.issue',readiness:'invoiceProvider'},
   'service.models':{id:'service.models',group:'F26',dependencies:['catalog'],permission:'configuration.publish'},
   'integrations':{id:'integrations',group:'F27',dependencies:[],permission:'integration.write'},

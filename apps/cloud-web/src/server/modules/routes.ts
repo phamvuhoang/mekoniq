@@ -28,6 +28,7 @@ import {createSharedBalance,reserveSharedBalance,reconcileSharedBalance,readShar
 import {receiveExternalOrder,externalOrderStatus,newWebExternalId} from './channels/ingress';
 import {issueChannelCredential,revokeChannelCredential} from './channels/credentials';
 import {resolveDeadLetter} from './channels/restaurant-ack';
+import {submitAutomationCommand,readAutomationResult,readAutomationEvents} from './automation/api';
 import {readReport} from './reports/read';
 import {reportCsv} from '../../../../../packages/domain/src/reporting/report';
 import type {CommandEnvelope,CommandResult,JsonObject} from '../../../../../packages/contracts/generated/wire';
@@ -40,7 +41,7 @@ function protectMutation(request:Request,actor:Actor){if(actor.deviceId)return;i
 function safe(handler:CloudRoute['handler']):CloudRoute['handler']{return async(request,context)=>{
  try{return await handler(request,context);}catch(error){
   const code=error instanceof Error?error.message:'SERVICE_UNAVAILABLE';
-  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED|NOT_ENABLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED|EXHAUSTED|BALANCE_EXISTS/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_|ESCROW_/.test(code)?400:/PAYLOAD_TOO_LARGE/.test(code)?413:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
+  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED|NOT_ENABLED|KIND_NOT_READABLE/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED|EXHAUSTED|BALANCE_EXISTS|FEATURE_/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_|ESCROW_|COMMAND_NOT_RELAYABLE/.test(code)?400:/PAYLOAD_TOO_LARGE/.test(code)?413:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
   return Response.json({code:status===503?'SERVICE_UNAVAILABLE':code},{status});
  }
 };}
@@ -159,6 +160,10 @@ export function registerWave02Routes(register:(route:CloudRoute)=>void):void {
  add('POST','/v1/venues/:venueId/channels/credentials','channel.operate',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await issueChannelCredential(actor,actorScope(actor,c.params.venueId),{provider:String(body.provider),merchantId:String(body.merchantId),...(body.unavailablePolicy==='reject'||body.unavailablePolicy==='hold'?{unavailablePolicy:body.unavailablePolicy}:{})}),{status:201});});
  add('POST','/v1/venues/:venueId/channels/credentials/:keyId/revoke','channel.operate',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);return Response.json(await revokeChannelCredential(actor,actorScope(actor,c.params.venueId),c.params.keyId));});
  add('POST','/v1/venues/:venueId/channels/jobs/:jobId/resolve','channel.operate',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await resolveDeadLetter(actor,actorScope(actor,c.params.venueId),c.params.jobId,body.action as 'retry'|'abandon'));});
+ // Automation (service accounts): allowlisted commands with a caller-chosen operationId, own-result reads, polled events. Never a robot, MQTT or database path.
+ add('POST','/v1/automation/venues/:venueId/commands','relay.write',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);const result=await submitAutomationCommand(actor,actorScope(actor,c.params.venueId),{type:String(body.type),payload:object(body.payload) as Parameters<typeof submitAutomationCommand>[2]['payload'],...(typeof body.operationId==='string'?{operationId:body.operationId}:{})});return Response.json(result,{status:result.status==='pending'?202:200});});
+ add('GET','/v1/automation/venues/:venueId/commands/:operationId','relay.write',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await readAutomationResult(actor,actorScope(actor,c.params.venueId),c.params.operationId));});
+ add('GET','/v1/automation/venues/:venueId/events',null,async(request,c)=>{const actor=actorRequired(c.actor),q=new URL(request.url).searchParams;return Response.json(await readAutomationEvents(actor,actorScope(actor,c.params.venueId),q.get('kind')??'',q.get('after')??''));});
  // Guest web: no staff session. Scope comes from the venue-signed table token (or the public menu's own org/venue), never from a cookie.
  add('GET','/v1/guest/menu/:organizationId/:venueId',null,async(_request,c)=>Response.json(await guestMenu({organizationId:c.params.organizationId,venueId:c.params.venueId})));
  add('GET','/v1/guest/menu/:organizationId/:venueId/images/:assetId',null,async(_request,c)=>new Response(null,{status:302,headers:{Location:await guestMenuImage({organizationId:c.params.organizationId,venueId:c.params.venueId},c.params.assetId)}}));

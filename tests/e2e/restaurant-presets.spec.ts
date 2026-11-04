@@ -22,7 +22,7 @@ const navPaths=async(page:Page)=>page.getByRole('navigation').locator('a').evalu
 
 test('every offered template only switches on modules that exist, and the chain template says what it still waits for',()=>{
  for(const name of PRESET_NAMES){const a=presetAcceptance(name);expect(a.ok,name+JSON.stringify(a)).toBe(true);}
- expect(presetAcceptance('chain').deferred).toEqual(['chain','online']);
+ expect(presetAcceptance('chain').deferred).toEqual(['chain']);
 });
 
 test('cafe: counter ordering and payment screens are offered, robot and booking screens are not',async({page})=>{
