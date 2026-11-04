@@ -24,7 +24,7 @@ export async function enqueueGuestRelay(command:CommandEnvelope,expiresAt:string
 }
 /** External channel source (W09-T03): the cloud acts for a verified channel credential, never for a person. Only these two types may travel, with only `channel.ingest` at the venue. */
 export const channelRelaySource={deviceId:'cloud-channel',deviceEpoch:'cloud-channel-v1'};
-export const channelRelayTypes=new Set(['ExternalOrder.Receive','ExternalOrder.Expire']);
+export const channelRelayTypes=new Set(['ExternalOrder.Receive','ExternalOrder.Expire','ExternalOrder.Cancel']);
 export const channelRelayPermissions=['channel.ingest'];
 export const isChannelRelay=(command:CommandEnvelope)=>command.actorRef.startsWith('channel:')&&command.deviceId===channelRelaySource.deviceId&&command.deviceEpoch===channelRelaySource.deviceEpoch&&channelRelayTypes.has(command.type);
 export async function enqueueChannelRelay(command:CommandEnvelope,expiresAt:string){

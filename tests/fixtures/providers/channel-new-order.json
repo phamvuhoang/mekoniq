@@ -1,0 +1,20 @@
+{
+  "provenance": {
+    "kind": "emulated",
+    "redacted": true,
+    "sha256": "c82a9f9b2561ad19c4fdfa1d8430263eb727894b61d48c1ed2da957cb772c71e",
+    "source": "authored for the sandbox channel in W10-T04; not a partner recording"
+  },
+  "body": {
+    "merchantId": "shop-1",
+    "externalId": "order-1",
+    "currency": "VND",
+    "items": [
+      {
+        "itemId": "tea",
+        "quantity": "1"
+      }
+    ],
+    "declaredTotalMinor": "20000"
+  }
+}

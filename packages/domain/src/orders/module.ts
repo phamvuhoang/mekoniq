@@ -20,6 +20,20 @@ export function placeOrder(c:CommandEnvelope,s:Snapshot[],extra:JsonObject={}):D
  const state={sessionId,tableId:session.state.tableId!,menuVersion:menu.state.version!,currency:quoted.currency!,lines:materialized.lines,totalMinor:quoted.totalMinor,summary:summarize(materialized.lines),status:'open',policyRevision:c.policyRevision,occurredAt:c.occurredAt,...extra};
  return done([created('OrderAccepted','order',orderId,state),...uses.map(u=>changed('VoucherAppliedToOrder',u,{orderId})),changed('SessionOrderAdded',session,{orderIds:[...((session.state.orderIds ?? []) as string[]),orderId]}),...materialized.events],{orderId,lineIds:materialized.lines.map(l=>l.id),sessionId});
 }
+/** The rules for cancelling an order that is still open: nothing a station already made, nothing allocated, nothing ready/served/held — those need an explicit disposition first. */
+export function cancelOrderDecision(c:CommandEnvelope,s:Snapshot[]):Decision {
+  const order=requireState(s,'order',text(c.payload.orderId)); expectVersion(c,order); assertMutableOrder(order.state);
+  const reason=text(c.payload.reason,'REASON_REQUIRED');
+  const lines=lineReferences(order.state);
+  const portions=lines.map(line=>requireState(s,'fulfillment',String(line.id))), tickets=lines.flatMap(line=>ticketsFor(s,String(line.id)));
+  if(tickets.some(t=>BigInt(String(t.state.prepared??'0'))>0n)) return fail('REQUIRES_DISPOSITION'); // food a station already made, even a part of a combo, needs an explicit decision
+  if(portions.some(p=>BigInt(String(p.state.allocated))>0n)) return fail('FULFILLMENT_ACTIVE');
+  if(portions.some(p=>BigInt(String(p.state.ready))+BigInt(String(p.state.served))+BigInt(String(p.state.held ?? '0'))>0n)) return fail('REQUIRES_DISPOSITION');
+  const session=sessionForOrder(s,order.state);
+  const events=[changed('OrderCancelled',order,{status:'cancelled',cancellationReason:reason}),...portions.map(p=>changed('FulfillmentCancelled',p,{status:'cancelled'})),...tickets.map(t=>changed('KitchenTicketCancelled',t,{status:'cancelled'}))];
+  if(session) events.push(changed('SessionOrderCancelled',session,{}));
+  return done(events,{orderId:order.ref.id});
+}
 export function registerOrders(registry:ModuleRegistry):void {
  handle(registry,'Order.Place',(c,s)=>placeOrder(c,s));
  handle(registry,'Order.Amend',(c,s)=>{
@@ -35,17 +49,5 @@ export function registerOrders(registry:ModuleRegistry):void {
   const total=amount(String(BigInt(String(order.state.totalMinor))+BigInt(String(quoted.totalMinor)))), lines=[...lineReferences(order.state),...materialized.lines];
   return done([changed('OrderAmended',order,{lines,totalMinor:total,summary:summarize(lines)}),...uses.map(u=>changed('VoucherAppliedToOrder',u,{orderId:order.ref.id})),changed('SessionOrderAmended',session,{}),...materialized.events],{orderId:order.ref.id,lineIds:materialized.lines.map(l=>l.id)});
  });
- handle(registry,'Order.Cancel',(c,s)=>{
-  const order=requireState(s,'order',text(c.payload.orderId)); expectVersion(c,order); assertMutableOrder(order.state);
-  const reason=text(c.payload.reason,'REASON_REQUIRED');
-  const lines=lineReferences(order.state);
-  const portions=lines.map(line=>requireState(s,'fulfillment',String(line.id))), tickets=lines.flatMap(line=>ticketsFor(s,String(line.id)));
-  if(tickets.some(t=>BigInt(String(t.state.prepared??'0'))>0n)) return fail('REQUIRES_DISPOSITION'); // food a station already made, even a part of a combo, needs an explicit decision
-  if(portions.some(p=>BigInt(String(p.state.allocated))>0n)) return fail('FULFILLMENT_ACTIVE');
-  if(portions.some(p=>BigInt(String(p.state.ready))+BigInt(String(p.state.served))+BigInt(String(p.state.held ?? '0'))>0n)) return fail('REQUIRES_DISPOSITION');
-  const session=sessionForOrder(s,order.state);
-  const events=[changed('OrderCancelled',order,{status:'cancelled',cancellationReason:reason}),...portions.map(p=>changed('FulfillmentCancelled',p,{status:'cancelled'})),...tickets.map(t=>changed('KitchenTicketCancelled',t,{status:'cancelled'}))];
-  if(session) events.push(changed('SessionOrderCancelled',session,{}));
-  return done(events,{orderId:order.ref.id});
- });
+ handle(registry,'Order.Cancel',(c,s)=>cancelOrderDecision(c,s));
 }

@@ -2,7 +2,7 @@ import {randomUUID} from 'node:crypto';
 import type {CommandEnvelope,JsonObject} from '../../../../../../packages/contracts/generated/wire';
 import {hashPayload,parseJsonStrict} from '../../../../../../packages/contracts/src/index';
 import {profileFor,type NormalizedOrder} from '../../../../../../integrations/core/src/connector';
-import type {ExternalStatus} from '../../../../../../integrations/core/src/inbox';
+import {channelStatus,type ExternalStatus} from '../../../../../../integrations/core/src/inbox';
 import {classifyReceipt,payloadFingerprint} from '../../../../../../integrations/core/src/external-ids';
 import {KEY_HEADER,SIGNATURE_HEADER,TIMESTAMP_HEADER,verifyWebhook} from '../../../../../../integrations/core/src/webhook-signature';
 import {createSandboxChannel} from '../../../../../../integrations/core/src/sandbox';
@@ -28,7 +28,7 @@ export async function authenticateChannel(provider:string,rawBody:string,headers
  if(!verdict.ok)throw new Error(verdict.code==='TIMESTAMP_OUT_OF_WINDOW'?'TIMESTAMP_EXPIRED':'INVALID_SIGNATURE');
  return {scope:{organizationId:credential.organizationId,venueId:credential.venueId},merchantId:credential.merchantId,policy:credential.unavailablePolicy,actorRef:'channel:'+keyId};
 }
-export function relayOrderCommand(scope:TenantScope,actorRef:string,type:'ExternalOrder.Receive'|'ExternalOrder.Expire',payload:JsonObject,operationId:string,context:{epoch:number;policyRevision:number}):CommandEnvelope{
+export function relayOrderCommand(scope:TenantScope,actorRef:string,type:'ExternalOrder.Receive'|'ExternalOrder.Expire'|'ExternalOrder.Cancel',payload:JsonObject,operationId:string,context:{epoch:number;policyRevision:number}):CommandEnvelope{
  const at=new Date().toISOString();
  return {schemaVersion:1,...scope,operationId,type,actorRef,...channelRelaySource,coordinatorEpoch:context.epoch,policyRevision:context.policyRevision,occurredAt:at,recordedAt:at,payload,payloadHash:hashPayload(payload)};
 }
@@ -46,8 +46,8 @@ export async function relayReceive(scope:TenantScope,actorRef:string,row:{normal
  await enqueueChannelRelay(command,new Date(Math.min(Date.parse(n.expiresAt),Date.now()+RELAY_WINDOW_MS)).toISOString());
  return {operationId,attempt};
 }
-function view(r:{status:ExternalStatus|string;code?:string|null;venue_recorded?:boolean;attention?:string|null;expires_at?:string|Date}):JsonObject{
- return {status:String(r.status),venueRecorded:r.venue_recorded===true,...(r.code?{code:String(r.code)}:{}),...(r.attention?{attention:String(r.attention)}:{}),...(r.expires_at?{expiresAt:new Date(r.expires_at).toISOString()}:{})};
+function view(r:{status:ExternalStatus|string;code?:string|null;venue_recorded?:boolean;attention?:string|null;expires_at?:string|Date;cancel_status?:string|null;cancel_code?:string|null}):JsonObject{
+ return {status:String(r.status),channelStatus:channelStatus(r.status==='accepted',r.status==='expired'||r.status==='rejected'),...(r.cancel_status?{cancelStatus:r.cancel_status,...(r.cancel_code?{cancelCode:r.cancel_code}:{})}:{}),venueRecorded:r.venue_recorded===true,...(r.code?{code:String(r.code)}:{}),...(r.attention?{attention:String(r.attention)}:{}),...(r.expires_at?{expiresAt:new Date(r.expires_at).toISOString()}:{})};
 }
 /**
  * POST /v1/channels/:provider/webhooks. `202 received` means "stored durably and handed to the venue" — never that the restaurant accepted. The same event again returns the stored answer;
@@ -95,8 +95,18 @@ export async function scheduleSweep(scope:TenantScope,n:{provider:string;merchan
 export async function externalOrderStatus(input:{provider:string;merchantId:string;externalId:string;headers:Headers;nowMs?:number;publicScope?:TenantScope}):Promise<JsonObject>{
  const auth=await authenticateChannel(input.provider,'',input.headers,input.nowMs??Date.now(),input.publicScope);
  if(auth.merchantId!==input.merchantId)throw new Error('MERCHANT_MISMATCH');
- const [row]=await withTenant(auth.scope,sql=>sql`SELECT status,code,venue_recorded,attention,expires_at,provider_ref FROM external_order WHERE organization_id=${auth.scope.organizationId} AND venue_id=${auth.scope.venueId} AND provider_id=${input.provider} AND merchant_id=${input.merchantId} AND external_id=${input.externalId}`);
+ const [row]=await withTenant(auth.scope,sql=>sql`SELECT status,code,venue_recorded,attention,expires_at,provider_ref,cancel_status,cancel_code FROM external_order WHERE organization_id=${auth.scope.organizationId} AND venue_id=${auth.scope.venueId} AND provider_id=${input.provider} AND merchant_id=${input.merchantId} AND external_id=${input.externalId}`);
  if(!row)throw new Error('EXTERNAL_ORDER_NOT_FOUND');
  return view(row as never);
 }
 export const newWebExternalId=()=>'web-'+randomUUID();
+/** POST …/cancellations: same authentication as an order, then relay. The answer is the venue's, read from the status endpoint (`cancelStatus`). */
+export async function receiveChannelCancellation(input:{provider:string;rawBody:string;headers:Headers;nowMs?:number}):Promise<IngressResult>{
+ const nowMs=input.nowMs??Date.now();
+ if(Buffer.byteLength(input.rawBody)>MAX_BODY)throw new Error('PAYLOAD_TOO_LARGE');
+ const auth=await authenticateChannel(input.provider,input.rawBody,input.headers,nowMs);
+ let body:Record<string,unknown>;try{body=parseJsonStrict(input.rawBody,MAX_BODY) as Record<string,unknown>;}catch{throw new Error('INVALID_BODY');}
+ if(body.merchantId!==auth.merchantId||typeof body.externalId!=='string')throw new Error('MERCHANT_MISMATCH');
+ const {requestChannelCancellation}=await import('./restaurant-ack');
+ return {status:202,body:await requestChannelCancellation(auth.scope,auth.actorRef,{provider:input.provider,merchantId:auth.merchantId,externalId:body.externalId},String(body.reason??''))};
+}

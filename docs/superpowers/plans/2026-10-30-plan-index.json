@@ -659,7 +659,9 @@
       "depends": "W10-T01, W09-T03, W09-T04",
       "testFile": "tests/providers/channel-provider.test.ts",
       "testCommand": "pnpm test:providers -- tests/providers/channel-provider.test.ts",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W10-T04.md",
+      "remaining": "No channel is chosen: needs the Zalo app registration or marketplace/POS partner agreement, official API + version, webhook signature and permission scopes, a sandbox account and callback trace, the concrete connector registered with its profile, and an acceptance report. Venue-acknowledgement, expiry, cancellation, registry and status rules are verified locally against the sandbox emulator only; external-POS-only routing and partial fulfilment are not implemented."
     },
     {
       "wave": "W10",

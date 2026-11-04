@@ -20,8 +20,10 @@ export async function setupWave02() {
  const [storageUpgrade]=await admin`SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='public.asset_manifest'::regclass AND conname='asset_manifest_status_check' AND pg_get_constraintdef(oid) LIKE '%collected%') AS applied`;
  if(!storageUpgrade.applied)await admin.begin(sql=>sql.unsafe(readFileSync('supabase/migrations/20261031000100_cloud_storage_reservations.sql','utf8')));
  // Later waves add tables; each migration is applied once, detected by the table it creates.
- for(const [filename,table] of [['20261104000100_chain_rollout.sql','chain_revision'],['20261104000200_chain_shared_balance.sql','chain_shared_balance'],['20261104000300_external_orders.sql','external_order'],['20261104000400_payment_intents.sql','payment_intent'],['20261104000500_invoice_requests.sql','invoice_request']] as const){
-  const exists=await admin`SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name=${table}`;
+ for(const [filename,table] of [['20261104000100_chain_rollout.sql','chain_revision'],['20261104000200_chain_shared_balance.sql','chain_shared_balance'],['20261104000300_external_orders.sql','external_order'],['20261104000400_payment_intents.sql','payment_intent'],['20261104000500_invoice_requests.sql','invoice_request'],['20261104000600_external_order_cancel.sql','external_order.cancel_status']] as const){
+  // `table` detects a new table; `table.column` detects a column added to an existing one
+  const [t,column]=table.split('.');
+  const exists=column?await admin`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name=${t!} AND column_name=${column}`:await admin`SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name=${t!}`;
   if(!exists.length)await admin.begin(sql=>sql.unsafe(readFileSync(`supabase/migrations/${filename}`,'utf8')));
  }
  process.env.DATABASE_URL='postgresql://mekoniq_app:local_test_only@127.0.0.1:57422/postgres';

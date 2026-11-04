@@ -134,6 +134,7 @@ export const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_
  'ExternalOrder.Accept':{feature:'online',intent:'finish_existing'},
  'ExternalOrder.Reject':{feature:'online',intent:'finish_existing'},
  'ExternalOrder.Expire':{feature:'online',intent:'finish_existing'},
+ 'ExternalOrder.Cancel':{feature:'online',intent:'finish_existing'},
  'Voucher.ReturnEscrow':{feature:'promotion',intent:'finish_existing'},
  'Voucher.Reserve':{feature:'promotion',intent:'new'},
  'Voucher.Redeem':{feature:'promotion',intent:'finish_existing'},

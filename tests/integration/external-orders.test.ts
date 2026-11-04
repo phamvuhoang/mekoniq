@@ -186,7 +186,7 @@ test('outbound: a lost acknowledgement is queried, not repeated; a 429 is retrie
  await runAll(sandbox);
  const done=await jobs('order.accepted');expect(done.map(j=>j.status)).toEqual(['confirmed','confirmed','confirmed']);
  expect(sandbox.acted).toBe(3); // three orders, three provider-side effects: the lost ack and the 429 produced no duplicates
- for(const id of ['fx-1','fx-2','fx-3'])expect((await rows(id))[0]!.provider_ref).toMatch(/^sbx-channel-effect:/);
+ for(const id of ['fx-1','fx-2','fx-3'])expect((await rows(id))[0]!.provider_ref).toMatch(/^sbx-[0-9a-f]{32}$/);
 });
 test('outbound: repeated refusal ends in dead_letter and only channel.operate resolves it',async()=>{
  await send(body({externalId:'dl-1'}));await venueSays('dl-1',{status:'accepted'});await refreshFromVenue(scope,key1('dl-1'));

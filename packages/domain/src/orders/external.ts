@@ -2,7 +2,7 @@ import type { ModuleRegistry } from '../modules';
 import type { CommandEnvelope, Decision, JsonObject, Snapshot } from '../../../contracts/src/index';
 import { currentMenu } from '../catalog/menu';
 import { quoteForCommand } from '../pricing/quote';
-import { placeOrder } from './module';
+import { cancelOrderDecision, placeOrder } from './module';
 import { changed, created, done, fail, find, handle, requireState, text } from '../restaurant-context';
 const PART = /^[A-Za-z0-9._-]{1,60}$/;
 /** One external order = one aggregate, named by the channel's own identity (provider, merchant, external id): the same event can never become a second order here. */
@@ -61,5 +61,16 @@ export function registerExternalOrders(registry: ModuleRegistry): void {
     if (ext.state.status !== 'received') return fail('EXTERNAL_ORDER_NOT_PENDING');
     if (!expired(ext.state, c.recordedAt)) return fail('EXTERNAL_ORDER_NOT_EXPIRED');
     return done([changed('ExternalOrderExpired', ext, { status: 'expired', expiredAt: c.recordedAt })], { externalOrderId: ext.ref.id });
+  });
+  // ExternalOrder.Cancel {externalOrderId,reason}: the CHANNEL asks to cancel. Not yet accepted -> simply cancelled. Accepted -> the same rules as cancelling any order (nothing a station already
+  // made or allocated is thrown away silently: REQUIRES_DISPOSITION / FULFILLMENT_ACTIVE come back and the channel is told it was refused).
+  handle(registry, 'ExternalOrder.Cancel', (c, s): Decision => {
+    const ext = requireState(s, 'external-order', text(c.payload.externalOrderId)), reason = text(c.payload.reason, 'REASON_REQUIRED');
+    if (ext.state.status === 'cancelled') return done([], { externalOrderId: ext.ref.id, duplicate: true });
+    if (ext.state.status === 'received') return done([changed('ExternalOrderCancelled', ext, { status: 'cancelled', cancellationReason: reason, cancelledAt: c.recordedAt })], { externalOrderId: ext.ref.id });
+    if (ext.state.status !== 'accepted') return fail('EXTERNAL_ORDER_NOT_PENDING');
+    const order = requireState(s, 'order', String(ext.state.orderId)), cancelled = cancelOrderDecision({ ...c, payload: { orderId: order.ref.id, reason, expectedVersion: order.version } }, s);
+    if (!cancelled.ok) return cancelled;
+    return done([...cancelled.events, changed('ExternalOrderCancelled', ext, { status: 'cancelled', cancellationReason: reason, cancelledAt: c.recordedAt })], { externalOrderId: ext.ref.id, orderId: order.ref.id });
   });
 }

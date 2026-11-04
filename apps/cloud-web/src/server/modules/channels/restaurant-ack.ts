@@ -38,10 +38,11 @@ export async function refreshFromVenue(scope:TenantScope,key:{provider:string;me
   await setStatus(scope,row,status,code);await queueEffect(scope,row,status==='expired'?'order.expired':'order.rejected',code);
  }
  const venue=fact?.status as string|undefined;
- if(venue==='accepted'||venue==='rejected'||venue==='expired'){
+ if(venue==='accepted'||venue==='rejected'||venue==='expired'||venue==='cancelled'){
   const wanted=venue as ExternalStatus,next=advance(status,wanted);
-  if(next===wanted&&status==='received'){await setStatus(scope,row,wanted,wanted==='rejected'?String(fact?.rejectionReason??'REJECTED'):undefined);await queueEffect(scope,row,wanted==='accepted'?'order.accepted':wanted==='rejected'?'order.rejected':'order.expired',wanted==='rejected'?String(fact?.rejectionReason??''):undefined);status=wanted;}
-  else if(status!==wanted&&status!=='received')await setStatus(scope,row,status,undefined,`VENUE_${venue.toUpperCase()}_AFTER_${status.toUpperCase()}`); // contradiction: keep both facts visible
+  if(wanted==='cancelled'&&next==='cancelled'){await setStatus(scope,row,'cancelled');await withTenant(scope,sql=>sql`UPDATE external_order SET cancel_status=CASE WHEN cancel_status IS NULL THEN cancel_status ELSE 'done' END WHERE id=${row.id}`);status='cancelled';}
+  else if(next===wanted&&status==='received'){await setStatus(scope,row,wanted,wanted==='rejected'?String(fact?.rejectionReason??'REJECTED'):undefined);await queueEffect(scope,row,wanted==='accepted'?'order.accepted':wanted==='rejected'?'order.rejected':'order.expired',wanted==='rejected'?String(fact?.rejectionReason??''):undefined);status=wanted;}
+  else if(status!==wanted&&status!=='received'&&status!=='accepted')await setStatus(scope,row,status,undefined,`VENUE_${venue.toUpperCase()}_AFTER_${status.toUpperCase()}`); // contradiction: keep both facts visible
  }
  return {...row,status};
 }
@@ -77,4 +78,31 @@ export async function resolveDeadLetter(actor:Actor,scope:TenantScope,jobId:stri
   ?sql`UPDATE cloud_job SET status='pending',attempts=0,due_at=now(),lease_until=NULL WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND id=${jobId} AND type='channel.effect' AND status='dead_letter' RETURNING id`
   :sql`UPDATE cloud_job SET status='failed',result=${sql.json({abandonedBy:actor.id})} WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND id=${jobId} AND type='channel.effect' AND status='dead_letter' RETURNING id`);
  if(rows.length!==1)throw new Error('DEAD_LETTER_NOT_FOUND');return {jobId,action};
+}
+/** True only when the VENUE itself decided yes (its own synced aggregate moved the cloud record to accepted). The provider is never told "accepted" on any other basis. */
+export async function venueAcknowledged(scope:TenantScope,key:{provider:string;merchantId:string;externalId:string}){
+ const row=await load(scope,key);return row?.status==='accepted';
+}
+/**
+ * The channel asks to cancel. The cloud only relays the request; the venue answers under the normal order-cancel rules (an order whose food is made or allocated is refused, not cancelled
+ * behind the kitchen's back). The answer is read back from the relay receipt / the venue's aggregate.
+ */
+export async function requestChannelCancellation(scope:TenantScope,actorRef:string,key:{provider:string;merchantId:string;externalId:string},reason:string):Promise<JsonObject>{
+ const row=await load(scope,key);if(!row)throw new Error('EXTERNAL_ORDER_NOT_FOUND');
+ if(!reason?.trim()||reason.length>200)throw new Error('INVALID_REASON');
+ if(row.status==='cancelled')return {cancelStatus:'done',duplicate:true};
+ if(row.status!=='received'&&row.status!=='accepted')throw new Error('EXTERNAL_ORDER_NOT_CANCELLABLE');
+ const operationId=`ext-can-${hashPayload({i:idOf(row)}).slice(0,24)}`;
+ await enqueueChannelRelay(relayOrderCommand(scope,actorRef,'ExternalOrder.Cancel',{externalOrderId:idOf(row),reason:reason.trim()},operationId,await venueContext(scope)),new Date(Date.now()+300_000).toISOString());
+ await withTenant(scope,sql=>sql`UPDATE external_order SET cancel_status='pending',cancel_operation_id=${operationId},updated_at=now() WHERE id=${row.id} AND cancel_status IS DISTINCT FROM 'done'`);
+ return {cancelStatus:'pending'};
+}
+/** Learn the venue's answer to a cancellation: done (cancelled), refused (with its code), or still pending. */
+export async function refreshCancellation(scope:TenantScope,key:{provider:string;merchantId:string;externalId:string}):Promise<JsonObject>{
+ await refreshFromVenue(scope,key);
+ const [row]=await withTenant(scope,sql=>sql`SELECT status,cancel_status,cancel_operation_id FROM external_order WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND provider_id=${key.provider} AND merchant_id=${key.merchantId} AND external_id=${key.externalId}`);
+ if(!row?.cancel_operation_id||row.cancel_status!=='pending')return {cancelStatus:(row?.cancel_status as string|null)??'none'};
+ const [relay]=await withTenant(scope,sql=>sql`SELECT status,venue_receipt FROM relay_command WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND operation_id=${row.cancel_operation_id}`);
+ if(relay?.status==='rejected'){const code=String((relay.venue_receipt as JsonObject|null)?.code??'REJECTED');await withTenant(scope,sql=>sql`UPDATE external_order SET cancel_status='refused',cancel_code=${code},updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND provider_id=${key.provider} AND merchant_id=${key.merchantId} AND external_id=${key.externalId}`);return {cancelStatus:'refused',code};}
+ return {cancelStatus:'pending'};
 }

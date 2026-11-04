@@ -25,7 +25,7 @@ import {setBranchOverride} from './chain/branch-overrides';
 import {rolloutStatus} from './chain/rollout-state';
 import {chainReport,chainReportCsv} from './chain/reports';
 import {createSharedBalance,reserveSharedBalance,reconcileSharedBalance,readSharedBalance} from './chain/shared-entitlements';
-import {receiveExternalOrder,externalOrderStatus,newWebExternalId} from './channels/ingress';
+import {receiveExternalOrder,receiveChannelCancellation,externalOrderStatus,newWebExternalId} from './channels/ingress';
 import {issueChannelCredential,revokeChannelCredential} from './channels/credentials';
 import {resolveDeadLetter} from './channels/restaurant-ack';
 import {submitAutomationCommand,readAutomationResult,readAutomationEvents} from './automation/api';
@@ -44,7 +44,7 @@ function protectMutation(request:Request,actor:Actor){if(actor.deviceId)return;i
 function safe(handler:CloudRoute['handler']):CloudRoute['handler']{return async(request,context)=>{
  try{return await handler(request,context);}catch(error){
   const code=error instanceof Error?error.message:'SERVICE_UNAVAILABLE';
-  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED|NOT_ENABLED|KIND_NOT_READABLE/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED|EXHAUSTED|BALANCE_EXISTS|FEATURE_|REFUND_IN_PROGRESS|INTENT_NOT_CAPTURED|INVOICE_NOT_ISSUED/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_|ESCROW_|COMMAND_NOT_RELAYABLE|AMOUNT_EXCEEDS|BILL_NOT_PAYABLE|MERCHANT_NOT_BOUND|REFUND_EXCEEDS|SIGNATURE_SCHEME|UNSUPPORTED_BY_PROVIDER|REJECTED_BY_PROVIDER/.test(code)?400:/PAYLOAD_TOO_LARGE/.test(code)?413:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
+  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED|NOT_ENABLED|KIND_NOT_READABLE/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED|EXHAUSTED|BALANCE_EXISTS|FEATURE_|REFUND_IN_PROGRESS|INTENT_NOT_CAPTURED|INVOICE_NOT_ISSUED|NOT_CANCELLABLE/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_|ESCROW_|COMMAND_NOT_RELAYABLE|AMOUNT_EXCEEDS|BILL_NOT_PAYABLE|MERCHANT_NOT_BOUND|REFUND_EXCEEDS|SIGNATURE_SCHEME|UNSUPPORTED_BY_PROVIDER|REJECTED_BY_PROVIDER/.test(code)?400:/PAYLOAD_TOO_LARGE/.test(code)?413:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
   return Response.json({code:status===503?'SERVICE_UNAVAILABLE':code},{status});
  }
 };}
@@ -152,6 +152,7 @@ export function registerWave02Routes(register:(route:CloudRoute)=>void):void {
  add('POST','/v1/chain/shared-balances/:id/reconcile','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await reconcileSharedBalance(actor,actor.organizationId,{balanceId:c.params.id,venueId:String(body.venueId),release:body.release===true}));});
  // External channels: signed webhooks are verified on the raw bytes (`raw`), before any parsing; 202 means received, never accepted.
  register({method:'POST',path:'/v1/channels/:provider/webhooks',permission:null,bodyLimit:65536,raw:true,handler:safe(async(request,c)=>{const r=await receiveExternalOrder({provider:c.params.provider,rawBody:c.rawBody,headers:request.headers});return Response.json(r.body,{status:r.status});})});
+ register({method:'POST',path:'/v1/channels/:provider/cancellations',permission:null,bodyLimit:8192,raw:true,handler:safe(async(request,c)=>{const r=await receiveChannelCancellation({provider:c.params.provider,rawBody:c.rawBody,headers:request.headers});return Response.json(r.body,{status:r.status});})});
  add('GET','/v1/channels/:provider/merchants/:merchantId/orders/:externalId',null,async(request,c)=>Response.json(await externalOrderStatus({provider:c.params.provider,merchantId:c.params.merchantId,externalId:c.params.externalId,headers:request.headers})));
  register({method:'POST',path:'/v1/channels/web-sandbox/:organizationId/:venueId/orders',permission:null,bodyLimit:16384,raw:true,handler:safe(async(request,c)=>{
   // Sandbox web checkout: public, so the server assigns the id and the merchant; it is refused unless CHANNELS_SANDBOX_WEB=1 and every order is tagged sandbox.
