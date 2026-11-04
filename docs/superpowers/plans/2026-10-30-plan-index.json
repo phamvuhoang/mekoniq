@@ -681,7 +681,9 @@
       "depends": "W06-T01, W10-T01",
       "testFile": "tests/adapters/vendor-profile.test.ts",
       "testCommand": "pnpm test:adapters -- tests/adapters/vendor-profile.test.ts",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W10-T06.md",
+      "remaining": "No vendor SDK/licence/firmware/hardware supplied: needs the vendor's official SDK and redistribution permission, the exact SDK + firmware version, a recorded trace and a supervised run through the common conformance suite (navigation, cancel, reboot, map, epoch), and alignment of the observation export to the official MassRobotics standard version. The exact-version profile/registry, coverage matrix, reconcile-or-unknown adapter and read-only observation export are verified locally with an emulated SDK."
     },
     {
       "wave": "W11",
