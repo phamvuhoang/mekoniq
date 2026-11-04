@@ -12,8 +12,9 @@ import {enqueueRelay} from './commands';
 export const cloudCommandTypes=new Set<string>(['Promotion.Publish','Voucher.Issue','Voucher.GrantEscrow','Customer.Upsert','Consent.Record','Customer.Merge','Customer.Erase','Loyalty.Reverse','Booking.Create','Booking.Confirm','Booking.Cancel','Waitlist.Join']);
 /** Projection kinds the admin pages may read, with the permission each needs (customer data is personal data: it is not readable with a plain report right). */
 export const readableKinds:Record<string,string>={promotion:'promotion.write',voucher:'promotion.write','voucher-use':'promotion.write',customer:'customer.read','loyalty-account':'customer.read',consent:'customer.read',booking:'reservation.write',waitlist:'reservation.write',deposit:'reservation.write'};
-export async function relayVenueCommand(actor:Actor,scope:TenantScope,input:{type:string;payload:JsonObject;operationId?:string}){
- if(!cloudCommandTypes.has(input.type))throw new Error('COMMAND_NOT_RELAYABLE');
+/** `internal` is for cloud modules that own the business rule themselves (e.g. the chain's shared pool); the HTTP relay route never sets it. */
+export async function relayVenueCommand(actor:Actor,scope:TenantScope,input:{type:string;payload:JsonObject;operationId?:string},options:{internal?:boolean}={}){
+ if(!options.internal&&!cloudCommandTypes.has(input.type))throw new Error('COMMAND_NOT_RELAYABLE');
  if(!input.payload||typeof input.payload!=='object'||Array.isArray(input.payload))throw new Error('INVALID_COMMAND');
  const context=await withTenant(scope,async sql=>{
   const [owner]=await sql`SELECT epoch FROM venue_ownership WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND resource_id='coordinator' AND status='active'`;

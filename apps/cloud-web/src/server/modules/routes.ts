@@ -23,6 +23,8 @@ import {guestMenu,guestMenuImage,guestSession,submitGuestCommand} from './guest/
 import {createChainRevision,rollBackForward,chainPublish,previewRollout,compareBranches,listChainRevisions} from './chain/catalog-rollout';
 import {setBranchOverride} from './chain/branch-overrides';
 import {rolloutStatus} from './chain/rollout-state';
+import {chainReport,chainReportCsv} from './chain/reports';
+import {createSharedBalance,reserveSharedBalance,reconcileSharedBalance,readSharedBalance} from './chain/shared-entitlements';
 import {readReport} from './reports/read';
 import {reportCsv} from '../../../../../packages/domain/src/reporting/report';
 import type {CommandEnvelope,CommandResult,JsonObject} from '../../../../../packages/contracts/generated/wire';
@@ -35,7 +37,7 @@ function protectMutation(request:Request,actor:Actor){if(actor.deviceId)return;i
 function safe(handler:CloudRoute['handler']):CloudRoute['handler']{return async(request,context)=>{
  try{return await handler(request,context);}catch(error){
   const code=error instanceof Error?error.message:'SERVICE_UNAVAILABLE';
-  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_/.test(code)?400:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
+  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED|EXHAUSTED|BALANCE_EXISTS/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_|ESCROW_/.test(code)?400:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
   return Response.json({code:status===503?'SERVICE_UNAVAILABLE':code},{status});
  }
 };}
@@ -131,6 +133,16 @@ export function registerWave02Routes(register:(route:CloudRoute)=>void):void {
  add('GET','/v1/chain/revisions/:revision/status','chain.read',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await rolloutStatus(actor,actor.organizationId,Number(c.params.revision)));});
  add('POST','/v1/chain/venues/:venueId/override','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await setBranchOverride(actor,actor.organizationId,c.params.venueId,{expectedRevision:Number(body.expectedRevision),patch:body.patch}),{status:201});});
  add('GET','/v1/chain/compare','chain.read',async(request,c)=>{const actor=actorRequired(c.actor),q=new URL(request.url).searchParams;return Response.json(await compareBranches(actor,actor.organizationId,q.get('a')??'',q.get('b')??''));});
+ add('GET','/v1/chain/reports','report.read',async(request,c)=>{
+  const actor=actorRequired(c.actor),q=new URL(request.url).searchParams,venues=q.get('venues');
+  const report=await chainReport(actor,actor.organizationId,q.get('kind')??'chain-sales',q.get('businessDate')??'',venues?venues.split(','):undefined);
+  if(q.get('format')!=='csv')return Response.json(report);
+  return new Response('\uFEFF'+chainReportCsv(report),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="${String(report.kind)}-${String(report.businessDate)}.csv"`}});
+ });
+ add('POST','/v1/chain/shared-balances','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await createSharedBalance(actor,actor.organizationId,{balanceId:String(body.balanceId),voucherId:String(body.voucherId),total:Number(body.total)}),{status:201});});
+ add('GET','/v1/chain/shared-balances/:id','chain.read',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await readSharedBalance(actor,actor.organizationId,c.params.id));});
+ add('POST','/v1/chain/shared-balances/:id/reserve','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);const r=await reserveSharedBalance(actor,actor.organizationId,{balanceId:c.params.id,venueId:String(body.venueId),count:Number(body.count),operationId:String(body.operationId)});return Response.json(r,{status:r.duplicate?200:202});});
+ add('POST','/v1/chain/shared-balances/:id/reconcile','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await reconcileSharedBalance(actor,actor.organizationId,{balanceId:c.params.id,venueId:String(body.venueId),release:body.release===true}));});
  // Guest web: no staff session. Scope comes from the venue-signed table token (or the public menu's own org/venue), never from a cookie.
  add('GET','/v1/guest/menu/:organizationId/:venueId',null,async(_request,c)=>Response.json(await guestMenu({organizationId:c.params.organizationId,venueId:c.params.venueId})));
  add('GET','/v1/guest/menu/:organizationId/:venueId/images/:assetId',null,async(_request,c)=>new Response(null,{status:302,headers:{Location:await guestMenuImage({organizationId:c.params.organizationId,venueId:c.params.venueId},c.params.assetId)}}));
