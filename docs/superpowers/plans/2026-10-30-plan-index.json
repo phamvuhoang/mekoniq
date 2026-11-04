@@ -670,7 +670,9 @@
       "depends": "W06-T01, W06-T03",
       "testFile": "tests/adapters/vda5050-conformance.test.ts",
       "testCommand": "pnpm test:adapters -- tests/adapters/vda5050-conformance.test.ts",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W10-T05.md",
+      "remaining": "No vendor vehicle or factsheet/trace, no official pinned schema files, no LAN MQTT broker/ACL and no native MQTT transport; the 2.0.0 field list was written by hand from the public specification. Needs the vendor's exact spec version + factsheet + recorded trace, a venue-LAN broker with per-vehicle ACLs and the executor transport, and supervised runs (navigation, cancel, reconnect, reboot, map change, E-stop) before anything above integration_tested. VDA 5050 3.x is not implemented."
     },
     {
       "wave": "W10",
