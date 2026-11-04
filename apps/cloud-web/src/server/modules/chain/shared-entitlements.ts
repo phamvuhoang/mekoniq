@@ -14,10 +14,17 @@ export async function createSharedBalance(actor:Actor,organizationId:string,inpu
   if(!rows.length)throw new Error('SHARED_BALANCE_EXISTS');return {balanceId:input.balanceId,total:input.total,available:input.total};
  });
 }
+/** A relay in flight is never copied; one that lapsed or was refused is delivered again under a NEW delivery id (`-d<n>`), carrying the same business revision, so the branch still applies it once. */
+async function deliver(actor:Actor,scope:{organizationId:string;venueId:string},base:string,type:string,payload:JsonObject){
+ const sent=await withTenant(scope,sql=>sql`SELECT operation_id,status,expires_at FROM relay_command WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND starts_with(operation_id,${base+'-d'}) ORDER BY created_at DESC`);
+ const last=sent[0];
+ if(last&&(last.status==='accepted'||last.status==='unknown'||(last.status==='pending'&&Date.parse(last.expires_at as string)>Date.now())))return {status:String(last.status),operationId:String(last.operation_id)};
+ return relayVenueCommand(actor,scope,{type,operationId:`${base}-d${sent.length+1}`.slice(0,128),payload},{internal:true});
+}
 async function sendGrant(actor:Actor,organizationId:string,balanceId:string,venueId:string){
  const {pool,grant}=await withOrganization(organizationId,async sql=>({pool:(await sql`SELECT voucher_id,total FROM chain_shared_balance WHERE organization_id=${organizationId} AND balance_id=${balanceId}`)[0]!,grant:(await sql`SELECT granted,revision FROM chain_shared_grant WHERE organization_id=${organizationId} AND balance_id=${balanceId} AND venue_id=${venueId}`)[0]!}));
  // The command carries the CUMULATIVE grant and its revision, so re-sending it (a retry, a lost relay) never gives the branch a use twice.
- return relayVenueCommand(actor,{organizationId,venueId},{type:'Voucher.ReceiveEscrow',operationId:`shared-${balanceId}-${venueId}-r${grant.revision}`.slice(0,128),payload:{voucherId:String(pool.voucher_id),total:Number(grant.granted),revision:Number(grant.revision),limit:Number(pool.total)}},{internal:true});
+ return deliver(actor,{organizationId,venueId},`shared-${balanceId}-${venueId}-r${grant.revision}`,'Voucher.ReceiveEscrow',{voucherId:String(pool.voucher_id),total:Number(grant.granted),revision:Number(grant.revision),limit:Number(pool.total)});
 }
 /** Takes exactly `count` uses out of the pool for one branch — once per operationId, so a timed-out caller can retry and gets the same grant, never a second one. */
 export async function reserveSharedBalance(actor:Actor,organizationId:string,input:{balanceId:string;venueId:string;count:number;operationId:string}){
@@ -56,9 +63,15 @@ export async function reconcileSharedBalance(actor:Actor,organizationId:string,i
   if(delta>0){await sql`UPDATE chain_shared_grant SET returned=returned+${delta} WHERE organization_id=${organizationId} AND balance_id=${input.balanceId} AND venue_id=${input.venueId}`;await sql`UPDATE chain_shared_balance SET available=available+${delta} WHERE organization_id=${organizationId} AND balance_id=${input.balanceId}`;}
  });
  let release:string|undefined;
- if(input.release&&unspent>0&&Number(grant.return_revision)<=Number(slot?.returnRevision??0)){ // a previous return still unanswered is never doubled
-  const next=await withOrganization(organizationId,async sql=>(await sql`UPDATE chain_shared_grant SET return_revision=return_revision+1,pending_return=${unspent} WHERE organization_id=${organizationId} AND balance_id=${input.balanceId} AND venue_id=${input.venueId} RETURNING return_revision`)[0]!.return_revision as number);
-  release=(await relayVenueCommand(actor,scope,{type:'Voucher.ReturnEscrow',operationId:`shared-return-${input.balanceId}-${input.venueId}-r${next}`.slice(0,128),payload:{voucherId:String(pool.voucher_id),count:unspent,returnRevision:Number(next)}},{internal:true})).status;
+ // a return is "in flight" while its relay can still be answered, or the branch accepted it and the projection has not caught up; a refused or lapsed one is re-asked with the CURRENT unspent count and the next revision
+ const returned=Number(grant.return_revision),applied=Number(slot?.returnRevision??0);
+ if(input.release&&unspent>0){
+  const [last]=returned>0?await withTenant(scope,sql=>sql`SELECT status,expires_at FROM relay_command WHERE organization_id=${organizationId} AND venue_id=${input.venueId} AND starts_with(operation_id,${`shared-return-${input.balanceId}-${input.venueId}-r${returned}-d`}) ORDER BY created_at DESC LIMIT 1`):[];
+  const inFlight=returned>applied&&last&&(last.status==='accepted'||last.status==='unknown'||(last.status==='pending'&&Date.parse(last.expires_at as string)>Date.now()));
+  if(!inFlight){
+   const next=await withOrganization(organizationId,async sql=>(await sql`UPDATE chain_shared_grant SET return_revision=return_revision+1,pending_return=${unspent} WHERE organization_id=${organizationId} AND balance_id=${input.balanceId} AND venue_id=${input.venueId} AND return_revision=${returned} RETURNING return_revision`)[0]?.return_revision as number|undefined);
+   if(next)release=(await deliver(actor,scope,`shared-return-${input.balanceId}-${input.venueId}-r${next}`,'Voucher.ReturnEscrow',{voucherId:String(pool.voucher_id),count:unspent,returnRevision:Number(next)})).status;
+  }
  }
  const issued=Number(grant.granted);
  return {balanceId:input.balanceId,venueId:input.venueId,issued,confirmedByVenue:venueGranted,unconfirmed:issued-venueGranted,used,returned:venueReturned,outstanding:remainingEscrow(String(issued),String(used),String(venueReturned)),...(release?{release}:{}),appliedRevision:Number(slot?.revision??0)};
@@ -69,6 +82,7 @@ export async function readSharedBalance(actor:Actor,organizationId:string,balanc
   const [pool]=await sql`SELECT balance_id,voucher_id,total,available FROM chain_shared_balance WHERE organization_id=${organizationId} AND balance_id=${balanceId}`;
   if(!pool)throw new Error('SHARED_BALANCE_NOT_FOUND');
   const grants=await sql`SELECT venue_id,granted,returned,revision FROM chain_shared_grant WHERE organization_id=${organizationId} AND balance_id=${balanceId} ORDER BY venue_id`;
+  if(grants.length)requireChain(actor,'chain.read',organizationId,grants.map(g=>String(g.venue_id))); // the same rule as a rollout: every branch actually returned must be one the caller may read
   return {balanceId,voucherId:String(pool.voucher_id),total:Number(pool.total),available:Number(pool.available),grants:grants.map(g=>({venueId:String(g.venue_id),granted:Number(g.granted),returned:Number(g.returned),revision:Number(g.revision)}))};
  });
 }

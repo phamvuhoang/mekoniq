@@ -91,6 +91,27 @@ test('only the chain owner reserves; a branch manager cannot grant itself the po
  await expect(reserveSharedBalance(mgr,org,{balanceId:'pool',venueId:'venue-a',count:1,operationId:'op-9'})).rejects.toThrow('PERMISSION_DENIED');
  await expect(reserveSharedBalance(owner,org,{balanceId:'nope',venueId:'venue-a',count:1,operationId:'op-9'})).rejects.toThrow('SHARED_BALANCE_NOT_FOUND');
 });
+test('a grant whose relay lapsed unanswered is delivered again under a new delivery id; a refused return is re-asked with what is still unspent',async()=>{
+ await createSharedBalance(owner,org,{balanceId:'pool-r',voucherId:'VR',total:10});
+ const first=await reserveSharedBalance(owner,org,{balanceId:'pool-r',venueId:'venue-b',count:10,operationId:'r-op-1'});expect(first.relay).toBe('pending');
+ const sends=async(type:string)=>await db.admin`SELECT operation_id,status,command->'payload' AS payload FROM relay_command WHERE organization_id=${org} AND venue_id='venue-b' AND command->>'type'=${type} AND command->'payload'->>'voucherId'='VR' ORDER BY created_at`;
+ expect(await sends('Voucher.ReceiveEscrow')).toHaveLength(1);
+ const live=await reserveSharedBalance(owner,org,{balanceId:'pool-r',venueId:'venue-b',count:10,operationId:'r-op-1'});expect(live.duplicate).toBe(true);expect(await sends('Voucher.ReceiveEscrow')).toHaveLength(1); // still in flight: no second copy
+ await db.admin`UPDATE relay_command SET expires_at=now()-interval '1 minute' WHERE organization_id=${org} AND venue_id='venue-b' AND command->'payload'->>'voucherId'='VR'`; // the branch stayed offline past the window
+ await reserveSharedBalance(owner,org,{balanceId:'pool-r',venueId:'venue-b',count:10,operationId:'r-op-1'});
+ const grants=await sends('Voucher.ReceiveEscrow');expect(grants).toHaveLength(2);expect(grants[1]!.payload).toMatchObject({total:10,revision:1}); // same cumulative grant, fresh delivery: the branch applies it once by revision
+ await venueApplied('venue-b','VR',{count:10,granted:10,revision:1});
+ expect((await reconcileSharedBalance(owner,org,{balanceId:'pool-r',venueId:'venue-b',release:true})).release).toBe('pending');
+ await db.admin`UPDATE relay_command SET status='rejected',venue_receipt='{"status":"rejected","code":"ESCROW_INSUFFICIENT"}' WHERE organization_id=${org} AND venue_id='venue-b' AND command->>'type'='Voucher.ReturnEscrow' AND command->'payload'->>'voucherId'='VR'`; // a use was spent meanwhile
+ await venueApplied('venue-b','VR',{count:9,granted:10,revision:1});
+ expect((await reconcileSharedBalance(owner,org,{balanceId:'pool-r',venueId:'venue-b',release:true})).release).toBe('pending');
+ const returns=await sends('Voucher.ReturnEscrow');expect(returns).toHaveLength(2);expect(returns[1]!.payload).toMatchObject({count:9,returnRevision:2});
+});
+test('reading a pool shows only branches the caller may read',async()=>{
+ const onlyA:Actor={...owner,id:'only-a',venueIds:['venue-a']};
+ await expect(readSharedBalance(onlyA,org,'pool-r')).rejects.toThrow('SCOPE_DENIED'); // pool-r has a grant at venue-b
+ expect((await readSharedBalance(owner,org,'pool-r')).grants.map(g=>g.venueId)).toEqual(['venue-b']);
+});
 // ---- the venue side of the allocation ----------------------------------------------------------------------------------
 test('venue: ReceiveEscrow is cumulative and idempotent; ReturnEscrow gives back only unspent uses; spending is limited to the slot',async()=>{
  const lab=await createRestaurantLab();
