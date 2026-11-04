@@ -627,7 +627,8 @@
       "depends": "W09-T03, W06-T01",
       "testFile": "tests/contracts/provider-profile.test.ts",
       "testCommand": "pnpm test:contracts -- tests/contracts/provider-profile.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W10-T01.md"
     },
     {
       "wave": "W10",

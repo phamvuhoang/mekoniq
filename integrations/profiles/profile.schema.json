@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mekoniq.invalid/schemas/integration-profile.json",
+  "title": "IntegrationProfile",
+  "description": "One provider / firmware / protocol version. A profile is data: it names the official documentation it was written from and the evidence that lets it run. Nothing here is inferred.",
+  "type": "object",
+  "required": ["id", "kind", "mode", "status", "label", "evidence", "requiredInputs"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{1,59}$" },
+    "kind": { "enum": ["payment", "einvoice", "channel", "robot-protocol", "vendor-sdk"] },
+    "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "mode": { "enum": ["simulation", "sandbox", "production"], "description": "simulation = our own emulator, never evidence about a provider; sandbox = the provider's test environment; production = live money/orders/robots." },
+    "status": { "enum": ["draft", "contract_tested", "sandbox_verified", "production_approved"] },
+    "adapter": { "type": "string", "pattern": "^[A-Za-z0-9_./-]+#[A-Za-z0-9_]+$", "description": "module path#export of the adapter entrypoint" },
+    "provider": {
+      "type": "object", "required": ["name", "docsUrl", "apiVersion"], "additionalProperties": false,
+      "properties": { "name": { "type": "string", "minLength": 1 }, "docsUrl": { "type": "string", "pattern": "^https://" }, "apiVersion": { "type": "string", "minLength": 1 }, "docsRetrievedAt": { "type": "string", "format": "date" } }
+    },
+    "webhook": {
+      "type": "object", "required": ["signatureScheme", "signedFields", "timestampToleranceSeconds", "eventIdField"], "additionalProperties": false,
+      "properties": { "signatureScheme": { "type": "string", "minLength": 1 }, "signedFields": { "type": "array", "items": { "type": "string" }, "minItems": 1 }, "timestampToleranceSeconds": { "type": "integer", "minimum": 1, "maximum": 3600 }, "eventIdField": { "type": "string", "minLength": 1 } }
+    },
+    "idempotency": { "type": "object", "required": ["keyField"], "additionalProperties": false, "properties": { "keyField": { "type": "string", "minLength": 1 }, "queryEndpoint": { "type": "string" } } },
+    "credentialRefs": { "type": "array", "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,63}$" }, "description": "Names of environment variables / secret-store entries. Never values." },
+    "version": { "type": "string", "description": "robot-protocol / vendor-sdk: exact protocol or SDK version" },
+    "requiredInputs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "What a person must still supply before this profile can be activated." },
+    "evidence": {
+      "type": "object", "required": ["sandbox", "production"], "additionalProperties": false,
+      "properties": { "sandbox": { "$ref": "#/definitions/evidence" }, "production": { "$ref": "#/definitions/evidence" } }
+    }
+  },
+  "definitions": {
+    "evidence": {
+      "oneOf": [ { "type": "null" }, { "type": "object", "required": ["ref", "sha256", "at"], "additionalProperties": false, "properties": { "ref": { "type": "string", "minLength": 1 }, "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "at": { "type": "string", "format": "date" } } } ]
+    }
+  }
+}
