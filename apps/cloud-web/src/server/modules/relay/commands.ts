@@ -31,10 +31,10 @@ export async function enqueueChannelRelay(command:CommandEnvelope,expiresAt:stri
  validateEnvelope(command);if(!isChannelRelay(command)&&!isProviderRelay(command))throw new Error('CHANNEL_COMMAND_FORBIDDEN');
  return storeRelay(command,expiresAt);
 }
-/** Payment-provider source (W10-T02): the cloud forwards ONE fact type — money a verified provider confirmed — carrying only `payment.capture`. */
+/** Provider source (W10-T02/T03): the cloud forwards only what a verified provider confirmed — captured money (`payment.capture`) or an invoice answer (`invoice.record`). */
 export const providerRelaySource={deviceId:'cloud-provider',deviceEpoch:'cloud-provider-v1'};
-export const providerRelayTypes=new Set(['Payment.RecordProvider']);
-export const providerRelayPermissions=['payment.capture'];
+export const providerRelayTypes=new Set(['Payment.RecordProvider','Invoice.Record']);
+export const providerRelayPermissions=['payment.capture','invoice.record'];
 export const isProviderRelay=(command:CommandEnvelope)=>command.actorRef.startsWith('provider:')&&command.deviceId===providerRelaySource.deviceId&&command.deviceEpoch===providerRelaySource.deviceEpoch&&providerRelayTypes.has(command.type);
 /** One token may hold at most this many unanswered relays; a flood is refused in the cloud instead of queueing ahead of staff work. */
 export const GUEST_PENDING_LIMIT=5;

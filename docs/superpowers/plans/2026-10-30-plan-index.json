@@ -648,7 +648,9 @@
       "depends": "W10-T01, W05-T03, W04-T04",
       "testFile": "tests/providers/einvoice-provider.test.ts",
       "testCommand": "pnpm test:providers -- tests/providers/einvoice-provider.test.ts",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W10-T03.md",
+      "remaining": "No e-invoice provider is selected: needs the chosen provider's sandbox account, certificate handling, official issue/query/adjust/cancel schemas + version and uniqueness semantics, buyer-data rules, accountant/legal confirmation of tax rules, recorded sandbox vectors and an acceptance report. Provider-agnostic issue/query-before-reissue, adjust/cancel, venue recording, tablet screen and neutral accounting CSV are verified locally against our own emulator only."
     },
     {
       "wave": "W10",

@@ -30,6 +30,8 @@ import {issueChannelCredential,revokeChannelCredential} from './channels/credent
 import {resolveDeadLetter} from './channels/restaurant-ack';
 import {submitAutomationCommand,readAutomationResult,readAutomationEvents} from './automation/api';
 import {bindMerchant,createPaymentIntent,readPaymentIntent,receivePaymentWebhook,reconcilePaymentIntents,requestProviderRefund,unappliedFunds} from './payments/provider';
+import {amendInvoice,collectInvoiceRequests,listInvoices,reconcileInvoices} from './invoices/issuer';
+import {exportAccounting} from './accounting/export';
 import {readReport} from './reports/read';
 import {reportCsv} from '../../../../../packages/domain/src/reporting/report';
 import type {CommandEnvelope,CommandResult,JsonObject} from '../../../../../packages/contracts/generated/wire';
@@ -42,7 +44,7 @@ function protectMutation(request:Request,actor:Actor){if(actor.deviceId)return;i
 function safe(handler:CloudRoute['handler']):CloudRoute['handler']{return async(request,context)=>{
  try{return await handler(request,context);}catch(error){
   const code=error instanceof Error?error.message:'SERVICE_UNAVAILABLE';
-  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED|NOT_ENABLED|KIND_NOT_READABLE/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED|EXHAUSTED|BALANCE_EXISTS|FEATURE_|REFUND_IN_PROGRESS|INTENT_NOT_CAPTURED/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_|ESCROW_|COMMAND_NOT_RELAYABLE|AMOUNT_EXCEEDS|BILL_NOT_PAYABLE|MERCHANT_NOT_BOUND|REFUND_EXCEEDS|SIGNATURE_SCHEME/.test(code)?400:/PAYLOAD_TOO_LARGE/.test(code)?413:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
+  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED|NOT_ENABLED|KIND_NOT_READABLE/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED|EXHAUSTED|BALANCE_EXISTS|FEATURE_|REFUND_IN_PROGRESS|INTENT_NOT_CAPTURED|INVOICE_NOT_ISSUED/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_|ESCROW_|COMMAND_NOT_RELAYABLE|AMOUNT_EXCEEDS|BILL_NOT_PAYABLE|MERCHANT_NOT_BOUND|REFUND_EXCEEDS|SIGNATURE_SCHEME|UNSUPPORTED_BY_PROVIDER|REJECTED_BY_PROVIDER/.test(code)?400:/PAYLOAD_TOO_LARGE/.test(code)?413:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
   return Response.json({code:status===503?'SERVICE_UNAVAILABLE':code},{status});
  }
 };}
@@ -173,6 +175,16 @@ export function registerWave02Routes(register:(route:CloudRoute)=>void):void {
  add('POST','/v1/venues/:venueId/payments/intents/:intentId/refund','payment.refund',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const b=object(c.body);return Response.json(await requestProviderRefund(actor,actorScope(actor,c.params.venueId),{intentId:c.params.intentId,amountMinor:String(b.amountMinor),reason:String(b.reason),...(typeof b.refundId==='string'?{refundId:b.refundId}:{})}));});
  add('GET','/v1/venues/:venueId/payments/unapplied','payment.operate',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await unappliedFunds(actor,actorScope(actor,c.params.venueId)));});
  add('POST','/v1/venues/:venueId/payments/reconcile','payment.operate',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);requirePermission(actor,'payment.operate',actorScope(actor,c.params.venueId));return Response.json(await reconcilePaymentIntents(actorScope(actor,c.params.venueId)));});
+ // E-invoices (W10-T03): the venue owns the request and the answer; the cloud guards the provider call (claim as unknown, query before any re-issue).
+ add('POST','/v1/venues/:venueId/invoices/collect','invoice.operate',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const scope=actorScope(actor,c.params.venueId);requirePermission(actor,'invoice.operate',scope);return Response.json(await collectInvoiceRequests(scope,String(object(c.body).profileId)));});
+ add('POST','/v1/venues/:venueId/invoices/reconcile','invoice.operate',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const scope=actorScope(actor,c.params.venueId);requirePermission(actor,'invoice.operate',scope);return Response.json(await reconcileInvoices(scope));});
+ add('GET','/v1/venues/:venueId/invoices','invoice.request',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await listInvoices(actor,actorScope(actor,c.params.venueId)));});
+ add('POST','/v1/venues/:venueId/invoices/:requestId/amend','invoice.operate',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const b=object(c.body);return Response.json(await amendInvoice(actor,actorScope(actor,c.params.venueId),{requestId:c.params.requestId,action:b.action==='cancel'?'cancel':'adjust',reason:String(b.reason),key:String(b.key),...(typeof b.deltaMinor==='string'?{deltaMinor:b.deltaMinor}:{})}));});
+ add('GET','/v1/venues/:venueId/accounting/export','report.read',async(request,c)=>{
+  const actor=actorRequired(c.actor),q=new URL(request.url).searchParams,date=q.get('businessDate')??'',out=await exportAccounting(actor,actorScope(actor,c.params.venueId),date);
+  if(q.get('format')!=='csv')return Response.json({lines:out.lines,timeZone:out.timeZone,timeZoneAssumed:out.timeZoneAssumed,complete:out.complete});
+  return new Response('\uFEFF'+out.csv,{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="accounting-${date}.csv"`}});
+ });
  // Guest web: no staff session. Scope comes from the venue-signed table token (or the public menu's own org/venue), never from a cookie.
  add('GET','/v1/guest/menu/:organizationId/:venueId',null,async(_request,c)=>Response.json(await guestMenu({organizationId:c.params.organizationId,venueId:c.params.venueId})));
  add('GET','/v1/guest/menu/:organizationId/:venueId/images/:assetId',null,async(_request,c)=>new Response(null,{status:302,headers:{Location:await guestMenuImage({organizationId:c.params.organizationId,venueId:c.params.venueId},c.params.assetId)}}));

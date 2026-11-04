@@ -25,6 +25,7 @@ import {Purchasing} from './screens/Purchasing';
 import {Stocktake} from './screens/Stocktake';
 import {Staff} from './screens/Staff';
 import {PromotionStatus} from './screens/PromotionStatus';
+import {Invoices} from './screens/Invoices';
 import {CustomerLookup} from './screens/CustomerLookup';
 import {Reservations} from './screens/Reservations';
 import {ServiceModels} from './screens/ServiceModels';
@@ -54,6 +55,7 @@ export const routes=[
  {path:'/stocktake',key:'stocktake',permission:'inventory.count',screen:Stocktake},
  {path:'/staff',key:'staff',permission:'workforce.clock',screen:Staff},
  {path:'/promotions',key:'promotions',permission:'voucher.redeem',screen:PromotionStatus},
+ {path:'/invoices',key:'invoices',permission:'invoice.request',screen:Invoices},
  {path:'/customers',key:'customers',permission:'loyalty.write',screen:CustomerLookup},
  {path:'/reservations',key:'reservations',permission:'reservation.write',screen:Reservations},
  {path:'/models',key:'models',permission:'order.write',screen:ServiceModels},
@@ -63,7 +65,7 @@ export const routes=[
  * A screen that starts business for a feature is offered only while that feature is enabled or draining in the applied configuration (any of the listed).
  * Display only: the coordinator's feature guard is the enforcement. No configuration snapshot -> nothing is hidden. Reports are read-only and stay.
  */
-export const screenFeatures:Record<string,string[]>={'/pos':['pos.order'],'/kitchen':['kitchen'],'/fleet':['fleet'],'/robot':['fleet'],'/robot-setup':['fleet'],'/checkout':['billing'],'/cash':['cash.shift'],'/print':['printing'],'/guest-requests':['guest.call','guest.bill','qr.order','kiosk.order','robot.order'],'/kiosk':['kiosk.order'],'/robot-screen':['robot.order','fleet'],'/inventory':['inventory'],'/recipes':['inventory'],'/purchasing':['procurement'],'/stocktake':['inventory'],'/staff':['workforce'],'/promotions':['promotion'],'/customers':['loyalty'],'/reservations':['reservations'],'/models':['service.models'],'/inventory-reports':['inventory']};
+export const screenFeatures:Record<string,string[]>={'/pos':['pos.order'],'/kitchen':['kitchen'],'/fleet':['fleet'],'/robot':['fleet'],'/robot-setup':['fleet'],'/checkout':['billing'],'/cash':['cash.shift'],'/print':['printing'],'/guest-requests':['guest.call','guest.bill','qr.order','kiosk.order','robot.order'],'/kiosk':['kiosk.order'],'/robot-screen':['robot.order','fleet'],'/inventory':['inventory'],'/recipes':['inventory'],'/purchasing':['procurement'],'/stocktake':['inventory'],'/staff':['workforce'],'/promotions':['promotion'],'/customers':['loyalty'],'/reservations':['reservations'],'/models':['service.models'],'/inventory-reports':['inventory'],'/invoices':['einvoice']};
 /** Back-office screens reached from the Manage page instead of the main navigation. */
 const managementPaths:string[]=['/isolated','/reconciliation','/maintenance','/import','/recovery','/recipes','/purchasing','/stocktake','/inventory-reports','/promotions','/customers','/reservations','/models'];
 export function featureOn(c:Pick<ScreenContext,'snapshots'>,path:string){const wanted=screenFeatures[path];return !wanted||featureShown(c,wanted);}

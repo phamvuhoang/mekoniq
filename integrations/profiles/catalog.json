@@ -28,6 +28,22 @@
     }
   },
   {
+    "id": "sim-einvoice",
+    "kind": "einvoice",
+    "label": "E-invoice provider emulator (ours)",
+    "mode": "simulation",
+    "status": "contract_tested",
+    "adapter": "integrations/einvoice/src/sim-provider.ts#createSimInvoiceProvider",
+    "idempotency": {
+      "keyField": "requestKey"
+    },
+    "requiredInputs": [],
+    "evidence": {
+      "sandbox": null,
+      "production": null
+    }
+  },
+  {
     "id": "sandbox-channel",
     "kind": "channel",
     "label": "Sandbox channel (our emulator)",

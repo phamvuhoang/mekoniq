@@ -3,6 +3,7 @@ import { registerCatalog } from './catalog/publish';
 import { registerSessions } from './orders/session';
 import { registerOrders } from './orders/module';
 import { registerExternalOrders } from './orders/external';
+import { registerInvoices } from './billing/invoice';
 import { registerCourses } from './orders/course';
 import { registerAmendments } from './orders/amendment';
 import { registerTableMoves } from './orders/move-table';
@@ -48,7 +49,7 @@ import { registerPurchasing } from './procurement/purchase-order';
 import { registerReceiving } from './procurement/goods-receipt';
 import { registerReturns } from './procurement/return';
 export function registerRestaurantModules(registry:ModuleRegistry):void {
- for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake,registerSchedule,registerAttendance,registerApproval,registerPromotions,registerVouchers,registerRedemption,registerConsent,registerCustomers,registerLoyalty,registerBookings,registerWaitlist,registerDeposits,registerServiceModels,registerExternalOrders]) register(registry);
+ for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake,registerSchedule,registerAttendance,registerApproval,registerPromotions,registerVouchers,registerRedemption,registerConsent,registerCustomers,registerLoyalty,registerBookings,registerWaitlist,registerDeposits,registerServiceModels,registerExternalOrders,registerInvoices]) register(registry);
 }
 export const commandPermissions:Record<string,string>={
  'Catalog.Publish':'catalog.publish','Catalog.Quote':'catalog.read','Session.Open':'order.write',
@@ -61,7 +62,7 @@ export const commandPermissions:Record<string,string>={
  'Shift.Open':'shift.write','Shift.Close':'shift.write','Cash.RecordMovement':'shift.write','Print.Request':'print','Print.ConfirmReprint':'print','Print.Observe':'print.observe','Print.Resolve':'print.resolve','Bill.Prepare':'billing.write','Payment.Claim':'payment.claim',
  'Payment.RecordCash':'payment.cash','Bill.Close':'billing.write',
  'Bill.Split':'billing.write','Bill.Merge':'billing.write','Bill.Void':'bill.void',
- 'Payment.RecordTerminal':'payment.terminal','Payment.RecordProvider':'payment.capture','Payment.VerifyManual':'payment.verify','Refund.Record':'payment.refund',
+ 'Payment.RecordTerminal':'payment.terminal','Payment.RecordProvider':'payment.capture','Invoice.Request':'invoice.request','Invoice.LinkExternal':'invoice.request','Invoice.Record':'invoice.record','Payment.VerifyManual':'payment.verify','Refund.Record':'payment.refund',
  'Session.Close':'order.write','Guest.IssueToken':'order.write','Guest.AcknowledgeCall':'order.write','Robot.PairDisplay':'device.enroll',
  // Guest surfaces (QR via the cloud guest API, kiosk, paired robot screen) hold only guest.* permissions; the handler resolves their session.
  'Guest.PlaceOrder':'guest.order','Guest.CallStaff':'guest.call','Guest.ReportIssue':'guest.call','Guest.RequestBill':'guest.bill',

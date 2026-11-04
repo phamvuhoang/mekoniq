@@ -26,7 +26,7 @@ test('an exact verified capture is forwarded to the venue once; the webhook body
  try{
   const first=await rig.deliverFixture('signed-exact');expect(first).toMatchObject({duplicate:false,outcome:'settle'});
   expect(await rig.settledCount()).toBe(1);expect(await rig.relayCount('Payment.RecordProvider')).toBe(1);
-  const [relay]=await rows<{command:{actorRef:string;deviceId:string;payload:{billId:string;reference:{provider:string;merchantId:string;transactionId:string}}}}>(rig,`SELECT command FROM relay_command WHERE command->>'type'='Payment.RecordProvider'`);
+  const [relay]=await rows<{command:{actorRef:string;deviceId:string;payload:{billId:string;reference:{provider:string;merchantId:string;transactionId:string}}}}>(rig,`SELECT command FROM relay_command WHERE organization_id='${rig.scope.organizationId}' AND command->>'type'='Payment.RecordProvider'`);
   expect(relay!.command).toMatchObject({deviceId:'cloud-provider',payload:{billId:'bill-1',reference:{provider:'sim-payment',merchantId:'merchant-1',transactionId:'TX-1'}}});expect(relay!.command.actorRef).toMatch(/^provider:/);
   const queries=rig.callCount('query');
   expect(await rig.deliverFixture('signed-exact')).toEqual({duplicate:true});expect(await rig.relayCount('Payment.RecordProvider')).toBe(1);expect(rig.callCount('query')).toBe(queries);
@@ -96,9 +96,9 @@ test('offline venue / cashier conflict: a lapsed relay is resent; a venue that r
  const rig=await createProviderRig('payment');
  try{
   await rig.deliverFixture('signed-exact');
-  await rig.admin`UPDATE relay_command SET expires_at=now()-interval '1 minute' WHERE command->>'type'='Payment.RecordProvider'`; // venue stayed offline
+  await rig.admin`UPDATE relay_command SET expires_at=now()-interval '1 minute' WHERE organization_id=${rig.scope.organizationId} AND command->>'type'='Payment.RecordProvider'`; // venue stayed offline
   expect((await rig.reconcile()).resent).toBe(1);expect(await rig.relayCount('Payment.RecordProvider')).toBe(2);
-  const [latest]=await rows<{operation_id:string}>(rig,`SELECT operation_id FROM relay_command WHERE command->>'type'='Payment.RecordProvider' ORDER BY created_at DESC LIMIT 1`);expect(latest!.operation_id).toMatch(/-a2$/);
+  const [latest]=await rows<{operation_id:string}>(rig,`SELECT operation_id FROM relay_command WHERE organization_id='${rig.scope.organizationId}' AND command->>'type'='Payment.RecordProvider' ORDER BY created_at DESC LIMIT 1`);expect(latest!.operation_id).toMatch(/-a2$/);
   await rig.admin`UPDATE relay_command SET status='rejected',venue_receipt='{"status":"rejected","code":"BILL_NOT_COLLECTABLE","ack":"venue"}' WHERE operation_id=${latest!.operation_id}`; // the cashier took cash meanwhile
   expect((await rig.reconcile()).venueRefused).toBe(1);
   expect(await rig.settledCount()).toBe(0);expect(await rig.unappliedFundsCount()).toBe(1);
