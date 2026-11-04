@@ -169,7 +169,7 @@ test('a silent venue: reject policy tells the channel at once; hold policy retri
  expect(await sweepExternalOrder(scope,key1('silent-h'),1,NOW+400_000)).toMatchObject({status:'received',done:false});
  expect((await db.admin`SELECT count(*)::int AS n FROM relay_command WHERE organization_id=${org} AND command->'payload'->>'externalId'='silent-h'`)[0].n).toBe(2); // a second, fresh relay window
  expect((await rows('silent-h'))[0]!.relay_attempts).toBe(2);
- expect(await sweepExternalOrder(scope,key1('silent-h'),2,NOW+2*3600_000)).toMatchObject({status:'expired',done:true});
+ expect(await sweepExternalOrder(scope,key1('silent-h'),2,NOW+2*3600_000)).toMatchObject({status:'expired',done:false}); // the decision is not the end of listening
  expect((await jobs('order.expired')).some(j=>j.payload.externalId==='silent-h')).toBe(true);
  expect((await db.admin`SELECT count(*)::int AS n FROM relay_command WHERE organization_id=${org} AND command->>'type'='ExternalOrder.Expire'`)[0].n).toBeGreaterThanOrEqual(1);
 });
