@@ -67,7 +67,7 @@ export const routes=[
  */
 export const screenFeatures:Record<string,string[]>={'/pos':['pos.order'],'/kitchen':['kitchen'],'/fleet':['fleet'],'/robot':['fleet'],'/robot-setup':['fleet'],'/checkout':['billing'],'/cash':['cash.shift'],'/print':['printing'],'/guest-requests':['guest.call','guest.bill','qr.order','kiosk.order','robot.order'],'/kiosk':['kiosk.order'],'/robot-screen':['robot.order','fleet'],'/inventory':['inventory'],'/recipes':['inventory'],'/purchasing':['procurement'],'/stocktake':['inventory'],'/staff':['workforce'],'/promotions':['promotion'],'/customers':['loyalty'],'/reservations':['reservations'],'/models':['service.models'],'/inventory-reports':['inventory'],'/invoices':['einvoice']};
 /** Back-office screens reached from the Manage page instead of the main navigation. */
-const managementPaths:string[]=['/isolated','/reconciliation','/maintenance','/import','/recovery','/recipes','/purchasing','/stocktake','/inventory-reports','/promotions','/customers','/reservations','/models'];
+const managementPaths:string[]=['/isolated','/reconciliation','/maintenance','/import','/recovery','/recipes','/purchasing','/stocktake','/inventory-reports','/promotions','/customers','/reservations','/models','/invoices'];
 export function featureOn(c:Pick<ScreenContext,'snapshots'>,path:string){const wanted=screenFeatures[path];return !wanted||featureShown(c,wanted);}
 export function canOpen(c:ScreenContext,permission:string){return !permission||c.session.permissions.includes('*')||c.session.permissions.includes(permission);}
 export function routeScreen(path:string,c:ScreenContext):HTMLElement {

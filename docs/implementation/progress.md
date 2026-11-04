@@ -1,5 +1,7 @@
 # W00–W04 execution ledger
 
+> Sổ này chỉ ghi W00–W04. Trạng thái W00–W11 hiện tại nằm trong `docs/superpowers/plans/2026-10-30-plan-index.json`, `evidence/W*.md` và `gates/D-full-scope.md`.
+
 Plan: docs/superpowers/plans/2026-10-30-production-implementation-plan.md
 Branch: feat/w00-w04-production-foundation (base 62a98bd); no worktree.
 
