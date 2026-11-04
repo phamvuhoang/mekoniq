@@ -692,7 +692,9 @@
       "depends": "W02, W04, W05, release-selected W09/W10",
       "testFile": "tests/security/tenant-escape.test.ts",
       "testCommand": "pnpm test:security -- tests/security/tenant-escape.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W11-T01.md",
+      "remaining": "Local checks only. Still required before a production claim: hosted Vercel/Supabase environment separation and RLS/Storage/Realtime checks, key-rotation drill, network dependency + licence audit, signed-artifact verification (W11-T04), Android encryption profile on a physical device, Realtime/WebSocket flood and map-upload fuzz tests, and an independent penetration test."
     },
     {
       "wave": "W11",
