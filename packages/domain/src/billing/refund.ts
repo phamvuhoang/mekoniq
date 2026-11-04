@@ -1,5 +1,6 @@
 import type { ModuleRegistry } from '../modules';
 import type { JsonObject } from '../../../contracts/src/index';
+import { amendmentDue, invoiceRequestId } from './invoice';
 import { refundableComponents } from '../pricing/combo';
 import { all, amount, changed, created, done, expectVersion, fail, find, handle, note, record, requireState, stableId, text } from '../restaurant-context';
 
@@ -50,10 +51,14 @@ export function registerRefunds(registry: ModuleRegistry): void {
     const billUnapplied = BigInt(String(bill.state.unappliedMinor ?? '0'));
     if (billUnapplied < fromUnapplied) return fail('BILL_BALANCE_CORRUPT');
     const refundId = stableId('refund', c);
+    // an ISSUED invoice no longer matches the bill once applied money goes back: record the obligation on the invoice request so someone adjusts or cancels it at the provider
+    const invoice = fromApplied > 0n ? find(s, 'invoice-request', invoiceRequestId(bill.ref.id)) : undefined;
+    const afterIssue = invoice?.state.status === 'issued' ? String(BigInt(String(invoice.state.refundedAfterIssueMinor ?? '0')) + fromApplied) : undefined;
     return done([
       created('RefundRecorded', 'refund', refundId, { paymentId: payment.ref.id, billId: bill.ref.id, currency, amountMinor: request, ...(component ? { component } : {}), appliedMinor: String(fromApplied), unappliedMinor: String(fromUnapplied), method, shiftId, reason, evidenceRef, actorRef: c.actorRef, billStatus: bill.state.status!, occurredAt: c.occurredAt, recordedAt: c.recordedAt }),
       changed('PaymentRefunded', payment, { refundedMinor: String(BigInt(refunded) + req), unappliedMinor: String(unapplied - fromUnapplied), refundIds: [...((payment.state.refundIds ?? []) as string[]), refundId] }),
       changed('BillRefunded', bill, { refundedMinor: String(BigInt(String(bill.state.refundedMinor ?? '0')) + fromApplied), unappliedMinor: String(billUnapplied - fromUnapplied) }),
+      ...(invoice && afterIssue ? [changed('InvoiceAmendmentDue', invoice, { refundedAfterIssueMinor: afterIssue, amendmentDue: amendmentDue('issued', afterIssue, (invoice.state.adjustments ?? []) as JsonObject[]) })] : []),
       ...(shift ? [changed('ShiftCashRefunded', shift, { cashRefundedMinor: String(BigInt(String(shift.state.cashRefundedMinor ?? '0')) + req) })] : []),
     ], { refundId, paymentId: payment.ref.id, amountMinor: request, refundableMinor: refundableMinor(captured, String(BigInt(refunded) + req)) });
   });

@@ -7,6 +7,7 @@ export function Invoices(c:ScreenContext) {
   const text:Record<string,[string,string]>={requested:['Đã yêu cầu, đang chờ nhà cung cấp (chưa phải đã phát hành)','Requested, waiting for the provider (not issued yet)'],issued:['Đã phát hành','Issued'],rejected:['Bị từ chối','Rejected'],cancelled:['Đã hủy','Cancelled'],external:['Hóa đơn phát hành bên ngoài (chỉ liên kết)','Issued outside this system (link only)']};
   row.append(el('p',`${tr(c,'Hóa đơn bán hàng','Bill')} ${String(inv.state.billId)} · ${tr(c,...(text[status]??[status,status]))}`));
   if(status==='issued')row.append(el('p',`${tr(c,'Mã tra cứu','Lookup code')}: ${String(inv.state.code)}`));
+  if(inv.state.amendmentDue===true)row.append(el('p',tr(c,'Đã hoàn tiền sau khi phát hành: cần điều chỉnh hoặc hủy hóa đơn tại nhà cung cấp','Refunded after issue: the invoice must be adjusted or cancelled at the provider'),'warning'));
   if(status==='rejected')row.append(el('p',`${tr(c,'Lý do','Reason')}: ${String(inv.state.rejectionReason)}`,'warning'));
   root.append(row);
  }

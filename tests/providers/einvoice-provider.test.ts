@@ -162,3 +162,15 @@ test('accounting export: one line per closed bill of the venue business date, in
  expect(csv.split('\n')[0]).toContain('mekoniq-accounting-1');expect(csv.split('\n')[0]).toContain('complete=false');expect(csv).toContain("'=cmd|b-1"); // formula-looking text is neutralised
  expect(accountingLines(snaps.slice(2,3),'2026-10-30','UTC')).toEqual([]);expect(accountingLines([bill('t',{status:'closed',closedAt:'2026-10-30T20:00:00.000Z',currency:'VND',totalMinor:'1'})],'2026-10-31','Asia/Ho_Chi_Minh')).toHaveLength(1); // business date is the venue's local day
 });
+test('a refund on a bill whose invoice was issued leaves a tracked amendment obligation until the provider confirms a matching adjustment', async () => {
+  const lab = await createRestaurantLab();
+  try {
+    await lab.seed('bill', 'bill-r', { status: 'closed', totalMinor: '100000', paidMinor: '100000', refundedMinor: '0', unappliedMinor: '0', currency: 'VND', orderIds: [], lines: [], version: 1 });
+    await lab.seed('payment', 'pay-r', { status: 'captured', billId: 'bill-r', method: 'transfer', capturedMinor: '100000', appliedMinor: '100000', unappliedMinor: '0', refundedMinor: '0', currency: 'VND', version: 1 });
+    await lab.seed('invoice-request', 'inv-bill-r', { billId: 'bill-r', status: 'issued', providerInvoiceId: 'P1', code: 'C1', currency: 'VND', totalMinor: '100000', adjustments: [], version: 1 });
+    const refund = await lab.command('manager', 'Refund.Record', { paymentId: 'pay-r', expectedVersion: 1, amountMinor: '20000', reason: 'cold', evidenceRef: 'ev-1' }); expect(refund.status).toBe('accepted');
+    expect(await lab.state('invoice-request', 'inv-bill-r')).toMatchObject({ status: 'issued', refundedAfterIssueMinor: '20000', amendmentDue: true });
+    const adjusted = await lab.command('cloud-provider', 'Invoice.Record', { requestId: 'inv-bill-r', status: 'adjusted', providerRef: 'adj-1', reason: 'refund', deltaMinor: '-20000' }); expect(adjusted.status).toBe('accepted');
+    expect(await lab.state('invoice-request', 'inv-bill-r')).toMatchObject({ amendmentDue: false });
+  } finally { await lab.close(); }
+});
