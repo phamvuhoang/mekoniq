@@ -122,3 +122,17 @@ test('channel wording and status order are exact',()=>{
  expect(channelStatus(false,false)).toBe('awaiting_restaurant');expect(channelStatus(true,false)).toBe('accepted');expect(channelStatus(false,true)).toBe('rejected');expect(channelStatus(true,true)).toBe('rejected');
  expect(advance('accepted','cancelled')).toBe('cancelled');expect(advance('cancelled','accepted')).toBe('cancelled');expect(advance('rejected','cancelled')).toBe('rejected');
 });
+
+test('a cancellation of an already accepted order starts a fresh sweep even though the order\'s first sweep finished long ago', async () => {
+  const rig = await createProviderRig('channel');
+  try {
+    await rig.deliverFixture('new-order'); await rig.venueDecides('order-1', { status: 'accepted', orderId: 'o' }); await rig.sweep('order-1', Date.now());
+    await rig.admin`UPDATE cloud_job SET status='confirmed' WHERE organization_id=${rig.scope.organizationId} AND type='channel.sweep'`; // every sweep scheduled so far has run
+    expect(await rig.cancel('order-1')).toEqual({ cancelStatus: 'pending' });
+    const [open] = await rig.admin`SELECT count(*)::int AS n FROM cloud_job WHERE organization_id=${rig.scope.organizationId} AND type='channel.sweep' AND status='pending'`;
+    expect(open!.n).toBe(1); // someone will read the venue's answer
+    await rig.venueDecides('order-1', { status: 'cancelled' });
+    const [job] = await rig.admin`SELECT payload FROM cloud_job WHERE organization_id=${rig.scope.organizationId} AND type='channel.sweep' AND status='pending'`;
+    expect(await rig.sweep('order-1', Date.now())).toMatchObject({ status: 'cancelled', done: true }); expect(job!.payload).toMatchObject({ gen: 'cancel-', round: 1 });
+  } finally { await rig.close(); }
+});

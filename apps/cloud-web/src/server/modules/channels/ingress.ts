@@ -87,9 +87,10 @@ export async function receiveExternalOrder(input:{provider:string;rawBody:string
  }
  return {status:202,body:{status:'received',venueRecorded:false,expiresAt:normalized.expiresAt}};
 }
-export async function scheduleSweep(scope:TenantScope,n:{provider:string;merchantId:string;externalId:string},round:number,atMs:number){
- const id=`channel-sweep:${hashPayload({p:n.provider,m:n.merchantId,e:n.externalId}).slice(0,24)}:${round}`;
- await withTenant(scope,sql=>sql`INSERT INTO cloud_job(organization_id,venue_id,id,type,payload,due_at) VALUES(${scope.organizationId},${scope.venueId},${id},'channel.sweep',${sql.json({provider:n.provider,merchantId:n.merchantId,externalId:n.externalId,round})},${new Date(atMs)}) ON CONFLICT DO NOTHING`);
+/** `gen` names a separate line of sweeps for the same order (a cancellation asked after the order's own sweeps finished): job ids are unique per (order, gen, round), so an old finished round never swallows a new one. */
+export async function scheduleSweep(scope:TenantScope,n:{provider:string;merchantId:string;externalId:string},round:number,atMs:number,gen=''){
+ const id=`channel-sweep:${hashPayload({p:n.provider,m:n.merchantId,e:n.externalId}).slice(0,24)}:${gen}${round}`;
+ await withTenant(scope,sql=>sql`INSERT INTO cloud_job(organization_id,venue_id,id,type,payload,due_at) VALUES(${scope.organizationId},${scope.venueId},${id},'channel.sweep',${sql.json({provider:n.provider,merchantId:n.merchantId,externalId:n.externalId,round,...(gen?{gen}:{})})},${new Date(atMs)}) ON CONFLICT DO NOTHING`);
 }
 /** GET status for the channel: signed over an empty body like any other call (the sandbox web checkout is public, addressed by its unguessable id). */
 export async function externalOrderStatus(input:{provider:string;merchantId:string;externalId:string;headers:Headers;nowMs?:number;publicScope?:TenantScope}):Promise<JsonObject>{

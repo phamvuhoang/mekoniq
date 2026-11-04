@@ -46,8 +46,8 @@ export function defaultJobRegistry(){
    if(out.status==='confirmed')await recordProviderRef(c.scope,c.payload,String(out.value.providerRef));return out;},
  });
  registry.register('channel.sweep',{
-  execute:async c=>({status:'confirmed',value:await sweepExternalOrder(c.scope,{provider:String(c.payload.provider),merchantId:String(c.payload.merchantId),externalId:String(c.payload.externalId)},Number(c.payload.round))}),
-  reconcile:async c=>({status:'confirmed',value:await sweepExternalOrder(c.scope,{provider:String(c.payload.provider),merchantId:String(c.payload.merchantId),externalId:String(c.payload.externalId)},Number(c.payload.round))}),
+  execute:async c=>({status:'confirmed',value:await sweepExternalOrder(c.scope,{provider:String(c.payload.provider),merchantId:String(c.payload.merchantId),externalId:String(c.payload.externalId)},Number(c.payload.round),undefined,c.payload.gen?String(c.payload.gen):'')}),
+  reconcile:async c=>({status:'confirmed',value:await sweepExternalOrder(c.scope,{provider:String(c.payload.provider),merchantId:String(c.payload.merchantId),externalId:String(c.payload.externalId)},Number(c.payload.round),undefined,c.payload.gen?String(c.payload.gen):'')}),
  });registry.register('hint.publish',{
   execute:async c=>{await publishHint(c.scope,{ref:String(c.payload.ref),revision:Number(c.payload.revision),watermark:String(c.payload.watermark)});return {status:'confirmed',value:{}};},
   // Repeating a hint only wakes idempotent pull; it cannot trigger a physical/financial action.
