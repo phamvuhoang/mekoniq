@@ -1,17 +1,20 @@
 # MEKONIQ — interactive presentations
 
-Hai bản HTML tự chứa, chuyển trực tiếp **Tiếng Việt / 日本語 / English**. Mở bằng trình duyệt hoặc gửi riêng từng file; không cần cài ứng dụng, chạy server hay tải thư viện/font từ Internet.
+Ba bản HTML tự chứa, chuyển trực tiếp **Tiếng Việt / 日本語 / English**. Mở bằng trình duyệt hoặc gửi riêng từng file; không cần cài ứng dụng, chạy server hay tải thư viện/font từ Internet.
 
 | Tài liệu | HTML độc lập | Bản xem riêng tư trên Pages |
 | --- | --- | --- |
 | Engineering Atlas · 8 chương | [engineering.html](engineering.html) | [Mở bản kỹ thuật](https://chatgpt.com/space/page_0c0b52bccf7481918e5a45ac0ad84ea6) |
 | Business Plan · 11 slide | [business-plan.html](business-plan.html) | [Mở Business Plan](https://chatgpt.com/space/page_86729025d6548191a54021ac49b24dd6) |
+| Robot Lab · 9 trang | [robot-lab.html](robot-lab.html) | File HTML local, chưa xuất bản |
 
 ## Nội dung và cách dùng
 
 **Engineering:** bản đồ kiến trúc có thể chọn từng thành phần; luồng order và mất ACK; bốn chế độ kết nối; dữ liệu/quyền sở hữu; robot adapters; 30 nhóm chức năng và preset; Supabase Free; lộ trình 12 wave / 63 task.
 
 **Business Plan:** vấn đề vận hành; hành trình sản phẩm; nhóm khách hàng; tính liên tục khi offline; biểu đồ BOM; mô hình doanh thu minh hoạ có thanh điều chỉnh; lợi thế cần kiểm chứng; lộ trình robot giao món → pha chế → nấu ăn và đề xuất demo/pilot.
+
+**Robot Lab:** giới thiệu bằng hình robot SVG, cấu hình 2–4 khay/tách lớp, linh kiện và sơ đồ chức năng, mặt bằng chọn bàn, hành trình S01 có xác nhận tải/giao, bốn nhóm thử lỗi, timeline/replay, gói candidate draft và phạm vi hiện tại. Mặc định tiếng Việt. Các tương tác là minh họa độc lập, không chạy runtime Lab hay phát lệnh robot. Nội dung theo [tiến độ Lab ngày 2026-11-04](../../lab/docs/implementation/progress.md); source W00–W11 đã có code, Lab vẫn chỉ mở S01 business simulation. Xem [kiểm chứng deck Lab](robot-lab-verification.md).
 
 - Business Plan mặc định **日本語**, thứ tự chuyển **日本語 / EN / VI**; engineering giữ **VI / 日本語 / EN**. Lựa chọn được nhớ riêng cho từng bản. Đổi ngôn ngữ giữ trạng thái tương tác và đổi định dạng số.
 - Nút điều hướng hoặc **← / →** đổi trang; **Home / End** đến trang đầu/cuối. Phím của input/slider giữ chức năng nhập liệu.
@@ -24,7 +27,7 @@ HTML hoạt động offline, bao gồm mọi sơ đồ SVG, animation và tươn
 
 ## Phạm vi thông tin
 
-Nội dung phản ánh **thiết kế đã duyệt ngày 2026-10-30**, không phải hệ thống production đã triển khai. Business Plan ghi nhận trạng thái được người dùng cập nhật: **code đang chạy nội bộ, chưa demo bên ngoài**. Robot pha chế và nấu ăn là hướng R&D tương lai, ngoài phạm vi 12 wave hiện tại. Các tương tác là minh hoạ, không gửi lệnh tới robot hoặc dịch vụ thanh toán.
+Engineering và Business Plan phản ánh **thiết kế đã duyệt ngày 2026-10-30**, không phải hệ thống production đã triển khai. Business Plan ghi nhận trạng thái được người dùng cập nhật: **code đang chạy nội bộ, chưa demo bên ngoài**. Robot pha chế và nấu ăn là hướng R&D tương lai, ngoài phạm vi 12 wave hiện tại. Các tương tác là minh hoạ, không gửi lệnh tới robot hoặc dịch vụ thanh toán. Robot Lab có mốc nội dung riêng ngày 2026-11-04 như mô tả ở trên.
 
 BOM 28,12 triệu đồng lấy từ brief phần cứng của người dùng, chưa phải báo giá xác nhận. Các đầu vào doanh thu là giả định minh hoạ; deck không công bố khách hàng, doanh thu thực tế, định giá hoặc quy mô thị trường chưa có bằng chứng. Phí thuê minh hoạ có thể chỉnh từ 0,3 đến 15 triệu VND/nhà hàng/tháng. Các giới hạn cloud phải được kiểm tra lại khi triển khai.
 
@@ -38,7 +41,7 @@ Nguồn thiết kế trong repository:
 
 ## Chỉnh sửa và build
 
-Sửa nội dung/ngôn ngữ trong `src/engineering.js` hoặc `src/business-plan.js`; styles và điều hướng dùng chung ở `src/core.css`, `src/core.js`. Mỗi chuỗi `tr(vi, ja, en)` có đủ ba bản dịch. Không sửa trực tiếp HTML đã sinh.
+Sửa nội dung/ngôn ngữ trong `src/engineering.js`, `src/business-plan.js` hoặc `src/robot-lab.js`; styles và điều hướng dùng chung ở `src/core.css`, `src/core.js`. Robot Lab có styles riêng tại `src/robot-lab.css`. Mỗi chuỗi `tr(vi, ja, en)` có đủ ba bản dịch. Không sửa trực tiếp HTML đã sinh.
 
 Từ thư mục `source`:
 
@@ -47,9 +50,10 @@ python3 artifacts/build.py
 node --check artifacts/src/core.js
 node --check artifacts/src/engineering.js
 node --check artifacts/src/business-plan.js
+node --check artifacts/src/robot-lab.js
 ```
 
-Build chỉ dùng Python standard library, sinh hai file dưới 256 KiB/file. Bản xem Pages là bản chụp đã tải lên; chỉnh file local không tự cập nhật Pages. Khi xuất bản lại, thay embed trong Page hiện có và kiểm tra biên nhận/lần đọc lại.
+Build chỉ dùng Python standard library, sinh ba file dưới 256 KiB/file. Bản xem Pages là bản chụp đã tải lên; chỉnh file local không tự cập nhật Pages. Khi xuất bản lại, thay embed trong Page hiện có và kiểm tra biên nhận/lần đọc lại.
 
 ## Kiểm thử
 

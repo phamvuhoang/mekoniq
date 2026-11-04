@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-"""Build two portable presentations using only the Python standard library."""
+"""Build portable presentations using only the Python standard library."""
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "src"
 style = (SRC / "core.css").read_text()
 core = (SRC / "core.js").read_text()
-for name, title in [("engineering", "MEKONIQ · Engineering Atlas"), ("business-plan", "MEKONIQ · Business Plan")]:
+for name, title in [("engineering", "MEKONIQ · Engineering Atlas"), ("business-plan", "MEKONIQ · Business Plan"), ("robot-lab", "MEKONIQ · Robot Lab")]:
     content = (SRC / f"{name}.js").read_text()
+    extra_style = (SRC / f"{name}.css").read_text() if (SRC / f"{name}.css").exists() else ""
+    date = "2026-11-04" if name == "robot-lab" else "2026-10-30"
     html = f'''<!doctype html>
 <html lang="{'ja' if name == 'business-plan' else 'vi'}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="MEKONIQ interactive presentation · Tiếng Việt / 日本語 / English · 2026-10-30">
-<title>{title}</title><style>{style}</style></head>
+<meta name="description" content="MEKONIQ interactive presentation · Tiếng Việt / 日本語 / English · {date}">
+<title>{title}</title><style>{style}{extra_style}</style></head>
 <body data-audience="{'business' if name == 'business-plan' else name}"><div id="app"></div>
 <noscript>Vui lòng bật JavaScript để xem bản trình bày. JavaScriptを有効にしてください。 Please enable JavaScript.</noscript>
 <script>{core}\n{content}</script></body></html>'''
