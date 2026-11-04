@@ -1,6 +1,6 @@
 import type { ModuleRegistry } from '../modules';
 import type { JsonObject, Snapshot } from '../../../contracts/src/index';
-import { all, amount, changed, created, done, expectVersion, externalPaymentId, externalReference, fail, find, handle, note, requireState, text } from '../restaurant-context';
+import { requireCloudSource, all, amount, changed, created, done, expectVersion, externalPaymentId, externalReference, fail, find, handle, note, requireState, text } from '../restaurant-context';
 import { assertCollectable } from './bill';
 import { dueMinor } from './settlement';
 
@@ -31,6 +31,7 @@ function tenderBasics(c: { payload: JsonObject }, bill: Snapshot) {
 }
 function externalCapture(registry: ModuleRegistry, type: string, method: string, prefix: string): void {
   handle(registry, type, (c, s) => {
+    if (type === 'Payment.RecordProvider') requireCloudSource(c, 'cloud-provider'); // provider money is a verified provider fact, relayed by the cloud
     const bill = requireState(s, 'bill', text(c.payload.billId));
     const status = TERMINAL_STATUSES.includes(String(c.payload.status)) ? String(c.payload.status) : fail('INVALID_STATUS');
     const { currency, reference, id, minor } = tenderBasics(c, bill), existing = find(s, 'payment', id);

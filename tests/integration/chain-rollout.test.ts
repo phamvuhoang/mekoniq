@@ -79,6 +79,20 @@ test('chain rights are per venue: a branch manager cannot publish or read other 
  await expect(chainPublish(owner,'other-org',{revision:1,venues:['venue-a']})).rejects.toThrow('SCOPE_DENIED');
  await expect(chainPublish(owner,org,{revision:1,venues:[]})).rejects.toThrow('INVALID_VENUES');
 });
+test('chain features are merged over the branch\'s own; a refused branch is retried by publishing again', async () => {
+ const on = (revision: number) => ({ status: 'enabled', revision });
+ await db.admin`INSERT INTO configuration_revision(organization_id,venue_id,revision,features,status,published_by) VALUES(${org},'venue-a',1,${db.admin.json({ catalog: on(1), orders: on(1) })},'applied','seed')`;
+ const rev = (await createChainRevision(owner, org, { expectedRevision: 3, snapshot: { features: { promotion: on(1) } } })).revision;
+ await chainPublish(owner, org, { revision: rev, venues: ['venue-a'] });
+ const [latest] = await db.admin`SELECT features FROM configuration_revision WHERE organization_id=${org} AND venue_id='venue-a' ORDER BY revision DESC LIMIT 1`;
+ expect(Object.keys(latest!.features).sort()).toEqual(['catalog', 'orders', 'promotion']); // nothing the branch already ran was switched off
+ const bad = (await createChainRevision(owner, org, { expectedRevision: rev, snapshot: { features: { 'robot.delivery': on(1) } } })).revision; // needs fleet + fulfillment, which the branch lacks
+ const refused = await chainPublish(owner, org, { revision: bad, venues: ['venue-a'] });
+ expect(refused.targets.find(t => t.kind === 'configuration')).toMatchObject({ state: 'failed' });
+ await db.admin`INSERT INTO configuration_revision(organization_id,venue_id,revision,features,status,published_by) VALUES(${org},'venue-a',99,${db.admin.json({ catalog: on(1), orders: on(1), fleet: on(1), fulfillment: on(1) })},'applied','seed')`;
+ const retried = await chainPublish(owner, org, { revision: bad, venues: ['venue-a'] });
+ expect(retried.targets.find(t => t.kind === 'configuration')!.state).not.toBe('failed'); // the same call is the retry
+});
 test('pure helpers: state, overlay purity, override validation',()=>{
  expect(rolloutState(2,2)).toBe('applied');expect(rolloutState(2,1)).toBe('pending');expect(rolloutState(2,3)).toBe('superseded');expect(rolloutState(2,1,'X')).toBe('failed');
  const base=[{id:'a',unitMinor:'1'}];expect(overlayItems(base,{a:{unitMinor:'2'}})).toEqual([{id:'a',unitMinor:'2'}]);expect(base[0]!.unitMinor).toBe('1');

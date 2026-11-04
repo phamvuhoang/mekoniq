@@ -16,6 +16,7 @@ export const readableKinds:Record<string,string>={promotion:'promotion.write',vo
 export async function relayVenueCommand(actor:Actor,scope:TenantScope,input:{type:string;payload:JsonObject;operationId?:string},options:{internal?:boolean}={}){
  if(!options.internal&&!cloudCommandTypes.has(input.type))throw new Error('COMMAND_NOT_RELAYABLE');
  if(!input.payload||typeof input.payload!=='object'||Array.isArray(input.payload))throw new Error('INVALID_COMMAND');
+ requirePermission(actor,'relay.write',scope); // scope first: a foreign venue must be refused before anything about it (does it have an owner? a policy?) is looked up
  const context=await withTenant(scope,async sql=>{
   const [owner]=await sql`SELECT epoch FROM venue_ownership WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND resource_id='coordinator' AND status='active'`;
   const [policy]=await sql`SELECT policy_revision FROM authority WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId}`;

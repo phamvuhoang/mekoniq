@@ -47,7 +47,7 @@ export async function relayReceive(scope:TenantScope,actorRef:string,row:{normal
  return {operationId,attempt};
 }
 function view(r:{status:ExternalStatus|string;code?:string|null;venue_recorded?:boolean;attention?:string|null;expires_at?:string|Date;cancel_status?:string|null;cancel_code?:string|null}):JsonObject{
- return {status:String(r.status),channelStatus:channelStatus(r.status==='accepted',r.status==='expired'||r.status==='rejected'),...(r.cancel_status?{cancelStatus:r.cancel_status,...(r.cancel_code?{cancelCode:r.cancel_code}:{})}:{}),venueRecorded:r.venue_recorded===true,...(r.code?{code:String(r.code)}:{}),...(r.attention?{attention:String(r.attention)}:{}),...(r.expires_at?{expiresAt:new Date(r.expires_at).toISOString()}:{})};
+ return {status:String(r.status),channelStatus:channelStatus(r.status==='accepted',r.status==='expired'||r.status==='rejected'||r.status==='cancelled'),...(r.cancel_status?{cancelStatus:r.cancel_status,...(r.cancel_code?{cancelCode:r.cancel_code}:{})}:{}),venueRecorded:r.venue_recorded===true,...(r.code?{code:String(r.code)}:{}),...(r.attention?{attention:String(r.attention)}:{}),...(r.expires_at?{expiresAt:new Date(r.expires_at).toISOString()}:{})};
 }
 /**
  * POST /v1/channels/:provider/webhooks. `202 received` means "stored durably and handed to the venue" — never that the restaurant accepted. The same event again returns the stored answer;

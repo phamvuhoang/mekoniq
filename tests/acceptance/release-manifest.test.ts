@@ -93,5 +93,7 @@ test('the CLIs use the same function: exit 1 with reasons for a blocked manifest
   const dry = spawnSync(process.execPath, ['scripts/release.mjs', '--env', 'staging', '--out', join(dir, 'm.json')], { encoding: 'utf8' }); expect(dry.status).toBe(1); expect(JSON.parse(dry.stdout)).toMatchObject({ dryRun: true, ok: false });
   const workflow = readFileSync('.github/workflows/release.yml', 'utf8');
   expect(workflow).toMatch(/RELEASE_DEPLOY_ENABLED == 'true'/); expect(workflow).toMatch(/node scripts\/verify-release\.mjs release-manifest\.json/); expect(workflow).toMatch(/DRY RUN BY DEFAULT/);
+  expect(workflow).toMatch(/if \[ "\$\{\{ inputs\.environment \}\}" = "production" \]; then PROD=--prod/); expect(workflow).not.toMatch(/vercel (build|deploy)[^\n]*--prod/); // --prod only through the production branch
+  expect(workflow).toMatch(/supabase link --project-ref/); expect(workflow).toMatch(/environment\/database mismatch/); expect(workflow.slice(workflow.indexOf('  deploy:'))).toMatch(/pnpm install --frozen-lockfile/);
   expect(JSON.parse(readFileSync('apps/cloud-web/vercel.json', 'utf8'))).toMatchObject({ regions: ['sin1'], functions: expect.any(Object) });
 });

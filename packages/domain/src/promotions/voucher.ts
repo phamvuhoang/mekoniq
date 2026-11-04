@@ -1,6 +1,6 @@
 import type { ModuleRegistry } from '../modules';
 import type { JsonObject } from '../../../contracts/src/index';
-import { changed, created, done, fail, find, handle, text } from '../restaurant-context';
+import { changed, created, done, fail, find, handle, requireCloudSource, text } from '../restaurant-context';
 const isDate = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
 const count = (v: unknown, code = 'INVALID_LIMIT'): number => Number.isInteger(v) && (v as number) > 0 && (v as number) <= 1_000_000_000 ? v as number : fail(code);
 export function registerVouchers(registry: ModuleRegistry): void {
@@ -31,6 +31,7 @@ export function registerVouchers(registry: ModuleRegistry): void {
   // Voucher.ReceiveEscrow {voucherId,total,revision,limit?,promotionId?,validFrom?,validTo?,restoreOnRefund?}: the chain authority (cloud) tells this venue its CUMULATIVE share of a shared pool.
   // Cumulative + revision make a retry or a missed earlier message harmless: a revision not newer than the slot's is a no-op, a newer one adds only the part not yet received.
   handle(registry, 'Voucher.ReceiveEscrow', (c, s) => {
+    requireCloudSource(c, 'cloud-web'); // only the chain authority grants shared-pool uses
     const id = text(c.payload.voucherId), total = count(c.payload.total, 'INVALID_COUNT'), revision = count(c.payload.revision, 'INVALID_REVISION');
     const v = find(s, 'voucher', id);
     if (v && v.state.scope !== 'shared') return fail('VOUCHER_NOT_SHARED');
@@ -49,6 +50,7 @@ export function registerVouchers(registry: ModuleRegistry): void {
   });
   // Voucher.ReturnEscrow {voucherId,count,returnRevision}: gives unspent allocation back to the pool. Only unspent uses can go back (a spent one stays spent), and a repeated returnRevision is a no-op.
   handle(registry, 'Voucher.ReturnEscrow', (c, s) => {
+    requireCloudSource(c, 'cloud-web');
     const v = find(s, 'voucher', text(c.payload.voucherId)) ?? fail('NOT_FOUND'), n = count(c.payload.count, 'INVALID_COUNT'), returnRevision = count(c.payload.returnRevision, 'INVALID_REVISION');
     const escrow = { ...((v.state.escrow ?? {}) as Record<string, JsonObject>) }, slot = escrow[c.venueId];
     if (!slot) return fail('ESCROW_NOT_FOUND');

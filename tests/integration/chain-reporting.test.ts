@@ -96,7 +96,7 @@ test('venue: ReceiveEscrow is cumulative and idempotent; ReturnEscrow gives back
  const lab=await createRestaurantLab();
  try{
   type V={remaining:number;escrow:Record<string,{count:number;revision:number;granted:number;returned?:number}>};
-  const recv=(total:number,revision:number,op:string)=>lab.command('manager','Voucher.ReceiveEscrow',{voucherId:'VS',total,revision,limit:10},op);
+  const recv=(total:number,revision:number,op:string)=>lab.command('cloud-web','Voucher.ReceiveEscrow',{voucherId:'VS',total,revision,limit:10},op);
   expect((await recv(6,1,'r1')).status).toBe('accepted');
   expect((await recv(6,1,'r1-again')).value.duplicate).toBe(true); // same revision: nothing added
   expect((await lab.state<V>('voucher','VS')).escrow['venue-a']!.count).toBe(6);
@@ -105,11 +105,12 @@ test('venue: ReceiveEscrow is cumulative and idempotent; ReturnEscrow gives back
   expect((await recv(8,4,'r4')).code).toBe('ESCROW_TOTAL_REGRESSED');
   for(const bill of ['b1','b2'])expect((await lab.command('cashier','Voucher.Redeem',{voucherId:'VS',billId:bill})).status).toBe('accepted');
   expect((await lab.state<V>('voucher','VS')).escrow['venue-a']!.count).toBe(7);
-  expect((await lab.command('manager','Voucher.ReturnEscrow',{voucherId:'VS',count:8,returnRevision:1})).code).toBe('ESCROW_INSUFFICIENT');
-  expect((await lab.command('manager','Voucher.ReturnEscrow',{voucherId:'VS',count:7,returnRevision:1})).status).toBe('accepted');
-  expect((await lab.command('manager','Voucher.ReturnEscrow',{voucherId:'VS',count:7,returnRevision:1},'ret-again')).value.duplicate).toBe(true);
+  expect((await lab.command('cloud-web','Voucher.ReturnEscrow',{voucherId:'VS',count:8,returnRevision:1})).code).toBe('ESCROW_INSUFFICIENT');
+  expect((await lab.command('cloud-web','Voucher.ReturnEscrow',{voucherId:'VS',count:7,returnRevision:1})).status).toBe('accepted');
+  expect((await lab.command('cloud-web','Voucher.ReturnEscrow',{voucherId:'VS',count:7,returnRevision:1},'ret-again')).value.duplicate).toBe(true);
   expect((await lab.state<V>('voucher','VS')).escrow['venue-a']).toMatchObject({count:0,returned:7});
   expect((await lab.command('cashier','Voucher.Redeem',{voucherId:'VS',billId:'b3'})).code).toBe('SHARED_VOUCHER_OFFLINE_DENIED');
+  expect((await lab.command('manager','Voucher.ReceiveEscrow',{voucherId:'VS',total:100000,revision:99})).code).toBe('CLOUD_SOURCE_REQUIRED'); // a branch manager cannot mint shared-pool uses on a tablet
   expect((await lab.command('cashier','Voucher.ReceiveEscrow',{voucherId:'VS',total:1,revision:9})).code).toBe('FORBIDDEN');
  }finally{await lab.close();}
 });

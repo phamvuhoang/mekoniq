@@ -146,7 +146,7 @@ test('venue side: Payment.RecordProvider records money once per reference, appli
  const lab=await createRestaurantLab();
  try{
   await lab.seed('bill','bill-1',{status:'prepared',totalMinor:'100000',paidMinor:'0',refundedMinor:'0',currency:'VND',orderIds:[],lines:[],version:1});
-  const record=(amountMinor:string,tx='TX-1',billId='bill-1')=>lab.command('owner','Payment.RecordProvider',{billId,amountMinor,currency:'VND',status:'captured',reference:{provider:'sim-payment',merchantId:'merchant-1',transactionId:tx}},'op-'+tx+amountMinor+billId);
+  const record=(amountMinor:string,tx='TX-1',billId='bill-1')=>lab.command('cloud-provider','Payment.RecordProvider',{billId,amountMinor,currency:'VND',status:'captured',reference:{provider:'sim-payment',merchantId:'merchant-1',transactionId:tx}},'op-'+tx+amountMinor+billId);
   expect(await record('100000')).toMatchObject({status:'accepted',value:{appliedMinor:'100000',unappliedMinor:'0'}});
   expect((await record('100000')).duplicate).toBe(true);expect(await lab.count('ProviderPaymentCaptured')).toBe(1); // a re-sent relay is one payment
   expect(await record('50000','TX-2')).toMatchObject({status:'accepted',value:{appliedMinor:'0',unappliedMinor:'50000'}}); // paid in full: the extra money is KEPT as unapplied, not hidden and not applied
@@ -154,6 +154,8 @@ test('venue side: Payment.RecordProvider records money once per reference, appli
   expect((await record('1000','TX-3','bill-closed')).status).toBe('rejected'); // a closed bill takes nothing: the cloud then shows it as unapplied funds
   expect((await lab.command('cashier','Payment.RecordProvider',{})).code).toBe('FORBIDDEN'); // only the provider relay (payment.capture) may send it
   expect((await lab.command('manager','Payment.RecordProvider',{})).code).toBe('FORBIDDEN');
+  const typed = { billId: 'bill-1', amountMinor: '1', currency: 'VND', status: 'captured', reference: { provider: 'x', merchantId: 'y', transactionId: 'z' } };
+  expect((await lab.command('owner', 'Payment.RecordProvider', typed)).code).toBe('CLOUD_SOURCE_REQUIRED'); // not even a wildcard owner on a tablet can type provider money;
  }finally{await lab.close();}
 });
 test('VietQR: CRC vector, round trip, dynamic vs static, and strict inputs; displaying it is not payment',()=>{
@@ -174,4 +176,32 @@ test('reconciliation rules are pure and exact',()=>{
  expect(judge(exp,cap({}))).toBe('settle');expect(judge(exp,cap({amountMinor:'101'}))).toBe('unapplied');expect(judge(exp,cap({merchantId:'z'}))).toBe('foreign');
  expect(judge({...exp,payee:'A'},cap({payee:'B'}))).toBe('foreign');expect(judge(exp,{status:'pending'})).toBe('wait');expect(judge(exp,{status:'not_found'})).toBe('wait');expect(judge(exp,{status:'expired'})).toBe('close');
  expect(refundable('100','30')).toBe('70');
+});
+
+test('money captured after our own expiry is kept as unapplied funds, never dropped', async () => {
+  const rig = await createProviderRig('payment');
+  try {
+    const intentId = await rig.newIntent();
+    await rig.admin`UPDATE payment_intent SET status='expired' WHERE intent_id=${intentId}::uuid`; // reconcile closed it on our TTL
+    await rig.deliverFixture('signed-exact', { intentId }); // the customer scanned late; the provider captured exactly
+    expect(await rig.settledCount()).toBe(0);expect(await rig.unappliedFundsCount()).toBe(1);
+    const [i] = await rows<{ status: string; attention: string; captured_minor: string }>(rig, `SELECT status,attention,captured_minor FROM payment_intent WHERE intent_id='${intentId}'`);
+    expect(i).toMatchObject({ status: 'unapplied', attention: 'LATE_CAPTURE', captured_minor: '100000' });
+  } finally { await rig.close(); }
+});
+test('a refund whose call never reached the provider is re-sent under the SAME id; two refunds cannot together exceed the capture', async () => {
+  const rig = await createProviderRig('payment');
+  try {
+    await rig.deliverFixture('signed-exact'); const intentId = rig.currentIntent()!;
+    const refundCalls = rig.sim.calls.refund!, original = rig.sim.provider.refund!;
+    rig.sim.provider.refund = async () => { throw new Error('CONNECTION_RESET'); }; // dies before the provider sees it
+    const first = await requestProviderRefund(rig.owner, rig.scope, { intentId, amountMinor: '40000', reason: 'x', refundId: 'refund-stuck' });
+    rig.sim.provider.refund = original; expect(first.refundStatus).toBe('unknown');
+    await rig.reconcile(); // queryRefund: not found -> the same refund id is sent again
+    const [after] = await rows<{ refunded_minor: string; refund_status: string }>(rig, `SELECT refunded_minor,refund_status FROM payment_intent WHERE intent_id='${intentId}'`);
+    expect(after).toMatchObject({ refunded_minor: '40000', refund_status: 'confirmed' }); expect(rig.sim.calls.refund).toBe(refundCalls + 1);
+    // the limit holds even if a stale read lets two requests start: the claim itself re-checks it
+    await expect(Promise.all([requestProviderRefund(rig.owner, rig.scope, { intentId, amountMinor: '40000', reason: 'a', refundId: 'r-a' }), requestProviderRefund(rig.owner, rig.scope, { intentId, amountMinor: '40000', reason: 'b', refundId: 'r-b' })])).rejects.toThrow(/REFUND_EXCEEDS_CAPTURED|REFUND_IN_PROGRESS/);
+    const [end] = await rows<{ refunded_minor: string }>(rig, `SELECT refunded_minor FROM payment_intent WHERE intent_id='${intentId}'`); expect(Number(end!.refunded_minor)).toBeLessThanOrEqual(100000);
+  } finally { await rig.close(); }
 });

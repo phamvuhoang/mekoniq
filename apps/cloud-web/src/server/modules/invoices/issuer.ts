@@ -110,7 +110,10 @@ export async function reconcileInvoices(scope:TenantScope,nowMs=Date.now(),limit
     if(relay?.status==='accepted'){await withTenant(scope,sql=>sql`UPDATE invoice_request SET venue_status='recorded',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND request_id=${row.request_id}`);report.recorded++;}
     else if(!relay||(relay.status==='pending'&&Date.parse(relay.expires_at)<=nowMs)){
      const attempt=1+Number((await withTenant(scope,sql=>sql`SELECT count(*)::int AS n FROM relay_command WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND operation_id LIKE ${'invoice-'+row.request_id+'-'+row.status+'%'}`))[0]!.n);
-     await forward(scope,row,row.status==='issued'?{status:'issued',providerInvoiceId:row.provider_invoice_id,code:row.invoice_code}:{status:row.status,reason:'resent'},`${row.status}-r${attempt}`);report.resent++;
+     const cancel=[...row.adjustments].reverse().find(a=>a.action==='cancel');
+     // exactly what the venue needs to accept the answer again: the provider's id+code, its rejection, or the cancellation's own reference
+     const payload:JsonObject=row.status==='issued'?{status:'issued',providerInvoiceId:row.provider_invoice_id,code:row.invoice_code}:row.status==='rejected'?{status:'rejected',reason:'rejected by the provider: '+String((row as unknown as {rejection_code?:string}).rejection_code??'REJECTED')}:{status:'cancelled',providerRef:String(cancel?.providerRef??''),reason:String(cancel?.reason??'cancelled')};
+     await forward(scope,row,payload,`${row.status}-r${attempt}`);report.resent++;
     }
    }
   }catch{report.errors++;}

@@ -24,6 +24,11 @@ export const requireState = (snapshots: Snapshot[], kind: string, id: string): S
 export const stableId = (prefix: string, command: CommandEnvelope, suffix = ''): string => `${prefix}-${hashPayload({operationId:command.operationId,suffix}).slice(0,32)}`;
 /** External payment reference {provider,merchantId,transactionId}; its id is unique per scope, so one transaction is one payment aggregate. */
 /** Human-entered justification (reason, evidence reference): trimmed, never blank. */
+/**
+ * Commands that state a fact only the CLOUD can vouch for (a chain pool grant, a verified provider capture, a channel request). Their permission is not enough: a person with a wildcard or manager role
+ * on a tablet must not be able to type them, so the command must arrive from the cloud's own relay source (the device id the relay stamps on it).
+ */
+export const requireCloudSource = (command: CommandEnvelope, source: 'cloud-web' | 'cloud-channel' | 'cloud-provider'): void => { if (command.deviceId !== source) fail('CLOUD_SOURCE_REQUIRED'); };
 export const note = (value: JsonValue | undefined, code: string): string => text(typeof value === 'string' ? value.trim() : value, code);
 /**
  * External payment reference {provider,merchantId,transactionId}, normalized before it becomes an id: references are typed by hand, so

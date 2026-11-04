@@ -1,7 +1,7 @@
 import type { ModuleRegistry } from '../modules';
 import type { JsonObject } from '../../../contracts/src/index';
 import type { FeatureConfig } from '../policy/registry';
-import { changed, created, done, fail, find, handle, note, requireState, text } from '../restaurant-context';
+import { changed, created, done, fail, find, handle, note, requireCloudSource, requireState, text } from '../restaurant-context';
 /** Frozen statuses of an invoice request at the venue. `issued` exists only through a provider's code (Invoice.Record); `external` is a link to something issued elsewhere, never an issue. */
 export const INVOICE_STATUSES = ['requested', 'issued', 'rejected', 'cancelled', 'external'] as const;
 const TAX_CODE = /^[0-9]{10}(-[0-9]{3})?$/;
@@ -31,6 +31,7 @@ export function registerInvoices(registry: ModuleRegistry): void {
   });
   // Invoice.Record {requestId,status,providerInvoiceId?,code?,reason?,adjustment?}: a provider's answer, forwarded by the cloud. "issued" needs the provider's invoice id AND code; a rejection needs the reason.
   handle(registry, 'Invoice.Record', (c, s) => {
+    requireCloudSource(c, 'cloud-provider'); // an invoice is "issued" only by a provider's answer relayed by the cloud, never by a person
     const req = requireState(s, 'invoice-request', text(c.payload.requestId)), status = String(c.payload.status);
     if (!['issued', 'rejected', 'cancelled', 'adjusted'].includes(status)) return fail('INVALID_STATUS');
     const current = String(req.state.status);

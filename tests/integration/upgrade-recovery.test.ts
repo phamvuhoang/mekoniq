@@ -98,7 +98,7 @@ test('migrations: expand-only goes through; a destructive one needs every client
   expect(migrationAllowed({ unknownClients: 0, pendingJournals: 2, backwardCompatible: false })).toBe(false);
   expect(migrationAllowed({ unknownClients: 0, pendingJournals: 0, backwardCompatible: false })).toBe(true);
   expect(classifyMigration('ALTER TABLE t ADD COLUMN c text;').backwardCompatible).toBe(true);
-  for (const bad of ['ALTER TABLE t DROP COLUMN c;', 'DROP TABLE t;', 'ALTER TABLE t ALTER COLUMN c TYPE bigint;', 'ALTER TABLE t RENAME TO u;', 'ALTER TABLE t ALTER COLUMN c SET NOT NULL;', 'TRUNCATE t;', 'DELETE FROM t;']) expect(classifyMigration(bad).backwardCompatible, bad).toBe(false);
+  for (const bad of ['ALTER TABLE t DROP COLUMN c;', 'DROP TABLE t;', 'ALTER TABLE t ALTER COLUMN c TYPE bigint;', 'ALTER TABLE t RENAME TO u;', 'ALTER TABLE t ALTER COLUMN c SET NOT NULL;', 'TRUNCATE t;', 'DELETE FROM t;', 'ALTER TABLE t DROP c;', 'DROP FUNCTION f();', 'DROP TYPE x;']) expect(classifyMigration(bad).backwardCompatible, bad).toBe(false);
   expect(classifyMigration('-- DROP TABLE in a comment\nCREATE TABLE x(a int);').backwardCompatible).toBe(true);
   expect(planMigrations().filter((m: { backwardCompatible: boolean }) => !m.backwardCompatible).map((m: { file: string }) => m.file)).toEqual([]); // every shipped migration is expand-only: old tablets keep syncing across a rolling upgrade
   const dir = tmp(); writeFileSync(join(dir, '20270101000000_bad.sql'), 'ALTER TABLE t DROP COLUMN c;');

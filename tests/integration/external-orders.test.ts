@@ -95,7 +95,7 @@ async function venueLab(){
  await lab.seed('configuration','applied',{...fixture.configuration,features:{...fixture.configuration.features,online:{status:'enabled',revision:1}}} as JsonObject);
  return lab;
 }
-const receive=(lab:Awaited<ReturnType<typeof venueLab>>,over:JsonObject={},op=randomUUID())=>lab.command('manager','ExternalOrder.Receive',{provider:'sandbox-channel',merchantId:'shop-1',externalId:'e1',payloadHash:'h1',items:[{itemId:'tea',quantity:'1'}],currency:'VND',expiresAt:new Date(lab.clock.nowMs+3600_000).toISOString(),...over},op);
+const receive=(lab:Awaited<ReturnType<typeof venueLab>>,over:JsonObject={},op=randomUUID())=>lab.command('cloud-channel','ExternalOrder.Receive',{provider:'sandbox-channel',merchantId:'shop-1',externalId:'e1',payloadHash:'h1',items:[{itemId:'tea',quantity:'1'}],currency:'VND',expiresAt:new Date(lab.clock.nowMs+3600_000).toISOString(),...over},op);
 test('venue: received is recorded but only Accept makes an order; price is ours, duplicates are no-ops',async()=>{
  const lab=await venueLab();
  try{
@@ -121,9 +121,9 @@ test('venue: reject, expire after the deadline, never expire an accepted order, 
   expect((await lab.command('cashier','ExternalOrder.Reject',{externalOrderId:'ext:sandbox-channel:shop-1:r1',reason:'hết món'})).status).toBe('accepted');
   expect((await lab.command('cashier','ExternalOrder.Accept',{externalOrderId:'ext:sandbox-channel:shop-1:r1',sessionId:'s1'})).code).toBe('EXTERNAL_ORDER_NOT_PENDING');
   await receive(lab,{externalId:'x1'});
-  expect((await lab.command('manager','ExternalOrder.Expire',{externalOrderId:'ext:sandbox-channel:shop-1:x1'})).code).toBe('EXTERNAL_ORDER_NOT_EXPIRED');
+  expect((await lab.command('cloud-channel','ExternalOrder.Expire',{externalOrderId:'ext:sandbox-channel:shop-1:x1'})).code).toBe('EXTERNAL_ORDER_NOT_EXPIRED');
   await lab.advance(2*3600_000);
-  expect((await lab.command('manager','ExternalOrder.Expire',{externalOrderId:'ext:sandbox-channel:shop-1:x1'})).status).toBe('accepted');
+  expect((await lab.command('cloud-channel','ExternalOrder.Expire',{externalOrderId:'ext:sandbox-channel:shop-1:x1'})).status).toBe('accepted');
   await lab.command('cashier','Session.Open',{tableId:'table-1',sessionId:'s2'});
   expect((await lab.command('cashier','ExternalOrder.Accept',{externalOrderId:'ext:sandbox-channel:shop-1:x1',sessionId:'s2'})).code).toBe('EXTERNAL_ORDER_NOT_PENDING');
   await receive(lab,{externalId:'p1',expiresAt:new Date(lab.clock.nowMs+3600_000).toISOString()});

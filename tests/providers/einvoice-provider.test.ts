@@ -101,6 +101,18 @@ test('lapsed relay of a provider answer is resent; the venue accepting it ends t
   expect((await rig.reconcileAll()).resent).toBe(0);
  }finally{await rig.close();}
 });
+test('a cancellation or rejection is re-sent in a form the venue accepts', async () => {
+  const rig = await createProviderRig('einvoice');
+  try {
+    await rig.issue('bill-1'); await amendInvoice(owner(rig), rig.scope, { requestId: 'inv-bill-1', action: 'cancel', reason: 'mistake', key: 'c-1' });
+    await rig.admin`UPDATE relay_command SET status='accepted',venue_receipt='{"status":"accepted","ack":"venue"}' WHERE organization_id=${rig.scope.organizationId} AND operation_id LIKE '%issued%'`;
+    await rig.admin`UPDATE relay_command SET expires_at=now()-interval '1 minute' WHERE organization_id=${rig.scope.organizationId} AND command->'payload'->>'status'='cancelled'`; // venue offline when the cancellation was sent
+    await rig.admin`UPDATE invoice_request SET venue_status='pending' WHERE organization_id=${rig.scope.organizationId}`;
+    await rig.reconcileAll();
+    const rows = await rig.admin`SELECT command->'payload' AS p FROM relay_command WHERE organization_id=${rig.scope.organizationId} AND command->'payload'->>'status'='cancelled' ORDER BY created_at DESC LIMIT 1`;
+    expect(rows[0]!.p).toMatchObject({ status: 'cancelled', providerRef: expect.stringMatching(/^sim-can-/), reason: 'mistake' }); // not "resent" with no reference
+  } finally { await rig.close(); }
+});
 test('venue side: request needs the feature and a closed bill, validates the buyer, is one per bill; issued needs the provider code; an external link is never an issue',async()=>{
  const lab=await createRestaurantLab();
  try{
@@ -117,9 +129,10 @@ test('venue side: request needs the feature and a closed bill, validates the buy
   const ok=await request('closed-1');expect(ok.status).toBe('accepted');
   expect(await lab.state<{status:string;totalMinor:string}>('invoice-request','inv-closed-1')).toMatchObject({status:'requested',totalMinor:'110000'});
   expect((await request('closed-1')).value.duplicate).toBe(true);expect(await lab.count('InvoiceRequested')).toBe(1);
-  const record=(over:JsonObject,op?:string)=>lab.command('owner','Invoice.Record',{requestId:'inv-closed-1',...over},op);
+  const record=(over:JsonObject,op?:string)=>lab.command('cloud-provider','Invoice.Record',{requestId:'inv-closed-1',...over},op);
   expect((await record({status:'issued'})).code).toBe('PROVIDER_ID_REQUIRED'); // no "issued" without the provider's id AND code
   expect((await record({status:'issued',providerInvoiceId:'p-1'})).code).toBe('PROVIDER_CODE_REQUIRED');
+  expect((await lab.command('owner','Invoice.Record',{requestId:'inv-closed-1',status:'issued',providerInvoiceId:'p',code:'c'})).code).toBe('CLOUD_SOURCE_REQUIRED');
   expect((await lab.command('cashier','Invoice.Record',{requestId:'inv-closed-1',status:'issued',providerInvoiceId:'p',code:'c'})).code).toBe('FORBIDDEN'); // staff cannot declare an invoice issued
   expect((await record({status:'adjusted',providerRef:'x',reason:'r'})).code).toBe('INVOICE_NOT_ISSUED');
   expect((await record({status:'issued',providerInvoiceId:'p-1',code:'SIM/000001'},'rec-1')).status).toBe('accepted');

@@ -91,9 +91,12 @@ async function dispatchCatalog(actor:Actor,organizationId:string,revision:number
  }catch(error){await recordTarget(organizationId,revision,scope.venueId,'catalog',plan.version,null,'rejected',error instanceof Error?error.message.slice(0,100):'REJECTED',attempts);}
 }
 async function dispatchConfiguration(actor:Actor,organizationId:string,revision:number,scope:{organizationId:string;venueId:string},features:JsonObject){
- if(await existingTarget(organizationId,revision,scope.venueId,'configuration'))return; // a configuration revision is durable in the cloud; the venue pulls it whenever it returns
+ const prior=await existingTarget(organizationId,revision,scope.venueId,'configuration');
+ if(prior&&prior.status!=='rejected')return; // a configuration revision is durable in the cloud; the venue pulls it whenever it returns. A refused one is retried by publishing again.
  try{
-  const current=await readConfiguration(actor,scope),result=await publishConfiguration(actor,scope,{expectedRevision:Number(current.revision),features:features as never});
+  // the chain states the features it manages; every other feature of the branch keeps its current setting (a missing feature would read as DISABLED)
+  const current=await readConfiguration(actor,scope),
+   merged={...((current.features??{}) as JsonObject),...features},result=await publishConfiguration(actor,scope,{expectedRevision:Number(current.revision),features:merged as never});
   await recordTarget(organizationId,revision,scope.venueId,'configuration',result.revision,null,'dispatched',null);
  }catch(error){await recordTarget(organizationId,revision,scope.venueId,'configuration',0,null,'rejected',error instanceof Error?error.message.split(':')[0]!.slice(0,100):'REJECTED');}
 }

@@ -85,13 +85,19 @@ async function forwardToVenue(scope:TenantScope,row:IntentRow,transactionId:stri
  await enqueueChannelRelay(command,new Date(Date.now()+RELAY_WINDOW_MS).toISOString());
  await withTenant(scope,sql=>sql`UPDATE payment_intent SET venue_operation_id=${operationId},venue_status='pending',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id}`);
 }
+/** The provider captured money for an intent we had already closed (our TTL expired, or it was marked failed). Never dropped: it becomes unapplied funds for a person to apply or refund. */
+async function lateCapture(scope:TenantScope,row:IntentRow,captured:Extract<ProviderState,{status:'captured'}>){
+ await withTenant(scope,sql=>sql`UPDATE payment_intent SET status='unapplied',captured_minor=${captured.amountMinor},transaction_id=${captured.transactionId},attention='LATE_CAPTURE',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id} AND status IN('expired','failed')`);
+}
 async function settle(scope:TenantScope,row:IntentRow,verdict:Verdict,state:ProviderState){
  const captured=state.status==='captured'?state:undefined;
  if(verdict==='settle'&&captured){
   const moved=await withTenant(scope,sql=>sql`UPDATE payment_intent SET status='captured',captured_minor=${captured.amountMinor},transaction_id=${captured.transactionId},updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id} AND status IN('created','pending','unknown') RETURNING intent_id`);
   if(moved.length||(row.status==='captured'&&!row.venue_operation_id))await forwardToVenue(scope,{...row,amount_minor:captured.amountMinor},captured.transactionId);
+  else await lateCapture(scope,row,captured); // our own expiry beat the provider: the money is real
  }else if(verdict==='unapplied'&&captured){
-  await withTenant(scope,sql=>sql`UPDATE payment_intent SET status='unapplied',captured_minor=${captured.amountMinor},transaction_id=${captured.transactionId},attention=${captured.currency!==row.currency?'CURRENCY_MISMATCH':'AMOUNT_MISMATCH'},updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id} AND status IN('created','pending','unknown')`);
+  const moved=await withTenant(scope,sql=>sql`UPDATE payment_intent SET status='unapplied',captured_minor=${captured.amountMinor},transaction_id=${captured.transactionId},attention=${captured.currency!==row.currency?'CURRENCY_MISMATCH':'AMOUNT_MISMATCH'},updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id} AND status IN('created','pending','unknown') RETURNING intent_id`);
+  if(!moved.length)await lateCapture(scope,row,captured);
  }else if(verdict==='foreign'){
   await withTenant(scope,sql=>sql`UPDATE payment_intent SET attention='FOREIGN_MERCHANT_EVENT',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id}`);
  }else if(verdict==='close'){
@@ -149,6 +155,11 @@ export async function reconcilePaymentIntents(scope:TenantScope,nowMs=Date.now()
    if(row.refund_status&&['pending','unknown'].includes(row.refund_status)&&row.refund_id&&provider.queryRefund){
     const r=await provider.queryRefund({refundId:row.refund_id});
     if(r.status==='confirmed')await withTenant(scope,sql=>sql`UPDATE payment_intent SET refunded_minor=refunded_minor+${row.refund_minor!},refund_status='confirmed',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id} AND refund_status IN('pending','unknown')`);
+    else if(r.status==='not_found'&&provider.refund){ // the provider never saw it: asking again with the SAME refund id is safe and idempotent
+     const again=await provider.refund({refundId:row.refund_id,intentId:row.intent_id,providerRef:row.provider_ref,amountMinor:row.refund_minor!,reason:'retry of a refund whose outcome was unknown'});
+     if(again.status==='confirmed')await withTenant(scope,sql=>sql`UPDATE payment_intent SET refunded_minor=refunded_minor+${row.refund_minor!},refund_status='confirmed',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id} AND refund_status IN('pending','unknown')`);
+     else if(again.status==='rejected')await withTenant(scope,sql=>sql`UPDATE payment_intent SET refund_status='rejected',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id} AND refund_status IN('pending','unknown')`);
+    }
     else if(r.status==='rejected')await withTenant(scope,sql=>sql`UPDATE payment_intent SET refund_status='rejected',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id} AND refund_status IN('pending','unknown')`);
     report.refunds++;
    }
@@ -167,8 +178,8 @@ export async function requestProviderRefund(actor:Actor,scope:TenantScope,input:
  if(!['captured','unapplied'].includes(row.status))throw new Error('INTENT_NOT_CAPTURED');
  if(row.refund_status&&['pending','unknown'].includes(row.refund_status))throw new Error('REFUND_IN_PROGRESS');
  if(BigInt(input.amountMinor)>BigInt(refundable(String(row.captured_minor),String(row.refunded_minor))))throw new Error('REFUND_EXCEEDS_CAPTURED');
- const claimed=await withTenant(scope,sql=>sql`UPDATE payment_intent SET refund_id=${refundId},refund_minor=${input.amountMinor},refund_status='pending',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${input.intentId} AND (refund_status IS NULL OR refund_status IN('confirmed','rejected')) RETURNING intent_id`);
- if(!claimed.length)throw new Error('REFUND_IN_PROGRESS');
+ const claimed=await withTenant(scope,sql=>sql`UPDATE payment_intent SET refund_id=${refundId},refund_minor=${input.amountMinor},refund_status='pending',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${input.intentId} AND (refund_status IS NULL OR refund_status IN('confirmed','rejected')) AND refunded_minor+${input.amountMinor}<=captured_minor RETURNING intent_id`); // the limit is re-checked IN the claim: a concurrent refund cannot slip past a stale read
+ if(!claimed.length){const now=await loadIntent(scope,input.intentId);throw new Error(now&&BigInt(input.amountMinor)>BigInt(refundable(String(now.captured_minor),String(now.refunded_minor)))?'REFUND_EXCEEDS_CAPTURED':'REFUND_IN_PROGRESS');}
  try{
   const result=await provider.refund({refundId,intentId:row.intent_id,providerRef:row.provider_ref,amountMinor:input.amountMinor,reason:input.reason});
   if(result.status==='confirmed')await withTenant(scope,sql=>sql`UPDATE payment_intent SET refunded_minor=refunded_minor+${input.amountMinor},refund_status='confirmed',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${input.intentId}`);

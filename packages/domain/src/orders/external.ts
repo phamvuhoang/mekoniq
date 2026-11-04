@@ -3,7 +3,7 @@ import type { CommandEnvelope, Decision, JsonObject, Snapshot } from '../../../c
 import { currentMenu } from '../catalog/menu';
 import { quoteForCommand } from '../pricing/quote';
 import { cancelOrderDecision, placeOrder } from './module';
-import { changed, created, done, fail, find, handle, requireState, text } from '../restaurant-context';
+import { changed, created, done, fail, find, handle, requireCloudSource, requireState, text } from '../restaurant-context';
 const PART = /^[A-Za-z0-9._-]{1,60}$/;
 /** One external order = one aggregate, named by the channel's own identity (provider, merchant, external id): the same event can never become a second order here. */
 export function externalOrderId(provider: string, merchantId: string, externalId: string): string {
@@ -23,6 +23,7 @@ function quoteBasket(c: CommandEnvelope, s: Snapshot[], items: unknown, currency
  */
 export function registerExternalOrders(registry: ModuleRegistry): void {
   handle(registry, 'ExternalOrder.Receive', (c, s): Decision => {
+    requireCloudSource(c, 'cloud-channel');
     const provider = text(c.payload.provider), merchantId = text(c.payload.merchantId), externalId = text(c.payload.externalId), id = externalOrderId(provider, merchantId, externalId);
     const payloadHash = text(c.payload.payloadHash, 'INVALID_PAYLOAD_HASH'), prior = find(s, 'external-order', id);
     if (prior) return prior.state.payloadHash === payloadHash ? done([], { externalOrderId: id, status: String(prior.state.status), duplicate: true }) : fail('EXTERNAL_ORDER_PAYLOAD_CONFLICT');
@@ -56,6 +57,7 @@ export function registerExternalOrders(registry: ModuleRegistry): void {
   });
   // ExternalOrder.Expire: the deadline passed without an answer. An accepted order is never expired away.
   handle(registry, 'ExternalOrder.Expire', (c, s): Decision => {
+    requireCloudSource(c, 'cloud-channel');
     const ext = requireState(s, 'external-order', text(c.payload.externalOrderId));
     if (ext.state.status === 'expired') return done([], { externalOrderId: ext.ref.id, duplicate: true });
     if (ext.state.status !== 'received') return fail('EXTERNAL_ORDER_NOT_PENDING');
@@ -65,6 +67,7 @@ export function registerExternalOrders(registry: ModuleRegistry): void {
   // ExternalOrder.Cancel {externalOrderId,reason}: the CHANNEL asks to cancel. Not yet accepted -> simply cancelled. Accepted -> the same rules as cancelling any order (nothing a station already
   // made or allocated is thrown away silently: REQUIRES_DISPOSITION / FULFILLMENT_ACTIVE come back and the channel is told it was refused).
   handle(registry, 'ExternalOrder.Cancel', (c, s): Decision => {
+    requireCloudSource(c, 'cloud-channel');
     const ext = requireState(s, 'external-order', text(c.payload.externalOrderId)), reason = text(c.payload.reason, 'REASON_REQUIRED');
     if (ext.state.status === 'cancelled') return done([], { externalOrderId: ext.ref.id, duplicate: true });
     if (ext.state.status === 'received') return done([changed('ExternalOrderCancelled', ext, { status: 'cancelled', cancellationReason: reason, cancelledAt: c.recordedAt })], { externalOrderId: ext.ref.id });

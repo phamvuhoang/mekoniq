@@ -48,16 +48,28 @@ jobs:
     needs: manifest
     if: ${{ vars.RELEASE_DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}   # protected environment = a person approves
+    environment: ${{ inputs.environment }}   # protected environment = a person approves; its secrets are that environment's only
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .node-version, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
       - uses: actions/download-artifact@v4
         with: { name: release-manifest }
       - run: node scripts/verify-release.mjs release-manifest.json   # same function again: a blocked manifest never deploys
-      - name: Migrations (expand-only unless cleared), then deploy; a failing migration stops here and nothing is deployed
+      - name: The environment and the database must agree (production deploys production, nothing else does)
         run: |
-          pnpm exec supabase db push --linked
+          case "${{ inputs.environment }}:${{ inputs.database }}" in
+            production:production|staging:staging|preview:preview) ;;
+            *) echo "environment/database mismatch: ${{ inputs.environment }}/${{ inputs.database }}"; exit 1 ;;
+          esac
+      - name: Migrations (expand-only unless cleared) against THIS environment's project, then deploy; a failing migration stops here and nothing is deployed
+        run: |
+          pnpm exec supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          pnpm exec supabase db push
           npx vercel pull --yes --environment="${{ inputs.environment }}" --token "$VERCEL_TOKEN"
-          npx vercel build --prod --token "$VERCEL_TOKEN"
-          npx vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
-        env: { VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}', SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}' }
+          if [ "${{ inputs.environment }}" = "production" ]; then PROD=--prod; else PROD=; fi
+          npx vercel build $PROD --token "$VERCEL_TOKEN"
+          npx vercel deploy --prebuilt $PROD --token "$VERCEL_TOKEN"
+        env: { VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}', SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}', SUPABASE_PROJECT_REF: '${{ secrets.SUPABASE_PROJECT_REF }}' }

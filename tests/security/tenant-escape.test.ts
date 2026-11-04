@@ -37,6 +37,10 @@ test('foreign-scope signed journal is denied before projection', async () => {
     expect(validDeviceScope({ organizationId: 'o', venueId: 'v' }, { organizationId: 'o', venueId: 'v2' })).toBe(false);
   } finally { await lab.close(); }
 });
+const validBody: Record<string, unknown> = {
+  '/v1/venues/:venueId/ownership/initialize': { deviceId: 'd' }, '/v1/venues/:venueId/commands': { type: 'Promotion.Publish', operationId: 'x1', payload: { promotionId: 'p', name: 'n', kind: 'percent', valueBps: 1 } },
+  '/v1/automation/venues/:venueId/commands': { type: 'Mission.Create', operationId: 'x2', payload: {} },
+};
 test('every route that names a venue refuses an owner of another tenant, and no response carries the other tenant\'s data', async () => {
   const routes: CloudRoute[] = []; registerWave02Routes(r => routes.push(r));
   const venueRoutes = routes.filter(r => r.path.includes(':venueId'));
@@ -44,9 +48,9 @@ test('every route that names a venue refuses an owner of another tenant, and no 
   const hits: string[] = [];
   for (const route of venueRoutes) {
     const path = route.path.replace(':venueId', scopeB.venueId).replace(/:[A-Za-z]+/g, 'x');
-    const res = await call(route.method, path + (route.method === 'GET' ? '?kind=order&businessDate=2026-10-30&a=venue-a&b=venue-b' : ''), route.method === 'GET' ? undefined : {});
+    const res = await call(route.method, path + (route.method === 'GET' ? '?kind=order&businessDate=2026-10-30&a=venue-a&b=venue-b' : ''), route.method === 'GET' ? undefined : validBody[route.path] ?? {}); // a body that passes validation, so the refusal must come from the scope/permission check
     const text = await res.text();
-    if (res.status < 400 || /tenant B only|secret-order/.test(text)) hits.push(`${route.method} ${route.path} -> ${res.status}`);
+    if (![401, 403, 404].includes(res.status) || /tenant B only|secret-order/.test(text)) hits.push(`${route.method} ${route.path} -> ${res.status}`); // only 401/403/404 count: a 400 from body validation would hide a missing permission check
   }
   expect(hits).toEqual([]);
 });

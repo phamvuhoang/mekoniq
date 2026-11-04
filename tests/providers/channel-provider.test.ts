@@ -30,7 +30,7 @@ test('even a wrongly queued "accepted" call is refused until the venue itself ac
   await rig.runEffects();
   expect(rig.callCount('confirmRestaurantAccepted')).toBe(0);
   const [job]=await rows<{status:string;result:{code:string}}>(rig,`SELECT status,result FROM cloud_job WHERE organization_id='${rig.scope.organizationId}' AND type='channel.effect'`);expect(job).toMatchObject({status:'pending',result:{code:'NO_VENUE_ACK'}}); // not sent; it retries and ends in dead_letter for a person to see
-  await rig.venueDecides('order-1',{status:'accepted',orderId:'order-9'});
+  await rig.venueDecides('order-1',{status:'accepted',orderId:'order-9'});await rig.sweep('order-1',Date.now()); // the cloud learns the decision from its sweeper
   await rig.runEffects();
   expect(rig.callCount('confirmRestaurantAccepted')).toBeGreaterThanOrEqual(1);expect(rig.sim.acted).toBe(1); // the forced job and the real one share the channel's idempotency key: one effect
   expect(await rig.status('order-1')).toMatchObject({status:'accepted',channelStatus:'accepted'});
@@ -56,8 +56,20 @@ test('venue offline past the order deadline: the channel is told expired, never 
   expect(rig.callCount('reportExpired')).toBe(1);expect(rig.callCount('confirmRestaurantAccepted')).toBe(0);
   expect(await rig.status('order-1')).toMatchObject({status:'expired',channelStatus:'rejected'});
   await rig.venueDecides('order-1',{status:'accepted'}); // too late: the contradiction is shown, not hidden
+  expect(await rig.sweep('order-1',Date.now()+2*3600_000+60_000)).toMatchObject({done:false}); // still listening: the venue may be offline and accept later
   expect(await rig.status('order-1')).toMatchObject({status:'expired',attention:'VENUE_ACCEPTED_AFTER_EXPIRED'});
  }finally{await rig.close();}
+});
+test('a cancellation of an ACCEPTED order is still answered: the sweeper keeps reading after the decision, and a cancelled order is shown to the channel as not accepted', async () => {
+  const rig = await createProviderRig('channel');
+  try {
+    await rig.deliverFixture('new-order'); await rig.venueDecides('order-1', { status: 'accepted', orderId: 'o' }); await rig.sweep('order-1', Date.now());
+    expect(await rig.cancel('order-1')).toEqual({ cancelStatus: 'pending' });
+    expect(await rig.sweep('order-1', Date.now())).toMatchObject({ status: 'accepted', done: false }); // pending cancel: keep listening
+    await rig.venueDecides('order-1', { status: 'cancelled' });
+    expect(await rig.sweep('order-1', Date.now())).toMatchObject({ status: 'cancelled', done: true });
+    expect(await rig.status('order-1')).toMatchObject({ status: 'cancelled', channelStatus: 'rejected', cancelStatus: 'done' });
+  } finally { await rig.close(); }
 });
 test('a channel cancellation is relayed once; the venue answers: done, or refused with its reason',async()=>{
  const rig=await createProviderRig('channel');
@@ -66,11 +78,12 @@ test('a channel cancellation is relayed once; the venue answers: done, or refuse
   expect(await rig.cancel('order-1')).toEqual({cancelStatus:'pending'});expect(await rig.cancel('order-1')).toEqual({cancelStatus:'pending'});
   expect(await rig.relayCount('ExternalOrder.Cancel')).toBe(1); // the same request, not two
   await rig.admin`UPDATE relay_command SET status='rejected',venue_receipt='{"status":"rejected","code":"REQUIRES_DISPOSITION","ack":"venue"}' WHERE organization_id=${rig.scope.organizationId} AND command->>'type'='ExternalOrder.Cancel'`;
-  expect(await rig.cancelStatus('order-1')).toEqual({cancelStatus:'refused',code:'REQUIRES_DISPOSITION'});
+  await rig.sweep('order-1',Date.now()); // read back by the sweeper, not by a test calling refresh
+  expect(await rig.cancelStatus('order-1')).toEqual({cancelStatus:'refused'});
   expect(await rig.status('order-1')).toMatchObject({cancelStatus:'refused',cancelCode:'REQUIRES_DISPOSITION'});
   const second=await rig.deliverFixture('new-order',{externalId:'order-2'});expect(second.status).toBe(202);
   await rig.cancel('order-2');
-  await rig.venueDecides('order-2',{status:'cancelled'});
+  await rig.venueDecides('order-2',{status:'cancelled'});await rig.sweep('order-2',Date.now());
   expect(await rig.cancelStatus('order-2')).toMatchObject({cancelStatus:'done'});expect(await rig.status('order-2')).toMatchObject({status:'cancelled',cancelStatus:'done'});
   await expect(rig.cancel('order-missing')).rejects.toThrow('EXTERNAL_ORDER_NOT_FOUND');
  }finally{await rig.close();}
@@ -88,8 +101,8 @@ test('venue side: the channel can cancel a received order, or an accepted one un
  try{
   const features=(fixture.configuration as unknown as {features:Record<string,unknown>}).features;
   await lab.seed('configuration','applied',{...fixture.configuration,features:{...features,online:{status:'enabled',revision:1}}} as JsonObject);
-  const receive=(externalId:string)=>lab.command('manager','ExternalOrder.Receive',{provider:'sandbox-channel',merchantId:'shop-1',externalId,payloadHash:'h-'+externalId,items:[{itemId:'tea',quantity:'1'}],currency:'VND',expiresAt:new Date(lab.clock.nowMs+3600_000).toISOString()});
-  const cancel=(externalId:string,op?:string)=>lab.command('owner','ExternalOrder.Cancel',{externalOrderId:`ext:sandbox-channel:shop-1:${externalId}`,reason:'customer cancelled'},op);
+  const receive=(externalId:string)=>lab.command('cloud-channel','ExternalOrder.Receive',{provider:'sandbox-channel',merchantId:'shop-1',externalId,payloadHash:'h-'+externalId,items:[{itemId:'tea',quantity:'1'}],currency:'VND',expiresAt:new Date(lab.clock.nowMs+3600_000).toISOString()});
+  const cancel=(externalId:string,op?:string)=>lab.command('cloud-channel','ExternalOrder.Cancel',{externalOrderId:`ext:sandbox-channel:shop-1:${externalId}`,reason:'customer cancelled'},op);
   await receive('c1');expect((await cancel('c1')).status).toBe('accepted');expect((await lab.state<{status:string}>('external-order','ext:sandbox-channel:shop-1:c1')).status).toBe('cancelled');
   expect((await cancel('c1','c1-again')).value.duplicate).toBe(true);
   await lab.command('cashier','Session.Open',{tableId:'table-1',sessionId:'s1'});
@@ -102,6 +115,7 @@ test('venue side: the channel can cancel a received order, or an accepted one un
   expect((await cancel('c3')).code).toBe('REQUIRES_DISPOSITION');
   expect(await lab.state<{status:string}>('order','order-ext:sandbox-channel:shop-1:c3')).toMatchObject({status:'open'});
   expect((await lab.command('cashier','ExternalOrder.Cancel',{})).code).toBe('FORBIDDEN');
+  expect((await lab.command('manager','ExternalOrder.Receive',{provider:'sandbox-channel',merchantId:'shop-1',externalId:'typed',payloadHash:'h',items:[{itemId:'tea',quantity:'1'}],currency:'VND',expiresAt:new Date(lab.clock.nowMs+3600_000).toISOString()})).code).toBe('CLOUD_SOURCE_REQUIRED'); // staff cannot fabricate a channel order
  }finally{await lab.close();}
 });
 test('channel wording and status order are exact',()=>{

@@ -50,8 +50,15 @@ export async function refreshFromVenue(scope:TenantScope,key:{provider:string;me
  * One round of the per-order sweeper (job `channel.sweep`): learn the venue's answer, otherwise apply the silent-venue policy. `hold` keeps trying until the order's own deadline;
  * `reject` tells the channel "venue unavailable" once the relay window passed unanswered. Past its deadline an unanswered order is expired — and the venue is told to expire it too.
  */
+const GRACE_MS=6*3600_000;
 export async function sweepExternalOrder(scope:TenantScope,key:{provider:string;merchantId:string;externalId:string},round:number,nowMs=Date.now()){
- const row=await refreshFromVenue(scope,key);if(row.status!=='received')return {status:row.status,done:true};
+ const row=await refreshFromVenue(scope,key),cancel=await refreshCancellation(scope,key); // the venue's answer to a cancellation is read on every round
+ if(row.status!=='received'){
+  // A decision is not the end of listening: a cancellation the venue has not answered, or an order the cloud gave up on while the venue (offline) may still accept it, keeps being read until the grace ends.
+  const waiting=cancel.cancelStatus==='pending',contested=(row.status==='expired'||row.status==='rejected')&&nowMs<Date.parse(row.expires_at as unknown as string)+GRACE_MS;
+  if(waiting||contested){await scheduleSweep(scope,{provider:key.provider,merchantId:key.merchantId,externalId:key.externalId},round+1,nowMs+Math.min(300_000,GRACE_MS));return {status:row.status,done:false};}
+  return {status:row.status,done:true};
+ }
  const relay=row.relay_operation_id?(await withTenant(scope,sql=>sql`SELECT status,expires_at FROM relay_command WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND operation_id=${row.relay_operation_id}`))[0]:undefined;
  const answered=relay?.status==='accepted'||relay?.status==='unknown'; // recorded by the venue (waiting for a person) or an unknown receipt that needs reconciling, not resending
  const verdict=onVenueSilent(row.unavailable_policy,nowMs,Date.parse(row.expires_at as unknown as string));
@@ -95,6 +102,7 @@ export async function requestChannelCancellation(scope:TenantScope,actorRef:stri
  const operationId=`ext-can-${hashPayload({i:idOf(row)}).slice(0,24)}`;
  await enqueueChannelRelay(relayOrderCommand(scope,actorRef,'ExternalOrder.Cancel',{externalOrderId:idOf(row),reason:reason.trim()},operationId,await venueContext(scope)),new Date(Date.now()+300_000).toISOString());
  await withTenant(scope,sql=>sql`UPDATE external_order SET cancel_status='pending',cancel_operation_id=${operationId},updated_at=now() WHERE id=${row.id} AND cancel_status IS DISTINCT FROM 'done'`);
+ await scheduleSweep(scope,key,1,Date.now()+30_000); // the answer is read back by the sweeper, not only on demand
  return {cancelStatus:'pending'};
 }
 /** Learn the venue's answer to a cancellation: done (cancelled), refused (with its code), or still pending. */

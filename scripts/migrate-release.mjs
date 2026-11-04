@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 /** Plan function: backward compatible migrations always go; destructive ones only when no client is unknown and no journal is pending. */
 export function migrationAllowed(s) { return s.backwardCompatible || (s.unknownClients === 0 && s.pendingJournals === 0); }
-const DESTRUCTIVE = [/\bDROP\s+TABLE\b/i, /\bDROP\s+COLUMN\b/i, /\bALTER\s+COLUMN\s+\S+\s+(SET\s+DATA\s+)?TYPE\b/i, /\bRENAME\b/i, /\bTRUNCATE\b/i, /\bDELETE\s+FROM\b/i, /\bALTER\s+COLUMN\s+\S+\s+SET\s+NOT\s+NULL\b/i];
+const DESTRUCTIVE = [/\bDROP\s+TABLE\b/i, /\bDROP\s+COLUMN\b/i, /\bALTER\s+TABLE\s+(IF\s+EXISTS\s+)?\S+\s+DROP\s+(?!CONSTRAINT\b|COLUMN\b)\w+/i, /\bDROP\s+(FUNCTION|TYPE|VIEW|SCHEMA)\b/i, /\bALTER\s+COLUMN\s+\S+\s+(SET\s+DATA\s+)?TYPE\b/i, /\bRENAME\b/i, /\bTRUNCATE\b/i, /\bDELETE\s+FROM\b/i, /\bALTER\s+COLUMN\s+\S+\s+SET\s+NOT\s+NULL\b/i];
 export function classifyMigration(text) {
   const body = text.replace(/--.*$/gm, '');
   const destructive = DESTRUCTIVE.filter(r => r.test(body)).map(r => r.source);
