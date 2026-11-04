@@ -587,7 +587,8 @@
       "depends": "W02-T03, W05-T01",
       "testFile": "tests/integration/chain-rollout.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/chain-rollout.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W09-T01.md"
     },
     {
       "wave": "W09",

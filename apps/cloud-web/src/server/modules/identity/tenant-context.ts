@@ -20,3 +20,12 @@ export async function withTenant<T>(scope:TenantScope,work:(sql:CloudTransaction
     return work(sql);
   }) as Promise<T>;
 }
+/** Chain-wide work: only the organisation is bound, so venue-scoped tables return nothing here; per-venue facts are read through withTenant one venue at a time. */
+export async function withOrganization<T>(organizationId:string,work:(sql:CloudTransaction)=>Promise<T>):Promise<T> {
+  if(!organizationId)throw new Error('TENANT_SCOPE_REQUIRED');
+  return cloudDatabase().begin(async transaction=>{
+    const sql=transaction as unknown as CloudTransaction;
+    await sql`SELECT set_config('app.organization_id',${organizationId},true),set_config('app.venue_id','',true)`;
+    return work(sql);
+  }) as Promise<T>;
+}

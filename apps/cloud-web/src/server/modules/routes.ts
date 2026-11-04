@@ -20,6 +20,9 @@ import {relayVenueCommand,readVenueRecords} from './relay/venue-command';
 import {createAssetUpload,createAssetDownload,type UploadInput} from './storage/signed-upload';
 import {finalizeAsset} from './storage/finalize';
 import {guestMenu,guestMenuImage,guestSession,submitGuestCommand} from './guest/api';
+import {createChainRevision,rollBackForward,chainPublish,previewRollout,compareBranches,listChainRevisions} from './chain/catalog-rollout';
+import {setBranchOverride} from './chain/branch-overrides';
+import {rolloutStatus} from './chain/rollout-state';
 import {readReport} from './reports/read';
 import {reportCsv} from '../../../../../packages/domain/src/reporting/report';
 import type {CommandEnvelope,CommandResult,JsonObject} from '../../../../../packages/contracts/generated/wire';
@@ -32,7 +35,7 @@ function protectMutation(request:Request,actor:Actor){if(actor.deviceId)return;i
 function safe(handler:CloudRoute['handler']):CloudRoute['handler']{return async(request,context)=>{
  try{return await handler(request,context);}catch(error){
   const code=error instanceof Error?error.message:'SERVICE_UNAVAILABLE';
-  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE/.test(code)?400:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
+  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_/.test(code)?400:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
   return Response.json({code:status===503?'SERVICE_UNAVAILABLE':code},{status});
  }
 };}
@@ -119,6 +122,15 @@ export function registerWave02Routes(register:(route:CloudRoute)=>void):void {
   if(query.get('format')!=='csv')return Response.json(report);
   return new Response('\uFEFF'+reportCsv(report),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="${c.params.kind}-${businessDate}.csv"`}}); // kind and date are validated by readReport
  });
+ // Chain (organisation-wide) back office: owner-level rights checked again per venue; the cloud relays intents and reports what each branch has acknowledged.
+ add('GET','/v1/chain/revisions','chain.read',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await listChainRevisions(actor,actor.organizationId));});
+ add('POST','/v1/chain/revisions','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await createChainRevision(actor,actor.organizationId,{expectedRevision:Number(body.expectedRevision),snapshot:body.snapshot,...(typeof body.note==='string'?{note:body.note}:{})}),{status:201});});
+ add('POST','/v1/chain/rollback','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await rollBackForward(actor,actor.organizationId,{expectedRevision:Number(body.expectedRevision),toRevision:Number(body.toRevision),...(typeof body.note==='string'?{note:body.note}:{})}),{status:201});});
+ add('POST','/v1/chain/revisions/:revision/preview','chain.read',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await previewRollout(actor,actor.organizationId,{revision:Number(c.params.revision),venues:object(c.body).venues as string[]}));});
+ add('POST','/v1/chain/revisions/:revision/publish','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);return Response.json(await chainPublish(actor,actor.organizationId,{revision:Number(c.params.revision),venues:object(c.body).venues as string[]}),{status:202});});
+ add('GET','/v1/chain/revisions/:revision/status','chain.read',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await rolloutStatus(actor,actor.organizationId,Number(c.params.revision)));});
+ add('POST','/v1/chain/venues/:venueId/override','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await setBranchOverride(actor,actor.organizationId,c.params.venueId,{expectedRevision:Number(body.expectedRevision),patch:body.patch}),{status:201});});
+ add('GET','/v1/chain/compare','chain.read',async(request,c)=>{const actor=actorRequired(c.actor),q=new URL(request.url).searchParams;return Response.json(await compareBranches(actor,actor.organizationId,q.get('a')??'',q.get('b')??''));});
  // Guest web: no staff session. Scope comes from the venue-signed table token (or the public menu's own org/venue), never from a cookie.
  add('GET','/v1/guest/menu/:organizationId/:venueId',null,async(_request,c)=>Response.json(await guestMenu({organizationId:c.params.organizationId,venueId:c.params.venueId})));
  add('GET','/v1/guest/menu/:organizationId/:venueId/images/:assetId',null,async(_request,c)=>new Response(null,{status:302,headers:{Location:await guestMenuImage({organizationId:c.params.organizationId,venueId:c.params.venueId},c.params.assetId)}}));
