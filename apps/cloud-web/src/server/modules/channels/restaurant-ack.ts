@@ -65,10 +65,11 @@ export async function sweepExternalOrder(scope:TenantScope,key:{provider:string;
  if(verdict==='expire'){
   await setStatus(scope,row,'expired','EXTERNAL_ORDER_EXPIRED');await queueEffect(scope,row,'order.expired');
   try{const ctx=await venueContext(scope);await enqueueChannelRelay(relayOrderCommand(scope,'channel:sweeper','ExternalOrder.Expire',{externalOrderId:idOf(row)},`ext-exp-${hashPayload({i:idOf(row)}).slice(0,24)}`,ctx),new Date(Date.now()+300_000).toISOString());}catch{/* the venue learns it when it reconnects: its own Accept refuses an expired order */}
-  return {status:'expired',done:true};
+  await scheduleSweep(scope,{provider:key.provider,merchantId:key.merchantId,externalId:key.externalId},round+1,nowMs+Math.min(300_000,GRACE_MS),gen); // the venue (offline) may still decide: keep reading through the grace period
+  return {status:'expired',done:false};
  }
  if(!answered&&(!relay||Date.parse(relay.expires_at as string)<=nowMs)){
-  if(verdict==='reject'){await setStatus(scope,row,'rejected','VENUE_UNAVAILABLE');await queueEffect(scope,row,'order.rejected','VENUE_UNAVAILABLE');return {status:'rejected',done:true};}
+  if(verdict==='reject'){await setStatus(scope,row,'rejected','VENUE_UNAVAILABLE');await queueEffect(scope,row,'order.rejected','VENUE_UNAVAILABLE');await scheduleSweep(scope,{provider:key.provider,merchantId:key.merchantId,externalId:key.externalId},round+1,nowMs+Math.min(300_000,GRACE_MS),gen); return {status:'rejected',done:false};}
   try{ // hold: give the venue a fresh relay window; the same Receive is idempotent at the venue
    const sent=await relayReceive(scope,'channel:sweeper',{normalized:row.normalized,payloadHash:row.payload_hash,relayAttempts:row.relay_attempts});
    await withTenant(scope,sql=>sql`UPDATE external_order SET relay_operation_id=${sent.operationId},relay_attempts=${sent.attempt},updated_at=now() WHERE id=${row.id}`);

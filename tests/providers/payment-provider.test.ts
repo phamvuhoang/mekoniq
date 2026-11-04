@@ -252,6 +252,6 @@ test('a 429 for the first request cannot erase a refund the sweeper has re-sent 
     while (calls < 1) await new Promise(r => setTimeout(r, 10));
     await rig.reconcile(); expect(await first).toBe('RATE_LIMITED');
     const [i] = await rows<{ refunded_minor: string; refund_status: string }>(rig, `SELECT refunded_minor,refund_status FROM payment_intent WHERE intent_id='${intentId}'`); expect(i).toMatchObject({ refunded_minor: '30000', refund_status: 'confirmed' });
-    expect(await rows(rig, `SELECT status FROM payment_refund WHERE refund_id='ref-race'`)).toEqual([{ status: 'confirmed' }]);
+    expect(await rows(rig, `SELECT status FROM payment_refund WHERE refund_id='ref-race' AND organization_id='${rig.scope.organizationId}'`)).toEqual([{ status: 'confirmed' }]);
   } finally { await rig.close(); }
 });

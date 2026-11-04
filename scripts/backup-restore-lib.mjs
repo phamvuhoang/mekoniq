@@ -18,13 +18,13 @@ export function migrationInventory(dir = 'supabase/migrations') { return readdir
 /** Reads one Storage object through the platform's REST API (service role); undefined when this environment has no way to read Storage. */
 export const storageDownloader = () => { const base = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY; if (!base || !key) return undefined; return async (bucket, path) => { const r = await fetch(`${base}/storage/v1/object/${bucket}/${path}`, { headers: { authorization: `Bearer ${key}` } }); if (!r.ok) throw new Error(`STORAGE_READ_FAILED ${path} ${r.status}`); return Buffer.from(await r.arrayBuffer()); }; };
 /** The backup takes its own inventory of ready assets (never a caller-supplied list) and copies each through `download`; without a way to read Storage the objects stay uncopied and verifyBackup refuses the backup. */
-export async function createBackup({ outDir, appCommit, download }) {
+export async function createBackup({ outDir, appCommit, download, database = 'postgres' }) {
   mkdirSync(outDir, { recursive: true });
-  const sql = postgres(adminUrl(), { max: 1 });
+  const sql = postgres(adminUrl(database), { max: 1 });
   try {
     const tables = await publicTables(sql), rowCounts = {};
     for (const t of tables) rowCounts[t] = Number((await sql.unsafe(`SELECT count(*)::int AS n FROM public."${t}"`))[0].n);
-    const dump = docker(['pg_dump', '-U', 'postgres', '-d', 'postgres', '--schema=public', '--no-owner', '--quote-all-identifiers']);
+    const dump = docker(['pg_dump', '-U', 'postgres', '-d', database, '--schema=public', '--no-owner', '--quote-all-identifiers']);
     writeFileSync(join(outDir, 'public.sql'), dump);
     const ready = await sql`SELECT 'mekoniq-private' AS bucket, object_path, expected_bytes::text AS size_bytes, expected_hash AS sha256 FROM public.asset_manifest WHERE status = 'ready' ORDER BY object_path`;
     const storage = { readyAssets: ready.length, ...(await exportStorage({ objects: ready, download, outDir })) };
