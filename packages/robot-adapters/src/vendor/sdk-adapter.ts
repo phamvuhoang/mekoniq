@@ -58,12 +58,15 @@ export class VendorSdkAdapter implements RobotAdapter {
     if (Date.parse(command.expiresAt) <= this.now()) return { accepted: false, unknown: false, reason: 'EXPIRED_COMMAND' };
     if (command.target.mapId !== this.manifest.mapId || command.target.mapRevision !== this.manifest.mapRevision) return { accepted: false, unknown: false, reason: 'MAP_MISMATCH' };
     this.maxEpoch = command.controlEpoch;
-    const g: Goal = { command: structuredClone(command), goalId: '', status: 'sending', evidence: {} };
+    const callerSupplied = this.profile.nativeCommandIdentity === 'caller-supplied';
+    // a goal id WE choose is known before any I/O: if the answer is lost the robot may still be moving, and it must stay queryable, cancellable and able to report completion
+    const g: Goal = { command: structuredClone(command), goalId: callerSupplied ? command.commandId : '', status: 'sending', evidence: {} };
     this.goals.set(command.commandId, g);
     try {
       const speed = command.limits.speedLimitMps;
-      const made = await this.sdk.navigate({ ...(this.profile.nativeCommandIdentity === 'caller-supplied' ? { goalId: command.commandId } : {}), locationRef: String(command.target.locationRef), mapId: String(command.target.mapId), ...(speed !== undefined ? { speedLimitMps: speed } : {}) });
-      g.goalId = made.goalId; g.status = 'executing'; this.emit('accepted', g);
+      const made = await this.sdk.navigate({ ...(callerSupplied ? { goalId: command.commandId } : {}), locationRef: String(command.target.locationRef), mapId: String(command.target.mapId), ...(speed !== undefined ? { speedLimitMps: speed } : {}) });
+      g.goalId = made.goalId;
+      if (g.status === 'sending') { g.status = 'executing'; this.emit('accepted', g); } // an event that raced the answer may already have finished the goal
       return { accepted: true, nativeGoalId: g.goalId, unknown: false };
     } catch { g.status = 'unknown'; g.evidence = { sendFailed: true }; return { accepted: false, unknown: true, reason: 'SDK_CALL_FAILED' }; } // the SDK may have started it
   }

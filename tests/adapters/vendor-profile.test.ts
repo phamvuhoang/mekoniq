@@ -20,14 +20,14 @@ const command = (over: Partial<RobotCommand> = {}): RobotCommand => ({ schemaVer
 /** An emulated vendor SDK (our model, not any vendor's). */
 function fakeSdk(options: { query?: boolean; cancel?: boolean } = {}) {
   const listeners = new Set<(e: { goalId: string; kind: 'succeeded' | 'failed' | 'cancelled' | 'progress' }) => void>(), goals = new Map<string, string>(), calls = { navigate: 0, query: 0, cancel: 0 };
-  let n = 0, failNavigate = false;
+  let n = 0, failNavigate = false, loseResponse = false;
   const sdk: VendorSdk = {
-    async navigate(g) { calls.navigate++; if (failNavigate) throw new Error('SDK_TIMEOUT'); const goalId = g.goalId ?? `vx-goal-${++n}`; goals.set(goalId, 'running'); return { goalId }; },
+    async navigate(g) { calls.navigate++; if (failNavigate) throw new Error('SDK_TIMEOUT'); const goalId = g.goalId ?? `vx-goal-${++n}`; goals.set(goalId, 'running'); if (loseResponse) throw new Error('RESPONSE_LOST'); return { goalId }; },
     ...(options.query === false ? {} : { async query(id: string) { calls.query++; return { state: (goals.get(id) ?? 'unknown') as 'running' | 'succeeded' | 'cancelled' | 'failed' | 'unknown' }; } }),
     ...(options.cancel === false ? {} : { async cancel(id: string) { calls.cancel++; goals.set(id, 'cancelled'); return { ok: true }; } }),
     onEvent(l) { listeners.add(l); return () => listeners.delete(l); },
   };
-  return { sdk, calls, emit: (goalId: string, kind: 'succeeded' | 'failed' | 'cancelled' | 'progress') => { if (kind !== 'progress') goals.set(goalId, kind); for (const l of listeners) l({ goalId, kind }); }, set: (id: string, s: string) => goals.set(id, s), failNavigate: () => { failNavigate = true; } };
+  return { sdk, calls, emit: (goalId: string, kind: 'succeeded' | 'failed' | 'cancelled' | 'progress') => { if (kind !== 'progress') goals.set(goalId, kind); for (const l of listeners) l({ goalId, kind }); }, set: (id: string, s: string) => goals.set(id, s), failNavigate: () => { failNavigate = true; }, loseResponse: () => { loseResponse = true; } };
 }
 test('a profile is exact and earns "supported" with evidence; licence review and reconcilability are required', () => {
   expect(vendorProfileProblems(profile())).toEqual([]);
@@ -69,6 +69,14 @@ test('an SDK that cannot be asked afterwards makes an in-flight goal unknown (ne
   const broken = fakeSdk(); broken.failNavigate(); const d = new VendorSdkAdapter(manifest(), broken.sdk, profile());
   expect(await d.execute(command({ commandId: 'c-4' }))).toMatchObject({ accepted: false, unknown: true, reason: 'SDK_CALL_FAILED' }); // may have started
   expect(await d.reconcile('c-4')).toMatchObject({ status: 'unknown' });
+});
+test('a caller-supplied goal id is known before the call: a lost answer can still be queried, cancelled and completed', async () => {
+  const f = fakeSdk(); f.loseResponse(); const p = { ...profile(), nativeCommandIdentity: 'caller-supplied' as const }, a = new VendorSdkAdapter(manifest(p), f.sdk, p), seen: string[] = []; a.observe(e => seen.push(e.type));
+  expect(await a.execute(command())).toMatchObject({ accepted: false, unknown: true, reason: 'SDK_CALL_FAILED' }); // the robot may already be moving
+  expect(await a.reconcile('c-1')).toMatchObject({ status: 'executing', evidence: { goalId: 'c-1' } }); expect(f.calls.query).toBe(1); // asked, not guessed
+  expect(await a.cancel('c-1')).toMatchObject({ acknowledged: true }); expect(f.calls.cancel).toBe(1);
+  const g = fakeSdk(); g.loseResponse(); const b = new VendorSdkAdapter(manifest(p), g.sdk, p), events: string[] = []; b.observe(e => events.push(e.type)); await b.execute(command({ commandId: 'c-9' }));
+  g.emit('c-9', 'succeeded'); expect(events).toContain('completed'); // the completion of a goal whose answer we never saw is not dropped
 });
 test('only supported operations are translated; the rest are refused explicitly, never improvised', async () => {
   const f = fakeSdk(), p = profile({}, { cancel: { status: 'unsupported' }, stop: { status: 'untested' } }), a = new VendorSdkAdapter(manifest(p), f.sdk, p);
