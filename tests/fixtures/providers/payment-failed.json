@@ -1,0 +1,19 @@
+{
+  "provenance": {
+    "kind": "emulated",
+    "redacted": true,
+    "sha256": "da988cc7e61fbd1703ae97b8bfa152b3923d6d32de684927b7df7f5f248b4b7a",
+    "source": "authored for the emulator in W10-T02; not a provider recording"
+  },
+  "body": {
+    "intent": {
+      "amountMinor": "100000"
+    },
+    "provider": {
+      "status": "failed"
+    },
+    "webhook": {
+      "eventId": "evt-failed"
+    }
+  }
+}

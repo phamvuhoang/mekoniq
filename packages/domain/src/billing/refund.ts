@@ -9,7 +9,7 @@ export function refundableMinor(captured: string, refunded: string) {
 export function canRefund(captured: string, refunded: string, request: string) {
   return BigInt(request) > 0n && BigInt(request) <= BigInt(refundableMinor(captured, refunded));
 }
-const METHODS = ['cash', 'transfer', 'card-terminal'];
+const METHODS = ['cash', 'transfer', 'card-terminal', 'provider'];
 /**
  * Refund.Record {paymentId,expectedVersion,amountMinor,reason,method?,shiftId?,evidenceRef?}: money only. It never touches orders, kitchen or stock,
  * never voids the payment (it stays captured) and never exceeds its unrefunded captured part. It consumes the payment's unapplied (overpaid) part

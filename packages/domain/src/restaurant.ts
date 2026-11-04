@@ -61,7 +61,7 @@ export const commandPermissions:Record<string,string>={
  'Shift.Open':'shift.write','Shift.Close':'shift.write','Cash.RecordMovement':'shift.write','Print.Request':'print','Print.ConfirmReprint':'print','Print.Observe':'print.observe','Print.Resolve':'print.resolve','Bill.Prepare':'billing.write','Payment.Claim':'payment.claim',
  'Payment.RecordCash':'payment.cash','Bill.Close':'billing.write',
  'Bill.Split':'billing.write','Bill.Merge':'billing.write','Bill.Void':'bill.void',
- 'Payment.RecordTerminal':'payment.terminal','Payment.VerifyManual':'payment.verify','Refund.Record':'payment.refund',
+ 'Payment.RecordTerminal':'payment.terminal','Payment.RecordProvider':'payment.capture','Payment.VerifyManual':'payment.verify','Refund.Record':'payment.refund',
  'Session.Close':'order.write','Guest.IssueToken':'order.write','Guest.AcknowledgeCall':'order.write','Robot.PairDisplay':'device.enroll',
  // Guest surfaces (QR via the cloud guest API, kiosk, paired robot screen) hold only guest.* permissions; the handler resolves their session.
  'Guest.PlaceOrder':'guest.order','Guest.CallStaff':'guest.call','Guest.ReportIssue':'guest.call','Guest.RequestBill':'guest.bill',

@@ -1,48 +1,175 @@
 [
   {
-    "id": "sandbox-channel", "kind": "channel", "label": "Sandbox channel (our emulator)", "mode": "simulation", "status": "contract_tested",
-    "adapter": "integrations/core/src/sandbox.ts#createSandboxChannel",
-    "webhook": { "signatureScheme": "mekoniq-hmac-sha256-v1", "signedFields": ["timestamp", "rawBody"], "timestampToleranceSeconds": 300, "eventIdField": "externalId" },
-    "idempotency": { "keyField": "idempotencyKey" },
-    "credentialRefs": ["CHANNEL_SECRET_MASTER"],
+    "id": "sim-payment",
+    "kind": "payment",
+    "label": "Payment provider emulator (ours)",
+    "mode": "simulation",
+    "status": "contract_tested",
+    "adapter": "integrations/payments/src/sim-provider.ts#createSimPaymentProvider",
+    "webhook": {
+      "signatureScheme": "mekoniq-hmac-sha256-v1",
+      "signedFields": [
+        "timestamp",
+        "rawBody"
+      ],
+      "timestampToleranceSeconds": 300,
+      "eventIdField": "eventId"
+    },
+    "idempotency": {
+      "keyField": "reference"
+    },
+    "credentialRefs": [
+      "CHANNEL_SECRET_MASTER"
+    ],
     "requiredInputs": [],
-    "evidence": { "sandbox": null, "production": null }
+    "evidence": {
+      "sandbox": null,
+      "production": null
+    }
   },
   {
-    "id": "web-sandbox", "kind": "channel", "label": "Web checkout (sandbox)", "mode": "simulation", "status": "contract_tested",
+    "id": "sandbox-channel",
+    "kind": "channel",
+    "label": "Sandbox channel (our emulator)",
+    "mode": "simulation",
+    "status": "contract_tested",
+    "adapter": "integrations/core/src/sandbox.ts#createSandboxChannel",
+    "webhook": {
+      "signatureScheme": "mekoniq-hmac-sha256-v1",
+      "signedFields": [
+        "timestamp",
+        "rawBody"
+      ],
+      "timestampToleranceSeconds": 300,
+      "eventIdField": "externalId"
+    },
+    "idempotency": {
+      "keyField": "idempotencyKey"
+    },
+    "credentialRefs": [
+      "CHANNEL_SECRET_MASTER"
+    ],
+    "requiredInputs": [],
+    "evidence": {
+      "sandbox": null,
+      "production": null
+    }
+  },
+  {
+    "id": "web-sandbox",
+    "kind": "channel",
+    "label": "Web checkout (sandbox)",
+    "mode": "simulation",
+    "status": "contract_tested",
     "adapter": "integrations/core/src/sandbox.ts#createSandboxChannel",
     "requiredInputs": [],
-    "evidence": { "sandbox": null, "production": null }
+    "evidence": {
+      "sandbox": null,
+      "production": null
+    }
   },
   {
-    "id": "zalo-mini-app", "kind": "channel", "label": "Zalo Mini App", "mode": "sandbox", "status": "draft",
-    "requiredInputs": ["Zalo app registration and sandbox/test account", "official API version and webhook signature scheme", "documented permission scopes", "sandbox callback trace"],
-    "evidence": { "sandbox": null, "production": null }
+    "id": "zalo-mini-app",
+    "kind": "channel",
+    "label": "Zalo Mini App",
+    "mode": "sandbox",
+    "status": "draft",
+    "requiredInputs": [
+      "Zalo app registration and sandbox/test account",
+      "official API version and webhook signature scheme",
+      "documented permission scopes",
+      "sandbox callback trace"
+    ],
+    "evidence": {
+      "sandbox": null,
+      "production": null
+    }
   },
   {
-    "id": "delivery-marketplace", "kind": "channel", "label": "Delivery marketplace (partner to be chosen)", "mode": "sandbox", "status": "draft",
-    "requiredInputs": ["chosen partner and its partner-program agreement", "official order/status API version", "webhook signature and retry rules", "sandbox merchant"],
-    "evidence": { "sandbox": null, "production": null }
+    "id": "delivery-marketplace",
+    "kind": "channel",
+    "label": "Delivery marketplace (partner to be chosen)",
+    "mode": "sandbox",
+    "status": "draft",
+    "requiredInputs": [
+      "chosen partner and its partner-program agreement",
+      "official order/status API version",
+      "webhook signature and retry rules",
+      "sandbox merchant"
+    ],
+    "evidence": {
+      "sandbox": null,
+      "production": null
+    }
   },
   {
-    "id": "payment-provider", "kind": "payment", "label": "Payment provider (to be chosen)", "mode": "sandbox", "status": "draft",
-    "requiredInputs": ["chosen provider and merchant sandbox", "official create/query/refund API and version", "webhook signature, timestamp and event-id rules", "bank/payee binding rules"],
-    "evidence": { "sandbox": null, "production": null }
+    "id": "payment-provider",
+    "kind": "payment",
+    "label": "Payment provider (to be chosen)",
+    "mode": "sandbox",
+    "status": "draft",
+    "requiredInputs": [
+      "chosen provider and merchant sandbox",
+      "official create/query/refund API and version",
+      "webhook signature, timestamp and event-id rules",
+      "bank/payee binding rules"
+    ],
+    "evidence": {
+      "sandbox": null,
+      "production": null
+    }
   },
   {
-    "id": "einvoice-provider", "kind": "einvoice", "label": "E-invoice provider (to be chosen)", "mode": "sandbox", "status": "draft",
-    "requiredInputs": ["chosen provider, sandbox account and certificate handling", "official issue/query/adjust/cancel schemas and version", "tax-authority rules confirmed by the venue's accountant", "uniqueness / reference semantics for retries"],
-    "evidence": { "sandbox": null, "production": null }
+    "id": "einvoice-provider",
+    "kind": "einvoice",
+    "label": "E-invoice provider (to be chosen)",
+    "mode": "sandbox",
+    "status": "draft",
+    "requiredInputs": [
+      "chosen provider, sandbox account and certificate handling",
+      "official issue/query/adjust/cancel schemas and version",
+      "tax-authority rules confirmed by the venue's accountant",
+      "uniqueness / reference semantics for retries"
+    ],
+    "evidence": {
+      "sandbox": null,
+      "production": null
+    }
   },
   {
-    "id": "vda5050-2.0.0", "kind": "robot-protocol", "label": "VDA 5050 2.0.0 (protocol emulator only)", "mode": "simulation", "status": "contract_tested", "version": "2.0.0",
+    "id": "vda5050-2.0.0",
+    "kind": "robot-protocol",
+    "label": "VDA 5050 2.0.0 (protocol emulator only)",
+    "mode": "simulation",
+    "status": "contract_tested",
+    "version": "2.0.0",
     "adapter": "packages/robot-adapters/src/vda5050/adapter.ts#Vda5050Adapter",
-    "requiredInputs": ["pinned official schema files for the exact version", "robot factsheet and recorded trace", "LAN broker with ACL on the venue network", "supervised run on the real robot"],
-    "evidence": { "sandbox": null, "production": null }
+    "requiredInputs": [
+      "pinned official schema files for the exact version",
+      "robot factsheet and recorded trace",
+      "LAN broker with ACL on the venue network",
+      "supervised run on the real robot"
+    ],
+    "evidence": {
+      "sandbox": null,
+      "production": null
+    }
   },
   {
-    "id": "vendor-sdk", "kind": "vendor-sdk", "label": "Vendor SDK adapter (vendor to be chosen)", "mode": "sandbox", "status": "draft",
-    "requiredInputs": ["vendor SDK, licence and redistribution permission", "exact SDK/firmware version", "hardware or vendor emulator", "native command identity and query/cancel semantics"],
-    "evidence": { "sandbox": null, "production": null }
+    "id": "vendor-sdk",
+    "kind": "vendor-sdk",
+    "label": "Vendor SDK adapter (vendor to be chosen)",
+    "mode": "sandbox",
+    "status": "draft",
+    "requiredInputs": [
+      "vendor SDK, licence and redistribution permission",
+      "exact SDK/firmware version",
+      "hardware or vendor emulator",
+      "native command identity and query/cancel semantics"
+    ],
+    "evidence": {
+      "sandbox": null,
+      "production": null
+    }
   }
 ]

@@ -28,9 +28,14 @@ export const channelRelayTypes=new Set(['ExternalOrder.Receive','ExternalOrder.E
 export const channelRelayPermissions=['channel.ingest'];
 export const isChannelRelay=(command:CommandEnvelope)=>command.actorRef.startsWith('channel:')&&command.deviceId===channelRelaySource.deviceId&&command.deviceEpoch===channelRelaySource.deviceEpoch&&channelRelayTypes.has(command.type);
 export async function enqueueChannelRelay(command:CommandEnvelope,expiresAt:string){
- validateEnvelope(command);if(!isChannelRelay(command))throw new Error('CHANNEL_COMMAND_FORBIDDEN');
+ validateEnvelope(command);if(!isChannelRelay(command)&&!isProviderRelay(command))throw new Error('CHANNEL_COMMAND_FORBIDDEN');
  return storeRelay(command,expiresAt);
 }
+/** Payment-provider source (W10-T02): the cloud forwards ONE fact type — money a verified provider confirmed — carrying only `payment.capture`. */
+export const providerRelaySource={deviceId:'cloud-provider',deviceEpoch:'cloud-provider-v1'};
+export const providerRelayTypes=new Set(['Payment.RecordProvider']);
+export const providerRelayPermissions=['payment.capture'];
+export const isProviderRelay=(command:CommandEnvelope)=>command.actorRef.startsWith('provider:')&&command.deviceId===providerRelaySource.deviceId&&command.deviceEpoch===providerRelaySource.deviceEpoch&&providerRelayTypes.has(command.type);
 /** One token may hold at most this many unanswered relays; a flood is refused in the cloud instead of queueing ahead of staff work. */
 export const GUEST_PENDING_LIMIT=5;
 /** Rights a guest relay carries to the venue (no payment.claim: guests never touch payment records through the relay). */
@@ -72,7 +77,7 @@ export async function pendingRelay(actor:Actor,scope:TenantScope){
    const needed=requiredPermissions(command.type,command.payload);
    const member=/^[0-9a-f-]{36}$/i.test(command.actorRef)?(await sql`SELECT role,station_ids FROM venue_membership WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND user_id=${command.actorRef}::uuid AND active`)[0]:undefined;
    // A guest relay carries only guest.* rights; its session/table come from the venue's own verification of the token, never from the cloud.
-   const permissions=isGuestRelay(command)?guestRelayPermissions:isChannelRelay(command)?channelRelayPermissions:member?rolePermissions(member.role):[];
+   const permissions=isGuestRelay(command)?guestRelayPermissions:isChannelRelay(command)?channelRelayPermissions:isProviderRelay(command)?providerRelayPermissions:member?rolePermissions(member.role):[];
    const receiptOnly=Date.parse(row.expires_at)<=Date.now()||row.status==='unknown'||!needed.length||!needed.every(permission=>permissions.includes('*')||permissions.includes(permission));
    const nowMs=Date.now();const payload={schemaVersion:1,...scope,recipientDeviceId:actor.deviceId,recipientDeviceEpoch:actor.deviceEpoch!,coordinatorEpoch:Number(owner.epoch),commandHash:hashPayload({...command}),actorRef:command.actorRef,deviceId:command.deviceId,deviceEpoch:command.deviceEpoch,permissions:receiptOnly?[]:permissions,stationIds:receiptOnly?[]:member?.station_ids??[],receiptOnly,issuedAt:new Date(nowMs).toISOString(),expiresAt:new Date(receiptOnly?nowMs+60000:Math.min(Date.parse(row.expires_at),nowMs+60000)).toISOString()};
    const signed=signGrant(payload,signer);

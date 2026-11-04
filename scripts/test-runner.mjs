@@ -4,7 +4,7 @@ const [suite, ...raw] = process.argv.slice(2);
 const args = raw[0] === '--' ? raw.slice(1) : raw;
 const softwareOnly=args.indexOf('--software-only');
 if(softwareOnly>=0){if(suite!=='acceptance')throw new Error('SOFTWARE_ONLY_REQUIRES_ACCEPTANCE');args.splice(softwareOnly,1);process.env.MEKONIQ_CONTINUITY_SOFTWARE_ONLY='1';}
-const suites = new Set(['unit','contracts','integration','security','acceptance','e2e','adapters']);
+const suites = new Set(['unit','contracts','integration','security','acceptance','e2e','adapters','providers','load']);
 if (!suites.has(suite) || !existsSync(`tests/${suite}`)) {
   console.error(`PREREQUISITE: suite ${suite} is not implemented`); process.exit(2);
 }

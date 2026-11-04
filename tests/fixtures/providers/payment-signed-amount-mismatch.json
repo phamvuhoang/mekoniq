@@ -1,0 +1,24 @@
+{
+  "provenance": {
+    "kind": "emulated",
+    "redacted": true,
+    "sha256": "2522ffdf8cddf5b5a6800cfcdb517aaf0f878eedaa94381c36cc8c8572d91d95",
+    "source": "authored for the emulator in W10-T02; not a provider recording"
+  },
+  "body": {
+    "intent": {
+      "amountMinor": "100000"
+    },
+    "provider": {
+      "status": "captured",
+      "amountMinor": "90000",
+      "merchantId": "merchant-1",
+      "currency": "VND",
+      "transactionId": "TX-1",
+      "capturedAt": "2026-11-04T01:00:00.000Z"
+    },
+    "webhook": {
+      "eventId": "evt-short"
+    }
+  }
+}

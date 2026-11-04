@@ -29,6 +29,27 @@ function tenderBasics(c: { payload: JsonObject }, bill: Snapshot) {
   const reference = externalReference(c.payload.reference);
   return { currency, reference, id: externalPaymentId(reference), minor: amount(c.payload.amountMinor, true) };
 }
+function externalCapture(registry: ModuleRegistry, type: string, method: string, prefix: string): void {
+  handle(registry, type, (c, s) => {
+    const bill = requireState(s, 'bill', text(c.payload.billId));
+    const status = TERMINAL_STATUSES.includes(String(c.payload.status)) ? String(c.payload.status) : fail('INVALID_STATUS');
+    const { currency, reference, id, minor } = tenderBasics(c, bill), existing = find(s, 'payment', id);
+    if (existing) {
+      if (existing.state.method !== method || existing.state.billId !== bill.ref.id || existing.state.amountMinor !== minor || existing.state.currency !== currency) return fail('PAYMENT_REFERENCE_CONFLICT');
+      if (existing.state.status === status) return done([], { paymentId: id, status, duplicate: true });
+      if (!['pending', 'unknown'].includes(String(existing.state.status))) return fail('PAYMENT_ALREADY_FINAL');
+    } else assertCollectable(s, bill);
+    const { applied, unapplied } = status === 'captured' ? capture(bill, BigInt(minor)) : { applied: 0n, unapplied: 0n };
+    const state: JsonObject = {
+      billId: bill.ref.id, method, reference, currency, amountMinor: minor, capturedMinor: status === 'captured' ? minor : '0', appliedMinor: String(applied), unappliedMinor: String(unapplied),
+      refundedMinor: '0', feeMinor: c.payload.feeMinor === undefined ? String(existing?.state.feeMinor ?? '0') : amount(c.payload.feeMinor), status, shiftId: tenderShift(s, c.actorRef, existing), actorRef: c.actorRef, occurredAt: c.occurredAt,
+      observations: [...((existing?.state.observations ?? []) as JsonObject[]), { status, by: c.actorRef, at: c.recordedAt, operationId: c.operationId }],
+    };
+    const eventType = `${prefix}${status[0]!.toUpperCase()}${status.slice(1)}`;
+    return done([existing ? changed(eventType, existing, state) : created(eventType, 'payment', id, state), changed('BillTenderObserved', bill, { ...billMoney(bill, applied, unapplied), externalPaymentState: externalState(s, bill.ref.id, id, status) })],
+      { paymentId: id, status, appliedMinor: String(applied), unappliedMinor: String(unapplied) });
+  });
+}
 /**
  * Non-cash tenders. Each is one payment aggregate keyed by its external reference (provider+merchant+transaction), so a repeated observation is
  * idempotent and the same transaction can never pay twice or pay a second bill. Fees are recorded beside the payment, never netted from it.
@@ -36,25 +57,10 @@ function tenderBasics(c: { payload: JsonObject }, bill: Snapshot) {
 export function registerTenders(registry: ModuleRegistry): void {
   // Payment.RecordTerminal {billId,amountMinor,currency,status,reference,feeMinor?}: what a standalone card terminal (or later its webhook) reported.
   // pending/unknown is a real state: it blocks every other collection on the bill until the same reference is observed captured or failed.
-  handle(registry, 'Payment.RecordTerminal', (c, s) => {
-    const bill = requireState(s, 'bill', text(c.payload.billId));
-    const status = TERMINAL_STATUSES.includes(String(c.payload.status)) ? String(c.payload.status) : fail('INVALID_STATUS');
-    const { currency, reference, id, minor } = tenderBasics(c, bill), existing = find(s, 'payment', id);
-    if (existing) {
-      if (existing.state.method !== 'card-terminal' || existing.state.billId !== bill.ref.id || existing.state.amountMinor !== minor || existing.state.currency !== currency) return fail('PAYMENT_REFERENCE_CONFLICT');
-      if (existing.state.status === status) return done([], { paymentId: id, status, duplicate: true });
-      if (!['pending', 'unknown'].includes(String(existing.state.status))) return fail('PAYMENT_ALREADY_FINAL');
-    } else assertCollectable(s, bill);
-    const { applied, unapplied } = status === 'captured' ? capture(bill, BigInt(minor)) : { applied: 0n, unapplied: 0n };
-    const state: JsonObject = {
-      billId: bill.ref.id, method: 'card-terminal', reference, currency, amountMinor: minor, capturedMinor: status === 'captured' ? minor : '0', appliedMinor: String(applied), unappliedMinor: String(unapplied),
-      refundedMinor: '0', feeMinor: c.payload.feeMinor === undefined ? String(existing?.state.feeMinor ?? '0') : amount(c.payload.feeMinor), status, shiftId: tenderShift(s, c.actorRef, existing), actorRef: c.actorRef, occurredAt: c.occurredAt,
-      observations: [...((existing?.state.observations ?? []) as JsonObject[]), { status, by: c.actorRef, at: c.recordedAt, operationId: c.operationId }],
-    };
-    const type = `CardPayment${status[0]!.toUpperCase()}${status.slice(1)}`;
-    return done([existing ? changed(type, existing, state) : created(type, 'payment', id, state), changed('BillTenderObserved', bill, { ...billMoney(bill, applied, unapplied), externalPaymentState: externalState(s, bill.ref.id, id, status) })],
-      { paymentId: id, status, appliedMinor: String(applied), unappliedMinor: String(unapplied) });
-  });
+  externalCapture(registry, 'Payment.RecordTerminal', 'card-terminal', 'CardPayment');
+  // Payment.RecordProvider: the same rules for money a payment PROVIDER confirmed. The cloud only sends it after verifying the webhook AND querying the provider, and binding merchant,
+  // currency and amount to the intent it created; money that does not match is never sent here (it stays unapplied funds in the cloud for a person to resolve).
+  externalCapture(registry, 'Payment.RecordProvider', 'provider', 'ProviderPayment');
   // Payment.VerifyManual {billId,expectedVersion,amountMinor,currency,reference,reason,evidenceRef,claimId?}: a manager attests a bank transfer arrived.
   // This is a human attestation, not a bank integration: it needs no `bank` readiness and never turns a customer claim into money by itself.
   handle(registry, 'Payment.VerifyManual', (c, s) => {

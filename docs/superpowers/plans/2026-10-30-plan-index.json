@@ -637,7 +637,9 @@
       "depends": "W10-T01, W05-T03",
       "testFile": "tests/providers/payment-provider.test.ts",
       "testCommand": "pnpm test:providers -- tests/providers/payment-provider.test.ts",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W10-T02.md",
+      "remaining": "No payment provider is selected: needs the chosen provider's merchant sandbox, official create/query/refund API + version, webhook signature/timestamp/event-id rules and bank/payee binding, a recorded sandbox run attached as evidence, bank-app acceptance of the VietQR codes, and merchant acceptance. Provider-agnostic intents, verified-webhook reconciliation, unapplied funds, refunds and VietQR are verified locally against our own emulator only (rig.emulated)."
     },
     {
       "wave": "W10",
