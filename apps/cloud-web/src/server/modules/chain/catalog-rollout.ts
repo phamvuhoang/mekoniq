@@ -79,7 +79,7 @@ async function recordTarget(organizationId:string,revision:number,venueId:string
 }
 async function dispatchCatalog(actor:Actor,organizationId:string,revision:number,scope:{organizationId:string;venueId:string},plan:NonNullable<Plan['catalog']>){
  const prior=await existingTarget(organizationId,revision,scope.venueId,'catalog'),effective=(await venueEffective(scope)).catalogVersion;
- if(prior&&effective>=Number(prior.desired_version))return; // acknowledged already: nothing to send
+ if(prior?.status==='dispatched'&&effective>=Number(prior.desired_version))return; // dispatched and acknowledged: nothing to send. A refused target never reached the branch, whatever its recorded version.
  if(prior?.status==='dispatched'&&prior.operation_id){
   const [relay]=await withTenant(scope,sql=>sql`SELECT status,expires_at FROM relay_command WHERE organization_id=${organizationId} AND venue_id=${scope.venueId} AND operation_id=${prior.operation_id}`);
   if(relay&&(relay.status==='unknown'||(relay.status==='pending'&&Date.parse(relay.expires_at)>Date.now())))return; // still in flight: never a second copy

@@ -50,6 +50,12 @@ test('a branch missing a station rejects with a reason while the other branches 
  expect(preview.venues[0]!.catalog!.diff).toEqual([{itemId:'cake',field:'*',a:'absent',b:'present'}]);
  expect(preview.venues[1]!.error).toBe('STATION_NOT_FOUND:bar');
 });
+test('a branch that was missing a station is rolled out by publishing again once the station exists',async()=>{
+ await db.admin`INSERT INTO sync_projection(organization_id,venue_id,aggregate_type,aggregate_id,version,state,entry_id) VALUES(${org},'venue-c','station','bar',1,${db.admin.json({name:'bar'})},'st-venue-c-bar-late')`;
+ const again=await chainPublish(owner,org,{revision:1,venues:['venue-c']}),t=again.targets.find(x=>x.venueId==='venue-c')!;
+ expect(t.state).not.toBe('failed');
+ const [relay]=await db.admin`SELECT count(*)::int AS n FROM relay_command WHERE organization_id=${org} AND venue_id='venue-c' AND command->>'type'='Catalog.Publish'`;expect(relay!.n).toBeGreaterThan(0);
+});
 test('overrides change only allowed fields, are versioned, and a stale writer collides',async()=>{
  await expect(setBranchOverride(owner,org,'venue-a',{expectedRevision:0,patch:{tea:{name:'Hacked'}}})).rejects.toThrow('OVERRIDE_FIELD_NOT_ALLOWED');
  await expect(setBranchOverride(owner,org,'venue-a',{expectedRevision:0,patch:{ghost:{unitMinor:'1'}}})).rejects.toThrow('OVERRIDE_UNKNOWN_ITEM');
