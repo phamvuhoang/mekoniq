@@ -2,6 +2,7 @@ import type { ModuleRegistry } from './modules';
 import { registerCatalog } from './catalog/publish';
 import { registerSessions } from './orders/session';
 import { registerOrders } from './orders/module';
+import { registerExternalOrders } from './orders/external';
 import { registerCourses } from './orders/course';
 import { registerAmendments } from './orders/amendment';
 import { registerTableMoves } from './orders/move-table';
@@ -47,7 +48,7 @@ import { registerPurchasing } from './procurement/purchase-order';
 import { registerReceiving } from './procurement/goods-receipt';
 import { registerReturns } from './procurement/return';
 export function registerRestaurantModules(registry:ModuleRegistry):void {
- for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake,registerSchedule,registerAttendance,registerApproval,registerPromotions,registerVouchers,registerRedemption,registerConsent,registerCustomers,registerLoyalty,registerBookings,registerWaitlist,registerDeposits,registerServiceModels]) register(registry);
+ for(const register of [registerCatalog,registerSessions,registerOrders,registerCourses,registerAmendments,registerTableMoves,registerSessionMerge,registerKitchen,registerAllocations,registerHandOff,registerMissions,registerBills,registerPayments,registerCashShifts,registerCashbook,registerPrinting,registerBillSplit,registerBillMerge,registerTenders,registerRefunds,registerBillVoid,registerGuestTokens,registerServiceCalls,registerGuide,registerBussing,registerMapBinding,registerReservations,registerRecipes,registerConsumption,registerSuppliers,registerPurchasing,registerReceiving,registerReturns,registerStocktake,registerSchedule,registerAttendance,registerApproval,registerPromotions,registerVouchers,registerRedemption,registerConsent,registerCustomers,registerLoyalty,registerBookings,registerWaitlist,registerDeposits,registerServiceModels,registerExternalOrders]) register(registry);
 }
 export const commandPermissions:Record<string,string>={
  'Catalog.Publish':'catalog.publish','Catalog.Quote':'catalog.read','Session.Open':'order.write',
@@ -76,7 +77,7 @@ export const commandPermissions:Record<string,string>={
  // Workforce (W07-T04). Punching someone else's time is a manager's workforce.approve (see requiredPermissions); permissions themselves are an identity-workflow matter.
  'Staff.Schedule':'workforce.write','Staff.ClockIn':'workforce.clock','Staff.ClockOut':'workforce.clock','Staff.ApproveCorrection':'workforce.approve','Staff.SetPermissions':'identity.delegate',
  // Promotions and vouchers (W08-T01): publishing rules and issuing/allocating vouchers is a manager's job; spending a voucher at the till is the cashier's.
- 'Promotion.Publish':'promotion.write','Voucher.Issue':'promotion.write','Voucher.GrantEscrow':'promotion.write','Voucher.ReceiveEscrow':'promotion.write','Voucher.ReturnEscrow':'promotion.write','Voucher.Reserve':'voucher.redeem','Voucher.Redeem':'voucher.redeem','Voucher.Release':'voucher.redeem',
+ 'Promotion.Publish':'promotion.write','Voucher.Issue':'promotion.write','Voucher.GrantEscrow':'promotion.write','Voucher.ReceiveEscrow':'promotion.write','ExternalOrder.Receive':'channel.ingest','ExternalOrder.Expire':'channel.ingest','ExternalOrder.Accept':'channel.accept','ExternalOrder.Reject':'channel.accept','Voucher.ReturnEscrow':'promotion.write','Voucher.Reserve':'voucher.redeem','Voucher.Redeem':'voucher.redeem','Voucher.Release':'voucher.redeem',
  // CRM and loyalty (W08-T02): the till enrols, records consent and earns/spends points; merging people, erasing data and reversing points are a manager's customer.manage.
  'Customer.Upsert':'loyalty.write','Consent.Record':'loyalty.write','Loyalty.Earn':'loyalty.write','Loyalty.Redeem':'loyalty.write','Loyalty.Reverse':'customer.manage','Customer.Merge':'customer.manage','Customer.Erase':'customer.manage',
  // Reservations (W08-T03): front-of-house staff take, confirm, seat and cancel bookings and take deposits; returning a deposit or forfeiting one for a no-show is a manager's deposit.manage.

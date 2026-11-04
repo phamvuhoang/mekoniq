@@ -607,7 +607,8 @@
       "depends": "W02-T05, W03-T02",
       "testFile": "tests/integration/external-orders.test.ts",
       "testCommand": "pnpm test:integration -- tests/integration/external-orders.test.ts",
-      "status": "planned"
+      "status": "verified_local",
+      "evidence": "../../implementation/evidence/W09-T03.md"
     },
     {
       "wave": "W09",

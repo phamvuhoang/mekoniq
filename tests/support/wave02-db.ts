@@ -20,7 +20,7 @@ export async function setupWave02() {
  const [storageUpgrade]=await admin`SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='public.asset_manifest'::regclass AND conname='asset_manifest_status_check' AND pg_get_constraintdef(oid) LIKE '%collected%') AS applied`;
  if(!storageUpgrade.applied)await admin.begin(sql=>sql.unsafe(readFileSync('supabase/migrations/20261031000100_cloud_storage_reservations.sql','utf8')));
  // Later waves add tables; each migration is applied once, detected by the table it creates.
- for(const [filename,table] of [['20261104000100_chain_rollout.sql','chain_revision'],['20261104000200_chain_shared_balance.sql','chain_shared_balance']] as const){
+ for(const [filename,table] of [['20261104000100_chain_rollout.sql','chain_revision'],['20261104000200_chain_shared_balance.sql','chain_shared_balance'],['20261104000300_external_orders.sql','external_order']] as const){
   const exists=await admin`SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name=${table}`;
   if(!exists.length)await admin.begin(sql=>sql.unsafe(readFileSync(`supabase/migrations/${filename}`,'utf8')));
  }

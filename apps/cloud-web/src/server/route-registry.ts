@@ -24,9 +24,9 @@ export async function dispatchRequest(request:Request) {
         chunks.push(value);
       }
       const text=Buffer.concat(chunks).toString('utf8');
-      const body=text?parseJsonStrict(text,route.bodyLimit):null;
+      const body=route.raw?null:text?parseJsonStrict(text,route.bodyLimit):null; // `raw` routes (signed webhooks) verify the exact bytes first and parse afterwards
       const params=Object.fromEntries(names.map((n,i)=>[n,decodeURIComponent(match[i+1])]));
-      const response=await route.handler(request,{actor,params,body});
+      const response=await route.handler(request,{actor,params,body,rawBody:text});
       response.headers.set('Cache-Control','no-store');if(path.startsWith('/v1/guest/'))response.headers.set('Referrer-Policy','no-referrer');return response;
     } catch(error) {
       const code=error instanceof Error?error.message:'INTERNAL_ERROR';

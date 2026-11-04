@@ -25,11 +25,14 @@ import {setBranchOverride} from './chain/branch-overrides';
 import {rolloutStatus} from './chain/rollout-state';
 import {chainReport,chainReportCsv} from './chain/reports';
 import {createSharedBalance,reserveSharedBalance,reconcileSharedBalance,readSharedBalance} from './chain/shared-entitlements';
+import {receiveExternalOrder,externalOrderStatus,newWebExternalId} from './channels/ingress';
+import {issueChannelCredential,revokeChannelCredential} from './channels/credentials';
+import {resolveDeadLetter} from './channels/restaurant-ack';
 import {readReport} from './reports/read';
 import {reportCsv} from '../../../../../packages/domain/src/reporting/report';
 import type {CommandEnvelope,CommandResult,JsonObject} from '../../../../../packages/contracts/generated/wire';
-export type CloudRouteContext={actor:Actor|null;params:Record<string,string>;body:unknown};
-export type CloudRoute={method:string;path:string;permission:string|null;bodyLimit:number;handler:(request:Request,context:CloudRouteContext)=>Promise<Response>};
+export type CloudRouteContext={actor:Actor|null;params:Record<string,string>;body:unknown;rawBody:string};
+export type CloudRoute={method:string;path:string;permission:string|null;bodyLimit:number;raw?:boolean;handler:(request:Request,context:CloudRouteContext)=>Promise<Response>};
 function object(value:unknown):Record<string,unknown>{if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('INVALID_BODY');return value as Record<string,unknown>;}
 function actorRequired(actor:Actor|null){if(!actor)throw new Error('UNAUTHENTICATED');return actor;}
 function actorScope(actor:Actor,venueId:string):TenantScope{return {organizationId:actor.organizationId,venueId};}
@@ -37,7 +40,7 @@ function protectMutation(request:Request,actor:Actor){if(actor.deviceId)return;i
 function safe(handler:CloudRoute['handler']):CloudRoute['handler']{return async(request,context)=>{
  try{return await handler(request,context);}catch(error){
   const code=error instanceof Error?error.message:'SERVICE_UNAVAILABLE';
-  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED|EXHAUSTED|BALANCE_EXISTS/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_|ESCROW_/.test(code)?400:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
+  const status=code==='UNAUTHENTICATED'?401:/DENIED|FORBIDDEN|OWNER_REQUIRED|INVALID_SIGNATURE|UNENROLLED|NOT_ENABLED/.test(code)?403:/CONFLICT|HANDOFF_REQUIRED|NOT_READY|UNRECONCILED|SESSION_EXPIRED|EXHAUSTED|BALANCE_EXISTS/.test(code)?409:/NOT_FOUND/.test(code)?404:/INVALID|EXPIRED|REJECTED|MISMATCH|UNKNOWN_FEATURE|OVERRIDE_|ESCROW_/.test(code)?400:/PAYLOAD_TOO_LARGE/.test(code)?413:/QUOTA/.test(code)?507:/RATE_LIMITED/.test(code)?429:503;
   return Response.json({code:status===503?'SERVICE_UNAVAILABLE':code},{status});
  }
 };}
@@ -143,6 +146,19 @@ export function registerWave02Routes(register:(route:CloudRoute)=>void):void {
  add('GET','/v1/chain/shared-balances/:id','chain.read',async(_request,c)=>{const actor=actorRequired(c.actor);return Response.json(await readSharedBalance(actor,actor.organizationId,c.params.id));});
  add('POST','/v1/chain/shared-balances/:id/reserve','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);const r=await reserveSharedBalance(actor,actor.organizationId,{balanceId:c.params.id,venueId:String(body.venueId),count:Number(body.count),operationId:String(body.operationId)});return Response.json(r,{status:r.duplicate?200:202});});
  add('POST','/v1/chain/shared-balances/:id/reconcile','chain.publish',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await reconcileSharedBalance(actor,actor.organizationId,{balanceId:c.params.id,venueId:String(body.venueId),release:body.release===true}));});
+ // External channels: signed webhooks are verified on the raw bytes (`raw`), before any parsing; 202 means received, never accepted.
+ register({method:'POST',path:'/v1/channels/:provider/webhooks',permission:null,bodyLimit:65536,raw:true,handler:safe(async(request,c)=>{const r=await receiveExternalOrder({provider:c.params.provider,rawBody:c.rawBody,headers:request.headers});return Response.json(r.body,{status:r.status});})});
+ add('GET','/v1/channels/:provider/merchants/:merchantId/orders/:externalId',null,async(request,c)=>Response.json(await externalOrderStatus({provider:c.params.provider,merchantId:c.params.merchantId,externalId:c.params.externalId,headers:request.headers})));
+ register({method:'POST',path:'/v1/channels/web-sandbox/:organizationId/:venueId/orders',permission:null,bodyLimit:16384,raw:true,handler:safe(async(request,c)=>{
+  // Sandbox web checkout: public, so the server assigns the id and the merchant; it is refused unless CHANNELS_SANDBOX_WEB=1 and every order is tagged sandbox.
+  let body:Record<string,unknown>;try{body=JSON.parse(c.rawBody);}catch{throw new Error('INVALID_BODY');}if(!body||typeof body!=='object'||Array.isArray(body))throw new Error('INVALID_BODY');
+  const raw=JSON.stringify({items:body.items,currency:body.currency,merchantId:'web',externalId:newWebExternalId(),expiresAt:new Date(Date.now()+30*60000).toISOString()});
+  const r=await receiveExternalOrder({provider:'web-sandbox',rawBody:raw,headers:request.headers,publicScope:{organizationId:c.params.organizationId,venueId:c.params.venueId}});
+  return Response.json({...r.body,externalId:JSON.parse(raw).externalId},{status:r.status});})});
+ add('GET','/v1/channels/web-sandbox/:organizationId/:venueId/orders/:externalId',null,async(request,c)=>Response.json(await externalOrderStatus({provider:'web-sandbox',merchantId:'web',externalId:c.params.externalId,headers:request.headers,publicScope:{organizationId:c.params.organizationId,venueId:c.params.venueId}})));
+ add('POST','/v1/venues/:venueId/channels/credentials','channel.operate',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await issueChannelCredential(actor,actorScope(actor,c.params.venueId),{provider:String(body.provider),merchantId:String(body.merchantId),...(body.unavailablePolicy==='reject'||body.unavailablePolicy==='hold'?{unavailablePolicy:body.unavailablePolicy}:{})}),{status:201});});
+ add('POST','/v1/venues/:venueId/channels/credentials/:keyId/revoke','channel.operate',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);return Response.json(await revokeChannelCredential(actor,actorScope(actor,c.params.venueId),c.params.keyId));});
+ add('POST','/v1/venues/:venueId/channels/jobs/:jobId/resolve','channel.operate',async(request,c)=>{const actor=actorRequired(c.actor);protectMutation(request,actor);const body=object(c.body);return Response.json(await resolveDeadLetter(actor,actorScope(actor,c.params.venueId),c.params.jobId,body.action as 'retry'|'abandon'));});
  // Guest web: no staff session. Scope comes from the venue-signed table token (or the public menu's own org/venue), never from a cookie.
  add('GET','/v1/guest/menu/:organizationId/:venueId',null,async(_request,c)=>Response.json(await guestMenu({organizationId:c.params.organizationId,venueId:c.params.venueId})));
  add('GET','/v1/guest/menu/:organizationId/:venueId/images/:assetId',null,async(_request,c)=>new Response(null,{status:302,headers:{Location:await guestMenuImage({organizationId:c.params.organizationId,venueId:c.params.venueId},c.params.assetId)}}));
