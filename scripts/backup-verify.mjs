@@ -22,6 +22,7 @@ export function verifyBackup(dir) {
     else if (sha256(bytes) !== f.sha256) reasons.push(`corrupt ${f.path} (sha256)`);
   }
   for (const name of readdirSync(dir)) if (name !== 'manifest.json' && !named.has(name) && statSync(join(dir, name)).isFile()) reasons.push(`unaccounted file ${name}`);
+  if (!Number.isInteger(manifest.storage?.readyAssets) || manifest.storage.readyAssets !== (manifest.storage.objects ?? []).length) reasons.push(`storage inventory lists ${(manifest.storage?.objects ?? []).length} objects for ${manifest.storage?.readyAssets ?? '?'} ready assets`);
   for (const o of manifest.storage?.objects ?? []) {
     if (!o.copied) { reasons.push(`storage object not copied ${o.path}`); continue; }
     const p = join(dir, 'storage', o.path);

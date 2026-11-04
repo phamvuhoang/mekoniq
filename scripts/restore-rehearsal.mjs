@@ -7,12 +7,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import postgres from 'postgres';
 import { verifyBackup } from './backup-verify.mjs';
-import { adminUrl, createBackup, dropDatabase, neutralizeLiveEffects, restoreInto, verifyRestore } from './backup-restore-lib.mjs';
+import { adminUrl, createBackup, storageDownloader, dropDatabase, neutralizeLiveEffects, restoreInto, verifyRestore } from './backup-restore-lib.mjs';
 const dir = process.argv[2] ?? mkdtempSync(join(tmpdir(), 'mekoniq-backup-')), database = `restore_rehearsal_${Date.now()}`, started = Date.now();
 const report = { backupDir: dir, steps: {}, ok: false };
 try {
   const commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-  const manifest = await createBackup({ outDir: dir, appCommit: commit }); report.steps.backup = { tables: Object.keys(manifest.rowCounts).length, authUsers: manifest.auth.users.length };
+  const manifest = await createBackup({ outDir: dir, appCommit: commit, download: storageDownloader() }); report.steps.backup = { tables: Object.keys(manifest.rowCounts).length, authUsers: manifest.auth.users.length, readyAssets: manifest.storage.readyAssets };
   const verified = verifyBackup(dir); report.steps.verifyBackup = { ok: verified.ok, reasons: verified.reasons }; if (!verified.ok) throw new Error('BACKUP_INVALID');
   await restoreInto({ dir, database });
   const sql = postgres(adminUrl(database), { max: 1 }); try { report.steps.neutralize = await neutralizeLiveEffects(sql); } finally { await sql.end({ timeout: 1 }); }

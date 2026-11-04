@@ -19,6 +19,8 @@ const scratch: string[] = [], dirs: string[] = [];
 afterAll(async () => { delete process.env.MEKONIQ_TEST_DB; for (const d of scratch) await dropDatabase(d); for (const d of dirs) rmSync(d, { recursive: true, force: true }); });
 const tmp = () => { const d = mkdtempSync(join(tmpdir(), 'mekoniq-up-')); dirs.push(d); return d; };
 const commit = 'test-commit';
+/** Other suites leave `ready` assets in the shared dev database; a backup must now copy them, so tests that need a valid backup retire them first. */
+async function retireLeftoverAssets() { await inDb('postgres', sql => sql`UPDATE asset_manifest SET status='missing' WHERE status='ready'`); }
 async function inDb<T>(database: string, work: (sql: ReturnType<typeof postgres>) => Promise<T>): Promise<T> { const sql = postgres(adminUrl(database), { max: 1 }); try { return await work(sql); } finally { await sql.end({ timeout: 1 }); } }
 test('old offline client sync survives a schema upgrade and restored cloud', async () => {
   const lab = await createRestaurantLab();
@@ -26,7 +28,7 @@ test('old offline client sync survives a schema upgrade and restored cloud', asy
     await lab.command('cashier', 'Shift.Open', { shiftId: 'shift-up', currency: 'VND', openingMinor: '0' }, 'up-shift');
     await lab.seed('bill', 'bill-up', { status: 'prepared', totalMinor: '50000', paidMinor: '0', refundedMinor: '0', currency: 'VND', orderIds: [], lines: [], version: 1 });
     await lab.sync(); // the cloud knows the shift: this is the checkpoint
-    const checkpoint = tmp(); await createBackup({ outDir: checkpoint, appCommit: commit });
+    await retireLeftoverAssets(); const checkpoint = tmp(); await createBackup({ outDir: checkpoint, appCommit: commit });
     await lab.partition('wan'); // the tablet goes on selling with no cloud
     const receipt = await lab.command('cashier', 'Payment.RecordCash', { billId: 'bill-up', expectedVersion: 1, amountMinor: '50000', currency: 'VND', shiftId: 'shift-up' }, 'legacy-op');
     expect(receipt.status).toBe('accepted');
@@ -54,6 +56,7 @@ test('a restore matches its backup (rows, RLS, app role), and nothing the old sy
     await live.admin`INSERT INTO relay_command(organization_id,venue_id,operation_id,payload_hash,command,coordinator_epoch,expires_at) VALUES(${org},'venue-a','old-relay','h','{"type":"x"}',1,now()+interval '4 minutes')`;
     await live.admin`INSERT INTO cloud_job(organization_id,venue_id,id,type,payload,status) VALUES(${org},'venue-a','mid-call','channel.effect','{}','sending')`;
   } finally { await live.close(); }
+  await retireLeftoverAssets();
   const dir = tmp(), manifest = await createBackup({ outDir: dir, appCommit: commit }), database = `restore_fx_${Date.now()}`; scratch.push(database);
   expect(verifyBackup(dir)).toMatchObject({ ok: true });
   await restoreInto({ dir, database });
@@ -70,19 +73,35 @@ test('a restore matches its backup (rows, RLS, app role), and nothing the old sy
   expect(damaged.ok).toBe(false); expect(damaged.reasons.join()).toMatch(/sync_inbox/);
 });
 test('backup verification finds corruption, missing segments, strays, missing objects and credentials in the Auth inventory', async () => {
-  const dir = tmp(), manifest = await createBackup({ outDir: dir, appCommit: commit, storageObjects: [{ bucket: 'b', path: 'menu/a.png', bytes: 3, sha256: 'a'.repeat(64), copied: true }] });
+  await retireLeftoverAssets();
+  const dir = tmp(), manifest = await createBackup({ outDir: dir, appCommit: commit });
+  writeFileSync(join(dir, 'manifest.json'), JSON.stringify({ ...manifest, storage: { readyAssets: 1, objects: [{ bucket: 'b', path: 'menu/a.png', bytes: 3, sha256: 'a'.repeat(64), copied: true }] } }));
   expect(verifyBackup(dir).reasons).toEqual([expect.stringMatching(/missing storage object menu\/a\.png/)]); // a manifest that names a copy that is not there
   mkdirSync(join(dir, 'storage', 'menu'), { recursive: true }); writeFileSync(join(dir, 'storage', 'menu', 'a.png'), 'abc');
   expect(verifyBackup(dir).reasons.join()).toMatch(/corrupt storage object/);
-  writeFileSync(join(dir, 'manifest.json'), JSON.stringify({ ...manifest, storage: { objects: [] } })); expect(verifyBackup(dir)).toMatchObject({ ok: true });
+  writeFileSync(join(dir, 'manifest.json'), JSON.stringify({ ...manifest, storage: { readyAssets: 0, objects: [] } })); expect(verifyBackup(dir)).toMatchObject({ ok: true });
   const bytes = readFileSync(join(dir, 'public.sql')); writeFileSync(join(dir, 'public.sql'), Buffer.concat([bytes.subarray(0, 100), Buffer.from('X'), bytes.subarray(101)]));
   expect(verifyBackup(dir).reasons.join()).toMatch(/corrupt public\.sql/);
   writeFileSync(join(dir, 'public.sql'), bytes); appendFileSync(join(dir, 'stray.sql'), 'drop table x;'); expect(verifyBackup(dir).reasons.join()).toMatch(/unaccounted file stray\.sql/); unlinkSync(join(dir, 'stray.sql'));
   unlinkSync(join(dir, 'public.sql')); expect(verifyBackup(dir).reasons.join()).toMatch(/missing segment public\.sql/);
   writeFileSync(join(dir, 'public.sql'), bytes);
-  writeFileSync(join(dir, 'manifest.json'), JSON.stringify({ ...manifest, storage: { objects: [] }, auth: { users: [{ id: 'u', email: 'a@b.c', encrypted_password: 'x' }] } })); expect(verifyBackup(dir).reasons.join()).toMatch(/must not contain credentials/);
+  writeFileSync(join(dir, 'manifest.json'), JSON.stringify({ ...manifest, storage: { readyAssets: 0, objects: [] }, auth: { users: [{ id: 'u', email: 'a@b.c', encrypted_password: 'x' }] } })); expect(verifyBackup(dir).reasons.join()).toMatch(/must not contain credentials/);
   unlinkSync(join(dir, 'manifest.json')); expect(verifyBackup(dir)).toMatchObject({ ok: false, reasons: ['manifest.json is missing or unreadable'] });
   expect(spawnSync(process.execPath, ['scripts/backup-verify.mjs', dir]).status).toBe(1);
+});
+test('a backup inventories ready assets itself: one without copies of them is not valid', async () => {
+  const live = await setupWave02(), org = 'assets-' + randomUUID(), { createHash } = await import('node:crypto'), body = Buffer.from('asset-body'), hash = createHash('sha256').update(body).digest('hex');
+  try {
+    await live.admin`INSERT INTO venue(organization_id,id,name) VALUES(${org},'venue-a','A')`;
+    for (let i = 0; i < 3; i++) await live.admin`INSERT INTO asset_manifest(organization_id,venue_id,id,kind,object_path,expected_bytes,mime,expected_hash,status,created_by,expires_at) VALUES(${org},'venue-a',${'a' + i},'menu-image',${`${org}/venue-a/a${i}.png`},${body.length},'image/png',${hash},'ready','t',now()+interval '1 day')`;
+    await retireLeftoverAssets(); await live.admin`UPDATE asset_manifest SET status='ready' WHERE organization_id=${org}`;
+    const bare = tmp(); await createBackup({ outDir: bare, appCommit: commit }); // no way to read Storage: the inventory still names every ready asset
+    const miss = verifyBackup(bare); expect(miss.ok).toBe(false); expect(miss.reasons.join()).toMatch(/storage object not copied/);
+    const full = tmp(), m = await createBackup({ outDir: full, appCommit: commit, download: async () => body });
+    expect(m.storage.readyAssets).toBeGreaterThanOrEqual(3); expect(verifyBackup(full)).toMatchObject({ ok: true });
+    writeFileSync(join(full, 'manifest.json'), JSON.stringify({ ...m, storage: { readyAssets: m.storage.readyAssets, objects: [] } })); // objects quietly dropped from the manifest
+    expect(verifyBackup(full).reasons.join()).toMatch(/storage inventory/);
+  } finally { await live.close(); }
 });
 test('storage export copies verified objects only: a damaged object stops the export instead of entering a backup', async () => {
   const good = Buffer.from('menu image'), { createHash } = await import('node:crypto'), hash = createHash('sha256').update(good).digest('hex'), out = tmp();

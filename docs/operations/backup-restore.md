@@ -4,7 +4,7 @@
 
 ## What a backup contains (`scripts/backup-restore-lib.mjs` → `createBackup`)
 
-`public.sql` (structure + data of the app schema, no owners), `manifest.json` (schema `mekoniq-backup-1`: time, commit, every migration with its sha256, each file with size and sha256, row counts per table, **Auth inventory** = ids/emails/created-at only — no hashes, no tokens —, **Storage object manifest** with `copied` flags, the *names* of the secrets needed), and `storage/` object copies (`scripts/export-storage.mjs`; an object whose bytes do not match the manifest hash stops the export). Not included: secrets and private keys, sessions/refresh tokens, provider-managed schemas.
+`public.sql` (structure + data of the app schema, no owners), `manifest.json` (schema `mekoniq-backup-1`: time, commit, every migration with its sha256, each file with size and sha256, row counts per table, **Auth inventory** = ids/emails/created-at only — no hashes, no tokens —, **Storage inventory** (the backup lists every `ready` asset itself; `readyAssets` must equal the objects named and an uncopied object makes the backup invalid), the *names* of the secrets needed), and `storage/` object copies (`scripts/export-storage.mjs`; an object whose bytes do not match the manifest hash stops the export). Not included: secrets and private keys, sessions/refresh tokens, provider-managed schemas.
 
 Encrypt the directory (age/GPG) and move it to storage **outside** the project before it counts as a backup.
 

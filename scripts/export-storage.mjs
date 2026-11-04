@@ -22,5 +22,5 @@ export async function exportStorage({ objects, download, outDir }) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const url = process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL; if (!url) { console.error('DATABASE_ADMIN_URL required'); process.exit(2); }
   const sql = postgres(url, { max: 1 });
-  try { const objects = await sql`SELECT bucket, object_path, size_bytes, sha256 FROM public.asset_manifest WHERE status = 'ready'`; console.log(JSON.stringify(await exportStorage({ objects }), null, 1)); } finally { await sql.end(); }
+  try { const objects = await sql`SELECT 'mekoniq-private' AS bucket, object_path, expected_bytes AS size_bytes, expected_hash AS sha256 FROM public.asset_manifest WHERE status = 'ready'`; console.log(JSON.stringify(await exportStorage({ objects }), null, 1)); } finally { await sql.end(); }
 }

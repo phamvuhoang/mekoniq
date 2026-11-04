@@ -7,6 +7,7 @@ import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import postgres from 'postgres';
 import { sha256 } from './backup-verify.mjs';
+import { exportStorage } from './export-storage.mjs';
 export const containerName = () => process.env.MEKONIQ_DB_CONTAINER ?? 'supabase_db_mekoniq-w00-w04';
 const docker = (args, input) => { const r = spawnSync('docker', ['exec', ...(input ? ['-i'] : []), containerName(), ...args], { input, encoding: 'buffer', maxBuffer: 512 * 1024 * 1024 }); if (r.status !== 0) throw new Error(`docker ${args[0]} failed: ${r.stderr?.toString().slice(0, 400)}`); return r.stdout; };
 export const adminUrl = (database = 'postgres') => `postgresql://postgres:postgres@127.0.0.1:57422/${database}`;
@@ -14,7 +15,10 @@ export const appUrl = (database) => `postgresql://mekoniq_app:local_test_only@12
 /** Tables of the public schema, in a stable order. */
 export async function publicTables(sql) { return (await sql`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind='r' ORDER BY 1`).map(r => r.relname); }
 export function migrationInventory(dir = 'supabase/migrations') { return readdirSync(dir).filter(f => f.endsWith('.sql')).sort().map(f => ({ file: f, sha256: sha256(readFileSync(join(dir, f))) })); }
-export async function createBackup({ outDir, appCommit, storageObjects = [] }) {
+/** Reads one Storage object through the platform's REST API (service role); undefined when this environment has no way to read Storage. */
+export const storageDownloader = () => { const base = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY; if (!base || !key) return undefined; return async (bucket, path) => { const r = await fetch(`${base}/storage/v1/object/${bucket}/${path}`, { headers: { authorization: `Bearer ${key}` } }); if (!r.ok) throw new Error(`STORAGE_READ_FAILED ${path} ${r.status}`); return Buffer.from(await r.arrayBuffer()); }; };
+/** The backup takes its own inventory of ready assets (never a caller-supplied list) and copies each through `download`; without a way to read Storage the objects stay uncopied and verifyBackup refuses the backup. */
+export async function createBackup({ outDir, appCommit, download }) {
   mkdirSync(outDir, { recursive: true });
   const sql = postgres(adminUrl(), { max: 1 });
   try {
@@ -22,9 +26,11 @@ export async function createBackup({ outDir, appCommit, storageObjects = [] }) {
     for (const t of tables) rowCounts[t] = Number((await sql.unsafe(`SELECT count(*)::int AS n FROM public."${t}"`))[0].n);
     const dump = docker(['pg_dump', '-U', 'postgres', '-d', 'postgres', '--schema=public', '--no-owner', '--quote-all-identifiers']);
     writeFileSync(join(outDir, 'public.sql'), dump);
+    const ready = await sql`SELECT 'mekoniq-private' AS bucket, object_path, expected_bytes::text AS size_bytes, expected_hash AS sha256 FROM public.asset_manifest WHERE status = 'ready' ORDER BY object_path`;
+    const storage = { readyAssets: ready.length, ...(await exportStorage({ objects: ready, download, outDir })) };
     const users = (await sql`SELECT id::text AS id, email, created_at FROM auth.users ORDER BY id`).map(u => ({ id: u.id, email: u.email, createdAt: new Date(u.created_at).toISOString() })); // ids + emails only: no hashes, no tokens
     const files = [{ path: 'public.sql', bytes: dump.length, sha256: sha256(dump) }];
-    const manifest = { schema: 'mekoniq-backup-1', createdAt: new Date().toISOString(), appCommit, migrations: migrationInventory(), files, rowCounts, auth: { users }, storage: { objects: storageObjects },
+    const manifest = { schema: 'mekoniq-backup-1', createdAt: new Date().toISOString(), appCommit, migrations: migrationInventory(), files, rowCounts, auth: { users }, storage,
       secretNamesNeeded: ['SUPABASE_SERVICE_ROLE_KEY', 'DATABASE_URL', 'JOB_HMAC_SECRET', 'DEVICE_GRANT_PRIVATE_KEY', 'CHANNEL_SECRET_MASTER'] };
     writeFileSync(join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 1));
     return manifest;
