@@ -3,6 +3,7 @@ import type { CommandEnvelope, Decision, DomainEvent, JsonObject, Snapshot } fro
 import { all, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
 import { legHoldReason, missionDemand, selectRobot } from './scheduler';
 import { homeTarget } from './map-binding';
+import { productionControls } from './dispatcher-cutover';
 import { issueRobotCommand } from './command-journal';
 import type { MissionStop } from './stop';
 
@@ -48,6 +49,7 @@ function nextStop(c:CommandEnvelope,s:Snapshot[],mission:Snapshot,stops:MissionS
   const queued=all(s,'mission').filter(m=>m.state.status==='queued'&&(!m.state.preferredRobotId||m.state.preferredRobotId===robot.ref.id)).sort((a,b)=>BigInt(String(a.state.queueRank))<BigInt(String(b.state.queueRank))?-1:1);
   for(const candidate of queued) {
    const pending=structuredClone(candidate.state.stops) as MissionStop[];
+   if(!productionControls(s,robot.ref.id))continue; // a robot handed to another dispatcher takes no queued work from this one
    try{selectRobot([released],missionDemand(s,candidate.state,pending.map(stop=>stop.targetId),Math.max(((candidate.state.allocationIds??[]) as string[]).length,1)),robot.ref.id);}catch{continue;}
    const first=pending.find(stop=>stop.status==='pending');if(!first)continue;
    first.status='travelling';
@@ -102,7 +104,8 @@ export function createMission(c:CommandEnvelope,s:Snapshot[]):Decision {
    });
   }
   const demand=missionDemand(s,c.payload,stops.map(stop=>stop.targetId),Math.max(allocations.length,1)),limits={...(demand.loadMinor!==undefined?{loadMinor:demand.loadMinor}:{}),...(demand.speedLimitMps!==undefined?{speedLimitMps:demand.speedLimitMps}:{})};
-  const robot=selectRobot(all(s,'robot'),{...demand,allowBusy:true},typeof c.payload.robotId==='string'?c.payload.robotId:undefined);
+  if(typeof c.payload.robotId==='string'&&c.payload.robotId!=='any'&&!productionControls(s,c.payload.robotId)) return fail('CONTROLLED_BY_OTHER_DISPATCHER');
+  const robot=selectRobot(all(s,'robot').filter(r=>productionControls(s,r.ref.id)),{...demand,allowBusy:true},typeof c.payload.robotId==='string'?c.payload.robotId:undefined);
   if(robot.state.availability!=='idle') {
    const counter=find(s,'fleet-queue','current'),rank=String(BigInt(String(counter?.state.rank??'0'))+1n);
    return done([created('MissionQueued','mission',missionId,{...limits,kind,status:'queued',robotId:null,preferredRobotId:typeof c.payload.robotId==='string'&&c.payload.robotId!=='any'?c.payload.robotId:null,source:stops[0]!.targetId,loaded:false,stops,currentStopId:null,revision:0,allocationIds:ids,queueRank:rank}),{type:'FleetQueueAdvanced',data:{kind:'fleet-queue',id:'current',state:{rank}}},...allocations.map(a=>changed('AllocationAssigned',a,{missionId}))],{missionId,status:'queued'});

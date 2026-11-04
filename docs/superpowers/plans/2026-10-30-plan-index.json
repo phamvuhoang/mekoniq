@@ -744,7 +744,9 @@
       "depends": "W11-T04, all required F01–F30 acceptance tasks",
       "testFile": "tests/acceptance/first-shift.test.ts",
       "testCommand": "pnpm test:acceptance -- first-shift",
-      "status": "planned"
+      "status": "blocked_external",
+      "evidence": "../../implementation/evidence/W11-T05.md",
+      "remaining": "Procedures and software guards only. Not performed: customer UAT per preset, the trial-service E2E on the exact hosted build and APK digest, the supervised cutover and first live shift with a named support owner, and every upstream external gate (Gate A device qualification, Gate B robot commissioning, selected providers, hosted Supabase Free and Vercel measurements, recovery drill, signed APK). The completion inventory (scripts/verify-completion.mjs) correctly reports the program as NOT COMPLETE."
     }
   ],
   "featureCoverage": [
