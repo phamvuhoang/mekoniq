@@ -136,3 +136,17 @@ test('a cancellation of an already accepted order starts a fresh sweep even thou
     expect(await rig.sweep('order-1', Date.now())).toMatchObject({ status: 'cancelled', done: true }); expect(job!.payload).toMatchObject({ gen: 'cancel-', round: 1 });
   } finally { await rig.close(); }
 });
+
+test('after the cloud itself expires or rejects an order, listening continues: a later venue decision is noticed without anyone asking', async () => {
+  for (const policy of ['expire', 'reject'] as const) {
+    const rig = await createProviderRig('channel');
+    try {
+      await rig.deliverFixture(policy === 'expire' ? 'new-order' : 'new-order');
+      if (policy === 'reject') await rig.admin`UPDATE external_order SET unavailable_policy='reject' WHERE organization_id=${rig.scope.organizationId}`;
+      await rig.admin`UPDATE cloud_job SET status='confirmed' WHERE organization_id=${rig.scope.organizationId} AND type='channel.sweep'`; // every sweep scheduled so far has run
+      const r = await rig.sweep('order-1', Date.now() + (policy === 'expire' ? 2 * 3600_000 : 5 * 60_000));
+      expect(r).toMatchObject({ status: policy === 'expire' ? 'expired' : 'rejected', done: false });
+      const [open] = await rig.admin`SELECT count(*)::int AS n FROM cloud_job WHERE organization_id=${rig.scope.organizationId} AND type='channel.sweep' AND status='pending'`; expect(open!.n).toBe(1);
+    } finally { await rig.close(); }
+  }
+});

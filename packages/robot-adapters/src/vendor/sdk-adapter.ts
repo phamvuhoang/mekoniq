@@ -68,7 +68,7 @@ export class VendorSdkAdapter implements RobotAdapter {
       g.goalId = made.goalId;
       if (g.status === 'sending') { g.status = 'executing'; this.emit('accepted', g); } // an event that raced the answer may already have finished the goal
       return { accepted: true, nativeGoalId: g.goalId, unknown: false };
-    } catch { g.status = 'unknown'; g.evidence = { sendFailed: true }; return { accepted: false, unknown: true, reason: 'SDK_CALL_FAILED' }; } // the SDK may have started it
+    } catch { if (g.status === 'sending') { g.status = 'unknown'; g.evidence = { sendFailed: true }; } return { accepted: false, unknown: true, reason: 'SDK_CALL_FAILED' }; } // the SDK may have started it; an event that raced the failed call may already have finished the goal, and a final state is kept
   }
   async cancel(commandId: string) {
     const g = this.goals.get(commandId);

@@ -6,9 +6,9 @@ import { changed, created, done, fail, find, handle, note, requireCloudSource, r
 /** Frozen statuses of an invoice request at the venue. `issued` exists only through a provider's code (Invoice.Record); `external` is a link to something issued elsewhere, never an issue. */
 export const INVOICE_STATUSES = ['requested', 'issued', 'rejected', 'cancelled', 'external'] as const;
 const TAX_CODE = /^[0-9]{10}(-[0-9]{3})?$/;
-/** Whether the books and an ISSUED invoice disagree: money given back after issue (`refundedAfterIssueMinor`) that the provider's confirmed adjustments (negative deltas) do not yet cover. */
-export function amendmentDue(status: string, refundedAfterIssueMinor: string, adjustments: JsonObject[]): boolean {
-  return refundNeedsAmendment(status, refundedAfterIssueMinor, String(adjustments.reduce((sum, a) => sum + BigInt(String(a.deltaMinor ?? '0')), 0n)));
+/** Whether the books and an ISSUED invoice disagree: money given back since the request (`refundedSinceRequestMinor`; the invoice is made from the bill as requested) that the provider's confirmed adjustments (negative deltas) do not yet cover. */
+export function amendmentDue(status: string, refundedSinceRequestMinor: string, adjustments: JsonObject[]): boolean {
+  return refundNeedsAmendment(status, refundedSinceRequestMinor, String(adjustments.reduce((sum, a) => sum + BigInt(String(a.deltaMinor ?? '0')), 0n)));
 }
 export const invoiceRequestId = (billId: string): string => `inv-${billId}`;
 /** Buyer data as the venue can check without a provider. Provider-specific rules (name registered against the tax code, address format) are checked by that provider's profile. */
@@ -44,7 +44,7 @@ export function registerInvoices(registry: ModuleRegistry): void {
       const providerInvoiceId = text(c.payload.providerInvoiceId, 'PROVIDER_ID_REQUIRED'), code = text(c.payload.code, 'PROVIDER_CODE_REQUIRED');
       if (current === 'issued') return req.state.providerInvoiceId === providerInvoiceId ? done([], { requestId: req.ref.id, duplicate: true }) : fail('INVOICE_ALREADY_ISSUED');
       if (current !== 'requested') return fail('INVOICE_NOT_PENDING');
-      return done([changed('InvoiceIssued', req, { status: 'issued', providerInvoiceId, code, issuedAt: c.recordedAt })], { requestId: req.ref.id });
+      return done([changed('InvoiceIssued', req, { status: 'issued', providerInvoiceId, code, issuedAt: c.recordedAt, amendmentDue: amendmentDue('issued', String(req.state.refundedSinceRequestMinor ?? '0'), (req.state.adjustments ?? []) as JsonObject[]) })], { requestId: req.ref.id });
     }
     if (status === 'rejected') {
       if (current === 'rejected') return done([], { requestId: req.ref.id, duplicate: true });
@@ -59,7 +59,7 @@ export function registerInvoices(registry: ModuleRegistry): void {
     const list = (req.state.adjustments ?? []) as JsonObject[];
     if (list.some(a => a.providerRef === providerRef)) return done([], { requestId: req.ref.id, duplicate: true });
     const next = [...list, { providerRef, reason, deltaMinor: String(c.payload.deltaMinor ?? '0'), at: c.recordedAt }];
-    return done([changed('InvoiceAdjusted', req, { adjustments: next, amendmentDue: amendmentDue('issued', String(req.state.refundedAfterIssueMinor ?? '0'), next) })], { requestId: req.ref.id });
+    return done([changed('InvoiceAdjusted', req, { adjustments: next, amendmentDue: amendmentDue('issued', String(req.state.refundedSinceRequestMinor ?? '0'), next) })], { requestId: req.ref.id });
   });
   // Invoice.LinkExternal {billId,invoiceNumber,source}: a historical bill whose invoice was issued OUTSIDE this system. It is a link for lookup, never an issue.
   handle(registry, 'Invoice.LinkExternal', (c, s) => {

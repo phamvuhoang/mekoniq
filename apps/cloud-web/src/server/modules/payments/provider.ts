@@ -172,6 +172,9 @@ export async function reconcilePaymentIntents(scope:TenantScope,nowMs=Date.now()
     const r=await provider.queryRefund({refundId:row.refund_id});
     if(r.status==='confirmed')await settleRefund(scope,row.intent_id,row.refund_id,'confirmed');
     else if(r.status==='not_found'&&provider.refund){ // the provider never saw it: asking again with the SAME refund id is safe and idempotent
+     // claim the re-send: from here the original request (still waiting on a 429, say) can no longer withdraw this refund; and if it already withdrew it, there is nothing to send
+     const claimed=await withTenant(scope,sql=>sql`UPDATE payment_refund SET status='unknown',updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${row.intent_id} AND refund_id=${row.refund_id} AND status IN('pending','unknown') RETURNING refund_id`);
+     if(!claimed.length){report.refunds++;continue;}
      const again=await provider.refund({refundId:row.refund_id,intentId:row.intent_id,providerRef:row.provider_ref,amountMinor:row.refund_minor!,reason:'retry of a refund whose outcome was unknown'});
      if(again.status==='confirmed')await settleRefund(scope,row.intent_id,row.refund_id,'confirmed');
      else if(again.status==='rejected')await settleRefund(scope,row.intent_id,row.refund_id,'rejected');
@@ -205,7 +208,8 @@ export async function requestProviderRefund(actor:Actor,scope:TenantScope,input:
   const result=await provider.refund({refundId,intentId:row.intent_id,providerRef:row.provider_ref,amountMinor:input.amountMinor,reason:input.reason});
   if(result.status==='confirmed')await settleRefund(scope,input.intentId,refundId,'confirmed');
   else if(result.status==='rejected')await settleRefund(scope,input.intentId,refundId,'rejected');
-  else{await withTenant(scope,async sql=>{await sql`DELETE FROM payment_refund WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND refund_id=${refundId} AND status='pending'`;await sql`UPDATE payment_intent SET refund_id=NULL,refund_minor=NULL,refund_status=NULL,updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${input.intentId} AND refund_id=${refundId}`;});throw new Error('RATE_LIMITED');} // 429: nothing happened, the same refundId may be sent again
+  else{ // 429: nothing happened, the same refundId may be sent again. Withdraw only if the row is still OUR untouched `pending` claim: a sweeper that took over the re-send has changed it, and its result must stand.
+   await withTenant(scope,async sql=>{const gone=await sql`DELETE FROM payment_refund WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND refund_id=${refundId} AND status='pending' RETURNING refund_id`;if(gone.length)await sql`UPDATE payment_intent SET refund_id=NULL,refund_minor=NULL,refund_status=NULL,updated_at=now() WHERE organization_id=${scope.organizationId} AND venue_id=${scope.venueId} AND intent_id=${input.intentId} AND refund_id=${refundId}`;});throw new Error('RATE_LIMITED');}
  }catch(error){
   if(error instanceof Error&&error.message==='RATE_LIMITED')throw error;
   await settleRefund(scope,input.intentId,refundId,'unknown');

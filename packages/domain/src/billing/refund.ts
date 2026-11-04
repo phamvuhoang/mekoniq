@@ -51,14 +51,15 @@ export function registerRefunds(registry: ModuleRegistry): void {
     const billUnapplied = BigInt(String(bill.state.unappliedMinor ?? '0'));
     if (billUnapplied < fromUnapplied) return fail('BILL_BALANCE_CORRUPT');
     const refundId = stableId('refund', c);
-    // an ISSUED invoice no longer matches the bill once applied money goes back: record the obligation on the invoice request so someone adjusts or cancels it at the provider
+    // The invoice is made from the bill as it was REQUESTED. Applied money that goes back after that (whether the provider has answered yet or not, and a tablet may not know) is noted on the request;
+    // once the invoice is issued, whatever the provider's adjustments do not cover is owed as an amendment.
     const invoice = fromApplied > 0n ? find(s, 'invoice-request', invoiceRequestId(bill.ref.id)) : undefined;
-    const afterIssue = invoice?.state.status === 'issued' ? String(BigInt(String(invoice.state.refundedAfterIssueMinor ?? '0')) + fromApplied) : undefined;
+    const status = String(invoice?.state.status ?? ''), noted = invoice && (status === 'requested' || status === 'issued') ? String(BigInt(String(invoice.state.refundedSinceRequestMinor ?? '0')) + fromApplied) : undefined;
     return done([
       created('RefundRecorded', 'refund', refundId, { paymentId: payment.ref.id, billId: bill.ref.id, currency, amountMinor: request, ...(component ? { component } : {}), appliedMinor: String(fromApplied), unappliedMinor: String(fromUnapplied), method, shiftId, reason, evidenceRef, actorRef: c.actorRef, billStatus: bill.state.status!, occurredAt: c.occurredAt, recordedAt: c.recordedAt }),
       changed('PaymentRefunded', payment, { refundedMinor: String(BigInt(refunded) + req), unappliedMinor: String(unapplied - fromUnapplied), refundIds: [...((payment.state.refundIds ?? []) as string[]), refundId] }),
       changed('BillRefunded', bill, { refundedMinor: String(BigInt(String(bill.state.refundedMinor ?? '0')) + fromApplied), unappliedMinor: String(billUnapplied - fromUnapplied) }),
-      ...(invoice && afterIssue ? [changed('InvoiceAmendmentDue', invoice, { refundedAfterIssueMinor: afterIssue, amendmentDue: amendmentDue('issued', afterIssue, (invoice.state.adjustments ?? []) as JsonObject[]) })] : []),
+      ...(invoice && noted ? [changed('InvoiceRefundNoted', invoice, { refundedSinceRequestMinor: noted, amendmentDue: amendmentDue(status, noted, (invoice.state.adjustments ?? []) as JsonObject[]) })] : []),
       ...(shift ? [changed('ShiftCashRefunded', shift, { cashRefundedMinor: String(BigInt(String(shift.state.cashRefundedMinor ?? '0')) + req) })] : []),
     ], { refundId, paymentId: payment.ref.id, amountMinor: request, refundableMinor: refundableMinor(captured, String(BigInt(refunded) + req)) });
   });

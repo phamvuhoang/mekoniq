@@ -239,3 +239,19 @@ test('the amount and currency the provider actually took are kept apart from the
     const [view] = (await unappliedFunds(rig.owner, rig.scope)).intents; expect(view).toMatchObject({ currency: 'VND', capturedCurrency: i!.captured_currency, capturedMinor: i!.captured_minor });
   } finally { await rig.close(); }
 });
+test('a 429 for the first request cannot erase a refund the sweeper has re-sent and the provider has made', async () => {
+  const rig = await createProviderRig('payment');
+  try {
+    await rig.deliverFixture('signed-exact'); const intentId = rig.currentIntent()!, original = rig.sim.provider.refund!;
+    let calls = 0, release!: () => void; const gate = new Promise<void>(r => { release = r; });
+    rig.sim.provider.refund = async input => {
+      if (++calls === 1) { await gate; return { status: 'rate_limited', retryAfterMs: 1 }; } // the first request: still waiting, then told to slow down
+      const made = await original(input); release(); await new Promise(r => setTimeout(r, 300)); return made; // the sweeper's re-send: the provider acts, and the first request's 429 lands before we record it
+    };
+    const first = requestProviderRefund(rig.owner, rig.scope, { intentId, amountMinor: '30000', reason: 'x', refundId: 'ref-race' }).then(() => 'ok', (e: Error) => e.message);
+    while (calls < 1) await new Promise(r => setTimeout(r, 10));
+    await rig.reconcile(); expect(await first).toBe('RATE_LIMITED');
+    const [i] = await rows<{ refunded_minor: string; refund_status: string }>(rig, `SELECT refunded_minor,refund_status FROM payment_intent WHERE intent_id='${intentId}'`); expect(i).toMatchObject({ refunded_minor: '30000', refund_status: 'confirmed' });
+    expect(await rows(rig, `SELECT status FROM payment_refund WHERE refund_id='ref-race'`)).toEqual([{ status: 'confirmed' }]);
+  } finally { await rig.close(); }
+});

@@ -169,8 +169,20 @@ test('a refund on a bill whose invoice was issued leaves a tracked amendment obl
     await lab.seed('payment', 'pay-r', { status: 'captured', billId: 'bill-r', method: 'transfer', capturedMinor: '100000', appliedMinor: '100000', unappliedMinor: '0', refundedMinor: '0', currency: 'VND', version: 1 });
     await lab.seed('invoice-request', 'inv-bill-r', { billId: 'bill-r', status: 'issued', providerInvoiceId: 'P1', code: 'C1', currency: 'VND', totalMinor: '100000', adjustments: [], version: 1 });
     const refund = await lab.command('manager', 'Refund.Record', { paymentId: 'pay-r', expectedVersion: 1, amountMinor: '20000', reason: 'cold', evidenceRef: 'ev-1' }); expect(refund.status).toBe('accepted');
-    expect(await lab.state('invoice-request', 'inv-bill-r')).toMatchObject({ status: 'issued', refundedAfterIssueMinor: '20000', amendmentDue: true });
+    expect(await lab.state('invoice-request', 'inv-bill-r')).toMatchObject({ status: 'issued', refundedSinceRequestMinor: '20000', amendmentDue: true });
     const adjusted = await lab.command('cloud-provider', 'Invoice.Record', { requestId: 'inv-bill-r', status: 'adjusted', providerRef: 'adj-1', reason: 'refund', deltaMinor: '-20000' }); expect(adjusted.status).toBe('accepted');
     expect(await lab.state('invoice-request', 'inv-bill-r')).toMatchObject({ amendmentDue: false });
+  } finally { await lab.close(); }
+});
+test('a refund made while the tablet still sees the request as requested is owed as an amendment once the provider issues it', async () => {
+  const lab = await createRestaurantLab();
+  try {
+    await lab.seed('bill', 'bill-q', { status: 'closed', totalMinor: '100000', paidMinor: '100000', refundedMinor: '0', unappliedMinor: '0', currency: 'VND', orderIds: [], lines: [], version: 1 });
+    await lab.seed('payment', 'pay-q', { status: 'captured', billId: 'bill-q', method: 'transfer', capturedMinor: '100000', appliedMinor: '100000', unappliedMinor: '0', refundedMinor: '0', currency: 'VND', version: 1 });
+    await lab.seed('invoice-request', 'inv-bill-q', { billId: 'bill-q', status: 'requested', currency: 'VND', totalMinor: '100000', adjustments: [], version: 1 });
+    expect((await lab.command('manager', 'Refund.Record', { paymentId: 'pay-q', expectedVersion: 1, amountMinor: '20000', reason: 'cold', evidenceRef: 'ev-q' })).status).toBe('accepted');
+    expect(await lab.state('invoice-request', 'inv-bill-q')).toMatchObject({ status: 'requested', refundedSinceRequestMinor: '20000', amendmentDue: false }); // nothing to adjust yet: nothing is issued
+    expect((await lab.command('cloud-provider', 'Invoice.Record', { requestId: 'inv-bill-q', status: 'issued', providerInvoiceId: 'P9', code: 'C9' })).status).toBe('accepted');
+    expect(await lab.state('invoice-request', 'inv-bill-q')).toMatchObject({ status: 'issued', amendmentDue: true }); // issued for the full 100000: the 20000 already returned is now owed
   } finally { await lab.close(); }
 });

@@ -20,14 +20,14 @@ const command = (over: Partial<RobotCommand> = {}): RobotCommand => ({ schemaVer
 /** An emulated vendor SDK (our model, not any vendor's). */
 function fakeSdk(options: { query?: boolean; cancel?: boolean } = {}) {
   const listeners = new Set<(e: { goalId: string; kind: 'succeeded' | 'failed' | 'cancelled' | 'progress' }) => void>(), goals = new Map<string, string>(), calls = { navigate: 0, query: 0, cancel: 0 };
-  let n = 0, failNavigate = false, loseResponse = false;
+  let n = 0, failNavigate = false, loseResponse = false, finishDuring = false;
   const sdk: VendorSdk = {
-    async navigate(g) { calls.navigate++; if (failNavigate) throw new Error('SDK_TIMEOUT'); const goalId = g.goalId ?? `vx-goal-${++n}`; goals.set(goalId, 'running'); if (loseResponse) throw new Error('RESPONSE_LOST'); return { goalId }; },
+    async navigate(g) { calls.navigate++; if (failNavigate) throw new Error('SDK_TIMEOUT'); const goalId = g.goalId ?? `vx-goal-${++n}`; goals.set(goalId, 'running'); if (finishDuring) { goals.set(goalId, 'succeeded'); for (const l of listeners) l({ goalId, kind: 'succeeded' }); } if (loseResponse) throw new Error('RESPONSE_LOST'); return { goalId }; },
     ...(options.query === false ? {} : { async query(id: string) { calls.query++; return { state: (goals.get(id) ?? 'unknown') as 'running' | 'succeeded' | 'cancelled' | 'failed' | 'unknown' }; } }),
     ...(options.cancel === false ? {} : { async cancel(id: string) { calls.cancel++; goals.set(id, 'cancelled'); return { ok: true }; } }),
     onEvent(l) { listeners.add(l); return () => listeners.delete(l); },
   };
-  return { sdk, calls, emit: (goalId: string, kind: 'succeeded' | 'failed' | 'cancelled' | 'progress') => { if (kind !== 'progress') goals.set(goalId, kind); for (const l of listeners) l({ goalId, kind }); }, set: (id: string, s: string) => goals.set(id, s), failNavigate: () => { failNavigate = true; }, loseResponse: () => { loseResponse = true; } };
+  return { sdk, calls, emit: (goalId: string, kind: 'succeeded' | 'failed' | 'cancelled' | 'progress') => { if (kind !== 'progress') goals.set(goalId, kind); for (const l of listeners) l({ goalId, kind }); }, set: (id: string, s: string) => goals.set(id, s), failNavigate: () => { failNavigate = true; }, loseResponse: () => { loseResponse = true; }, finishDuring: () => { finishDuring = true; } };
 }
 test('a profile is exact and earns "supported" with evidence; licence review and reconcilability are required', () => {
   expect(vendorProfileProblems(profile())).toEqual([]);
@@ -77,6 +77,13 @@ test('a caller-supplied goal id is known before the call: a lost answer can stil
   expect(await a.cancel('c-1')).toMatchObject({ acknowledged: true }); expect(f.calls.cancel).toBe(1);
   const g = fakeSdk(); g.loseResponse(); const b = new VendorSdkAdapter(manifest(p), g.sdk, p), events: string[] = []; b.observe(e => events.push(e.type)); await b.execute(command({ commandId: 'c-9' }));
   g.emit('c-9', 'succeeded'); expect(events).toContain('completed'); // the completion of a goal whose answer we never saw is not dropped
+});
+test('a goal that finished before the navigate call gave up stays finished, with or without a way to query', async () => {
+  for (const query of [true, false]) {
+    const f = fakeSdk({ query }); f.loseResponse(); f.finishDuring(); const p = { ...profile(), nativeCommandIdentity: 'caller-supplied' as const }, a = new VendorSdkAdapter(manifest(p), f.sdk, p), seen: string[] = []; a.observe(e => seen.push(e.type));
+    await a.execute(command()); expect(seen).toEqual(['completed']);
+    expect((await a.reconcile('c-1')).status).toBe('completed'); // the completion is not overwritten by the failed call
+  }
 });
 test('only supported operations are translated; the rest are refused explicitly, never improvised', async () => {
   const f = fakeSdk(), p = profile({}, { cancel: { status: 'unsupported' }, stop: { status: 'untested' } }), a = new VendorSdkAdapter(manifest(p), f.sdk, p);

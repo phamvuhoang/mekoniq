@@ -107,6 +107,18 @@ test('a grant whose relay lapsed unanswered is delivered again under a new deliv
  expect((await reconcileSharedBalance(owner,org,{balanceId:'pool-r',venueId:'venue-b',release:true})).release).toBe('pending');
  const returns=await sends('Voucher.ReturnEscrow');expect(returns).toHaveLength(2);expect(returns[1]!.payload).toMatchObject({count:9,returnRevision:2});
 });
+test('long but valid ids keep their revision and delivery suffix in the operation id',async()=>{
+ const long='b'.repeat(100),vid=randomUUID(),a:Actor={...owner,venueIds:[vid]};
+ await venue(vid,'VND',null);
+ await createSharedBalance(a,org,{balanceId:long,voucherId:'VL',total:10});
+ await reserveSharedBalance(a,org,{balanceId:long,venueId:vid,count:3,operationId:'l-1'});
+ const grants=async()=>await db.admin`SELECT operation_id FROM relay_command WHERE organization_id=${org} AND venue_id=${vid} AND command->>'type'='Voucher.ReceiveEscrow' ORDER BY created_at`;
+ await db.admin`UPDATE relay_command SET expires_at=now()-interval '1 minute' WHERE organization_id=${org} AND venue_id=${vid}`;
+ await reserveSharedBalance(a,org,{balanceId:long,venueId:vid,count:3,operationId:'l-1'}); // retry after the relay lapsed
+ let ids=(await grants()).map(r=>String(r.operation_id));expect(ids).toHaveLength(2);expect(new Set(ids).size).toBe(2);expect(ids.every(i=>i.length<=128)).toBe(true);
+ await reserveSharedBalance(a,org,{balanceId:long,venueId:vid,count:2,operationId:'l-2'}); // a further grant is revision 2, not a collision
+ ids=(await grants()).map(r=>String(r.operation_id));expect(ids).toHaveLength(3);expect(new Set(ids).size).toBe(3);
+});
 test('reading a pool shows only branches the caller may read',async()=>{
  const onlyA:Actor={...owner,id:'only-a',venueIds:['venue-a']};
  await expect(readSharedBalance(onlyA,org,'pool-r')).rejects.toThrow('SCOPE_DENIED'); // pool-r has a grant at venue-b
