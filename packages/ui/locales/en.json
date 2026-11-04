@@ -32,5 +32,6 @@
   "promotions": "Promotions",
   "customers": "Customers",
   "reservations": "Reservations",
-  "models": "Service models"
+  "models": "Service models",
+  "invoices": "E-invoices"
 }

@@ -1,6 +1,6 @@
-# Triển khai W00–W04
+# Triển khai W00–W11
 
-Branch: `feat/w00-w04-production-foundation`, tách từ `62a98bd`; làm trực tiếp trong repository `source`, không dùng worktree. `trial` và `web` được giữ nguyên.
+Toàn bộ W00–W11 đã merge vào `main` (W00–W04 từ `feat/w00-w04-production-foundation`, W05–W06 qua PR #1, W07–W08 và W09–W11 merge sau đó). `trial` và `web` được giữ nguyên. Trạng thái từng task: [plan index](../superpowers/plans/2026-10-30-plan-index.json); tổng hợp: [Gate D](gates/D-full-scope.md), [production release](gates/production-release.md).
 
 Review bổ sung ngày 2026-10-31: xem [13 bản sửa và kiểm chứng](review-repair-verification.md). Gate A vẫn chưa được chấp nhận.
 
@@ -35,10 +35,16 @@ pnpm typecheck
 pnpm lint
 pnpm build
 pnpm test
+pnpm test:adapters && pnpm test:providers && pnpm test:security
 pnpm test:e2e
 pnpm test:acceptance -- continuity --software-only
-.venv/bin/python -m pytest tests/contracts/test_schema_python.py -q
+pnpm test:acceptance -- release-manifest
+pnpm test:acceptance -- first-shift
+pnpm test:load            # và pnpm test:load:free (~4 phút)
+.venv/bin/python -m pytest robotics/agent/tests tests/hardware tests/contracts/test_schema_python.py -q
 ```
+
+Công cụ vận hành (chỉ local/dry-run): `pnpm release:dry-run`, `pnpm release:verify`, `node scripts/release-security.mjs`, `node scripts/migrate-release.mjs --plan`, `node scripts/restore-rehearsal.mjs`, `node scripts/verify-completion.mjs`. Xem `docs/operations/`.
 
 Tạo `.venv` bằng `python3 -m venv .venv`, rồi cài `requirements-dev.txt` trước kiểm Python. Playwright cần Chromium tương ứng hoặc `PLAYWRIGHT_CHROMIUM` chỉ tới browser sẵn có. Xem cấu hình Playwright để biết cổng test.
 
@@ -48,6 +54,6 @@ Android: xem `docs/operations/tablet-provisioning.md`; build qua Gradle wrapper,
 
 ## Phạm vi và giới hạn
 
-Luồng hiện có: menu có version, phiên bàn/order, KDS theo phần, allocation/giao tay hoặc simulator, ca tiền mặt, bill snapshot; isolated capture/đối soát, signed settlement grants, maintenance/import và controlled handoff. Customer claim không settlement; historical import không tạo live effect. Provider và robot thật thuộc wave sau.
+Luồng hiện có: menu có version, phiên bàn/order, KDS theo phần, allocation/giao tay hoặc simulator, ca tiền mặt, bill snapshot; isolated capture/đối soát, signed settlement grants, maintenance/import và controlled handoff. Customer claim không settlement; historical import không tạo live effect. W05–W11 thêm POS đầy đủ, robot Valetudo/ROS 2/VDA 5050, kho, nhân sự, khuyến mãi, CRM, đặt bàn, chuỗi, kênh online sandbox, SDK/Node-RED và khung provider; provider, robot và hạ tầng hosted thật vẫn chưa có (xem evidence từng task).
 
 Các lệnh phần cứng/provider chưa có prerequisite phải thất bại rõ ràng. Không có deploy hosted, robot thật, SMTP production, commissioning hoặc RPO/RTO production trong kết quả local. Xem [kết quả kiểm tra](verification.md), `evidence/`, `gates/A-continuity.md` và `tablet-support-matrix.json` cho phạm vi từng phép đo.
