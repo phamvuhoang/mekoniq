@@ -1,4 +1,5 @@
 'use client';
+import {BrandLogo} from '../../components/BrandLogo';
 import {useState,type FormEvent} from 'react';
 export default function Login(){
  const [error,setError]=useState('');const [busy,setBusy]=useState(false);
@@ -7,5 +8,5 @@ export default function Login(){
    if(!response.ok){setError(response.status===429?'Thử lại sau / Try again later':'Không đăng nhập được / Sign in failed');return;}window.location.assign('/admin/settings');
   }catch{setError('Không kết nối được / Connection unavailable');}finally{setBusy(false);}
  }
- return <main><h1>Đăng nhập / Sign in</h1><form onSubmit={submit}><label>Email<input name="email" type="email" required autoComplete="username"/></label><label>Mật khẩu / Password<input name="password" type="password" required autoComplete="current-password"/></label><button disabled={busy}>{busy?'Đang đăng nhập…':'Đăng nhập / Sign in'}</button><p role="alert">{error}</p></form></main>;
+ return <main className="cloud-login"><BrandLogo/><p className="slogan">Intelligence in Motion.</p><h1>Đăng nhập / Sign in</h1><form onSubmit={submit} aria-busy={busy}><label>Email<input name="email" type="email" required autoComplete="username"/></label><label>Mật khẩu / Password<input name="password" type="password" required autoComplete="current-password"/></label><button disabled={busy} aria-busy={busy}>{busy?'Đang đăng nhập…':'Đăng nhập / Sign in'}</button><p role="alert">{error}</p></form></main>;
 }

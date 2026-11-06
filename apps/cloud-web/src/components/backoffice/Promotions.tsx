@@ -19,5 +19,5 @@ export function Promotions({venueId}:{venueId:string}){
    <label>Số lần dùng / Uses<input value={voucher.limit} onChange={e=>setVoucher({...voucher,limit:e.target.value})}/></label><label>Phạm vi (trống = nhà hàng này, shared = dùng chung) / Scope<input value={voucher.scope} onChange={e=>setVoucher({...voucher,scope:e.target.value})}/></label>
    <button onClick={()=>run('Voucher.Issue',{voucherId:voucher.id,limit:Number(voucher.limit),...(voucher.promotionId?{promotionId:voucher.promotionId}:{}),...(voucher.scope?{scope:voucher.scope}:{})})}>Phát hành voucher / Issue</button></fieldset>
   <ul>{vouchers.map(v=><li key={v.id}>{v.id} · còn/remaining {String(v.state.remaining)}/{String(v.state.limit)} · {String(v.state.scope)}</li>)}</ul>
-  <button onClick={()=>void load()}>Tải lại / Refresh</button></section>;
+  <button className="quiet" onClick={()=>void load()}>Tải lại / Refresh</button></section>;
 }

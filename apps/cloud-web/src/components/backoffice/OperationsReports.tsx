@@ -16,6 +16,6 @@ export function OperationsReports({venueId}:{venueId:string}){
   {report&&<><p>{report.basis}</p>
    <p role={stale?'alert':'status'}>{report.status==='unsynced'?'Chưa có dữ liệu đồng bộ — không phải số 0 / Not synced yet, no figures':stale?`Số liệu có thể chưa đủ (${report.statusReason}) / Figures may be incomplete`:`Đã đồng bộ lúc ${report.watermark?.appliedAt??'—'}`}</p>
    {report.totals&&<p>{Object.entries(report.totals).filter(([,v])=>typeof v==='string'||typeof v==='number').map(([k,v])=>`${k}: ${String(v)}`).join(' · ')}</p>}
-   <table><thead><tr>{report.columns.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{report.rows.slice(0,200).map((row,i)=><tr key={i}>{report.columns.map(c=><td key={c}>{row[c]===null||row[c]===undefined?'':String(row[c])}</td>)}</tr>)}</tbody></table></>}
+   <div className="mq-table" role="region" aria-label="Bảng dữ liệu / Data table" tabIndex={0}><table><thead><tr>{report.columns.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{report.rows.slice(0,200).map((row,i)=><tr key={i}>{report.columns.map(c=><td key={c}>{row[c]===null||row[c]===undefined?'':String(row[c])}</td>)}</tr>)}</tbody></table></div></>}
  </section>;
 }

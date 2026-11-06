@@ -8,7 +8,7 @@ export function Menu({organizationId,venueId,currency,items,onAdd}:{organization
  return <ul style={{listStyle:'none',padding:0,display:'grid',gap:12}}>{items.map(item=>{
   // Items with options are ordered through staff in this first guest version; the venue would reject them without a choice.
   const orderable=item.available&&!item.modifierGroups?.length;
-  return <li key={item.id} style={{display:'flex',gap:12,alignItems:'center',borderBottom:'1px solid #ccd',paddingBottom:12}}>
+  return <li key={item.id} style={{display:'flex',gap:12,alignItems:'center',borderBottom:'1px solid var(--mq-border)',paddingBottom:12}}>
    {item.imageManifestId&&<img src={`/v1/guest/menu/${encodeURIComponent(organizationId)}/${encodeURIComponent(venueId)}/images/${encodeURIComponent(item.imageManifestId)}`} alt="" width={72} height={72} style={{objectFit:'cover',borderRadius:8}}/>}
    <span style={{flex:1}}><strong>{item.name}</strong><br/>{money(item.unitMinor,currency)}{!item.available&&' · Hết món / Sold out'}{item.available&&!orderable&&' · Gọi nhân viên để chọn / Ask staff for options'}</span>
    {onAdd&&<button style={touch} disabled={!orderable} onClick={()=>onAdd(item)} aria-label={`Thêm ${item.name} / Add ${item.name}`}>+</button>}

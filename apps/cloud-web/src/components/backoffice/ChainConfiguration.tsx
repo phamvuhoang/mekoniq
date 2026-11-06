@@ -21,7 +21,7 @@ export function ChainConfiguration({venueIds}:{venueIds:string[]}){
   <button disabled={!selected||!chosen.length} onClick={()=>run('Đã gửi, chờ chi nhánh xác nhận / Sent, awaiting branches',async()=>{await call(`/v1/chain/revisions/${selected}/publish`,'POST',{venues:chosen});})}>Phát hành / Publish</button>
   <button disabled={!selected} onClick={()=>run('Đã tạo bản mới từ bản cũ / New revision created from the old one',async()=>{await call('/v1/chain/rollback','POST',{expectedRevision:revisions[0]?.revision??0,toRevision:selected,note:'rollback forward'});setSelected(0);})}>Quay lại bản này (tạo bản mới) / Roll back forward</button>
   <ul>{preview.map(p=><li key={p.venueId}>{p.venueId}: {p.error?`không áp dụng được / cannot apply: ${p.error}`:`${p.catalog?.diff.length??0} thay đổi / changes → menu v${p.catalog?.version}`}</li>)}</ul>
-  <table><thead><tr><th>Chi nhánh / Branch</th><th>Loại / Kind</th><th>Mong muốn / Desired</th><th>Hiệu lực / Effective</th><th>Trạng thái / State</th></tr></thead>
-   <tbody>{targets.map(t=><tr key={t.venueId+t.kind}><td>{t.venueId}</td><td>{t.kind}</td><td>{t.desired}</td><td>{t.effective}</td><td>{stateText[t.state]??t.state}{t.code?` · ${t.code}`:''}{t.attempts>1?` · lần/attempt ${t.attempts}`:''}</td></tr>)}</tbody></table>
-  <button onClick={()=>void load()}>Tải lại / Refresh</button></section>;
+  <div className="mq-table" role="region" aria-label="Bảng dữ liệu / Data table" tabIndex={0}><table><thead><tr><th>Chi nhánh / Branch</th><th>Loại / Kind</th><th>Mong muốn / Desired</th><th>Hiệu lực / Effective</th><th>Trạng thái / State</th></tr></thead>
+   <tbody>{targets.map(t=><tr key={t.venueId+t.kind}><td>{t.venueId}</td><td>{t.kind}</td><td>{t.desired}</td><td>{t.effective}</td><td>{stateText[t.state]??t.state}{t.code?` · ${t.code}`:''}{t.attempts>1?` · lần/attempt ${t.attempts}`:''}</td></tr>)}</tbody></table></div>
+  <button className="quiet" onClick={()=>void load()}>Tải lại / Refresh</button></section>;
 }

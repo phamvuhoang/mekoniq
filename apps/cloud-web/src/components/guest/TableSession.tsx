@@ -1,4 +1,5 @@
 'use client';
+import {BrandLogo} from '../BrandLogo';
 import {useCallback,useEffect,useState} from 'react';
 import {Menu,money,touch,type GuestMenuItem} from './Menu';
 import {Cart} from './Cart';
@@ -28,10 +29,10 @@ export function TableSession({token}:{token:string}){
   if(!menu)return;const id=draftId??crypto.randomUUID();setDraftId(id); // the same id on retry, so a resend is never a second order
   if(await send('Order.Place',{menuVersion:menu.version,items:Object.entries(cart).filter(([,n])=>n>0).map(([itemId,n])=>({itemId,quantity:String(n)}))},id)){setCart({});setDraftId(null);}
  }
- if(!view)return <main style={{padding:16,maxWidth:720,margin:'auto'}}><p role="status">{message}</p></main>;
+ if(!view)return <main className="cloud-guest" style={{padding:16,maxWidth:720,margin:'auto'}}><BrandLogo/><p role="status">{message}</p></main>;
  const pendingOrder=view.requests.some(r=>r.type==='Guest.PlaceOrder'&&['pending','unknown'].includes(r.status));
- return <main style={{padding:16,maxWidth:720,margin:'auto',fontSize:18}}>
-  <h1>{view.tableName}</h1>
+ return <main className="cloud-guest" style={{padding:16,maxWidth:720,margin:'auto',fontSize:18}}>
+  <BrandLogo/><h1>{view.tableName}</h1>
   <p role="status">{message}</p>
   {view.session==='expired'&&<p>Phiên bàn này đã kết thúc hoặc đã chuyển bàn. Nhờ nhân viên cấp mã mới. / This table session ended or moved. Ask staff for a new code.</p>}
   {view.session==='unknown'&&<p>Đang đồng bộ với nhà hàng. Món gửi lúc này vẫn chờ nhà hàng xác nhận. / Still syncing with the restaurant; anything sent waits for its confirmation.</p>}
