@@ -1,0 +1,105 @@
+{
+  "project": {
+    "schemaVersion": 2,
+    "id": "sil-restaurant",
+    "name": "SIL restaurant (one table, one robot, one corridor)",
+    "revision": 1,
+    "updatedAt": "2026-11-05T00:00:00.000Z",
+    "entities": [
+      {
+        "id": "amr-1",
+        "kind": "amr",
+        "assetRef": {
+          "id": "service-robot-sil",
+          "revision": 1,
+          "contentHash": "7af1195f91369d6af801a9ea582255bb9ea891ed52b6bfbb95823c6356e9bec2"
+        }
+      }
+    ],
+    "world": {
+      "id": "sil-world",
+      "revision": 1,
+      "width": 12,
+      "height": 8,
+      "points": [
+        {
+          "id": "kitchen",
+          "name": "Kitchen pass",
+          "kind": "kitchen",
+          "x": 1.5,
+          "y": 4
+        },
+        {
+          "id": "parking",
+          "name": "Bay",
+          "kind": "parking",
+          "x": 1.5,
+          "y": 1
+        },
+        {
+          "id": "table-1",
+          "name": "T1",
+          "kind": "table",
+          "x": 7,
+          "y": 2
+        }
+      ],
+      "handoffPoints": [
+        {
+          "id": "table-1",
+          "name": "T1",
+          "kind": "table",
+          "position": [
+            7,
+            2,
+            0
+          ],
+          "yawRad": null
+        }
+      ],
+      "obstacles": [
+        {
+          "id": "table-1-top",
+          "x": 6.6,
+          "y": 1.6,
+          "width": 0.8,
+          "height": 0.8
+        },
+        {
+          "id": "corridor-south",
+          "x": 3.2,
+          "y": 0,
+          "width": 1.6,
+          "height": 3.4
+        },
+        {
+          "id": "corridor-north",
+          "x": 3.2,
+          "y": 4.6,
+          "width": 1.6,
+          "height": 3.4
+        }
+      ]
+    }
+  },
+  "assetFiles": [
+    "assets/service-robot-v1.json",
+    "assets/table-v1.json"
+  ],
+  "expected": {
+    "inputHash": "52a74298cb847fcb51e0472509e76fb92ac30dcbabacff75ea0465af4dcc1d67",
+    "collisionBounds": {
+      "min": [
+        3.2,
+        0,
+        0
+      ],
+      "max": [
+        7.4,
+        8,
+        0.75
+      ]
+    },
+    "tableCenterX": 7
+  }
+}

@@ -1,4 +1,5 @@
 import type { ModuleRegistry } from '../modules';
+import {coffeeStopEvents} from '../beverage/module';
 import type { CommandEnvelope, Decision, DomainEvent, JsonObject, Snapshot } from '../../../contracts/src/index';
 import { all, changed, created, done, expectVersion, fail, find, handle, requireState, stableId, text } from '../restaurant-context';
 import { legHoldReason, missionDemand, selectRobot } from './scheduler';
@@ -135,6 +136,8 @@ export function registerMissions(registry:ModuleRegistry):void {
   else if(stop.action==='unload') loaded=false;
   // Allocation status is authoritative for delivery cargo; a stop may unload only one source/table.
   if(all(s,'allocation').some(a=>a.state.missionId===mission.ref.id)) loaded=onboardCargo(s,mission,events);
+  // a coffee cup is loaded only on a confirmed tray transfer to this robot, and handed off with the stop (beverage/module.ts)
+  events=[...events,...coffeeStopEvents(c,s,String(mission.state.robotId),stop.action,String(stop.targetId),allocations)];
   stop.status='completed';
   const next=nextStop(c,s,mission,stops,loaded,String(mission.state.status));
   if(!next.ok) return next;

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "puma560-reference",
+  "revision": 1,
+  "convention": "T_parent_child; quaternion [x,y,z,w]; right-handed, +Z up",
+  "toolRevision": "tool-0-notool",
+  "note": "arm_base is the DH base frame (genserkins joint 0 axis = +Z). link_i poses are the DH frames after joint i and depend on q; their translationM here is the all-zero-joint pose for documentation only. cell_base -> arm_base is a calibration input that no one has measured: it stays unknown and a world overlay is unavailable until a revisioned calibration exists.",
+  "frames": [
+    {"id": "world", "parentId": null, "translationM": [0, 0, 0], "quaternionXyzw": [0, 0, 0, 1], "provenance": "definition"},
+    {"id": "cell_base", "parentId": "world", "translationM": null, "quaternionXyzw": null, "provenance": "unknown", "reason": "NOT_CALIBRATED: cell placement in the world is a project input (armCollisionProfile.baseInMap), never a model constant"},
+    {"id": "arm_base", "parentId": "cell_base", "translationM": [0, 0, 0], "quaternionXyzw": [0, 0, 0, 1], "provenance": "definition"},
+    {"id": "link_1", "parentId": "arm_base", "translationM": [0, 0, 0.67183], "quaternionXyzw": [0, 0, 0, 1], "provenance": "derived_q0"},
+    {"id": "link_2", "parentId": "link_1", "translationM": [0, 0.1397, 0], "quaternionXyzw": [0.7071067812, 0, 0, 0.7071067812], "provenance": "derived_q0"},
+    {"id": "link_3", "parentId": "link_2", "translationM": [0.4318, 0, 0], "quaternionXyzw": [0, 0, 0, 1], "provenance": "derived_q0"},
+    {"id": "link_4", "parentId": "link_3", "translationM": [0, -0.43307, 0], "quaternionXyzw": [0.7071067812, 0, 0, 0.7071067812], "provenance": "derived_q0"},
+    {"id": "link_5", "parentId": "link_4", "translationM": [0, 0, 0], "quaternionXyzw": [-0.7071067812, 0, 0, 0.7071067812], "provenance": "derived_q0"},
+    {"id": "link_6", "parentId": "link_5", "translationM": [0, -0.05588, 0], "quaternionXyzw": [0.7071067812, 0, 0, 0.7071067812], "provenance": "derived_q0"},
+    {"id": "flange", "parentId": "link_6", "translationM": [0, 0, 0], "quaternionXyzw": [0, 0, 0, 1], "provenance": "definition"},
+    {"id": "tcp", "parentId": "flange", "translationM": [0, 0, 0], "quaternionXyzw": [0, 0, 0, 1], "provenance": "definition", "note": "tool-0-notool: no gripper geometry is measured; the Lab's illustrative gripper/cup capsules are checker inputs, not this frame"}
+  ]
+}

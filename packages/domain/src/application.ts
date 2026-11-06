@@ -5,7 +5,8 @@ import {registerContinuityModules,continuityHandlers} from './continuity/module'
 import {registerPolicyModule} from './policy/module';
 import {registerLayout} from './configuration/layout';
 import {registerTrialImport} from './configuration/trial-import';
-export const productionPermissions:Record<string,string>={...commandPermissions,
+import {registerBeverage,beveragePermissions} from './beverage/module';
+export const productionPermissions:Record<string,string>={...commandPermissions,...beveragePermissions,
  'Policy.Check':'configuration.read','Configuration.Apply':'configuration.publish',
  'Venue.Configure':'configuration.publish','Trial.ImportPreview':'configuration.publish','Trial.ImportApply':'configuration.publish',
  ...Object.fromEntries(Object.keys(continuityHandlers).map(type=>[type,
@@ -28,6 +29,8 @@ function commandPermissions_(type:string,payload:JsonObject):string[] {
  if(!base)return [];
  // Releasing a zone on written evidence (an `unknown` reservation: no proof the robot left) is a manager decision, not the executor's.
  if(type==='Zone.Release'&&payload.evidence!==undefined)return [base,'robot.configure'];
+ // A person attesting a cup transfer is an override, not sensor feedback: it needs beverage.override instead of the observer's cell.observe.
+ if(type==='Cup.ConfirmTransfer'&&payload.provenance==='human')return ['beverage.override'];
  if(approvalCommands.has(type)&&(payload.approve===true||payload.adjustment===true))return [base,'shift.approve'];
  // Punching for somebody else (explicit userId) is a manager's call on top of the plain clock permission.
  if((type==='Staff.ClockIn'||type==='Staff.ClockOut')&&payload.userId!==undefined)return [base,'workforce.approve'];
@@ -38,7 +41,7 @@ function commandPermissions_(type:string,payload:JsonObject):string[] {
  return [base,...(ids!==undefined&&!(Array.isArray(ids)&&ids.length===0)?['discount.apply']:[]),];
 }
 export function createProductionRegistry() {
- const registry=new ModuleRegistry();registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);registerLayout(registry);registerTrialImport(registry);return registry;
+ const registry=new ModuleRegistry();registerRestaurantModules(registry);registerContinuityModules(registry);registerPolicyModule(registry);registerLayout(registry);registerTrialImport(registry);registerBeverage(registry);return registry;
 }
 // This object comes from verified native grants/server identity, never the wire command.
 export type Principal={id:string;deviceId:string;scope:Scope;permissions:string[];expiresAtMs:number;stationIds:string[]};
@@ -48,6 +51,8 @@ export function authorizeVenueCommand(principal:Principal,command:CommandEnvelop
  if(nowMs>=principal.expiresAtMs&&!capture)return false;
  const needed=requiredPermissions(command.type,command.payload);
  if(!needed.length||!needed.every(permission=>principal.permissions.includes('*')||principal.permissions.includes(permission)))return false;
- if(command.type.startsWith('Kitchen.')&&!principal.permissions.includes('*')&&!principal.stationIds.includes(String(command.payload.stationId)))return false;
+ // Station-scoped work: kitchen tickets and every coffee/cup command except recipe configuration.
+ const stationScoped=command.type.startsWith('Kitchen.')||/^(Coffee|Cup)\./.test(command.type)&&command.type!=='Coffee.RegisterRecipe';
+ if(stationScoped&&!principal.permissions.includes('*')&&!principal.stationIds.includes(String(command.payload.stationId)))return false;
  return true;
 }

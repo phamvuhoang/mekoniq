@@ -1,0 +1,835 @@
+{
+ "schemaVersion": 1,
+ "note": "Shared arm bridge message fixture (plan 03 A03): the Python bridge and the TS adapter validate these against the same schemas. Bound to configs/sim/puma560/profile.json by profileHash.",
+ "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+ "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+ "valid": [
+  {
+   "name": "acquire",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "",
+     "actor": "lab_simulation"
+    },
+    "leaseId": "",
+    "expected": {
+     "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+     "modelManifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+    },
+    "acquire": {
+     "actor": "lab-runtime",
+     "leaseMs": 10000
+    }
+   }
+  },
+  {
+   "name": "stage_program",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "t0k",
+     "actor": "lab_simulation"
+    },
+    "leaseId": "lease-3",
+    "expected": {
+     "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+     "modelManifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+    },
+    "command": {
+     "commandId": "cmd-stage",
+     "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+     "deviceId": "arm-1",
+     "controlEpoch": 1,
+     "expiresAt": "2026-11-05T08:00:30.000Z",
+     "recipeRevision": null,
+     "programRef": {
+      "id": "demo-six-axis",
+      "hash": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9"
+     },
+     "capability": "stage_program",
+     "payloadHash": "bdc76ddbc9259b34bd298f0b84d46d775e75ee9f9100878d02b1e98f53880d4b",
+     "payload": {
+      "profileId": "puma560-sim-1"
+     }
+    }
+   }
+  },
+  {
+   "name": "start_job",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "t0k",
+     "actor": "lab_simulation"
+    },
+    "leaseId": "lease-3",
+    "expected": {
+     "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+     "modelManifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+    },
+    "command": {
+     "commandId": "cmd-run",
+     "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+     "deviceId": "arm-1",
+     "controlEpoch": 1,
+     "expiresAt": "2026-11-05T08:00:30.000Z",
+     "recipeRevision": null,
+     "programRef": {
+      "id": "demo-six-axis",
+      "hash": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9"
+     },
+     "capability": "start_job",
+     "payloadHash": "0b4b0e03bcb05d9658b362eda546b18b7f163746c31520229b22ad0256cc8e15",
+     "payload": {
+      "jobId": "job-1"
+     }
+    }
+   }
+  },
+  {
+   "name": "query_outcome",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "t0k",
+     "actor": "lab_simulation"
+    },
+    "leaseId": "lease-3",
+    "expected": {
+     "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+     "modelManifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+    },
+    "command": {
+     "commandId": "cmd-q",
+     "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+     "deviceId": "arm-1",
+     "controlEpoch": 1,
+     "expiresAt": "2026-11-05T08:00:30.000Z",
+     "recipeRevision": null,
+     "programRef": null,
+     "capability": "query_outcome",
+     "payloadHash": "2e9e89947872ddc1a35891b1c1e53daac994c63fff0cce6482ee8fd270f1d3b1",
+     "payload": {
+      "targetCommandId": "cmd-run"
+     }
+    }
+   }
+  },
+  {
+   "name": "status",
+   "message": {
+    "schemaVersion": 1,
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "bootId": "milltask-4242-1000",
+    "seq": "7",
+    "observedAt": "2026-11-05T08:00:01.000Z",
+    "monotonicNs": "123456789000",
+    "kind": "arm.status.v1",
+    "owner": {
+     "kind": "lab_simulation",
+     "actor": "lab-runtime",
+     "leaseId": "lease-3"
+    },
+    "reconcileRequired": false,
+    "unknownCommands": [],
+    "task": {
+     "state": "on",
+     "mode": "auto",
+     "interp": "running",
+     "homed": true,
+     "fault": null
+    },
+    "joints": {
+     "names": [
+      "J1",
+      "J2",
+      "J3",
+      "J4",
+      "J5",
+      "J6"
+     ],
+     "commandedRad": [
+      0,
+      0,
+      0,
+      0,
+      0.0017453292519943296,
+      0
+     ],
+     "actualRad": [
+      0,
+      0,
+      0,
+      0,
+      0.0017453292519943296,
+      0
+     ],
+     "velocityRadS": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "followingErrorRad": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "source": "controller_sim"
+    },
+    "tcp": {
+     "frameId": "arm_base",
+     "positionM": [
+      0.4318,
+      0.1397,
+      0.18288
+     ],
+     "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+     ]
+    },
+    "program": {
+     "id": "demo-six-axis",
+     "hash": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9",
+     "state": "running"
+    },
+    "units": {
+     "source": {
+      "length": "inch",
+      "angle": "deg"
+     },
+     "wire": "SI"
+    },
+    "freshness": {
+     "staleMs": 500,
+     "quality": "valid"
+    },
+    "reasonCodes": [
+     "TCP_ORIENTATION_NOT_PINNED"
+    ]
+   }
+  },
+  {
+   "name": "event-completed",
+   "message": {
+    "schemaVersion": 1,
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "bootId": "milltask-4242-1000",
+    "seq": "7",
+    "observedAt": "2026-11-05T08:00:01.000Z",
+    "monotonicNs": "123456789000",
+    "kind": "arm.event.v1",
+    "event": "command_completed",
+    "commandId": "cmd-run",
+    "observation": {
+     "schemaVersion": 2,
+     "commandId": "cmd-run",
+     "deviceId": "arm-1",
+     "controlEpoch": 1,
+     "payloadHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+     "bootId": "milltask-4242-1000",
+     "seq": "8",
+     "result": "completed",
+     "observedAt": "2026-11-05T08:00:09.000Z",
+     "reasonCodes": []
+    },
+    "reasonCodes": [],
+    "detail": null,
+    "evidence": {
+     "source": "linuxcnc_sim",
+     "gripperClosed": null,
+     "objectPresent": null
+    }
+   }
+  },
+  {
+   "name": "reply-accepted",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.reply.v1",
+    "requestId": "req-1",
+    "commandId": "cmd-run",
+    "status": "accepted",
+    "lifecycle": "accepted_not_completed",
+    "duplicate": false,
+    "reasonCodes": [],
+    "token": null,
+    "leaseId": null,
+    "expiresAtMs": null,
+    "outcome": {
+     "status": "running",
+     "evidence": {
+      "interp": "running"
+     }
+    }
+   }
+  },
+  {
+   "name": "sim-scene",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "",
+     "actor": "lab_simulation"
+    },
+    "leaseId": "",
+    "expected": {
+     "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+     "modelManifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+    },
+    "simScene": {
+     "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+     "worldRevision": "world-r1",
+     "sceneSeq": "9007199254740993",
+     "transferId": "transfer-1",
+     "commandId": "cmd-1",
+     "cup": {
+      "id": "cup-1",
+      "present": true,
+      "positionM": [
+       2.33,
+       2.14,
+       0.555
+      ]
+     },
+     "receiver": null,
+     "faults": []
+    }
+   }
+  },
+  {
+   "name": "sim-scene-acquire",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "",
+     "actor": "lab_simulation"
+    },
+    "leaseId": "",
+    "expected": {
+     "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+     "modelManifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+    },
+    "acquire": {
+     "actor": "lab-runtime",
+     "leaseMs": 10000,
+     "simulationScene": {
+      "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+      "worldRevision": "world-r1"
+     }
+    }
+   }
+  }
+ ],
+ "invalid": [
+  {
+   "name": "command-with-url",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "t0k",
+     "actor": "lab_simulation"
+    },
+    "leaseId": "lease-3",
+    "expected": {
+     "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+     "modelManifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+    },
+    "command": {
+     "commandId": "cmd-q",
+     "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+     "deviceId": "arm-1",
+     "controlEpoch": 1,
+     "expiresAt": "2026-11-05T08:00:30.000Z",
+     "recipeRevision": null,
+     "programRef": null,
+     "capability": "query_outcome",
+     "payloadHash": "2e9e89947872ddc1a35891b1c1e53daac994c63fff0cce6482ee8fd270f1d3b1",
+     "payload": {
+      "targetCommandId": "cmd-run",
+      "url": "http://10.0.0.1/halcmd"
+     }
+    }
+   },
+   "code": "ENDPOINT_FORBIDDEN:url"
+  },
+  {
+   "name": "envelope-with-role",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "t0k",
+     "actor": "lab_simulation",
+     "role": "admin"
+    },
+    "leaseId": "lease-3",
+    "expected": {
+     "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+     "modelManifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+    },
+    "command": {
+     "commandId": "cmd-q",
+     "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+     "deviceId": "arm-1",
+     "controlEpoch": 1,
+     "expiresAt": "2026-11-05T08:00:30.000Z",
+     "recipeRevision": null,
+     "programRef": null,
+     "capability": "query_outcome",
+     "payloadHash": "2e9e89947872ddc1a35891b1c1e53daac994c63fff0cce6482ee8fd270f1d3b1",
+     "payload": {
+      "targetCommandId": "cmd-run"
+     }
+    }
+   },
+   "code": "ACTOR_FORBIDDEN:role"
+  },
+  {
+   "name": "gcode-field",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "t0k",
+     "actor": "lab_simulation"
+    },
+    "leaseId": "lease-3",
+    "expected": {
+     "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+     "modelManifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+    },
+    "command": {
+     "commandId": "cmd-run",
+     "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+     "deviceId": "arm-1",
+     "controlEpoch": 1,
+     "expiresAt": "2026-11-05T08:00:30.000Z",
+     "recipeRevision": null,
+     "programRef": {
+      "id": "demo-six-axis",
+      "hash": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9"
+     },
+     "capability": "start_job",
+     "payloadHash": "0b4b0e03bcb05d9658b362eda546b18b7f163746c31520229b22ad0256cc8e15",
+     "payload": {
+      "jobId": "job-1"
+     },
+     "gcode": "G0 X1"
+    }
+   },
+   "code": "RAW_COMMAND_FORBIDDEN:gcode"
+  },
+  {
+   "name": "missing-expected",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "t0k",
+     "actor": "lab_simulation"
+    },
+    "leaseId": "lease-3",
+    "command": {
+     "commandId": "cmd-run",
+     "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+     "deviceId": "arm-1",
+     "controlEpoch": 1,
+     "expiresAt": "2026-11-05T08:00:30.000Z",
+     "recipeRevision": null,
+     "programRef": {
+      "id": "demo-six-axis",
+      "hash": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9"
+     },
+     "capability": "start_job",
+     "payloadHash": "0b4b0e03bcb05d9658b362eda546b18b7f163746c31520229b22ad0256cc8e15",
+     "payload": {
+      "jobId": "job-1"
+     }
+    }
+   },
+   "code": "FIELD_REQUIRED:expected"
+  },
+  {
+   "name": "five-joints",
+   "message": {
+    "schemaVersion": 1,
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "bootId": "milltask-4242-1000",
+    "seq": "7",
+    "observedAt": "2026-11-05T08:00:01.000Z",
+    "monotonicNs": "123456789000",
+    "kind": "arm.status.v1",
+    "owner": {
+     "kind": "lab_simulation",
+     "actor": "lab-runtime",
+     "leaseId": "lease-3"
+    },
+    "reconcileRequired": false,
+    "unknownCommands": [],
+    "task": {
+     "state": "on",
+     "mode": "auto",
+     "interp": "running",
+     "homed": true,
+     "fault": null
+    },
+    "joints": {
+     "names": [
+      "J1",
+      "J2",
+      "J3",
+      "J4",
+      "J5",
+      "J6"
+     ],
+     "commandedRad": [
+      0,
+      0,
+      0,
+      0,
+      0.0017453292519943296,
+      0
+     ],
+     "actualRad": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "velocityRadS": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "followingErrorRad": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "source": "controller_sim"
+    },
+    "tcp": {
+     "frameId": "arm_base",
+     "positionM": [
+      0.4318,
+      0.1397,
+      0.18288
+     ],
+     "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+     ]
+    },
+    "program": {
+     "id": "demo-six-axis",
+     "hash": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9",
+     "state": "running"
+    },
+    "units": {
+     "source": {
+      "length": "inch",
+      "angle": "deg"
+     },
+     "wire": "SI"
+    },
+    "freshness": {
+     "staleMs": 500,
+     "quality": "valid"
+    },
+    "reasonCodes": [
+     "TCP_ORIENTATION_NOT_PINNED"
+    ]
+   },
+   "code": "INVALID_FIELD:/joints/actualRad"
+  },
+  {
+   "name": "unknown-event",
+   "message": {
+    "schemaVersion": 1,
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "bootId": "milltask-4242-1000",
+    "seq": "7",
+    "observedAt": "2026-11-05T08:00:01.000Z",
+    "monotonicNs": "123456789000",
+    "kind": "arm.event.v1",
+    "event": "auto_resumed",
+    "commandId": "cmd-run",
+    "observation": {
+     "schemaVersion": 2,
+     "commandId": "cmd-run",
+     "deviceId": "arm-1",
+     "controlEpoch": 1,
+     "payloadHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+     "bootId": "milltask-4242-1000",
+     "seq": "8",
+     "result": "completed",
+     "observedAt": "2026-11-05T08:00:09.000Z",
+     "reasonCodes": []
+    },
+    "reasonCodes": [],
+    "detail": null,
+    "evidence": {
+     "source": "linuxcnc_sim",
+     "gripperClosed": null,
+     "objectPresent": null
+    }
+   },
+   "code": "INVALID_FIELD:/event"
+  },
+  {
+   "name": "bad-observation",
+   "message": {
+    "schemaVersion": 1,
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "bootId": "milltask-4242-1000",
+    "seq": "7",
+    "observedAt": "2026-11-05T08:00:01.000Z",
+    "monotonicNs": "123456789000",
+    "kind": "arm.event.v1",
+    "event": "command_completed",
+    "commandId": "cmd-run",
+    "observation": {
+     "schemaVersion": 2,
+     "commandId": "cmd-run",
+     "deviceId": "arm-1",
+     "controlEpoch": 1,
+     "payloadHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+     "bootId": "milltask-4242-1000",
+     "seq": "8",
+     "result": "done",
+     "observedAt": "2026-11-05T08:00:09.000Z",
+     "reasonCodes": []
+    },
+    "reasonCodes": [],
+    "detail": null,
+    "evidence": {
+     "source": "linuxcnc_sim",
+     "gripperClosed": null,
+     "objectPresent": null
+    }
+   },
+   "code": "INVALID_FIELD:/observation/result"
+  },
+  {
+   "name": "reply-without-lifecycle",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.reply.v1",
+    "requestId": "req-1",
+    "commandId": "cmd-run",
+    "status": "accepted",
+    "duplicate": false,
+    "reasonCodes": [],
+    "token": null,
+    "leaseId": null,
+    "expiresAtMs": null,
+    "outcome": {
+     "status": "running",
+     "evidence": {
+      "interp": "running"
+     }
+    }
+   },
+   "code": "FIELD_REQUIRED:lifecycle"
+  },
+  {
+   "name": "unknown-kind",
+   "message": {
+    "kind": "arm.jog.v1"
+   },
+   "code": "KIND_UNKNOWN"
+  },
+  {
+   "name": "status-without-reconcile-state",
+   "message": {
+    "schemaVersion": 1,
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "bootId": "milltask-4242-1000",
+    "seq": "7",
+    "observedAt": "2026-11-05T08:00:01.000Z",
+    "monotonicNs": "123456789000",
+    "kind": "arm.status.v1",
+    "owner": {
+     "kind": "lab_simulation",
+     "actor": "lab-runtime",
+     "leaseId": "lease-3"
+    },
+    "unknownCommands": [],
+    "task": {
+     "state": "on",
+     "mode": "auto",
+     "interp": "running",
+     "homed": true,
+     "fault": null
+    },
+    "joints": {
+     "names": [
+      "J1",
+      "J2",
+      "J3",
+      "J4",
+      "J5",
+      "J6"
+     ],
+     "commandedRad": [
+      0,
+      0,
+      0,
+      0,
+      0.0017453292519943296,
+      0
+     ],
+     "actualRad": [
+      0,
+      0,
+      0,
+      0,
+      0.0017453292519943296,
+      0
+     ],
+     "velocityRadS": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "followingErrorRad": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "source": "controller_sim"
+    },
+    "tcp": {
+     "frameId": "arm_base",
+     "positionM": [
+      0.4318,
+      0.1397,
+      0.18288
+     ],
+     "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+     ]
+    },
+    "program": {
+     "id": "demo-six-axis",
+     "hash": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9",
+     "state": "running"
+    },
+    "units": {
+     "source": {
+      "length": "inch",
+      "angle": "deg"
+     },
+     "wire": "SI"
+    },
+    "freshness": {
+     "staleMs": 500,
+     "quality": "valid"
+    },
+    "reasonCodes": [
+     "TCP_ORIENTATION_NOT_PINNED"
+    ]
+   },
+   "code": "FIELD_REQUIRED:reconcileRequired"
+  },
+  {
+   "name": "sim-scene-raw-hal",
+   "message": {
+    "schemaVersion": 1,
+    "kind": "arm.command.v1",
+    "machineId": "puma560-sim-1",
+    "controllerEpoch": 1,
+    "owner": {
+     "token": "",
+     "actor": "lab_simulation"
+    },
+    "leaseId": "",
+    "expected": {
+     "profileHash": "0df739d9fc61002f8d1de7aeb656a1b58c7fbf3d7849ddc2cbc73068c2c0bc0a",
+     "modelManifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+    },
+    "simScene": {
+     "runId": "3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c",
+     "worldRevision": "world-r1",
+     "sceneSeq": "9007199254740993",
+     "transferId": "transfer-1",
+     "commandId": "cmd-1",
+     "cup": {
+      "id": "cup-1",
+      "present": true,
+      "positionM": [
+       2.33,
+       2.14,
+       0.555
+      ]
+     },
+     "receiver": null,
+     "faults": [],
+     "halcmd": "setp motion.digital-out-00 1"
+    }
+   },
+   "code": "RAW_COMMAND_FORBIDDEN:halcmd"
+  }
+ ]
+}

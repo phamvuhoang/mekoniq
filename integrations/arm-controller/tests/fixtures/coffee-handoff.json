@@ -1,0 +1,979 @@
+{
+ "schemaVersion": 1,
+ "note": "Coffee pickup/handoff admission oracle (plan 03 A05). Inputs are device observations the cell already reported (brew/ice/milk completion per recipe, cup presence/identity/verification, gripper security, receiver readiness, cleaning/interlock freshness, cancel/feedback loss). Amounts and timings are simulation inputs; physical temperature/payload/force limits stay unknown. `custody` is what the arm side may claim: cell before a pick, arm after a secure grip, unresolved whenever the grip, feedback or cancel leaves the cup's place uncertain (never auto-released, never served).",
+ "order": [
+  "BREW_NOT_COMPLETE",
+  "ICE_JAM",
+  "ICE_NOT_COMPLETE",
+  "MILK_EMPTY",
+  "MILK_NOT_COMPLETE",
+  "MILK_BATCH_STALE",
+  "CUP_ABSENT",
+  "CUP_IDENTITY_MISMATCH",
+  "CUP_NOT_VERIFIED",
+  "CLEANING_STALE",
+  "INTERLOCK_NOT_READY",
+  "GRIP_NOT_SECURE",
+  "FEEDBACK_LOST",
+  "CANCELLED_WHILE_HOLDING",
+  "RECEIVER_NOT_READY"
+ ],
+ "unknownLimits": {
+  "temperatureK": null,
+  "payloadKg": null,
+  "gripForceN": null,
+  "reason": "NOT_PROVIDED: vendor/measured profile pending (HW-07)"
+ },
+ "cases": [
+  {
+   "name": "espresso-brew-ready",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "allowed",
+    "reasonCodes": [],
+    "custody": "arm",
+    "served": false
+   }
+  },
+  {
+   "name": "iced-milk-ready-in-recipe-order",
+   "recipe": "iced-milk-coffee",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": true,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": true,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "allowed",
+    "reasonCodes": [],
+    "custody": "arm",
+    "served": false
+   }
+  },
+  {
+   "name": "brew-ack-not-complete",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": false
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "BREW_NOT_COMPLETE"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  },
+  {
+   "name": "ice-not-complete",
+   "recipe": "iced-milk-coffee",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": true,
+     "complete": false,
+     "fault": null
+    },
+    "milk": {
+     "required": true,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "ICE_NOT_COMPLETE"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  },
+  {
+   "name": "ice-jam",
+   "recipe": "iced-milk-coffee",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": true,
+     "complete": false,
+     "fault": "ICE_JAMMED"
+    },
+    "milk": {
+     "required": true,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "ICE_JAM"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  },
+  {
+   "name": "milk-empty",
+   "recipe": "iced-milk-coffee",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": true,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": true,
+     "complete": false,
+     "fault": "MILK_EMPTY",
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "MILK_EMPTY"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  },
+  {
+   "name": "milk-batch-stale",
+   "recipe": "iced-milk-coffee",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": true,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": true,
+     "complete": true,
+     "fault": null,
+     "batchFresh": false
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "MILK_BATCH_STALE"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  },
+  {
+   "name": "espresso-ignores-ice-milk-devices",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": false,
+     "fault": "ICE_JAMMED"
+    },
+    "milk": {
+     "required": false,
+     "complete": false,
+     "fault": "MILK_EMPTY",
+     "batchFresh": false
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "allowed",
+    "reasonCodes": [],
+    "custody": "arm",
+    "served": false
+   }
+  },
+  {
+   "name": "cup-absent",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": false,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "CUP_ABSENT"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  },
+  {
+   "name": "cup-identity-mismatch",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-9",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "CUP_IDENTITY_MISMATCH"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  },
+  {
+   "name": "cup-not-verified",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": false
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "CUP_NOT_VERIFIED"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  },
+  {
+   "name": "cleaning-stale",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": false
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "CLEANING_STALE"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  },
+  {
+   "name": "interlock-not-ready",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": false
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "INTERLOCK_NOT_READY"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  },
+  {
+   "name": "grip-not-secure-after-pick",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": false
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "GRIP_NOT_SECURE"
+    ],
+    "custody": "unresolved",
+    "served": false
+   }
+  },
+  {
+   "name": "feedback-lost-while-holding",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": true
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "FEEDBACK_LOST"
+    ],
+    "custody": "unresolved",
+    "served": false
+   }
+  },
+  {
+   "name": "cancel-while-holding",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": true
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "CANCELLED_WHILE_HOLDING"
+    ],
+    "custody": "unresolved",
+    "served": false
+   }
+  },
+  {
+   "name": "receiver-not-ready-blocks-handoff-not-pickup",
+   "recipe": "espresso",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": true
+    },
+    "ice": {
+     "required": false,
+     "complete": true,
+     "fault": null
+    },
+    "milk": {
+     "required": false,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": true
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": false
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "allowed",
+    "reasonCodes": [
+     "RECEIVER_NOT_READY"
+    ],
+    "custody": "arm",
+    "served": false
+   }
+  },
+  {
+   "name": "several-reasons-in-order",
+   "recipe": "iced-milk-coffee",
+   "inputs": {
+    "brew": {
+     "ack": true,
+     "complete": false
+    },
+    "ice": {
+     "required": true,
+     "complete": false,
+     "fault": null
+    },
+    "milk": {
+     "required": true,
+     "complete": true,
+     "fault": null,
+     "batchFresh": true
+    },
+    "cup": {
+     "present": true,
+     "id": "cup-1",
+     "expectedId": "cup-1",
+     "verified": false
+    },
+    "gripper": {
+     "secure": true
+    },
+    "receiver": {
+     "ready": true
+    },
+    "cleaning": {
+     "fresh": true
+    },
+    "interlock": {
+     "ok": true
+    },
+    "cancel": {
+     "whileHolding": false
+    },
+    "feedback": {
+     "lost": false
+    }
+   },
+   "expected": {
+    "pickup": "blocked",
+    "reasonCodes": [
+     "BREW_NOT_COMPLETE",
+     "ICE_NOT_COMPLETE",
+     "CUP_NOT_VERIFIED"
+    ],
+    "custody": "cell",
+    "served": false
+   }
+  }
+ ]
+}

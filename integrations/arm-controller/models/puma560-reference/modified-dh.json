@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "puma560-reference",
+  "revision": 1,
+  "convention": "modified_dh_craig",
+  "note": "Link i: T_i = Rx(alpha_{i-1}) Tx(a_{i-1}) Rz(theta_i + thetaOffset) Tz(d_i); genserkins A-n/ALPHA-n/D-n index n = i-1. Numbers are the LinuxCNC 2.9 sample verbatim (origin/puma560_dh.hal, puma560.ini): ALPHA is the sample's truncated 1.570796326 rad (pi/2 - 7e-10), limits/velocity are the sample's INI values and are NOT MEKONIQ cell limits.",
+  "units": {"length": "inch", "alpha": "rad", "joint": "deg"},
+  "joints": [
+    {"name": "J1", "linuxcncJoint": "JOINT_0", "alpha": 0, "a": 0, "d": 26.45, "thetaOffset": 0, "min": -180.0, "max": 180.0, "maxVelocity": 30.0, "maxAcceleration": 200.0, "home": 0.0},
+    {"name": "J2", "linuxcncJoint": "JOINT_1", "alpha": 1.570796326, "a": 0, "d": -5.5, "thetaOffset": 0, "min": -360.0, "max": 360.0, "maxVelocity": 30.0, "maxAcceleration": 200.0, "home": 0.0},
+    {"name": "J3", "linuxcncJoint": "JOINT_2", "alpha": 0, "a": 17, "d": 0, "thetaOffset": 0, "min": -215.0, "max": 35.0, "maxVelocity": 30.0, "maxAcceleration": 200.0, "home": 0.0},
+    {"name": "J4", "linuxcncJoint": "JOINT_3", "alpha": 1.570796326, "a": 0, "d": 17.05, "thetaOffset": 0, "min": -360.0, "max": 360.0, "maxVelocity": 30.0, "maxAcceleration": 200.0, "home": 0.0},
+    {"name": "J5", "linuxcncJoint": "JOINT_4", "alpha": -1.570796326, "a": 0, "d": 0, "thetaOffset": 0, "min": -360.0, "max": 360.0, "maxVelocity": 30.0, "maxAcceleration": 200.0, "home": 0.1},
+    {"name": "J6", "linuxcncJoint": "JOINT_5", "alpha": 1.570796326, "a": 0, "d": 2.2, "thetaOffset": 0, "min": -360.0, "max": 360.0, "maxVelocity": 30.0, "maxAcceleration": 200.0, "home": 0.0}
+  ],
+  "toolTranslation": [0, 0, 0],
+  "toolRevision": "tool-0-notool"
+}

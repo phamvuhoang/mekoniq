@@ -1,0 +1,226 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.lab-evidence.v2",
+  "title": "LabEvidenceV2",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "requirementIds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "pattern": "^[A-Za-z0-9_.:-]+$"
+      }
+    },
+    "scenarioId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "runId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "inputsManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "projectHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "sourceCommit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "schemaHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mode": {
+          "enum": [
+            "mock",
+            "simulation",
+            "hardware"
+          ]
+        },
+        "access": {
+          "enum": [
+            "simulated",
+            "shadow",
+            "hil",
+            "live"
+          ]
+        },
+        "backends": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          }
+        }
+      },
+      "required": [
+        "projectHash",
+        "sourceCommit",
+        "schemaHash",
+        "seed",
+        "mode",
+        "access",
+        "backends"
+      ]
+    },
+    "result": {
+      "enum": [
+        "pass",
+        "fail",
+        "blocked_external",
+        "not_run"
+      ]
+    },
+    "assertions": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "id",
+          "passed"
+        ]
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "name",
+          "sha256"
+        ]
+      }
+    },
+    "actualFidelity": {
+      "enum": [
+        "business",
+        "modeled",
+        "physics_sim",
+        "hardware"
+      ]
+    },
+    "signer": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "trust": {
+              "enum": [
+                "local_unsigned",
+                "authorized_signer"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "trust"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "requirementIds",
+    "scenarioId",
+    "runId",
+    "inputsManifest",
+    "result",
+    "assertions",
+    "artifacts",
+    "actualFidelity",
+    "signer"
+  ]
+}

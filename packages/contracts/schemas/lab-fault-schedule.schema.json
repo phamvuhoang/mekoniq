@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.lab-fault-schedule.v1",
+  "title": "FaultScheduleEntry",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+    },
+    "faultId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+    },
+    "targetId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+    },
+    "trigger": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "elapsed_sim_ms"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 3600000
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "phase"
+            },
+            "value": {
+              "enum": [
+                "brew",
+                "grasp",
+                "handoff",
+                "delivery"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ]
+        }
+      ]
+    },
+    "durationMs": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 60000
+    }
+  },
+  "required": [
+    "id",
+    "faultId",
+    "targetId",
+    "trigger",
+    "durationMs"
+  ]
+}

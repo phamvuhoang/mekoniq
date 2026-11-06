@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 2,
+  "id": "cup-paper-sil",
+  "revision": 1,
+  "contentHash": "2f3d81be006ad2259e685bb13821994bd8439f5edaf1870aeeb0ca85a4441d66",
+  "hashAlgorithm": "sha256-canonical-json-v1",
+  "kind": "cup",
+  "visual": {
+    "contentHash": "5555555555555555555555555555555555555555555555555555555555555555",
+    "mediaType": "model/gltf-binary"
+  },
+  "collision": {
+    "contentHash": "6666666666666666666666666666666666666666666666666666666666666666",
+    "mediaType": "application/x-mekoniq-geometry"
+  },
+  "frames": [
+    {
+      "id": "cup_base",
+      "parentId": null,
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "body",
+      "parentId": "cup_base",
+      "translationM": [
+        0,
+        0,
+        0.045
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "geometry": [
+    {
+      "kind": "cylinder",
+      "frameId": "body",
+      "radiusM": 0.035,
+      "heightM": 0.09
+    }
+  ],
+  "inertial": {
+    "massKg": 0.05
+  },
+  "provenance": [
+    {
+      "parameter": "geometry",
+      "source": "illustrative",
+      "reference": "35 mm radius, 90 mm paper cup; illustrative"
+    },
+    {
+      "parameter": "inertial.massKg",
+      "source": "illustrative"
+    }
+  ]
+}

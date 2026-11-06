@@ -1,0 +1,234 @@
+{
+ "schemaVersion": 1,
+ "id": "puma560-reference",
+ "revision": 1,
+ "frame": "arm_base",
+ "quaternionOrder": "xyzw",
+ "oracle": "tests/test_model_units.py oracle_fk: 4x4 homogeneous matrices, Shepperd quaternion (independent of the quaternion-chain FK of the Lab and the plan 02 checker)",
+ "singularityIndicator": {
+  "rule": "near: abs(sin(q5)) < 0.05; exact: finite-difference Jacobian rank < 6 at q5 = 0",
+  "note": "fixture indicator, not a controller policy"
+ },
+ "cases": [
+  {
+   "name": "sample-home",
+   "kind": "near_singularity",
+   "qDeg": [
+    0,
+    0,
+    0,
+    0,
+    0.1,
+    0
+   ],
+   "expected": {
+    "tcpM": [
+     0.43189752894908634,
+     0.13969999922267062,
+     0.18288008499903835
+    ],
+    "quaternionXyzw": [
+     0.9999996192282494,
+     0.0,
+     0.0008726645152351496,
+     7.948963515508493e-10
+    ],
+    "singular": true
+   },
+   "note": "puma560.ini HOME: JOINT_4 = 0.1 deg to dodge the inverse failure; the wrist is near-singular here"
+  },
+  {
+   "name": "j1-plus-90",
+   "kind": "near_singularity",
+   "qDeg": [
+    90,
+    0,
+    0,
+    0,
+    0.1,
+    0
+   ],
+   "expected": {
+    "tcpM": [
+     -0.1396999992226706,
+     0.43189752894908634,
+     0.18288008499903835
+    ],
+    "quaternionXyzw": [
+     -0.7071065119402608,
+     -0.7071065119402606,
+     -0.0006170675585002461,
+     0.0006170664343470451
+    ],
+    "singular": true
+   },
+   "note": "same wrist as sample-home, base turned +90 deg: pins quaternion order/sign"
+  },
+  {
+   "name": "nominal-1",
+   "kind": "nominal",
+   "qDeg": [
+    10,
+    -30,
+    20,
+    15,
+    45,
+    30
+   ],
+   "expected": {
+    "tcpM": [
+     0.30198524535264515,
+     0.18471872938102252,
+     -0.016101113987475508
+    ],
+    "quaternionXyzw": [
+     -0.9110879586075024,
+     0.2782135999448906,
+     -0.30076723954189044,
+     0.04533202074107736
+    ],
+    "singular": false
+   }
+  },
+  {
+   "name": "nominal-2",
+   "kind": "nominal",
+   "qDeg": [
+    -45,
+    -60,
+    30,
+    0,
+    60,
+    -20
+   ],
+   "expected": {
+    "tcpM": [
+     0.1180903672690358,
+     0.07947526594843846,
+     -0.12556289064556903
+    ],
+    "quaternionXyzw": [
+     0.9430295273800398,
+     -0.20906461293484893,
+     0.2182857682403808,
+     0.13906337221384873
+    ],
+    "singular": false
+   }
+  },
+  {
+   "name": "nominal-3",
+   "kind": "nominal",
+   "qDeg": [
+    90,
+    -90,
+    -45,
+    30,
+    -70,
+    180
+   ],
+   "expected": {
+    "tcpM": [
+     -0.16595501137649435,
+     -0.28758532798895287,
+     0.5919267100390986
+    ],
+    "quaternionXyzw": [
+     -0.3021823526995104,
+     -0.006520341802492641,
+     0.765155226632731,
+     0.5684899207693851
+    ],
+    "singular": false
+   }
+  },
+  {
+   "name": "unit-conversion",
+   "kind": "unit_conversion",
+   "sourceUnits": {
+    "joint": "deg",
+    "length": "inch"
+   },
+   "qDeg": [
+    30,
+    -45,
+    30,
+    0,
+    60,
+    0
+   ],
+   "qRad": [
+    0.5235987755982988,
+    -0.7853981633974483,
+    0.5235987755982988,
+    0.0,
+    1.0471975511965976,
+    0.0
+   ],
+   "expected": {
+    "tcpM": [
+     0.13172180500481756,
+     0.2373612836399893,
+     -0.09132533275110934
+    ],
+    "tcpInch": [
+     5.1858978348353375,
+     9.344932426771232,
+     -3.5954855413822573
+    ],
+    "quaternionXyzw": [
+     -0.8923991008325228,
+     -0.23911761839433457,
+     -0.36964381080445996,
+     0.09904575983192257
+    ],
+    "singular": false
+   }
+  },
+  {
+   "name": "beyond-reach",
+   "kind": "unreachable",
+   "targetM": [
+    2.0,
+    0.0,
+    0.0
+   ],
+   "expected": {
+    "reachable": false,
+    "reason": "TARGET_BEYOND_REACH_BOUND"
+   },
+   "note": "reach bound 1.732280 m is sum(|a|+|d|)+|tool| (a conservative sphere, not the real workspace)"
+  },
+  {
+   "name": "j3-over-max",
+   "kind": "joint_limit",
+   "qDeg": [
+    0,
+    -30,
+    40,
+    0,
+    30,
+    0
+   ],
+   "expected": {
+    "tcpM": [
+     0.485070557285622,
+     0.13969999906667427,
+     -0.01336725718953248
+    ],
+    "quaternionXyzw": [
+     0.9396926207859084,
+     2.750835067818568e-26,
+     0.34202014332566877,
+     7.469585202626777e-10
+    ],
+    "withinLimits": false,
+    "violatedJoints": [
+     "J3"
+    ],
+    "singular": false
+   },
+   "note": "J3 max is +35 deg in the sample INI"
+  }
+ ]
+}

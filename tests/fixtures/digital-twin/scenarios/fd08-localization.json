@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "fd08-localization",
+  "revision": 1,
+  "scenarioId": "FD08",
+  "projectFixture": "restaurant-v2.json",
+  "seed": 1,
+  "actors": [],
+  "blockers": [],
+  "zones": [],
+  "faults": [{"atTick": 300, "faultId": "localization-lost", "entityId": "amr-1"}, {"atTick": 900, "faultId": "map-changed", "entityId": "amr-1"}],
+  "assertions": ["FD08.no-goal-on-stale-map", "FD08.pose-stale", "FD08.mission-held", "FD08.no-false-arrival"]
+}

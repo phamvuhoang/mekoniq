@@ -1,0 +1,161 @@
+{
+  "project": {
+    "schemaVersion": 2,
+    "id": "native-bv01",
+    "name": "BV01 native PUMA560 SIM",
+    "revision": 1,
+    "updatedAt": "2026-11-05T00:00:00.000Z",
+    "entities": [
+      {
+        "id": "amr-1",
+        "kind": "amr",
+        "assetRef": {
+          "id": "service-robot-sil",
+          "revision": 1,
+          "contentHash": "7af1195f91369d6af801a9ea582255bb9ea891ed52b6bfbb95823c6356e9bec2"
+        }
+      },
+      {
+        "id": "arm-1",
+        "kind": "arm",
+        "assetRef": {
+          "id": "arm-puma-reference",
+          "revision": 1,
+          "contentHash": "f12c8e962d74dcab35734e0e14f00e0a1168e6906b377fa530b27a4e4b2f79ef"
+        }
+      },
+      {
+        "id": "coffee-1",
+        "kind": "coffee_machine",
+        "assetRef": {
+          "id": "coffee-machine-illustrative",
+          "revision": 1,
+          "contentHash": "18771958e98006dd7cb6bd9352611ce0bbd37aaacaaa159f67ef70124d7d9faa"
+        }
+      },
+      {
+        "id": "cups-1",
+        "kind": "cup_station",
+        "assetRef": {
+          "id": "cup-paper-illustrative",
+          "revision": 1,
+          "contentHash": "a58680ada2a4f5befb241b9abd6f3ee38a4dc60639038e07cd69b0e1fbd3633e"
+        }
+      }
+    ],
+    "world": {
+      "id": "native-bv01-world",
+      "revision": 1,
+      "width": 6,
+      "height": 4,
+      "points": [
+        {
+          "id": "parking",
+          "name": "Parking",
+          "kind": "parking",
+          "x": 0.8,
+          "y": 0.8
+        },
+        {
+          "id": "coffee-pickup",
+          "name": "Coffee pickup",
+          "kind": "coffee_pickup",
+          "x": 2.0103000007659912,
+          "y": 2.330557457353138
+        },
+        {
+          "id": "table-1",
+          "name": "T01",
+          "kind": "table",
+          "x": 5,
+          "y": 3
+        }
+      ],
+      "handoffPoints": [
+        {
+          "id": "coffee-pickup",
+          "name": "Coffee pickup",
+          "kind": "coffee_pickup",
+          "position": [
+            3,
+            1,
+            0
+          ],
+          "yawRad": 1.5707963267948966
+        }
+      ],
+      "obstacles": []
+    }
+  },
+  "assetFiles": [
+    "../assets/service-robot-v1.json",
+    "../assets/arm-puma-reference.json",
+    "../assets/coffee-machine-illustrative.json",
+    "../assets/cup-paper-illustrative.json"
+  ],
+  "beverage": {
+    "cups": [
+      {
+        "fixtureId": "cup-1",
+        "gazeboModel": "cup_1",
+        "positionM": [
+          2.330557457353138,
+          2.1396999992340087,
+          0.5549999999999999
+        ]
+      },
+      {
+        "fixtureId": "cup-2",
+        "gazeboModel": "cup_2",
+        "positionM": [
+          2.330557457353138,
+          2.1396999992340087,
+          0.5549999999999999
+        ]
+      }
+    ],
+    "trays": [
+      {
+        "robotId": "amr-1",
+        "slot": 1,
+        "offsetM": [
+          -0.15,
+          0,
+          0.555
+        ],
+        "dockPositionM": [
+          2.0103000007659912,
+          2.330557457353138,
+          0
+        ],
+        "toleranceM": 0.025
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "actors": [],
+  "blockers": [
+    {
+      "id": "native_fault",
+      "x": 3.5,
+      "y": 2,
+      "width": 0.6,
+      "height": 0.6,
+      "heightM": 1.7,
+      "atTick": 180001,
+      "untilTick": null
+    }
+  ],
+  "faults": [],
+  "id": "bv01-native",
+  "revision": 1,
+  "scenarioId": "BV01",
+  "projectFixture": "bv01.json",
+  "seed": 23,
+  "zones": [],
+  "assertions": [
+    "BV01.served-after-handoff",
+    "ARM03",
+    "SIM.no-contact"
+  ]
+}

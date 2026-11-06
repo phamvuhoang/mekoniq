@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Trust metadata of the arm controller release signing keys (Ed25519, held by the CI/offline signing station). Installed on each IPC under <prefix>/trust by provisioning; the artifact's own copy is reference only and is never used to verify itself.",
+  "note": "NO_ACTIVE_KEY: this repository copy ships no key, so every install fails closed until governance provisions the real public key(s). Rotation: add the new key as active, mark the old one revoked with revokedAt/reason; expiry: expiresAt. Offline installs trust a cached copy only within offlineCacheValidityDays of cachedAt. Provision a positive policyRevision; each signed update must strictly increase it. The installed policy is the persistent revision high-water mark and is never rolled back with a release.",
+  "keys": [],
+  "allowDowngrade": false,
+  "allowDowngradeTo": [],
+  "offlineCacheValidityDays": 90,
+  "cachedAt": null,
+  "governance": {
+    "approver": "release manager + controls lead",
+    "recovery": "a signed offline recovery package re-provisions the policy; no checkbox bypass"
+  },
+  "policyRevision": 0
+}

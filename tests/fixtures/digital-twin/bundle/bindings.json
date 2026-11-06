@@ -1,0 +1,49 @@
+{
+  "bindings": {
+    "kitchen": {
+      "frame": "map",
+      "kind": "kitchen",
+      "mapId": "lab-world",
+      "mapRevision": "1",
+      "waypointId": "kitchen",
+      "x": 1.5,
+      "y": 4.0,
+      "yaw": 0.0,
+      "zone": {
+        "clearanceM": 1.4,
+        "radiusM": 0.40697051490249264
+      }
+    },
+    "parking": {
+      "frame": "map",
+      "kind": "parking",
+      "mapId": "lab-world",
+      "mapRevision": "1",
+      "waypointId": "parking",
+      "x": 1.5,
+      "y": 1.0,
+      "yaw": 0.0,
+      "zone": {
+        "clearanceM": 0.9,
+        "radiusM": 0.40697051490249264
+      }
+    },
+    "table-1": {
+      "frame": "map",
+      "kind": "table",
+      "mapId": "lab-world",
+      "mapRevision": "1",
+      "waypointId": "table-1",
+      "x": 6.123552444192091,
+      "y": 2.318708202111967,
+      "yaw": -0.34877100358390734,
+      "zone": {
+        "clearanceM": 0.47644755580790843,
+        "radiusM": 0.40697051490249264
+      }
+    }
+  },
+  "frame": "map",
+  "mapId": "lab-world",
+  "mapRevision": "1"
+}

@@ -25,7 +25,9 @@ export function consumeCore(c: CommandEnvelope, s: Snapshot[], levels: Levels, a
   const exceptionId = sourceId('exc', source), recipe = version ? find(s, 'recipe', version) : undefined;
   const except = (reason: string): { events: DomainEvent[]; value: JsonObject } => find(s, 'stock-exception', exceptionId) ? { events: [], value: { exception: true, duplicate: true } } : { events: [created('StockExceptionOpened', 'stock-exception', exceptionId, { sourceEventId: source, recipeVersion: version, quantity: String(portions), reason, status: 'open', openedAt: c.occurredAt, ...(a.meta ?? {}) })], value: { exception: true, exceptionId } };
   if (!recipe) return historical ? except('RECIPE_VERSION_MISSING') : fail('RECIPE_NOT_FOUND');
-  const lines = (recipe.state.lines as JsonObject[]).map(line => ({ line, item: find(s, 'stock-item', String(line.ingredientId)) }));
+  // Coffee steps already booked their measured ingredients; exclusions are frozen in the consumption/exception metadata, including later resolution.
+  const excluded=(a.meta?.excludeIngredientIds??[]) as string[];
+  const lines = (recipe.state.lines as JsonObject[]).filter(line=>!excluded.includes(String(line.ingredientId))).map(line => ({ line, item: find(s, 'stock-item', String(line.ingredientId)) }));
   if (lines.some(l => !l.item)) return historical ? except('INGREDIENT_MISSING') : fail('INGREDIENT_UNKNOWN');
   const events: DomainEvent[] = [], out: JsonObject[] = [], work = new Map(levels);
   for (const { line, item } of lines as { line: JsonObject; item: Snapshot }[]) {

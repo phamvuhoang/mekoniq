@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 2,
+  "revision": 1,
+  "contentHash": "a58680ada2a4f5befb241b9abd6f3ee38a4dc60639038e07cd69b0e1fbd3633e",
+  "hashAlgorithm": "sha256-canonical-json-v1",
+  "visual": null,
+  "collision": null,
+  "id": "cup-paper-illustrative",
+  "kind": "cup",
+  "frames": [
+    {
+      "id": "cup_base",
+      "parentId": null,
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "cup_body",
+      "parentId": "cup_base",
+      "translationM": [
+        0,
+        0,
+        0.05
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "geometry": [
+    {
+      "kind": "cylinder",
+      "frameId": "cup_body",
+      "radiusM": 0.04,
+      "heightM": 0.1
+    }
+  ],
+  "provenance": [
+    {
+      "parameter": "geometry",
+      "source": "illustrative",
+      "reference": "no capacity or volume claim"
+    }
+  ]
+}

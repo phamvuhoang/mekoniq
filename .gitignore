@@ -1,6 +1,8 @@
 node_modules
 node_modules/
 .next/
+# Next.js recreates this declaration for both dev and production type generation.
+apps/cloud-web/next-env.d.ts
 dist/
 .env
 .env.local

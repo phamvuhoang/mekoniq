@@ -1,0 +1,8 @@
+
+### UTM native ARM64 profile
+
+`node scripts/lab-sil.mjs doctor --backend gazebo_nav2 --environment-profile utm-ubuntu-arm64 --json` inspects actual OS/architecture and installed dpkg versions. The profile is a candidate until the Ubuntu VM exists: `profiles/utm-ubuntu-arm64.lock.json` deliberately has `packageVersions: null`. Capture the doctor JSON above from the source root, review `environment.actual` on Ubuntu24.04 ARM64 (doctor and backend use the same inspector environment), then pin the complete installed package inventory as `packageVersions` and the inspected runtime paths, launcher hashes and environment as `runtimePin` in the lock and commit it. This includes transitive Gazebo/Nav2 dependencies, content fingerprints of local AMENT overlays, and alternate launchers. Copy `environment.actual.runtime` exactly; a direct Python invocation with a different PYTHONPATH is not the runtime inventory. Missing or changed packages block admission. Keep the reported inventory/profile hashes with run evidence.
+
+`run --environment-profile utm-ubuntu-arm64` passes the same profile to the backend, which independently verifies it before starting the worker. Native apt capability reports contain `environment` with actual inventory and no container `image` digest. Existing container runs retain their image metadata. Headless launch already passes `--headless-rendering` while preserving sensors; renderer and sensor samples must still be verified on the VM. A matching package inventory is prerequisite evidence, not proof that Gazebo/Nav2 ran.
+
+This host has not executed native ARM64 fixtures. Keep VM provision, renderer, FD01/02/03/04/07 repeats and combined BV01 marked not_run until their actual artifacts exist.

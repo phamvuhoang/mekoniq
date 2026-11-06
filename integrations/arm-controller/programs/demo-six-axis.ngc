@@ -1,0 +1,12 @@
+(MEKONIQ demo-six-axis r1: short world-coordinate moves around the homed TCP of models/puma560-reference, inch and deg)
+(allowlisted words only; orientation words A B C are left untouched so no ABC convention is assumed; no tool, no user M-codes, no subroutines)
+(the Linux smoke run is the only proof this program executes on the controller; a hash match is not an execution claim)
+G20 G90 G94 G17 G40 G49 G54
+G4 P0.5
+G0 X17.0 Y5.5 Z9.2
+G1 X15.0 Y5.5 Z9.2 F20
+G1 X15.0 Y7.5 Z9.2
+G4 P0.5
+G1 X17.0 Y5.5 Z9.2
+G0 X17.0 Y5.5 Z7.2
+M2

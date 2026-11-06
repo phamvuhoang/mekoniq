@@ -1,0 +1,32 @@
+{
+  "project": {
+    "schemaVersion": 2,
+    "id": "sil-corridor",
+    "name": "SIL corridor (two robots, one narrow passage)",
+    "revision": 1,
+    "updatedAt": "2026-11-05T00:00:00.000Z",
+    "entities": [
+      {"id": "amr-a", "kind": "amr", "assetRef": {"id": "service-robot-sil", "revision": 1, "contentHash": "7af1195f91369d6af801a9ea582255bb9ea891ed52b6bfbb95823c6356e9bec2"}},
+      {"id": "amr-b", "kind": "amr", "assetRef": {"id": "service-robot-sil", "revision": 1, "contentHash": "7af1195f91369d6af801a9ea582255bb9ea891ed52b6bfbb95823c6356e9bec2"}}
+    ],
+    "world": {
+      "id": "sil-corridor-world",
+      "revision": 1,
+      "width": 10,
+      "height": 6,
+      "points": [
+        {"id": "bay-a", "name": "Bay A", "kind": "parking", "x": 1, "y": 1},
+        {"id": "bay-b", "name": "Bay B", "kind": "parking", "x": 1, "y": 5},
+        {"id": "pass", "name": "Pass", "kind": "kitchen", "x": 1, "y": 3},
+        {"id": "east-1", "name": "E1", "kind": "table", "x": 8.5, "y": 1.5},
+        {"id": "east-2", "name": "E2", "kind": "table", "x": 8.5, "y": 4.5}
+      ],
+      "handoffPoints": [],
+      "obstacles": [
+        {"id": "wall-south", "x": 4.5, "y": 0, "width": 1, "height": 2.5},
+        {"id": "wall-north", "x": 4.5, "y": 3.5, "width": 1, "height": 2.5}
+      ]
+    }
+  },
+  "assetFiles": ["assets/service-robot-v1.json"]
+}

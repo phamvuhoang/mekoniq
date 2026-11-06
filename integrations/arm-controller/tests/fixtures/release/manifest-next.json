@@ -1,0 +1,81 @@
+{
+ "schemaVersion": 1,
+ "artifact": "mekoniq-arm-controller",
+ "version": "0.2.0+next",
+ "sourceCommit": "1111111111111111111111111111111111111111",
+ "dirty": false,
+ "signed": true,
+ "exportedAt": "2026-11-05T12:00:00.000Z",
+ "nodeVersion": "v24.22.2",
+ "mode": "simulation",
+ "hardwareEnabled": false,
+ "profile": {
+  "id": "puma560-sim-1",
+  "path": "profile.json",
+  "sha256": "dd901ce5ad0920853e4fe18fb0a698c500d2cc417bb50d32fa46826c81f8f3e1"
+ },
+ "model": {
+  "id": "puma560-reference",
+  "revision": 1,
+  "manifestSha256": "2222222222222222222222222222222222222222222222222222222222222222"
+ },
+ "files": [
+  {
+   "path": "a.txt",
+   "sha256": "b6a98d9ce9a2d9149288fa3df42d377c3e42737afdcdaf714e33c0a100b51060",
+   "bytes": 6
+  },
+  {
+   "path": "b/c.json",
+   "sha256": "8e325816cf2d9e97b7611a0c80bb71ea45c10fdbd1df2411972ddd407272cb70",
+   "bytes": 8
+  },
+  {
+   "path": "profile.json",
+   "sha256": "dd901ce5ad0920853e4fe18fb0a698c500d2cc417bb50d32fa46826c81f8f3e1",
+   "bytes": 77
+  }
+ ],
+ "dependencies": {
+  "lockSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+  "status": "candidate",
+  "components": [
+   {
+    "id": "linuxcnc",
+    "version": "v2.9.10 (candidate)",
+    "status": "candidate"
+   }
+  ]
+ },
+ "sbom": {
+  "format": "mekoniq-sbom-v1",
+  "components": [
+   {
+    "name": "linuxcnc",
+    "version": "v2.9.10",
+    "source": "https://github.com/LinuxCNC/linuxcnc",
+    "license": "GPL-2.0-only",
+    "licenseReviewed": false
+   }
+  ]
+ },
+ "schemas": [],
+ "compatibleCalibrationSchemas": [
+  2
+ ],
+ "machineOverlay": {
+  "path": "machine/",
+  "note": "per-machine identity and calibration are provisioned on the IPC, never shipped in the artifact; the installer keeps them across releases"
+ },
+ "trust": {
+  "keyId": "test-key-2026",
+  "algorithm": "Ed25519",
+  "signatureFile": "manifest.sig.json",
+  "canonicalization": "sorted-keys compact JSON (JCS-equivalent for this manifest)"
+ },
+ "claims": {
+  "softwareSil": "not_run_until_linux_smoke",
+  "hardware": "not_accepted",
+  "note": "simulation install; LinuxCNC smoke, HMI acceptance and every hardware gate are recorded separately; this artifact carries no production claim"
+ }
+}

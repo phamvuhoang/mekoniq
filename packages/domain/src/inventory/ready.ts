@@ -9,9 +9,10 @@ const inventoryOn = (c: CommandEnvelope, s: Snapshot[]): boolean => { try { requ
  * part of a combo through the part's own recipe (parts are frozen on the ticket). Source ids are the ticket + cumulative prepared count, so a replay is a no-op. Food that is already
  * cooked is never un-cooked by a refusal: a consumption that cannot be booked (blocked stock, missing ingredient) opens a stock exception and the ready event stands.
  */
-export function consumeOnReady(c: CommandEnvelope, s: Snapshot[], ticket: Snapshot, ready: bigint, prepared: bigint): DomainEvent[] {
+export interface ReadyStockOptions {source?:string;jobId?:string;excludeIngredientIds?:string[]}
+export function consumeOnReady(c: CommandEnvelope, s: Snapshot[], ticket: Snapshot, ready: bigint, prepared: bigint,options:ReadyStockOptions={}): DomainEvent[] {
   if (!inventoryOn(c, s)) return [];
-  const itemId = String(ticket.state.itemId ?? ''), root = String(ticket.state.lineId ?? ticket.ref.id), base = `ready:${ticket.ref.id}:${prepared}`;
+  const itemId = String(ticket.state.itemId ?? ''), root = String(ticket.state.lineId ?? ticket.ref.id), base = options.source??`ready:${ticket.ref.id}:${prepared}`;
   // The parts' quantity per ONE combo is frozen on the ticket (perUnit), so cancelling some combos later never changes what one combo uses.
   const whole = ticket.state.stockMode === 'whole';
   const parts = whole ? [] : ((ticket.state.components ?? []) as JsonObject[]).map(p => ({ itemId: String(p.itemId), perUnit: big(p.perUnit ?? 1) }));
@@ -20,7 +21,7 @@ export function consumeOnReady(c: CommandEnvelope, s: Snapshot[], ticket: Snapsh
   for (const t of targets) {
     const pointer = find(s, 'recipe-pointer', t.itemId);
     if (!pointer) continue; // an item without a recipe is not tracked (that is different from a recipe that failed: see the exception below)
-    const portions = ready * t.perUnit * 1000n, meta: JsonObject = { lineId: root, ticketId: ticket.ref.id, ticketItemId: t.itemId, ...(t.componentOf ? { componentOf: t.componentOf } : {}), unitsMilli: String(ready * 1000n), preparedAfter: String(prepared) };
+    const portions = ready * t.perUnit * 1000n, meta: JsonObject = { lineId: root, ticketId: ticket.ref.id, ticketItemId: t.itemId, ...(t.componentOf ? { componentOf: t.componentOf } : {}), unitsMilli: String(ready * 1000n), preparedAfter: String(prepared),...options.jobId?{jobId:options.jobId}:{},...options.excludeIngredientIds?{excludeIngredientIds:options.excludeIngredientIds}:{} };
     try {
       events.push(...consumeCore(c, s, levels, { source: t.source, version: String(pointer.state.recipeVersion), portions, historical: false, meta }).events);
     } catch (e) {
@@ -36,8 +37,8 @@ export function consumeOnReady(c: CommandEnvelope, s: Snapshot[], ticket: Snapsh
  * ticket, when given) made: the item itself and each combo part. Never restocks and never deducts again. A batch whose stock could not be booked yet (an open stock exception) cannot be
  * reclassified now, so the discard is noted on the exception (wasteClaims) and booked as waste in the same decision that books the consumption (Inventory.ResolveException).
  */
-export function wasteOnDispose(c: CommandEnvelope, s: Snapshot[], lineId: string, count: bigint, cancellationId: string, reason: string, ticketId?: string): DomainEvent[] {
-  const mine = (x: Snapshot) => x.state.lineId === lineId && (ticketId === undefined || x.state.ticketId === ticketId);
+export function wasteOnDispose(c: CommandEnvelope, s: Snapshot[], lineId: string, count: bigint, cancellationId: string, reason: string, ticketId?: string,jobId?:string): DomainEvent[] {
+  const mine = (x: Snapshot) => x.state.lineId === lineId && (ticketId === undefined || x.state.ticketId === ticketId)&&(jobId===undefined||x.state.jobId===jobId);
   const batches = [...all(s, 'consumption').filter(mine), ...all(s, 'stock-exception').filter(x => mine(x) && x.state.status === 'open')]
     .sort((a, b) => Number(b.state.preparedAfter) - Number(a.state.preparedAfter) || a.ref.id.localeCompare(b.ref.id));
   const left = new Map<string, bigint>(), events: DomainEvent[] = [];

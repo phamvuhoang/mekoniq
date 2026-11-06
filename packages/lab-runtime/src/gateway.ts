@@ -3,8 +3,10 @@ import {randomBytes,createHash,timingSafeEqual,randomUUID} from 'node:crypto';
 import {join} from 'node:path';
 import {createLabSession,type LabSession,type RunAction} from './session';
 import {parseJsonStrict} from '../../contracts/src/validate';
+import {createV2Gateway,type V2Deps} from './v2/gateway';
+import type {CapabilityCatalog} from './v2/capabilities';
 export interface LabGateway {url:string;pairingToken:string;issuePairingToken():string;close():Promise<void>;}
-export interface GatewayOptions {port?:number;directory:string;sourceCommit:string;schemaHash:string;nowMs?:()=>number;pairingTtlMs?:number;}
+export interface GatewayOptions {port?:number;directory:string;sourceCommit:string;schemaHash:string;nowMs?:()=>number;pairingTtlMs?:number;v2?:{catalog?:CapabilityCatalog;enabledBackends?:readonly string[];stream?:V2Deps['stream'];readinessProbes?:V2Deps['readinessProbes'];nativeChecks?:V2Deps['nativeChecks'];simulationFactory?:V2Deps['simulationFactory']};}
 class GatewayError extends Error {constructor(readonly status:number,message:string){super(message);}}
 const origins=new Set(['http://127.0.0.1:4175','http://127.0.0.1:4176']);
 const token=()=>randomBytes(32).toString('base64url');
@@ -26,6 +28,8 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
  let creatingRuns=0;
  const issuePairingToken=()=>{currentToken=token();tokenExpiresAt=now()+(options.pairingTtlMs??300000);return currentToken;};
  const pairingToken=issuePairingToken();
+ const pairingValid=(t:unknown)=>typeof t==='string'&&!!currentToken&&now()<tokenExpiresAt&&same(t,currentToken);
+ const v2=createV2Gateway({directory:options.directory,sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,now,catalog:options.v2?.catalog,enabledBackends:options.v2?.enabledBackends,stream:options.v2?.stream,readinessProbes:options.v2?.readinessProbes,nativeChecks:options.v2?.nativeChecks,simulationFactory:options.v2?.simulationFactory,pairingValid,spendPairing(){currentToken='';},same,readBody:body,send:(r,s,d)=>send(r,s,d)});
  let port=options.port??4176;
  const server=createServer((request,response)=>{void handle(request,response).catch(error=>{
   const message=error instanceof Error?error.message:'INTERNAL_ERROR';
@@ -44,12 +48,14 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
    response.setHeader('Access-Control-Allow-Methods','GET, POST');response.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token');return send(response,204,null);
   }
   const url=new URL(request.url??'/',`http://${host}`),path=url.pathname;
-  if(url.search)throw new GatewayError(400,'QUERY_UNSUPPORTED');
+  // the only query accepted: the initial business-event cursor of a v2 stream (EventSource cannot send Last-Event-ID on first connect)
+  if(url.search&&path!=='/lab/v2/readiness'&&!(/^\/lab\/v2\/runs\/[0-9a-f-]{36}\/events$/.test(path)&&/^\?after=\d{1,20}$/.test(url.search)))throw new GatewayError(400,'QUERY_UNSUPPORTED');
+  if(path==='/lab/v2'||path.startsWith('/lab/v2/'))return v2(request,response,path,origin);
   if(request.method==='GET'&&path==='/lab/v1/health')return send(response,200,{sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,protocolMajor:1,backends:[{id:'business_sim',available:true},{id:'gazebo_sil',available:false,reason:'W06 backend not installed'},{id:'shadow',available:false,reason:'Native read-only telemetry not provisioned'},{id:'hardware_test',available:false,reason:'Native execution is outside this dev-only gateway'}],scenarioIds:['S01'],features:{polling:true,sse:false}});
   if(request.method==='POST'&&!origin)throw new GatewayError(403,'ORIGIN_REQUIRED');
   if(request.method==='POST'&&path==='/lab/v1/sessions'){
    const b=await body(request);
-   if(typeof b.token!=='string'||!currentToken||now()>=tokenExpiresAt||!same(b.token,currentToken))throw new GatewayError(401,'PAIRING_INVALID');
+   if(!pairingValid(b.token))throw new GatewayError(401,'PAIRING_INVALID');
    for(const [id,s]of sessions)if(now()>=s.expiresAt)sessions.delete(id);
    if(sessions.size>=10)throw new GatewayError(429,'SESSION_LIMIT');
    currentToken='';const id=token(),csrf=token();sessions.set(id,{csrf,expiresAt:now()+3600000});response.setHeader('Set-Cookie',`mekoniq_lab_session=${id}; HttpOnly; SameSite=Strict; Path=/lab/v1; Max-Age=3600`);return send(response,201,{csrfToken:csrf});
@@ -82,5 +88,5 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
  server.requestTimeout=10000;server.headersTimeout=10000;server.maxRequestsPerSocket=1000;
  await new Promise<void>((resolve,reject)=>{server.once('error',reject);server.listen(port,'127.0.0.1',()=>resolve());});
  port=(server.address() as {port:number}).port;
- return {url:`http://127.0.0.1:${port}`,pairingToken,issuePairingToken,async close(){server.closeIdleConnections();await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));await Promise.all([...runs.values()].map(r=>r.session.close()));}};
+ return {url:`http://127.0.0.1:${port}`,pairingToken,issuePairingToken,async close(){v2.endStreams();server.closeIdleConnections();await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));await Promise.all([...runs.values()].map(r=>r.session.close()));await v2.close();}};
 }

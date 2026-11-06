@@ -14,4 +14,6 @@ COPY robotics/agent src/agent
 COPY packages/contracts/schemas contracts
 ENV MEKONIQ_CONTRACTS_DIR=/ws/contracts
 RUN . /opt/ros/jazzy/setup.sh && colcon build --packages-select mekoniq_description mekoniq_navigation mekoniq_simulation
+# Lab v2 SIL worker: `python3 -m bridge.nav2_session --bundle <compiled bundle> --run-id <id> --robots <ns,...> --state-dir <dir>` (see robotics/simulation/bridge).
+ENV PYTHONPATH=/ws/src/simulation:/ws/src/agent
 CMD ["bash", "-lc", ". /opt/ros/jazzy/setup.sh && . /ws/install/setup.sh && colcon test --packages-select mekoniq_simulation --event-handlers console_direct+ && colcon test-result --verbose"]

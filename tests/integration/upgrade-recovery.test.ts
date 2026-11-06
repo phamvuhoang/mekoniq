@@ -76,7 +76,12 @@ test('backup verification finds corruption, missing segments, strays, missing ob
   mkdirSync(join(dir, 'storage', 'menu'), { recursive: true }); writeFileSync(join(dir, 'storage', 'menu', 'a.png'), 'abc');
   expect(verifyBackup(dir).reasons.join()).toMatch(/corrupt storage object/);
   writeFileSync(join(dir, 'manifest.json'), JSON.stringify({ ...manifest, storage: { readyAssets: 0, objects: [] } })); expect(verifyBackup(dir)).toMatchObject({ ok: true });
-  const bytes = readFileSync(join(dir, 'public.sql')); writeFileSync(join(dir, 'public.sql'), Buffer.concat([bytes.subarray(0, 100), Buffer.from('X'), bytes.subarray(101)]));
+  const bytes = readFileSync(join(dir, 'public.sql'));
+  expect(bytes.length).toBeGreaterThan(100);
+  const corrupted = Buffer.from(bytes);
+  corrupted[100] = corrupted[100]! ^ 1; // always changes a byte, including an original 'X' in pg_dump's random restrict key
+  expect(corrupted.equals(bytes)).toBe(false);
+  writeFileSync(join(dir, 'public.sql'), corrupted);
   expect(verifyBackup(dir).reasons.join()).toMatch(/corrupt public\.sql/);
   writeFileSync(join(dir, 'public.sql'), bytes); appendFileSync(join(dir, 'stray.sql'), 'drop table x;'); expect(verifyBackup(dir).reasons.join()).toMatch(/unaccounted file stray\.sql/); unlinkSync(join(dir, 'stray.sql'));
   unlinkSync(join(dir, 'public.sql')); expect(verifyBackup(dir).reasons.join()).toMatch(/missing segment public\.sql/);

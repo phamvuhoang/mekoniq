@@ -1,0 +1,137 @@
+{
+ "schemaVersion": 1,
+ "id": "puma560-reference",
+ "revision": 1,
+ "referenceOnly": true,
+ "mekoniqRobotCode": null,
+ "purpose": "Controller test model for the LinuxCNC simulation package (plan 03). Not a MEKONIQ robot; reach/limits are not coffee-counter numbers.",
+ "origin": {
+  "repository": "https://github.com/LinuxCNC/linuxcnc",
+  "branch": "2.9",
+  "commit": "135b0ce5220bef8f8a34b6825723108b8b9740f1",
+  "commitDate": "2021-06-20T01:22:49Z",
+  "checkedAt": "2026-11-05",
+  "files": {
+   "configs/sim/axis/vismach/puma/puma560_dh.hal": {
+    "vendoredCopy": "origin/puma560_dh.hal",
+    "vendoredSha256": "dae628cb0d84ffbf858bfef12a9238e21a3e353029262d38174699a6e0efb80e",
+    "upstreamSha256": null,
+    "note": "text fetched from the raw 2.9 URL on 2026-11-05 and vendored; upstream bytes not verified byte-for-byte (whitespace/line endings)"
+   },
+   "configs/sim/axis/vismach/puma/puma560.ini": {
+    "vendoredCopy": null,
+    "upstreamSha256": null,
+    "note": "only the unit/kinematics/joint lines were read (LINEAR_UNITS=inch, ANGULAR_UNITS=deg, G20 startup, genserkins, JOINTS=6, JOINT limits/velocity/HOME); not vendored"
+   }
+  }
+ },
+ "convention": "modified_dh_craig",
+ "units": {
+  "length": "inch",
+  "alpha": "rad",
+  "joint": "deg"
+ },
+ "siOutput": {
+  "length": "m",
+  "angle": "rad",
+  "time": "s"
+ },
+ "jointOrder": [
+  "J1",
+  "J2",
+  "J3",
+  "J4",
+  "J5",
+  "J6"
+ ],
+ "linuxcncJointMap": {
+  "JOINT_0": "J1",
+  "JOINT_1": "J2",
+  "JOINT_2": "J3",
+  "JOINT_3": "J4",
+  "JOINT_4": "J5",
+  "JOINT_5": "J6"
+ },
+ "axisSign": [
+  1,
+  1,
+  1,
+  1,
+  1,
+  1
+ ],
+ "zeroOffsetDeg": [
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "homeDeg": {
+  "J1": 0.0,
+  "J2": 0.0,
+  "J3": 0.0,
+  "J4": 0.0,
+  "J5": 0.1,
+  "J6": 0.0
+ },
+ "frames": {
+  "base": "arm_base",
+  "flange": "flange",
+  "tcp": "tcp"
+ },
+ "toolRevision": "tool-0-notool",
+ "reachBoundM": 1.7322799999999998,
+ "hashes": {
+  "modified-dh.json": "d0269d04828d26893f52087c5fcda8ab36a0f9333307a3ae0e100253b0bf171a",
+  "frames.json": "7f93c97d985d31365d8e4897c5aaa53dc61f3e2b6f55cb1d2fcaaebdd73cb5de",
+  "reference-poses.json": "4bd03c8d89715c4fb3d9b391474cf3cee5da1317bcc891f6e286af916eaa6ab1"
+ },
+ "hashAlgorithm": "sha256 over file bytes",
+ "tolerances": {
+  "fkPositionM": 1e-06,
+  "fkAngleRad": 1e-06,
+  "ikPositionM": 0.001,
+  "ikAngleRad": 0.0087266463
+ },
+ "tolerancesNote": "fixture numeric tolerances (spec arm-hardware \u00a73), not mechanical accuracy or repeatability",
+ "labIllustrativeModel": {
+  "id": "puma560-reference",
+  "revision": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+  "where": "source/packages/lab-runtime/src/v2/models/arm-kinematics.ts PUMA560_REFERENCE",
+  "note": "plan 01 mock_kinematic table with different numbers; mock mode only; never the controller model"
+ },
+ "unknown": {
+  "payloadKg": {
+   "value": null,
+   "unit": "kg",
+   "reason": "NOT_PROVIDED: the PUMA 560 sample carries no MEKONIQ mechanical data; never fill from PUMA defaults"
+  },
+  "gearRatio": {
+   "value": null,
+   "unit": "ratio",
+   "reason": "NOT_PROVIDED: the PUMA 560 sample carries no MEKONIQ mechanical data; never fill from PUMA defaults"
+  },
+  "brake": {
+   "value": null,
+   "unit": "spec",
+   "reason": "NOT_PROVIDED: the PUMA 560 sample carries no MEKONIQ mechanical data; never fill from PUMA defaults"
+  },
+  "encoder": {
+   "value": null,
+   "unit": "spec",
+   "reason": "NOT_PROVIDED: the PUMA 560 sample carries no MEKONIQ mechanical data; never fill from PUMA defaults"
+  },
+  "massKg": {
+   "value": null,
+   "unit": "kg",
+   "reason": "NOT_PROVIDED: the PUMA 560 sample carries no MEKONIQ mechanical data; never fill from PUMA defaults"
+  },
+  "inertia": {
+   "value": null,
+   "unit": "kg*m2",
+   "reason": "NOT_PROVIDED: the PUMA 560 sample carries no MEKONIQ mechanical data; never fill from PUMA defaults"
+  }
+ }
+}

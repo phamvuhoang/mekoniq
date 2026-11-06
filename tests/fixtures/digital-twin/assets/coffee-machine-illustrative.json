@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 2,
+  "revision": 1,
+  "contentHash": "18771958e98006dd7cb6bd9352611ce0bbd37aaacaaa159f67ef70124d7d9faa",
+  "hashAlgorithm": "sha256-canonical-json-v1",
+  "visual": null,
+  "collision": null,
+  "id": "coffee-machine-illustrative",
+  "kind": "coffee_machine",
+  "frames": [
+    {
+      "id": "machine_base",
+      "parentId": null,
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "body",
+      "parentId": "machine_base",
+      "translationM": [
+        0,
+        0,
+        0.225
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "pickup_zone",
+      "parentId": "machine_base",
+      "translationM": [
+        0.2,
+        0,
+        0.05
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "geometry": [
+    {
+      "kind": "box",
+      "frameId": "body",
+      "sizeM": [
+        0.4,
+        0.3,
+        0.45
+      ]
+    },
+    {
+      "kind": "cylinder",
+      "frameId": "pickup_zone",
+      "radiusM": 0.05,
+      "heightM": 0.01
+    }
+  ],
+  "provenance": [
+    {
+      "parameter": "geometry",
+      "source": "illustrative"
+    }
+  ]
+}

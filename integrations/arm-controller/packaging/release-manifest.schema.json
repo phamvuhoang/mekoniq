@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.arm-controller-release.v1",
+  "title": "ArmControllerReleaseManifest",
+  "description": "Manifest of one exported arm controller SIM artifact: identity, every file's sha256, model lock, dependency lock, SBOM/licence inventory, trust metadata (key id only) and claims. Signed as canonical JSON (manifest.sig.json). No credentials, no calibration, no hardware enable.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "artifact": {"const": "mekoniq-arm-controller"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(\\+[A-Za-z0-9.-]+)?$"},
+    "sourceCommit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "dirty": {"type": "boolean"},
+    "signed": {"type": "boolean"},
+    "exportedAt": {"type": "string", "format": "date-time"},
+    "nodeVersion": {"type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "mode": {"const": "simulation"},
+    "hardwareEnabled": {"const": false},
+    "profile": {"type": "object", "additionalProperties": false, "properties": {"id": {"type": "string", "minLength": 1}, "path": {"type": "string", "minLength": 1}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}, "required": ["id", "path", "sha256"]},
+    "model": {"type": "object", "additionalProperties": false, "properties": {"id": {"type": "string", "minLength": 1}, "revision": {"type": "integer", "minimum": 1}, "manifestSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}, "required": ["id", "revision", "manifestSha256"]},
+    "files": {"type": "array", "minItems": 1, "maxItems": 5000, "items": {"type": "object", "additionalProperties": false, "properties": {"path": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*\\.\\.)[^\\\\]+$"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "bytes": {"type": "integer", "minimum": 0}}, "required": ["path", "sha256", "bytes"]}},
+    "dependencies": {"type": "object", "additionalProperties": false, "properties": {"lockSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "status": {"enum": ["candidate", "verified"]}, "components": {"type": "array", "items": {"type": "object", "additionalProperties": false, "properties": {"id": {"type": "string"}, "version": {"type": "string"}, "status": {"enum": ["candidate", "verified"]}}, "required": ["id", "version", "status"]}}}, "required": ["lockSha256", "status", "components"]},
+    "sbom": {"type": "object", "additionalProperties": false, "properties": {"format": {"const": "mekoniq-sbom-v1"}, "components": {"type": "array", "items": {"type": "object", "additionalProperties": false, "properties": {"name": {"type": "string"}, "version": {"type": "string"}, "source": {"type": "string"}, "license": {"type": "string"}, "licenseReviewed": {"type": "boolean"}}, "required": ["name", "version", "source", "license", "licenseReviewed"]}}}, "required": ["format", "components"]},
+    "schemas": {"type": "array", "items": {"type": "object", "additionalProperties": false, "properties": {"name": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}, "required": ["name", "sha256"]}},
+    "compatibleCalibrationSchemas": {"type": "array", "minItems": 1, "items": {"type": "integer", "minimum": 1}},
+    "machineOverlay": {"type": "object", "additionalProperties": false, "properties": {"path": {"const": "machine/"}, "note": {"type": "string"}}, "required": ["path", "note"]},
+    "trust": {"type": "object", "additionalProperties": false, "properties": {"keyId": {"type": "string", "minLength": 1}, "algorithm": {"const": "Ed25519"}, "signatureFile": {"const": "manifest.sig.json"}, "canonicalization": {"type": "string"}}, "required": ["keyId", "algorithm", "signatureFile", "canonicalization"]},
+    "claims": {"type": "object", "additionalProperties": false, "properties": {"softwareSil": {"enum": ["not_run_until_linux_smoke", "smoke_recorded"]}, "hardware": {"const": "not_accepted"}, "note": {"type": "string"}}, "required": ["softwareSil", "hardware", "note"]}
+  },
+  "required": ["schemaVersion", "artifact", "version", "sourceCommit", "dirty", "signed", "exportedAt", "nodeVersion", "mode", "hardwareEnabled", "profile", "model", "files", "dependencies", "sbom", "schemas", "compatibleCalibrationSchemas", "machineOverlay", "trust", "claims"]
+}

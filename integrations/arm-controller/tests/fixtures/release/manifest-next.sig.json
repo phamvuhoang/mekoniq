@@ -1,0 +1,9 @@
+{
+ "schemaVersion": 1,
+ "algorithm": "Ed25519",
+ "keyId": "test-key-2026",
+ "signedAt": "2026-11-06T00:00:00.000Z",
+ "manifestSha256": "14ec490e13548a720c901c616fccbd9870a861c32e8dae3cd8b0e3c6035613cf",
+ "signature": "fWMapf9Agu3cyBWyqP68l_JjtAnVFRBMP3u1dl_380dYbG0z6f4RZDErxvnKRZj2VnbSUP9QkE_b7oWZjZp0AQ",
+ "publicKey": "FuUwuUkZlv7yF3HOz1EclbmyoenjFeJkycu_PDd5znc"
+}

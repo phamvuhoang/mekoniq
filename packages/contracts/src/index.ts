@@ -1,4 +1,5 @@
 export type * from '../generated/wire';
+export type * from '../generated/lab-v2';
 export * from './canonical';
 export * from './validate';
 export * from './signing';

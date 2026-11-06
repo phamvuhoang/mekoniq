@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "status": "candidate",
+  "verified": false,
+  "checkedAt": "2026-11-06",
+  "note": "Candidate only. Official Debian Bookworm index lists linuxcnc-uspace for arm64. Exact installed package, binary and Qt/Python inventory must be captured in the Debian VM before qualification. ARM64 results do not qualify amd64 or hardware.",
+  "host": {
+    "distribution": "debian",
+    "release": "12 (bookworm)",
+    "architecture": "arm64",
+    "image": {
+      "name": null,
+      "sha512": null,
+      "reason": "UNVERIFIED: recorded when the clean VM/PC is provisioned"
+    },
+    "kernel": "stock (no PREEMPT_RT needed for simulation)",
+    "realtime": {
+      "claim": "none",
+      "note": "VM timings are not IPC real-time evidence"
+    }
+  },
+  "requires": {
+    "ethercat": false,
+    "physicalNic": false,
+    "realtimeKernel": false,
+    "linux": true
+  },
+  "components": [
+    {
+      "id": "linuxcnc",
+      "kind": "controller",
+      "repository": "https://github.com/LinuxCNC/linuxcnc",
+      "status": "candidate",
+      "candidateRelease": {
+        "tag": "v2.9.10",
+        "publishedAt": "2026-07-03T00:19:48Z"
+      },
+      "branchHead": {
+        "branch": "2.9",
+        "commit": "26a2827980d61b309ae6113ed0f036c410735a37",
+        "date": "2026-11-01T11:16:03Z",
+        "note": "a branch is not a lock"
+      },
+      "sampleCommit": "135b0ce5220bef8f8a34b6825723108b8b9740f1",
+      "debianPackage": {
+        "name": "linuxcnc-uspace",
+        "suite": "bookworm",
+        "version": "2.9.0~pre1+git20230208.f1270d6ed7-1+deb12u2",
+        "architectures": [
+          "amd64",
+          "arm64",
+          "armel",
+          "armhf",
+          "i386",
+          "mips64el",
+          "mipsel",
+          "ppc64el",
+          "s390x"
+        ]
+      },
+      "sha256": null,
+      "sha256Reason": "UNVERIFIED: package/source digest recorded at install on the clean host",
+      "components": [
+        "genserkins",
+        "motmod (sim)",
+        "halui",
+        "qtvcp"
+      ]
+    },
+    {
+      "id": "python3",
+      "kind": "runtime",
+      "status": "candidate",
+      "version": "3.11 (bookworm default)",
+      "sha256": null,
+      "sha256Reason": "UNVERIFIED: distribution package"
+    },
+    {
+      "id": "python3-pyqt5",
+      "kind": "hmi",
+      "status": "candidate",
+      "version": "5.15.9+dfsg-1",
+      "suite": "bookworm",
+      "sha256": null,
+      "sha256Reason": "UNVERIFIED: distribution package"
+    },
+    {
+      "id": "python3-pyqt5.qsci",
+      "kind": "hmi",
+      "status": "candidate",
+      "version": "2.13.3+dfsg-3",
+      "suite": "bookworm",
+      "sha256": null,
+      "sha256Reason": "UNVERIFIED: distribution package"
+    },
+    {
+      "id": "qtvcp",
+      "kind": "hmi",
+      "status": "candidate",
+      "version": "bundled with linuxcnc",
+      "sha256": null,
+      "sha256Reason": "UNVERIFIED: ships inside the linuxcnc package",
+      "display": "qtvcp -f mekoniq_arm"
+    },
+    {
+      "id": "virtual-hal",
+      "kind": "config",
+      "status": "candidate",
+      "version": "configs/sim/puma560 (machine.hal loopbacks)",
+      "sha256": null,
+      "sha256Reason": "UNVERIFIED: hashed by the release manifest at export"
+    },
+    {
+      "id": "model",
+      "kind": "model",
+      "status": "candidate",
+      "version": "puma560-reference r1",
+      "manifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5",
+      "sha256": null,
+      "sha256Reason": "UNVERIFIED: see manifestSha256; the release manifest hashes the model files"
+    }
+  ],
+  "excluded": {
+    "igh-ethercat-master": "not required for simulation; a hardware profile pins it separately",
+    "lcec": "same",
+    "ros2": "not a dependency of the controller package"
+  },
+  "profileId": "utm-debian-arm64",
+  "actualInventory": null,
+  "compatibility": {
+    "terminal": "not_run",
+    "gui": "not_run",
+    "reason": "VM_NOT_PROVISIONED"
+  },
+  "sources": [
+    "https://packages.debian.org/bookworm/linuxcnc-uspace",
+    "https://linuxcnc.org/docs/html/getting-started/getting-linuxcnc.html"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "fd03-crossing",
+  "revision": 1,
+  "scenarioId": "FD03",
+  "projectFixture": "restaurant-v2.json",
+  "seed": 1,
+  "actors": [
+    {"id": "person-1", "kind": "pedestrian", "heightM": 1.7, "radiusM": 0.2, "trajectory": {"waypoints": [[5.5, 0.6], [5.5, 3.4]], "speedMps": 0.67, "startTick": 400, "dwellTicks": 0, "loop": false}, "note": "perpendicular crossing of the dining lane"},
+    {"id": "person-2", "kind": "pedestrian", "heightM": 1.7, "radiusM": 0.2, "trajectory": {"waypoints": [[6.0, 2.9], [6.0, 0.6]], "speedMps": 0.5, "startTick": 900, "dwellTicks": 300, "loop": false}, "note": "stands unexpectedly on the route, then leaves"},
+    {"id": "person-3", "kind": "pedestrian", "heightM": 1.7, "radiusM": 0.2, "trajectory": {"waypoints": [[4.0, 4.7], [4.0, 4.0]], "speedMps": 0.6, "startTick": 1200, "dwellTicks": 100, "loop": false}, "note": "occluded: steps out from behind the corridor-north wall"}
+  ],
+  "blockers": [],
+  "zones": [],
+  "faults": [],
+  "assertions": ["FD03.no-contact", "FD03.min-separation", "FD03.resume-cause", "FD03.no-false-arrival"]
+}

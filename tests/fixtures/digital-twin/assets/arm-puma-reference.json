@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 2,
+  "revision": 1,
+  "contentHash": "f12c8e962d74dcab35734e0e14f00e0a1168e6906b377fa530b27a4e4b2f79ef",
+  "hashAlgorithm": "sha256-canonical-json-v1",
+  "visual": null,
+  "collision": null,
+  "id": "arm-puma-reference",
+  "kind": "arm",
+  "frames": [
+    {
+      "id": "arm_base",
+      "parentId": null,
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "link_1",
+      "parentId": "arm_base",
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "link_2",
+      "parentId": "link_1",
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        -0.7071067811865475,
+        0,
+        0,
+        0.7071067811865476
+      ]
+    },
+    {
+      "id": "link_3",
+      "parentId": "link_2",
+      "translationM": [
+        0.43179999999999996,
+        0,
+        0.14986
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "link_4",
+      "parentId": "link_3",
+      "translationM": [
+        -0.020320000000000005,
+        0.4318,
+        1.1102230246251565e-16
+      ],
+      "quaternionXyzw": [
+        -0.7071067811865475,
+        0,
+        0,
+        0.7071067811865476
+      ]
+    },
+    {
+      "id": "link_5",
+      "parentId": "link_4",
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0.7071067811865475,
+        0,
+        0,
+        0.7071067811865476
+      ]
+    },
+    {
+      "id": "link_6",
+      "parentId": "link_5",
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        -0.7071067811865475,
+        0,
+        0,
+        0.7071067811865476
+      ]
+    },
+    {
+      "id": "flange",
+      "parentId": "link_6",
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "tcp",
+      "parentId": "flange",
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "geometry": [
+    {
+      "kind": "cylinder",
+      "frameId": "arm_base",
+      "radiusM": 0.09,
+      "heightM": 0.25
+    },
+    {
+      "kind": "sphere",
+      "frameId": "link_2",
+      "radiusM": 0.06
+    },
+    {
+      "kind": "sphere",
+      "frameId": "link_3",
+      "radiusM": 0.05
+    },
+    {
+      "kind": "sphere",
+      "frameId": "link_4",
+      "radiusM": 0.045
+    },
+    {
+      "kind": "box",
+      "frameId": "flange",
+      "sizeM": [
+        0.06,
+        0.06,
+        0.1
+      ]
+    }
+  ],
+  "kinematics": {
+    "convention": "modified_dh",
+    "jointCount": 6
+  },
+  "provenance": [
+    {
+      "parameter": "geometry",
+      "source": "illustrative",
+      "reference": "joint envelopes only; not link meshes"
+    },
+    {
+      "parameter": "kinematics",
+      "source": "illustrative",
+      "reference": "puma560-reference@bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3; not a MEKONIQ robot"
+    },
+    {
+      "parameter": "frames",
+      "source": "illustrative",
+      "reference": "link frames at q=0 from the pinned model"
+    }
+  ]
+}

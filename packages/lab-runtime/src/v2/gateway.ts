@@ -1,0 +1,171 @@
+import {randomBytes,randomUUID} from 'node:crypto';
+import {rm,writeFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import type {IncomingMessage,ServerResponse} from 'node:http';
+import {admitBackend,defaultCatalog,type CapabilityCatalog,type Access} from './capabilities';
+import {classifyField,validateProjectV2,validateRunRequestV2,validateActionV2,type Issue} from './contracts';
+import {collectReadiness,type ReadinessProbe,type NativeReadinessChecks} from './readiness';
+import {requiredBackends} from './scenario-matrix';
+import {scenarioRegistry} from './scenario-registry';
+import {createScenarioRun,type ScenarioRun,type RunManifestInput,type RunProviders} from './scenario-runner';
+import {serveRunStream,STREAM_DEFAULTS,type StreamOptions} from './event-stream';
+import {findReclaim,proofHash,saveReclaim} from './reclaim-store';
+/** Hooks into the v1 gateway so v2 shares its pairing token, body parser and response helper without importing it. */
+export interface V2Deps {
+ sourceCommit:string;schemaHash:string;now:()=>number;catalog?:CapabilityCatalog;
+ /** Parent directory for per-run journals; each run gets a fresh server-chosen subdirectory. */
+ directory:string;
+ /** Backends whose execution has been switched on. Schema-only builds enable none, so every run is denied before any backend starts. */
+ enabledBackends?:readonly string[];
+ pairingValid(token:unknown):boolean;spendPairing():void;same(a:string,b:string):boolean;
+ readBody(request:IncomingMessage):Promise<Record<string,unknown>>;send(response:ServerResponse,status:number,data:unknown):void;
+ /** SSE timing and the resumable business-event window (tests shorten them). */
+ stream?:Partial<StreamOptions>;
+ readinessProbes?:Readonly<Record<string,ReadinessProbe>>;
+ nativeChecks?:NativeReadinessChecks;
+ simulationFactory?:(input:RunManifestInput,providers:RunProviders)=>Promise<ScenarioRun>;
+}
+const COOKIE='mekoniq_lab_session_v2';
+// Local demo pairing may only drive simulations and read-only shadow; hil/live belong to native provisioning.
+const PAIRING_ACCESS:readonly Access[]=['simulated','shadow'];
+const UUID='[0-9a-f-]{36}';
+const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
+const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:/CONFLICT|MISMATCH|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_)/.test(m)?422:500;
+export function createV2Gateway(deps:V2Deps){
+ const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
+ const sessions=new Map<string,{csrf:string;expiresAt:number}>();
+ // Runs are owned by the v2 pairing session that created them; another session sees 404, exactly as for an unknown id.
+ const runs=new Map<string,{owner:string;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput}>();let creating=0;
+ const reclaiming=new Set<string>();
+ const streams=new Set<ServerResponse>(),streamOptions={...STREAM_DEFAULTS,...deps.stream};
+ const token=()=>randomBytes(32).toString('base64url');
+ const deny=(response:ServerResponse,status:number,error:string,reasonCodes:string[],issues?:Issue[])=>deps.send(response,status,{error,reasonCodes,...issues?{issues}:{}});
+ const failed=(response:ServerResponse,e:unknown)=>{const m=e instanceof Error?e.message:'RUNTIME_FAILURE',status=statusOf(m.split(':')[0]!);return deny(response,status,status===500&&m!=='SIMULATED_CRASH'?'RUNTIME_FAILURE':m.split(':')[0]!,m.includes(':')?m.split(':')[1]!.split(','):[]);};
+ const handle=async function handle(request:IncomingMessage,response:ServerResponse,path:string,origin:string|undefined){
+  const method=request.method,{send}=deps,sub=path.slice('/lab/v2'.length);
+  if(method==='GET'&&sub==='/health')return send(response,200,{
+   protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
+   backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
+   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends})),scenarioIds:[...scenarioRegistry.keys()],scenarioRequirements:Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,{mock:requiredBackends(def,'mock'),simulation:requiredBackends(def,'simulation')}])),features:{polling:true,sse:true,readiness:true},
+  });
+  if(method==='POST'&&!origin)return deny(response,403,'ORIGIN_REQUIRED',[]);
+  if(method==='POST'&&sub==='/sessions'){
+   const b=await deps.readBody(request),extra=Object.keys(b).filter(k=>k!=='token');
+   if(extra.length){const issues=extra.map(k=>({path:'',code:classifyField(k),message:`Property "${k}" is not allowed`}));return deny(response,422,'INVALID_SESSION_REQUEST',codesOf(issues),issues);}
+   if(!deps.pairingValid(b.token))return deny(response,401,'PAIRING_INVALID',[]);
+   for(const [id,s]of sessions)if(deps.now()>=s.expiresAt)sessions.delete(id);
+   if(sessions.size>=10)return deny(response,429,'SESSION_LIMIT',[]);
+   deps.spendPairing();const id=token(),csrf=token();sessions.set(id,{csrf,expiresAt:deps.now()+3600000});
+   response.setHeader('Set-Cookie',`${COOKIE}=${id}; HttpOnly; SameSite=Strict; Path=/lab/v2; Max-Age=3600`);
+   // The principal is assigned by the server; nothing in the request can choose it.
+   return send(response,201,{csrfToken:csrf,principal:{kind:'local_pairing',controlOwner:'lab_simulation',accesses:PAIRING_ACCESS}});
+  }
+  const sessionId=new RegExp(`(?:^|;\\s*)${COOKIE}=([A-Za-z0-9_-]+)`).exec(request.headers.cookie??'')?.[1]??'',session=sessions.get(sessionId);
+  if(!session||deps.now()>=session.expiresAt)return deny(response,401,'SESSION_REQUIRED',[]);
+  if(sub==='/readiness'){
+   const params=new URL(request.url??'/','http://127.0.0.1').searchParams;
+   let context:{scenarioId:string;backendSetId:string;project?:unknown};
+   if(method==='GET'){
+    if([...params.keys()].some(k=>!['scenarioId','backendSetId'].includes(k))||['scenarioId','backendSetId'].some(k=>params.getAll(k).length!==1||!/^[A-Za-z0-9_.:-]{1,200}$/.test(params.get(k)??'')))return deny(response,400,'INVALID_READINESS_QUERY',[]);
+    context={scenarioId:params.get('scenarioId')!,backendSetId:params.get('backendSetId')!};
+   }else if(method==='POST'){
+    if(!deps.same(String(request.headers['x-csrf-token']??''),session.csrf))return deny(response,403,'CSRF_INVALID',[]);
+    const body=await deps.readBody(request);
+    if(params.size||Object.keys(body).some(k=>!['scenarioId','backendSetId','project'].includes(k))||['scenarioId','backendSetId'].some(k=>typeof body[k]!=='string'||!/^[A-Za-z0-9_.:-]{1,200}$/.test(body[k] as string))||!Object.hasOwn(body,'project'))return deny(response,400,'INVALID_READINESS_QUERY',[]);
+    context={scenarioId:body.scenarioId as string,backendSetId:body.backendSetId as string,project:body.project};
+   }else return deny(response,405,'METHOD_NOT_ALLOWED',[]);
+   return send(response,200,await collectReadiness(context,{catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks}));
+  }
+  const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
+  const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|events|telemetry|reclaim|archive))?$`).exec(sub);
+  const runAllow=runRoute?({actions:'POST',reclaim:'POST',archive:'POST'}as Record<string,string>)[runRoute[2]??'']??'GET':undefined;
+  if(!route&&!runRoute)return deny(response,404,'NOT_FOUND',[]);
+  if(method!==(route?.allow??runAllow))return deny(response,405,'METHOD_NOT_ALLOWED',[]);
+  if(method==='POST'&&!deps.same(String(request.headers['x-csrf-token']??''),session.csrf))return deny(response,403,'CSRF_INVALID',[]);
+  if(route?.name==='validate'){
+   const result=validateProjectV2(await deps.readBody(request));
+   return result.ok?send(response,200,{ok:true}):deny(response,422,'INVALID_PROJECT',codesOf(result.issues),result.issues);
+  }
+  if(route?.name==='create'){
+   const result=validateRunRequestV2(await deps.readBody(request));
+   if(!result.ok)return deny(response,422,'INVALID_RUN_REQUEST',codesOf(result.issues),result.issues);
+   const r=result.value;
+   if(!PAIRING_ACCESS.includes(r.access))return deny(response,403,'CAPABILITY_DENIED',['ACCESS_NOT_GRANTED']);
+   if(r.runtimeIdentity.sourceCommit!==deps.sourceCommit||r.runtimeIdentity.schemaHash!==deps.schemaHash)return deny(response,409,'CONTRACT_MISMATCH',['CONTRACT_MISMATCH']);
+   const set=Object.hasOwn(catalog.sets,r.backendSetId)?catalog.sets[r.backendSetId]:undefined;
+   if(!set)return deny(response,422,'BACKEND_UNAVAILABLE',['BACKEND_SET_UNKNOWN']);
+   if(set.mode!==r.mode)return deny(response,422,'BACKEND_UNAVAILABLE',['MODE_BACKEND_MISMATCH']);
+   // The set's access is server-owned; the claimed (and already granted) access must equal it, so a shadow grant can never carry a hil/live set.
+   if(set.access!==r.access)return deny(response,422,'BACKEND_UNAVAILABLE',['ACCESS_MODE_MISMATCH']);
+   const scenario=scenarioRegistry.get(r.scenarioId);
+   if(!scenario)return deny(response,422,'SCENARIO_UNSUPPORTED',[]);
+   const required=r.mode==='hardware'?set.backends:requiredBackends(scenario,r.mode);
+   if(!required.every(id=>set.backends.includes(id)))return deny(response,422,'BACKEND_UNAVAILABLE',['SCENARIO_BACKEND_MISSING']);
+   const admission=admitBackend(r.mode,required,catalog,r.access);
+   if(!admission.ok)return deny(response,422,'BACKEND_UNAVAILABLE',admission.reasonCodes);
+   // Contract admission and execution availability are separate; native runs require a server-owned factory.
+   if((set.mode!=='mock'&&!(set.mode==='simulation'&&deps.simulationFactory))||!required.every(b=>enabled.has(b)))return deny(response,501,'BACKEND_UNAVAILABLE',['BACKEND_EXECUTION_DISABLED']);
+   const readiness=await collectReadiness({scenarioId:r.scenarioId,backendSetId:r.backendSetId,project:r.project},{catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks});
+   if(!readiness.canStart)return deny(response,422,'BACKEND_UNAVAILABLE',readiness.checks.flatMap(c=>c.reasonCodes));
+   // Expired sessions free active slots. Their durable checkpoints can later be reclaimed with local ownership proof.
+   for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});}}
+   if(runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
+   creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
+   try{
+    const input={project:r.project,scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit};
+    run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled]});
+    const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
+    const view=await run.snapshot();runs.set(run.id,{owner:sessionId,run,directory,input});return send(response,201,{...view,reclaimToken});
+   }catch(e){await run?.close().catch(()=>{});if(r.mode==='mock')await rm(directory,{recursive:true,force:true});return failed(response,e);}
+   finally{creating--;}
+  }
+  const entry=runs.get(runRoute![1]!),kind=runRoute![2];
+  if(kind==='reclaim'){
+   const body=await deps.readBody(request),id=runRoute![1]!;
+   if(Object.keys(body).some(k=>k!=='proof')||typeof body.proof!=='string'||body.proof.length>200)return deny(response,422,'INVALID_RECLAIM',[]);
+   const stored=await findReclaim(deps.directory,id);
+   if(!stored||!deps.same(proofHash(body.proof),stored.record.proofHash))return deny(response,404,'RUN_NOT_FOUND',[]);
+   if(stored.record.schemaHash!==deps.schemaHash||stored.record.input.sourceCommit!==deps.sourceCommit)return deny(response,409,'CONTRACT_MISMATCH',['CONTRACT_MISMATCH']);
+   if(reclaiming.has(id)||entry?.archiving)return deny(response,409,'RECLAIM_CONFLICT',[]);
+   if(!entry&&runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
+   reclaiming.add(id);if(!entry)creating++;let reopened:ScenarioRun|undefined;
+   try{
+    const factory=stored.record.input.mode==='simulation'?deps.simulationFactory:createScenarioRun;if(!factory)throw new Error('BACKEND_EXECUTION_DISABLED');
+    const run=entry?.run??(reopened=await factory(stored.record.input,{directory:stored.directory,catalog,enabledBackends:[...enabled]}));
+    const view=await run.holdForReclaim();
+    if(entry){entry.owner=sessionId;entry.readOnly=true;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,run,directory:stored.directory,readOnly:true,input:stored.record.input});
+    // Only the proof-protected record supplies reset/evidence inputs; the caller cannot substitute a project or seed.
+    return send(response,200,{...view,controlAccess:'view_reconcile',lockedInput:structuredClone(stored.record.input)});
+   }catch(e){await reopened?.close().catch(()=>{});return failed(response,e);}finally{reclaiming.delete(id);if(!entry)creating--;}
+  }
+  if(kind==='actions'){
+   const action=validateActionV2(await deps.readBody(request));
+   if(!action.ok)return deny(response,422,'INVALID_ACTION',codesOf(action.issues),action.issues);
+   if(!entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);
+   if(entry.archiving||reclaiming.has(runRoute![1]!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
+   if(entry.readOnly&&action.value.kind!=='reconcile')return deny(response,403,'RECLAIM_READ_ONLY',['VIEW_RECONCILE_ONLY']);
+   const beforeExecute=action.value.kind==='start'||action.value.kind==='resume'?async()=>{
+    const readiness=await collectReadiness({scenarioId:entry.input.scenarioId,backendSetId:entry.input.backendSetId,project:entry.input.project},{catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks});
+    if(!readiness.canStart)throw new Error(`BACKEND_UNAVAILABLE:${readiness.checks.flatMap(c=>c.reasonCodes).join(',')}`);
+   }:undefined;
+   try{return send(response,200,await entry.run.action(action.value,beforeExecute));}catch(e){return failed(response,e);}
+  }
+  if(!entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);
+  if(kind==='archive'){
+   const body=await deps.readBody(request);if(Object.keys(body).length)return deny(response,422,'INVALID_ARCHIVE',[]);
+   if(entry.archiving||reclaiming.has(runRoute![1]!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
+   entry.archiving=true;
+   try{
+    const report=await entry.run.report(),view=await entry.run.snapshot();
+    await writeFile(join(entry.directory,`archive-${view.run.runRevision}.json`),JSON.stringify(report),{mode:0o600,flag:'wx'}).catch(e=>{if((e as NodeJS.ErrnoException).code!=='EEXIST')throw e;});
+    await entry.run.close();runs.delete(entry.run.id);return send(response,200,{archived:true,runId:entry.run.id,eventCursor:view.run.eventCursor});
+   }catch(e){entry.archiving=false;return failed(response,e);}
+  }
+  if(kind==='events'||kind==='telemetry'){streams.add(response);return serveRunStream(kind,entry.run,request,response,streamOptions,new URL(request.url??'/','http://127.0.0.1'),()=>streams.delete(response),()=>sessions.get(sessionId)===session&&deps.now()<session.expiresAt&&runs.get(entry.run.id)===entry&&entry.owner===sessionId&&!entry.archiving);}
+  try{return send(response,200,kind==='report'?{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2}:{...await entry.run.snapshot(),...entry.readOnly?{controlAccess:'view_reconcile'}:{}});}catch(e){return failed(response,e);}
+ };
+ return Object.assign(handle,{
+  /** Ends open SSE connections so the HTTP server can close. */
+  endStreams(){for(const r of streams)r.end();streams.clear();},
+  close:async()=>{await Promise.all([...runs.values()].map(x=>x.run.close().catch(()=>{})));runs.clear();}});
+}

@@ -1,0 +1,542 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.twin-sample.v2",
+  "title": "TwinSampleV2",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "runId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "entityId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "providerId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "bootId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "seq": {
+      "type": "string",
+      "pattern": "^[0-9]{1,20}$"
+    },
+    "simTimeNs": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9]{1,20}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observedAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "receivedMonotonicNs": {
+      "type": "string",
+      "pattern": "^[0-9]{1,20}$"
+    },
+    "frameId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "origin": {
+      "enum": [
+        "mock",
+        "controller_sim",
+        "physics_sim",
+        "hardware"
+      ]
+    },
+    "quality": {
+      "enum": [
+        "valid",
+        "stale",
+        "unknown",
+        "invalid"
+      ]
+    },
+    "reasonCodes": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      }
+    },
+    "commanded": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TwinAmrState"
+        },
+        {
+          "$ref": "#/definitions/TwinAmrGoal"
+        },
+        {
+          "$ref": "#/definitions/TwinArmState"
+        },
+        {
+          "$ref": "#/definitions/TwinCoffeeCellState"
+        },
+        {
+          "$ref": "#/definitions/TwinCupState"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observed": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TwinAmrState"
+        },
+        {
+          "$ref": "#/definitions/TwinAmrGoal"
+        },
+        {
+          "$ref": "#/definitions/TwinArmState"
+        },
+        {
+          "$ref": "#/definitions/TwinCoffeeCellState"
+        },
+        {
+          "$ref": "#/definitions/TwinCupState"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "estimated": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TwinAmrState"
+        },
+        {
+          "$ref": "#/definitions/TwinAmrGoal"
+        },
+        {
+          "$ref": "#/definitions/TwinArmState"
+        },
+        {
+          "$ref": "#/definitions/TwinCoffeeCellState"
+        },
+        {
+          "$ref": "#/definitions/TwinCupState"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "causationId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "runId",
+    "entityId",
+    "providerId",
+    "bootId",
+    "seq",
+    "simTimeNs",
+    "observedAt",
+    "receivedMonotonicNs",
+    "frameId",
+    "origin",
+    "quality",
+    "reasonCodes",
+    "commanded",
+    "observed",
+    "estimated",
+    "causationId"
+  ],
+  "if": {
+    "properties": {
+      "quality": {
+        "const": "valid"
+      }
+    }
+  },
+  "then": {
+    "properties": {
+      "observed": {
+        "type": "object"
+      }
+    }
+  },
+  "else": {
+    "properties": {
+      "reasonCodes": {
+        "type": "array",
+        "minItems": 1
+      }
+    }
+  },
+  "definitions": {
+    "TwinAmrState": {
+      "description": "AMR base_link in frameId (map): metres, radians; commanded carries the goal, observed the pose.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "xM": {
+          "type": "number"
+        },
+        "yM": {
+          "type": "number"
+        },
+        "yawRad": {
+          "type": "number"
+        },
+        "linearMps": {
+          "type": "number"
+        },
+        "angularRadps": {
+          "type": "number"
+        },
+        "moving": {
+          "type": "boolean"
+        },
+        "hold": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "goalCommandId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "goalState": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "batteryRatio": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "xM",
+        "yM",
+        "yawRad"
+      ]
+    },
+    "TwinAmrGoal": {
+      "description": "AMR commanded goal: command id and state, optional target in metres.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "goalCommandId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "goalState": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+        },
+        "targetXM": {
+          "type": "number"
+        },
+        "targetYM": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "goalCommandId",
+        "goalState"
+      ]
+    },
+    "TwinArmState": {
+      "description": "Six-joint arm in frameId (arm_base): radians, metres.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "jointsRad": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "number"
+          }
+        },
+        "jointVelocityRadps": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "number"
+          }
+        },
+        "followingErrorRad": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "number"
+          }
+        },
+        "tcpM": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "homed": {
+          "type": "boolean"
+        },
+        "limitsOk": {
+          "type": "boolean"
+        },
+        "gripper": {
+          "enum": [
+            "open",
+            "closed",
+            "unknown"
+          ]
+        },
+        "virtualGrip": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "state": {
+              "enum": [
+                "open",
+                "held",
+                "empty",
+                "fault",
+                "unknown",
+                "released",
+                "lost"
+              ]
+            },
+            "closeOutput": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "producer": {
+              "const": "linuxcnc_virtual_grip"
+            },
+            "fidelity": {
+              "const": "modeled"
+            },
+            "reasonCodes": {
+              "type": "array",
+              "maxItems": 10,
+              "items": {
+                "type": "string",
+                "maxLength": 120
+              }
+            }
+          },
+          "required": [
+            "state",
+            "closeOutput",
+            "producer",
+            "fidelity",
+            "reasonCodes"
+          ]
+        }
+      },
+      "required": [
+        "jointsRad"
+      ]
+    },
+    "TwinCoffeeCellState": {
+      "description": "Coffee cell process state; quantities stay in the domain (exact decimals), temperature in kelvin.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cycleState": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+        },
+        "cupPresent": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "machineStatus": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "jobId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stepId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "temperatureK": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "cleaning": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "cycleState",
+        "cupPresent"
+      ]
+    },
+    "TwinCupState": {
+      "description": "Cup attachment parent (exactly one owner at a time).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ownerKind": {
+          "enum": [
+            "cell",
+            "arm",
+            "robot",
+            "customer",
+            "quarantine",
+            "unknown"
+          ]
+        },
+        "ownerId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ownerKind",
+        "ownerId"
+      ]
+    }
+  }
+}

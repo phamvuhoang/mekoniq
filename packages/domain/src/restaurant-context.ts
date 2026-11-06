@@ -75,6 +75,9 @@ export const commandFeatures:Record<string,{feature:string;intent:'new'|'finish_
  'Fulfillment.Allocate':{feature:'fulfillment',intent:'finish_existing'},
  'Fulfillment.HandOff':{feature:'fulfillment',intent:'finish_existing'},
  'Mission.Create':{feature:'robot.delivery',intent:'new'},
+ // Coffee: registering a recipe and starting a job are new work; steps, observations, transfers, cancel and reconcile finish a job already under way.
+ 'Coffee.RegisterRecipe':{feature:'beverage',intent:'new'},'Coffee.ReserveJob':{feature:'beverage',intent:'new'},'Coffee.StartJob':{feature:'beverage',intent:'new'},
+ 'Coffee.StartStep':{feature:'beverage',intent:'finish_existing'},'Coffee.ConfirmQuality':{feature:'beverage',intent:'finish_existing'},'Coffee.StepTimeout':{feature:'beverage',intent:'finish_existing'},'Coffee.ObserveCup':{feature:'beverage',intent:'finish_existing'},'Coffee.ObserveDevice':{feature:'beverage',intent:'finish_existing'},'Coffee.CancelJob':{feature:'beverage',intent:'finish_existing'},'Coffee.Reconcile':{feature:'beverage',intent:'finish_existing'},'Coffee.RecordCleaning':{feature:'beverage',intent:'finish_existing'},'Cup.RequestTransfer':{feature:'beverage',intent:'finish_existing'},'Cup.ConfirmTransfer':{feature:'beverage',intent:'finish_existing'},'Cup.TransferLost':{feature:'beverage',intent:'finish_existing'},
  'Shift.Open':{feature:'cash.shift',intent:'new'},
  // Closing and moving cash finish an existing shift (allowed while the feature drains); a new print attempt needs a ready printer, recording what the spool saw does not.
  'Shift.Close':{feature:'cash.shift',intent:'finish_existing'},

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "food-beverage",
+  "revision": 1,
+  "title": "Food + beverage campaign: shared robots, corridor and coffee cell",
+  "note": "FD02 + FD07 + BV01 + BV03 share resources inside one workload (verification.md section 4). Entries name runner scenarios of the source registry; `requires` equals the runtime preflight for that scenario (the FD02 verification row also owns FD02-cups, which needs the cell). BV01 uses the pinned sil/bv01.json fixture and the server native-config; a simulation run needs the exact required backend set and never falls back. The concurrent mixed workload remains explicitly unsupported by the native runner.",
+  "scenarios": [
+    {"id": "FD02", "seed": 23, "repeat": 3, "mock": {"backendSetId": "mock-amr"}, "simulation": {"backendSetId": "simulation-default", "requires": ["gazebo_nav2"]}},
+    {"id": "FD07", "seed": 23, "repeat": 3, "mock": {"backendSetId": "mock-amr"}, "simulation": {"backendSetId": "simulation-default", "requires": ["gazebo_nav2"]}},
+    {"id": "BV01", "seed": 23, "repeat": 3, "mock": {"backendSetId": "mock-default"}, "simulation": {"backendSetId": "coffee-simulation", "requires": ["gazebo_nav2", "linuxcnc_sim", "coffee_io_sim"]}},
+    {"id": "CAMPAIGN-FD02-FD07-BV01-BV03", "seed": 23, "repeat": 3, "mock": {"backendSetId": "mock-default"}, "simulation": {"backendSetId": "coffee-simulation", "requires": ["gazebo_nav2", "linuxcnc_sim", "coffee_io_sim"]}}
+  ]
+}

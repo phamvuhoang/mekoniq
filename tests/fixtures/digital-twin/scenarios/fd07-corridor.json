@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "fd07-corridor",
+  "revision": 1,
+  "scenarioId": "FD07",
+  "projectFixture": "corridor-v2.json",
+  "seed": 17,
+  "actors": [],
+  "blockers": [],
+  "zones": [{"id": "corridor-a", "x": 4.5, "y": 2.5, "width": 1, "height": 1}],
+  "faults": [],
+  "assertions": ["FD07.exclusive-zone", "FD07.both-deliver", "FD07.no-contact", "FD07.min-separation", "FD07.progress-or-reason"]
+}

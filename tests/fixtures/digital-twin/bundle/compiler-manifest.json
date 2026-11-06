@@ -1,0 +1,175 @@
+{
+  "assumptions": [
+    "boundary walls 0.1 m thick and 2.0 m high inside the world rectangle (illustrative)",
+    "project obstacles extruded from z=0 to 0.75 m (fixture asset table-sil; illustrative)",
+    "handoff pose for a table point inside its furniture: along the ray from the furniture centre to the nearest service point, offset by the largest robot radius + 0.1 m margin; yaw faces the furniture centre",
+    "visual geometry reuses the collision primitives: mesh blobs are referenced by hash but not bundled",
+    "max linear velocity 0.6 m/s unless the entity declares speedLimitMps (illustrative)"
+  ],
+  "backendCompatibility": {
+    "gazebo_nav2": {
+      "compatible": true,
+      "dynamicsProvenance": [
+        "illustrative"
+      ],
+      "reasons": []
+    }
+  },
+  "collisionAssetRevisionRefs": [
+    {
+      "contentHash": "7af1195f91369d6af801a9ea582255bb9ea891ed52b6bfbb95823c6356e9bec2",
+      "id": "service-robot-sil",
+      "revision": 1
+    }
+  ],
+  "collisionBlobs": [
+    {
+      "assetId": "service-robot-sil",
+      "contentHash": "2222222222222222222222222222222222222222222222222222222222222222",
+      "mediaType": "application/x-mekoniq-geometry"
+    }
+  ],
+  "collisionBounds": {
+    "max": [
+      7.4,
+      8.0,
+      0.75
+    ],
+    "min": [
+      3.2,
+      0,
+      0
+    ]
+  },
+  "compiler": {
+    "id": "lab-world-compiler",
+    "version": "1"
+  },
+  "fixtureHeightM": 0.75,
+  "frame": "world",
+  "hashAlgorithm": "sha256-canonical-json-v1",
+  "inputHash": "52a74298cb847fcb51e0472509e76fb92ac30dcbabacff75ea0465af4dcc1d67",
+  "manifestHash": "1258c612e58f40652bb1a11e5b6f52ffc848c5b83feafcbbfccff8302766c71a",
+  "map": {
+    "inflation": "none",
+    "mapId": "lab-world",
+    "mapRevision": "1",
+    "origin": [
+      0,
+      0,
+      0
+    ],
+    "pgmSha256": "e69ef5471041ecd26841bbe30d28a3438853930696b978b6bad4aafb0dfba040",
+    "resolutionM": 0.05
+  },
+  "outputs": [
+    {
+      "path": "bindings.json",
+      "sha256": "18a1a724e14cd8e69cde2d45c0bcb6fbe7c1d799520dc8a0540c40dfbae2adde"
+    },
+    {
+      "path": "map.identity.json",
+      "sha256": "1b90953aff1913944ae409e697285699fa64b3a813fc0d78b276fe5b11cc55c2"
+    },
+    {
+      "path": "map.pgm",
+      "sha256": "e69ef5471041ecd26841bbe30d28a3438853930696b978b6bad4aafb0dfba040"
+    },
+    {
+      "path": "map.yaml",
+      "sha256": "160f68bfa681bc856b03efe99c03b0a3675940af451c8b5bbfdba62460cf711f"
+    },
+    {
+      "path": "nav2-amr-1.yaml",
+      "sha256": "e9640aa959e8199b876da86abc8fe71f2fbcb25ab0d82f712b72905fb7adb206"
+    },
+    {
+      "path": "robot-amr-1.urdf",
+      "sha256": "d3a450e64f84713cf117a32fc1874f5825f9c05e9ec9f0367ad2bcf6b515e4d3"
+    },
+    {
+      "path": "scene-index.json",
+      "sha256": "6708e12b06f787941a888da95c73be8eb5e23bed33df4d06108d0e5c536dca02"
+    },
+    {
+      "path": "world.sdf",
+      "sha256": "c4f07db369631c605d1755f43c6129db46fc4d7b2015977006b0a4ba70a0f701"
+    }
+  ],
+  "project": {
+    "id": "sil-restaurant",
+    "revision": 1
+  },
+  "robots": [
+    {
+      "assetRef": {
+        "contentHash": "7af1195f91369d6af801a9ea582255bb9ea891ed52b6bfbb95823c6356e9bec2",
+        "id": "service-robot-sil",
+        "revision": 1
+      },
+      "entityId": "amr-1",
+      "footprint": {
+        "max": [
+          0.3,
+          0.275
+        ],
+        "min": [
+          -0.3,
+          -0.275
+        ]
+      },
+      "mass": {
+        "kg": 20,
+        "provenance": "illustrative"
+      },
+      "maxLinearMps": 0.6,
+      "namespace": "robot_amr_1",
+      "parkingId": "parking",
+      "radiusM": 0.40697051490249264,
+      "spawn": {
+        "x": 1.5,
+        "y": 1.0,
+        "yaw": 0.0
+      }
+    }
+  ],
+  "scenario": null,
+  "schemaVersion": 1,
+  "units": "m",
+  "visualAssetRevisionRefs": [
+    {
+      "contentHash": "7af1195f91369d6af801a9ea582255bb9ea891ed52b6bfbb95823c6356e9bec2",
+      "id": "service-robot-sil",
+      "revision": 1
+    }
+  ],
+  "visualBlobs": [
+    {
+      "assetId": "service-robot-sil",
+      "contentHash": "1111111111111111111111111111111111111111111111111111111111111111",
+      "mediaType": "model/gltf-binary"
+    }
+  ],
+  "warnings": [],
+  "world": {
+    "hash": "9f3b0ad7199a6817072a418e17ad2a1324e86d4e53a76b6ba3012d7987e7f6d1",
+    "heightM": 8,
+    "id": "sil-world",
+    "revision": 1,
+    "widthM": 12
+  },
+  "worldBounds": {
+    "max": [
+      12,
+      8,
+      2.0
+    ],
+    "min": [
+      0,
+      0,
+      0
+    ]
+  },
+  "yaw": "rad",
+  "zUp": true
+}

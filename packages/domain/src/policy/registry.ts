@@ -40,6 +40,8 @@ export const featureRegistry: Record<string,FeatureDefinition> = {
   'einvoice':{id:'einvoice',group:'F25',dependencies:['billing'],permission:'invoice.issue',readiness:'invoiceProvider'},
   'service.models':{id:'service.models',group:'F26',dependencies:['catalog'],permission:'configuration.publish'},
   'integrations':{id:'integrations',group:'F27',dependencies:[],permission:'integration.write'},
+  // Coffee cell (recipes, jobs, cup custody). Off in every preset: only a venue/lab that configured a cell switches it on; it consumes W07 stock.
+  'beverage':{id:'beverage',group:'F07',dependencies:['kitchen','inventory'],permission:'beverage.write'},
 };
 export const systemRegistry = {identity:'F01',configuration:'F02',operations:'F28',continuity:'F29',maintenance:'F30'} as const;
 export const systemInvariants = ['identity','audit','tenant-isolation','replay-protection','robot.stop','continuity','maintenance'] as const;

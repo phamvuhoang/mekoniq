@@ -1,0 +1,39 @@
+import {expect,test} from 'vitest';
+import {assessNativeFaultCase,validateNativeFaultExpectation,type NativeFaultBaseline} from '../../packages/lab-runtime/src/v2/sil/native-fault-oracle';
+import type {RunReport} from '../../packages/lab-runtime/src/v2/report';
+import type {JsonObject} from '../../packages/contracts/src/index';
+// Pure observation-assessment fixtures, never an executed native run.
+const expectation={faultId:'cut',outcome:'needs_attention' as const,attentionReasons:['INJECTED_TUNNEL_LOSS']};
+function fixture(){
+ const pending={transferId:'place',from:{kind:'arm',id:'arm-1'},to:{kind:'robot',id:'amr-1',slot:1},epoch:2,commandId:'command-place',payloadHash:'a'.repeat(64),controlEpoch:7,requestedAt:'2026-11-06T00:00:00.000Z'},cup={cupId:'cup-1',ownerKind:'arm',ownerId:'arm-1',slot:null,epoch:2,pendingTransfer:pending};
+ const armSamples=[0,1].map(i=>({schemaVersion:2,runId:'oracle',entityId:'arm-1',providerId:'linuxcnc_sim',bootId:'arm-boot',seq:String(41+i),simTimeNs:null,receivedMonotonicNs:String(1000+i*1000),quality:'valid',observed:{jointsRad:[0,0,0,0,0,0]}}));
+ const armTrace=armSamples.map((s,i)=>({tick:i,bootId:s.bootId,seq:s.seq,controllerEpoch:7,quality:'valid',actualRad:s.observed.jointsRad,receivedMonotonicNs:s.receivedMonotonicNs}));
+ return {report:{manifest:{runId:'oracle'},outcome:{status:'needs_attention',served:'0',tick:10},attention:[{reason:'INJECTED_TUNNEL_LOSS'}],businessEvents:[],effects:[],recoveredOps:[],faultScheduleFires:[{id:'cut',outcome:'applied'}],coffee:{cups:[structuredClone(cup)],cellEffects:[]},metrics:{collision:{contacts:0}},verification:{arm:{colliding:[]},blockers:[]}} as unknown as RunReport,
+ log:[{id:'cut',kind:'tunnel-loss',status:'intent',tick:10},{id:'cut',kind:'tunnel-loss',status:'observed',proof:{producer:'transport',closed:true}},{id:'cut',kind:'tunnel-loss',status:'fired'}] as JsonObject[],
+ baseline:{id:'cut',kind:'tunnel-loss',sourceCursor:'10',arm:{result:'pass',trace:{samples:2,fromTick:0,toTick:1}},armTickMap:armSamples.map((s,i)=>({sampleTick:i,runTick:8+i,entityId:s.entityId,bootId:s.bootId,seq:s.seq})),armSamples,armTrace,navSamples:[{runId:'oracle',providerId:'gazebo_nav2',quality:'valid'},{runId:'oracle',providerId:'gazebo_nav2',quality:'valid'}],contacts:{available:true,contacts:[],sensors:[{alive:true},{alive:true}]},cups:[structuredClone(cup)],blockers:[]} as unknown as NativeFaultBaseline,
+ dispatches:[{commandId:'pick'},{commandId:'place'}]};
+}
+const assess=(x:ReturnType<typeof fixture>)=>assessNativeFaultCase(expectation,x.report,x.log,[x.baseline],x.dispatches);
+test('declared negative oracle can pass while underlying business remains attention',()=>{const x=fixture();expect(assess(x).every(r=>r.result==='pass')).toBe(true);expect(x.report.outcome.status).toBe('needs_attention');});
+test.each(['unobserved','unexpected-attention','custody-advanced','pending-cleared','replay','empty-samples','collision','coverage-gap','wrong-run','wrong-proof'] as const)('negative oracle refuses %s without waiving safety or coverage',kind=>{const x=fixture();if(kind==='unobserved')x.log=x.log.filter(r=>r.status!=='observed');if(kind==='unexpected-attention')x.report.attention=[{reason:'UNRELATED_FAILURE',tick:10}];if(kind==='custody-advanced')x.report.businessEvents=[{sequence:'11',type:'CupTransferConfirmed'}] as RunReport['businessEvents'];if(kind==='pending-cleared')x.report.coffee!.cups[0]!.pendingTransfer=null;if(kind==='replay')x.dispatches.push({commandId:'pick'});if(kind==='empty-samples')x.baseline.navSamples=[];if(kind==='collision')x.report.metrics.collision.contacts=1;if(kind==='wrong-run')(x.baseline.armSamples[0] as {runId:string}).runId='other';if(kind==='wrong-proof')x.log.find(r=>r.status==='observed')!.proof={producer:'command_completion',closed:true};if(kind==='coverage-gap')x.baseline.blockers=['CONTACT_SENSOR_COVERAGE_GAP'];expect(assess(x).some(r=>r.result!=='pass')).toBe(true);});
+test('expectation declaration is bounded and cannot supply commands or arbitrary coverage exemptions',()=>{expect(validateNativeFaultExpectation(expectation)).toEqual(expectation);for(const value of [{...expectation,skipArm:true},{...expectation,attentionReasons:[]},{...expectation,outcome:'completed'}])expect(()=>validateNativeFaultExpectation(value)).toThrow();});
+
+test('negative restart oracle requires an observed change of both boot and controller epoch',()=>{const x=fixture();x.log=[{id:'cut',kind:'controller-restart',status:'intent'},{id:'cut',kind:'controller-restart',status:'observed_transition',before:{bootId:'a',controllerEpoch:1},after:{bootId:'b',controllerEpoch:2}}];expect(assess(x).find(r=>r.id==='BV01.fault-observed')?.result).toBe('pass');(x.log[1]!.after as JsonObject).controllerEpoch=1;expect(assess(x).find(r=>r.id==='BV01.fault-observed')?.result).toBe('fail');});
+
+test.each(['entity','boot','seq','sampleTick','map-order','run-order','negative-run','fractional-run','after-fault','after-run','trace-bound','sample-reordered','trace-tick','trace-boot','trace-seq','trace-epoch','trace-joints','sequence-order'] as const)('negative oracle rejects corrupt arm correlation: %s',kind=>{
+ const x=fixture(),map=x.baseline.armTickMap!,m=map[1]!;
+ if(kind==='entity')m.entityId='unrelated';if(kind==='boot')m.bootId='wrong';if(kind==='seq')m.seq='888';if(kind==='sampleTick')m.sampleTick=8;
+ if(kind==='map-order')map.reverse();if(kind==='run-order')m.runTick=7;if(kind==='negative-run')map[0]!.runTick=-1;if(kind==='fractional-run')m.runTick=8.5;
+ if(kind==='after-fault')m.runTick=11;if(kind==='after-run')x.report.outcome.tick=8;if(kind==='trace-bound')x.baseline.arm!.trace!.toTick=9;if(kind==='sample-reordered')x.baseline.armSamples.reverse();
+ if(kind==='trace-tick')x.baseline.armTrace[1]!.tick=99;if(kind==='trace-boot')x.baseline.armTrace[1]!.bootId='other';if(kind==='trace-seq')x.baseline.armTrace[1]!.seq='777';if(kind==='trace-epoch')x.baseline.armTrace[1]!.controllerEpoch=999;if(kind==='trace-joints')x.baseline.armTrace[1]!.actualRad=[1,1,1,1,1,1];if(kind==='sequence-order'){m.seq='1';(x.baseline.armSamples[1] as {seq:string}).seq='1';x.baseline.armTrace[1]!.seq='1';}
+ expect(assess(x).find(r=>r.id==='SIM.engine-samples')?.result).not.toBe('pass');expect(assess(x).find(r=>r.id==='ARM03')?.result).not.toBe('pass');
+});
+test.each(['commandId','payloadHash','controlEpoch','transferId','epoch','requestedAt','from','to','slot','cup-slot','cup-epoch','new-pending'] as const)('negative oracle preserves full pending identity: %s',kind=>{
+ const x=fixture(),cup=x.report.coffee!.cups[0]!,pending=cup.pendingTransfer as JsonObject;
+ if(['commandId','payloadHash','transferId','requestedAt'].includes(kind))pending[kind]='changed';if(['controlEpoch','epoch'].includes(kind))pending[kind]=999;
+ if(kind==='from')pending.from={kind:'arm',id:'other'};if(kind==='to')pending.to={kind:'robot',id:'other',slot:1};if(kind==='slot')(pending.to as JsonObject).slot=2;
+ if(kind==='cup-slot')cup.slot=2;if(kind==='cup-epoch')cup.epoch=999;if(kind==='new-pending')x.baseline.cups[0]!.pendingTransfer=null;
+ expect(assess(x).find(r=>r.id==='BV01.custody-preserved')?.result).toBe('fail');expect(assess(x).find(r=>r.id==='BV01.cup-ledger')?.result).toBe('fail');
+});
+test('negative oracle allows only mutable pending observation fields',()=>{const x=fixture();Object.assign(x.report.coffee!.cups[0]!.pendingTransfer!,{giver:{observedBy:'arm-observer',observedAt:'2026-11-06T00:00:01.000Z'},receiver:{observedBy:'tray-observer',observedAt:'2026-11-06T00:00:01.000Z'},lastResult:'outcome_unknown',lastObservedBy:'controller'});expect(assess(x).every(r=>r.result==='pass')).toBe(true);});
+test('negative oracle retains a second required unfired schedule blocker',()=>{const x=fixture();x.report.verification!.blockers.push('NATIVE_FAULT_NOT_FIRED:second-required-fault');expect(assess(x).some(r=>r.result==='fail')).toBe(true);});

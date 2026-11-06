@@ -1,0 +1,26 @@
+# MEKONIQ PUMA 560 reference, simulation only: virtual HAL. Every joint feeds its own command back (no drive, no encoder, no EtherCAT/IgH/lcec),
+# estop and tool changer are loopbacks. Nothing here opens a path to hardware; a hardware profile is a different, provisioning-controlled config.
+loadrt [KINS]KINEMATICS
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS
+source puma560-dh.hal
+addf motion-command-handler servo-thread
+addf motion-controller servo-thread
+# joint loopbacks: commanded position is the fed-back position
+net J0pos joint.0.motor-pos-cmd => joint.0.motor-pos-fb
+net J1pos joint.1.motor-pos-cmd => joint.1.motor-pos-fb
+net J2pos joint.2.motor-pos-cmd => joint.2.motor-pos-fb
+net J3pos joint.3.motor-pos-cmd => joint.3.motor-pos-fb
+net J4pos joint.4.motor-pos-cmd => joint.4.motor-pos-fb
+net J5pos joint.5.motor-pos-cmd => joint.5.motor-pos-fb
+# estop / enable and tool-change loopbacks (software state only; not a safety circuit)
+net estop-loop iocontrol.0.user-enable-out => iocontrol.0.emc-enable-in
+net tool-prep-loop iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+net tool-change-loop iocontrol.0.tool-change => iocontrol.0.tool-changed
+# controller fault fixture: a signal with no writer. `halcmd sets mekoniq-fault-inject true` trips joint 0's amp fault, which takes the machine
+# off; recovery needs an explicit reset and never resumes the program by itself.
+net mekoniq-fault-inject => joint.0.amp-fault-in
+
+# SIM gripper command, sampled via linuxcnc.stat.dout[0]; no hardware driver or M66.
+# Virtual object-present is telemetry from the bridge, never a physical input sensor.
+net mekoniq-sim-grip-close motion.digital-out-00
+net mekoniq-sim-object-present => motion.digital-in-00

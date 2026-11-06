@@ -1,0 +1,16 @@
+/* MEKONIQ arm HMI — navy ground, lime accent (same palette as lab/src/styles/main.css); touch-sized controls for a fullscreen 1024x600+ panel */
+QMainWindow, QWidget { background: #0b151a; color: #edf5f3; font-family: Inter, "Noto Sans JP", "Noto Sans", sans-serif; font-size: 18px; }
+QGroupBox { border: 1px solid #2c424b; border-radius: 12px; margin-top: 14px; padding: 12px; background: #121f26; }
+QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 6px; color: #a2b8bf; }
+QLabel { color: #edf5f3; }
+QLabel#safetyNote { color: #ffd08c; font-weight: 600; }
+QLabel#faultLabel { color: #ffaaa0; font-weight: 700; }
+QLabel#freshnessLabel { color: #9dccff; }
+QPushButton { min-height: 56px; min-width: 120px; padding: 8px 18px; border-radius: 12px; border: 1px solid #2c424b; background: #182a33; color: #edf5f3; font-weight: 600; }
+QPushButton:pressed { background: #b4f375; color: #122207; }
+QPushButton:disabled { color: #5b6d74; background: #0f1c22; border-color: #1f3038; }
+QPushButton#revokeButton { background: #7a1f1f; color: #ffffff; }
+QPushButton#runButton, QPushButton#acquireButton { border-color: #b4f375; }
+QTableWidget { background: #0d1a20; gridline-color: #2c424b; border: 1px solid #2c424b; border-radius: 8px; }
+QHeaderView::section { background: #182a33; color: #a2b8bf; padding: 6px; border: none; }
+QLineEdit { min-height: 44px; background: #0d1a20; border: 1px solid #2c424b; border-radius: 8px; padding: 4px 10px; }

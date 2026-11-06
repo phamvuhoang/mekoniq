@@ -10,6 +10,8 @@ export const IMPLEMENTED_FEATURES: ReadonlySet<string> = new Set([
   'reservations', 'promotion', 'loyalty', 'inventory', 'procurement', 'workforce', 'reporting', 'service.models',
   // W09-T03: external channel orders (ExternalOrder.* commands, gated by this feature). `chain` is organisation-level cloud management, not a per-venue switch, so it stays out of this list.
   'online',
+  // Coffee cell module (Coffee.*/Cup.* commands, permissions, this gate); no template enables it, a venue with a configured cell does.
+  'beverage',
 ]);
 export const PRESET_NAMES = Object.keys(profiles);
 /** What the capability matrix wants for a venue type beyond what the template can enable yet. */

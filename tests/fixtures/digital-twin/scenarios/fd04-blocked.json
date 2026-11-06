@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "fd04-blocked",
+  "revision": 1,
+  "scenarioId": "FD04",
+  "projectFixture": "restaurant-v2.json",
+  "seed": 1,
+  "actors": [],
+  "blockers": [
+    {"id": "chair", "x": 6.0, "y": 2.2, "width": 0.5, "height": 0.5, "heightM": 0.9, "atTick": 0},
+    {"id": "lane-closed", "x": 3.2, "y": 3.4, "width": 1.6, "height": 1.2, "heightM": 1.0, "atTick": 400, "untilTick": 1400}
+  ],
+  "zones": [],
+  "faults": [{"atTick": 0, "faultId": "blocker-on", "entityId": "chair"}, {"atTick": 400, "faultId": "blocker-on", "entityId": "lane-closed"}, {"atTick": 1400, "faultId": "blocker-off", "entityId": "lane-closed"}],
+  "assertions": ["FD04.no-false-arrival", "FD04.blocked-reason", "FD04.no-contact", "FD04.reopen-by-policy"]
+}

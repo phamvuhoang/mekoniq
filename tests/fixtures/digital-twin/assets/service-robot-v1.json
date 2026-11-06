@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 2,
+  "id": "service-robot-sil",
+  "revision": 1,
+  "contentHash": "7af1195f91369d6af801a9ea582255bb9ea891ed52b6bfbb95823c6356e9bec2",
+  "hashAlgorithm": "sha256-canonical-json-v1",
+  "kind": "amr",
+  "visual": {
+    "contentHash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "mediaType": "model/gltf-binary"
+  },
+  "collision": {
+    "contentHash": "2222222222222222222222222222222222222222222222222222222222222222",
+    "mediaType": "application/x-mekoniq-geometry"
+  },
+  "frames": [
+    {
+      "id": "base_link",
+      "parentId": null,
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "chassis",
+      "parentId": "base_link",
+      "translationM": [
+        0,
+        0,
+        0.2
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "drive",
+      "parentId": "base_link",
+      "translationM": [
+        0,
+        0,
+        0.1
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "sensor",
+      "parentId": "base_link",
+      "translationM": [
+        0.2,
+        0,
+        0.28
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "tray_1",
+      "parentId": "base_link",
+      "translationM": [
+        0,
+        0,
+        0.5
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "geometry": [
+    {
+      "kind": "box",
+      "frameId": "chassis",
+      "sizeM": [
+        0.6,
+        0.55,
+        0.15
+      ]
+    },
+    {
+      "kind": "box",
+      "frameId": "drive",
+      "sizeM": [
+        0.2,
+        0.42,
+        0.2
+      ]
+    },
+    {
+      "kind": "cylinder",
+      "frameId": "sensor",
+      "radiusM": 0.04,
+      "heightM": 0.06
+    },
+    {
+      "kind": "box",
+      "frameId": "tray_1",
+      "sizeM": [
+        0.4,
+        0.45,
+        0.02
+      ]
+    }
+  ],
+  "inertial": {
+    "massKg": 20
+  },
+  "sensorRefs": [
+    "sensor"
+  ],
+  "provenance": [
+    {
+      "parameter": "geometry",
+      "source": "illustrative",
+      "reference": "SIL fixture; not a measured robot"
+    },
+    {
+      "parameter": "frames",
+      "source": "illustrative"
+    },
+    {
+      "parameter": "inertial.massKg",
+      "source": "illustrative",
+      "reference": "20 kg illustrative chassis mass for Gazebo physics; not measured"
+    }
+  ]
+}

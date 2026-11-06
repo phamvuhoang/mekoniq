@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 2,
+  "id": "table-sil",
+  "revision": 1,
+  "contentHash": "1b5791188a6116a92d0e80a3f24512d079b25aee67184d440b281b38cc470af2",
+  "hashAlgorithm": "sha256-canonical-json-v1",
+  "kind": "fixture",
+  "visual": {
+    "contentHash": "3333333333333333333333333333333333333333333333333333333333333333",
+    "mediaType": "model/gltf-binary"
+  },
+  "collision": {
+    "contentHash": "4444444444444444444444444444444444444444444444444444444444444444",
+    "mediaType": "application/x-mekoniq-geometry"
+  },
+  "frames": [
+    {
+      "id": "fixture_base",
+      "parentId": null,
+      "translationM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "top",
+      "parentId": "fixture_base",
+      "translationM": [
+        0,
+        0,
+        0.375
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "geometry": [
+    {
+      "kind": "box",
+      "frameId": "top",
+      "sizeM": [
+        0.8,
+        0.8,
+        0.75
+      ]
+    }
+  ],
+  "provenance": [
+    {
+      "parameter": "geometry",
+      "source": "illustrative",
+      "reference": "0.8 m square table, 0.75 m high; illustrative"
+    }
+  ]
+}

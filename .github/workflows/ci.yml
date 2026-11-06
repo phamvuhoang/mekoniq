@@ -10,6 +10,11 @@ jobs:
         with:
           node-version-file: .node-version
           cache: pnpm
+      # TS integration exercises the real Python compiler/worker output through the canonical runtime validator.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt -e robotics/agent
       - run: pnpm install --frozen-lockfile
       - run: pnpm supabase:start
       - run: pnpm contracts:check && pnpm typecheck && pnpm lint && pnpm build
@@ -22,8 +27,9 @@ jobs:
       - run: pnpm supabase:stop
         if: always()
   python:
-    # Python robot executor, hardware profile validation and the cross-runtime schema contract. Target runtime is 3.12.
-    # robotics/simulation/tests is deliberately NOT run here: it needs Docker and ROS 2 Jazzy/Gazebo (see docs/implementation/evidence/W06-T04.md for the command).
+    # Python robot executor, hardware profile validation, the cross-runtime schema contract and the pure-Python simulation tooling (world compiler,
+    # bridge protocol, actors/metrics, collision). Target runtime is 3.12. robotics/simulation/tests/test_restaurant.py skips itself here: the Gazebo/Nav2
+    # scenarios need Docker and ROS 2 Jazzy/Gazebo (see docs/implementation/evidence/W06-T04.md for the command); a skip is never a pass of that gate.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,4 +37,6 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt -e robotics/agent
-      - run: .venv/bin/python -m pytest robotics/agent/tests tests/hardware tests/contracts/test_schema_python.py -q
+      - run: .venv/bin/python -m pytest robotics/agent/tests tests/hardware tests/contracts/test_schema_python.py robotics/simulation/tests -q
+      # the arm controller package has its own top-level `bridge`; it runs in its own interpreter, as the plan's unittest commands do
+      - run: cd integrations/arm-controller && ../../.venv/bin/python -m pytest tests -q

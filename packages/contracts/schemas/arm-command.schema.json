@@ -1,0 +1,412 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.arm-command.v1",
+  "title": "ArmCommand",
+  "description": "arm.command.v1: the local bridge envelope of the arm controller. `command` is the mekoniq.cell-command.v2 authority envelope (the only command authority; this schema adds owner token, lease, controller epoch and the profile/model the caller expects). Exactly one of command/acquire/release/renew/reconcile. Transport-internal (Unix socket on the IPC); never exposed under /lab/v2. Exactly one of command/acquire/release/renew/reconcile/local/revoke is present (checked by the bridge and the adapter; Ajv strict mode cannot express it as oneOf/required). `local` (jog/home) and `revoke` exist for the local operator owner only; the arbiter refuses them from any other owner. Optional simScene is negotiated by simulation_scene.v1 and a pinned acquire.simulationScene; exactly one shape including simScene.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "kind": {
+      "const": "arm.command.v1"
+    },
+    "machineId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "controllerEpoch": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "token": {
+          "type": "string",
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_-]*$"
+        },
+        "actor": {
+          "enum": [
+            "local_operator",
+            "lab_simulation",
+            "authorized_cell_job"
+          ]
+        }
+      },
+      "required": [
+        "token",
+        "actor"
+      ]
+    },
+    "leaseId": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]*$"
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profileHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "modelManifestSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "profileHash",
+        "modelManifestSha256"
+      ]
+    },
+    "command": {
+      "$ref": "cell-command.schema.json"
+    },
+    "acquire": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "leaseMs": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 600000
+        },
+        "simulationScene": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "worldRevision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          },
+          "required": [
+            "runId",
+            "worldRevision"
+          ]
+        }
+      },
+      "required": [
+        "actor",
+        "leaseMs"
+      ]
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "leaseId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        }
+      },
+      "required": [
+        "leaseId"
+      ]
+    },
+    "renew": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "leaseId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        }
+      },
+      "required": [
+        "leaseId"
+      ]
+    },
+    "reconcile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "commandId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        }
+      },
+      "required": [
+        "commandId"
+      ]
+    },
+    "local": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "jog_start",
+            "jog_stop",
+            "home_all",
+            "estop_reset",
+            "machine_on"
+          ]
+        },
+        "joint": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "velocityDegS": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -360,
+              "maximum": 360
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "action",
+        "joint",
+        "velocityDegS"
+      ]
+    },
+    "revoke": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "actor",
+        "reason"
+      ]
+    },
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$",
+      "description": "Client request correlation id echoed by the reply; a late reply never answers another request."
+    },
+    "simScene": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "worldRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "sceneSeq": {
+          "type": "string",
+          "pattern": "^[0-9]{1,20}$"
+        },
+        "transferId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "cup": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            "present": {
+              "type": "boolean"
+            },
+            "positionM": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number",
+                "minimum": -100,
+                "maximum": 100
+              }
+            }
+          },
+          "required": [
+            "id",
+            "present",
+            "positionM"
+          ]
+        },
+        "receiver": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "robotId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "slot": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "stationary": {
+                  "type": "boolean"
+                },
+                "localizationValid": {
+                  "type": "boolean"
+                },
+                "poseErrorM": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "trayPresent": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "robotId",
+                "slot",
+                "stationary",
+                "localizationValid",
+                "poseErrorM",
+                "trayPresent"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "faults": {
+          "type": "array",
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "missing_cup",
+              "gripper_stuck",
+              "drop_cup"
+            ]
+          }
+        }
+      },
+      "required": [
+        "runId",
+        "worldRevision",
+        "sceneSeq",
+        "transferId",
+        "commandId",
+        "cup",
+        "receiver",
+        "faults"
+      ]
+    },
+    "barrier": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "barrierId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+        },
+        "nonce": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+        },
+        "bootId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+        },
+        "afterSeq": {
+          "type": "string",
+          "pattern": "^[0-9]{1,20}$"
+        },
+        "state": {
+          "enum": [
+            "stationary",
+            "paused"
+          ]
+        }
+      },
+      "required": [
+        "barrierId",
+        "nonce",
+        "bootId",
+        "afterSeq",
+        "state"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "kind",
+    "machineId",
+    "controllerEpoch",
+    "owner",
+    "leaseId",
+    "expected"
+  ]
+}

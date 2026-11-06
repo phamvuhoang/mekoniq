@@ -1,0 +1,370 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.lab-arm-collision-evidence.v1",
+  "title": "ArmCollisionEvidenceRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "const": "ARM03"
+    },
+    "result": {
+      "enum": [
+        "pass",
+        "fail",
+        "not_run"
+      ]
+    },
+    "reasonCodes": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "type": "string",
+        "maxLength": 1000
+      }
+    },
+    "engine": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "modelRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "geometryRevision": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "worldRevision": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "hash"
+      ]
+    },
+    "assetRef": {
+      "type": "object",
+      "maxProperties": 100,
+      "additionalProperties": true
+    },
+    "trace": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "samples": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fromTick": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "toTick": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "samples",
+            "fromTick",
+            "toTick"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "attachments": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cupId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "fromTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "toTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "cupId",
+          "fromTick",
+          "toTick"
+        ]
+      }
+    },
+    "allowedContacts": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "pair": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "minItems": 2
+          },
+          "phase": {
+            "enum": [
+              "grasp",
+              "release"
+            ]
+          },
+          "fromTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "toTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "pair",
+          "phase",
+          "fromTick",
+          "toTick",
+          "revision"
+        ]
+      }
+    },
+    "method": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "type": "string",
+              "maxLength": 1000
+            },
+            "bound": {
+              "type": "string",
+              "maxLength": 1000
+            },
+            "toleranceM": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "maxDepth": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "kind",
+            "bound",
+            "toleranceM",
+            "maxDepth"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "coverage": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "intervals": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "evaluations": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "uncertain": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "allowedContactsApplied": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "intervals",
+            "evaluations",
+            "uncertain",
+            "allowedContactsApplied"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "colliding": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "pair": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "minItems": 2
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "fraction": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "clearanceM": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": -1000000000000.0,
+                "maximum": 1000000000000.0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interval": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "fromTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "toTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "fromTick",
+              "toTick"
+            ]
+          }
+        },
+        "required": [
+          "pair",
+          "reason",
+          "fraction",
+          "clearanceM",
+          "interval"
+        ]
+      }
+    },
+    "provenance": {
+      "const": "geometric_checker"
+    },
+    "fidelity": {
+      "const": "modeled"
+    }
+  },
+  "required": [
+    "id",
+    "result",
+    "reasonCodes",
+    "engine",
+    "modelRevision",
+    "geometryRevision",
+    "worldRevision",
+    "assetRef",
+    "trace",
+    "attachments",
+    "allowedContacts",
+    "method",
+    "coverage",
+    "colliding",
+    "provenance",
+    "fidelity"
+  ]
+}

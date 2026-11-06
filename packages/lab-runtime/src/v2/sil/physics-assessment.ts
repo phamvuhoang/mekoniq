@@ -1,0 +1,7 @@
+import type {SilAssertion} from './campaign';
+/** Pure assessment of supplied observations. This function never establishes provider provenance. */
+export function assessPhysicsObservations(i:{robots:string[];contacts:unknown[];liveness:Record<string,number>;contactGaps:string[];poseGaps:string[];separation:{samples:number;min:null|{gapM:number;tick:number;a:string;b:string}}}):SilAssertion[]{
+ const silent=i.robots.filter(id=>!i.liveness[id]),s=i.separation;
+ return [{id:'SIM.no-contact',...i.contacts.length?{result:'fail',reason:'CONTACT',detail:`${i.contacts.length} contacts recorded`}:silent.length?{result:'not_run',reason:`CONTACT_SENSOR_SILENT:${silent.join(',')}`,detail:'no contact-sensor report for these robots'}:i.contactGaps.length?{result:'not_run',reason:`CONTACT_SENSOR_COVERAGE_GAP:${[...i.contactGaps].sort().join(',')}`}:{result:'pass',detail:`0 contacts over ${Object.values(i.liveness).reduce((a,b)=>a+b,0)} sensor reports`}},
+ {id:'SIM.min-separation',...i.robots.length<2?{result:'not_run',reason:'SINGLE_ROBOT'}:!s.min?{result:'not_run',reason:'SEPARATION_NOT_COMPUTED',detail:'no separation sample from the worker'}:s.min.gapM<=0?{result:'fail',reason:'FOOTPRINT_OVERLAP',detail:`footprints overlapped at tick ${s.min.tick} (${s.min.a},${s.min.b})`}:i.poseGaps.length?{result:'not_run',reason:`POSE_COVERAGE_GAP:${[...i.poseGaps].sort().join(',')}`}:{result:'pass',detail:`min footprint gap ${s.min.gapM} m at tick ${s.min.tick} (${s.min.a},${s.min.b}) over ${s.samples} samples`}}];
+}

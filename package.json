@@ -10,7 +10,7 @@
     "dev:cloud": "pnpm --filter @mekoniq/cloud-web dev",
     "dev:tablet": "pnpm --filter @mekoniq/tablet-web dev",
     "build": "pnpm -r --if-present build",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "pnpm --filter @mekoniq/cloud-web exec next typegen && tsc --noEmit",
     "lint": "eslint .",
     "doctor": "node scripts/doctor.mjs",
     "local:bootstrap": "node scripts/bootstrap-local.mjs",

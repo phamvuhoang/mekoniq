@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "machineId": "puma560-sim-1",
+  "backend": "linuxcnc_sim",
+  "mode": "simulation",
+  "model": {
+    "id": "puma560-reference",
+    "revision": 1,
+    "manifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+  },
+  "units": {
+    "length": "inch",
+    "angle": "deg",
+    "alpha": "rad"
+  },
+  "telemetry": {
+    "staleMs": 500,
+    "deviceStatusStaleMs": 2000,
+    "clockSkewMaxMs": 250,
+    "rateHz": 20
+  },
+  "disconnect": {
+    "response": "hold_and_reconcile",
+    "note": "a lost Lab link never stops a running program by itself and never resumes one; the local operator decides"
+  },
+  "lease": {
+    "ttlMs": 10000,
+    "renewBeforeMs": 3000,
+    "expiredResponse": "block_next_command_require_reconcile"
+  },
+  "channel": {
+    "socketPath": "/run/mekoniq-arm/bridge.sock",
+    "maxFrameBytes": 65536,
+    "queueDepth": 32,
+    "maxCommandsPerSecond": 50,
+    "localSocketPath": "/run/mekoniq-arm/local.sock",
+    "note": "socketPath: Lab-class clients (lab_simulation, authorized_cell_job); localSocketPath: the operator HMI (local_operator; jog/home/revoke). Filesystem ACLs decide who connects to which."
+  },
+  "ownerTransfer": {
+    "allowedTaskStates": [
+      "idle",
+      "disabled"
+    ],
+    "requireNoUnknownOutcome": true
+  },
+  "gcode": {
+    "allowedWords": [
+      "G0",
+      "G1",
+      "G4",
+      "G17",
+      "G20",
+      "G40",
+      "G49",
+      "G54",
+      "G90",
+      "G94",
+      "M2",
+      "M30",
+      "M64",
+      "M65"
+    ],
+    "note": "staged programs are allowlisted by id + sha256 and by word set; MDI, user M-codes, subroutines, file paths and Python are refused"
+  },
+  "programs": {
+    "demo-six-axis": {
+      "path": "programs/demo-six-axis.ngc",
+      "sha256": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9",
+      "model": {
+        "id": "puma560-reference",
+        "revision": 1,
+        "manifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+      }
+    },
+    "cup-pick": {
+      "path": "programs/cup-pick.ngc",
+      "sha256": "67a9daa19a59a9a041d53b9e1403249c56a9b999e7a7ab108d313ad9d49951fb",
+      "model": {
+        "id": "puma560-reference",
+        "revision": 1,
+        "manifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+      }
+    },
+    "cup-place": {
+      "path": "programs/cup-place.ngc",
+      "sha256": "31d4b6434f113fcd4e251a1f40b6982992da894e8b30155f5a51ef8a05310486",
+      "model": {
+        "id": "puma560-reference",
+        "revision": 1,
+        "manifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5"
+      }
+    }
+  },
+  "hardware": {
+    "enabled": false,
+    "reason": "SIM_ONLY: hardware enable is provisioning-controlled, never a profile edit"
+  },
+  "localMotion": {
+    "maxJogVelocityDegS": 10,
+    "joints": 6,
+    "note": "HMI-local jog/home only, through the arbiter, local_operator owner, task on, interpreter idle, no fault, nothing unknown"
+  },
+  "simulationScene": {
+    "capability": "simulation_scene.v1",
+    "freshnessMs": 500,
+    "graspToleranceM": 0.015,
+    "releaseToleranceM": 0.025,
+    "liftMinM": 0.03,
+    "dockToleranceM": 0.05,
+    "armId": "arm-1",
+    "worldFromArmBaseM": [
+      2,
+      2,
+      0.2878563958200204
+    ],
+    "trayPositionM": [
+      1.860300000654706,
+      2.330557457353138,
+      0.625
+    ],
+    "outputPin": 0,
+    "trayRobotId": "amr-1",
+    "traySlot": 1,
+    "cupOffsetTcpM": [
+      0,
+      0,
+      0.07
+    ]
+  }
+}

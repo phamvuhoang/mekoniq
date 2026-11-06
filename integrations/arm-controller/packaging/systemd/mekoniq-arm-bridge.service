@@ -1,0 +1,31 @@
+# MEKONIQ arm bridge: the local command arbiter/service on the controller IPC. Simulation install (scripts/install-sim.sh) only; hardware
+# profiles are provisioned separately. Each socket grants its own client group access at every bind.
+[Unit]
+Description=MEKONIQ arm controller bridge (LinuxCNC simulation profile)
+After=network-online.target
+# no Requires on linuxcnc: the bridge reports the controller unavailable instead of starting it
+
+[Service]
+Type=simple
+User=mekoniq-arm
+Group=mekoniq-arm
+SupplementaryGroups=mekoniq-lab mekoniq-arm-operators
+RuntimeDirectory=mekoniq-arm
+RuntimeDirectoryMode=0711
+StateDirectory=mekoniq-arm
+StateDirectoryMode=0700
+UMask=0077
+# Provision disjoint client groups: desktop HMI in mekoniq-arm-operators, connector in mekoniq-lab.
+# Only the service belongs to both. Runtime directory permits traversal; each socket is 0660.
+Environment=MEKONIQ_ARM_PREFIX=/opt/mekoniq-arm-sim
+Environment=MEKONIQ_ARM_SCHEMA_DIR=/opt/mekoniq-arm-sim/current/schemas
+ExecStart=/usr/bin/python3 /opt/mekoniq-arm-sim/current/bridge/run.py --profile /opt/mekoniq-arm-sim/current/configs/sim/puma560/profile.json --journal /var/lib/mekoniq-arm/journal.jsonl --lab-group mekoniq-lab --local-group mekoniq-arm-operators
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/mekoniq-arm /run/mekoniq-arm
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,24 @@
+{
+ "schemaVersion": 1,
+ "purpose": "TEST trust policy: ephemeral key generated for the fixtures, not a release key",
+ "keys": [
+  {
+   "keyId": "test-key-2026",
+   "algorithm": "Ed25519",
+   "publicKey": "FuUwuUkZlv7yF3HOz1EclbmyoenjFeJkycu_PDd5znc",
+   "validFrom": "2026-01-01T00:00:00Z",
+   "expiresAt": "2030-01-01T00:00:00Z",
+   "status": "revoked",
+   "revokedAt": "2026-10-01T00:00:00Z",
+   "reason": "test revocation"
+  }
+ ],
+ "allowDowngrade": false,
+ "allowDowngradeTo": [],
+ "offlineCacheValidityDays": 90,
+ "cachedAt": "2026-11-05T12:00:00Z",
+ "governance": {
+  "approver": "test"
+ },
+ "policyRevision": 1
+}

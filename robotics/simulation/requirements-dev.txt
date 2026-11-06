@@ -1,0 +1,7 @@
+# Pinned Python prerequisites of the simulation tooling (world compiler, worker bridge, actors/metrics, collision). ROS/rclpy/Gazebo are NOT pip
+# packages: they come from the pinned image in image.lock.json (Ubuntu 24.04 + ROS 2 Jazzy + Gazebo Harmonic) and are only needed to RUN a SIL.
+pytest==9.2.0
+rfc8785==0.1.4
+jsonschema==4.26.0
+rfc3339-validator==0.1.4
+pyyaml==6.0.2

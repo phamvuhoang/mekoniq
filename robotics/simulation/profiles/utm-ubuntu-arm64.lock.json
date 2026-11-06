@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "utm-ubuntu-arm64",
+  "platform": "linux",
+  "architecture": "arm64",
+  "os": {
+    "id": "ubuntu",
+    "version": "24.04"
+  },
+  "installation": "native_apt",
+  "ros": "jazzy",
+  "gazebo": "harmonic",
+  "headless": true,
+  "qualification": "not_run",
+  "requiredPackages": [
+    "ros-jazzy-ros-base",
+    "ros-jazzy-navigation2",
+    "ros-jazzy-nav2-bringup",
+    "ros-jazzy-ros-gz"
+  ],
+  "packageVersions": null,
+  "image": null,
+  "reasonCodes": [
+    "VM_STORAGE_UNAVAILABLE",
+    "PACKAGE_INVENTORY_NOT_CAPTURED"
+  ],
+  "note": "Candidate native apt profile. Capture and review dpkg inventory on provisioned Ubuntu before pinning packageVersions. No amd64 container digest is evidence for this ARM64 VM. Pin the complete installed dpkg inventory and inspected runtime paths/launcher hashes/environment, not only metapackages.",
+  "runtimePin": null
+}

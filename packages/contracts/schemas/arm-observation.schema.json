@@ -1,0 +1,808 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.arm-observation.v1",
+  "title": "ArmObservation",
+  "description": "What the arm bridge publishes: arm.status.v1 (authoritative controller state, commanded and actual joints apart, SI on the wire), arm.event.v1 (lifecycle/owner/fault events; a command observation is the mekoniq.cell-observation.v2 payload) and arm.reply.v1 (the answer to one arm.command.v1). An accepted reply is never a completion.",
+  "type": "object",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "machineId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "controllerEpoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bootId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "seq": {
+          "type": "string",
+          "pattern": "^[0-9]{1,20}$"
+        },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "monotonicNs": {
+          "type": "string",
+          "pattern": "^[0-9]{1,20}$"
+        },
+        "kind": {
+          "const": "arm.status.v1"
+        },
+        "owner": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "enum": [
+                "none",
+                "local_operator",
+                "lab_simulation",
+                "authorized_cell_job"
+              ]
+            },
+            "actor": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "leaseId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "actor",
+            "leaseId"
+          ]
+        },
+        "task": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "state": {
+              "enum": [
+                "estop",
+                "off",
+                "on"
+              ]
+            },
+            "mode": {
+              "enum": [
+                "manual",
+                "auto",
+                "mdi",
+                "unknown"
+              ]
+            },
+            "interp": {
+              "enum": [
+                "idle",
+                "running",
+                "paused",
+                "unknown"
+              ]
+            },
+            "homed": {
+              "type": "boolean"
+            },
+            "fault": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "state",
+            "mode",
+            "interp",
+            "homed",
+            "fault"
+          ]
+        },
+        "joints": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "names": {
+              "type": "array",
+              "minItems": 6,
+              "maxItems": 6,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              }
+            },
+            "commandedRad": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "minItems": 6,
+                  "maxItems": 6,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "actualRad": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "minItems": 6,
+                  "maxItems": 6,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "velocityRadS": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "minItems": 6,
+                  "maxItems": 6,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "followingErrorRad": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "minItems": 6,
+                  "maxItems": 6,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "enum": [
+                "controller_sim",
+                "hardware",
+                "unknown"
+              ]
+            }
+          },
+          "required": [
+            "names",
+            "commandedRad",
+            "actualRad",
+            "velocityRadS",
+            "followingErrorRad",
+            "source"
+          ]
+        },
+        "tcp": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "frameId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "positionM": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "quaternionXyzw": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "required": [
+                "frameId",
+                "positionM",
+                "quaternionXyzw"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "program": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "hash": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "none",
+                "staged",
+                "running",
+                "paused",
+                "done",
+                "unknown"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "hash",
+            "state"
+          ]
+        },
+        "units": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "source": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "length": {
+                  "enum": [
+                    "inch",
+                    "mm",
+                    "m"
+                  ]
+                },
+                "angle": {
+                  "enum": [
+                    "deg",
+                    "rad"
+                  ]
+                }
+              },
+              "required": [
+                "length",
+                "angle"
+              ]
+            },
+            "wire": {
+              "const": "SI"
+            }
+          },
+          "required": [
+            "source",
+            "wire"
+          ]
+        },
+        "freshness": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "staleMs": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "quality": {
+              "enum": [
+                "valid",
+                "stale",
+                "unknown"
+              ]
+            }
+          },
+          "required": [
+            "staleMs",
+            "quality"
+          ]
+        },
+        "reasonCodes": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^[A-Z][A-Z0-9_:.-]*$"
+          }
+        },
+        "reconcileRequired": {
+          "type": "boolean"
+        },
+        "unknownCommands": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "simulation_scene.v1",
+              "correlated_barrier.v1"
+            ]
+          }
+        },
+        "virtualGrip": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "state": {
+              "enum": [
+                "open",
+                "held",
+                "empty",
+                "fault",
+                "unknown",
+                "released",
+                "lost"
+              ]
+            },
+            "closeOutput": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "producer": {
+              "const": "linuxcnc_virtual_grip"
+            },
+            "fidelity": {
+              "const": "modeled"
+            },
+            "reasonCodes": {
+              "type": "array",
+              "maxItems": 10,
+              "items": {
+                "type": "string",
+                "maxLength": 120
+              }
+            }
+          },
+          "required": [
+            "state",
+            "closeOutput",
+            "producer",
+            "fidelity",
+            "reasonCodes"
+          ]
+        },
+        "inventory": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "controllerVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "pythonVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "platform": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "architecture": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "bridgeCodeSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "profileSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "controllerVersion",
+            "pythonVersion",
+            "platform",
+            "architecture",
+            "bridgeCodeSha256",
+            "profileSha256"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "machineId",
+        "controllerEpoch",
+        "bootId",
+        "seq",
+        "observedAt",
+        "monotonicNs",
+        "kind",
+        "owner",
+        "task",
+        "joints",
+        "tcp",
+        "program",
+        "units",
+        "freshness",
+        "reasonCodes",
+        "reconcileRequired",
+        "unknownCommands"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "machineId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "controllerEpoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bootId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "seq": {
+          "type": "string",
+          "pattern": "^[0-9]{1,20}$"
+        },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "monotonicNs": {
+          "type": "string",
+          "pattern": "^[0-9]{1,20}$"
+        },
+        "kind": {
+          "const": "arm.event.v1"
+        },
+        "event": {
+          "enum": [
+            "bridge_start",
+            "owner_acquired",
+            "owner_released",
+            "owner_revoked",
+            "lease_expired",
+            "bridge_restart",
+            "controller_restart",
+            "command_accepted",
+            "command_completed",
+            "command_failed",
+            "command_rejected",
+            "outcome_unknown",
+            "fault",
+            "reconcile_required",
+            "reconciled",
+            "error_channel",
+            "virtual_grip"
+          ]
+        },
+        "commandId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observation": {
+          "anyOf": [
+            {
+              "$ref": "cell-observation.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reasonCodes": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^[A-Z][A-Z0-9_:.-]*$"
+          }
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "type": "object",
+              "maxProperties": 40
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Transfer/grip evidence the controller can state (sensor capability permitting); absent sensors give null fields, never a claim."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "machineId",
+        "controllerEpoch",
+        "bootId",
+        "seq",
+        "observedAt",
+        "monotonicNs",
+        "kind",
+        "event",
+        "commandId",
+        "observation",
+        "reasonCodes",
+        "detail",
+        "evidence"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "arm.reply.v1"
+        },
+        "commandId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "conflict",
+            "outcome_unknown"
+          ]
+        },
+        "lifecycle": {
+          "enum": [
+            "accepted_not_completed",
+            "immediate",
+            "none"
+          ]
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "reasonCodes": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^[A-Z][A-Z0-9_:.-]*$"
+          }
+        },
+        "token": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "leaseId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expiresAtMs": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outcome": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "status": {
+                  "enum": [
+                    "accepted",
+                    "running",
+                    "completed",
+                    "failed",
+                    "unknown",
+                    "not_found"
+                  ]
+                },
+                "evidence": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "status",
+                "evidence"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requestId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capabilities": {
+          "type": "array",
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "simulation_scene.v1",
+              "correlated_barrier.v1"
+            ]
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "commandId",
+        "status",
+        "lifecycle",
+        "duplicate",
+        "reasonCodes"
+      ]
+    }
+  ],
+  "discriminator": {
+    "propertyName": "kind"
+  }
+}
