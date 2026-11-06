@@ -121,12 +121,20 @@
         },
         "model": {
           "$ref": "#/definitions/ModelDocument"
+        },
+        "leftJointId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "rightJointId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
         }
       },
       "required": [
         "entityId",
         "instanceId",
-        "model"
+        "model",
+        "leftJointId",
+        "rightJointId"
       ]
     },
     "ResolvedModels": {

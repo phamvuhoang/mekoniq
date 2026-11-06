@@ -480,6 +480,8 @@ export interface DriveBinding {
   entityId: EngineeringId;
   instanceId: EngineeringId;
   model: ModelDocument;
+  leftJointId: EngineeringId;
+  rightJointId: EngineeringId;
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
