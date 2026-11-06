@@ -30,3 +30,6 @@
 @media (max-width: 767px) { .mq-panel { padding: var(--mq-space-16); } }
 @media (prefers-reduced-motion: reduce) { .mq-theme *, .mq-theme *::before, .mq-theme *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 @media print { .mq-theme, .mq-panel, .mq-alert, .mq-badge { background: var(--mekoniq-paper); color: var(--mekoniq-ink); box-shadow: none; } }
+
+/* A label supplies the touch target; the checkbox remains visually compact. */
+.mq-check { display:inline-flex; align-items:center; gap:var(--mq-space-8); min-width:44px; min-height:44px; cursor:pointer; }

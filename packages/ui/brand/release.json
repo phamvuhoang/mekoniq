@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "brandVersion": "1.0.0",
-  "sourceCommit": "a918c0f12b1ad70bebae4695b6cb12214eb1f2ad",
+  "brandVersion": "1.0.1",
+  "sourceCommit": "3f31af9f837a6a5f13c41f27c26154d9c24b5c83",
   "files": [
     {
       "path": "README.md",
-      "sha256": "ed7c5ce52008d4925affd454f5f73b86ace631bcb78277b169fc6f37c4de0c08",
-      "bytes": 1619
+      "sha256": "43501eca2c6a61fd186e04a715d27baa148980eed4f2ea066be4a8b25159709e",
+      "bytes": 1784
     },
     {
       "path": "assets-manifest.json",
@@ -60,8 +60,8 @@
     },
     {
       "path": "components.css",
-      "sha256": "bee753e6015e409453e5f8ccc99a59bad67f73981160420e88060537d0896661",
-      "bytes": 4155
+      "sha256": "6347ba632bf4f3133239ea93021493db125431a7ba8bc466a3878718b821ea02",
+      "bytes": 4363
     },
     {
       "path": "fonts.css",
@@ -100,17 +100,17 @@
     },
     {
       "path": "gallery.html",
-      "sha256": "0e785c69812e538df3863c8602c5efbae0eff91f1e5debd16b99e95096fa6e63",
-      "bytes": 2408
+      "sha256": "c93dc2f58ef9b37cb84799b5de9270785eb78e746428baf16ff629d8793ad586",
+      "bytes": 2425
     },
     {
       "path": "tokens.css",
-      "sha256": "834f5580b794768f6e369a77bbc78bf9ff06a074816abb19705d39634709a627",
+      "sha256": "c7284f6bac82320cf34e1c275b8a37bf43dc2e29e5ee7bf5ded3fda02727edca",
       "bytes": 1534
     },
     {
       "path": "tokens.json",
-      "sha256": "bf8555b0d236bee65f5a4f1f886e51a2568970119e2d3855a935555371652f91",
+      "sha256": "4fce497f366475172b696ae9384ba9a5a77b0d4ad62ae044f34f3310821eee6d",
       "bytes": 1855
     }
   ]

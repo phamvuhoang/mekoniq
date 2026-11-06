@@ -27,3 +27,17 @@ test('committed content cannot reuse an existing release version',()=>{
  const result=exec(process.execPath,['scripts/export-brand.mjs','--target',join(temp,'out')]);expect(result.status).toBe(1);expect(result.stderr).toContain('Bump brandVersion');
  }finally{rmSync(temp,{recursive:true,force:true});}
 });
+
+test('Source build gate detects unexported canonical CSS changes',()=>{
+ const temp=mkdtempSync(join(realpathSync(tmpdir()),'brand-build-gate-'));
+ try {
+  for(const dest of ['packages/ui/brand','apps/cloud-web/public/brand','apps/tablet-web/public/brand']) {mkdirSync(join(temp,dest),{recursive:true});cpSync('packages/ui/brand',join(temp,dest),{recursive:true});}
+  mkdirSync(join(temp,'scripts'));
+  for(const file of ['check-brand.mjs','brand-check.cjs'])cpSync('scripts/'+file,join(temp,'scripts',file));
+  const command=JSON.parse(readFileSync('package.json','utf8')).scripts['check:brand'];
+  const check=()=>spawnSync('/bin/sh',['-c',command],{cwd:temp,encoding:'utf8'});
+  expect(check().status).toBe(0);
+  const css=join(temp,'packages/ui/brand/components.css');writeFileSync(css,readFileSync(css,'utf8')+'\n/* drift */');
+  expect(check().status).toBe(1);
+ }finally {rmSync(temp,{recursive:true,force:true});}
+});
