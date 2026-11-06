@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.engineering-project.v1",
+  "title": "EngineeringProject",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "documentType": {
+      "const": "engineering-project"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "runtimeProject": {
+      "$ref": "lab-project-v2.schema.json"
+    },
+    "assembly": {
+      "$ref": "#/definitions/Assembly"
+    },
+    "entityBindings": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/definitions/EntityBinding"
+      }
+    },
+    "requestedProfile": {
+      "$ref": "#/definitions/EngineeringProfile"
+    }
+  },
+  "required": [
+    "documentType",
+    "schemaVersion",
+    "id",
+    "revision",
+    "runtimeProject",
+    "assembly",
+    "entityBindings",
+    "requestedProfile"
+  ],
+  "definitions": {
+    "Instance": {
+      "title": "Instance",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "componentDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "pose": {
+          "$ref": "engineering-component.schema.json#/definitions/Pose"
+        }
+      },
+      "required": [
+        "id",
+        "componentDigest",
+        "pose"
+      ]
+    },
+    "Connection": {
+      "title": "Connection",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+/[A-Za-z0-9_.:-]+$"
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+/[A-Za-z0-9_.:-]+$"
+        },
+        "kind": {
+          "enum": [
+            "mount",
+            "power",
+            "data"
+          ]
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "kind"
+      ]
+    },
+    "Assembly": {
+      "title": "Assembly",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "instances": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "#/definitions/Instance"
+          }
+        },
+        "connections": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/definitions/Connection"
+          }
+        }
+      },
+      "required": [
+        "instances",
+        "connections"
+      ]
+    },
+    "EntityBinding": {
+      "title": "EntityBinding",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entityId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "instanceIds": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          }
+        }
+      },
+      "required": [
+        "entityId",
+        "instanceIds"
+      ]
+    },
+    "EngineeringProfile": {
+      "title": "EngineeringProfile",
+      "enum": [
+        "engineering-rigid-v1",
+        "engineering-contact-v1"
+      ]
+    }
+  }
+}

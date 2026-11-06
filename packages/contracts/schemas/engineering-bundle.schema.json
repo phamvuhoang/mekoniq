@@ -1,0 +1,775 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.engineering-bundle.v1",
+  "title": "EngineeringBundleContracts",
+  "type": "object",
+  "description": "Container for the engineering bundle definitions; use the definitions directly.",
+  "additionalProperties": false,
+  "properties": {},
+  "definitions": {
+    "Problem": {
+      "title": "Problem",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "path": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "code",
+        "path",
+        "blocking",
+        "detail"
+      ]
+    },
+    "ModelDocument": {
+      "title": "ModelDocument",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "enum": [
+            "actuator",
+            "sensor",
+            "process"
+          ]
+        },
+        "id": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "digest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "parameters": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "id",
+        "digest",
+        "parameters"
+      ]
+    },
+    "ResolvedPort": {
+      "title": "ResolvedPort",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "instanceId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "port": {
+          "$ref": "engineering-component.schema.json#/definitions/Port"
+        }
+      },
+      "required": [
+        "id",
+        "instanceId",
+        "port"
+      ]
+    },
+    "Placement": {
+      "title": "Placement",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "instanceId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "world": {
+          "$ref": "engineering-component.schema.json#/definitions/Pose"
+        }
+      },
+      "required": [
+        "instanceId",
+        "world"
+      ]
+    },
+    "DriveBinding": {
+      "title": "DriveBinding",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entityId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "instanceId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "model": {
+          "$ref": "#/definitions/ModelDocument"
+        }
+      },
+      "required": [
+        "entityId",
+        "instanceId",
+        "model"
+      ]
+    },
+    "ResolvedModels": {
+      "title": "ResolvedModels",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "drive": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DriveBinding"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "arm": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ModelDocument"
+          }
+        },
+        "sensor": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ModelDocument"
+          }
+        },
+        "process": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ModelDocument"
+          }
+        }
+      },
+      "required": [
+        "drive",
+        "arm",
+        "sensor",
+        "process"
+      ]
+    },
+    "BomPrice": {
+      "title": "BomPrice",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        },
+        "quotedOn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10
+        }
+      },
+      "required": [
+        "amount",
+        "currency",
+        "quotedOn"
+      ]
+    },
+    "BomLine": {
+      "title": "BomLine",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lineId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "componentId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "componentRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "componentDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "sku": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate": {
+          "type": "boolean"
+        },
+        "qty": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "massKg": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "voltageRangeV": {
+          "anyOf": [
+            {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "additionalItems": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/BomPrice"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+          }
+        },
+        "instanceIds": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          }
+        },
+        "requiredAccessories": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "required": [
+        "lineId",
+        "componentId",
+        "componentRevision",
+        "componentDigest",
+        "sku",
+        "candidate",
+        "qty",
+        "massKg",
+        "voltageRangeV",
+        "price",
+        "sources",
+        "instanceIds",
+        "requiredAccessories"
+      ]
+    },
+    "Bom": {
+      "title": "Bom",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lines": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/definitions/BomLine"
+          }
+        },
+        "missingPriceLineIds": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          }
+        },
+        "total": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/BomPrice"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "incompleteTotal": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "lines",
+        "missingPriceLineIds",
+        "total",
+        "incompleteTotal"
+      ]
+    },
+    "ResolvedAssembly": {
+      "title": "ResolvedAssembly",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "assemblyDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "links": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/Link"
+          }
+        },
+        "joints": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/Joint"
+          }
+        },
+        "entityBindings": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "engineering-project.schema.json#/definitions/EntityBinding"
+          }
+        },
+        "ports": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/definitions/ResolvedPort"
+          }
+        },
+        "models": {
+          "$ref": "#/definitions/ResolvedModels"
+        },
+        "placements": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "#/definitions/Placement"
+          }
+        },
+        "assumptions": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+          }
+        },
+        "bom": {
+          "$ref": "#/definitions/Bom"
+        }
+      },
+      "required": [
+        "assemblyDigest",
+        "links",
+        "joints",
+        "entityBindings",
+        "ports",
+        "models",
+        "placements",
+        "assumptions",
+        "bom"
+      ]
+    },
+    "SceneFrame": {
+      "title": "SceneFrame",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pose": {
+          "$ref": "engineering-component.schema.json#/definitions/Pose"
+        }
+      },
+      "required": [
+        "id",
+        "parent",
+        "pose"
+      ]
+    },
+    "GeometryRef": {
+      "title": "GeometryRef",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "linkId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "kind": {
+          "enum": [
+            "visual",
+            "collision"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blobSha256": {
+          "anyOf": [
+            {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "linkId",
+        "kind",
+        "index",
+        "blobSha256"
+      ]
+    },
+    "FixedJointMapping": {
+      "title": "FixedJointMapping",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "jointId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "linkId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "mergedInto": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        }
+      },
+      "required": [
+        "jointId",
+        "linkId",
+        "mergedInto"
+      ]
+    },
+    "WheelBinding": {
+      "title": "WheelBinding",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]+/(left|right)$"
+        },
+        "entityId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "side": {
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "radiusM": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "jointId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        }
+      },
+      "required": [
+        "id",
+        "entityId",
+        "side",
+        "radiusM",
+        "jointId"
+      ]
+    },
+    "CompiledScene": {
+      "title": "CompiledScene",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "links": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/Link"
+          }
+        },
+        "joints": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/Joint"
+          }
+        },
+        "frames": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/definitions/SceneFrame"
+          }
+        },
+        "geometryRefs": {
+          "type": "array",
+          "maxItems": 5000,
+          "items": {
+            "$ref": "#/definitions/GeometryRef"
+          }
+        },
+        "fixedJointMapping": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/definitions/FixedJointMapping"
+          }
+        },
+        "wheelBindings": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/definitions/WheelBinding"
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "links",
+        "joints",
+        "frames",
+        "geometryRefs",
+        "fixedJointMapping",
+        "wheelBindings"
+      ]
+    },
+    "EngineeringRef": {
+      "title": "EngineeringRef",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bundleDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "projectDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "bundleDigest",
+        "projectDigest"
+      ]
+    },
+    "EngineeringCompileInput": {
+      "title": "EngineeringCompileInput",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "project": {
+          "$ref": "engineering-project.schema.json"
+        },
+        "projectDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "resolved": {
+          "$ref": "#/definitions/ResolvedAssembly"
+        },
+        "runtimeProjection": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "project": {
+              "$ref": "lab-project-v2.schema.json"
+            },
+            "assets": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "$ref": "asset-revision.schema.json"
+              }
+            }
+          },
+          "required": [
+            "project",
+            "assets"
+          ]
+        },
+        "recipes": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "coffee-recipe.schema.json"
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "project",
+        "projectDigest",
+        "resolved",
+        "runtimeProjection",
+        "recipes"
+      ]
+    },
+    "BundleReceipt": {
+      "title": "BundleReceipt",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "projectDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "profile": {
+              "$ref": "engineering-project.schema.json#/definitions/EngineeringProfile"
+            },
+            "problems": {
+              "type": "array",
+              "maxItems": 500,
+              "items": {
+                "$ref": "#/definitions/Problem"
+              }
+            },
+            "state": {
+              "const": "blocked"
+            },
+            "bundleDigest": {
+              "type": "null"
+            },
+            "assemblyDigest": {
+              "type": "null"
+            },
+            "sceneDigest": {
+              "type": "null"
+            },
+            "runnable": {
+              "const": false
+            }
+          },
+          "required": [
+            "projectDigest",
+            "profile",
+            "problems",
+            "state",
+            "bundleDigest",
+            "assemblyDigest",
+            "sceneDigest",
+            "runnable"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "projectDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "profile": {
+              "$ref": "engineering-project.schema.json#/definitions/EngineeringProfile"
+            },
+            "problems": {
+              "type": "array",
+              "maxItems": 500,
+              "items": {
+                "$ref": "#/definitions/Problem"
+              }
+            },
+            "state": {
+              "const": "compiled"
+            },
+            "bundleDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "assemblyDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "sceneDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "runnable": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "projectDigest",
+            "profile",
+            "problems",
+            "state",
+            "bundleDigest",
+            "assemblyDigest",
+            "sceneDigest",
+            "runnable"
+          ]
+        }
+      ]
+    }
+  }
+}

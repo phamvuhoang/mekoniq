@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.engineering-candidate.v1",
+  "title": "EngineeringCandidate",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "documentType": {
+      "const": "engineering-candidate"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "status": {
+      "const": "draft"
+    },
+    "hardwareValidated": {
+      "const": false
+    },
+    "controlAuthority": {
+      "const": false
+    },
+    "project": {
+      "$ref": "engineering-project.schema.json"
+    },
+    "projectDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "assemblyDigest": {
+      "anyOf": [
+        {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bundleDigest": {
+      "anyOf": [
+        {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "problems": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "$ref": "engineering-bundle.schema.json#/definitions/Problem"
+      }
+    },
+    "evidenceRefs": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "reportDigest": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          },
+          "projectDigest": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          },
+          "bundleDigest": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          }
+        },
+        "required": [
+          "runId",
+          "reportDigest",
+          "projectDigest",
+          "bundleDigest"
+        ]
+      }
+    },
+    "historicalEvidenceRefs": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "reportDigest": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          },
+          "projectDigest": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          },
+          "bundleDigest": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "runId",
+          "reportDigest",
+          "projectDigest",
+          "bundleDigest",
+          "reason"
+        ]
+      }
+    },
+    "checksum": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    }
+  },
+  "required": [
+    "documentType",
+    "schemaVersion",
+    "status",
+    "hardwareValidated",
+    "controlAuthority",
+    "project",
+    "projectDigest",
+    "assemblyDigest",
+    "bundleDigest",
+    "problems",
+    "evidenceRefs",
+    "historicalEvidenceRefs",
+    "checksum"
+  ]
+}
