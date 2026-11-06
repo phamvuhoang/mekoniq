@@ -20,14 +20,14 @@ export function CashShift(c:ScreenContext) {
     el('p',tr(c,'Ca đã đóng, không sửa được.','Shift closed; it cannot be edited.'),'muted'));
    if(big(L.adjustmentMinor)!==0n)row.append(el('p',tr(c,'Điều chỉnh sau khi đóng ca: ','Adjustments after close: ')+money(L.adjustmentMinor,currency),'warning'));
    if(approver){
-    const direction=el('select'),amount=field(tr(c,'Số tiền điều chỉnh sau đóng ca','Late adjustment amount'),'','number'),reason=field(tr(c,'Lý do điều chỉnh (bắt buộc)','Adjustment reason (required)'));
+    const direction=el('select');direction.setAttribute('aria-label',tr(c,'Chiều điều chỉnh tiền','Cash adjustment direction'));const amount=field(tr(c,'Số tiền điều chỉnh sau đóng ca','Late adjustment amount'),'','number'),reason=field(tr(c,'Lý do điều chỉnh (bắt buộc)','Adjustment reason (required)'));
     for(const [id,name] of [['in',tr(c,'Thu thêm','Cash in')],['out',tr(c,'Chi ra','Cash out')]]){const o=el('option',name);o.value=id!;direction.append(o);}
     row.append(direction,amount.node,reason.node,button(tr(c,'Ghi điều chỉnh sau đóng ca','Record adjustment after close'),()=>act(c,'Cash.RecordMovement',{shiftId:shift.ref.id,direction:direction.value,amountMinor:amount.input.value,reason:reason.input.value,adjustment:true}).then(done)));
    }
    root.append(row);continue;
   }
   if(own||approver){
-   const direction=el('select'),amount=field(tr(c,'Số tiền nộp thêm / chi ra (VND)','Cash in / out amount (VND)'),'','number'),reason=field(tr(c,'Lý do','Reason'));
+   const direction=el('select');direction.setAttribute('aria-label',tr(c,'Chiều điều chỉnh tiền','Cash adjustment direction'));const amount=field(tr(c,'Số tiền nộp thêm / chi ra (VND)','Cash in / out amount (VND)'),'','number'),reason=field(tr(c,'Lý do','Reason'));
    for(const [id,name] of [['in',tr(c,'Nộp thêm vào két','Cash in')],['out',tr(c,'Chi ra khỏi két','Cash out')]]){const o=el('option',name);o.value=id!;direction.append(o);}
    row.append(direction,amount.node,reason.node,button(tr(c,'Ghi sổ két','Record cash movement'),()=>act(c,'Cash.RecordMovement',{shiftId:shift.ref.id,direction:direction.value,amountMinor:amount.input.value,reason:reason.input.value,...(own?{}:{approve:true})}).then(done)));
    const counted=field(tr(c,'Tiền mặt đếm được (VND)','Counted cash (VND)'),'','number'),why=field(tr(c,'Lý do chênh lệch (quản lý duyệt)','Variance reason (manager approval)'));

@@ -31,7 +31,7 @@ function render(){
  document.documentElement.lang=language;
  const words=dictionaries[language],c=context();
  const header=el('header',undefined,'topbar');
- const brand=el('a','MEKONIQ','brand');brand.href='/device';
+ const brand=el('a',undefined,'brand mq-brand');brand.href='/device';brand.setAttribute('aria-label','MEKONIQ');const logo=el('img');logo.src='/brand/assets/MEKONIQ_Horizontal_White_Transparent_v2.png';logo.alt='';const picture=el('picture'),compact=el('source');compact.media='(max-width: 767px)';compact.srcset='/brand/assets/MEKONIQ_Icon_Transparent.svg';picture.append(compact,logo);brand.append(picture);
  const right=el('div',undefined,'header-actions');
  const lang=button(language==='vi'?'EN':'VI',()=>{language=language==='vi'?'en':'vi';localStorage.setItem('mekoniq-language',language);render();},'quiet');lang.setAttribute('aria-label',language==='vi'?'Switch to English':'Chuyển sang tiếng Việt');
  right.append(SyncStatus({level:session.level,language}),lang);header.append(brand,right);
@@ -53,7 +53,7 @@ async function boot(){
   await refresh();
  }catch(error){
   app.replaceChildren(el('main',undefined,'enrollment'));
-  const main=app.firstElementChild!;main.append(el('p','MEKONIQ','eyebrow'),el('h1',dictionaries[language].enroll),el('p',language==='vi'?'Mở ứng dụng Android đã cài và hoàn tất cấp quyền thiết bị. Dữ liệu bán hàng cần lưu trữ native.':'Open the installed Android app and complete device enrollment. Business records require native storage.'),el('p',error instanceof Error?error.message:'UNAVAILABLE','muted'),button(dictionaries[language].retry,boot));
+  const main=app.firstElementChild!;const brand=el('a',undefined,'brand mq-brand');brand.href='/device';brand.setAttribute('aria-label','MEKONIQ');const logo=el('img');logo.src='/brand/assets/MEKONIQ_Horizontal_White_Transparent_v2.png';logo.alt='';const picture=el('picture'),compact=el('source');compact.media='(max-width: 767px)';compact.srcset='/brand/assets/MEKONIQ_Icon_Transparent.svg';picture.append(compact,logo);brand.append(picture);main.append(brand,el('h1',dictionaries[language].enroll),el('p',language==='vi'?'Mở ứng dụng Android đã cài và hoàn tất cấp quyền thiết bị. Dữ liệu bán hàng cần lưu trữ native.':'Open the installed Android app and complete device enrollment. Business records require native storage.'),el('p',error instanceof Error?error.message:'UNAVAILABLE','muted'),button(dictionaries[language].retry,boot));
   if(Capacitor.isNativePlatform()){
     const access=field(language==='vi'?'Phiên quản lý để cấp quyền thiết bị':'Manager session for device enrollment','','password');access.input.autocomplete='off';
     const enroll=button(language==='vi'?'Cấp quyền thiết bị':'Enroll device',async()=>{try{const {Identity}=await import('../../tablet-android/src/lan-bridge');await Identity.enroll({accessToken:access.input.value});access.input.value='';await boot();}catch(e){main.append(el('p',e instanceof Error?e.message:'ENROLLMENT_FAILED','error'));}});

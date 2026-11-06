@@ -22,7 +22,8 @@ export function InventoryReports(c:ScreenContext) {
   const columns=r.columns as string[],rows=(r.rows as JsonObject[]).slice(0,100),table=el('table'),head=el('tr');
   for(const col of columns)head.append(el('th',col));table.append(head);
   for(const row of rows){const tr_=el('tr');for(const col of columns)tr_.append(el('td',row[col]===null||row[col]===undefined?'':String(row[col])));table.append(tr_);}
-  box.append(table,button(tr(c,'Xuất CSV','Export CSV'),()=>{const a=el('a');a.href=URL.createObjectURL(new Blob(['﻿'+reportCsv(r)],{type:'text/csv;charset=utf-8'}));a.download=`${kind}-${chosen}.csv`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);},'quiet'));
+  const tableRegion=el('div',undefined,'mq-table');tableRegion.tabIndex=0;tableRegion.setAttribute('role','region');tableRegion.setAttribute('aria-label',title);tableRegion.append(table);
+  box.append(tableRegion,button(tr(c,'Xuất CSV','Export CSV'),()=>{const a=el('a');a.href=URL.createObjectURL(new Blob(['﻿'+reportCsv(r)],{type:'text/csv;charset=utf-8'}));a.download=`${kind}-${chosen}.csv`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);},'quiet'));
   page.append(box);
  }
  return page;

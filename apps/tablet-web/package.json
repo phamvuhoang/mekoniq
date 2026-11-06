@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 3452",
-    "build": "vite build",
+    "build": "npm run check:brand && vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "lint": "eslint src vite.config.ts"
+    "lint": "eslint src vite.config.ts",
+    "check:brand": "node ../../scripts/check-brand.mjs --dir ../../packages/ui/brand && node ../../scripts/check-brand.mjs --dir public/brand --against ../../packages/ui/brand/release.json"
   },
   "dependencies": {
     "@capacitor/core": "8.6.0"
