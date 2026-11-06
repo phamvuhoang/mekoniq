@@ -233,6 +233,111 @@ export interface ComponentDocument {
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "ActuatorModel".
+ */
+export interface ActuatorModel {
+  schemaVersion: 1;
+  kind: 'actuator';
+  id: EngineeringId;
+  /**
+   * @minItems 1
+   * @maxItems 50
+   */
+  jointIds: [EngineeringId, ...EngineeringId[]];
+  transmission: {
+    ratio: Scalar;
+    efficiency: Scalar;
+  };
+  commandInterface: 'velocity' | 'position' | 'effort';
+  /**
+   * @minItems 2
+   * @maxItems 200
+   */
+  torqueSpeedTable: [
+    {
+      speed: Scalar;
+      torque: Scalar;
+    },
+    {
+      speed: Scalar;
+      torque: Scalar;
+    },
+    ...{
+      speed: Scalar;
+      torque: Scalar;
+    }[]
+  ];
+  currentLimit: Scalar;
+  voltageLimit: Scalar;
+  damping: Scalar;
+  friction: Scalar;
+  drive?: {
+    wheelRadiusM: Scalar;
+    wheelSeparationM: Scalar;
+    leftMountPort: EngineeringId;
+    rightMountPort: EngineeringId;
+  };
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "SensorModel".
+ */
+export interface SensorModel {
+  schemaVersion: 1;
+  kind: 'sensor';
+  id: EngineeringId;
+  frame: EngineeringId;
+  rateHz: Scalar;
+  range: {
+    min: Scalar;
+    max: Scalar;
+  };
+  fieldOfView: Scalar;
+  noise: {
+    distribution: 'none' | 'gaussian' | 'uniform';
+    stddev: Scalar;
+    seed: number;
+  };
+  latency: Scalar;
+  dropoutProbability: Scalar;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "ProcessModel".
+ */
+export interface ProcessModel {
+  schemaVersion: 1;
+  kind: 'process';
+  id: EngineeringId;
+  processKind: 'coffee';
+  /**
+   * @minItems 1
+   * @maxItems 50
+   */
+  reservoirs: [
+    {
+      resourceId: EngineeringId;
+      capacityMl: Scalar;
+      initialMl: Scalar;
+    },
+    ...{
+      resourceId: EngineeringId;
+      capacityMl: Scalar;
+      initialMl: Scalar;
+    }[]
+  ];
+  flowMlPerSec: Scalar;
+  startupDelaySec: Scalar;
+  maxDurationSec: Scalar;
+  densityKgPerM3: Scalar;
+  temperature?: {
+    initialC: Scalar;
+    targetC: Scalar;
+    thermalTimeConstantSec?: Scalar;
+  };
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
  * via the `definition` "ComponentRevision".
  */
 export interface ComponentRevision {

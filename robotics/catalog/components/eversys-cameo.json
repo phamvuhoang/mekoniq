@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "eversys-cameo",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "Eversys",
+    "family": "Cameo (survey candidate)",
+    "sku": null,
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": [
+    {
+      "id": "vendor-page",
+      "url": "https://www.eversys.com/en-us/products/cameo",
+      "digest": "9cb1f5fb1d9d9a11a4faf24fd696ac7e2b5b22cace6cb4381d4f3af1af6ade72",
+      "license": "unreviewed"
+    }
+  ]
+}

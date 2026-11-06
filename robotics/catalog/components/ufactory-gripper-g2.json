@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "ufactory-gripper-g2",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "UFACTORY",
+    "family": "Gripper G2",
+    "sku": null,
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": [
+    {
+      "id": "vendor-page",
+      "url": "https://www.ufactory.us/products/gripper-g2",
+      "digest": "d27d619bea6c325747af9e5e89ec1683518809ee2c1e17c9680ae112671ec4ef",
+      "license": "unreviewed"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "orientalmotor-blv-r",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "Oriental Motor",
+    "family": "BLV R series",
+    "sku": null,
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": [
+    {
+      "id": "vendor-page",
+      "url": "https://catalog.orientalmotor.com/viewitems/blv-r-series-brushless-dc-motor-speed-control/shop-blv-r-series-brushless-dc-motors?pagenum=4&pagesize=25",
+      "digest": "486c69a1f7292191a90b58efb92f916757b7e864f289b9e3dc140a9d51e35fe1",
+      "license": "unreviewed"
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "id": "battery-24v-ref",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "sku": null,
+    "status": "candidate",
+    "family": "battery pack"
+  },
+  "links": [
+    {
+      "id": "pack",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.2,
+              0.15,
+              0.1
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "selection-worksheet",
+            "revision": "1",
+            "locator": "selection.md",
+            "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.2,
+              0.15,
+              0.1
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "selection-worksheet",
+            "revision": "1",
+            "locator": "selection.md",
+            "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 6,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "selection-worksheet",
+          "revision": "1",
+          "locator": "selection.md",
+          "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.01625,
+        0,
+        0,
+        0.025000000000000005,
+        0,
+        0.03125
+      ],
+      "inertialSource": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+    }
+  ],
+  "joints": [],
+  "ports": [
+    {
+      "id": "mount",
+      "kind": "mount",
+      "frame": {
+        "xyzM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "battery-tray",
+      "direction": "bidirectional"
+    },
+    {
+      "id": "out",
+      "kind": "power",
+      "frame": {
+        "xyzM": [
+          0,
+          0,
+          0.05
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "dc-bus",
+      "direction": "out",
+      "voltageRangeV": [
+        22,
+        29
+      ],
+      "continuousCurrentA": {
+        "value": 40,
+        "unit": "A",
+        "source": {
+          "kind": "assumed",
+          "documentId": "selection-worksheet",
+          "revision": "1",
+          "locator": "selection.md",
+          "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+        }
+      }
+    }
+  ],
+  "models": [],
+  "documents": [
+    {
+      "id": "selection-worksheet",
+      "url": null,
+      "digest": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb",
+      "license": "internal"
+    }
+  ]
+}

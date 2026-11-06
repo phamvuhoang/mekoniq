@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-11-07",
+  "entries": [
+    {
+      "componentId": "ufactory-xarm6",
+      "check": "xarm_ros2 jazzy import + ros2_control interfaces + MoveIt config",
+      "status": "not_run",
+      "blocker": "No Ubuntu 24.04 / ROS Jazzy / Gazebo Harmonic environment on this host (macOS); vendor commit and mesh licences not yet pinned. Owner: C01."
+    },
+    {
+      "componentId": "ufactory-gripper-g2",
+      "check": "tool mass/COM/inertia, stroke, force limits",
+      "status": "not_run",
+      "blocker": "No pinned vendor snapshot; parameters unknown. Owner: C01/C02."
+    }
+  ]
+}

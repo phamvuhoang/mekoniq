@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "phidgets-frc4115",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "Phidgets",
+    "family": "FRC4115_0 5 kg load cell",
+    "sku": null,
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": [
+    {
+      "id": "vendor-page",
+      "url": "https://www.phidgets.com/?prodid=1193",
+      "digest": "febc5619935c74495b19374e66bb57533bd5966c16f537fe2d5150856fb966df",
+      "license": "unreviewed"
+    }
+  ]
+}

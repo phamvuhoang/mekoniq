@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "slamtec-rplidar-s2",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "SLAMTEC",
+    "family": "RPLIDAR S2 (variant to be locked)",
+    "sku": null,
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": [
+    {
+      "id": "vendor-page",
+      "url": "https://www.slamtec.com/en/s2/spec",
+      "digest": "6154a0c1f5ba71b3f90dfa1fd1aae69075a9e62985010f4ff7d9f12e56e6aab0",
+      "license": "unreviewed"
+    }
+  ]
+}

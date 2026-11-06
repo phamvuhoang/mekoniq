@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "ufactory-xarm6",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "UFACTORY",
+    "family": "xArm 6",
+    "sku": null,
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": [
+    {
+      "id": "vendor-page",
+      "url": "https://www.ufactory.cc/en-us/products/ufactory-xarm-series",
+      "digest": "ef9afa0ca7e4cdac2117c518773ebe5eb774e49abd935c1c445009d0f7362f0b",
+      "license": "unreviewed"
+    }
+  ]
+}

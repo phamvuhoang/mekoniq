@@ -696,6 +696,294 @@
         "digest",
         "license"
       ]
+    },
+    "ActuatorModel": {
+      "title": "ActuatorModel",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "actuator"
+        },
+        "id": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "jointIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/definitions/EngineeringId"
+          }
+        },
+        "transmission": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ratio": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "efficiency": {
+              "$ref": "#/definitions/Scalar"
+            }
+          },
+          "required": [
+            "ratio",
+            "efficiency"
+          ]
+        },
+        "commandInterface": {
+          "enum": [
+            "velocity",
+            "position",
+            "effort"
+          ]
+        },
+        "torqueSpeedTable": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "speed": {
+                "$ref": "#/definitions/Scalar"
+              },
+              "torque": {
+                "$ref": "#/definitions/Scalar"
+              }
+            },
+            "required": [
+              "speed",
+              "torque"
+            ]
+          }
+        },
+        "currentLimit": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "voltageLimit": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "damping": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "friction": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "drive": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "wheelRadiusM": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "wheelSeparationM": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "leftMountPort": {
+              "$ref": "#/definitions/EngineeringId"
+            },
+            "rightMountPort": {
+              "$ref": "#/definitions/EngineeringId"
+            }
+          },
+          "required": [
+            "wheelRadiusM",
+            "wheelSeparationM",
+            "leftMountPort",
+            "rightMountPort"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "id",
+        "jointIds",
+        "transmission",
+        "commandInterface",
+        "torqueSpeedTable",
+        "currentLimit",
+        "voltageLimit",
+        "damping",
+        "friction"
+      ]
+    },
+    "SensorModel": {
+      "title": "SensorModel",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "sensor"
+        },
+        "id": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "frame": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "rateHz": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "range": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "max": {
+              "$ref": "#/definitions/Scalar"
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ]
+        },
+        "fieldOfView": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "noise": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "distribution": {
+              "enum": [
+                "none",
+                "gaussian",
+                "uniform"
+              ]
+            },
+            "stddev": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          },
+          "required": [
+            "distribution",
+            "stddev",
+            "seed"
+          ]
+        },
+        "latency": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "dropoutProbability": {
+          "$ref": "#/definitions/Scalar"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "id",
+        "frame",
+        "rateHz",
+        "range",
+        "fieldOfView",
+        "noise",
+        "latency",
+        "dropoutProbability"
+      ]
+    },
+    "ProcessModel": {
+      "title": "ProcessModel",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "process"
+        },
+        "id": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "processKind": {
+          "const": "coffee"
+        },
+        "reservoirs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "resourceId": {
+                "$ref": "#/definitions/EngineeringId"
+              },
+              "capacityMl": {
+                "$ref": "#/definitions/Scalar"
+              },
+              "initialMl": {
+                "$ref": "#/definitions/Scalar"
+              }
+            },
+            "required": [
+              "resourceId",
+              "capacityMl",
+              "initialMl"
+            ]
+          }
+        },
+        "flowMlPerSec": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "startupDelaySec": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "maxDurationSec": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "densityKgPerM3": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "temperature": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "initialC": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "targetC": {
+              "$ref": "#/definitions/Scalar"
+            },
+            "thermalTimeConstantSec": {
+              "$ref": "#/definitions/Scalar"
+            }
+          },
+          "required": [
+            "initialC",
+            "targetC"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "id",
+        "processKind",
+        "reservoirs",
+        "flowMlPerSec",
+        "startupDelaySec",
+        "maxDurationSec",
+        "densityKgPerM3"
+      ]
     }
   }
 }

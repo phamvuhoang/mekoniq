@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "mekoniq-robot-catalog",
+  "components": [
+    {
+      "file": "components/amr-chassis-ref.json",
+      "digest": "4b3ec067ee95a60d180774e9e208872738f33f48772519e696a6886ff4584700"
+    },
+    {
+      "file": "components/battery-24v-ref.json",
+      "digest": "bbbc4bb766cc3cbe2433e5cfa1833be324712ad5baa7282f6378f526dbc1fe80"
+    },
+    {
+      "file": "components/caster-ref.json",
+      "digest": "1ef88db2ac5f660e323af5df4645e9661e8bdcd26b842278e0e21d0897e6f5e3"
+    },
+    {
+      "file": "components/cup-ref.json",
+      "digest": "bf6e07d519ea737582c39b75c6a1f206af593ad4ab4541cb85f7d3d0e78d2e91"
+    },
+    {
+      "file": "components/drive-wheel-ref.json",
+      "digest": "ddce314c28153f83ea998e31c52f20beb1fe20efdef758c782ac174aa93a400c"
+    },
+    {
+      "file": "components/eversys-cameo.json",
+      "digest": "eca8af31edb4d80b2eb346ade39df4bb3bdb7df20a98b7dd1c214e1c1250e740"
+    },
+    {
+      "file": "components/gripper-jaw-ref.json",
+      "digest": "2c79575c38f3694462434e1a784565159090879dec61e231112587a545564fb2"
+    },
+    {
+      "file": "components/orientalmotor-blv-r.json",
+      "digest": "e3acd33c2c36cc336a3e739c07bc85c8e3bda5400879265718f8e97ba33ed3c9"
+    },
+    {
+      "file": "components/phidgets-frc4115.json",
+      "digest": "9bdb9c3b7bfc77adfd49166e736d6258f260ddeb59e5f01e18f312b6d0ab32dc"
+    },
+    {
+      "file": "components/service-tray-ref.json",
+      "digest": "3579af17453cf900cc13a9ec88188696ffc5b537026f2c0a434e0a5ce10754bc"
+    },
+    {
+      "file": "components/slamtec-rplidar-s2.json",
+      "digest": "cda4bb14ebe5e76fb2576f2110cb70583c7e641456c7ee2fe4d45f806ab47a29"
+    },
+    {
+      "file": "components/ufactory-gripper-g2.json",
+      "digest": "322d3992fce141a98be278a525b63bde2dbee56ddf90688e251908fca5b3b323"
+    },
+    {
+      "file": "components/ufactory-xarm6.json",
+      "digest": "842508dfd500f578d9c0b88aa881a1c0d80f230bf5b02f09124122e494216345"
+    }
+  ],
+  "quotes": []
+}

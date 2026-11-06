@@ -1,6 +1,6 @@
 import Ajv,{type ErrorObject} from 'ajv';
 import addFormats from 'ajv-formats';
-import type {ComponentRevision,EngineeringProject,EngineeringRef,EngineeringCompileInput,BundleReceipt,EngineeringArchive,EngineeringCandidate,Problem,ResolvedAssembly,CompiledScene,Scalar} from '../../../contracts/generated/engineering';
+import type {ComponentRevision,EngineeringProject,EngineeringRef,EngineeringCompileInput,BundleReceipt,EngineeringArchive,EngineeringCandidate,Problem,ResolvedAssembly,CompiledScene,Scalar,ActuatorModel,SensorModel,ProcessModel} from '../../../contracts/generated/engineering';
 import faultScheduleSchema from '../../../contracts/schemas/lab-fault-schedule.schema.json';
 import cellCommandSchema from '../../../contracts/schemas/cell-command.schema.json';
 import cellObservationSchema from '../../../contracts/schemas/cell-observation.schema.json';
@@ -13,7 +13,7 @@ import bundleSchema from '../../../contracts/schemas/engineering-bundle.schema.j
 import archiveSchema from '../../../contracts/schemas/engineering-project-archive.schema.json';
 import candidateSchema from '../../../contracts/schemas/engineering-candidate.schema.json';
 import {classifyField} from '../v2/contracts';
-export type {ComponentRevision,EngineeringProject,EngineeringRef,EngineeringCompileInput,BundleReceipt,EngineeringArchive,EngineeringCandidate,Problem,ResolvedAssembly,CompiledScene};
+export type {ActuatorModel,SensorModel,ProcessModel,ComponentRevision,EngineeringProject,EngineeringRef,EngineeringCompileInput,BundleReceipt,EngineeringArchive,EngineeringCandidate,Problem,ResolvedAssembly,CompiledScene};
 export type {Link,Joint,Port,Shape,Geometry,ModelRef,Instance,Connection,Assembly,Digest,Vec3,Pose,SourceRef,Scalar,EntityBinding,ResolvedModels,ModelDocument,Bom,BomLine,Placement,ResolvedPort,SceneFrame,WheelBinding} from '../../../contracts/generated/engineering';
 export interface Checked{ok:boolean;problems:Problem[];}
 
@@ -78,6 +78,16 @@ function projectRules(p:EngineeringProject):Problem[]{
  p.entityBindings.forEach((b,i)=>b.instanceIds.forEach((id,j)=>{const other=bound.get(id);if(other&&other!==b.entityId)out.push(problem('DUPLICATE_INSTANCE_BINDING',`/entityBindings/${i}/instanceIds/${j}`,`${id} already bound to ${other}`));bound.set(id,b.entityId);}));
  return out;
 }
+const actuatorRules=(m:ActuatorModel):Problem[]=>{
+ const out:Problem[]=[],eff=m.transmission.efficiency.value;
+ if(!(eff>0&&eff<=1))out.push(problem('MODEL_PARAMETER_RANGE','/transmission/efficiency','efficiency must be in (0, 1]'));
+ if(!(m.transmission.ratio.value>0))out.push(problem('MODEL_PARAMETER_RANGE','/transmission/ratio','ratio must be positive'));
+ m.torqueSpeedTable.forEach((row,i,t)=>{if(i&&row.speed.value<=t[i-1]!.speed.value)out.push(problem('MODEL_PARAMETER_RANGE',`/torqueSpeedTable/${i}/speed`,'speeds must strictly increase'));});
+ return out;
+};
+export const validateActuatorModel=check<ActuatorModel>('engineering-component.schema.json#/definitions/ActuatorModel',actuatorRules);
+export const validateSensorModel=check<SensorModel>('engineering-component.schema.json#/definitions/SensorModel',m=>m.range.min.value>=m.range.max.value?[problem('MODEL_PARAMETER_RANGE','/range','min must be below max')]:[]);
+export const validateProcessModel=check<ProcessModel>('engineering-component.schema.json#/definitions/ProcessModel');
 export const validateEngineeringProject=check<EngineeringProject>('engineering-project.schema.json',projectRules);
 export const validateEngineeringRef=check('engineering-bundle.schema.json#/definitions/EngineeringRef');
 export const validateBundleReceipt=check('engineering-bundle.schema.json#/definitions/BundleReceipt');

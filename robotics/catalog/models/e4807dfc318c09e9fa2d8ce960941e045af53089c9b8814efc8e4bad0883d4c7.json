@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "kind": "actuator",
+  "id": "wheel-drive-ref",
+  "jointIds": [
+    "axle"
+  ],
+  "transmission": {
+    "ratio": {
+      "value": 15,
+      "unit": "1",
+      "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+    },
+    "efficiency": {
+      "value": 0.75,
+      "unit": "1",
+      "source": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+    }
+  },
+  "commandInterface": "velocity",
+  "torqueSpeedTable": [
+    {
+      "speed": {
+        "value": 0,
+        "unit": "rad/s",
+        "source": {
+          "kind": "assumed",
+          "documentId": "selection-worksheet",
+          "revision": "1",
+          "locator": "selection.md",
+          "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+        }
+      },
+      "torque": {
+        "value": 4,
+        "unit": "N*m",
+        "source": {
+          "kind": "assumed",
+          "documentId": "selection-worksheet",
+          "revision": "1",
+          "locator": "selection.md",
+          "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+        }
+      }
+    },
+    {
+      "speed": {
+        "value": 18,
+        "unit": "rad/s",
+        "source": {
+          "kind": "assumed",
+          "documentId": "selection-worksheet",
+          "revision": "1",
+          "locator": "selection.md",
+          "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+        }
+      },
+      "torque": {
+        "value": 0,
+        "unit": "N*m",
+        "source": {
+          "kind": "assumed",
+          "documentId": "selection-worksheet",
+          "revision": "1",
+          "locator": "selection.md",
+          "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+        }
+      }
+    }
+  ],
+  "currentLimit": {
+    "value": 8,
+    "unit": "A",
+    "source": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+  },
+  "voltageLimit": {
+    "value": 24,
+    "unit": "V",
+    "source": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+  },
+  "damping": {
+    "value": 0.01,
+    "unit": "N*m",
+    "source": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+  },
+  "friction": {
+    "value": 0.05,
+    "unit": "N*m",
+    "source": {
+      "kind": "assumed",
+      "documentId": "selection-worksheet",
+      "revision": "1",
+      "locator": "selection.md",
+      "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+    }
+  }
+}

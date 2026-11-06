@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "id": "caster-ref",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "sku": null,
+    "status": "candidate",
+    "family": "caster"
+  },
+  "links": [
+    {
+      "id": "ball",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.04
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "selection-worksheet",
+            "revision": "1",
+            "locator": "selection.md",
+            "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.04
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "selection-worksheet",
+            "revision": "1",
+            "locator": "selection.md",
+            "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.4,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "selection-worksheet",
+          "revision": "1",
+          "locator": "selection.md",
+          "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.00005120000000000001,
+        0,
+        0,
+        0.00005120000000000001,
+        0,
+        0.00005120000000000001
+      ],
+      "inertialSource": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+    }
+  ],
+  "joints": [],
+  "ports": [
+    {
+      "id": "mount",
+      "kind": "mount",
+      "frame": {
+        "xyzM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "caster",
+      "direction": "bidirectional"
+    }
+  ],
+  "models": [],
+  "documents": [
+    {
+      "id": "selection-worksheet",
+      "url": null,
+      "digest": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb",
+      "license": "internal"
+    }
+  ]
+}

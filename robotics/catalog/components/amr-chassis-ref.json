@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "id": "amr-chassis-ref",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "sku": null,
+    "status": "candidate",
+    "family": "AMR chassis"
+  },
+  "links": [
+    {
+      "id": "base",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.6,
+              0.44,
+              0.18
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "selection-worksheet",
+            "revision": "1",
+            "locator": "selection.md",
+            "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.6,
+              0.44,
+              0.18
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "selection-worksheet",
+            "revision": "1",
+            "locator": "selection.md",
+            "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 18,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "selection-worksheet",
+          "revision": "1",
+          "locator": "selection.md",
+          "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.33899999999999997,
+        0,
+        0,
+        0.5885999999999999,
+        0,
+        0.8304
+      ],
+      "inertialSource": {
+        "kind": "assumed",
+        "documentId": "selection-worksheet",
+        "revision": "1",
+        "locator": "selection.md",
+        "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+      }
+    }
+  ],
+  "joints": [],
+  "ports": [
+    {
+      "id": "left-axle",
+      "kind": "mount",
+      "frame": {
+        "xyzM": [
+          0,
+          0.25,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "axle-hub",
+      "direction": "bidirectional"
+    },
+    {
+      "id": "right-axle",
+      "kind": "mount",
+      "frame": {
+        "xyzM": [
+          0,
+          -0.25,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "axle-hub",
+      "direction": "bidirectional"
+    },
+    {
+      "id": "caster-front",
+      "kind": "mount",
+      "frame": {
+        "xyzM": [
+          0.25,
+          0,
+          -0.09
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "caster",
+      "direction": "bidirectional"
+    },
+    {
+      "id": "caster-rear",
+      "kind": "mount",
+      "frame": {
+        "xyzM": [
+          -0.25,
+          0,
+          -0.09
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "caster",
+      "direction": "bidirectional"
+    },
+    {
+      "id": "battery-bay",
+      "kind": "mount",
+      "frame": {
+        "xyzM": [
+          -0.1,
+          0,
+          0.09
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "battery-tray",
+      "direction": "bidirectional"
+    },
+    {
+      "id": "tray-plate",
+      "kind": "mount",
+      "frame": {
+        "xyzM": [
+          0.05,
+          0,
+          0.12
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "tray",
+      "direction": "bidirectional"
+    },
+    {
+      "id": "power-in",
+      "kind": "power",
+      "frame": {
+        "xyzM": [
+          -0.2,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "dc-bus",
+      "direction": "in",
+      "voltageRangeV": [
+        18,
+        30
+      ],
+      "continuousCurrentA": {
+        "value": 40,
+        "unit": "A",
+        "source": {
+          "kind": "assumed",
+          "documentId": "selection-worksheet",
+          "revision": "1",
+          "locator": "selection.md",
+          "contentSha256": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb"
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "kind": "actuator",
+      "id": "amr-drive-ref",
+      "digest": "383800387c682e65f0e11a4d7cbb7496a2a1c8544f2a360775b5b1043fe6d301"
+    }
+  ],
+  "documents": [
+    {
+      "id": "selection-worksheet",
+      "url": null,
+      "digest": "b16af7afd26c537294fd5324b310266faa7a20317b963f48b11e6cc226d9f2fb",
+      "license": "internal"
+    }
+  ]
+}
