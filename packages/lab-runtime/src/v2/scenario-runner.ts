@@ -30,7 +30,9 @@ import {declareArmScene,materializeArmScene,validateArmCollisionProfile} from '.
 import {TelemetryRecorder,TELEMETRY_RATE_TICKS} from './telemetry';
 import {projectSamples} from './twin-projection';
 import type {JournalEvents} from './event-stream';
-export interface RunManifestInput {project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string}
+/** Locked engineering extension: the bundle ref plus the exact project and projection it was compiled from (absent for every legacy run). */
+export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]}}
+export interface RunManifestInput {project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
 export interface RunProviders {directory:string;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>}
 export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'}
 export interface ScenarioRun {readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
@@ -91,7 +93,7 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  });
  const armCollisionScene=scenario.coffee?declareArmScene(project,radius,roles.robots.map(r=>r.id)):undefined;
  const armProfile={kinematics:PUMA560_SI,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={amr:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
- const manifest:Omit<RunReport['manifest'],'runId'>={...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:'mock',access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
+ const manifest:Omit<RunReport['manifest'],'runId'>={...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:'mock',access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends:backends.descriptors}),configuration,
   recipes:COFFEE_RECIPES.filter(r=>scenario.coffee?.orders.some(o=>o.recipe===r.id)).map(r=>({id:r.id,revision:r.revision,hash:r.hash})),

@@ -19,7 +19,7 @@ export interface CoffeeReport {
 export interface RunReport {
  schemaVersion:2;
  faultScheduleFires?:FaultFireRecord[];
- manifest:{faultSchedule?:{entries:FaultScheduleEntry[];hash:string};runId:string;sourceCommit:string;mode:'mock'|'simulation';access:'simulated';backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];prng:{algorithm:string;seeding:string;version:number};clock:{tickMs:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
+ manifest:{faultSchedule?:{entries:FaultScheduleEntry[];hash:string};engineering?:{bundleDigest:string;projectDigest:string};runId:string;sourceCommit:string;mode:'mock'|'simulation';access:'simulated';backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];prng:{algorithm:string;seeding:string;version:number};clock:{tickMs:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
   scenario:{id:string;revision:number;hash:string};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[];
   hashAlgorithm:'sha256-canonical-json-v1';designHash:string;adapterHash:string;configuration:{revision:number;hash:string};recipes:{id:string;revision:number;hash:string}[];
   models:{id:string;revision:string;hash:string;provenance:string}[];profiles:{id:string;revision:number;hash:string;provenance:string}[];calibration:{status:'not_calibrated';revision:null;hash:null;reason:string};armCollisionScene?:ArmSceneDeclaration};

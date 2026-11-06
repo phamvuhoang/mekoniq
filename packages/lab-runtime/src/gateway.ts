@@ -6,15 +6,15 @@ import {parseJsonStrict} from '../../contracts/src/validate';
 import {createV2Gateway,type V2Deps} from './v2/gateway';
 import type {CapabilityCatalog} from './v2/capabilities';
 export interface LabGateway {url:string;pairingToken:string;issuePairingToken():string;close():Promise<void>;}
-export interface GatewayOptions {port?:number;directory:string;sourceCommit:string;schemaHash:string;nowMs?:()=>number;pairingTtlMs?:number;v2?:{catalog?:CapabilityCatalog;enabledBackends?:readonly string[];stream?:V2Deps['stream'];readinessProbes?:V2Deps['readinessProbes'];nativeChecks?:V2Deps['nativeChecks'];simulationFactory?:V2Deps['simulationFactory']};}
+export interface GatewayOptions {port?:number;directory:string;sourceCommit:string;schemaHash:string;nowMs?:()=>number;pairingTtlMs?:number;v2?:{catalog?:CapabilityCatalog;enabledBackends?:readonly string[];stream?:V2Deps['stream'];readinessProbes?:V2Deps['readinessProbes'];nativeChecks?:V2Deps['nativeChecks'];simulationFactory?:V2Deps['simulationFactory'];engineering?:V2Deps['engineering']};}
 class GatewayError extends Error {constructor(readonly status:number,message:string){super(message);}}
 const origins=new Set(['http://127.0.0.1:4175','http://127.0.0.1:4176']);
 const token=()=>randomBytes(32).toString('base64url');
 const digest=(v:string)=>createHash('sha256').update(v).digest();
 const same=(a:string,b:string)=>timingSafeEqual(digest(a),digest(b));
-async function body(request:IncomingMessage):Promise<Record<string,unknown>>{
+async function body(request:IncomingMessage,maxBytes=1024*1024):Promise<Record<string,unknown>>{
  if(!/^application\/json(?:\s*;|$)/i.test(request.headers['content-type']??''))throw new GatewayError(415,'JSON_REQUIRED');
- const limit=1024*1024;
+ const limit=maxBytes;
  if(Number(request.headers['content-length']??0)>limit){request.resume();throw new GatewayError(413,'BODY_TOO_LARGE');}
  const chunks:Buffer[]=[];let size=0;
  for await(const chunk of request){size+=chunk.length;if(size>limit)throw new GatewayError(413,'BODY_TOO_LARGE');chunks.push(Buffer.from(chunk));}
@@ -29,7 +29,7 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
  const issuePairingToken=()=>{currentToken=token();tokenExpiresAt=now()+(options.pairingTtlMs??300000);return currentToken;};
  const pairingToken=issuePairingToken();
  const pairingValid=(t:unknown)=>typeof t==='string'&&!!currentToken&&now()<tokenExpiresAt&&same(t,currentToken);
- const v2=createV2Gateway({directory:options.directory,sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,now,catalog:options.v2?.catalog,enabledBackends:options.v2?.enabledBackends,stream:options.v2?.stream,readinessProbes:options.v2?.readinessProbes,nativeChecks:options.v2?.nativeChecks,simulationFactory:options.v2?.simulationFactory,pairingValid,spendPairing(){currentToken='';},same,readBody:body,send:(r,s,d)=>send(r,s,d)});
+ const v2=createV2Gateway({directory:options.directory,sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,now,catalog:options.v2?.catalog,enabledBackends:options.v2?.enabledBackends,stream:options.v2?.stream,readinessProbes:options.v2?.readinessProbes,nativeChecks:options.v2?.nativeChecks,simulationFactory:options.v2?.simulationFactory,engineering:options.v2?.engineering,pairingValid,spendPairing(){currentToken='';},same,readBody:body,send:(r,s,d)=>send(r,s,d)});
  let port=options.port??4176;
  const server=createServer((request,response)=>{void handle(request,response).catch(error=>{
   const message=error instanceof Error?error.message:'INTERNAL_ERROR';

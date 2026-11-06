@@ -209,10 +209,27 @@
             "sourceCommit",
             "schemaHash"
           ]
+        },
+        "engineeringRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bundleDigest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "projectDigest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "bundleDigest",
+            "projectDigest"
+          ]
         }
       },
       "required": [
-        "project",
         "scenarioId",
         "scenarioRevision",
         "seed",

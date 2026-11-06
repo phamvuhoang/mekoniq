@@ -48,8 +48,10 @@ const checkRun=compile<CreateRunRequest>(runSchema,'mekoniq.lab-run.v2#/definiti
 export function validateRunRequestV2(value:unknown):Validated<CreateRunRequest>{
  const shape=checkRun(value);
  if(!shape.ok)return shape;
- const project=validateProjectV2(shape.value.project);
- return project.ok?shape:{ok:false,issues:project.issues.map(i=>({...i,path:'/project'+i.path}))};
+ if(shape.value.project===undefined&&shape.value.engineeringRef===undefined)return {ok:false,issues:[{path:'/project',code:'FIELD_REQUIRED',message:'Missing "project" (or "engineeringRef" for an engineering run)'}]};
+ // An engineering request carries engineeringRef instead of (or equal to) a project; the gateway derives the project from the bundle.
+ const project=shape.value.project===undefined?undefined:validateProjectV2(shape.value.project);
+ return !project||project.ok?shape:{ok:false,issues:project.issues.map(i=>({...i,path:'/project'+i.path}))};
 }
 const checkAction=compile<LabActionV2>(actionSchema);
 const MODE_KIND=/^(set|update|change)(Mode|Backend|Access)/;

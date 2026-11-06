@@ -910,7 +910,7 @@ export interface LabRunSnapshotV2 {
  * via the `definition` "CreateRunRequest".
  */
 export interface CreateRunRequest {
-  project: {
+  project?: {
     [k: string]: any;
   };
   scenarioId: string;
@@ -922,6 +922,10 @@ export interface CreateRunRequest {
   runtimeIdentity: {
     sourceCommit: string;
     schemaHash: string;
+  };
+  engineeringRef?: {
+    bundleDigest: string;
+    projectDigest: string;
   };
 }
 

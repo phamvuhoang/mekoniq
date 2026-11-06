@@ -32,7 +32,7 @@ const models=():Record<string,unknown>=>({[hashJson(driveModel)]:driveModel});
 const digested=(...cs:ComponentRevision[])=>Object.fromEntries(cs.map(c=>[hashJson(c),c]));
 const digestOf=(c:ComponentRevision)=>hashJson(c);
 const instance=(id:string,c:ComponentRevision,p:Pose=pose()):Instance=>({id,componentDigest:digestOf(c),pose:p});
-const world=()=>({id:'fixture-world',revision:1,width:6,height:4,points:[{id:'t1',name:'T1',kind:'table' as const,x:4,y:2},{id:'park',name:'Park',kind:'parking' as const,x:1,y:1}],handoffPoints:[],obstacles:[]});
+const world=()=>({id:'fixture-world',revision:1,width:6,height:4,points:[{id:'t1',name:'T1',kind:'table' as const,x:4,y:2},{id:'park',name:'Park',kind:'parking' as const,x:1,y:1},{id:'pass',name:'Kitchen pass',kind:'kitchen' as const,x:1,y:3}],handoffPoints:[],obstacles:[]});
 const runtime=()=>({schemaVersion:2 as const,id:'fixture-runtime',name:'Fixture',revision:1,updatedAt:'2026-11-07T00:00:00Z',entities:[{id:'amr-1',kind:'amr' as const,assetRef:{id:'engineering-amr',revision:1,contentHash:'c'.repeat(64)}}],world:world()});
 const project=(instances:Instance[],connections:EngineeringProject['assembly']['connections'],entityInstances=instances.map(i=>i.id)):EngineeringProject=>({documentType:'engineering-project',schemaVersion:1,id:'fixture-amr',revision:1,runtimeProject:runtime(),assembly:{instances,connections},entityBindings:[{entityId:'amr-1',instanceIds:entityInstances}],requestedProfile:'engineering-rigid-v1'});
 
@@ -62,3 +62,23 @@ export function engineeringFixture(name:string):Fixture{
  if(!build)throw new Error(`UNKNOWN_ENGINEERING_FIXTURE ${name}`);
  return build();
 }
+
+// ---- gateway-level helpers (A04) ----
+import {mkdir,writeFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import type {CompilerPort} from '../../packages/lab-runtime/src/engineering/gateway';
+/** Writes a loadCatalog()-compatible catalog containing exactly the fixture's components and models. */
+export async function writeFixtureCatalog(root:string,f:{components:Record<string,ComponentRevision>;models:Record<string,unknown>}){
+ for(const d of ['components','models','documents'])await mkdir(join(root,d),{recursive:true});
+ const entries=[];
+ for(const [digest,c] of Object.entries(f.components)){const file=`components/${digest}.json`;await writeFile(join(root,file),JSON.stringify(c));entries.push({file,digest});}
+ for(const [digest,m] of Object.entries(f.models))await writeFile(join(root,'models',`${digest}.json`),JSON.stringify(m));
+ await writeFile(join(root,'catalog.json'),JSON.stringify({schemaVersion:1,id:'fixture-catalog',components:entries,quotes:[]}));
+}
+const sha=(b:string|Uint8Array)=>createHash('sha256').update(b).digest('hex');
+/** Test compiler port: deterministic scene.json from the resolved links; no physics, so the service reports runnable:false. */
+export const testCompiler:CompilerPort={version:'test-compiler-1',async compileResolved(input,outDir){
+ const scene=JSON.stringify({links:input.resolved.links.map(l=>l.id).sort(),projectDigest:input.projectDigest});
+ await writeFile(join(outDir,'scene.json'),scene);
+ return {sceneDigest:sha(scene),files:[{path:'scene.json',sha256:sha(scene)}]};
+}};
