@@ -1,0 +1,112 @@
+[
+  {
+    "id": "source-pos",
+    "title": "Gọi món tại quầy",
+    "file": "source-pos.png",
+    "repo": "source",
+    "origin": "fresh",
+    "revision": "f82b2057cae89b0029968212753df01f86f334ad",
+    "capturedAt": "2026-11-06T08:49:43.009Z",
+    "scope": "Tablet web local, isolated fixture coordinator; dữ liệu thử nghiệm, không phải Vercel/nhà hàng thật.",
+    "route": "/pos"
+  },
+  {
+    "id": "source-kitchen",
+    "title": "Điều hành bếp / KDS",
+    "file": "source-kitchen.png",
+    "repo": "source",
+    "origin": "fresh",
+    "revision": "f82b2057cae89b0029968212753df01f86f334ad",
+    "capturedAt": "2026-11-06T08:49:43.101Z",
+    "scope": "Tablet web local, isolated fixture coordinator; dữ liệu thử nghiệm, không phải Vercel/nhà hàng thật.",
+    "route": "/kitchen"
+  },
+  {
+    "id": "source-fleet",
+    "title": "Điều phối đội robot",
+    "file": "source-fleet.png",
+    "repo": "source",
+    "origin": "fresh",
+    "revision": "f82b2057cae89b0029968212753df01f86f334ad",
+    "capturedAt": "2026-11-06T08:49:43.187Z",
+    "scope": "Tablet web local, isolated fixture coordinator; dữ liệu thử nghiệm, không phải Vercel/nhà hàng thật.",
+    "route": "/fleet"
+  },
+  {
+    "id": "source-inventory",
+    "title": "Kho và nguyên liệu",
+    "file": "source-inventory.png",
+    "repo": "source",
+    "origin": "fresh",
+    "revision": "f82b2057cae89b0029968212753df01f86f334ad",
+    "capturedAt": "2026-11-06T08:49:43.256Z",
+    "scope": "Tablet web local, isolated fixture coordinator; dữ liệu thử nghiệm, không phải Vercel/nhà hàng thật.",
+    "route": "/inventory"
+  },
+  {
+    "id": "source-checkout",
+    "title": "Thu ngân và thanh toán",
+    "file": "source-checkout.png",
+    "repo": "source",
+    "origin": "fresh",
+    "revision": "f82b2057cae89b0029968212753df01f86f334ad",
+    "capturedAt": "2026-11-06T08:49:43.334Z",
+    "scope": "Tablet web local, isolated fixture coordinator; dữ liệu thử nghiệm, không phải Vercel/nhà hàng thật.",
+    "route": "/checkout"
+  },
+  {
+    "id": "source-device",
+    "title": "Thiết bị và đồng bộ",
+    "file": "source-device.png",
+    "repo": "source",
+    "origin": "fresh",
+    "revision": "f82b2057cae89b0029968212753df01f86f334ad",
+    "capturedAt": "2026-11-06T08:49:43.419Z",
+    "scope": "Tablet web local, isolated fixture coordinator; dữ liệu thử nghiệm, không phải Vercel/nhà hàng thật.",
+    "route": "/device"
+  },
+  {
+    "id": "lab-design",
+    "title": "Thiết kế và cấu hình robot",
+    "file": "lab-design.png",
+    "repo": "lab",
+    "origin": "fresh",
+    "revision": "fbae7b0d6702e806d091fe9f4331d821e6075f63",
+    "capturedAt": "2026-11-06T08:49:44.812Z",
+    "scope": "UI local trên HEAD hiện tại; runtime không kết nối trong ảnh cấu hình này.",
+    "route": "#design"
+  },
+  {
+    "id": "lab-world",
+    "title": "Thiết kế mặt bằng nhà hàng",
+    "file": "lab-world.png",
+    "repo": "lab",
+    "origin": "fresh",
+    "revision": "fbae7b0d6702e806d091fe9f4331d821e6075f63",
+    "capturedAt": "2026-11-06T08:49:45.969Z",
+    "scope": "UI local trên HEAD hiện tại; runtime không kết nối trong ảnh cấu hình này.",
+    "route": "#restaurant"
+  },
+  {
+    "id": "lab-scenarios",
+    "title": "Kịch bản mô phỏng",
+    "file": "lab-scenarios.png",
+    "repo": "lab",
+    "origin": "fresh",
+    "revision": "fbae7b0d6702e806d091fe9f4331d821e6075f63",
+    "capturedAt": "2026-11-06T08:49:47.037Z",
+    "scope": "UI local trên HEAD hiện tại; runtime không kết nối trong ảnh cấu hình này.",
+    "route": "#scenarios"
+  },
+  {
+    "id": "lab-deployment",
+    "title": "Xuất cấu hình triển khai",
+    "file": "lab-deployment.png",
+    "repo": "lab",
+    "origin": "fresh",
+    "revision": "fbae7b0d6702e806d091fe9f4331d821e6075f63",
+    "capturedAt": "2026-11-06T08:49:48.118Z",
+    "scope": "UI local trên HEAD hiện tại; runtime không kết nối trong ảnh cấu hình này.",
+    "route": "#deployment"
+  }
+]

@@ -1,0 +1,15 @@
+(()=>{'use strict';
+const rows=[...document.querySelectorAll('[data-feature]')];
+const search=document.querySelector('#feature-search');
+const filters=[...document.querySelectorAll('[data-filter]')];
+let selected='all';
+const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();
+const apply=()=>{const q=normalize(search.value.trim());let shown=0;for(const row of rows){const match=(selected==='all'||row.dataset.status===selected)&&normalize(row.textContent).includes(q);row.hidden=!match;if(match)shown++;}document.querySelector('#result-count').textContent=`Hiển thị ${shown} / ${rows.length} nhóm chức năng`;document.querySelector('#empty').hidden=shown!==0;};
+for(const button of filters)button.addEventListener('click',()=>{selected=button.dataset.filter;filters.forEach(b=>b.setAttribute('aria-pressed',String(b===button)));apply();});search.addEventListener('input',apply);apply();
+const tabs=[...document.querySelectorAll('[role="tab"]')];
+const choose=tab=>{tabs.forEach(t=>{const active=t===tab;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;document.getElementById(t.getAttribute('aria-controls')).hidden=!active;});};
+tabs.forEach((tab,i)=>{tab.addEventListener('click',()=>choose(tab));tab.addEventListener('keydown',e=>{let index;if(e.key==='ArrowRight')index=(i+1)%tabs.length;else if(e.key==='ArrowLeft')index=(i+tabs.length-1)%tabs.length;else if(e.key==='Home')index=0;else if(e.key==='End')index=tabs.length-1;else return;e.preventDefault();choose(tabs[index]);tabs[index].focus();});});choose(tabs[0]);
+let toastTimer;const toast=message=>{const el=document.querySelector('#toast');el.textContent=message;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true;},3500);};
+for(const button of document.querySelectorAll('[data-copy]'))button.addEventListener('click',async()=>{const code=document.getElementById(button.dataset.copy);const text=code.textContent;let copied=false;try{if(navigator.clipboard){await navigator.clipboard.writeText(text);copied=true;}}catch{}if(!copied){const helper=document.createElement('textarea');helper.value=text;helper.setAttribute('aria-hidden','true');helper.style.cssText='position:fixed;left:-9999px;top:0';document.body.append(helper);helper.select();try{copied=document.execCommand('copy');}catch{}helper.remove();button.focus();}if(copied)toast('Đã sao chép lệnh. Kiểm tra host và điều kiện trước khi chạy.');else{const range=document.createRange();range.selectNodeContents(code);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);toast('Đã chọn nội dung. Nhấn Ctrl+C hoặc ⌘C để sao chép.');}});
+let openedForPrint=[];const expandPrint=()=>{openedForPrint=[...document.querySelectorAll('details:not([open])')];openedForPrint.forEach(d=>d.open=true);};const restorePrint=()=>{openedForPrint.forEach(d=>d.open=false);openedForPrint=[];};window.addEventListener('beforeprint',expandPrint);window.addEventListener('afterprint',restorePrint);document.querySelector('#print').addEventListener('click',()=>window.print());
+})();

@@ -7,6 +7,22 @@ Ba bản HTML tự chứa, chuyển trực tiếp **Tiếng Việt / 日本語 /
 | Engineering Atlas · 8 chương | [engineering.html](engineering.html) | [Mở bản kỹ thuật](https://chatgpt.com/space/page_0c0b52bccf7481918e5a45ac0ad84ea6) |
 | Business Plan · 11 slide | [business-plan.html](business-plan.html) | [Mở Business Plan](https://chatgpt.com/space/page_86729025d6548191a54021ac49b24dd6) |
 | Robot Lab · 9 trang | [robot-lab.html](robot-lab.html) | File HTML local, chưa xuất bản |
+| Digital Twin · trạng thái & triển khai · 06/11/2026 | [digital-twin-status-2026-11-06.html](digital-twin-status-2026-11-06.html) | Báo cáo tiếng Việt, offline; chưa xuất bản |
+
+## Báo cáo Digital Twin ngày 06/11/2026
+
+[Báo cáo HTML](digital-twin-status-2026-11-06.html) tổng hợp Plans 01–03 sau remediation R01–R12: 16 nhóm hoàn thành phần mềm, 10 nhóm còn tích hợp/nghiệm thu, 8 nhóm chưa thực hiện. Có tìm kiếm/lọc trạng thái, nguồn evidence, ba hướng dẫn deploy (mock / Gazebo-Nav2 / LinuxCNC SIM), sao chép lệnh, rollback, next steps và in/PDF toàn bộ nội dung. Không kết nối runtime hay chạy lệnh từ HTML. Đây là snapshot source `a89a077`, Lab `3a92e65`; không tự theo HEAD và không đóng acceptance gate.
+
+Nội dung/builder riêng ở `src/digital-twin-status.py`, styles và tương tác ở `src/digital-twin-status.css` / `.js`. Không sửa trực tiếp HTML đã sinh. Build từ `source/` (cần sibling `lab/` chứa evidence snapshot):
+
+```sh
+python3 artifacts/src/digital-twin-status.py
+node --check artifacts/src/digital-twin-status.js
+```
+
+Mở file trực tiếp trong trình duyệt, không cần server hoặc Internet. Nút in xuất cả ba hướng dẫn deploy và toàn bộ nhóm chức năng, kể cả khi bộ lọc đang bật. Liên kết source/evidence tương đối cần giữ cấu trúc workspace; gửi HTML riêng vẫn đọc được toàn bộ nội dung báo cáo.
+
+Đã kiểm bằng Chrome/Playwright offline ở 320, 375, 768, 1024 và 1440 px: không tràn ngang, không lỗi JavaScript/request mạng; bộ lọc, tìm kiếm không dấu, tab/bàn phím, clipboard, local source links, no-JS và toàn bộ nội dung in đều pass. 14 khối lệnh qua `bash -n` (không chạy deploy). Xem [verification](digital-twin-status-verification.json) và [ảnh xem trước](digital-twin-status-preview.png).
 
 ## Nội dung và cách dùng
 

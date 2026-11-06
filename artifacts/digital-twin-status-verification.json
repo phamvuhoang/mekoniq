@@ -1,0 +1,59 @@
+{
+  "passed": true,
+  "views": [
+    {
+      "scroll": 1440,
+      "width": 1440
+    },
+    {
+      "scroll": 1024,
+      "width": 1024
+    },
+    {
+      "scroll": 768,
+      "width": 768
+    },
+    {
+      "scroll": 375,
+      "width": 375
+    },
+    {
+      "scroll": 320,
+      "width": 320
+    }
+  ],
+  "features": 34,
+  "statusFilters": {
+    "done": 16,
+    "progress": 10,
+    "todo": 8
+  },
+  "commands": 14,
+  "tests": [
+    "responsive overflow",
+    "status filters",
+    "Vietnamese accent-insensitive search",
+    "empty state",
+    "deployment tabs and keyboard",
+    "actual clipboard copy",
+    "local source links",
+    "print includes hidden rows and all panels",
+    "no-JS readability"
+  ],
+  "pageErrors": [],
+  "externalRequests": [],
+  "artifact": "digital-twin-status-2026-11-06.html",
+  "sha256": "00b8fe209cab486c52631f44d30ec62b8944012e365e24cd29d83f5a6781af2f",
+  "bytes": 80752,
+  "recordedAt": "2026-11-06T00:11:42.219951+00:00",
+  "sourceRuntimeSnapshot": "a89a077ed12648931a857333f899e3d6c1ea9719",
+  "labSnapshot": "3a92e6579793aa47c30c0a3abd44942d95c679c3",
+  "checks": {
+    "builderDeterministic": true,
+    "javascriptSyntax": "node --check passed",
+    "renderedCommands": "14 blocks passed bash -n; no deploy executed",
+    "eslint": "artifact files excluded by repository ignore pattern"
+  },
+  "scope": "Standalone HTML document only; not application, native controller, deployment or hardware acceptance. Chrome on macOS; no claim for Safari or physical tablet.",
+  "rebuild": "python3 artifacts/src/digital-twin-status.py"
+}

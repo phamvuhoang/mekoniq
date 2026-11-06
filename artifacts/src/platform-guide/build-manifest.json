@@ -1,0 +1,30 @@
+{
+  "file": "mekoniq-platform-lab-guide-2026-11-06.html",
+  "features": 54,
+  "states": {
+    "software": 40,
+    "progress": 11,
+    "todo": 3
+  },
+  "screenshots": 21,
+  "commands": 13,
+  "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+  "runtimeLock": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "f82b2057cae89b0029968212753df01f86f334ad",
+    "schemaHash": "ebc4b1f05c57f1dbbbca9e376bd815dd20277a9fe8a7d4c8365ab566cc8f63fe",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "470a404c61714f5ee5b1878f964c1be4bea28628846bdfd800b1df8619a9d236",
+    "entrypoint": "runtime.mjs"
+  },
+  "sha256": "fd61f678b511997691471f9f8653f23480a6f6f171a1e87cbd20ecea3a7578a0"
+}

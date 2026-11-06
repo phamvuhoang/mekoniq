@@ -1,0 +1,85 @@
+{
+  "artifact": "mekoniq-platform-lab-guide-2026-11-06.html",
+  "recordedAt": "2026-11-06T14:21:34.199Z",
+  "sha256": "fd61f678b511997691471f9f8653f23480a6f6f171a1e87cbd20ecea3a7578a0",
+  "checks": [
+    {
+      "name": "54 feature groups / 21 embedded screenshots with alt text",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "responsive 1440",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "responsive 1024",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "responsive 768",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "responsive 390",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "responsive 320",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "repo/status/search without accents, empty state and reset",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "gallery filter, real image modal, Escape and focus restoration",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "copy command and clipboard-denied selection fallback",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "shell syntax only; deployment commands not executed",
+      "passed": true,
+      "details": 12
+    },
+    {
+      "name": "internal anchors and repository links exist",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "print includes all features and images despite active filters",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "content available with JavaScript disabled",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "zero JavaScript errors and zero external asset/network requests",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "no embedded Supabase keys or private-key material",
+      "passed": true,
+      "details": true
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "passed": true
+}
