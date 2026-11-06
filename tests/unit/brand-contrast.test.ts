@@ -17,3 +17,11 @@ test('token generator rejects unresolved/cyclic aliases and stays deterministic'
  const unknown=structuredClone(t);unknown.semantic['--mq-bg']='var(--mekoniq-unknown)';expect(()=>renderTokens(unknown)).toThrow('Unknown alias');
  const cyclic=structuredClone(t);cyclic.semantic['--mq-bg']='var(--mq-bg)';expect(()=>renderTokens(cyclic)).toThrow('Cyclic alias');
 });
+
+test('token aliases reject unknown references and cycles with CSS whitespace',async()=>{
+ // @ts-expect-error Node script has no TypeScript declaration
+ const {renderTokens}=await import('../../scripts/build-brand.mjs');
+ const t=JSON.parse(readFileSync('packages/ui/brand/tokens.json','utf8'));
+ t.semantic['--mq-bg']='var( --mekoniq-unknown )';expect(()=>renderTokens(t)).toThrow('Unknown alias');
+ t.semantic['--mq-bg']='var( --mq-bg )';expect(()=>renderTokens(t)).toThrow('Cyclic alias');
+});
