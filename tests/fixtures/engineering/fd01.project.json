@@ -1,0 +1,230 @@
+{
+ "documentType": "engineering-project",
+ "schemaVersion": 1,
+ "id": "fd01-reference",
+ "revision": 1,
+ "requestedProfile": "engineering-rigid-v1",
+ "runtimeProject": {
+  "schemaVersion": 2,
+  "id": "fd01-reference-runtime",
+  "name": "FD01 reference",
+  "revision": 1,
+  "updatedAt": "2026-11-07T00:00:00Z",
+  "entities": [
+   {
+    "id": "amr-1",
+    "kind": "amr",
+    "assetRef": {
+     "id": "placeholder",
+     "revision": 1,
+     "contentHash": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   }
+  ],
+  "world": {
+   "id": "fd01-world",
+   "revision": 1,
+   "width": 8,
+   "height": 5,
+   "points": [
+    {
+     "id": "pass",
+     "name": "Kitchen pass",
+     "kind": "kitchen",
+     "x": 1.2,
+     "y": 3.5
+    },
+    {
+     "id": "bay-1",
+     "name": "Parking",
+     "kind": "parking",
+     "x": 1.2,
+     "y": 1.2
+    },
+    {
+     "id": "t-1",
+     "name": "T01",
+     "kind": "table",
+     "x": 5.5,
+     "y": 2.5
+    }
+   ],
+   "handoffPoints": [],
+   "obstacles": []
+  }
+ },
+ "assembly": {
+  "instances": [
+   {
+    "id": "chassis",
+    "componentDigest": "5a8ab24d2eb805573e2a40bb2f0e79120c121c98961cd8c9bb69626435219015",
+    "pose": {
+     "xyzM": [
+      0,
+      0,
+      0
+     ],
+     "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+     ]
+    }
+   },
+   {
+    "id": "wheel-left",
+    "componentDigest": "ddce314c28153f83ea998e31c52f20beb1fe20efdef758c782ac174aa93a400c",
+    "pose": {
+     "xyzM": [
+      0,
+      0,
+      0
+     ],
+     "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+     ]
+    }
+   },
+   {
+    "id": "wheel-right",
+    "componentDigest": "ddce314c28153f83ea998e31c52f20beb1fe20efdef758c782ac174aa93a400c",
+    "pose": {
+     "xyzM": [
+      0,
+      0,
+      0
+     ],
+     "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+     ]
+    }
+   },
+   {
+    "id": "caster-front",
+    "componentDigest": "1ef88db2ac5f660e323af5df4645e9661e8bdcd26b842278e0e21d0897e6f5e3",
+    "pose": {
+     "xyzM": [
+      0,
+      0,
+      0
+     ],
+     "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+     ]
+    }
+   },
+   {
+    "id": "caster-rear",
+    "componentDigest": "1ef88db2ac5f660e323af5df4645e9661e8bdcd26b842278e0e21d0897e6f5e3",
+    "pose": {
+     "xyzM": [
+      0,
+      0,
+      0
+     ],
+     "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+     ]
+    }
+   },
+   {
+    "id": "battery",
+    "componentDigest": "47e245e6a14c53f3faaca42d35c0bfa8b28870cc78008483ffddb319a215d5cc",
+    "pose": {
+     "xyzM": [
+      0,
+      0,
+      0
+     ],
+     "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+     ]
+    }
+   },
+   {
+    "id": "tray",
+    "componentDigest": "3579af17453cf900cc13a9ec88188696ffc5b537026f2c0a434e0a5ce10754bc",
+    "pose": {
+     "xyzM": [
+      0,
+      0,
+      0
+     ],
+     "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+     ]
+    }
+   }
+  ],
+  "connections": [
+   {
+    "from": "chassis/left-axle",
+    "to": "wheel-left/mount",
+    "kind": "mount"
+   },
+   {
+    "from": "chassis/right-axle",
+    "to": "wheel-right/mount",
+    "kind": "mount"
+   },
+   {
+    "from": "chassis/caster-front",
+    "to": "caster-front/mount",
+    "kind": "mount"
+   },
+   {
+    "from": "chassis/caster-rear",
+    "to": "caster-rear/mount",
+    "kind": "mount"
+   },
+   {
+    "from": "chassis/battery-bay",
+    "to": "battery/mount",
+    "kind": "mount"
+   },
+   {
+    "from": "chassis/tray-plate",
+    "to": "tray/mount",
+    "kind": "mount"
+   },
+   {
+    "from": "battery/out",
+    "to": "chassis/power-in",
+    "kind": "power"
+   }
+  ]
+ },
+ "entityBindings": [
+  {
+   "entityId": "amr-1",
+   "instanceIds": [
+    "chassis",
+    "wheel-left",
+    "wheel-right",
+    "caster-front",
+    "caster-rear",
+    "battery",
+    "tray"
+   ]
+  }
+ ]
+}

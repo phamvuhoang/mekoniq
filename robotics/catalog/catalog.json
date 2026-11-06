@@ -4,11 +4,11 @@
   "components": [
     {
       "file": "components/amr-chassis-ref.json",
-      "digest": "4b3ec067ee95a60d180774e9e208872738f33f48772519e696a6886ff4584700"
+      "digest": "5a8ab24d2eb805573e2a40bb2f0e79120c121c98961cd8c9bb69626435219015"
     },
     {
       "file": "components/battery-24v-ref.json",
-      "digest": "bbbc4bb766cc3cbe2433e5cfa1833be324712ad5baa7282f6378f526dbc1fe80"
+      "digest": "47e245e6a14c53f3faaca42d35c0bfa8b28870cc78008483ffddb319a215d5cc"
     },
     {
       "file": "components/caster-ref.json",

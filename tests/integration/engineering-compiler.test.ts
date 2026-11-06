@@ -2,7 +2,7 @@
 import { afterEach, expect, test } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createPythonCompiler } from '../../packages/lab-runtime/src/engineering/compiler';
@@ -42,4 +42,17 @@ test.skipIf(!available)('a compiler refusal becomes a blocked receipt carrying t
   expect(receipt.state).toBe('blocked');
   expect(receipt.problems.find((p) => p.code === 'COMPILER_FAILED')?.detail).toMatch(/TARGET_CLEARANCE/);
   expect(existsSync(join(directory, 'bundles'))).toBe(false);
+});
+
+test.skipIf(!available)('the shipped reference catalog builds the FD01 reference AMR end to end', async () => {
+  const directory = await temp('eng-ref-'), project = JSON.parse(await readFile('tests/fixtures/engineering/fd01.project.json', 'utf8'));
+  const service = createEngineeringService({ directory, catalogRoot: 'robotics/catalog', compiler: compiler() });
+  const receipt = await service.compileEngineeringProject(project, 'session');
+  expect(receipt.problems.filter((p) => p.blocking)).toEqual([]);
+  expect(receipt.state).toBe('compiled');
+  if (receipt.state !== 'compiled') return;
+  const manifest = await service.readManifest('session', receipt.bundleDigest);
+  const scene = JSON.parse(Buffer.from(await service.readBlob('session', manifest.files.find((x) => x.path === 'scene.json')!.sha256)).toString());
+  expect(scene.wheelBindings.map((b: { radiusM: number }) => b.radiusM)).toEqual([0.1, 0.1]);
+  expect(scene.links.filter((l: { id: string }) => l.id.endsWith('/ball'))).toHaveLength(2);
 });
