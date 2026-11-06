@@ -1,0 +1,32 @@
+/* Scoped component contract. Apps own layout, semantics and event handling. */
+.mq-theme { color-scheme: dark; background: var(--mq-bg); color: var(--mq-text); font-family: var(--mq-font-ui); font-size: var(--mq-font-body); line-height: var(--mq-line-height); }
+.mq-button, .mq-field { box-sizing: border-box; min-height: 44px; padding: var(--mq-space-12) var(--mq-space-16); border: 1px solid var(--mq-control-border); border-radius: var(--mq-radius-control); background: var(--mq-surface); color: var(--mq-text); font: inherit; }
+.mq-button { min-width: 44px; cursor: pointer; transition: background-color var(--mq-motion-duration), color var(--mq-motion-duration); }
+.mq-button:hover, .mq-button[data-state="hover"] { background: var(--mq-surface-raised); }
+.mq-button--primary { background: var(--mq-primary); color: var(--mq-on-primary); }
+.mq-button--primary:hover, .mq-button--primary[data-state="hover"] { background: var(--mq-primary); box-shadow: inset 0 0 0 2px var(--mq-on-primary); }
+.mq-button--primary:active, .mq-button--primary[aria-pressed="true"] { box-shadow: inset 0 0 0 3px var(--mq-on-primary); }
+.mq-button--danger, .mq-button--danger:hover { background: var(--mq-danger); color: var(--mq-on-danger); }
+.mq-button:disabled, .mq-button[aria-disabled="true"] { background: var(--mq-surface-raised); color: var(--mq-text-muted); cursor: not-allowed; box-shadow: none; }
+.mq-button[aria-busy="true"] { cursor: progress; }
+.mq-button:focus-visible, .mq-field:focus-visible, .mq-checkbox:focus-visible, .mq-nav a:focus-visible, .mq-table:focus-visible, .mq-table tr:focus-visible, .mq-link:focus-visible, .mq-brand:focus-visible { outline: 2px solid var(--mq-focus); outline-offset: 3px; }
+.mq-field[aria-invalid="true"] { border-color: var(--mq-danger); }
+.mq-field::placeholder, .mq-helper { color: var(--mq-text-muted); }
+.mq-field option { color: var(--mq-text); background: var(--mq-surface); }
+.mq-field:autofill { box-shadow: inset 0 0 0 100px var(--mq-surface); -webkit-text-fill-color: var(--mq-text); }
+.mq-checkbox { width: 24px; height: 24px; accent-color: var(--mq-primary); vertical-align: middle; }
+.mq-panel { padding: var(--mq-space-24); border: 1px solid var(--mq-border); border-radius: var(--mq-radius-panel); background: var(--mq-surface); }
+.mq-badge, .mq-alert { color: var(--mq-text); background: var(--mq-surface); border: 1px solid currentColor; padding: var(--mq-space-4) var(--mq-space-12); }
+.mq-badge { display: inline-block; border-radius: var(--mq-radius-badge); }
+.mq-alert { border-radius: var(--mq-radius-control); padding: var(--mq-space-16); }
+.mq-info { color: var(--mq-info); } .mq-success { color: var(--mq-success); } .mq-warning { color: var(--mq-warning); } .mq-danger { color: var(--mq-danger); }
+.mq-nav { display: flex; flex-wrap: wrap; gap: var(--mq-space-8); }
+.mq-nav a, .mq-link { color: var(--mq-info); text-decoration: underline; text-underline-offset: 3px; }
+.mq-nav a { padding: var(--mq-space-12); } .mq-nav a[aria-current] { color: var(--mq-primary); border-bottom: 2px solid currentColor; }
+.mq-table { overflow: auto; } .mq-table table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.mq-table th, .mq-table td { padding: var(--mq-space-12); text-align: start; border-bottom: 1px solid var(--mq-border); } .mq-table tr[aria-selected="true"] { background: var(--mq-surface-raised); }
+.mq-brand { display: inline-flex; align-items: center; padding: var(--mq-space-8); } .mq-brand img { width: 180px; height: auto; } .mq-brand--icon img { width: 40px; }
+.mq-skip-link { position: absolute; top: -100px; color: var(--mq-on-primary); background: var(--mq-primary); padding: var(--mq-space-12); z-index: 1000; } .mq-skip-link:focus { top: 0; }
+@media (max-width: 767px) { .mq-panel { padding: var(--mq-space-16); } }
+@media (prefers-reduced-motion: reduce) { .mq-theme *, .mq-theme *::before, .mq-theme *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+@media print { .mq-theme, .mq-panel, .mq-alert, .mq-badge { background: var(--mekoniq-paper); color: var(--mekoniq-ink); box-shadow: none; } }
