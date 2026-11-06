@@ -51,7 +51,7 @@ export function Checkout(c:ScreenContext) {
        return act(c,'Bill.Split',{billId:bill.ref.id,mode:'lines',parts:[...groups.values()].map(lineIds=>({lineIds}))},bill.version).then(done);
       }));
      }
-     if(can('bill.void')){const reason=field(tr(c,'Lý do hủy hóa đơn','Void reason'));row.append(reason.node,button(tr(c,'Hủy hóa đơn (chưa thu tiền)','Void bill (nothing collected)'),()=>act(c,'Bill.Void',{billId:bill.ref.id,reason:reason.input.value},bill.version).then(done)));}
+     if(can('bill.void')){const reason=field(tr(c,'Lý do hủy hóa đơn','Void reason'));row.append(reason.node,button(tr(c,'Hủy hóa đơn (chưa thu tiền)','Void bill (nothing collected)'),()=>act(c,'Bill.Void',{billId:bill.ref.id,reason:reason.input.value},bill.version).then(done),'danger'));}
     }
     const close=button(tr(c,'Đóng hóa đơn','Close bill'),()=>act(c,'Bill.Close',{billId:bill.ref.id},bill.version).then(done));close.disabled=due!==0n;row.append(close);
    }

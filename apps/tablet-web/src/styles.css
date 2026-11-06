@@ -8,3 +8,6 @@
 button.quiet:hover,button.danger:hover{box-shadow:none}button.quiet:disabled,button.danger:disabled{color:var(--mq-text-muted);background:var(--mq-surface-raised);border-color:var(--mq-border)}@media print{:root{--mq-text:var(--mekoniq-ink);--mq-text-muted:var(--mekoniq-ink);--mq-info:var(--mekoniq-ink);--mq-success:var(--mekoniq-ink);--mq-warning:var(--mekoniq-ink);--mq-danger:var(--mekoniq-ink);--mq-primary:var(--mekoniq-ink);--mq-surface:white;--mq-surface-raised:white;--mq-bg:white;color-scheme:light}}
 
 @media(max-width:767px){.brand img{width:40px;height:40px}.brand{min-width:56px;min-height:56px}}
+
+/* Text links use the information token; operational navigation keeps its treatment. */
+a{color:var(--mq-info);text-decoration:underline;text-underline-offset:3px}.main-nav a,.management-links a{color:var(--accent);text-decoration:none}

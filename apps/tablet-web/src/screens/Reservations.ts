@@ -19,7 +19,7 @@ export function Reservations(c:ScreenContext) {
   if(['requested','confirmed'].includes(status)){
    const amount=field(tr(c,'Tiền cọc nhận (VND)','Deposit received (VND)'),'','number');
    row.append(amount.node,button(tr(c,'Nhận tiền cọc (tiền mặt)','Take deposit (cash)'),()=>act(c,'Deposit.Receive',{depositId:crypto.randomUUID(),bookingId:b.ref.id,amountMinor:amount.input.value,method:'cash'}).then(()=>{})));
-   const cancel=field(tr(c,'Lý do hủy','Cancel reason'));row.append(cancel.node,button(tr(c,'Hủy đặt bàn','Cancel booking'),()=>act(c,'Booking.Cancel',{bookingId:b.ref.id,reason:cancel.input.value},b.version).then(()=>{})));
+   const cancel=field(tr(c,'Lý do hủy','Cancel reason'));row.append(cancel.node,button(tr(c,'Hủy đặt bàn','Cancel booking'),()=>act(c,'Booking.Cancel',{bookingId:b.ref.id,reason:cancel.input.value},b.version).then(()=>{}),'danger'));
   }
   root.append(row);
  }
