@@ -1,6 +1,5 @@
 import {test,expect} from 'vitest';
 import {readFileSync} from 'node:fs';
-import {spawnSync} from 'node:child_process';
 test('brand contract and actual sRGB foreground contrasts',()=>{
  const t=JSON.parse(readFileSync('packages/ui/brand/tokens.json','utf8')); const all={...t.primitives,...t.semantic};
  const resolve=(k:string):string=>all[k].startsWith('var(')?resolve(all[k].slice(4,-1)):all[k];
@@ -9,4 +8,12 @@ test('brand contract and actual sRGB foreground contrasts',()=>{
  expect(all['--mekoniq-deep']).toBe('#071D21');expect(all['--mekoniq-motion']).toBe('#B9FB75');expect(all['--mekoniq-logo-orange']).toBe('#FFAA76');expect(all['--mq-on-primary']).toBe('var(--mekoniq-deep)');
  for(const bg of ['--mq-bg','--mq-surface','--mq-surface-raised'])for(const fg of ['--mq-text','--mq-text-muted','--mq-info','--mq-success','--mq-warning','--mq-danger'])expect(ratio(fg,bg)).toBeGreaterThanOrEqual(4.5);
  expect(ratio('--mq-on-primary','--mq-primary')).toBeGreaterThanOrEqual(4.5);expect(ratio('--mq-on-danger','--mq-danger')).toBeGreaterThanOrEqual(4.5);expect(ratio('--mq-control-border','--mq-surface-raised')).toBeGreaterThanOrEqual(3);
+});
+test('token generator rejects unresolved/cyclic aliases and stays deterministic',async()=>{
+ // @ts-expect-error Node script has no TypeScript declaration
+ const {renderTokens}=await import('../../scripts/build-brand.mjs');
+ const t=JSON.parse(readFileSync('packages/ui/brand/tokens.json','utf8'));
+ expect(renderTokens(t)).toBe(readFileSync('packages/ui/brand/tokens.css','utf8'));
+ const unknown=structuredClone(t);unknown.semantic['--mq-bg']='var(--mekoniq-unknown)';expect(()=>renderTokens(unknown)).toThrow('Unknown alias');
+ const cyclic=structuredClone(t);cyclic.semantic['--mq-bg']='var(--mq-bg)';expect(()=>renderTokens(cyclic)).toThrow('Cyclic alias');
 });

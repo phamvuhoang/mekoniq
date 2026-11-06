@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "brandVersion": "1.0.0",
+  "sourceCommit": "a918c0f12b1ad70bebae4695b6cb12214eb1f2ad",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "ed7c5ce52008d4925affd454f5f73b86ace631bcb78277b169fc6f37c4de0c08",
+      "bytes": 1619
+    },
+    {
+      "path": "assets-manifest.json",
+      "sha256": "de3e5c2b0cc6773ec02f2c256dec9a2a29fb131f96ad2b82d5199d171c75ae0d",
+      "bytes": 2101
+    },
+    {
+      "path": "assets/MEKONIQ_Horizontal_DeepTeal_v2.png",
+      "sha256": "5363ad195e12d5719a24dfa3532e2e4cfba8ae663778ed31dd1e3f856969055f",
+      "bytes": 29626
+    },
+    {
+      "path": "assets/MEKONIQ_Horizontal_White_Transparent.svg",
+      "sha256": "43693e11d6178f75dca87b876db7ca5c77582047dfe607449e7de81d0226d732",
+      "bytes": 722
+    },
+    {
+      "path": "assets/MEKONIQ_Horizontal_White_Transparent_v2.png",
+      "sha256": "1d4feac18e195633c407ec073536f6ce86976f24ad462b259981588b2fe1d19d",
+      "bytes": 27357
+    },
+    {
+      "path": "assets/MEKONIQ_Icon_OffWhite.png",
+      "sha256": "5e5415318de9c7ce0ffa79fd71aa11db4b23043bc48f6bfb897c22b5ea24c3cc",
+      "bytes": 39575
+    },
+    {
+      "path": "assets/MEKONIQ_Icon_Transparent.png",
+      "sha256": "e147ec79a78153b29dd28f88161ad8951cf8c3d3d9f849c66d42612fd97385ae",
+      "bytes": 34601
+    },
+    {
+      "path": "assets/MEKONIQ_Icon_Transparent.svg",
+      "sha256": "447e2f9fa4900db8b5a10a044cd8b2bafc039c2c0034298b10399de78bc4ad7b",
+      "bytes": 491
+    },
+    {
+      "path": "assets/MEKONIQ_Wordmark_DeepTeal.png",
+      "sha256": "097b1862c9d449d42547fc1fca5923aa178d6ed63470ad0c44ed834b4196f916",
+      "bytes": 21548
+    },
+    {
+      "path": "assets/MEKONIQ_Wordmark_White_Transparent.png",
+      "sha256": "216bf5e2af0f3f1f29ed17f738a49df92d3cdf0ac4c42be92ab9e3adefff1748",
+      "bytes": 19989
+    },
+    {
+      "path": "assets/MEKONIQ_Wordmark_White_Transparent.svg",
+      "sha256": "66c7d27b1c52d5a786b6323a9313aca2343ce1c22a43bbd0d561c7bdfca5e2ba",
+      "bytes": 289
+    },
+    {
+      "path": "components.css",
+      "sha256": "bee753e6015e409453e5f8ccc99a59bad67f73981160420e88060537d0896661",
+      "bytes": 4155
+    },
+    {
+      "path": "fonts.css",
+      "sha256": "45099b990aa0b084d7eab2b93259a0086b3055d830f30c6a82a52ad798216762",
+      "bytes": 1567
+    },
+    {
+      "path": "fonts/BeVietnamPro-400-latin.woff2",
+      "sha256": "d25f70ff7404fddbeb150c9c687bf37069468a5cdf59117b2a30226d1ebfa5c0",
+      "bytes": 12908
+    },
+    {
+      "path": "fonts/BeVietnamPro-400-vi.woff2",
+      "sha256": "b0d9b8aec7f47207ce4065be34286203e0741c8329be6d05986b149f991f84c1",
+      "bytes": 4720
+    },
+    {
+      "path": "fonts/BeVietnamPro-700-latin.woff2",
+      "sha256": "cf841d2b615f068e77a918114f44c17d51d0b73314fdff81eae95f528387c391",
+      "bytes": 13348
+    },
+    {
+      "path": "fonts/BeVietnamPro-700-vi.woff2",
+      "sha256": "141f6c45010274d7d3625d0554476ec1161274d9eb09a38135977ea1b2b84895",
+      "bytes": 5132
+    },
+    {
+      "path": "fonts/JetBrainsMono-500.woff2",
+      "sha256": "615a7673d37b1dd624e2deeb572a1a238f9b32981bf3fc44f87aa14f3bd7d04b",
+      "bytes": 21876
+    },
+    {
+      "path": "fonts/OFL.txt",
+      "sha256": "8862a157220ab830f2517e82023b321b21c64fcc02c50688cecb03b5b3400f20",
+      "bytes": 4493
+    },
+    {
+      "path": "gallery.html",
+      "sha256": "0e785c69812e538df3863c8602c5efbae0eff91f1e5debd16b99e95096fa6e63",
+      "bytes": 2408
+    },
+    {
+      "path": "tokens.css",
+      "sha256": "834f5580b794768f6e369a77bbc78bf9ff06a074816abb19705d39634709a627",
+      "bytes": 1534
+    },
+    {
+      "path": "tokens.json",
+      "sha256": "bf8555b0d236bee65f5a4f1f886e51a2568970119e2d3855a935555371652f91",
+      "bytes": 1855
+    }
+  ]
+}

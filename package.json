@@ -9,7 +9,7 @@
   "scripts": {
     "dev:cloud": "pnpm --filter @mekoniq/cloud-web dev",
     "dev:tablet": "pnpm --filter @mekoniq/tablet-web dev",
-    "build": "pnpm -r --if-present build",
+    "build": "npm run check:brand && pnpm -r --if-present build",
     "typecheck": "pnpm --filter @mekoniq/cloud-web exec next typegen && tsc --noEmit",
     "lint": "eslint .",
     "doctor": "node scripts/doctor.mjs",
@@ -34,7 +34,8 @@
     "test:load": "node scripts/test-runner.mjs load",
     "test:load:free": "node scripts/test-runner.mjs load --free",
     "release:dry-run": "node scripts/release.mjs",
-    "release:verify": "node scripts/verify-release.mjs .lab/release/release-manifest.json"
+    "release:verify": "node scripts/verify-release.mjs .lab/release/release-manifest.json",
+    "check:brand": "node scripts/check-brand.mjs --dir apps/cloud-web/public/brand --against packages/ui/brand/release.json && node scripts/check-brand.mjs --dir apps/tablet-web/public/brand --against packages/ui/brand/release.json"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

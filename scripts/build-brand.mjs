@@ -1,7 +1,7 @@
 import {readFileSync,writeFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 export function renderTokens(t) {
- if(t.schemaVersion!==1 || t.brandVersion!=='1.0.0')throw Error('Invalid token schema/version');
+ if(t.schemaVersion!==1 || !/^\d+\.\d+\.\d+$/.test(t.brandVersion))throw Error('Invalid token schema/version');
  const all={...t.primitives,...t.semantic};
  function resolve(key,seen=new Set()) {if(seen.has(key))throw Error('Cyclic alias');if(!(key in all))throw Error('Unknown alias '+key);seen.add(key);const value=all[key];for(const m of value.matchAll(/var\((--[\w-]+)\)/g))resolve(m[1],new Set(seen));}
  for(const key of Object.keys(all)){if(!/^--(?:mq|mekoniq)-[a-z0-9-]+$/.test(key)||/[;{}\n]/.test(all[key]))throw Error('Unsafe token');resolve(key);}
