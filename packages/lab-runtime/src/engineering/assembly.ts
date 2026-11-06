@@ -4,7 +4,7 @@ import {hashJson} from '../v2/hash';
 import {validateProjectV2} from '../v2/contracts';
 import type {AssetRevision,CoffeeRecipe} from '../v2/contracts';
 import type {Quote} from './catalog';
-import {validateEngineeringProject} from './contracts';
+import {validateEngineeringCompileInput,validateEngineeringProject} from './contracts';
 import type {Bom,BomLine,ComponentRevision,EngineeringCompileInput,EngineeringProject,Joint,Link,ModelDocument,Placement,Pose,Problem,ResolvedAssembly,ResolvedPort,SourceRef} from './contracts';
 import {engineeringPose,framePose,inertiaProblems} from './inertia';
 
@@ -225,7 +225,7 @@ export function resolveAssembly(project:EngineeringProject,components:Record<str
  const lines=new Map<string,BomLine>();
  for(const i of instances){
   const c=comp.get(i.id);if(!c)continue;
-  const lineId=`${c.id}@${c.revision}:${i.componentDigest.slice(0,8)}`,line=lines.get(lineId);
+  const lineId=`${c.id}:${c.revision.replace(/[^A-Za-z0-9_.:/-]/g,'_')}:${i.componentDigest.slice(0,8)}`,line=lines.get(lineId);
   if(line){line.qty+=1;line.instanceIds.push(i.id);continue;}
   const power=c.ports.filter(p=>p.kind==='power'&&p.voltageRangeV),range=(power.find(p=>p.direction==='in')??power[0])?.voltageRangeV??null;
   lines.set(lineId,{lineId,componentId:c.id,componentRevision:c.revision,componentDigest:i.componentDigest,sku:c.identity.sku,candidate:c.identity.status==='candidate',qty:1,
@@ -309,5 +309,9 @@ export function prepareEngineeringCompileInput(project:EngineeringProject,resolv
  const projected=validateProjectV2(runtime);
  if(!projected.ok)for(const i of projected.issues)add('PROJECTION_INVALID',i.path,i.message);
  if(problems.length)throw new EngineeringInputError(problems);
- return {schemaVersion:1,project,projectDigest:hashJson(project),resolved,runtimeProjection:{project:runtime,assets:assets.sort((a,b)=>a.id<b.id?-1:1)},recipes:[...recipes].sort((a,b)=>a.id<b.id?-1:1)};
+ const result:EngineeringCompileInput={schemaVersion:1,project,projectDigest:hashJson(project),resolved,runtimeProjection:{project:runtime,assets:assets.sort((a,b)=>a.id<b.id?-1:1)},recipes:[...recipes].sort((a,b)=>a.id<b.id?-1:1)};
+ // the compiler validates this against the same schema; refuse here rather than hand it something it must reject
+ const conforms=validateEngineeringCompileInput(result);
+ if(!conforms.ok)throw new EngineeringInputError(conforms.problems.map(p=>({...p,code:'INPUT_SCHEMA_INVALID',detail:`${p.code}: ${p.detail}`})));
+ return result;
 }

@@ -603,6 +603,141 @@
           "items": {
             "$ref": "#/definitions/WheelBinding"
           }
+        },
+        "world": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "widthM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "heightM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "hash": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "walls": {
+              "type": "array",
+              "maxItems": 16,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "width": {
+                    "type": "number"
+                  },
+                  "height": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ]
+              }
+            },
+            "fixtures": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "obstacleId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "width": {
+                    "type": "number"
+                  },
+                  "height": {
+                    "type": "number"
+                  },
+                  "heightM": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "obstacleId",
+                  "x",
+                  "y",
+                  "width",
+                  "height",
+                  "heightM"
+                ]
+              }
+            }
+          },
+          "required": [
+            "id",
+            "revision",
+            "widthM",
+            "heightM",
+            "hash",
+            "walls",
+            "fixtures"
+          ]
+        },
+        "entities": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "entityId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "kind": {
+                "enum": [
+                  "amr",
+                  "arm",
+                  "coffee_machine",
+                  "cup_station"
+                ]
+              },
+              "rootLinkId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "instanceIds": {
+                "type": "array",
+                "maxItems": 200,
+                "items": {
+                  "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                }
+              }
+            },
+            "required": [
+              "entityId",
+              "kind",
+              "rootLinkId",
+              "instanceIds"
+            ]
+          }
         }
       },
       "required": [
@@ -612,7 +747,9 @@
         "frames",
         "geometryRefs",
         "fixedJointMapping",
-        "wheelBindings"
+        "wheelBindings",
+        "world",
+        "entities"
       ]
     },
     "EngineeringRef": {

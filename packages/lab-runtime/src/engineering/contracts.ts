@@ -91,6 +91,7 @@ export const validateProcessModel=check<ProcessModel>('engineering-component.sch
 export const validateEngineeringProject=check<EngineeringProject>('engineering-project.schema.json',projectRules);
 export const validateEngineeringRef=check('engineering-bundle.schema.json#/definitions/EngineeringRef');
 export const validateBundleReceipt=check('engineering-bundle.schema.json#/definitions/BundleReceipt');
+export const validateEngineeringCompileInput=check<EngineeringCompileInput>('engineering-bundle.schema.json#/definitions/EngineeringCompileInput');
 export const validateResolvedAssembly=check('engineering-bundle.schema.json#/definitions/ResolvedAssembly');
 export const validateCompiledScene=check('engineering-bundle.schema.json#/definitions/CompiledScene');
 const nested=(base:string,r:Checked):Problem[]=>r.problems.map(p=>({...p,path:base+p.path}));

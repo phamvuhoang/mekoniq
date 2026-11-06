@@ -10,7 +10,31 @@ from actors.scenario import load_scenario
 from .compile_world import CompileError, compile_world
 
 
+def engineering_main(argv):
+    """`python3 -m compiler engineering --input <EngineeringCompileInput json> --out <dir>`: prints {sceneDigest, files}. Exit 1: refused (CODE: detail on stderr); 2: unreadable input."""
+    from .engineering import compile_engineering
+    p = argparse.ArgumentParser(prog="compiler engineering")
+    p.add_argument("--input", required=True)
+    p.add_argument("--out", required=True)
+    a = p.parse_args(argv)
+    try:
+        data = json.loads(Path(a.input).read_text())
+    except (OSError, ValueError) as e:
+        print(f"INPUT_INVALID: {e}", file=sys.stderr)
+        return 2
+    try:
+        result = compile_engineering(data, a.out)
+    except CompileError as e:
+        print(f"{e.code}: {e.detail or ''}", file=sys.stderr)
+        return 1
+    print(json.dumps(result))
+    return 0
+
+
 def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv[:1] == ["engineering"]:
+        return engineering_main(argv[1:])
     p = argparse.ArgumentParser(prog="compiler")
     p.add_argument("--fixture", required=True, help="JSON with {project, assetFiles[]} (paths relative to the fixture file)")
     p.add_argument("--out", required=True)

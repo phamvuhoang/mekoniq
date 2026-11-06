@@ -654,6 +654,889 @@ export interface CompiledScene {
    * @maxItems 50
    */
   wheelBindings: WheelBinding[];
+  world: {
+    id: EngineeringId;
+    revision: number;
+    widthM: number;
+    heightM: number;
+    hash: Digest;
+    /**
+     * @maxItems 16
+     */
+    walls:
+      | []
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ]
+      | [
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          },
+          {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        ];
+    /**
+     * @maxItems 200
+     */
+    fixtures: {
+      obstacleId: EngineeringId;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      heightM: number;
+    }[];
+  };
+  /**
+   * @maxItems 200
+   */
+  entities: {
+    entityId: EngineeringId;
+    kind: 'amr' | 'arm' | 'coffee_machine' | 'cup_station';
+    rootLinkId: EngineeringId;
+    /**
+     * @maxItems 200
+     */
+    instanceIds: EngineeringId[];
+  }[];
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema

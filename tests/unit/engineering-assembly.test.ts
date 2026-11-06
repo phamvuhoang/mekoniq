@@ -4,6 +4,7 @@ import { hashJson } from '../../packages/lab-runtime/src/v2/hash';
 import { validateProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
 import { ESPRESSO } from '../../packages/lab-runtime/src/v2/scenarios/coffee';
 import type { CoffeeRecipe } from '../../packages/lab-runtime/src/v2/contracts';
+import { validateEngineeringCompileInput, validateResolvedAssembly } from '../../packages/lab-runtime/src/engineering/contracts';
 import { engineeringFixture } from '../support/engineering';
 
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
@@ -115,6 +116,12 @@ const prepared = () => {
   f.project.runtimeProject.world.obstacles = [{ id: 'wall-x', x: 2, y: 1, width: 0.3, height: 2 }];
   return { f, resolved: resolved!, recipes: [ESPRESSO] as unknown as CoffeeRecipe[] };
 };
+
+test('the resolved assembly and compile input conform to their own schemas', () => {
+  const { f, resolved, recipes } = prepared();
+  expect(validateResolvedAssembly(resolved).problems).toEqual([]);
+  expect(validateEngineeringCompileInput(prepareEngineeringCompileInput(f.project, resolved, recipes)).problems).toEqual([]);
+});
 
 test('V17 compile input preserves world, handoff yaw, speed limit, recipes and project digest', () => {
   const { f, resolved, recipes } = prepared();
