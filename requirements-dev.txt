@@ -11,3 +11,4 @@ rfc3339-validator==0.1.4
 rfc8785==0.1.4
 rpds-py==2026.9.1
 six==1.17.0
+PyYAML==6.0.2

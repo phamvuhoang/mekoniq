@@ -77,7 +77,46 @@ def worker_pythonpath_identity(value, simulation_root):
     return os.pathsep.join(local.get(str(Path(p).resolve()), p) if p else p for p in value.split(os.pathsep))
 
 
+ENGINEERING_PROFILES = {"engineering-arm64": "arm64", "engineering-amd64": "amd64"}
+
+
+def inspect_engineering_profile(profile_id):
+    from bridge.engineering_profile import qualify_inventory
+    lock_file = PROFILES / f"{profile_id}.lock.json"
+    locked = json.loads(lock_file.read_text())
+    os_release = {}
+    try:
+        for line in Path("/etc/os-release").read_text().splitlines():
+            if "=" in line:
+                key, value = line.split("=", 1)
+                os_release[key] = value.strip('"')
+    except OSError:
+        pass
+    machine = platform.machine().lower()
+    arch = {"aarch64": "arm64", "arm64": "arm64", "x86_64": "amd64"}.get(machine, machine)
+    actual = {"os": f"{os_release.get('ID', '')}{os_release.get('VERSION_ID', '')}", "arch": arch, "packages": {}, "digests": {}}
+    try:
+        result = subprocess.run(["dpkg-query", "-W", "-f=${binary:Package}\t${db:Status-Abbrev}\t${Version}\n"], capture_output=True, text=True, timeout=10, check=False)
+        if result.returncode == 0:
+            for line in result.stdout.splitlines():
+                fields = line.split("\t")
+                if len(fields) == 3 and fields[1].startswith("ii "):
+                    actual["packages"][fields[0]] = fields[2]
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    report = qualify_inventory(actual, locked)
+    reasons = list(report["reasons"])
+    if platform.system().lower() != "linux":
+        reasons.insert(0, "PROFILE_PLATFORM_MISMATCH")
+    if locked.get("qualification") != "qualified" and "INVENTORY_UNRESOLVED" not in reasons:
+        reasons.append("INVENTORY_UNRESOLVED")
+    digest = hashlib.sha256(json.dumps(actual, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    return {"id": profile_id, "available": not reasons, "reasonCodes": reasons, "installation": "native_apt", "headless": True, "image": None, "profileSha256": hashlib.sha256(lock_file.read_bytes()).hexdigest(), "actual": actual, "inventorySha256": digest}
+
+
 def inspect_profile(profile_id):
+    if profile_id in ENGINEERING_PROFILES:
+        return inspect_engineering_profile(profile_id)
     if profile_id != PROFILE_ID:
         return {"id": profile_id, "available": False, "reasonCodes": ["PROFILE_UNKNOWN"], "image": None}
     profile = json.loads((PROFILES / f"{profile_id}.lock.json").read_text())

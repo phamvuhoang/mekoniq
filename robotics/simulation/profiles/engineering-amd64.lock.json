@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "engineering-amd64",
+  "os": "ubuntu24.04",
+  "arch": "amd64",
+  "ros": "jazzy",
+  "gazebo": "harmonic",
+  "qualification": "not_run",
+  "required": [
+    "ros-jazzy-ros-base",
+    "ros-jazzy-ros-gz",
+    "ros-jazzy-navigation2",
+    "ros-jazzy-nav2-bringup",
+    "ros-jazzy-moveit",
+    "ros-jazzy-ros2-control",
+    "ros-jazzy-ros2-controllers",
+    "ros-jazzy-gz-ros2-control"
+  ],
+  "packages": null,
+  "digests": null,
+  "forbidden": [
+    "linuxcnc-uspace",
+    "linuxcnc-uspace-dev"
+  ],
+  "reasonCodes": [
+    "INVENTORY_NOT_CAPTURED"
+  ],
+  "note": "Candidate lock for the amd64 engineering profile. No dpkg inventory, vendor commit or plugin digest has been captured: capture them on a provisioned Ubuntu 24.04 amd64 host (B01 runbook) before pinning. An inventory from another architecture is not evidence for this one."
+}
