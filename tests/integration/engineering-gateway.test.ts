@@ -195,3 +195,19 @@ test('V19 lifecycle: edit draft, restart, new pairing, proof reclaim restores re
   expect((await blocked.json()).error).toBe('ENGINEERING_CLOSURE_MISSING');
   expect((await get(g, h, `/runs/${created.run.id}/report`)).status).toBe(200);
 });
+
+test('engineering readiness uses the bundle projection and refuses what create would refuse', async () => {
+  const s = await setup(); const g = await s.start(); const h = await pair(g), other = await pair(g);
+  const receipt = await (await post(g, h, '/engineering/compile', { project: s.f.project })).json();
+  const ref = { bundleDigest: receipt.bundleDigest, projectDigest: receipt.projectDigest };
+  const ok = await post(g, h, '/readiness', { scenarioId: 'FD01', backendSetId: 'engineering-rigid-v1', engineeringRef: ref });
+  expect(ok.status).toBe(200);
+  const snapshot = await ok.json();
+  expect(snapshot.checks.find((c: { id: string }) => c.id === 'world')?.evidenceRef).toContain('world:fixture-world');
+  expect((await post(g, h, '/readiness', { scenarioId: 'FD01', backendSetId: 'engineering-rigid-v1', engineeringRef: ref, project: { not: 'the projection' } })).status).toBe(409);
+  expect((await post(g, h, '/readiness', { scenarioId: 'FD01', backendSetId: 'engineering-contact-v1', engineeringRef: ref })).status).toBe(409);
+  expect((await post(g, other, '/readiness', { scenarioId: 'FD01', backendSetId: 'engineering-rigid-v1', engineeringRef: ref })).status).toBe(403);
+  expect((await post(g, h, '/readiness', { scenarioId: 'FD01', backendSetId: 'engineering-rigid-v1' })).status).toBe(400);
+  const bare = await setup({ withEngineering: false }); const g2 = await bare.start(); const h2 = await pair(g2);
+  expect((await post(g2, h2, '/readiness', { scenarioId: 'FD01', backendSetId: 'engineering-rigid-v1', engineeringRef: ref })).status).toBe(400);
+});

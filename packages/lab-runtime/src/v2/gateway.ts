@@ -96,8 +96,13 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    }else if(method==='POST'){
     if(!deps.same(String(request.headers['x-csrf-token']??''),session.csrf))return deny(response,403,'CSRF_INVALID',[]);
     const body=await deps.readBody(request);
-    if(params.size||Object.keys(body).some(k=>!['scenarioId','backendSetId','project'].includes(k))||['scenarioId','backendSetId'].some(k=>typeof body[k]!=='string'||!/^[A-Za-z0-9_.:-]{1,200}$/.test(body[k] as string))||!Object.hasOwn(body,'project'))return deny(response,400,'INVALID_READINESS_QUERY',[]);
+    if(params.size||Object.keys(body).some(k=>!['scenarioId','backendSetId','project','engineeringRef'].includes(k))||['scenarioId','backendSetId'].some(k=>typeof body[k]!=='string'||!/^[A-Za-z0-9_.:-]{1,200}$/.test(body[k] as string))||!Object.hasOwn(body,'project')&&!Object.hasOwn(body,'engineeringRef'))return deny(response,400,'INVALID_READINESS_QUERY',[]);
     context={scenarioId:body.scenarioId as string,backendSetId:body.backendSetId as string,project:body.project};
+    if(Object.hasOwn(body,'engineeringRef')){
+     // the project is the bundle's locked projection; a supplied one can only be checked for equality against it
+     if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);
+     try{context.project=(await deps.engineering.admitRun(sessionId,body.engineeringRef,context.backendSetId,body.project)).runtimeProjection.project;}catch(e){return engineeringFailed(response,e);}
+    }
    }else return deny(response,405,'METHOD_NOT_ALLOWED',[]);
    return send(response,200,await collectReadiness(context,{catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks}));
   }
