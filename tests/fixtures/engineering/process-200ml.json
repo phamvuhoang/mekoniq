@@ -1,0 +1,112 @@
+{
+ "schemaVersion": 1,
+ "kind": "process",
+ "id": "fixture-brew",
+ "processKind": "coffee",
+ "reservoirs": [
+  {
+   "resourceId": "water",
+   "capacityMl": {
+    "value": 1000,
+    "unit": "1",
+    "source": {
+     "kind": "assumed",
+     "documentId": "process-fixture",
+     "revision": "1",
+     "locator": "tests/fixtures/engineering/process-200ml.json",
+     "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   },
+   "initialMl": {
+    "value": 1000,
+    "unit": "1",
+    "source": {
+     "kind": "assumed",
+     "documentId": "process-fixture",
+     "revision": "1",
+     "locator": "tests/fixtures/engineering/process-200ml.json",
+     "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   }
+  }
+ ],
+ "flowMlPerSec": {
+  "value": 20,
+  "unit": "1",
+  "source": {
+   "kind": "assumed",
+   "documentId": "process-fixture",
+   "revision": "1",
+   "locator": "tests/fixtures/engineering/process-200ml.json",
+   "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  }
+ },
+ "startupDelaySec": {
+  "value": 1,
+  "unit": "s",
+  "source": {
+   "kind": "assumed",
+   "documentId": "process-fixture",
+   "revision": "1",
+   "locator": "tests/fixtures/engineering/process-200ml.json",
+   "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  }
+ },
+ "maxDurationSec": {
+  "value": 30,
+  "unit": "s",
+  "source": {
+   "kind": "assumed",
+   "documentId": "process-fixture",
+   "revision": "1",
+   "locator": "tests/fixtures/engineering/process-200ml.json",
+   "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  }
+ },
+ "densityKgPerM3": {
+  "value": 1000,
+  "unit": "1",
+  "source": {
+   "kind": "assumed",
+   "documentId": "process-fixture",
+   "revision": "1",
+   "locator": "tests/fixtures/engineering/process-200ml.json",
+   "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  }
+ },
+ "temperature": {
+  "initialC": {
+   "value": 20,
+   "unit": "1",
+   "source": {
+    "kind": "assumed",
+    "documentId": "process-fixture",
+    "revision": "1",
+    "locator": "tests/fixtures/engineering/process-200ml.json",
+    "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  },
+  "targetC": {
+   "value": 90,
+   "unit": "1",
+   "source": {
+    "kind": "assumed",
+    "documentId": "process-fixture",
+    "revision": "1",
+    "locator": "tests/fixtures/engineering/process-200ml.json",
+    "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  },
+  "thermalTimeConstantSec": {
+   "value": 5,
+   "unit": "s",
+   "source": {
+    "kind": "assumed",
+    "documentId": "process-fixture",
+    "revision": "1",
+    "locator": "tests/fixtures/engineering/process-200ml.json",
+    "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  }
+ }
+}

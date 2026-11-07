@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "qualification": "not_run",
+  "vendors": [
+    {
+      "id": "xarm_ros2",
+      "repository": "https://github.com/xArm-Developer/xarm_ros2",
+      "branch": "jazzy",
+      "commit": null,
+      "license": null,
+      "note": "Not imported. A branch name is not a pin: record the exact commit and the licence of every mesh/config file (scripts/import-engineering-vendor.mjs) before any model is built from it."
+    }
+  ],
+  "blockers": [
+    "NO_LINUX_ROS_ENVIRONMENT: C01 import, MoveIt config and ros2_control interface checks are native-only and have not run on any target",
+    "VENDOR_COMMIT_UNPINNED",
+    "MESH_LICENCE_UNREVIEWED"
+  ]
+}
