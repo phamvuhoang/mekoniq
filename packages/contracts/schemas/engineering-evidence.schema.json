@@ -1,0 +1,414 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.engineering-evidence.v1",
+  "title": "EngineeringRunManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "execution": {
+      "enum": [
+        "not_started",
+        "completed",
+        "aborted"
+      ]
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:/-]+$"
+    },
+    "bundleDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "expectedEpoch": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "profile": {
+      "enum": [
+        "engineering-rigid-v1",
+        "engineering-contact-v1"
+      ]
+    },
+    "coverage": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/definitions/CoverageRequirement"
+      }
+    },
+    "checks": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/definitions/ThresholdCheck"
+      }
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "geometry": {
+          "enum": [
+            "unsupported",
+            "modeled",
+            "verified"
+          ]
+        },
+        "rigidBody": {
+          "enum": [
+            "unsupported",
+            "modeled",
+            "verified"
+          ]
+        },
+        "actuator": {
+          "enum": [
+            "unsupported",
+            "modeled",
+            "verified"
+          ]
+        },
+        "sensor": {
+          "enum": [
+            "unsupported",
+            "modeled",
+            "verified"
+          ]
+        },
+        "grasp": {
+          "enum": [
+            "unsupported",
+            "modeled",
+            "verified"
+          ]
+        },
+        "process": {
+          "enum": [
+            "unsupported",
+            "modeled",
+            "verified"
+          ]
+        },
+        "calibration": {
+          "enum": [
+            "unsupported",
+            "modeled",
+            "verified"
+          ]
+        }
+      },
+      "required": [
+        "geometry",
+        "rigidBody",
+        "actuator",
+        "sensor",
+        "grasp",
+        "process",
+        "calibration"
+      ]
+    },
+    "calibrationRefs": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "geometry",
+          "rigidBody",
+          "actuator",
+          "sensor",
+          "grasp",
+          "process"
+        ]
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "execution",
+    "runId",
+    "bundleDigest",
+    "expectedEpoch",
+    "profile",
+    "coverage",
+    "checks",
+    "claims",
+    "calibrationRefs",
+    "artifacts"
+  ],
+  "definitions": {
+    "CoverageRequirement": {
+      "title": "CoverageRequirement",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:/-]+$"
+        },
+        "kind": {
+          "enum": [
+            "joint",
+            "pose",
+            "contact",
+            "sensor",
+            "process"
+          ]
+        },
+        "entityId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:/-]+$"
+        },
+        "minSamples": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxGapNs": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "entityId",
+        "minSamples",
+        "maxGapNs"
+      ]
+    },
+    "ThresholdCheck": {
+      "title": "ThresholdCheck",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:/-]+$"
+        },
+        "kind": {
+          "enum": [
+            "joint",
+            "pose",
+            "contact",
+            "sensor",
+            "process"
+          ]
+        },
+        "entityId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:/-]+$"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "rule": {
+          "enum": [
+            "max",
+            "min"
+          ]
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "entityId",
+        "value",
+        "rule",
+        "limit"
+      ]
+    },
+    "CaseResult": {
+      "title": "CaseResult",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:/-]+$"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "not_run"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "id",
+        "status"
+      ]
+    },
+    "EngineeringAssessment": {
+      "title": "EngineeringAssessment",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "not_run"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "geometry": {
+              "enum": [
+                "unsupported",
+                "modeled",
+                "verified"
+              ]
+            },
+            "rigidBody": {
+              "enum": [
+                "unsupported",
+                "modeled",
+                "verified"
+              ]
+            },
+            "actuator": {
+              "enum": [
+                "unsupported",
+                "modeled",
+                "verified"
+              ]
+            },
+            "sensor": {
+              "enum": [
+                "unsupported",
+                "modeled",
+                "verified"
+              ]
+            },
+            "grasp": {
+              "enum": [
+                "unsupported",
+                "modeled",
+                "verified"
+              ]
+            },
+            "process": {
+              "enum": [
+                "unsupported",
+                "modeled",
+                "verified"
+              ]
+            },
+            "calibration": {
+              "enum": [
+                "unsupported",
+                "modeled",
+                "verified"
+              ]
+            }
+          },
+          "required": [
+            "geometry",
+            "rigidBody",
+            "actuator",
+            "sensor",
+            "grasp",
+            "process",
+            "calibration"
+          ]
+        },
+        "caseResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CaseResult"
+          }
+        },
+        "artifactRefs": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sampleCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "firstSimTimeNs": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lastSimTimeNs": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "samplesSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "artifacts": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "sampleCount",
+            "firstSimTimeNs",
+            "lastSimTimeNs",
+            "samplesSha256",
+            "artifacts"
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "reasons",
+        "capabilities",
+        "caseResults",
+        "artifactRefs"
+      ]
+    }
+  }
+}
