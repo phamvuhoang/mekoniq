@@ -62,7 +62,8 @@ test('a failed run claims nothing', () => {
   expect(Object.values(r.capabilities).every((l) => l === 'unsupported')).toBe(true);
 });
 test('a manifest that is not a complete schema document is refused, not interpreted', () => {
-  const { claims: _c, ...partial } = manifest();
+  const partial: Record<string, unknown> = { ...manifest() };
+  delete partial.claims;
   expect(() => assessEngineeringEvidence(partial as never, good())).toThrow(/MANIFEST_INVALID/);
   expect(() => assessEngineeringEvidence({ ...manifest(), extra: 1 } as never, good())).toThrow(/MANIFEST_INVALID/);
 });
