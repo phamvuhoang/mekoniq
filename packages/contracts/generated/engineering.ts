@@ -277,6 +277,7 @@ export interface ActuatorModel {
     leftMountPort: EngineeringId;
     rightMountPort: EngineeringId;
   };
+  torqueConstantNmPerA?: Scalar;
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema

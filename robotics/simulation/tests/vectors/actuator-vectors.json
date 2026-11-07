@@ -1,0 +1,280 @@
+{
+ "model": {
+  "schemaVersion": 1,
+  "kind": "actuator",
+  "id": "vector-actuator",
+  "jointIds": [
+   "axle"
+  ],
+  "transmission": {
+   "ratio": {
+    "value": 10,
+    "unit": "1",
+    "source": {
+     "kind": "assumed",
+     "documentId": "actuator-vectors",
+     "revision": "1",
+     "locator": "tests/vectors/actuator-vectors.json",
+     "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   },
+   "efficiency": {
+    "value": 0.8,
+    "unit": "1",
+    "source": {
+     "kind": "assumed",
+     "documentId": "actuator-vectors",
+     "revision": "1",
+     "locator": "tests/vectors/actuator-vectors.json",
+     "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   }
+  },
+  "commandInterface": "effort",
+  "torqueSpeedTable": [
+   {
+    "speed": {
+     "value": 0,
+     "unit": "rad/s",
+     "source": {
+      "kind": "assumed",
+      "documentId": "actuator-vectors",
+      "revision": "1",
+      "locator": "tests/vectors/actuator-vectors.json",
+      "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+     }
+    },
+    "torque": {
+     "value": 2,
+     "unit": "N*m",
+     "source": {
+      "kind": "assumed",
+      "documentId": "actuator-vectors",
+      "revision": "1",
+      "locator": "tests/vectors/actuator-vectors.json",
+      "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+     }
+    }
+   },
+   {
+    "speed": {
+     "value": 10,
+     "unit": "rad/s",
+     "source": {
+      "kind": "assumed",
+      "documentId": "actuator-vectors",
+      "revision": "1",
+      "locator": "tests/vectors/actuator-vectors.json",
+      "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+     }
+    },
+    "torque": {
+     "value": 0,
+     "unit": "N*m",
+     "source": {
+      "kind": "assumed",
+      "documentId": "actuator-vectors",
+      "revision": "1",
+      "locator": "tests/vectors/actuator-vectors.json",
+      "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+     }
+    }
+   }
+  ],
+  "currentLimit": {
+   "value": 100,
+   "unit": "A",
+   "source": {
+    "kind": "assumed",
+    "documentId": "actuator-vectors",
+    "revision": "1",
+    "locator": "tests/vectors/actuator-vectors.json",
+    "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  },
+  "voltageLimit": {
+   "value": 24,
+   "unit": "V",
+   "source": {
+    "kind": "assumed",
+    "documentId": "actuator-vectors",
+    "revision": "1",
+    "locator": "tests/vectors/actuator-vectors.json",
+    "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  },
+  "damping": {
+   "value": 0,
+   "unit": "N*m",
+   "source": {
+    "kind": "assumed",
+    "documentId": "actuator-vectors",
+    "revision": "1",
+    "locator": "tests/vectors/actuator-vectors.json",
+    "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  },
+  "friction": {
+   "value": 0,
+   "unit": "N*m",
+   "source": {
+    "kind": "assumed",
+    "documentId": "actuator-vectors",
+    "revision": "1",
+    "locator": "tests/vectors/actuator-vectors.json",
+    "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  },
+  "torqueConstantNmPerA": {
+   "value": 0.05,
+   "unit": "N*m",
+   "source": {
+    "kind": "assumed",
+    "documentId": "actuator-vectors",
+    "revision": "1",
+    "locator": "tests/vectors/actuator-vectors.json",
+    "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  }
+ },
+ "cases": [
+  {
+   "name": "stall request is clamped to the table cap",
+   "state": {
+    "speedRadSec": 0.0
+   },
+   "command": {
+    "effortNm": 10.0
+   },
+   "expect": {
+    "effortNm": 2.0,
+    "limited": true,
+    "limits": [
+     "torque_speed"
+    ]
+   }
+  },
+  {
+   "name": "request inside the envelope passes unchanged",
+   "state": {
+    "speedRadSec": 0.0
+   },
+   "command": {
+    "effortNm": 1.5
+   },
+   "expect": {
+    "effortNm": 1.5,
+    "limited": false,
+    "limits": []
+   }
+  },
+  {
+   "name": "torque falls linearly with speed",
+   "state": {
+    "speedRadSec": 5.0
+   },
+   "command": {
+    "effortNm": 10.0
+   },
+   "expect": {
+    "effortNm": 1.0,
+    "limited": true,
+    "limits": [
+     "torque_speed"
+    ]
+   }
+  },
+  {
+   "name": "braking uses the same envelope with opposite sign",
+   "state": {
+    "speedRadSec": 5.0
+   },
+   "command": {
+    "effortNm": -10.0
+   },
+   "expect": {
+    "effortNm": -1.0,
+    "limited": true,
+    "limits": [
+     "torque_speed"
+    ]
+   }
+  },
+  {
+   "name": "above the no-load speed no torque is available",
+   "state": {
+    "speedRadSec": 12.0
+   },
+   "command": {
+    "effortNm": 1.0
+   },
+   "expect": {
+    "effortNm": 0.0,
+    "limited": true,
+    "limits": [
+     "torque_speed"
+    ]
+   }
+  },
+  {
+   "name": "half supply voltage halves the speed range",
+   "state": {
+    "speedRadSec": 2.5
+   },
+   "command": {
+    "effortNm": 10.0,
+    "supplyV": 12.0
+   },
+   "expect": {
+    "effortNm": 1.0,
+    "limited": true,
+    "limits": [
+     "torque_speed"
+    ]
+   }
+  },
+  {
+   "name": "current limit binds below the table: 2 A * 0.05 * 10 * 0.8",
+   "modelOver": {
+    "currentLimit": {
+     "value": 2,
+     "unit": "A",
+     "source": {
+      "kind": "assumed",
+      "documentId": "actuator-vectors",
+      "revision": "1",
+      "locator": "tests/vectors/actuator-vectors.json",
+      "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+     }
+    }
+   },
+   "state": {
+    "speedRadSec": 0.0
+   },
+   "command": {
+    "effortNm": 10.0
+   },
+   "expect": {
+    "effortNm": 0.8,
+    "limited": true,
+    "limits": [
+     "current"
+    ]
+   }
+  },
+  {
+   "name": "zero effort draws no current",
+   "state": {
+    "speedRadSec": 3.0
+   },
+   "command": {
+    "effortNm": 0.0
+   },
+   "expect": {
+    "effortNm": 0.0,
+    "limited": false,
+    "limits": []
+   }
+  }
+ ]
+}
