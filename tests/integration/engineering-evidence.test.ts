@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest';
-import { assessEngineeringEvidence, type EngineeringRunManifest } from '../../packages/lab-runtime/src/engineering/evidence';
+import { assessEngineeringEvidence, calibrationDigest, type CalibrationEvidence, type EngineeringRunManifest } from '../../packages/lab-runtime/src/engineering/evidence';
 import type { PhysicsSample } from '../../packages/lab-runtime/src/engineering/physics-adapter';
 
 const B = 'a'.repeat(64);
-const manifest = (over: Partial<EngineeringRunManifest> = {}): EngineeringRunManifest => ({ schemaVersion: 1, execution: 'completed', runId: 'run-1', bundleDigest: B, expectedEpoch: 1, profile: 'engineering-rigid-v1',
+const manifest = (over: Partial<EngineeringRunManifest> = {}): EngineeringRunManifest => ({ schemaVersion: 1, execution: 'completed', runId: 'run-1', bundleDigest: B, configDigest: 'd'.repeat(64), expectedEpoch: 1, profile: 'engineering-rigid-v1', lastSequence: 19, window: { startSimTimeNs: '0', endSimTimeNs: '190000000' },
   coverage: [{ id: 'odom', kind: 'pose', entityId: 'amr-1', minSamples: 5, maxGapNs: 20_000_000 }],
   checks: [{ id: 'speed-limit', kind: 'joint', entityId: 'amr-1', value: 'velocity', rule: 'max', limit: 0.6 }],
   claims: { geometry: 'modeled', rigidBody: 'modeled', actuator: 'unsupported', sensor: 'unsupported', grasp: 'unsupported', process: 'unsupported', calibration: 'unsupported' }, calibrationRefs: {}, artifacts: ['report.json'], ...over });
@@ -50,12 +50,43 @@ test('a threshold breach fails with the check id; a check with no samples is una
   expect(r.reasons).toContain('UNAVAILABLE:speed-limit');
   expect(r.caseResults.find((c) => c.id === 'speed-limit')!.status).toBe('fail');
 });
-test('simulation reaches at most modeled; verified needs a calibration reference for that capability', () => {
-  const claims = { ...manifest().claims, actuator: 'verified' as const, rigidBody: 'verified' as const };
-  const r = assessEngineeringEvidence(manifest({ claims, calibrationRefs: { rigidBody: 'c'.repeat(64) } }), good());
+const passing = (over: Partial<CalibrationEvidence['result']> = {}, cfg = 'd'.repeat(64)): CalibrationEvidence => {
+  const result = { status: 'pass' as const, reasons: [], residuals: {}, domain: {}, calibratedCapabilities: ['rigidBody'], invalidatedBy: null, ...over };
+  return { configDigest: cfg, result, digest: calibrationDigest(cfg, result) };
+};
+const claimsVerified = { ...manifest().claims, actuator: 'verified' as const, rigidBody: 'verified' as const };
+test('simulation reaches modeled; verified only through a real, passing, matching calibration record', () => {
+  const record = passing();
+  const m = manifest({ claims: claimsVerified, calibrationRefs: { rigidBody: record.digest } });
+  const r = assessEngineeringEvidence(m, good(), [record]);
   expect(r.status).toBe('pass');
-  expect(r.capabilities).toMatchObject({ rigidBody: 'verified', actuator: 'modeled', geometry: 'modeled', grasp: 'unsupported' });
-  expect(r.capabilities.calibration).toBe('verified');
+  expect(r.capabilities).toMatchObject({ rigidBody: 'verified', actuator: 'modeled', geometry: 'modeled', grasp: 'unsupported', calibration: 'verified' });
+});
+test('an arbitrary digest, or a record that is failing, stale, for another model or another capability, earns nothing', () => {
+  const ref = (digest: string) => manifest({ claims: claimsVerified, calibrationRefs: { rigidBody: digest } });
+  const level = (m: EngineeringRunManifest, records: CalibrationEvidence[]) => assessEngineeringEvidence(m, good(), records).capabilities;
+  expect(level(ref('c'.repeat(64)), []).rigidBody).toBe('modeled');                                    // no record behind the digest
+  const failing = passing({ status: 'fail', reasons: ['RESIDUAL_EXCEEDS_TOLERANCE:speed'] });
+  expect(level(ref(failing.digest), [failing]).rigidBody).toBe('modeled');
+  const otherModel = passing({}, 'e'.repeat(64));
+  expect(level(ref(otherModel.digest), [otherModel]).rigidBody).toBe('modeled');                       // calibrated a different configuration
+  const wrongCapability = passing({ calibratedCapabilities: ['actuator'] });
+  expect(level(ref(wrongCapability.digest), [wrongCapability]).rigidBody).toBe('modeled');
+  const stale = passing({ invalidatedBy: 'f'.repeat(64) });
+  expect(level(ref(stale.digest), [stale]).rigidBody).toBe('modeled');
+  const tampered = { ...passing(), digest: 'a'.repeat(64) };
+  expect(level(ref(tampered.digest), [tampered]).rigidBody).toBe('modeled');                           // digest must be the hash of the record
+  const narrow = passing({ domain: { velocity: { min: 0, max: 0.3 } } });                               // observed joint velocity is 0.4
+  expect(level(ref(narrow.digest), [narrow]).rigidBody).toBe('modeled');
+});
+test('cutting the end off a run cannot turn a failure into a pass', () => {
+  const violating = good().map((s) => s.kind === 'joint' && s.sequence >= 15 ? { ...s, values: { ...s.values, velocity: 0.9 } } : s);
+  expect(assessEngineeringEvidence(manifest(), violating).status).toBe('fail');
+  const truncated = violating.filter((s) => s.sequence < 14);   // the violating second half is simply missing
+  const r = assessEngineeringEvidence(manifest(), truncated);
+  expect(r.status).toBe('fail');
+  expect(r.reasons).toContain('EVIDENCE_TRUNCATED');
+  expect(assessEngineeringEvidence(manifest({ lastSequence: 13, window: { startSimTimeNs: '0', endSimTimeNs: '130000000' } }), truncated).status).toBe('pass'); // only when the manifest said the run ended there
 });
 test('a failed run claims nothing', () => {
   const r = assessEngineeringEvidence(manifest(), []);

@@ -106,3 +106,17 @@ def test_missing_target_is_an_error_when_flow_would_start(process_fixture):
     del state["targetMl"]
     with pytest.raises(ValueError, match="PROCESS_STATE_INVALID:targetMl"):
         step(state, process_fixture, 1.0)
+
+
+def test_a_step_that_crosses_the_deadline_only_delivers_what_the_deadline_allowed(process_fixture):
+    slow = copy.deepcopy(process_fixture)
+    slow["maxDurationSec"]["value"] = 5.0           # startup 1 s, so 4 s of flow = 80 ml at 20 ml/s
+    s = step(fresh(targetMl=200.0), slow, 100.0)    # one huge step far past the deadline
+    assert s["status"] == "timeout"
+    assert s["volumeMl"] == pytest.approx(80.0)
+    assert s["cupMassKg"] - 0.02 == pytest.approx(0.08)
+    assert s["waterMl"] == pytest.approx(920.0)
+
+
+def test_completing_inside_the_deadline_still_completes(process_fixture):
+    assert run(fresh(), process_fixture, 15)["status"] == "complete"

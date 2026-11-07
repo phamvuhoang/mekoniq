@@ -131,3 +131,18 @@ def test_receiver_stability_cannot_be_bridged_across_a_gap_either():
     sparse = [s for s in place_samples(seconds=1.0) if int(s["simTimeNs"]) in (0, 1_000_000_000) or s["kind"] == "gripper"]
     result = assess(sparse, PLACE)
     assert result["status"] == "unknown"
+
+
+def test_a_single_gripper_sample_cannot_stand_in_for_the_whole_hold():
+    # P1: 251 pose samples but one gripper sample at the very end used to confirm
+    poses = [s for s in pick_samples() if s["kind"] == "cup_pose"]
+    grippers = [s for s in pick_samples() if s["kind"] == "gripper"]
+    result = assess(poses + [grippers[-1]], PICK)
+    assert result["status"] == "unknown" and "EVIDENCE_GAP" in result["reasons"]
+    result = assess([grippers[0]] + poses, PICK)  # the opposite hole: contact seen only before the lift
+    assert result["status"] == "unknown"
+
+
+def test_contact_must_be_present_when_the_lift_starts_and_when_the_hold_ends():
+    samples = [s for s in pick_samples() if s["kind"] != "gripper" or not (400_000_000 <= int(s["simTimeNs"]) <= 1_900_000_000)]
+    assert assess(samples, PICK)["status"] == "unknown"

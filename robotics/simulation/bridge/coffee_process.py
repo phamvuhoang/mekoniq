@@ -48,9 +48,12 @@ def step_process(state, model, dt_s):
         return out
     if "targetMl" not in state:
         raise ValueError("PROCESS_STATE_INVALID:targetMl")
-    flowing_dt = max(0.0, min(dt_s, out["elapsedS"] - _val(model, "startupDelaySec")))
+    # flow only runs between the end of start-up and the deadline, whatever the step size
+    window_start = max(state.get("elapsedS", 0.0), _val(model, "startupDelaySec"))
+    window_end = min(out["elapsedS"], _val(model, "maxDurationSec"))
+    flowing_dt = max(0.0, min(dt_s, window_end - window_start))
     if flowing_dt == 0.0:
-        out["status"] = "startup"
+        out["status"] = "timeout" if out["elapsedS"] >= _val(model, "maxDurationSec") else "startup"
         return out
     remaining = max(0.0, state["targetMl"] - out["volumeMl"])
     reservoir = state[level_key]

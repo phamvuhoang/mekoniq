@@ -1859,4 +1859,10 @@ export interface EngineeringRunManifest {
    * @maxItems 200
    */
   artifacts: string[];
+  configDigest: string;
+  lastSequence: number;
+  window: {
+    startSimTimeNs: string;
+    endSimTimeNs: string;
+  };
 }

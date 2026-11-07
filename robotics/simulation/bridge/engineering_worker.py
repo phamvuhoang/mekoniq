@@ -20,6 +20,8 @@ class EvidenceQueue:
         self.limit, self.pause_world, self.items, self.failed = limit, pause_world, [], False
 
     def put(self, sample):
+        if self.failed:
+            raise EvidenceGap("STREAM_FAILED")  # emptying the queue does not repair the gap
         if len(self.items) >= self.limit:
             self.failed = True
             try:
@@ -65,8 +67,14 @@ class Lifecycle:
 
     def fail(self, reason):
         self.failed = reason
-        while self.cleanups:
-            self.cleanups.pop()()
+        errors = []
+        while self.cleanups:  # every cleanup runs, newest first, even when one of them fails
+            try:
+                self.cleanups.pop()()
+            except Exception as error:
+                errors.append(error)
+        if errors:
+            raise RuntimeError(f"CLEANUP_FAILED:{len(errors)}") from errors[0]
 
 
 class SimClock:

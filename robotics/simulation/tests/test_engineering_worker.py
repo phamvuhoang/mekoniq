@@ -69,3 +69,28 @@ def test_pause_stops_integration_but_not_the_watchdog():
     assert c.sim_ns == 5_000_001
     with pytest.raises(RuntimeError, match="CLOCK_REGRESSION"):
         c.advance(-1)
+
+
+def test_one_failing_cleanup_does_not_stop_the_others():
+    from bridge.engineering_worker import STAGES, Lifecycle
+    stopped = []
+    life = Lifecycle(monotonic=lambda: 0, startup_timeout_s=50)
+    def bad():
+        raise OSError("cannot kill")
+    life.enter(STAGES[0], owns=lambda: stopped.append("a"))
+    life.enter(STAGES[1], owns=bad)
+    life.enter(STAGES[2], owns=lambda: stopped.append("c"))
+    with pytest.raises(RuntimeError, match="CLEANUP_FAILED"):
+        life.fail("X")
+    assert stopped == ["c", "a"] and life.failed == "X"  # every cleanup ran, newest first
+
+
+def test_the_queue_refuses_samples_after_an_overflow_even_once_drained():
+    from bridge.engineering_worker import EvidenceGap, EvidenceQueue
+    q = EvidenceQueue(limit=1, pause_world=lambda: None)
+    q.put({"sequence": 0})
+    with pytest.raises(EvidenceGap):
+        q.put({"sequence": 1})
+    q.drain()
+    with pytest.raises(EvidenceGap, match="STREAM_FAILED"):
+        q.put({"sequence": 2})  # the gap is not repaired by emptying the queue

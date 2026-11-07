@@ -62,6 +62,14 @@ def _intervals(items, ok, max_gap_ns):
     return [(int(r[0]["simTimeNs"]), int(r[-1]["simTimeNs"]), r) for r in runs]
 
 
+def _covers(items, start, end, max_gap):
+    """True when `items` has a sample near `start`, one near `end`, and no silence longer than max_gap between them."""
+    times = sorted(int(s["simTimeNs"]) for s in items)
+    near = lambda t: any(abs(x - t) <= max_gap for x in times)
+    inside = [x for x in times if start - max_gap <= x <= end + max_gap]
+    return near(start) and near(end) and all(b - a <= max_gap for a, b in zip(inside, inside[1:]))
+
+
 def _dist(a, b):
     return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
 
@@ -91,10 +99,11 @@ def _assess_pick(streams, p, now, refs):
         return _result("rejected", ["GRASP_CONTACT_LOST"], refs)
     if any(s["cupXyzM"][2] - base < p["liftM"] for s in after):
         return _result("rejected", ["CUP_DROPPED"], refs)
-    for stream in ([s for s in g if int(s["simTimeNs"]) >= start], after):
-        if any(int(b["simTimeNs"]) - int(a["simTimeNs"]) > p["maxGapNs"] for a, b in zip(stream, stream[1:])):
-            return _result("unknown", ["EVIDENCE_GAP"], refs)  # nothing was observed in between, so nothing is confirmed
-    held_ns = int(after[-1]["simTimeNs"]) - start
+    end = int(after[-1]["simTimeNs"])
+    # both streams must cover the whole lift-and-hold span: present at its start and end, and never silent for longer than the gap policy
+    if not all(_covers(stream, start, end, p["maxGapNs"]) for stream in (g, c)):
+        return _result("unknown", ["EVIDENCE_GAP"], refs)  # nothing was observed in between, so nothing is confirmed
+    held_ns = end - start
     if held_ns < p["holdS"] * NS_PER_S:
         return _result("unknown", ["HOLD_TOO_SHORT"], refs)
     return _result("confirmed", [], refs)

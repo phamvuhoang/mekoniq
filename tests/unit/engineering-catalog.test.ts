@@ -17,7 +17,7 @@ afterEach(async () => { for (const d of dirs.splice(0)) await rm(d, { recursive:
 const actuator = (over: Record<string, unknown> = {}) => ({ schemaVersion: 1, kind: 'actuator', id: 'wheel-drive', jointIds: ['axle'], transmission: { ratio: scalar(10, '1'), efficiency: scalar(0.8, '1') }, commandInterface: 'velocity',
   torqueSpeedTable: [{ speed: scalar(0, 'rad/s'), torque: scalar(3, 'N*m') }, { speed: scalar(30, 'rad/s'), torque: scalar(0, 'N*m') }], currentLimit: scalar(10, 'A'), voltageLimit: scalar(24, 'V'), damping: scalar(0.01, 'N*m'), friction: scalar(0.02, 'N*m'), ...over });
 
-interface Opts { doc?: Uint8Array; skipDoc?: boolean; docDigest?: string; model?: unknown; skipModel?: boolean; modelDigest?: string; declared?: string; mesh?: boolean; sku?: string | null; extra?: ComponentRevision[]; quotes?: unknown[]; file?: string }
+interface Opts { mfr?: 'missing' | 'wrong-hash' | 'ok'; doc?: Uint8Array; skipDoc?: boolean; docDigest?: string; model?: unknown; skipModel?: boolean; modelDigest?: string; declared?: string; mesh?: boolean; sku?: string | null; extra?: ComponentRevision[]; quotes?: unknown[]; file?: string }
 async function build(o: Opts = {}) {
   const root = await mkdtemp(join(tmpdir(), 'eng-catalog-')); dirs.push(root);
   for (const d of ['components', 'models', 'documents']) await mkdir(join(root, d));
@@ -27,6 +27,7 @@ async function build(o: Opts = {}) {
   if (!o.skipModel) await writeFile(join(root, 'models', `${hashJson(model)}.json`), JSON.stringify(model));
   const link = boxLink('body', [0.1, 0.1, 0.1], 1);
   if (o.mesh) link.visual.push({ pose: link.visual[0]!.pose, geometry: { kind: 'mesh', blobSha256: sha('mesh-not-written'), scale: [1, 1, 1] }, source: assumed });
+  if (o.mfr) link.massKg.source = { kind: 'manufacturer', documentId: o.mfr === 'missing' ? 'no-such-document' : 'datasheet', revision: '1', locator: 'p1', contentSha256: o.mfr === 'wrong-hash' ? 'e'.repeat(64) : sha(doc) };
   const component: ComponentRevision = { schemaVersion: 1, id: 'fixture-motor', revision: '1', identity: { manufacturer: 'fixture', family: 'motor', sku: o.sku === undefined ? null : o.sku, status: 'candidate' }, links: [link], joints: [], ports: [],
     models: [{ kind: 'actuator', id: 'wheel-drive', digest: modelDigest }], documents: [{ id: 'datasheet', url: null, digest: o.docDigest ?? sha(doc), license: 'fixture' }] };
   const all = [component, ...(o.extra ?? [])];
@@ -121,4 +122,11 @@ test('vendor import accepts only allowlisted https hosts, matching checksums and
   await expect(importVendor({ root, sources: [{ ...entry, url: 'http://raw.githubusercontent.com/x' }], fetchImpl })).rejects.toThrow(/IMPORT_HOST_FORBIDDEN/);
   await expect(importVendor({ root, sources: [{ ...entry, license: '' }], fetchImpl })).rejects.toThrow(/IMPORT_LICENSE_REQUIRED/);
   await expect(importVendor({ root, sources: [{ ...entry, commit: 'main' }], fetchImpl })).rejects.toThrow(/IMPORT_COMMIT_REQUIRED/);
+});
+
+test('a manufacturer or measured source must point at a document the component declares, with the same content hash', async () => {
+  expect((await loadCatalog((await build({ mfr: 'ok' })).root)).problems).toEqual([]);
+  const missing = await loadCatalog((await build({ mfr: 'missing' })).root);
+  expect(blocking(missing)).toContain('PROVENANCE_UNRESOLVED');
+  expect(blocking(await loadCatalog((await build({ mfr: 'wrong-hash' })).root))).toContain('PROVENANCE_UNRESOLVED');
 });

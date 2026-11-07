@@ -63,6 +63,17 @@ export async function loadCatalog(root:string):Promise<CatalogResult>{
    if(!checked.ok){own.push(...checked.problems.map(p=>problem('MODEL_INVALID',mpath+p.path,`${p.code}: ${p.detail}`)));continue;}
    result.models[ref.digest]=model;
   }
+  // a manufacturer/measured parameter must cite a document this component declares, with the same content hash
+  const cited=(value:unknown,path:string)=>{
+   if(Array.isArray(value))value.forEach((v,i)=>cited(v,`${path}/${i}`));
+   else if(value&&typeof value==='object'){
+    const r=value as {kind?:unknown;documentId?:unknown;contentSha256?:unknown};
+    if((r.kind==='manufacturer'||r.kind==='measured')&&typeof r.documentId==='string'&&!component.documents.some(d=>d.id===r.documentId&&d.digest===r.contentSha256))own.push(problem('PROVENANCE_UNRESOLVED',path,`${r.documentId} is not a declared document with digest ${String(r.contentSha256)}`));
+    for(const [k,v] of Object.entries(value))cited(v,`${path}/${k}`);
+   }
+  };
+  cited({links:component.links,joints:component.joints,ports:component.ports},path);
+  for(const ref of component.models)if(result.models[ref.digest])cited(result.models[ref.digest],`${path}/models/${ref.id}`);
   result.problems.push(...own);
  }
  for(const [i,raw] of (index.quotes??[]).entries()){

@@ -65,3 +65,16 @@ test('a channel or trial the model did not predict is missing, not zero', () => 
   const noTrial = prediction(); noTrial.trials.pop();
   expect(assessCalibration(dataset(), noTrial).reasons).toContain('PREDICTION_TRIAL_MISSING:v3');
 });
+
+test('a validation trial without measured data is not a trial: it cannot satisfy the minimum or pass quietly', () => {
+  const empty = (id: string) => ({ trialId: id, split: 'validation' as const, condition: 'empty', timesNs: times, channels: {} });
+  const oneOfThree = dataset({ trials: [trial('t1', 'tune', 'empty'), trial('v1', 'validation', 'empty'), empty('v2'), empty('v3')] });
+  const r = assessCalibration(oneOfThree, prediction());
+  expect(r.status).toBe('fail');
+  expect(r.reasons).toEqual(expect.arrayContaining(['TRIAL_WITHOUT_DATA:v2', 'TRIAL_WITHOUT_DATA:v3', 'TRIALS_INSUFFICIENT']));
+  expect(r.calibratedCapabilities).toEqual([]);
+  const none = dataset({ trials: [trial('t1', 'tune', 'empty'), empty('v1'), empty('v2'), empty('v3')] });
+  expect(assessCalibration(none, prediction())).toMatchObject({ status: 'fail', calibratedCapabilities: [] });
+  const misaligned = dataset({ trials: [trial('t1', 'tune', 'empty'), { ...trial('v1', 'validation', 'empty'), channels: { speed: [0, 1] } }, trial('v2', 'validation', 'empty'), trial('v3', 'validation', 'empty')] });
+  expect(assessCalibration(misaligned, prediction()).reasons).toContain('TRIAL_WITHOUT_DATA:v1');
+});

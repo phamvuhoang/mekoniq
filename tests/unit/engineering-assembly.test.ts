@@ -204,3 +204,19 @@ test('a port naming a link the component does not have, or a child port on a non
   const child = resolve('valid', (f) => { Object.values(f.components).find((c) => c.id === 'service-tray')!.ports[0]!.link = 'plate'; }).r;
   expect(codes(child)).not.toContain('MOUNT_MISMATCH'); // the root link as an explicit child link is the same as the default
 });
+
+test('the projected asset is framed on the real root link, not the alphabetically first link', () => {
+  const f = clone(engineeringFixture('valid'));
+  const chassis = Object.entries(f.components).find(([, c]) => c.id === 'amr-chassis')!;
+  const base = chassis[1].links[0]!;
+  chassis[1].links.unshift({ ...base, id: 'a_sensor', visual: [], collision: base.collision.map((c) => ({ ...c, geometry: { kind: 'box' as const, sizeM: [0.02, 0.02, 0.02] as [number, number, number] } })) });
+  chassis[1].joints.push({ id: 'sensor-mount', kind: 'fixed', parent: 'base', child: 'a_sensor', origin: { xyzM: [0, 0, 0.5], quaternionXyzw: [0, 0, 0, 1] }, axis: [0, 0, 1] });
+  const digest = hashJson(chassis[1]); delete f.components[chassis[0]]; f.components[digest] = chassis[1];
+  for (const i of f.project.assembly.instances) if (i.componentDigest === chassis[0]) i.componentDigest = digest;
+  const { resolved, problems } = resolveAssembly(f.project, f.components, { models: f.models as never });
+  expect(problems.filter((p) => p.code !== 'INITIAL_PENETRATION')).toEqual([]);
+  const input = prepareEngineeringCompileInput(f.project, resolved!, []);
+  const frames = input.runtimeProjection.assets[0]!.frames;
+  expect(frames.find((x) => x.id === 'chassis:base:c0')!.translationM).toEqual([0, 0, 0]);
+  expect(frames.find((x) => x.id === 'chassis:a_sensor:c0')!.translationM).toEqual([0, 0, 0.5]);
+});

@@ -272,7 +272,9 @@ const ENTITY_ASSET_KIND:Record<string,AssetRevision['kind']>={amr:'amr',arm:'arm
 function entityAsset(entityId:string,kind:string,revision:number,instanceIds:string[],resolved:ResolvedAssembly):AssetRevision{
  const poses=linkWorldPoses(resolved),mine=new Set(instanceIds),links=resolved.links.filter(l=>mine.has(l.id.split('/')[0]!));
  const rootInstance=instanceIds.find(id=>!resolved.joints.some(j=>j.id.startsWith('mount:')&&j.child.startsWith(id+'/')))??instanceIds[0]!;
- const rootLink=resolved.links.find(l=>l.id.startsWith(rootInstance+'/'))!,toRoot=invertPose(poses.get(rootLink.id)!);
+ // the instance's root link is the one no joint of its own component hangs under (the first link in id order is just the first)
+ const own=resolved.links.filter(l=>l.id.startsWith(rootInstance+'/')),childOfOwn=new Set(resolved.joints.filter(j=>!j.id.startsWith('mount:')&&j.parent.startsWith(rootInstance+'/')).map(j=>j.child));
+ const rootLink=own.find(l=>!childOfOwn.has(l.id))!,toRoot=invertPose(poses.get(rootLink.id)!);
  const frames:AssetRevision['frames']=[{id:'root',parentId:null,translationM:[0,0,0],quaternionXyzw:[0,0,0,1]}],geometry:AssetRevision['geometry']=[];
  for(const l of links)for(const [n,s] of l.collision.entries()){
   const g=s.geometry;if(g.kind==='mesh')continue;

@@ -25,11 +25,15 @@ export function assessCalibration(dataset:CalibrationDataset|null,prediction:Pre
   const ids=dataset.trials.map(t=>t.trialId);
   if (new Set(ids).size!==ids.length) structural.push('CALIBRATION_SPLIT_LEAKAGE');
   const tune=dataset.trials.filter(t=>t.split==='tune'),validation=dataset.trials.filter(t=>t.split==='validation');
+  // a trial counts only if every policy channel was actually measured, aligned with its clock; a trial without data is reported, never counted
+  const measured=(t:typeof validation[number])=>Object.keys(dataset.policy.channels).every(ch=>{const v=t.channels[ch];return !!v&&v.length>0&&v.length===t.timesNs.length;});
+  for (const t of validation) if (!measured(t)) structural.push(`TRIAL_WITHOUT_DATA:${t.trialId}`);
   if (!validation.length) structural.push('NO_VALIDATION_SPLIT');
   else {
     const byCondition=new Map<string,number>();
-    for (const t of validation) byCondition.set(t.condition,(byCondition.get(t.condition)??0)+1);
-    if ([...byCondition.values()].some(n=>n<dataset.policy.minTrialsPerCondition)) structural.push('TRIALS_INSUFFICIENT');
+    for (const t of validation.filter(measured)) byCondition.set(t.condition,(byCondition.get(t.condition)??0)+1);
+    const conditions=new Set(validation.map(t=>t.condition));
+    if ([...conditions].some(c=>(byCondition.get(c)??0)<dataset.policy.minTrialsPerCondition)) structural.push('TRIALS_INSUFFICIENT');
   }
   for (const [channel,tol] of Object.entries(dataset.policy.channels)) if ((dataset.uncertainty[channel]??Infinity)>tol.absoluteTolerance) structural.push(`UNCERTAINTY_EXCEEDS_TOLERANCE:${channel}`);
   if (structural.length) return empty('fail',structural,invalidatedBy);
