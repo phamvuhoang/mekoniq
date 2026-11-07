@@ -21,7 +21,7 @@ import {MOCK_AMR_PARAMS} from '../../packages/lab-runtime/src/v2/backends/mock-a
 import {TICK_MS} from '../../packages/lab-runtime/src/v2/clock';
 import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
 import {act,cleanupRuns,coffeeProject,corridor,executeCoffee,executeFixture,openCoffee,openFixture,restaurant,runDirectory,stepUntil} from '../support/lab-v2';
-import {assertRecordedRegressionIdentity,type RegressionIdentityRecord} from '../support/regression-identity';
+import {assertRecordedRegressionIdentity,regressionRoot,type RegressionIdentityRecord} from '../support/regression-identity';
 afterEach(cleanupRuns);
 type Run=Awaited<ReturnType<typeof openFixture>>;type View=Awaited<ReturnType<Run['snapshot']>>;
 const types=(r:RunReport)=>r.businessEvents.map(e=>e.type);
@@ -680,7 +680,7 @@ function coverage():Row[]{return [
 ];}
 export let COVERAGE:Row[]=[];
 const REQUIRED=[...['01','02','03','04','05','06','07','08','09','10','11','12'].map(n=>`QA-${n}`),...Array.from({length:8},(_,i)=>`FD0${i+1}`),...Array.from({length:8},(_,i)=>`BV0${i+1}`),...Array.from({length:6},(_,i)=>`ARM0${i+1}`),...Array.from({length:6},(_,i)=>`SYS0${i+1}`),...Array.from({length:20},(_,i)=>`UX-${String(i+1).padStart(2,'0')}`)];
-const LAB=join(process.cwd(),'..','lab'),REGRESSION=join(LAB,'docs/implementation/evidence/digital-twin-v2/regression');
+const LAB=join(process.cwd(),'..','lab'),REGRESSION=regressionRoot(process.env.LAB_V2_REGRESSION_DIR,LAB);
 const recordsOf=(r:Row)=>r.tests.filter(t=>t.startsWith('self:')).flatMap(t=>evidence.traceByCheck[t.slice(5)]??[]);
 check('QA-01 evidence records: every runner/gateway pass row resolves to records with scenario revision, backend set and versions, expected and actual outcome',async()=>{
  const rows=coverage().filter(r=>r.status==='pass'&&['runner','gateway'].includes(r.level)&&r.tests.some(t=>t.startsWith('self:')&&t.slice(5)!==current));

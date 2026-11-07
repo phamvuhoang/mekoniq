@@ -1,6 +1,7 @@
 // Shared by the Node 24 Lab recorder and source acceptance. This is evidence tooling, not runtime code.
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
+import {resolve} from 'node:path';
 export const LAB_EVIDENCE_MUTABLE_PATHS=['docs/','README.md','config/simulation-compatibility.json'] as const;
 export interface RepositoryIdentity {commit:string;codeHash:string;dirtyCodePaths:string[]}
 export interface RegressionIdentity {source:RepositoryIdentity;lab:RepositoryIdentity}
@@ -50,4 +51,9 @@ export function assertRecordedRegressionIdentity(record:RegressionIdentityRecord
   if(treeHash(directory,start[repo].commit,repo==='lab')!==start[repo].codeHash)throw new Error('RECORDED_CODE_HASH_MISMATCH');
   if(current[repo].codeHash!==start[repo].codeHash)throw new Error(`${repo.toUpperCase()}_CODE_STALE`);
  }
+}
+
+/** Where the recorded regression manifest lives: LAB_V2_REGRESSION_DIR (absolute, or relative to the Lab) or, when unset, the historical digital-twin-v2 path. */
+export function regressionRoot(env:string|undefined,lab:string):string{
+ return env?resolve(lab,env):resolve(lab,'docs/implementation/evidence/digital-twin-v2/regression');
 }
