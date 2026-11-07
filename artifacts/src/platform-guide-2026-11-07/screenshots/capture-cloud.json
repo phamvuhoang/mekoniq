@@ -1,0 +1,62 @@
+[
+  {
+    "id": "source-cloud-settings-empty",
+    "title": "Cloud: cấu hình ban đầu",
+    "file": "screenshots/source-cloud-settings-empty.png",
+    "repo": "source",
+    "environment": "local-fixture",
+    "url": "http://127.0.0.1:54480/admin/settings",
+    "capturedAt": "2026-11-07T10:43:17.822Z",
+    "revision": "899a83769726aa6840c40a32fb0e89d17a137cb7",
+    "runtimePin": null,
+    "scope": "Local Supabase synthetic owner and tenant; no published configuration; no production data.",
+    "sha256": "855a2205ce1e94bef2a1765436aa559a060a43daceb6dbef8171d38032e903bd",
+    "width": 1440,
+    "height": 4245
+  },
+  {
+    "id": "source-cloud-settings",
+    "title": "Cloud: bố trí và xem trước preset",
+    "file": "screenshots/source-cloud-settings.png",
+    "repo": "source",
+    "environment": "local-fixture",
+    "url": "http://127.0.0.1:54480/admin/settings",
+    "capturedAt": "2026-11-07T10:43:18.216Z",
+    "revision": "899a83769726aa6840c40a32fb0e89d17a137cb7",
+    "runtimePin": null,
+    "scope": "Local synthetic layout relay pending restaurant acknowledgement; preset preview is unpublished.",
+    "sha256": "596c535b3543aea018c66f8493b094489fdfffbc0e2c8b7ca6fe23d06d666d9c",
+    "width": 1440,
+    "height": 4751
+  },
+  {
+    "id": "source-cloud-catalog",
+    "title": "Cloud: danh mục món",
+    "file": "screenshots/source-cloud-catalog.png",
+    "repo": "source",
+    "environment": "local-fixture",
+    "url": "http://127.0.0.1:54480/admin/catalog",
+    "capturedAt": "2026-11-07T10:43:19.597Z",
+    "revision": "899a83769726aa6840c40a32fb0e89d17a137cb7",
+    "runtimePin": null,
+    "scope": "Local synthetic menu: Cơm 50,000 VND and Trà 20,000 VND.",
+    "sha256": "8f47d53fa3a7d91e29d72c155b89a49eb3275b570914d5f703cc6afdf0f685d8",
+    "width": 1440,
+    "height": 1791
+  },
+  {
+    "id": "source-cloud-catalog-pending",
+    "title": "Cloud: bản nháp chờ nhà hàng",
+    "file": "screenshots/source-cloud-catalog-pending.png",
+    "repo": "source",
+    "environment": "local-fixture",
+    "url": "http://127.0.0.1:54480/admin/catalog",
+    "capturedAt": "2026-11-07T10:43:19.798Z",
+    "revision": "899a83769726aa6840c40a32fb0e89d17a137cb7",
+    "runtimePin": null,
+    "scope": "Local synthetic catalog draft 55,000 VND pending acknowledgement; applied menu remains 50,000 VND.",
+    "sha256": "f896d63588c6b37460a2e9c692c7aee26dad6d01db408571281134beb327eb02",
+    "width": 1440,
+    "height": 1791
+  }
+]

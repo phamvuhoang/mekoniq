@@ -1,0 +1,82 @@
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+const require = createRequire(import.meta.url);
+const c = require('./common.cjs');
+// Run using source's installed tsx loader; imports deliberately reuse the maintained fixture helpers.
+process.chdir(c.source);
+delete process.env.MEKONIQ_TEST_DB;
+const status = JSON.parse(execFileSync('pnpm', ['exec', 'supabase', 'status', '--output', 'json'], { cwd: c.source, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
+if (typeof status.DB_URL !== 'string') throw new Error('LOCAL_SUPABASE_DB_URL_REQUIRED');
+const databaseEndpoint = new URL(status.DB_URL);
+if (!['postgres:', 'postgresql:'].includes(databaseEndpoint.protocol) || !['127.0.0.1', 'localhost'].includes(databaseEndpoint.hostname) || databaseEndpoint.port !== '57422' || databaseEndpoint.pathname !== '/postgres') throw new Error('LOCAL_SUPABASE_DB_57422_REQUIRED');
+process.env.DATABASE_ADMIN_URL = status.DB_URL;
+const endpoint = new URL(status.API_URL);
+if (!['127.0.0.1', 'localhost'].includes(endpoint.hostname) || endpoint.port !== '57421') throw new Error('LOCAL_SUPABASE_57421_REQUIRED');
+process.env.NEXT_PUBLIC_SUPABASE_URL = status.API_URL;
+process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = status.ANON_KEY;
+process.env.SUPABASE_SERVICE_ROLE_KEY = status.SERVICE_ROLE_KEY;
+const { setupWave02 } = await import(pathToFileURL(c.source + '/tests/support/wave02-db.ts'));
+const { createSupabaseActor } = await import(pathToFileURL(c.source + '/tests/support/supabase-auth.ts'));
+const { startCloud } = await import(pathToFileURL(c.source + '/tests/support/cloud-server.ts'));
+const scope = { organizationId: 'guide-capture-' + randomUUID(), venueId: 'venue-a' };
+const manifest = [];
+let db, actor, cloud, browser, stage = 'fixture setup';
+try {
+  db = await setupWave02();
+  actor = await createSupabaseActor(db.admin, scope);
+  await db.admin`INSERT INTO authority(organization_id,venue_id,coordinator_epoch,policy_revision) VALUES(${scope.organizationId},${scope.venueId},1,1)`;
+  await db.admin`INSERT INTO venue_ownership(organization_id,venue_id,resource_id,owner_device_id,owner_device_epoch,epoch,status) VALUES(${scope.organizationId},${scope.venueId},'coordinator','coordinator','epoch-coordinator',1,'active')`;
+  const menu = { version: 1, currency: 'VND', items: [ { id:'rice', name:'Cơm', stationId:'kitchen', unitMinor:'50000', available:true }, { id:'tea', name:'Trà', stationId:'bar', unitMinor:'20000', available:true } ] };
+  await db.admin`INSERT INTO sync_projection(organization_id,venue_id,aggregate_type,aggregate_id,version,state,entry_id) VALUES(${scope.organizationId},${scope.venueId},'catalog','current',1,${db.admin.json(menu)},'guide-menu')`;
+  for (const [id, name] of [['kitchen','Bếp'],['bar','Quầy pha chế']]) await db.admin`INSERT INTO sync_projection(organization_id,venue_id,aggregate_type,aggregate_id,version,state,entry_id) VALUES(${scope.organizationId},${scope.venueId},'station',${id},1,${db.admin.json({ name })},${'guide-station-' + id})`;
+  cloud = await startCloud({ databaseUrl: process.env.DATABASE_URL, port: 0 });
+  browser = await c.launch();
+  const page = await browser.newPage({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: 1 });
+  page.setDefaultTimeout(90000);
+  stage = 'fixture sign in';
+  await page.goto(cloud.url + '/login');
+  await page.getByLabel('Email', { exact:true }).fill(actor.email);
+  await page.getByLabel('Mật khẩu / Password', { exact:true }).fill(actor.password);
+  await page.getByRole('button', { name:'Đăng nhập / Sign in', exact:true }).click();
+  await page.waitForURL(cloud.url + '/admin/settings');
+  const shot = async(id,title,scopeText) => c.capture(page,manifest,{id,title,repo:'source',environment:'local-fixture',scope:scopeText});
+  stage = 'settings';
+  await c.expect(page.getByRole('status')).toHaveText('Chưa có cấu hình đã phát hành');
+  await shot('source-cloud-settings-empty','Cloud: cấu hình ban đầu','Local Supabase synthetic owner and tenant; no published configuration; no production data.');
+  await page.getByLabel('Trạm bếp / Stations',{exact:true}).fill('kitchen,Bếp\nbar,Quầy pha chế');
+  await page.getByLabel('Bàn / Tables',{exact:true}).fill('table-1,Bàn 01\ntable-2,Bàn 02\ntable-3,Bàn 03');
+  await page.getByLabel('Thêm robot mô phỏng / Add simulated robot',{exact:true}).check();
+  const layout = page.waitForResponse(r => r.url().endsWith('/layout') && r.request().method() === 'POST');
+  await page.getByRole('button',{name:'Gửi bố trí tới nhà hàng / Publish layout',exact:true}).click();
+  c.expect((await layout).status()).toBe(202);
+  await c.expect(page.getByLabel('Bố trí nhà hàng',{exact:true})).toContainText('Chờ nhà hàng xác nhận');
+  await page.getByLabel('Chọn preset / Choose preset',{exact:true}).selectOption('trial-service');
+  await page.getByLabel('Gọi món trên robot / Robot ordering',{exact:true}).check();
+  await c.expect(page.getByLabel('Kết quả xem trước preset')).toContainText('catalog, sessions');
+  await shot('source-cloud-settings','Cloud: bố trí và xem trước preset','Local synthetic layout relay pending restaurant acknowledgement; preset preview is unpublished.');
+  stage = 'catalog';
+  await page.goto(cloud.url + '/admin/catalog');
+  await c.expect(page.getByLabel('Giá món 1',{exact:true})).toHaveValue('50000');
+  await shot('source-cloud-catalog','Cloud: danh mục món','Local synthetic menu: Cơm 50,000 VND and Trà 20,000 VND.');
+  await page.getByLabel('Giá món 1',{exact:true}).fill('55000');
+  const publish = page.waitForResponse(r => r.url().endsWith('/catalog') && r.request().method() === 'POST');
+  await page.getByRole('button',{name:'Phát hành bản nháp / Publish draft',exact:true}).click();
+  c.expect((await publish).status()).toBe(202);
+  await c.expect(page.getByRole('status')).toContainText('Chờ nhà hàng xác nhận');
+  const [applied] = await db.admin`SELECT state FROM sync_projection WHERE organization_id=${scope.organizationId} AND aggregate_type='catalog'`;
+  c.expect(applied.state.items[0].unitMinor).toBe('50000');
+  await shot('source-cloud-catalog-pending','Cloud: bản nháp chờ nhà hàng','Local synthetic catalog draft 55,000 VND pending acknowledgement; applied menu remains 50,000 VND.');
+} catch { console.error('Cloud capture failed at: ' + stage + ' (credential-safe error; inspect selectors locally).'); process.exitCode = 1;
+} finally {
+  if (browser) await browser.close();
+  if (cloud) await cloud.close();
+  if (actor) await actor.cleanup();
+  if (db) {
+    // This allowlist is scoped to this invocation's random synthetic tenant.
+    for (const table of ['relay_command','configuration_revision','sync_projection','venue_ownership','authority','venue_membership','venue']) await db.admin`DELETE FROM ${db.admin(table)} WHERE organization_id=${scope.organizationId}`;
+    await db.close();
+  }
+  c.saveManifest('cloud', manifest);
+}

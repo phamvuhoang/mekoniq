@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-07T10:48:17.704Z",
+  "artifact": "mekoniq-platform-lab-guide-2026-11-07.html",
+  "mode": "browser",
+  "checks": [
+    {
+      "name": "Input/artifact/image hashes, complete scope, self-contained resources, anchors, secret scan, shell syntax",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Desktop/tablet/mobile widths have no document overflow",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Repository/status/accent-free search, empty result and reset work",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Gallery filter and real-pixel dialog with Escape/focus restoration",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Command copy and denied-clipboard selection fallback",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Print reveals all filtered content and removes controls",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "No-JavaScript reading fallback",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Zero browser errors or external resource requests",
+      "details": true,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "sha256": "b264f9c20ba5e4a9f7b8b23084d04e81f596a26e552c1f9521e526364e045d35"
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "source-production-login",
+    "title": "MEKONIQ: đăng nhập production",
+    "file": "screenshots/source-production-login.png",
+    "repo": "source",
+    "environment": "production-public",
+    "url": "https://www.mekoniq.app/login",
+    "capturedAt": "2026-11-07T10:43:45.074Z",
+    "revision": "899a83769726aa6840c40a32fb0e89d17a137cb7",
+    "runtimePin": null,
+    "scope": "Public production login only, anonymous fresh browser; no sign-in, no customer or admin data. revision identifies repository snapshot accompanying guide, not an independently verified deployment commit.",
+    "sha256": "876dae4c886e0357e781ded4068656730f2da721492fd1554f6e2c9ca39f5d30",
+    "width": 1440,
+    "height": 960
+  },
+  {
+    "id": "lab-public-home",
+    "title": "MEKONIQ Lab: trang công khai",
+    "file": "screenshots/lab-public-home.png",
+    "repo": "lab",
+    "environment": "production-public",
+    "url": "https://mekoniq-lab.vercel.app/",
+    "capturedAt": "2026-11-07T10:43:46.901Z",
+    "revision": "582f9f46eb4a6fed40e3df97ce50c580c5ea850d",
+    "runtimePin": null,
+    "scope": "Public Lab landing page only, anonymous fresh browser. revision identifies repository snapshot accompanying guide, not an independently verified deployment commit.",
+    "sha256": "b6a18d51bd10aafd4ad11fc8bb8e3b4a13d8ed6b0990fb8aaf29c43c2f595df3",
+    "width": 1440,
+    "height": 1936
+  }
+]

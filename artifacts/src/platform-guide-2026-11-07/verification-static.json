@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-07T10:48:17.531Z",
+  "artifact": "mekoniq-platform-lab-guide-2026-11-07.html",
+  "mode": "static",
+  "checks": [
+    {
+      "name": "Input/artifact/image hashes, complete scope, self-contained resources, anchors, secret scan, shell syntax",
+      "details": true,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "sha256": "b264f9c20ba5e4a9f7b8b23084d04e81f596a26e552c1f9521e526364e045d35"
+}
