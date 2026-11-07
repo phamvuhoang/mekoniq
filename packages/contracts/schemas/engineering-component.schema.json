@@ -91,6 +91,23 @@
       "items": {
         "$ref": "#/definitions/ComponentDocument"
       }
+    },
+    "payloadRatings": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "$ref": "#/definitions/PayloadRating"
+      }
+    },
+    "battery": {
+      "$ref": "#/definitions/BatteryRating"
+    },
+    "supportPoints": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "$ref": "#/definitions/SupportPoint"
+      }
     }
   },
   "required": [
@@ -989,6 +1006,69 @@
         "startupDelaySec",
         "maxDurationSec",
         "densityKgPerM3"
+      ]
+    },
+    "PayloadRating": {
+      "title": "PayloadRating",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "portId": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "maxMassKg": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "maxMomentNm": {
+          "$ref": "#/definitions/Scalar"
+        }
+      },
+      "required": [
+        "portId",
+        "maxMassKg",
+        "maxMomentNm"
+      ]
+    },
+    "BatteryRating": {
+      "title": "BatteryRating",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "portId": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "capacityAh": {
+          "$ref": "#/definitions/Scalar"
+        },
+        "usableFraction": {
+          "$ref": "#/definitions/Scalar"
+        }
+      },
+      "required": [
+        "portId",
+        "capacityAh",
+        "usableFraction"
+      ]
+    },
+    "SupportPoint": {
+      "title": "SupportPoint",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "linkId": {
+          "$ref": "#/definitions/EngineeringId"
+        },
+        "pointM": {
+          "$ref": "#/definitions/Vec3"
+        },
+        "source": {
+          "$ref": "#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "linkId",
+        "pointM",
+        "source"
       ]
     }
   }

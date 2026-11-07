@@ -141,6 +141,28 @@ export function resolveAssembly(project:EngineeringProject,components:Record<str
   };
   for(const i of instances)place(i.id);
  }
+ // ---- payload ratings ----
+ // Worst case over orientation: the static moment about a rated port is at most g*|sum m_i*(c_i-p)|, so the check holds whatever pose the arm takes.
+ if(!cyclic)for(const i of instances){
+  const c=comp.get(i.id),w=world.get(i.id);if(!c?.payloadRatings?.length||!w)continue;
+  for(const r of c.payloadRatings){
+   const root=mounts.find(m=>m.from.instance===i.id&&m.from.port===r.portId);if(!root)continue;
+   const beyond=new Set<string>(),queue=[root.to.instance];
+   for(let x=queue.shift();x!==undefined;x=queue.shift()){if(beyond.has(x))continue;beyond.add(x);for(const m of mounts)if(m.from.instance===x)queue.push(m.to.instance);}
+   const origin=composePose(w,port(i.id,r.portId)).position;let mass=0;const lever:[number,number,number]=[0,0,0];
+   for(const d of beyond){
+    const dw=world.get(d),dt=topo.get(d),dc=comp.get(d);if(!dw||!dt||!dc)continue;
+    for(const l of dc.links){
+     const lp=dt.poses.get(l.id);if(!lp)continue;
+     const at_=composePose(dw,lp),com=qrotate(at_.quaternionXyzw,l.comM);
+     mass+=l.massKg.value;for(let k=0;k<3;k++)lever[k]!+=l.massKg.value*(at_.position[k]!+com[k]!-origin[k]!);
+    }
+   }
+   const moment=9.80665*Math.hypot(...lever),n=(v:number)=>+v.toFixed(6),where=at('assembly','instances',i.id,'payloadRatings',r.portId);
+   if(mass>r.maxMassKg.value+EPS)add('PAYLOAD_EXCEEDED',where,`${n(mass)} kg of ${n(r.maxMassKg.value)} kg rated at ${r.portId}`);
+   if(moment>r.maxMomentNm.value+EPS)add('PAYLOAD_EXCEEDED',where,`${n(moment)} N*m of ${n(r.maxMomentNm.value)} N*m rated at ${r.portId} (worst-case static moment)`);
+  }
+ }
  // ---- global links/joints/ports ----
  const links:Link[]=[],joints:Joint[]=[],ports:ResolvedPort[]=[];
  for(const i of instances){

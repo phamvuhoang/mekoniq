@@ -340,6 +340,33 @@ export interface ProcessModel {
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "PayloadRating".
+ */
+export interface PayloadRating {
+  portId: EngineeringId;
+  maxMassKg: Scalar;
+  maxMomentNm: Scalar;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "BatteryRating".
+ */
+export interface BatteryRating {
+  portId: EngineeringId;
+  capacityAh: Scalar;
+  usableFraction: Scalar;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "SupportPoint".
+ */
+export interface SupportPoint {
+  linkId: EngineeringId;
+  pointM: Vec3;
+  source: SourceRef;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
  * via the `definition` "ComponentRevision".
  */
 export interface ComponentRevision {
@@ -372,6 +399,231 @@ export interface ComponentRevision {
    * @maxItems 200
    */
   documents: ComponentDocument[];
+  /**
+   * @maxItems 20
+   */
+  payloadRatings?:
+    | []
+    | [PayloadRating]
+    | [PayloadRating, PayloadRating]
+    | [PayloadRating, PayloadRating, PayloadRating]
+    | [PayloadRating, PayloadRating, PayloadRating, PayloadRating]
+    | [PayloadRating, PayloadRating, PayloadRating, PayloadRating, PayloadRating]
+    | [PayloadRating, PayloadRating, PayloadRating, PayloadRating, PayloadRating, PayloadRating]
+    | [PayloadRating, PayloadRating, PayloadRating, PayloadRating, PayloadRating, PayloadRating, PayloadRating]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ]
+    | [
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating,
+        PayloadRating
+      ];
+  battery?: BatteryRating;
+  /**
+   * @maxItems 50
+   */
+  supportPoints?: SupportPoint[];
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema

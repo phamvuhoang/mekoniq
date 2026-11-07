@@ -54,11 +54,35 @@ const duplicates=(ids:string[],base:string):Problem[]=>{
 };
 const unit=(s:Scalar|undefined,expected:string[],path:string):Problem[]=>s&&!expected.includes(s.unit)?[problem('UNIT_NOT_ALLOWED',`${path}/unit`,`"${s.unit}" is not one of ${expected.join(', ')}`)]:[];
 
+/** Optional ratings (payload, battery, support points): they must name real ports/links of this component, use fixed units and sit in a physical range. */
+function ratingRules(c:ComponentRevision,dimensioned:Set<unknown>):Problem[]{
+ const out:Problem[]=[],port=(id:string)=>c.ports.find(p=>p.id===id),range=(ok:boolean,path:string,detail:string)=>{if(!ok)out.push(problem('RATING_RANGE',path,detail));};
+ const dim=(s:Scalar,units:string[],path:string)=>{out.push(...unit(s,units,path));dimensioned.add(s);};
+ const payloads=c.payloadRatings??[];
+ out.push(...duplicates(payloads.map(r=>r.portId),'/payloadRatings').map(p=>({...p,path:p.path.replace(/\/id$/,'/portId')})));
+ payloads.forEach((r,i)=>{
+  const base=`/payloadRatings/${i}`;
+  if(port(r.portId)?.kind!=='mount')out.push(problem('RATING_REFERENCE_INVALID',`${base}/portId`,`${r.portId} is not a mount port of this component`));
+  dim(r.maxMassKg,['kg'],`${base}/maxMassKg`);dim(r.maxMomentNm,['N*m'],`${base}/maxMomentNm`);
+  range(r.maxMassKg.value>0,`${base}/maxMassKg`,'rated mass must be positive');range(r.maxMomentNm.value>0,`${base}/maxMomentNm`,'rated moment must be positive');
+ });
+ const b=c.battery;
+ if(b){
+  const p=port(b.portId);
+  if(!p||p.kind!=='power'||p.direction!=='out')out.push(problem('RATING_REFERENCE_INVALID','/battery/portId',`${b.portId} is not a power output port of this component`));
+  dim(b.capacityAh,['Ah'],'/battery/capacityAh');dim(b.usableFraction,['1'],'/battery/usableFraction');
+  range(b.capacityAh.value>0,'/battery/capacityAh','capacity must be positive');range(b.usableFraction.value>0&&b.usableFraction.value<=1,'/battery/usableFraction','usable fraction must be in (0, 1]');
+ }
+ (c.supportPoints??[]).forEach((s,i)=>{if(!c.links.some(l=>l.id===s.linkId))out.push(problem('RATING_REFERENCE_INVALID',`/supportPoints/${i}/linkId`,`${s.linkId} is not a link of this component`));});
+ return out;
+}
+
 function componentRules(c:ComponentRevision):Problem[]{
  const out=[...poseProblems(c),...duplicates(c.links.map(l=>l.id),'/links'),...duplicates(c.joints.map(j=>j.id),'/joints'),...duplicates(c.ports.map(p=>p.id),'/ports')];
  const dimensioned=new Set<unknown>();
  c.links.forEach((l,i)=>{out.push(...unit(l.massKg,['kg'],`/links/${i}/massKg`));dimensioned.add(l.massKg);});
  c.ports.forEach((p,i)=>{if(p.continuousCurrentA){out.push(...unit(p.continuousCurrentA,['A'],`/ports/${i}/continuousCurrentA`));dimensioned.add(p.continuousCurrentA);}});
+ out.push(...ratingRules(c,dimensioned));
  c.joints.forEach((j,i)=>{
   if(j.kind==='fixed')return;
   const linear=j.kind==='prismatic',base=`/joints/${i}/limits`,l=j.limits as unknown as Record<string,Scalar>;

@@ -72,7 +72,7 @@ export async function loadCatalog(root:string):Promise<CatalogResult>{
     for(const [k,v] of Object.entries(value))cited(v,`${path}/${k}`);
    }
   };
-  cited({links:component.links,joints:component.joints,ports:component.ports},path);
+  cited({links:component.links,joints:component.joints,ports:component.ports,payloadRatings:component.payloadRatings,battery:component.battery,supportPoints:component.supportPoints},path);
   for(const ref of component.models)if(result.models[ref.digest])cited(result.models[ref.digest],`${path}/models/${ref.id}`);
   result.problems.push(...own);
  }
