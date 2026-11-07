@@ -138,6 +138,7 @@ export function createEngineeringService(options:EngineeringServiceOptions){
    return {ref:r,project,runtimeProjection:{project:runtime,assets}};
   },
   bindRun:store.bindRun,
+  verifyClosure:store.verifyClosure,
   /** After a verified reclaim proof: read access to this run's bundle for the new session, nothing else. */
   grantRun:(sessionId:string,ref:EngineeringRef)=>store.grantBundle(sessionId,ref.bundleDigest),
  };

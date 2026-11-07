@@ -156,3 +156,14 @@ def test_actuator_fidelity_is_declared_ideal(tmp_path):
     manifest = json.loads(read(tmp_path, "compiler-manifest.json"))
     assert manifest["actuator"] == {"fidelity": "ideal", "enforces": ["velocity_limit"], "note": manifest["actuator"]["note"]}
     assert any("ideal" in a for a in manifest["assumptions"])
+
+
+def test_urdf_numbers_are_the_same_doubles_as_the_scene(tmp_path):
+    compile_to(load("compile-radius-100.json"), tmp_path)
+    scene = {l["id"]: l for l in json.loads(read(tmp_path, "scene.json"))["links"]}
+    urdf = ET.parse(tmp_path / "robots/amr-1.urdf").getroot()
+    for link in urdf.findall("link"):
+        want = scene[link.attrib["name"]]
+        inertia = link.find("inertial/inertia").attrib
+        assert [float(inertia[k]) for k in ("ixx", "ixy", "ixz", "iyy", "iyz", "izz")] == want["inertiaKgM2"]
+        assert float(link.find("inertial/mass").attrib["value"]) == want["massKg"]["value"]

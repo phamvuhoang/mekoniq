@@ -26,8 +26,9 @@ REQUIRED = ("project", "projectDigest", "resolved", "runtimeProjection", "recipe
 
 
 def g(value):
-    """Shortest faithful decimal (9 significant digits); `+ 0.0` folds -0.0 into 0."""
-    return format(float(value) + 0.0, ".9g")
+    """The exact double as its shortest round-trip decimal, so URDF and scene.json carry the same numbers; `+ 0.0` folds -0.0 into 0."""
+    text = repr(float(value) + 0.0)
+    return text[:-2] if text.endswith(".0") else text
 
 
 def _validator():

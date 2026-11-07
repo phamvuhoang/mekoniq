@@ -148,3 +148,18 @@ test('observations from every entity count, so the order of the checks cannot ch
   const b = crossCheck({ ...m, checks: [check('two', 'amr-2'), check('one', 'amr-1')] }, samples, record);
   expect([a, b]).toEqual(['modeled', 'modeled']);
 });
+
+test('a two-minute, six-joint, 100 Hz log (72,000 samples) is assessed in linear time, with the same answer', () => {
+  const n = 72_000, step = 1_666_666; // 120 s
+  const big: PhysicsSample[] = Array.from({ length: n }, (_, i) => sample(i, i % 6 === 0 ? 'pose' : 'joint', i % 6 === 0 ? POSE : { position: 0, velocity: 0.4, effort: 1 }, { simTimeNs: String(i * step) }));
+  const m = manifest({ checks: [], lastSequence: n - 1, window: { startSimTimeNs: '0', endSimTimeNs: String((n - 1) * step) }, coverage: [{ id: 'odom', kind: 'pose', entityId: 'amr-1', minSamples: 5, maxGapNs: 20 * step }] });
+  const record = passing({ domain: { velocity: { min: 0, max: 1 } } });
+  const started = performance.now();
+  const r = assessEngineeringEvidence({ ...m, claims: claimsVerified, calibrationRefs: { rigidBody: record.digest } }, big, [record]);
+  const ms = performance.now() - started;
+  expect(r.status).toBe('pass');
+  expect(r.capabilities.rigidBody).toBe('verified');
+  expect(ms).toBeLessThan(8000); // quadratic copying took ~20 s here; linear is a fraction of a second
+  const wide = big.map((s, i) => i === 40_000 && s.kind === 'joint' ? { ...s, values: { ...s.values, velocity: 3 } } : s.kind === 'joint' && i === 40_001 ? { ...s, values: { ...s.values, velocity: 3 } } : s);
+  expect(assessEngineeringEvidence({ ...m, claims: claimsVerified, calibrationRefs: { rigidBody: record.digest } }, wide, [record]).capabilities.rigidBody).toBe('modeled'); // the range check still sees one far sample
+}, 60_000);

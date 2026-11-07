@@ -31,7 +31,7 @@ function factory(spy: { inputs: unknown[]; providers: RunProviders[] }) {
     const idFile = join(providers.directory, 'run-id.txt');
     const id = await readFile(idFile, 'utf8').catch(async () => { const fresh = randomUUID(); await writeFile(idFile, fresh); return fresh; });
     const view = { run: { schemaVersion: 2, id, mode: 'simulation', access: 'simulated', backendSetId: 'engineering-rigid-v1', backends: ids, status: 'ready', runRevision: 0, eventCursor: null, telemetryCursor: null, fidelity: 'modeled', ageMs: 0, sourceCommit: 'test-commit', scenarioId: 'FD01', scenarioRevision: 1, seed: 7 }, tick: 0, simTimeNs: '0', model: 'physics_sim', entities: [], workload: [], awaiting: [], attention: [], served: '0', coffee: null };
-    return { id, start: async () => view, action: async () => view, report: async () => ({ manifest: { runId: id } }), snapshot: async () => view, holdForReclaim: async () => view, close: async () => {}, telemetry: new TelemetryRecorder(), journal: async () => [], pulse: () => ({ tick: 0, paused: true, runRevision: 0 }) } as unknown as ScenarioRun;
+    return { id, start: async () => view, action: async (_action: unknown, beforeExecute?: () => Promise<void>) => { await beforeExecute?.(); return view; }, report: async () => ({ manifest: { runId: id } }), snapshot: async () => view, holdForReclaim: async () => view, close: async () => {}, telemetry: new TelemetryRecorder(), journal: async () => [], pulse: () => ({ tick: 0, paused: true, runRevision: 0 }) } as unknown as ScenarioRun;
   };
 }
 
@@ -219,4 +219,33 @@ test('an engineering set never accepts a run or a readiness probe without a bund
   expect((await get(g, h, '/readiness?scenarioId=FD01&backendSetId=engineering-rigid-v1')).status).toBe(422);
   expect((await post(g, h, '/readiness', { scenarioId: 'FD01', backendSetId: 'engineering-rigid-v1', project: s.f.project.runtimeProject })).status).toBe(422);
   expect(s.spy.inputs).toEqual([]);
+});
+
+test('reclaim reports a broken closure while the stored evidence stays readable', async () => {
+  const s = await setup(); let g = await s.start(); let h = await pair(g);
+  const receipt = await (await post(g, h, '/engineering/compile', { project: s.f.project })).json();
+  const ref = { bundleDigest: receipt.bundleDigest, projectDigest: receipt.projectDigest };
+  const created = await (await post(g, h, '/runs', runBody(ref))).json();
+  const manifest = await (await get(g, h, `/engineering/bundles/${ref.bundleDigest}/manifest`)).json();
+  await g.close(); gateways.pop();
+  g = await s.start(); h = await pair(g);
+  const intact = await (await post(g, h, `/runs/${created.run.id}/reclaim`, { proof: created.reclaimToken })).json();
+  expect(intact.engineeringClosure).toEqual({ status: 'ok', problems: [] });
+  await rm(join(s.directory, 'engineering', 'blobs', manifest.files.find((f: { path: string }) => f.path === 'scene.json').sha256));
+  const broken = await (await post(g, h, `/runs/${created.run.id}/reclaim`, { proof: created.reclaimToken })).json();
+  expect(broken.engineeringClosure.status).toBe('missing');
+  expect(broken.engineeringClosure.problems.join()).toContain('scene.json');
+  expect((await get(g, h, `/runs/${created.run.id}/report`)).status).toBe(200);
+});
+
+test('a live run whose bundle lost a file cannot be started', async () => {
+  const s = await setup(); const g = await s.start(); const h = await pair(g);
+  const receipt = await (await post(g, h, '/engineering/compile', { project: s.f.project })).json();
+  const ref = { bundleDigest: receipt.bundleDigest, projectDigest: receipt.projectDigest };
+  const created = await (await post(g, h, '/runs', runBody(ref))).json();
+  const manifest = await (await get(g, h, `/engineering/bundles/${ref.bundleDigest}/manifest`)).json();
+  await rm(join(s.directory, 'engineering', 'blobs', manifest.files.find((f: { path: string }) => f.path === 'scene.json').sha256));
+  const start = await post(g, h, `/runs/${created.run.id}/actions`, { actionId: randomUUID(), expectedRevision: 0, kind: 'start', payload: {} });
+  expect(start.status).toBe(409);
+  expect((await start.json()).error).toBe('ENGINEERING_CLOSURE_MISSING');
 });

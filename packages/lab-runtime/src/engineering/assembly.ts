@@ -118,6 +118,7 @@ export function resolveAssembly(project:EngineeringProject,components:Record<str
  // ---- entities ----
  const entityKinds=new Map(project.runtimeProject.entities.map(e=>[e.id,e.kind]));
  const bindings=new Map(project.entityBindings.map(b=>[b.entityId,b]));
+ for(const i of instances)if(!project.entityBindings.some(b=>b.instanceIds.includes(i.id)))add('INSTANCE_UNBOUND',at('assembly','instances',i.id),'no entity owns this instance; bind it or remove it');
  for(const e of project.runtimeProject.entities)if(!bindings.get(e.id)?.instanceIds.length)add('UNBOUND_ENTITY',at('entityBindings',e.id),`entity ${e.id} (${e.kind}) has no instances`);
  for(const b of project.entityBindings){
   if(!entityKinds.has(b.entityId))add('UNBOUND_ENTITY',at('entityBindings',b.entityId),'binding refers to an entity that is not in runtimeProject');

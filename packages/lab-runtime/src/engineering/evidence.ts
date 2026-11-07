@@ -36,8 +36,12 @@ export function assessEngineeringEvidence(manifest:EngineeringRunManifest,sample
   if ((accepted.at(-1)?.sequence??-1)!==manifest.lastSequence) reasons.add('EVIDENCE_TRUNCATED');
   const caseResults:EngineeringAssessment['caseResults']=[];
   // everything the run produced, by value name, from every entity: independent of which thresholds the manifest happens to check
-  const observed=new Map<string,number[]>();
-  for (const s of accepted) for (const [name,value] of Object.entries(s.values)) observed.set(name,[...observed.get(name)??[],value]);
+  // range and count per value name, in one pass: the domain check needs the extremes, never a copy of every sample
+  const observed=new Map<string,{min:number;max:number;n:number}>();
+  for (const s of accepted) for (const [name,value] of Object.entries(s.values)) {
+    const o=observed.get(name);
+    if (o) {if (value<o.min) o.min=value;if (value>o.max) o.max=value;o.n+=1;} else observed.set(name,{min:value,max:value,n:1});
+  }
   for (const c of manifest.coverage) {
     const own=accepted.filter(s=>s.kind===c.kind&&s.entityId===c.entityId);
     let detail='';
@@ -65,7 +69,7 @@ export function assessEngineeringEvidence(manifest:EngineeringRunManifest,sample
     if (result.status!=='pass'||result.invalidatedBy!==null||!result.calibratedCapabilities.includes(cap)) return false;
     const domain=Object.entries(result.domain);
     // a calibration with no stated range, or a channel the run never produced, proves nothing about this run
-    return domain.length>0&&domain.every(([channel,range])=>{const seen=observed.get(channel)??[];return seen.length>0&&seen.every(v=>v>=range.min&&v<=range.max);});
+    return domain.length>0&&domain.every(([channel,range])=>{const seen=observed.get(channel);return !!seen&&seen.n>0&&seen.min>=range.min&&seen.max<=range.max;});
   };
   if (!reasons.size) {
     for (const cap of CAPS) {

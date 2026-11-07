@@ -220,3 +220,10 @@ test('the projected asset is framed on the real root link, not the alphabeticall
   expect(frames.find((x) => x.id === 'chassis:base:c0')!.translationM).toEqual([0, 0, 0]);
   expect(frames.find((x) => x.id === 'chassis:a_sensor:c0')!.translationM).toEqual([0, 0, 0.5]);
 });
+
+test('an instance that no entity owns is reported by the resolver, not left for the compiler to refuse', () => {
+  const { r } = resolve('valid', (f) => { f.project.entityBindings[0]!.instanceIds = f.project.entityBindings[0]!.instanceIds.filter((i) => i !== 'tray'); });
+  expect(codes(r)).toContain('INSTANCE_UNBOUND');
+  expect(r.problems.find((p) => p.code === 'INSTANCE_UNBOUND')?.path).toContain('tray');
+  expect(r.resolved).toBeNull();
+});

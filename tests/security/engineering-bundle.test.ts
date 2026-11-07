@@ -70,3 +70,13 @@ test('store authorisation: another session never reads, grants are per bundle, a
   await expect(store.publish('s1', [{ path: '../escape.json', bytes: new Uint8Array() }], { projectDigest: 'a'.repeat(64), assemblyDigest: 'b'.repeat(64), sceneDigest: 'c'.repeat(64), profile: 'engineering-rigid-v1', compilerVersion: 't' })).rejects.toThrow(/BUNDLE_PATH_INVALID/);
   expect(await readdir(join(dir, 'bundles'))).toEqual([bundleDigest]);
 });
+
+test('concurrent publishes of the same bundle all succeed with the same digest', async () => {
+  const dir = await temp('eng-race-'); const store = createBundleStore(dir);
+  const files = [{ path: 'scene.json', bytes: new TextEncoder().encode('{"a":1}') }, { path: 'bom.json', bytes: new TextEncoder().encode('[]') }];
+  const meta = { projectDigest: 'a'.repeat(64), assemblyDigest: 'b'.repeat(64), sceneDigest: 'c'.repeat(64), profile: 'engineering-rigid-v1', compilerVersion: 't' };
+  const results = await Promise.all(Array.from({ length: 12 }, (_, i) => store.publish(`s${i}`, files, meta)));
+  expect(new Set(results.map((r) => r.bundleDigest)).size).toBe(1);
+  expect(await readdir(join(dir, 'bundles'))).toEqual([results[0]!.bundleDigest]);   // no stray staging directories either
+  for (let i = 0; i < 12; i++) expect(await store.authorizeBundle(`s${i}`, results[0]!.bundleDigest)).toBe(true);
+});

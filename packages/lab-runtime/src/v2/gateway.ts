@@ -33,7 +33,7 @@ const COOKIE='mekoniq_lab_session_v2';
 const PAIRING_ACCESS:readonly Access[]=['simulated','shadow'];
 const UUID='[0-9a-f-]{36}';
 const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
-const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:/CONFLICT|MISMATCH|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_)/.test(m)?422:500;
+const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_)/.test(m)?422:500;
 export function createV2Gateway(deps:V2Deps){
  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
  const sessions=new Map<string,{csrf:string;expiresAt:number}>();
@@ -182,10 +182,11 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     const run=entry?.run??(reopened=await factory(stored.record.input,{directory:stored.directory,catalog,enabledBackends:[...enabled],...locked?{assets:locked.runtimeProjection.assets as never}:{}}));
     // a verified proof restores read access to this run's bundle for the new session; it never confers control
     if(locked&&deps.engineering)await deps.engineering.grantRun(sessionId,locked.ref);
+    const closure=locked&&deps.engineering?await deps.engineering.verifyClosure(locked.ref.bundleDigest):null;
     const view=await run.holdForReclaim();
     if(entry){entry.owner=sessionId;entry.readOnly=true;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,run,directory:stored.directory,readOnly:true,input:stored.record.input});
     // Only the proof-protected record supplies reset/evidence inputs; the caller cannot substitute a project or seed.
-    return send(response,200,{...view,controlAccess:'view_reconcile',lockedInput:structuredClone(stored.record.input)});
+    return send(response,200,{...view,controlAccess:'view_reconcile',lockedInput:structuredClone(stored.record.input),...closure?{engineeringClosure:{status:closure.length?'missing':'ok',problems:closure}}:{}});
    }catch(e){await reopened?.close().catch(()=>{});return failed(response,e);}finally{reclaiming.delete(id);if(!entry)creating--;}
   }
   if(kind==='actions'){
@@ -195,6 +196,8 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(entry.archiving||reclaiming.has(runRoute![1]!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
    if(entry.readOnly&&action.value.kind!=='reconcile')return deny(response,403,'RECLAIM_READ_ONLY',['VIEW_RECONCILE_ONLY']);
    const beforeExecute=action.value.kind==='start'||action.value.kind==='resume'?async()=>{
+    // the bundle a run was created from must still be whole before any motion is started or resumed
+    if(entry.input.engineering&&deps.engineering&&(await deps.engineering.verifyClosure(entry.input.engineering.ref.bundleDigest)).length)throw new Error('ENGINEERING_CLOSURE_MISSING');
     const readiness=await collectReadiness({scenarioId:entry.input.scenarioId,backendSetId:entry.input.backendSetId,project:entry.input.project},{catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks});
     if(!readiness.canStart)throw new Error(`BACKEND_UNAVAILABLE:${readiness.checks.flatMap(c=>c.reasonCodes).join(',')}`);
    }:undefined;

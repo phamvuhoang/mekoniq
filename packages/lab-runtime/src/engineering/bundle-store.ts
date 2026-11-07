@@ -53,6 +53,10 @@ export function createBundleStore(root:string){
    if(!await exists(join(bundles,bundleDigest))){
     const stage=join(bundles,`.stage-${randomUUID()}`);
     try{await mkdir(stage);await writeFile(join(stage,'manifest.json'),JSON.stringify(manifest),{mode:0o600});await rename(stage,join(bundles,bundleDigest));}
+    catch(e){
+     // a concurrent publish of the same content won the rename: identical bytes by construction, so that is success
+     if(!['ENOTEMPTY','EEXIST'].includes((e as NodeJS.ErrnoException).code??'')||!await exists(join(bundles,bundleDigest,'manifest.json')))throw e;
+    }
     finally{await rm(stage,{recursive:true,force:true});}
    }
    allow(session,bundleDigest);
