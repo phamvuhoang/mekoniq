@@ -78,8 +78,8 @@ export async function loadCatalog(root:string):Promise<CatalogResult>{
  }
  for(const [i,raw] of (index.quotes??[]).entries()){
   const q=raw as {componentDigest?:string;amount?:number;currency?:string;quotedOn?:string;documentId?:string};
-  const valid=typeof q.componentDigest==='string'&&q.componentDigest in result.components&&typeof q.amount==='number'&&Number.isFinite(q.amount)&&q.amount>0&&/^[A-Z]{3}$/.test(q.currency??'')&&/^\d{4}-\d{2}-\d{2}$/.test(q.quotedOn??'')&&!!q.documentId;
-  if(!valid)result.problems.push(problem('PRICE_QUOTE_INVALID',`/catalog/quotes/${i}`,'quote needs a known component, a positive amount, ISO currency, date and source document'));
+  const valid=typeof q.componentDigest==='string'&&q.componentDigest in result.components&&typeof q.amount==='number'&&Number.isFinite(q.amount)&&q.amount>0&&/^[A-Z]{3}$/.test(q.currency??'')&&/^\d{4}-\d{2}-\d{2}$/.test(q.quotedOn??'')&&!!q.documentId&&result.components[q.componentDigest!]!.documents.some(d=>d.id===q.documentId);
+  if(!valid)result.problems.push(problem('PRICE_QUOTE_INVALID',`/catalog/quotes/${i}`,'quote needs a known component, a positive amount, ISO currency, date and a source document the component declares'));
   else result.quotes[q.componentDigest!]={amount:q.amount!,currency:q.currency!,quotedOn:q.quotedOn!};
  }
  return result;

@@ -45,19 +45,27 @@ export function createBundleStore(root:string){
    const entries:BundleFile[]=[];
    for(const f of files){
     const digest=sha256(f.bytes);entries.push({path:f.path,sha256:digest,sizeBytes:f.bytes.length});
-    if(await exists(join(blobs,digest)))continue;
+    // an existing blob is reused only when its bytes still hash to its name; a damaged one is replaced atomically
+    const present=await blobOf(digest);
+    if('bytes' in present)continue;
     const tmp=join(blobs,`.tmp-${randomUUID()}`);await writeFile(tmp,f.bytes,{mode:0o600});await rename(tmp,join(blobs,digest));
    }
    const manifest:BundleManifest={schemaVersion:1,...meta,files:entries.sort((a,b)=>a.path<b.path?-1:1)};
    const bundleDigest=hashJson(manifest);
-   if(!await exists(join(bundles,bundleDigest))){
-    const stage=join(bundles,`.stage-${randomUUID()}`);
-    try{await mkdir(stage);await writeFile(join(stage,'manifest.json'),JSON.stringify(manifest),{mode:0o600});await rename(stage,join(bundles,bundleDigest));}
-    catch(e){
-     // a concurrent publish of the same content won the rename: identical bytes by construction, so that is success
-     if(!['ENOTEMPTY','EEXIST'].includes((e as NodeJS.ErrnoException).code??'')||!await exists(join(bundles,bundleDigest,'manifest.json')))throw e;
+   if(!await manifestOf(bundleDigest)){
+    const body=JSON.stringify(manifest),dir=join(bundles,bundleDigest);
+    if(await exists(dir)){
+     // a published directory whose manifest is damaged or missing is repaired in place: one atomic file rename of identical bytes, safe against a racing publisher
+     const tmp=join(dir,`.tmp-${randomUUID()}`);await writeFile(tmp,body,{mode:0o600});await rename(tmp,join(dir,'manifest.json'));
+    }else{
+     const stage=join(bundles,`.stage-${randomUUID()}`);
+     try{await mkdir(stage);await writeFile(join(stage,'manifest.json'),body,{mode:0o600});await rename(stage,dir);}
+     catch(e){
+      // a concurrent publish of the same content won the rename: identical bytes by construction, so that is success
+      if(!['ENOTEMPTY','EEXIST'].includes((e as NodeJS.ErrnoException).code??'')||!await manifestOf(bundleDigest))throw e;
+     }
+     finally{await rm(stage,{recursive:true,force:true});}
     }
-    finally{await rm(stage,{recursive:true,force:true});}
    }
    allow(session,bundleDigest);
    return {bundleDigest,manifest};

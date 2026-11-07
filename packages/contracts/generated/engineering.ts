@@ -630,7 +630,7 @@ export interface ComponentRevision {
  * via the `definition` "Instance".
  */
 export interface Instance {
-  id: EngineeringId;
+  id: string;
   componentDigest: Digest;
   pose: Pose;
 }

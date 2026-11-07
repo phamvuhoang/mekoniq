@@ -82,6 +82,11 @@ function componentRules(c:ComponentRevision):Problem[]{
  const dimensioned=new Set<unknown>();
  c.links.forEach((l,i)=>{out.push(...unit(l.massKg,['kg'],`/links/${i}/massKg`));dimensioned.add(l.massKg);});
  c.ports.forEach((p,i)=>{if(p.continuousCurrentA){out.push(...unit(p.continuousCurrentA,['A'],`/ports/${i}/continuousCurrentA`));dimensioned.add(p.continuousCurrentA);}});
+ // ids are joined as <instance>/<local id> everywhere downstream; a separator inside a local id would make ownership ambiguous
+ const sep=(id:string|undefined,path:string)=>{if(id!==undefined&&id.includes('/'))out.push(problem('ID_SEPARATOR',path,`"${id}" must not contain "/"`));};
+ c.links.forEach((l,i)=>sep(l.id,`/links/${i}/id`));
+ c.joints.forEach((j,i)=>{sep(j.id,`/joints/${i}/id`);sep(j.parent,`/joints/${i}/parent`);sep(j.child,`/joints/${i}/child`);});
+ c.ports.forEach((p,i)=>{sep(p.id,`/ports/${i}/id`);sep(p.link,`/ports/${i}/link`);});
  out.push(...ratingRules(c,dimensioned));
  c.joints.forEach((j,i)=>{
   if(j.kind==='fixed')return;
@@ -102,16 +107,57 @@ function projectRules(p:EngineeringProject):Problem[]{
  p.entityBindings.forEach((b,i)=>b.instanceIds.forEach((id,j)=>{const other=bound.get(id);if(other&&other!==b.entityId)out.push(problem('DUPLICATE_INSTANCE_BINDING',`/entityBindings/${i}/instanceIds/${j}`,`${id} already bound to ${other}`));bound.set(id,b.entityId);}));
  return out;
 }
+/** Unit and range of one model scalar. A model scalar with the wrong unit is not reinterpreted: it is refused. */
+const field=(out:Problem[],s:Scalar|undefined,units:string[]|null,path:string,ok:((v:number)=>boolean)|null,why:string)=>{
+ if(!s)return;
+ if(units)out.push(...unit(s,units,path));
+ if(ok&&!(Number.isFinite(s.value)&&ok(s.value)))out.push(problem('MODEL_PARAMETER_RANGE',path,why));
+};
+const positive=(v:number)=>v>0,nonNegative=(v:number)=>v>=0;
 const actuatorRules=(m:ActuatorModel):Problem[]=>{
- const out:Problem[]=[],eff=m.transmission.efficiency.value;
- if(!(eff>0&&eff<=1))out.push(problem('MODEL_PARAMETER_RANGE','/transmission/efficiency','efficiency must be in (0, 1]'));
- if(!(m.transmission.ratio.value>0))out.push(problem('MODEL_PARAMETER_RANGE','/transmission/ratio','ratio must be positive'));
- m.torqueSpeedTable.forEach((row,i,t)=>{if(i&&row.speed.value<=t[i-1]!.speed.value)out.push(problem('MODEL_PARAMETER_RANGE',`/torqueSpeedTable/${i}/speed`,'speeds must strictly increase'));});
+ const out:Problem[]=[];
+ field(out,m.transmission.ratio,['1'],'/transmission/ratio',positive,'ratio must be positive');
+ field(out,m.transmission.efficiency,['1'],'/transmission/efficiency',v=>v>0&&v<=1,'efficiency must be in (0, 1]');
+ m.torqueSpeedTable.forEach((row,i,t)=>{
+  field(out,row.speed,['rad/s'],`/torqueSpeedTable/${i}/speed`,nonNegative,'speed must not be negative');
+  field(out,row.torque,['N*m'],`/torqueSpeedTable/${i}/torque`,nonNegative,'torque must not be negative');
+  if(i&&row.speed.value<=t[i-1]!.speed.value)out.push(problem('MODEL_PARAMETER_RANGE',`/torqueSpeedTable/${i}/speed`,'speeds must strictly increase'));
+ });
+ field(out,m.currentLimit,['A'],'/currentLimit',positive,'current limit must be positive');
+ field(out,m.voltageLimit,['V'],'/voltageLimit',positive,'voltage limit must be positive');
+ field(out,m.damping,['N*m'],'/damping',nonNegative,'damping must not be negative');
+ field(out,m.friction,['N*m'],'/friction',nonNegative,'friction must not be negative');
+ field(out,m.torqueConstantNmPerA,null,'/torqueConstantNmPerA',positive,'torque constant must be positive');
+ if(m.drive){field(out,m.drive.wheelRadiusM,['m'],'/drive/wheelRadiusM',positive,'wheel radius must be positive');field(out,m.drive.wheelSeparationM,['m'],'/drive/wheelSeparationM',positive,'wheel separation must be positive');}
+ return out;
+};
+const sensorRules=(m:SensorModel):Problem[]=>{
+ const out:Problem[]=[];
+ if(m.range.min.value>=m.range.max.value)out.push(problem('MODEL_PARAMETER_RANGE','/range','min must be below max'));
+ field(out,m.rateHz,['Hz'],'/rateHz',positive,'rate must be positive');
+ field(out,m.fieldOfView,['rad'],'/fieldOfView',nonNegative,'field of view must not be negative');
+ field(out,m.latency,['s'],'/latency',nonNegative,'latency must not be negative');
+ field(out,m.dropoutProbability,['1'],'/dropoutProbability',v=>v>=0&&v<=1,'probability must be in [0, 1]');
+ field(out,m.noise.stddev,null,'/noise/stddev',nonNegative,'standard deviation must not be negative');
+ return out;
+};
+const processRules=(m:ProcessModel):Problem[]=>{
+ const out:Problem[]=[];
+ m.reservoirs.forEach((r,i)=>{
+  field(out,r.capacityMl,null,`/reservoirs/${i}/capacityMl`,positive,'capacity must be positive');
+  field(out,r.initialMl,null,`/reservoirs/${i}/initialMl`,nonNegative,'initial volume must not be negative');
+  if(r.initialMl.value>r.capacityMl.value)out.push(problem('MODEL_PARAMETER_RANGE',`/reservoirs/${i}/initialMl`,'initial volume exceeds capacity'));
+ });
+ field(out,m.flowMlPerSec,null,'/flowMlPerSec',positive,'flow must be positive');
+ field(out,m.startupDelaySec,['s'],'/startupDelaySec',nonNegative,'startup delay must not be negative');
+ field(out,m.maxDurationSec,['s'],'/maxDurationSec',positive,'maximum duration must be positive');
+ field(out,m.densityKgPerM3,null,'/densityKgPerM3',positive,'density must be positive');
+ if(m.temperature?.thermalTimeConstantSec)field(out,m.temperature.thermalTimeConstantSec,['s'],'/temperature/thermalTimeConstantSec',positive,'time constant must be positive');
  return out;
 };
 export const validateActuatorModel=check<ActuatorModel>('engineering-component.schema.json#/definitions/ActuatorModel',actuatorRules);
-export const validateSensorModel=check<SensorModel>('engineering-component.schema.json#/definitions/SensorModel',m=>m.range.min.value>=m.range.max.value?[problem('MODEL_PARAMETER_RANGE','/range','min must be below max')]:[]);
-export const validateProcessModel=check<ProcessModel>('engineering-component.schema.json#/definitions/ProcessModel');
+export const validateSensorModel=check<SensorModel>('engineering-component.schema.json#/definitions/SensorModel',sensorRules);
+export const validateProcessModel=check<ProcessModel>('engineering-component.schema.json#/definitions/ProcessModel',processRules);
 export const validateEngineeringProject=check<EngineeringProject>('engineering-project.schema.json',projectRules);
 export const validateEngineeringRef=check('engineering-bundle.schema.json#/definitions/EngineeringRef');
 export const validateBundleReceipt=check('engineering-bundle.schema.json#/definitions/BundleReceipt');

@@ -87,8 +87,16 @@ test('price comes only from a valid quotation; zero is never a default', async (
   expect(blocking(r)).toContain('PRICE_QUOTE_INVALID');
   expect(r.quotes[digest]).toBeUndefined();
   const ok = await build();
-  const good = await build({ quotes: [{ componentDigest: ok.digest, amount: 120.5, currency: 'USD', quotedOn: '2026-11-01', documentId: 'q' }] });
+  const good = await build({ quotes: [{ componentDigest: ok.digest, amount: 120.5, currency: 'USD', quotedOn: '2026-11-01', documentId: 'datasheet' }] });
   expect((await loadCatalog(good.root)).quotes[good.digest]).toEqual({ amount: 120.5, currency: 'USD', quotedOn: '2026-11-01' });
+});
+
+test('a quotation must cite a document the quoted component declares; otherwise the price stays unknown', async () => {
+  const ok = await build();
+  const ghost = await build({ quotes: [{ componentDigest: ok.digest, amount: 120.5, currency: 'USD', quotedOn: '2026-11-01', documentId: 'no-such-quote-document' }] });
+  const r = await loadCatalog(ghost.root);
+  expect(blocking(r)).toContain('PRICE_QUOTE_INVALID');
+  expect(r.quotes[ghost.digest]).toBeUndefined();
 });
 
 test('catalog entries cannot escape the catalog root', async () => {
