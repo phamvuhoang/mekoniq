@@ -26,7 +26,7 @@ export function assessCalibration(dataset:CalibrationDataset|null,prediction:Pre
   if (new Set(ids).size!==ids.length) structural.push('CALIBRATION_SPLIT_LEAKAGE');
   const tune=dataset.trials.filter(t=>t.split==='tune'),validation=dataset.trials.filter(t=>t.split==='validation');
   // a trial counts only if every policy channel was actually measured, aligned with its clock; a trial without data is reported, never counted
-  const measured=(t:typeof validation[number])=>Object.keys(dataset.policy.channels).every(ch=>{const v=t.channels[ch];return !!v&&v.length>0&&v.length===t.timesNs.length;});
+  const measured=(t:typeof validation[number])=>t.timesNs.length>0&&Object.keys(dataset.policy.channels).every(ch=>{const v=t.channels[ch];return !!v&&v.length>0&&v.length===t.timesNs.length;});
   for (const t of validation) if (!measured(t)) structural.push(`TRIAL_WITHOUT_DATA:${t.trialId}`);
   if (!validation.length) structural.push('NO_VALIDATION_SPLIT');
   else {

@@ -1677,10 +1677,9 @@ export interface CalibrationTrial {
   split: 'tune' | 'validation';
   condition: string;
   /**
-   * @minItems 1
    * @maxItems 100000
    */
-  timesNs: [number, ...number[]];
+  timesNs: number[];
   channels: {
     /**
      * @maxItems 100000
@@ -1704,10 +1703,9 @@ export interface PredictionSeries {
   trials: {
     trialId: string;
     /**
-     * @minItems 1
      * @maxItems 100000
      */
-    timesNs: [number, ...number[]];
+    timesNs: number[];
     channels: {
       /**
        * @maxItems 100000
