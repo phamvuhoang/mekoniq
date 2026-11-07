@@ -35,7 +35,7 @@ const check=<T=unknown>(key:string,extra?:(value:T)=>Problem[])=>(input:unknown)
  return {ok:problems.length===0,problems};
 };
 
-/** Units a Scalar may carry anywhere; fields with a fixed dimension are narrowed below. */
+/** Canonical units for component scalars without a narrower field rule. */
 export const ALLOWED_UNITS=['1','m','kg','kg*m^2','rad','rad/s','rad/s^2','m/s','m/s^2','N','N*m','V','A','Ah','Wh','W','Ohm','s','Hz'] as const;
 const QUATERNION_TOLERANCE=1e-6;
 function walk(value:unknown,path:string,visit:(node:Record<string,unknown>,path:string)=>void){
@@ -108,9 +108,9 @@ function projectRules(p:EngineeringProject):Problem[]{
  return out;
 }
 /** Unit and range of one model scalar. A model scalar with the wrong unit is not reinterpreted: it is refused. */
-const field=(out:Problem[],s:Scalar|undefined,units:string[]|null,path:string,ok:((v:number)=>boolean)|null,why:string)=>{
+const field=(out:Problem[],s:Scalar|undefined,units:string[],path:string,ok:((v:number)=>boolean)|null,why:string)=>{
  if(!s)return;
- if(units)out.push(...unit(s,units,path));
+ out.push(...unit(s,units,path));
  if(ok&&!(Number.isFinite(s.value)&&ok(s.value)))out.push(problem('MODEL_PARAMETER_RANGE',path,why));
 };
 const positive=(v:number)=>v>0,nonNegative=(v:number)=>v>=0;
@@ -127,31 +127,43 @@ const actuatorRules=(m:ActuatorModel):Problem[]=>{
  field(out,m.voltageLimit,['V'],'/voltageLimit',positive,'voltage limit must be positive');
  field(out,m.damping,['N*m'],'/damping',nonNegative,'damping must not be negative');
  field(out,m.friction,['N*m'],'/friction',nonNegative,'friction must not be negative');
- field(out,m.torqueConstantNmPerA,null,'/torqueConstantNmPerA',positive,'torque constant must be positive');
+ field(out,m.torqueConstantNmPerA,['N*m/A'],'/torqueConstantNmPerA',positive,'torque constant must be positive');
  if(m.drive){field(out,m.drive.wheelRadiusM,['m'],'/drive/wheelRadiusM',positive,'wheel radius must be positive');field(out,m.drive.wheelSeparationM,['m'],'/drive/wheelSeparationM',positive,'wheel separation must be positive');}
  return out;
 };
+// Generic sensors declare their measured dimension through range.min; range.max and noise must match it exactly.
+const SENSOR_MEASUREMENT_UNITS=[...ALLOWED_UNITS,'N*m/A','mL','mL/s','kg/m^3','degC'];
 const sensorRules=(m:SensorModel):Problem[]=>{
  const out:Problem[]=[];
- if(m.range.min.value>=m.range.max.value)out.push(problem('MODEL_PARAMETER_RANGE','/range','min must be below max'));
+ const units=SENSOR_MEASUREMENT_UNITS.includes(m.range.min.unit)?[m.range.min.unit]:SENSOR_MEASUREMENT_UNITS;
+ field(out,m.range.min,SENSOR_MEASUREMENT_UNITS,'/range/min',Number.isFinite,'range minimum must be finite');
+ field(out,m.range.max,units,'/range/max',Number.isFinite,'range maximum must be finite');
+ if(m.range.min.unit===m.range.max.unit&&m.range.min.value>=m.range.max.value)out.push(problem('MODEL_PARAMETER_RANGE','/range','min must be below max'));
  field(out,m.rateHz,['Hz'],'/rateHz',positive,'rate must be positive');
  field(out,m.fieldOfView,['rad'],'/fieldOfView',nonNegative,'field of view must not be negative');
  field(out,m.latency,['s'],'/latency',nonNegative,'latency must not be negative');
  field(out,m.dropoutProbability,['1'],'/dropoutProbability',v=>v>=0&&v<=1,'probability must be in [0, 1]');
- field(out,m.noise.stddev,null,'/noise/stddev',nonNegative,'standard deviation must not be negative');
+ field(out,m.noise.stddev,units,'/noise/stddev',nonNegative,'standard deviation must not be negative');
  return out;
 };
+// Legacy process fixtures use `1` to mean the unit named by that field (never an arbitrary dimensionless scale).
+// Both spellings have identical numeric interpretation; validation must not convert values or change content digests.
+const PROCESS_VOLUME_UNITS=['mL','1'];
 const processRules=(m:ProcessModel):Problem[]=>{
  const out:Problem[]=[];
  m.reservoirs.forEach((r,i)=>{
-  field(out,r.capacityMl,null,`/reservoirs/${i}/capacityMl`,positive,'capacity must be positive');
-  field(out,r.initialMl,null,`/reservoirs/${i}/initialMl`,nonNegative,'initial volume must not be negative');
-  if(r.initialMl.value>r.capacityMl.value)out.push(problem('MODEL_PARAMETER_RANGE',`/reservoirs/${i}/initialMl`,'initial volume exceeds capacity'));
+  field(out,r.capacityMl,PROCESS_VOLUME_UNITS,`/reservoirs/${i}/capacityMl`,positive,'capacity must be positive');
+  field(out,r.initialMl,PROCESS_VOLUME_UNITS,`/reservoirs/${i}/initialMl`,nonNegative,'initial volume must not be negative');
+  if(PROCESS_VOLUME_UNITS.includes(r.initialMl.unit)&&PROCESS_VOLUME_UNITS.includes(r.capacityMl.unit)&&r.initialMl.value>r.capacityMl.value)out.push(problem('MODEL_PARAMETER_RANGE',`/reservoirs/${i}/initialMl`,'initial volume exceeds capacity'));
  });
- field(out,m.flowMlPerSec,null,'/flowMlPerSec',positive,'flow must be positive');
+ field(out,m.flowMlPerSec,['mL/s','1'],'/flowMlPerSec',positive,'flow must be positive');
  field(out,m.startupDelaySec,['s'],'/startupDelaySec',nonNegative,'startup delay must not be negative');
  field(out,m.maxDurationSec,['s'],'/maxDurationSec',positive,'maximum duration must be positive');
- field(out,m.densityKgPerM3,null,'/densityKgPerM3',positive,'density must be positive');
+ field(out,m.densityKgPerM3,['kg/m^3','1'],'/densityKgPerM3',positive,'density must be positive');
+ if(m.temperature){
+  field(out,m.temperature.initialC,['degC','1'],'/temperature/initialC',v=>v>=-273.15,'temperature must be at least -273.15 Celsius');
+  field(out,m.temperature.targetC,['degC','1'],'/temperature/targetC',v=>v>=-273.15,'temperature must be at least -273.15 Celsius');
+ }
  if(m.temperature?.thermalTimeConstantSec)field(out,m.temperature.thermalTimeConstantSec,['s'],'/temperature/thermalTimeConstantSec',positive,'time constant must be positive');
  return out;
 };

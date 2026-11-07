@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createBundleStore } from '../../packages/lab-runtime/src/engineering/bundle-store';
 import { validateActuatorModel, validateEngineeringProject, validateProcessModel, validateSensorModel } from '../../packages/lab-runtime/src/engineering/contracts';
+import type { ProcessModel, SensorModel } from '../../packages/lab-runtime/src/engineering/contracts';
 import { engineeringFixture, makeDriveModel, scalar } from '../support/engineering';
 
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
@@ -75,4 +76,100 @@ test('publishing again repairs a corrupted blob and a corrupted manifest instead
   expect(await store.readManifest(first.bundleDigest)).toBeNull();
   await store.publish('s3', files, meta);
   expect(await store.readManifest(first.bundleDigest)).not.toBeNull();
+});
+
+
+// These regressions catch validators accepting a number whose unit the plant would silently reinterpret.
+const processModel = (): ProcessModel => JSON.parse(readFileSync(join(__dirname, '../fixtures/engineering/process-200ml.json'), 'utf8'));
+const sensorModel = (): SensorModel => ({ schemaVersion: 1, kind: 'sensor', id: 'lidar', frame: 'laser', rateHz: scalar(10, 'Hz'), range: { min: scalar(0.1, 'm'), max: scalar(10, 'm') }, fieldOfView: scalar(6.28, 'rad'), noise: { distribution: 'gaussian', stddev: scalar(0.01, 'm'), seed: 1 }, latency: scalar(0.05, 's'), dropoutProbability: scalar(0.01, '1') });
+const processScalars = (m: ProcessModel) => ({ capacityMl: m.reservoirs[0]!.capacityMl, initialMl: m.reservoirs[0]!.initialMl, flowMlPerSec: m.flowMlPerSec, densityKgPerM3: m.densityKgPerM3, initialC: m.temperature!.initialC, targetC: m.temperature!.targetC });
+const processDimensions = [
+  ['capacityMl', 'mL', 'L'], ['initialMl', 'mL', 'L'], ['flowMlPerSec', 'mL/s', 'L/s'],
+  ['densityKgPerM3', 'kg/m^3', 'g/cm^3'], ['initialC', 'degC', 'K'], ['targetC', 'degC', 'K'],
+] as const;
+
+test.each(processDimensions)('process %s refuses scaled or unrelated units', (name, _canonical, scaled) => {
+  for (const badUnit of [scaled, 'kg', 'made-up']) {
+    const m = processModel();
+    processScalars(m)[name].unit = badUnit;
+    expect(validateProcessModel(m).problems).toEqual(expect.arrayContaining([expect.objectContaining({ code: 'UNIT_NOT_ALLOWED', path: expect.stringMatching(new RegExp(`/${name}/unit$`)) })]));
+  }
+});
+
+test.each(processDimensions)('process %s accepts canonical units and legacy implicit units without rewriting bytes', (name, canonical) => {
+  const legacy = processModel();
+  const legacyBytes = JSON.stringify(legacy);
+  expect(validateProcessModel(legacy).ok).toBe(true);
+  expect(JSON.stringify(legacy)).toBe(legacyBytes);
+  processScalars(legacy)[name].unit = canonical;
+  const canonicalBytes = JSON.stringify(legacy);
+  expect(validateProcessModel(legacy).ok).toBe(true);
+  expect(JSON.stringify(legacy)).toBe(canonicalBytes);
+});
+
+test('scaled flow and density cannot pass as the values consumed by the plant', () => {
+  const flow = processModel(); flow.flowMlPerSec = scalar(0.02, 'L/s');
+  expect(validateProcessModel(flow).ok).toBe(false);
+  const density = processModel(); density.densityKgPerM3 = scalar(1, 'g/cm^3');
+  expect(validateProcessModel(density).ok).toBe(false);
+});
+
+test('reservoir capacity comparison requires the same canonical interpretation', () => {
+  const mixed = processModel(); mixed.reservoirs[0]!.capacityMl = scalar(500, 'mL'); mixed.reservoirs[0]!.initialMl = scalar(501, '1');
+  expect(codes(validateProcessModel(mixed))).toContain('MODEL_PARAMETER_RANGE');
+  const scaled = processModel(); scaled.reservoirs[0]!.capacityMl = scalar(0.5, 'L'); scaled.reservoirs[0]!.initialMl = scalar(400, 'mL');
+  expect(codes(validateProcessModel(scaled))).toContain('UNIT_NOT_ALLOWED');
+  expect(codes(validateProcessModel(scaled))).not.toContain('MODEL_PARAMETER_RANGE');
+});
+
+test.each(['1', 'N*m', 'A', 'made-up'])('torque constant refuses %s instead of assuming N*m/A', (unit) => {
+  const m = { ...makeDriveModel(), torqueConstantNmPerA: scalar(0.05, unit) };
+  expect(validateActuatorModel(m).problems).toEqual(expect.arrayContaining([expect.objectContaining({ code: 'UNIT_NOT_ALLOWED', path: '/torqueConstantNmPerA/unit' })]));
+});
+
+test('canonical torque constant must remain positive', () => {
+  expect(validateActuatorModel({ ...makeDriveModel(), torqueConstantNmPerA: scalar(0.05, 'N*m/A') }).ok).toBe(true);
+  expect(codes(validateActuatorModel({ ...makeDriveModel(), torqueConstantNmPerA: scalar(0, 'N*m/A') }))).toContain('MODEL_PARAMETER_RANGE');
+});
+
+test.each(['min', 'max', 'stddev'] as const)('sensor %s must use the same dimension as its range', (name) => {
+  for (const badUnit of ['s', 'cm', 'made-up']) {
+    const m = sensorModel();
+    const s = name === 'stddev' ? m.noise.stddev : m.range[name];
+    s.unit = badUnit;
+    expect(codes(validateSensorModel(m))).toContain('UNIT_NOT_ALLOWED');
+  }
+});
+
+test.each(['cm', 'L/s', 'made-up'])('matching sensor units still require an approved dimension: %s', (unit) => {
+  const m = sensorModel(); m.range.min.unit = unit; m.range.max.unit = unit; m.noise.stddev.unit = unit;
+  expect(codes(validateSensorModel(m))).toContain('UNIT_NOT_ALLOWED');
+});
+
+test.each(['m', 'rad', 'kg', 'degC', '1'])('sensor range and noise can declare canonical %s measurements', (unit) => {
+  const m = sensorModel(); m.range.min = scalar(-10, unit); m.range.max = scalar(10, unit); m.noise.stddev = scalar(0.01, unit);
+  expect(validateSensorModel(m).ok).toBe(true);
+});
+
+test('model finite values and existing numeric limits remain enforced', () => {
+  for (const name of ['initialC', 'targetC'] as const) {
+    const m = processModel(); processScalars(m)[name].value = Number.POSITIVE_INFINITY;
+    expect(validateProcessModel(m).ok).toBe(false);
+  }
+  const cold = processModel(); cold.temperature!.initialC = scalar(-10, 'degC');
+  expect(validateProcessModel(cold).ok).toBe(true);
+  const inverted = sensorModel(); inverted.range.min.value = 11;
+  expect(codes(validateSensorModel(inverted))).toContain('MODEL_PARAMETER_RANGE');
+  const negativeNoise = sensorModel(); negativeNoise.noise.stddev.value = -1;
+  expect(codes(validateSensorModel(negativeNoise))).toContain('MODEL_PARAMETER_RANGE');
+});
+
+
+test.each(['initialC', 'targetC'] as const)('temperature %s cannot be below absolute zero in canonical or implicit Celsius', (name) => {
+  for (const unit of ['degC', '1']) {
+    const m = processModel(); Object.assign(processScalars(m)[name], scalar(-273.15, unit));
+    expect(validateProcessModel(m).ok).toBe(true);
+    processScalars(m)[name].value = -273.16;
+    expect(codes(validateProcessModel(m))).toContain('MODEL_PARAMETER_RANGE');
+  }
 });
