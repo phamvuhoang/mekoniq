@@ -34,7 +34,10 @@ export function assessEngineeringEvidence(manifest:EngineeringRunManifest,sample
   // the run's extent is what the manifest locked before the run, never what happened to arrive: a missing tail must show up as a failure
   const windowStart=BigInt(manifest.window.startSimTimeNs),windowEnd=BigInt(manifest.window.endSimTimeNs);
   if ((accepted.at(-1)?.sequence??-1)!==manifest.lastSequence) reasons.add('EVIDENCE_TRUNCATED');
-  const caseResults:EngineeringAssessment['caseResults']=[],observed=new Map<string,number[]>();
+  const caseResults:EngineeringAssessment['caseResults']=[];
+  // everything the run produced, by value name, from every entity: independent of which thresholds the manifest happens to check
+  const observed=new Map<string,number[]>();
+  for (const s of accepted) for (const [name,value] of Object.entries(s.values)) observed.set(name,[...observed.get(name)??[],value]);
   for (const c of manifest.coverage) {
     const own=accepted.filter(s=>s.kind===c.kind&&s.entityId===c.entityId);
     let detail='';
@@ -47,7 +50,6 @@ export function assessEngineeringEvidence(manifest:EngineeringRunManifest,sample
   }
   for (const c of manifest.checks) {
     const values=accepted.filter(s=>s.kind===c.kind&&s.entityId===c.entityId&&c.value in s.values).map(s=>s.values[c.value]!);
-    observed.set(c.value,values);
     let status:'pass'|'fail'='pass',detail='';
     if (!values.length) {status='fail';detail='no samples carry this value';reasons.add(`UNAVAILABLE:${c.id}`);}
     else if (c.rule==='max'?Math.max(...values)>c.limit:Math.min(...values)<c.limit) {status='fail';detail=`${c.rule==='max'?Math.max(...values):Math.min(...values)} breaches ${c.limit}`;reasons.add(`CHECK_FAILED:${c.id}`);}
@@ -61,7 +63,9 @@ export function assessEngineeringEvidence(manifest:EngineeringRunManifest,sample
     if (!r||calibrationDigest(r.configDigest,r.result)!==ref||r.configDigest!==manifest.configDigest) return false;
     const {result}=r;
     if (result.status!=='pass'||result.invalidatedBy!==null||!result.calibratedCapabilities.includes(cap)) return false;
-    return Object.entries(result.domain).every(([channel,range])=>(observed.get(channel)??[]).every(v=>v>=range.min&&v<=range.max));
+    const domain=Object.entries(result.domain);
+    // a calibration with no stated range, or a channel the run never produced, proves nothing about this run
+    return domain.length>0&&domain.every(([channel,range])=>{const seen=observed.get(channel)??[];return seen.length>0&&seen.every(v=>v>=range.min&&v<=range.max);});
   };
   if (!reasons.size) {
     for (const cap of CAPS) {

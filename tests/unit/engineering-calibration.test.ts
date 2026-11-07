@@ -78,3 +78,18 @@ test('a validation trial without measured data is not a trial: it cannot satisfy
   const misaligned = dataset({ trials: [trial('t1', 'tune', 'empty'), { ...trial('v1', 'validation', 'empty'), channels: { speed: [0, 1] } }, trial('v2', 'validation', 'empty'), trial('v3', 'validation', 'empty')] });
   expect(assessCalibration(misaligned, prediction()).reasons).toContain('TRIAL_WITHOUT_DATA:v1');
 });
+
+test('a policy without channels, or trials without any samples, can never pass', () => {
+  const emptyTrial = (id: string, split: 'tune' | 'validation') => ({ trialId: id, split, condition: 'empty', timesNs: [] as number[], channels: {} });
+  const noChannels = dataset({ policy: { ...dataset().policy, channels: {}, capabilities: {} }, trials: [emptyTrial('t1', 'tune'), emptyTrial('v1', 'validation'), emptyTrial('v2', 'validation'), emptyTrial('v3', 'validation')] });
+  const emptyPrediction: PredictionSeries = { ...prediction(), trials: ['t1', 'v1', 'v2', 'v3'].map((trialId) => ({ trialId, timesNs: [], channels: {} })) };
+  const r = assessCalibration(noChannels, emptyPrediction);
+  expect(r.status).toBe('fail');
+  expect(r.calibratedCapabilities).toEqual([]);
+  // channels declared but every trial has zero samples
+  const hollow = dataset({ trials: [emptyTrial('t1', 'tune'), { ...emptyTrial('v1', 'validation'), channels: { speed: [] } }, { ...emptyTrial('v2', 'validation'), channels: { speed: [] } }, { ...emptyTrial('v3', 'validation'), channels: { speed: [] } }] });
+  const h = assessCalibration(hollow, emptyPrediction);
+  expect(h.status).toBe('fail');
+  expect(h.calibratedCapabilities).toEqual([]);
+  expect(h.reasons.length).toBeGreaterThan(0);
+});

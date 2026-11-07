@@ -51,7 +51,7 @@ test('a threshold breach fails with the check id; a check with no samples is una
   expect(r.caseResults.find((c) => c.id === 'speed-limit')!.status).toBe('fail');
 });
 const passing = (over: Partial<CalibrationEvidence['result']> = {}, cfg = 'd'.repeat(64)): CalibrationEvidence => {
-  const result = { status: 'pass' as const, reasons: [], residuals: {}, domain: {}, calibratedCapabilities: ['rigidBody'], invalidatedBy: null, ...over };
+  const result = { status: 'pass' as const, reasons: [], residuals: {}, domain: { velocity: { min: 0, max: 1 } }, calibratedCapabilities: ['rigidBody'], invalidatedBy: null, ...over };
   return { configDigest: cfg, result, digest: calibrationDigest(cfg, result) };
 };
 const claimsVerified = { ...manifest().claims, actuator: 'verified' as const, rigidBody: 'verified' as const };
@@ -119,4 +119,32 @@ test('coverage must span the run: a stream that stops early is an EVIDENCE_GAP',
   const r = assessEngineeringEvidence(manifest({ coverage: [{ id: 'odom', kind: 'pose', entityId: 'amr-1', minSamples: 4, maxGapNs: 20_000_000 }] }), early);
   expect(r.status).toBe('fail');
   expect(r.caseResults.find((c) => c.id === 'odom')!.status).toBe('fail');
+});
+
+// calibration domains are checked against what the run actually produced, whichever checks the manifest happens to list
+const crossCheck = (m: Partial<EngineeringRunManifest>, samples: PhysicsSample[], record: CalibrationEvidence) =>
+  assessEngineeringEvidence(manifest({ claims: claimsVerified, calibrationRefs: { rigidBody: record.digest }, ...m }), samples, [record]).capabilities.rigidBody;
+test('the calibrated range is compared with the run itself, not with the manifest\'s threshold checks', () => {
+  const record = passing({ domain: { velocity: { min: 0, max: 0.2 } } });          // calibrated for 0..0.2 m/s; the run reaches 0.9 m/s
+  const fast = good().map((s) => s.kind === 'joint' ? { ...s, values: { ...s.values, velocity: 0.9 } } : s);
+  const onlyEffort = [{ id: 'effort-limit', kind: 'joint' as const, entityId: 'amr-1', value: 'effort', rule: 'max' as const, limit: 5 }];
+  expect(crossCheck({ checks: onlyEffort }, fast, record)).toBe('modeled');
+  expect(crossCheck({ checks: [] }, fast, record)).toBe('modeled');
+  const inRange = passing({ domain: { velocity: { min: 0, max: 0.5 } } });
+  expect(crossCheck({ checks: onlyEffort }, good(), inRange)).toBe('verified');   // 0.4 m/s is inside
+});
+test('a calibration that states no range, or a channel the run never produced, verifies nothing', () => {
+  expect(crossCheck({}, good(), passing({ domain: {} }))).toBe('modeled');
+  expect(crossCheck({}, good(), passing({ domain: { gripForce: { min: 0, max: 10 } } }))).toBe('modeled');
+});
+test('observations from every entity count, so the order of the checks cannot change the answer', () => {
+  const second = Array.from({ length: 10 }, (_, i) => sample(0, 'joint', { position: 0, velocity: i === 0 ? 0.9 : 0.1, effort: 1 }, { entityId: 'amr-2', simTimeNs: String(i * 20_000_000 + 5_000_000) }));
+  // one contiguous stream in time order, as the worker would have produced it
+  const samples = [...good(), ...second].sort((a, b) => Number(BigInt(a.simTimeNs) - BigInt(b.simTimeNs))).map((x, i) => ({ ...x, sequence: i }));
+  const m = { lastSequence: 29 };
+  const check = (id: string, entityId: string) => ({ id, kind: 'joint' as const, entityId, value: 'velocity', rule: 'max' as const, limit: 5 });
+  const record = passing({ domain: { velocity: { min: 0, max: 0.5 } } });
+  const a = crossCheck({ ...m, checks: [check('one', 'amr-1'), check('two', 'amr-2')] }, samples, record);
+  const b = crossCheck({ ...m, checks: [check('two', 'amr-2'), check('one', 'amr-1')] }, samples, record);
+  expect([a, b]).toEqual(['modeled', 'modeled']);
 });

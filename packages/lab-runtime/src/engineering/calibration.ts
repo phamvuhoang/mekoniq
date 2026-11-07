@@ -63,6 +63,7 @@ export function assessCalibration(dataset:CalibrationDataset|null,prediction:Pre
       });
     }
   }
+  if (!Object.keys(stats).length||Object.values(stats).every(x=>x.n===0)) reasons.push('NO_MEASURED_SAMPLES');
   const residuals:CalibrationResult['residuals']={};
   for (const [channel,s] of Object.entries(stats)) {
     residuals[channel]={samples:s.n,meanAbs:s.n?s.sum/s.n:0,maxAbs:s.max,withinTolerance:s.ok&&s.n>0};

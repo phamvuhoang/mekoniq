@@ -139,7 +139,8 @@
               "absoluteTolerance",
               "relativeTolerance"
             ]
-          }
+          },
+          "minProperties": 1
         },
         "minTrialsPerCondition": {
           "type": "integer",
@@ -202,7 +203,8 @@
           "maxItems": 100000,
           "items": {
             "type": "number"
-          }
+          },
+          "minItems": 1
         },
         "channels": {
           "type": "object",
@@ -273,7 +275,8 @@
                 "maxItems": 100000,
                 "items": {
                   "type": "number"
-                }
+                },
+                "minItems": 1
               },
               "channels": {
                 "type": "object",
