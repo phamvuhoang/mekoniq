@@ -117,17 +117,40 @@ class LockTest(unittest.TestCase):
 
 
 class SmokeScriptTest(unittest.TestCase):
+    def assert_blocked_without_qualification(self, record):
+        self.assertEqual(record["status"], "blocked_external")
+        self.assertEqual(record["result"], "not_run")
+        self.assertEqual(record["runtimeInventory"]["qualification"], "not_run")
+
+    def test_blocked_record_allows_package_names_containing_pass(self):
+        self.assert_blocked_without_qualification({
+            "status": "blocked_external", "result": "not_run",
+            "runtimeInventory": {
+                "qualification": "not_run",
+                "packages": [{"name": "base-passwd", "version": "3.6.3", "architecture": "amd64", "status": "installed"}],
+            },
+        })
+
+    def test_blocked_record_rejects_false_pass_in_each_outcome(self):
+        for field in ("status", "result", "qualification"):
+            with self.subTest(field=field):
+                record = {"status": "blocked_external", "result": "not_run", "runtimeInventory": {"qualification": "not_run"}}
+                target = record["runtimeInventory"] if field == "qualification" else record
+                target[field] = "pass"
+                with self.assertRaises(AssertionError):
+                    self.assert_blocked_without_qualification(record)
+
     def test_without_linuxcnc_the_smoke_records_blocked_external_and_exits_2(self):
         with tempfile.TemporaryDirectory() as d:
             env = {**os.environ, "PATH": "/usr/bin:/bin", "MEKONIQ_SMOKE_FORCE_MISSING": "1"}
             r = subprocess.run(["bash", str(ROOT / "scripts" / "smoke-sim.sh"), "--profile", str(CFG / "mekoniq.ini"), "--evidence-dir", d], env=env, capture_output=True, text=True, cwd=ROOT)
             self.assertEqual(r.returncode, 2, r.stdout + r.stderr)
             rec = json.loads(Path(d, "smoke-sim.json").read_text())
-            self.assertEqual(rec["status"], "blocked_external"); self.assertEqual(rec["result"], "not_run")
+            self.assert_blocked_without_qualification(rec)
             self.assertTrue(set(rec["reasons"]) & {"LINUXCNC_MISSING", "HOST_NOT_LINUX", "LINUXCNC_PYTHON_MODULE_MISSING"})
             self.assertEqual(rec["profile"]["sha256"], sha(CFG / "mekoniq.ini")); self.assertEqual(rec["modelManifest"]["sha256"], sha(MODEL_DIR / "manifest.json"))
             self.assertEqual(rec["dependenciesLock"]["sha256"], sha(ROOT / "packaging" / "dependencies.lock.json")); self.assertEqual(rec["backend"], "linuxcnc_sim")
-            self.assertIn("platform", rec["host"]); self.assertNotIn("pass", json.dumps(rec).lower().replace("passed", "").replace("bypass", ""))
+            self.assertIn("platform", rec["host"])
 
     def test_usage_errors_exit_2_without_touching_the_evidence_dir(self):
         with tempfile.TemporaryDirectory() as d:

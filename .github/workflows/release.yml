@@ -9,7 +9,8 @@ on:
 jobs:
   gates:
     runs-on: ubuntu-latest
-    outputs: { ci: ${{ steps.ci.outputs.ci }} }
+    outputs:
+      ci: ${{ steps.ci.outputs.ci }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
