@@ -67,3 +67,25 @@ test('a manifest that is not a complete schema document is refused, not interpre
   expect(() => assessEngineeringEvidence(partial as never, good())).toThrow(/MANIFEST_INVALID/);
   expect(() => assessEngineeringEvidence({ ...manifest(), extra: 1 } as never, good())).toThrow(/MANIFEST_INVALID/);
 });
+
+test('an aborted run is a failure even when the samples that exist look fine', () => {
+  const r = assessEngineeringEvidence(manifest({ execution: 'aborted' }), good());
+  expect(r.status).toBe('fail');
+  expect(r.reasons).toContain('EXECUTION_ABORTED');
+  expect(Object.values(r.capabilities).every((l) => l === 'unsupported')).toBe(true);
+});
+test('repeated, replayed or skipped sequences do not count towards coverage', () => {
+  const copies = Array.from({ length: 5 }, () => sample(0, 'pose', POSE));
+  const dup = assessEngineeringEvidence(manifest(), [...good().filter((s) => s.kind === 'joint'), ...copies]);
+  expect(dup.status).toBe('fail');
+  expect(dup.reasons).toContain('DUPLICATE_SEQUENCE');
+  const skipped = assessEngineeringEvidence(manifest(), good().filter((s) => s.sequence !== 7));
+  expect(skipped.reasons).toContain('SEQUENCE_GAP');
+});
+test('coverage must span the run: a stream that stops early is an EVIDENCE_GAP', () => {
+  // pose stops at 60 ms while joints run to 190 ms; sequences are renumbered so the stream itself is contiguous and only the coverage window can tell
+  const early = good().filter((s) => s.kind !== 'pose' || s.sequence < 8).map((s, i) => ({ ...s, sequence: i }));
+  const r = assessEngineeringEvidence(manifest({ coverage: [{ id: 'odom', kind: 'pose', entityId: 'amr-1', minSamples: 4, maxGapNs: 20_000_000 }] }), early);
+  expect(r.status).toBe('fail');
+  expect(r.caseResults.find((c) => c.id === 'odom')!.status).toBe('fail');
+});

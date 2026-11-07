@@ -211,6 +211,7 @@ export interface Port {
   continuousCurrentA?: Scalar;
   protocol?: string;
   pinoutRevision?: string;
+  link?: EngineeringId;
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema

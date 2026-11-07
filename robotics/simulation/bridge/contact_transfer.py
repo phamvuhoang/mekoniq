@@ -5,7 +5,7 @@
 Missing evidence is `unknown`; an observed failure (slip, lost contact, cup outside the slot) is `rejected`. Nothing here moves a cup or touches custody."""
 
 NS_PER_S = 1_000_000_000
-DEFAULTS = {"liftM": 0.05, "holdS": 1.0, "driftM": 0.005, "receiverStableS": 0.5, "freshnessNs": 100_000_000, "minContactN": 0.5, "releasedOpeningM": 0.06}
+DEFAULTS = {"liftM": 0.05, "holdS": 1.0, "driftM": 0.005, "receiverStableS": 0.5, "freshnessNs": 100_000_000, "maxGapNs": 50_000_000, "minContactN": 0.5, "releasedOpeningM": 0.06}
 REQUIRED = {"gripper": ("leftContactN", "rightContactN", "openingM"), "cup_pose": ("cupXyzM", "toolXyzM"), "tray": ("contact", "insideSlot")}
 
 
@@ -23,10 +23,13 @@ def _prepare(samples, policy):
         if kind not in REQUIRED or not str(s.get("simTimeNs", "")).isdigit() or any(f not in s for f in REQUIRED[kind]):
             problems.append("SAMPLE_INVALID")
             continue
-        if s.get("epoch", policy["epoch"]) != policy["epoch"]:
+        if "epoch" not in s or "cupId" not in s:
+            problems.append("SAMPLE_INVALID")  # a sample that does not say whose it is belongs to nobody
+            continue
+        if s["epoch"] != policy["epoch"]:
             problems.append("EPOCH_MISMATCH")
             continue
-        if s.get("cupId", policy["cupId"]) != policy["cupId"]:
+        if s["cupId"] != policy["cupId"]:
             continue
         key = (kind, s.get("sequence"))
         if s.get("sequence") is not None and key in seen:
@@ -42,10 +45,13 @@ def _prepare(samples, policy):
     return streams, problems
 
 
-def _intervals(items, ok):
-    """Contiguous runs of samples satisfying `ok`, as (start_ns, end_ns, [samples])."""
+def _intervals(items, ok, max_gap_ns):
+    """Contiguous runs of samples satisfying `ok` with no gap above max_gap_ns, as (start_ns, end_ns, [samples])."""
     runs, current = [], []
     for s in items:
+        if current and int(s["simTimeNs"]) - int(current[-1]["simTimeNs"]) > max_gap_ns:
+            runs.append(current)
+            current = []
         if ok(s):
             current.append(s)
         elif current:
@@ -85,6 +91,9 @@ def _assess_pick(streams, p, now, refs):
         return _result("rejected", ["GRASP_CONTACT_LOST"], refs)
     if any(s["cupXyzM"][2] - base < p["liftM"] for s in after):
         return _result("rejected", ["CUP_DROPPED"], refs)
+    for stream in ([s for s in g if int(s["simTimeNs"]) >= start], after):
+        if any(int(b["simTimeNs"]) - int(a["simTimeNs"]) > p["maxGapNs"] for a, b in zip(stream, stream[1:])):
+            return _result("unknown", ["EVIDENCE_GAP"], refs)  # nothing was observed in between, so nothing is confirmed
     held_ns = int(after[-1]["simTimeNs"]) - start
     if held_ns < p["holdS"] * NS_PER_S:
         return _result("unknown", ["HOLD_TOO_SHORT"], refs)
@@ -106,7 +115,7 @@ def _assess_place(streams, p, now, refs):
     released = g[-1]["openingM"] >= p["releasedOpeningM"] and g[-1]["leftContactN"] < p["minContactN"] and g[-1]["rightContactN"] < p["minContactN"]
     if not released:
         return _result("unknown", ["JAWS_NOT_RELEASED"], refs)
-    runs = _intervals(t, lambda s: s["contact"] and s["insideSlot"])
+    runs = _intervals(t, lambda s: s["contact"] and s["insideSlot"], p["maxGapNs"])
     if not runs or runs[-1][2][-1] is not t[-1] or (runs[-1][1] - runs[-1][0]) < p["receiverStableS"] * NS_PER_S:
         return _result("unknown", ["RECEIVER_NOT_STABLE"], refs)
     return _result("confirmed", [], refs)

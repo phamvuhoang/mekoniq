@@ -112,3 +112,22 @@ def test_policy_must_name_stage_cup_and_epoch():
         assess([], {"stage": "pick", "cupId": "c"})
     with pytest.raises(ValueError, match="POLICY_INVALID:stage"):
         assess([], {"stage": "carry", "cupId": "c", "epoch": 1})
+
+
+def test_samples_without_identity_are_not_evidence():
+    # finding: missing cupId/epoch used to default to the policy's values and count as this cup's evidence
+    anonymous = [{k: v for k, v in s.items() if k not in ("cupId", "epoch")} for s in pick_samples()]
+    result = assess(anonymous, PICK)
+    assert result["status"] != "confirmed" and "SAMPLE_INVALID" in result["reasons"]
+
+
+def test_long_gaps_in_the_streams_cannot_be_bridged_into_a_confirmed_hold():
+    sparse = [s for s in pick_samples() if int(s["simTimeNs"]) in (0, 500_000_000, 510_000_000, 2_500_000_000)]
+    result = assess(sparse, PICK)
+    assert result["status"] == "unknown" and "EVIDENCE_GAP" in result["reasons"]
+
+
+def test_receiver_stability_cannot_be_bridged_across_a_gap_either():
+    sparse = [s for s in place_samples(seconds=1.0) if int(s["simTimeNs"]) in (0, 1_000_000_000) or s["kind"] == "gripper"]
+    result = assess(sparse, PLACE)
+    assert result["status"] == "unknown"

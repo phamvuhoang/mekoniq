@@ -19,20 +19,24 @@ export function assessEngineeringEvidence(manifest:EngineeringRunManifest,sample
   if (!validate(manifest)) throw new Error(`MANIFEST_INVALID: ${(validate.errors??[]).slice(0,3).map(e=>`${e.instancePath} ${e.message}`).join('; ')}`);
   const refs=(accepted:PhysicsSample[])=>({sampleCount:accepted.length,firstSimTimeNs:accepted[0]?.simTimeNs??null,lastSimTimeNs:accepted.at(-1)?.simTimeNs??null,samplesSha256:hashJson(accepted),artifacts:[...manifest.artifacts]});
   if (manifest.execution==='not_started') return {status:'not_run',reasons:['EXECUTION_NOT_STARTED'],capabilities:unsupported(),caseResults:[],artifactRefs:refs([])};
+  if (manifest.execution==='aborted') return {status:'fail',reasons:['EXECUTION_ABORTED'],capabilities:unsupported(),caseResults:[],artifactRefs:refs([])};
   const reasons=new Set<string>(),accepted:PhysicsSample[]=[];
-  // identity first: only this run's, this bundle's, this epoch's samples are evidence
-  for (const s of samples) {
-    const ingest=createPhysicsIngest({runId:manifest.runId,bundleDigest:manifest.bundleDigest,epoch:manifest.expectedEpoch});
-    const basic=ingest.ingest({...s,sequence:0});
-    if (basic.accepted) accepted.push(s); else reasons.add(basic.reason!);
+  // one ordered stream per run epoch: identity, duplicates, replays, gaps and clock regressions are all judged on the real sequence
+  const ingest=createPhysicsIngest({runId:manifest.runId,bundleDigest:manifest.bundleDigest,epoch:manifest.expectedEpoch},{queueLimit:samples.length+1});
+  for (const s of [...samples].sort((a,b)=>a.sequence-b.sequence)) {
+    const result=ingest.ingest(s);
+    if (result.accepted) accepted.push(s); else if (result.reason!=='STREAM_FAILED') reasons.add(result.reason!);
   }
   accepted.sort((a,b)=>(BigInt(a.simTimeNs)<BigInt(b.simTimeNs)?-1:BigInt(a.simTimeNs)>BigInt(b.simTimeNs)?1:a.sequence-b.sequence));
+  const windowStart=accepted[0]?BigInt(accepted[0].simTimeNs):0n,windowEnd=accepted.length?BigInt(accepted.at(-1)!.simTimeNs):0n;
   const caseResults:EngineeringAssessment['caseResults']=[];
   for (const c of manifest.coverage) {
     const own=accepted.filter(s=>s.kind===c.kind&&s.entityId===c.entityId);
     let detail='';
     if (own.length<c.minSamples) detail=`${own.length} of ${c.minSamples} samples`;
     for (let i=1;!detail&&i<own.length;i++) if (BigInt(own[i]!.simTimeNs)-BigInt(own[i-1]!.simTimeNs)>BigInt(c.maxGapNs)) detail=`gap before sample ${own[i]!.sequence}`;
+    // a stream that starts late or stops early relative to the run's own window is as incomplete as one with a hole
+    if (!detail&&own.length&&(BigInt(own[0]!.simTimeNs)-windowStart>BigInt(c.maxGapNs)||windowEnd-BigInt(own.at(-1)!.simTimeNs)>BigInt(c.maxGapNs))) detail='does not span the run';
     if (detail) reasons.add('EVIDENCE_GAP');
     caseResults.push({id:c.id,status:detail?'fail':'pass',...detail?{detail}:{}});
   }

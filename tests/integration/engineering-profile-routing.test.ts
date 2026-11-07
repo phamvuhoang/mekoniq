@@ -11,6 +11,8 @@ import { collectReadiness } from '../../packages/lab-runtime/src/v2/readiness';
 import { assertNativeAdmission } from '../../packages/lab-runtime/src/v2/sil/native-lifecycle';
 import { preflight } from '../../packages/lab-runtime/src/v2/sil/cli';
 import { coffeeProject } from '../support/lab-v2';
+import { createEngineeringService } from '../../packages/lab-runtime/src/engineering/gateway';
+import { testCompiler } from '../support/engineering';
 
 const roots: string[] = [], gateways: LabGateway[] = [];
 afterEach(async () => { for (const g of gateways.splice(0)) await g.close(); for (const d of roots.splice(0)) await rm(d, { recursive: true, force: true }); });
@@ -82,10 +84,9 @@ test('health keeps the legacy requirements and adds per-set requirements the eng
   const health = await (await fetch(g.url + '/lab/v2/health')).json();
   expect(health.scenarioRequirements.BV01).toEqual({ mock: ['mock_amr', 'mock_coffee', 'mock_arm'], simulation: LEGACY });
   const bySet = health.scenarioRequirementsByBackendSet;
+  // this runtime has no engineering service, so engineering sets must not look usable
+  expect(bySet.BV01['engineering-contact-v1']).toEqual({ supported: false, required: [], reasonCodes: ['ENGINEERING_CAPABILITY_REQUIRED'] });
   expect(bySet.BV01['coffee-simulation']).toEqual({ supported: true, required: LEGACY, reasonCodes: [] });
-  expect(bySet.BV01['engineering-contact-v1']).toEqual({ supported: true, required: ['gazebo_nav2', 'moveit_gazebo_arm', 'engineering_coffee_process'], reasonCodes: [] });
-  expect(bySet.BV01['engineering-rigid-v1']).toEqual({ supported: false, required: [], reasonCodes: ['SCENARIO_UNSUPPORTED_BY_SET'] });
-  expect(bySet.FD01['engineering-rigid-v1'].required).toEqual(['gazebo_nav2']);
   expect(bySet.FD01['coffee-simulation']).toEqual({ supported: true, required: ['gazebo_nav2'], reasonCodes: [] }); // legacy answer unchanged
   expect(bySet.FD01['hardware-live']).toBeUndefined(); // hardware sets are not simulation candidates
 });
@@ -97,4 +98,14 @@ test('the legacy native lifecycle and SIL preflight refuse engineering sets inst
   expect(r.ok).toBe(false);
   expect(r.reasons.join()).toContain('BACKEND_MISSING:moveit_gazebo_arm');
   expect(preflight('FD01', 'engineering-rigid-v1').reasons.join()).toContain('ENGINEERING_LIFECYCLE_UNAVAILABLE');
+});
+
+test('with the engineering service the engineering sets are listed as supported per scenario', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'eng-health2-')); roots.push(directory);
+  const engineering = createEngineeringService({ directory: join(directory, 'engineering'), catalogRoot: 'robotics/catalog', compiler: testCompiler });
+  const g = await startLabGateway({ port: 0, directory: join(directory, 'runs'), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), v2: { engineering } }); gateways.push(g);
+  const bySet = (await (await fetch(g.url + '/lab/v2/health')).json()).scenarioRequirementsByBackendSet;
+  expect(bySet.BV01['engineering-contact-v1']).toEqual({ supported: true, required: ['gazebo_nav2', 'moveit_gazebo_arm', 'engineering_coffee_process'], reasonCodes: [] });
+  expect(bySet.BV01['engineering-rigid-v1']).toEqual({ supported: false, required: [], reasonCodes: ['SCENARIO_UNSUPPORTED_BY_SET'] });
+  expect(bySet.FD01['engineering-rigid-v1'].required).toEqual(['gazebo_nav2']);
 });

@@ -150,8 +150,14 @@ export function resolveAssembly(project:EngineeringProject,components:Record<str
  }
  for(const m of mounts){
   const pt=topo.get(m.from.instance),ct=topo.get(m.to.instance);if(!pt||!ct)continue;
-  joints.push({id:`mount:${m.from.instance}/${m.from.port}:${m.to.instance}/${m.to.port}`,kind:'fixed',parent:linkKey(m.from.instance,pt.root),child:linkKey(m.to.instance,ct.root),
-   origin:engineeringPose(composePose(port(m.from.instance,m.from.port),invertPose(port(m.to.instance,m.to.port)))),axis:[0,0,1]});
+  const fromPort=comp.get(m.from.instance)!.ports.find(p=>p.id===m.from.port)!,toPort=comp.get(m.to.instance)!.ports.find(p=>p.id===m.to.port)!;
+  // a port may name the moving link it sits on (the arm's tool link, a wheel rim); without one it is on the component's root link. The child side must be its root link.
+  const parentLink=fromPort.link??pt.root,parentPose=pt.poses.get(parentLink);
+  if(!parentPose){add('COMPONENT_TOPOLOGY_INVALID',at('assembly','connections',m.n),`${m.from.instance}/${m.from.port} names unknown link ${parentLink}`);continue;}
+  if(toPort.link!==undefined&&toPort.link!==ct.root){add('COMPONENT_TOPOLOGY_INVALID',at('assembly','connections',m.n),`${m.to.instance}/${m.to.port} is on ${toPort.link}, but a mounted part attaches by its root link ${ct.root}`);continue;}
+  // port frames are in the component root frame, so the joint origin is expressed from the parent link's own frame
+  joints.push({id:`mount:${m.from.instance}/${m.from.port}:${m.to.instance}/${m.to.port}`,kind:'fixed',parent:linkKey(m.from.instance,parentLink),child:linkKey(m.to.instance,ct.root),
+   origin:engineeringPose(composePose(composePose(invertPose(parentPose),port(m.from.instance,m.from.port)),invertPose(port(m.to.instance,m.to.port)))),axis:[0,0,1]});
  }
  // ---- models ----
  const modelDoc=(ref:{kind:string;id:string;digest:string},path:string):ModelDocument|null=>{

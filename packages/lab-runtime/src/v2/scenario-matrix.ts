@@ -139,8 +139,8 @@ export function requiredBackends(target:ScenarioDefinition|MatrixRow,mode:'mock'
  return r.required;
 }
 /** Health view: scenario id -> backend set id -> what that pairing needs. Only sets of a mode the scenario can run in are listed. */
-export function requirementsByBackendSet(catalog:CapabilityCatalog=defaultCatalog):Record<string,Record<string,{supported:boolean;required:string[];reasonCodes:string[]}>>{
- return Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,Object.fromEntries(Object.entries(catalog.sets).filter(([,s])=>s.mode==='mock'||s.mode==='simulation').map(([setId,s])=>{const r=resolveBackends(def,s.mode as 'mock'|'simulation',setId,catalog);return [setId,{supported:r.ok,required:r.required,reasonCodes:r.reasonCodes}];}))]));
+export function requirementsByBackendSet(catalog:CapabilityCatalog=defaultCatalog,options:{engineering?:boolean}={}):Record<string,Record<string,{supported:boolean;required:string[];reasonCodes:string[]}>>{
+ return Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,Object.fromEntries(Object.entries(catalog.sets).filter(([,s])=>s.mode==='mock'||s.mode==='simulation').map(([setId,s])=>{if(s.scenarioIds&&!options.engineering)return [setId,{supported:false,required:[],reasonCodes:['ENGINEERING_CAPABILITY_REQUIRED']}];const r=resolveBackends(def,s.mode as 'mock'|'simulation',setId,catalog);return [setId,{supported:r.ok,required:r.required,reasonCodes:r.reasonCodes}];}))]));
 }
 export interface Admission {status:'admitted'|'unavailable'|'unsupported';reasons:string[];required:string[];effects:never[]}
 /**

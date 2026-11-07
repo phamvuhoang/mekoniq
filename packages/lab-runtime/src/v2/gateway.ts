@@ -50,7 +50,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(method==='GET'&&sub==='/health')return send(response,200,{
    protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
-   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends})),scenarioIds:[...scenarioRegistry.keys()],scenarioRequirements:Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,{mock:requiredBackends(def,'mock'),simulation:requiredBackends(def,'simulation')}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog),features:{polling:true,sse:true,readiness:true},capabilities:deps.engineering?[ENGINEERING_CAPABILITY]:[],
+   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends})),scenarioIds:[...scenarioRegistry.keys()],scenarioRequirements:Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,{mock:requiredBackends(def,'mock'),simulation:requiredBackends(def,'simulation')}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true},capabilities:deps.engineering?[ENGINEERING_CAPABILITY]:[],
   });
   if(method==='POST'&&!origin)return deny(response,403,'ORIGIN_REQUIRED',[]);
   if(method==='POST'&&sub==='/sessions'){
@@ -90,6 +90,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(sub==='/readiness'){
    const params=new URL(request.url??'/','http://127.0.0.1').searchParams;
    let context:{scenarioId:string;backendSetId:string;project?:unknown};
+   let engineeringChecked=false;
    if(method==='GET'){
     if([...params.keys()].some(k=>!['scenarioId','backendSetId'].includes(k))||['scenarioId','backendSetId'].some(k=>params.getAll(k).length!==1||!/^[A-Za-z0-9_.:-]{1,200}$/.test(params.get(k)??'')))return deny(response,400,'INVALID_READINESS_QUERY',[]);
     context={scenarioId:params.get('scenarioId')!,backendSetId:params.get('backendSetId')!};
@@ -101,9 +102,11 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     if(Object.hasOwn(body,'engineeringRef')){
      // the project is the bundle's locked projection; a supplied one can only be checked for equality against it
      if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);
-     try{context.project=(await deps.engineering.admitRun(sessionId,body.engineeringRef,context.backendSetId,body.project)).runtimeProjection.project;}catch(e){return engineeringFailed(response,e);}
+     try{context.project=(await deps.engineering.admitRun(sessionId,body.engineeringRef,context.backendSetId,body.project)).runtimeProjection.project;engineeringChecked=true;}catch(e){return engineeringFailed(response,e);}
     }
    }else return deny(response,405,'METHOD_NOT_ALLOWED',[]);
+   const readinessSet=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]:undefined;
+   if(readinessSet?.scenarioIds&&!(method==='POST'&&context.project!==undefined&&engineeringChecked))return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
    return send(response,200,await collectReadiness(context,{catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks}));
   }
   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
@@ -135,6 +138,8 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(set.mode!==r.mode)return deny(response,422,'BACKEND_UNAVAILABLE',['MODE_BACKEND_MISMATCH']);
    // The set's access is server-owned; the claimed (and already granted) access must equal it, so a shadow grant can never carry a hil/live set.
    if(set.access!==r.access)return deny(response,422,'BACKEND_UNAVAILABLE',['ACCESS_MODE_MISMATCH']);
+   // engineering sets run a compiled bundle only: no ref means no run, never the caller's raw project
+   if(set.scenarioIds&&!r.engineeringRef)return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
    const scenario=scenarioRegistry.get(r.scenarioId);
    if(!scenario)return deny(response,422,'SCENARIO_UNSUPPORTED',[]);
    const resolution=r.mode==='hardware'?undefined:resolveBackends(scenario,r.mode,r.backendSetId,catalog);

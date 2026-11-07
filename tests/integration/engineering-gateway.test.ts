@@ -19,8 +19,7 @@ const temp = async (p: string) => { const d = await mkdtemp(join(tmpdir(), p)); 
 const sha = (b: string | Uint8Array) => createHash('sha256').update(b).digest('hex');
 
 const ids = ['gazebo_nav2'];
-const catalog = () => ({ ...structuredClone(defaultCatalog), backends: defaultCatalog.backends.map((b) => ids.includes(b.id) ? { ...b, installed: true, compatible: true, reachable: true, commissioned: true } : b),
-  sets: { ...defaultCatalog.sets, 'engineering-rigid-v1': { mode: 'simulation' as const, access: 'simulated' as const, backends: ['gazebo_nav2'] } } });
+const catalog = () => ({ ...structuredClone(defaultCatalog), backends: defaultCatalog.backends.map((b) => ids.includes(b.id) ? { ...b, installed: true, compatible: true, reachable: true, commissioned: true } : b) });
 const checks = (): ReadinessCheck[] => ['model', 'clock', 'fixture', 'profile', 'runner', 'gripper'].map((id) => ({ id, status: 'ready', reasonCodes: [], evidenceRef: 'protocol_double' }));
 const runtimeIdentity = { sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64) };
 
@@ -210,4 +209,14 @@ test('engineering readiness uses the bundle projection and refuses what create w
   expect((await post(g, h, '/readiness', { scenarioId: 'FD01', backendSetId: 'engineering-rigid-v1' })).status).toBe(400);
   const bare = await setup({ withEngineering: false }); const g2 = await bare.start(); const h2 = await pair(g2);
   expect((await post(g2, h2, '/readiness', { scenarioId: 'FD01', backendSetId: 'engineering-rigid-v1', engineeringRef: ref })).status).toBe(400);
+});
+
+test('an engineering set never accepts a run or a readiness probe without a bundle ref', async () => {
+  const s = await setup(); const g = await s.start(); const h = await pair(g);
+  const noRef = await post(g, h, '/runs', { project: s.f.project.runtimeProject, scenarioId: 'FD01', scenarioRevision: 1, seed: 7, mode: 'simulation', access: 'simulated', backendSetId: 'engineering-rigid-v1', runtimeIdentity });
+  expect(noRef.status).toBe(422);
+  expect((await noRef.json()).error).toBe('ENGINEERING_REF_REQUIRED');
+  expect((await get(g, h, '/readiness?scenarioId=FD01&backendSetId=engineering-rigid-v1')).status).toBe(422);
+  expect((await post(g, h, '/readiness', { scenarioId: 'FD01', backendSetId: 'engineering-rigid-v1', project: s.f.project.runtimeProject })).status).toBe(422);
+  expect(s.spy.inputs).toEqual([]);
 });

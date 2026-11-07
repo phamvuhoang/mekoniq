@@ -177,3 +177,30 @@ test('V17 an input whose bindings differ from the resolved assembly is rejected'
   const other = { ...f.project, entityBindings: [{ entityId: 'amr-1', instanceIds: ['chassis'] }] };
   expect(() => prepareEngineeringCompileInput(other, resolved, recipes)).toThrow(EngineeringInputError);
 });
+
+test('a part can be mounted on a named moving link of its parent, never the parent base by accident', () => {
+  const { r } = resolve('valid', (f) => {
+    const wheel = Object.entries(f.components).find(([, c]) => c.id === 'drive-wheel')!;
+    const cap = { schemaVersion: 1 as const, id: 'cap', revision: '1', identity: { manufacturer: 'fixture', family: 'cap', sku: null, status: 'candidate' as const }, joints: [], models: [], documents: [],
+      links: [{ ...wheel[1].links[0]!, id: 'body', massKg: { ...wheel[1].links[0]!.massKg, value: 0.1 }, inertiaKgM2: [1e-5, 0, 0, 1e-5, 0, 1e-5] as [number, number, number, number, number, number], visual: [], collision: [] }],
+      ports: [{ id: 'mount', kind: 'mount' as const, frame: { xyzM: [0, 0, 0] as [number, number, number], quaternionXyzw: [0, 0, 0, 1] as [number, number, number, number] }, mate: 'cap', direction: 'bidirectional' as const }] };
+    wheel[1].ports.push({ id: 'cap', link: 'rim', kind: 'mount', frame: { xyzM: [0, 0.03, 0], quaternionXyzw: [0, 0, 0, 1] }, mate: 'cap', direction: 'bidirectional' });
+    const patched = { ...wheel[1] }; const digest = hashJson(patched);
+    delete f.components[wheel[0]]; f.components[digest] = patched;
+    for (const i of f.project.assembly.instances) if (i.componentDigest === wheel[0]) i.componentDigest = digest;
+    f.components[hashJson(cap)] = cap;
+    f.project.assembly.instances.push({ id: 'wheel-cap', componentDigest: hashJson(cap), pose: { xyzM: [0, 0, 0], quaternionXyzw: [0, 0, 0, 1] } });
+    f.project.assembly.connections.push({ from: 'wheel-left/cap', to: 'wheel-cap/mount', kind: 'mount' });
+    f.project.entityBindings[0]!.instanceIds.push('wheel-cap');
+  });
+  const mount = r.resolved?.joints.find((j) => j.id === 'mount:wheel-left/cap:wheel-cap/mount');
+  expect(r.problems.filter((p) => p.code !== 'INITIAL_PENETRATION')).toEqual([]);
+  expect(mount?.parent).toBe('wheel-left/rim');                 // follows the wheel joint, not the hub
+  expect(mount?.origin.xyzM).toEqual([0, 0.03, 0]);
+});
+test('a port naming a link the component does not have, or a child port on a non-root link, is refused', () => {
+  const bad = resolve('valid', (f) => { Object.values(f.components).find((c) => c.id === 'amr-chassis')!.ports.find((p) => p.id === 'tray-plate')!.link = 'nope'; }).r;
+  expect(codes(bad)).toContain('COMPONENT_TOPOLOGY_INVALID');
+  const child = resolve('valid', (f) => { Object.values(f.components).find((c) => c.id === 'service-tray')!.ports[0]!.link = 'plate'; }).r;
+  expect(codes(child)).not.toContain('MOUNT_MISMATCH'); // the root link as an explicit child link is the same as the default
+});
