@@ -1650,3 +1650,119 @@ export interface EngineeringCandidate {
   }[];
   checksum: Digest;
 }
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "CalibrationPolicy".
+ */
+export interface CalibrationPolicy {
+  channels: {
+    [k: string]: {
+      absoluteTolerance: number;
+      relativeTolerance: number;
+    };
+  };
+  minTrialsPerCondition: number;
+  maxClockGapNs: number;
+  capabilities: {
+    [k: string]: 'geometry' | 'rigidBody' | 'actuator' | 'sensor' | 'grasp' | 'process';
+  };
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "CalibrationTrial".
+ */
+export interface CalibrationTrial {
+  trialId: string;
+  split: 'tune' | 'validation';
+  condition: string;
+  /**
+   * @maxItems 100000
+   */
+  timesNs: number[];
+  channels: {
+    /**
+     * @maxItems 100000
+     */
+    [k: string]: number[];
+  };
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "PredictionSeries".
+ */
+export interface PredictionSeries {
+  configDigest: string;
+  clockDomain: 'sim' | 'wall' | 'instrument';
+  units: {
+    [k: string]: string;
+  };
+  /**
+   * @maxItems 500
+   */
+  trials: {
+    trialId: string;
+    /**
+     * @maxItems 100000
+     */
+    timesNs: number[];
+    channels: {
+      /**
+       * @maxItems 100000
+       */
+      [k: string]: number[];
+    };
+  }[];
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "CalibrationResult".
+ */
+export interface CalibrationResult {
+  status: 'pass' | 'fail' | 'not_run';
+  reasons: string[];
+  residuals: {
+    [k: string]: {
+      samples: number;
+      meanAbs: number;
+      maxAbs: number;
+      withinTolerance: boolean;
+    };
+  };
+  domain: {
+    [k: string]: {
+      min: number;
+      max: number;
+    };
+  };
+  calibratedCapabilities: string[];
+  invalidatedBy: string | null;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "CalibrationDataset".
+ */
+export interface CalibrationDataset {
+  schemaVersion: 1;
+  configDigest: string;
+  instrument: {
+    id: string;
+    revision: string;
+  };
+  units: {
+    [k: string]: string;
+  };
+  clockMapping: {
+    domain: 'sim' | 'wall' | 'instrument';
+    offsetNs: number;
+  };
+  uncertainty: {
+    [k: string]: number;
+  };
+  rawDigest: string;
+  sourceKind: 'measured' | 'simulated' | 'synthetic';
+  policy: CalibrationPolicy;
+  /**
+   * @maxItems 500
+   */
+  trials: CalibrationTrial[];
+}

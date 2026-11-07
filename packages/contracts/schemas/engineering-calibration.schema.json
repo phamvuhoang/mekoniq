@@ -1,0 +1,404 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.engineering-calibration.v1",
+  "title": "CalibrationDataset",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "configDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "instrument": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:/-]+$"
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "id",
+        "revision"
+      ]
+    },
+    "units": {
+      "type": "object",
+      "maxProperties": 50,
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_.:/-]{1,100}$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20
+      }
+    },
+    "clockMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "enum": [
+            "sim",
+            "wall",
+            "instrument"
+          ]
+        },
+        "offsetNs": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "domain",
+        "offsetNs"
+      ]
+    },
+    "uncertainty": {
+      "type": "object",
+      "maxProperties": 50,
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_.:/-]{1,100}$"
+      },
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0
+      }
+    },
+    "rawDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "sourceKind": {
+      "enum": [
+        "measured",
+        "simulated",
+        "synthetic"
+      ]
+    },
+    "policy": {
+      "$ref": "#/definitions/CalibrationPolicy"
+    },
+    "trials": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "$ref": "#/definitions/CalibrationTrial"
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "configDigest",
+    "instrument",
+    "units",
+    "clockMapping",
+    "uncertainty",
+    "rawDigest",
+    "sourceKind",
+    "policy",
+    "trials"
+  ],
+  "definitions": {
+    "CalibrationPolicy": {
+      "title": "CalibrationPolicy",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "channels": {
+          "type": "object",
+          "maxProperties": 50,
+          "propertyNames": {
+            "pattern": "^[A-Za-z0-9_.:/-]{1,100}$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "absoluteTolerance": {
+                "type": "number",
+                "minimum": 0
+              },
+              "relativeTolerance": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "absoluteTolerance",
+              "relativeTolerance"
+            ]
+          }
+        },
+        "minTrialsPerCondition": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxClockGapNs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "capabilities": {
+          "type": "object",
+          "maxProperties": 50,
+          "propertyNames": {
+            "pattern": "^[A-Za-z0-9_.:/-]{1,100}$"
+          },
+          "additionalProperties": {
+            "enum": [
+              "geometry",
+              "rigidBody",
+              "actuator",
+              "sensor",
+              "grasp",
+              "process"
+            ]
+          }
+        }
+      },
+      "required": [
+        "channels",
+        "minTrialsPerCondition",
+        "maxClockGapNs",
+        "capabilities"
+      ]
+    },
+    "CalibrationTrial": {
+      "title": "CalibrationTrial",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:/-]+$"
+        },
+        "split": {
+          "enum": [
+            "tune",
+            "validation"
+          ]
+        },
+        "condition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:/-]+$"
+        },
+        "timesNs": {
+          "type": "array",
+          "maxItems": 100000,
+          "items": {
+            "type": "number"
+          }
+        },
+        "channels": {
+          "type": "object",
+          "maxProperties": 50,
+          "propertyNames": {
+            "pattern": "^[A-Za-z0-9_.:/-]{1,100}$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "maxItems": 100000,
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "required": [
+        "trialId",
+        "split",
+        "condition",
+        "timesNs",
+        "channels"
+      ]
+    },
+    "PredictionSeries": {
+      "title": "PredictionSeries",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "configDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "clockDomain": {
+          "enum": [
+            "sim",
+            "wall",
+            "instrument"
+          ]
+        },
+        "units": {
+          "type": "object",
+          "maxProperties": 50,
+          "propertyNames": {
+            "pattern": "^[A-Za-z0-9_.:/-]{1,100}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          }
+        },
+        "trials": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "trialId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9_.:/-]+$"
+              },
+              "timesNs": {
+                "type": "array",
+                "maxItems": 100000,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "channels": {
+                "type": "object",
+                "maxProperties": 50,
+                "propertyNames": {
+                  "pattern": "^[A-Za-z0-9_.:/-]{1,100}$"
+                },
+                "additionalProperties": {
+                  "type": "array",
+                  "maxItems": 100000,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            "required": [
+              "trialId",
+              "timesNs",
+              "channels"
+            ]
+          }
+        }
+      },
+      "required": [
+        "configDigest",
+        "clockDomain",
+        "units",
+        "trials"
+      ]
+    },
+    "CalibrationResult": {
+      "title": "CalibrationResult",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "not_run"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "residuals": {
+          "type": "object",
+          "maxProperties": 50,
+          "propertyNames": {
+            "pattern": "^[A-Za-z0-9_.:/-]{1,100}$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "samples": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "meanAbs": {
+                "type": "number"
+              },
+              "maxAbs": {
+                "type": "number"
+              },
+              "withinTolerance": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "samples",
+              "meanAbs",
+              "maxAbs",
+              "withinTolerance"
+            ]
+          }
+        },
+        "domain": {
+          "type": "object",
+          "maxProperties": 50,
+          "propertyNames": {
+            "pattern": "^[A-Za-z0-9_.:/-]{1,100}$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "min",
+              "max"
+            ]
+          }
+        },
+        "calibratedCapabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "invalidatedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "reasons",
+        "residuals",
+        "domain",
+        "calibratedCapabilities",
+        "invalidatedBy"
+      ]
+    }
+  }
+}

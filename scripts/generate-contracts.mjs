@@ -25,7 +25,7 @@ const v2Output = '/* Generated from the Lab v2 schemas. Run pnpm contracts:gener
 const v2File = new URL('../packages/contracts/generated/lab-v2.ts', import.meta.url);
 // Engineering schemas reference each other by file; fold them into one definitions map so every type is declared exactly once.
 // lab-v2 types are imported by name (tsType) instead of re-declared.
-const engFiles = { 'engineering-component': 'ComponentRevision', 'engineering-project': 'EngineeringProject', 'engineering-bundle': null, 'engineering-project-archive': 'EngineeringArchive', 'engineering-candidate': 'EngineeringCandidate' };
+const engFiles = { 'engineering-component': 'ComponentRevision', 'engineering-project': 'EngineeringProject', 'engineering-bundle': null, 'engineering-project-archive': 'EngineeringArchive', 'engineering-candidate': 'EngineeringCandidate', 'engineering-calibration': 'CalibrationDataset' };
 const engRoots = Object.fromEntries(Object.entries(engFiles).filter(([, t]) => t).map(([n, t]) => [`${n}.schema.json`, `#/definitions/${t}`]));
 const labTypes = { 'lab-project-v2.schema.json': 'LabProjectV2', 'asset-revision.schema.json': 'AssetRevision', 'coffee-recipe.schema.json': 'CoffeeRecipe' };
 const fold = (v) => Array.isArray(v) ? v.map(fold) : v && typeof v === 'object'
