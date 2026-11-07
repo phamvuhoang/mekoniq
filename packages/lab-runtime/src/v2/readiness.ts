@@ -5,7 +5,7 @@ import {validateArmCollisionProfile} from './models/arm-scene';
 import {PUMA560_SI} from './models/arm-kinematics';
 import {hashJson} from './hash';
 import {TICK_MS} from './clock';
-import {requiredBackends} from './scenario-matrix';
+import {resolveBackends} from './scenario-matrix';
 export interface ReadinessCheck {id:string;status:'ready'|'blocked'|'unknown';reasonCodes:string[];evidenceRef:string|null}
 export interface ReadinessSnapshot {checkedAt:string;expiresAt:string;scenarioId:string;backendSetId:string;checks:ReadinessCheck[];canStart:boolean}
 export interface ReadinessContext {scenarioId:string;backendSetId:string;project?:unknown}
@@ -48,7 +48,9 @@ export async function collectReadiness(context:ReadinessContext,o:ReadinessOptio
   }else if(native)checks.push(check('world',['WORLD_PROVIDER_UNAVAILABLE'],'unknown'));
   if(set.mode==='hardware'||set.access!=='simulated')checks.push(check('mode',['MODE_UNSUPPORTED']));
   else{
-   for(const id of requiredBackends(scenario,set.mode)){
+   const resolution=resolveBackends(scenario,set.mode,context.backendSetId,catalog);
+   if(!resolution.ok)checks.push(check('scenario',resolution.reasonCodes));
+   for(const id of resolution.required){
     const b=catalog.backends.find(x=>x.id===id),reasons:string[]=[];
     if(!set.backends.includes(id))reasons.push(`BACKEND_NOT_IN_SET:${id}`);
     if(!b)reasons.push(`BACKEND_UNKNOWN:${id}`);

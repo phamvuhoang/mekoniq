@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {defaultCatalog} from '../capabilities';
 import {scenarioRegistry} from '../scenario-registry';
-import {requiredBackends} from '../scenario-matrix';
+import {resolveBackends} from '../scenario-matrix';
 import type {FaultEntry} from '../backends/fault-schedule';
 import {readCompiledWorld,startGazeboBackend} from '../backends/gazebo-nav2';
 import {runSilScenario} from './campaign';
@@ -18,11 +18,15 @@ export function preflight(scenarioId:string,backendSetId:string){
  if(!scenario)return {ok:false,reasons:['SCENARIO_UNSUPPORTED'],required:[] as string[]};
  const set=Object.hasOwn(defaultCatalog.sets,backendSetId)?defaultCatalog.sets[backendSetId]!:undefined;
  if(!set||set.mode!=='simulation')return {ok:false,reasons:['BACKEND_SET_UNKNOWN'],required:[] as string[]};
- const required=requiredBackends(scenario,'simulation');
+ const resolution=resolveBackends(scenario,'simulation',backendSetId,defaultCatalog);
+ if(!resolution.ok)return {ok:false,reasons:resolution.reasonCodes,required:[] as string[]};
+ // engineering sets have no SIL lifecycle yet: refuse explicitly (after listing any missing providers) rather than start the legacy plant
+ const required=resolution.required;
  const missing=required.filter(b=>!set.backends.includes(b)||!['gazebo_nav2','coffee_io_sim','linuxcnc_sim'].includes(b));
  const fixture=FIXTURE[scenarioId]??null;
  if(scenario.coffee&&[...set.backends].sort().join()!==[...required].sort().join())return {ok:false,reasons:['BACKEND_SET_EXACT_MISMATCH'],required,scenarioRevision:scenario.revision,fixture};
- return {ok:!missing.length&&!!fixture,reasons:[...missing.length?[`BACKEND_MISSING:${missing.join(',')}`]:[],...fixture?[]:['SIL_FIXTURE_MISSING']],required,scenarioRevision:scenario.revision,fixture};
+ const engineering=!!set.scenarioIds;
+ return {ok:!missing.length&&!!fixture&&!engineering,reasons:[...missing.length?[`BACKEND_MISSING:${missing.join(',')}`]:[],...fixture?[]:['SIL_FIXTURE_MISSING'],...engineering?['ENGINEERING_LIFECYCLE_UNAVAILABLE']:[]],required,scenarioRevision:scenario.revision,fixture};
 }
 export async function runCli(argv:string[]){
  const [command,...rest]=argv,o=args(rest);

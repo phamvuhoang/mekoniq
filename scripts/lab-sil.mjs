@@ -15,8 +15,8 @@ import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),SIM=join(root,'robotics/simulation'),TSX=join(root,'node_modules/.bin/tsx'),CLI=join(root,'packages/lab-runtime/src/v2/sil/cli.ts');
 const BACKENDS=['gazebo_nav2','linuxcnc_sim'],ARM=join(root,'integrations/arm-controller');
 const sha=(s)=>createHash('sha256').update(s).digest('hex');
-const usage=(m)=>{console.error(`${m}\nusage: lab-sil.mjs doctor --backend gazebo_nav2 [--json] [--environment-profile ID] | run (--scenario ID --seed N | --campaign ID [--seed N]) [--repeat N] --out DIR [--backend-set ID] [--environment-profile ID] | verify --input DIR`);process.exit(2);};
-const SCHEMA={doctor:{backend:'string',json:'flag','environment-profile':'id','native-config':'path'},run:{scenario:'id',campaign:'id',seed:'int',repeat:'int',out:'path','backend-set':'id','environment-profile':'id','native-config':'path'},verify:{input:'path'}};
+const usage=(m)=>{console.error(`${m}\nusage: lab-sil.mjs doctor --backend gazebo_nav2 [--json] [--environment-profile ID] | run (--scenario ID --seed N | --campaign ID [--seed N]) [--repeat N] --out DIR [--backend-set ID] [--environment-profile ID] [--engineering-project PATH] | verify --input DIR`);process.exit(2);};
+const SCHEMA={doctor:{backend:'string',json:'flag','environment-profile':'id','native-config':'path'},run:{scenario:'id',campaign:'id',seed:'int',repeat:'int',out:'path','backend-set':'id','environment-profile':'id','native-config':'path','engineering-project':'path'},verify:{input:'path'}};
 function parse(command,argv){
  const schema=SCHEMA[command];if(!schema)usage(`UNKNOWN_COMMAND:${command??''}`);
  const o={};
@@ -89,6 +89,12 @@ async function campaignEntries(o){
 async function run(o){
  if(!o.out)usage('MISSING_OPTION:--out');
  if(o.campaign&&(o.scenario||o['backend-set']))usage('CAMPAIGN_EXCLUDES:--scenario/--backend-set');
+ // engineering sets run a compiled project, never a preset; a project with a legacy set is a mistake, not a fallback
+ const engineeringSet=String(o['backend-set']??'').startsWith('engineering-');
+ if(engineeringSet&&!o['engineering-project'])usage('MISSING_OPTION:--engineering-project');
+ if(o['engineering-project']&&!engineeringSet)usage('ENGINEERING_PROJECT_NEEDS_ENGINEERING_BACKEND_SET');
+ if(o['engineering-project']&&!/^engineering-(arm64|amd64)$/.test(String(o['environment-profile']??'')))usage('ENGINEERING_PROJECT_NEEDS_ENGINEERING_ENVIRONMENT_PROFILE');
+ if(o['engineering-project']&&!existsSync(o['engineering-project']))usage(`ENGINEERING_PROJECT_MISSING:${o['engineering-project']}`);
  if(!o.campaign)for(const k of ['scenario','seed'])if(o[k]===undefined)usage(`MISSING_OPTION:--${k}`);
  const entries=o.campaign?await campaignEntries(o):[{id:o.scenario,seed:o.seed,repeat:o.repeat??1,backendSet:o['backend-set']??'simulation-default',requires:null}];
  for(const e of entries){e.preflight=preflightOf(e.id,e.backendSet);if(e.requires&&e.preflight.ok&&[...e.requires].sort().join()!==[...e.preflight.required].sort().join())e.preflight={...e.preflight,ok:false,reasons:[...e.preflight.reasons,`CAMPAIGN_REQUIRES_MISMATCH:${e.requires.join(',')}`]};}

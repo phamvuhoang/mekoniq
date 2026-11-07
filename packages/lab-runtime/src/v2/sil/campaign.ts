@@ -60,7 +60,8 @@ export async function runSilScenario(o:SilRunOptions):Promise<SilRunResult>{
  if(scenario.revision!==o.scenarioRevision)throw new Error('SCENARIO_REVISION_MISMATCH');
  const set=Object.hasOwn(catalog.sets,o.backendSetId)?catalog.sets[o.backendSetId]!:undefined;
  if(!set||set.mode!=='simulation')throw new Error('BACKEND_SET_UNKNOWN');
- const required=requiredBackends(scenario,'simulation');
+ if(set.scenarioIds)throw new Error('ENGINEERING_LIFECYCLE_UNAVAILABLE');
+ const required=requiredBackends(scenario,'simulation',o.backendSetId,catalog);
  const missing=required.filter(b=>!set.backends.includes(b)||!IMPLEMENTED.includes(b));
  if(missing.length)throw new Error(`BACKEND_MISSING:${missing.join(',')}`);
  const valid=validateProjectV2(o.project);if(!valid.ok)throw new Error('INVALID_PROJECT');

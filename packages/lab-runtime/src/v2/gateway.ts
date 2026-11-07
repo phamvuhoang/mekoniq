@@ -5,7 +5,7 @@ import type {IncomingMessage,ServerResponse} from 'node:http';
 import {admitBackend,defaultCatalog,type CapabilityCatalog,type Access} from './capabilities';
 import {classifyField,validateProjectV2,validateRunRequestV2,validateActionV2,type Issue} from './contracts';
 import {collectReadiness,type ReadinessProbe,type NativeReadinessChecks} from './readiness';
-import {requiredBackends} from './scenario-matrix';
+import {requirementsByBackendSet,requiredBackends,resolveBackends} from './scenario-matrix';
 import {scenarioRegistry} from './scenario-registry';
 import {createScenarioRun,type ScenarioRun,type RunManifestInput,type RunProviders} from './scenario-runner';
 import {serveRunStream,STREAM_DEFAULTS,type StreamOptions} from './event-stream';
@@ -50,7 +50,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(method==='GET'&&sub==='/health')return send(response,200,{
    protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
-   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends})),scenarioIds:[...scenarioRegistry.keys()],scenarioRequirements:Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,{mock:requiredBackends(def,'mock'),simulation:requiredBackends(def,'simulation')}])),features:{polling:true,sse:true,readiness:true},capabilities:deps.engineering?[ENGINEERING_CAPABILITY]:[],
+   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends})),scenarioIds:[...scenarioRegistry.keys()],scenarioRequirements:Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,{mock:requiredBackends(def,'mock'),simulation:requiredBackends(def,'simulation')}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog),features:{polling:true,sse:true,readiness:true},capabilities:deps.engineering?[ENGINEERING_CAPABILITY]:[],
   });
   if(method==='POST'&&!origin)return deny(response,403,'ORIGIN_REQUIRED',[]);
   if(method==='POST'&&sub==='/sessions'){
@@ -132,7 +132,9 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(set.access!==r.access)return deny(response,422,'BACKEND_UNAVAILABLE',['ACCESS_MODE_MISMATCH']);
    const scenario=scenarioRegistry.get(r.scenarioId);
    if(!scenario)return deny(response,422,'SCENARIO_UNSUPPORTED',[]);
-   const required=r.mode==='hardware'?set.backends:requiredBackends(scenario,r.mode);
+   const resolution=r.mode==='hardware'?undefined:resolveBackends(scenario,r.mode,r.backendSetId,catalog);
+   if(resolution&&!resolution.ok)return deny(response,422,'BACKEND_UNAVAILABLE',resolution.reasonCodes);
+   const required=resolution?resolution.required:set.backends;
    if(!required.every(id=>set.backends.includes(id)))return deny(response,422,'BACKEND_UNAVAILABLE',['SCENARIO_BACKEND_MISSING']);
    const admission=admitBackend(r.mode,required,catalog,r.access);
    if(!admission.ok)return deny(response,422,'BACKEND_UNAVAILABLE',admission.reasonCodes);

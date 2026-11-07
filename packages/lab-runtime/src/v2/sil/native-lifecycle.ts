@@ -52,8 +52,11 @@ export function assertNativeAdmission(input:RunManifestInput,p:RunProviders,f:Na
  if(!scenario.coffee||scenario.orders.length)throw new Error('NATIVE_SCENARIO_UNSUPPORTED');
  if(scenario.revision!==input.scenarioRevision)throw new Error('SCENARIO_REVISION_MISMATCH');
  if(input.mode!=='simulation'||input.access!=='simulated')throw new Error('MODE_BACKEND_MISMATCH');
- const set=(p.catalog??defaultCatalog).sets[input.backendSetId],required=requiredBackends(scenario,'simulation');
+ const set=(p.catalog??defaultCatalog).sets[input.backendSetId];
  if(!set||set.mode!=='simulation')throw new Error('BACKEND_SET_UNKNOWN');
+ // this lifecycle drives the LinuxCNC/coffee_io_sim plant; an engineering set must get its own lifecycle, never this one
+ if(set.scenarioIds)throw new Error('ENGINEERING_LIFECYCLE_UNAVAILABLE');
+ const required=requiredBackends(scenario,'simulation',input.backendSetId,p.catalog??defaultCatalog);
  if([...set.backends].sort().join()!==[...required].sort().join())throw new Error('BACKEND_SET_EXACT_MISMATCH');
  if(required.some(b=>!(p.enabledBackends??required).includes(b)))throw new Error('BACKEND_MISSING');
  const valid=validateProjectV2(input.project);if(!valid.ok)throw new Error('INVALID_PROJECT');
@@ -103,7 +106,7 @@ export async function createNativeScenarioRun(input:RunManifestInput,p:RunProvid
  const adapters:SimulatedNavigationAdapter[]=[];
  const view=async():Promise<RunView>=>{
   let served=0n;for(const w of cp.coffee.workload)if(w.lineId)served+=BigInt(String((await source.read('fulfillment',w.lineId)).state.served??'0'));
-  const j=await source.journal();const result:RunView={run:{schemaVersion:2,id,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends:requiredBackends(scenario,'simulation'),status:cp.held?'needs_attention':cp.complete?'completed':!cp.started?'ready':cp.paused?'paused':'running',runRevision:cp.revision,eventCursor:j.at(-1)?.sequence??null,telemetryCursor:telemetry.cursor(),fidelity:'modeled',ageMs:null,sourceCommit:input.sourceCommit,scenarioId:scenario.id,scenarioRevision:scenario.revision,seed:input.seed},tick:cp.tick,simTimeNs:cp.simTimeNs,model:'gazebo_nav2 + linuxcnc_sim + coffee_io_sim',entities:plant?.latest().entities??cp.lastView?.entities??[],workload:[],awaiting:[],attention:structuredClone(cp.attention),served:String(served),coffee:coffee?await coffee.view():cp.lastView?.coffee??null,...prior?{controlAccess:'view_reconcile' as const}:{}};cp.lastView=result;return structuredClone(result);
+  const j=await source.journal();const result:RunView={run:{schemaVersion:2,id,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends:requiredBackends(scenario,'simulation',input.backendSetId,p.catalog??defaultCatalog),status:cp.held?'needs_attention':cp.complete?'completed':!cp.started?'ready':cp.paused?'paused':'running',runRevision:cp.revision,eventCursor:j.at(-1)?.sequence??null,telemetryCursor:telemetry.cursor(),fidelity:'modeled',ageMs:null,sourceCommit:input.sourceCommit,scenarioId:scenario.id,scenarioRevision:scenario.revision,seed:input.seed},tick:cp.tick,simTimeNs:cp.simTimeNs,model:'gazebo_nav2 + linuxcnc_sim + coffee_io_sim',entities:plant?.latest().entities??cp.lastView?.entities??[],workload:[],awaiting:[],attention:structuredClone(cp.attention),served:String(served),coffee:coffee?await coffee.view():cp.lastView?.coffee??null,...prior?{controlAccess:'view_reconcile' as const}:{}};cp.lastView=result;return structuredClone(result);
  };
  const journal=async()=>(await source.journal()).map(entry=>({sequence:entry.sequence,at:entry.recordedAt,events:(entry.payload.events as unknown as DomainEvent[]).map(e=>({type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject}))}));
  const report=async():Promise<RunReport>=>{

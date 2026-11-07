@@ -72,7 +72,7 @@ function checkWorld(p:LabProjectV2){
 }
 export async function createScenarioRun(input:RunManifestInput,providers:RunProviders):Promise<ScenarioRun>{
  const registered=(providers.scenarios??scenarioRegistry).get(input.scenarioId);if(!registered)throw new Error('SCENARIO_UNSUPPORTED');
- const backends=instantiateBackends(input.backendSetId,providers.catalog??defaultCatalog,providers.enabledBackends??[],requiredBackends(registered,'mock'));
+ const backends=instantiateBackends(input.backendSetId,providers.catalog??defaultCatalog,providers.enabledBackends??[],requiredBackends(registered,'mock',input.backendSetId,providers.catalog??defaultCatalog));
  if(input.mode!==backends.mode||input.access!==backends.access)throw new Error('MODE_BACKEND_MISMATCH');
  const valid=validateProjectV2(input.project);if(!valid.ok)throw new Error('INVALID_PROJECT');
  const project=structuredClone(valid.value);checkWorld(project);

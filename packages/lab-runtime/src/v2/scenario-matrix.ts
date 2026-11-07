@@ -112,7 +112,36 @@ export function validateMatrix(rows:readonly MatrixRow[],o:{exists(path:string):
 }
 const BACKENDS:Record<'mock'|'simulation',{amr:string;cell:string[]}>={mock:{amr:'mock_amr',cell:['mock_coffee','mock_arm']},simulation:{amr:'gazebo_nav2',cell:['linuxcnc_sim','coffee_io_sim']}};
 /** The one formula every admission level uses (matrix, SIL preflight, orchestrator, Lab fixture): the AMR backend, plus the cell when the scenario/row needs it. A set may offer more. */
-export function requiredBackends(target:ScenarioDefinition|MatrixRow,mode:'mock'|'simulation'){const cell='cell' in target?target.cell:!!target.coffee;return [BACKENDS[mode].amr,...cell?BACKENDS[mode].cell:[]];}
+const needsCell=(target:ScenarioDefinition|MatrixRow)=>'cell' in target?target.cell:!!target.coffee;
+export interface BackendResolution {ok:boolean;required:string[];reasonCodes:string[]}
+const ownedScenarios=(target:ScenarioDefinition|MatrixRow)=>'runnerScenarios' in target?[target.id,...target.runnerScenarios]:[target.id];
+/**
+ * Non-throwing form of requiredBackends. Without a set id the answer is the legacy mode formula. With one, the set must exist and match the mode (no fallback);
+ * engineering sets (those declaring scenarioIds) must support the scenario and supply every role it needs; legacy sets keep the legacy formula.
+ */
+export function resolveBackends(target:ScenarioDefinition|MatrixRow,mode:'mock'|'simulation',backendSetId?:string,catalog:CapabilityCatalog=defaultCatalog):BackendResolution{
+ const fail=(code:string):BackendResolution=>({ok:false,required:[],reasonCodes:[code]});
+ const legacy=():BackendResolution=>({ok:true,required:[BACKENDS[mode].amr,...needsCell(target)?BACKENDS[mode].cell:[]],reasonCodes:[]});
+ if(backendSetId===undefined)return legacy();
+ const set=Object.hasOwn(catalog.sets,backendSetId)?catalog.sets[backendSetId]:undefined;
+ if(!set)return fail('BACKEND_SET_UNKNOWN');
+ if(set.mode!==mode)return fail('MODE_BACKEND_MISMATCH');
+ if(!set.scenarioIds)return legacy();
+ if(!ownedScenarios(target).some(id=>set.scenarioIds!.includes(id)))return fail('SCENARIO_UNSUPPORTED_BY_SET');
+ const roles=set.providers,cell=needsCell(target);
+ if(!roles?.amr||cell&&(!roles.arm||!roles.coffee))return fail('SCENARIO_BACKEND_MISSING');
+ return {ok:true,required:[roles.amr,...cell?[roles.arm!,roles.coffee!]:[]],reasonCodes:[]};
+}
+/** Backends a scenario needs. The two-argument form is the legacy mode-only answer; pass the backend set (and the server catalog) on every execution path. */
+export function requiredBackends(target:ScenarioDefinition|MatrixRow,mode:'mock'|'simulation',backendSetId?:string,catalog?:CapabilityCatalog){
+ const r=resolveBackends(target,mode,backendSetId,catalog);
+ if(!r.ok)throw new Error(r.reasonCodes[0]);
+ return r.required;
+}
+/** Health view: scenario id -> backend set id -> what that pairing needs. Only sets of a mode the scenario can run in are listed. */
+export function requirementsByBackendSet(catalog:CapabilityCatalog=defaultCatalog):Record<string,Record<string,{supported:boolean;required:string[];reasonCodes:string[]}>>{
+ return Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,Object.fromEntries(Object.entries(catalog.sets).filter(([,s])=>s.mode==='mock'||s.mode==='simulation').map(([setId,s])=>{const r=resolveBackends(def,s.mode as 'mock'|'simulation',setId,catalog);return [setId,{supported:r.ok,required:r.required,reasonCodes:r.reasonCodes}];}))]));
+}
 export interface Admission {status:'admitted'|'unavailable'|'unsupported';reasons:string[];required:string[];effects:never[]}
 /**
  * Preflight only (server-side `available` from the capability catalog, never from a browser); it never schedules an effect. `id` is a registry
@@ -128,6 +157,8 @@ export async function admitScenario(id:string,o:{mode:Mode;backendSetId:string;a
  const sets=(o.catalog??defaultCatalog).sets,set=Object.hasOwn(sets,o.backendSetId)?sets[o.backendSetId]:undefined;
  if(!set)return {status:'unavailable',reasons:['BACKEND_SET_UNKNOWN'],required:[],effects:none};
  if(set.mode!==mode)return {status:'unavailable',reasons:['MODE_BACKEND_MISMATCH'],required:[],effects:none};
- const required=[...new Set(runners.flatMap(d=>requiredBackends(d,mode)))],missing=required.filter(b=>!set.backends.includes(b)||!o.available.includes(b));
+ const resolutions=runners.map(d=>resolveBackends(d,mode,o.backendSetId,o.catalog));
+ if(resolutions.some(r=>!r.ok))return {status:'unavailable',reasons:[...new Set(resolutions.flatMap(r=>r.reasonCodes))],required:[],effects:none};
+ const required=[...new Set(resolutions.flatMap(r=>r.required))],missing=required.filter(b=>!set.backends.includes(b)||!o.available.includes(b));
  return {status:missing.length?'unavailable':'admitted',reasons:missing.map(b=>`BACKEND_MISSING:${b}`),required,effects:none};
 }
