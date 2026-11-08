@@ -1,0 +1,497 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.navigation-scene.v1",
+  "title": "NavigationSceneV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "navigation-scene"
+    },
+    "sceneDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "inputs": {
+      "$ref": "robot-physical-model-v1.schema.json#/definitions/InputIdentity"
+    },
+    "compilerVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "schemaHash": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "robots": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "robotId": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "model": {
+            "$ref": "navigation-model-2d-v1.schema.json"
+          },
+          "initialPoseMap": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "targetBindings": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "pointId": {
+                  "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                },
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                },
+                "yaw": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "pointId",
+                "x",
+                "y",
+                "yaw"
+              ]
+            }
+          }
+        },
+        "required": [
+          "robotId",
+          "model",
+          "initialPoseMap",
+          "targetBindings"
+        ]
+      }
+    },
+    "world": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "hash": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "widthM": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "heightM": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "obstacles": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 500,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "verticesM": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 256,
+                "items": {
+                  "$ref": "robot-physical-model-v1.schema.json#/definitions/Vec2"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "verticesM"
+            ]
+          }
+        },
+        "boundaries": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "verticesM": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 256,
+                "items": {
+                  "$ref": "robot-physical-model-v1.schema.json#/definitions/Vec2"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "verticesM"
+            ]
+          }
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "hash",
+        "widthM",
+        "heightM",
+        "obstacles",
+        "boundaries"
+      ]
+    },
+    "actors": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "radiusM": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "initialPoseMap": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "scheduleRef": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "hash": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              }
+            },
+            "required": [
+              "id",
+              "revision",
+              "hash"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "radiusM",
+          "initialPoseMap",
+          "scheduleRef"
+        ]
+      }
+    },
+    "zones": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "polygonM": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 256,
+            "items": {
+              "$ref": "robot-physical-model-v1.schema.json#/definitions/Vec2"
+            }
+          },
+          "entryPoints": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 16,
+            "items": {
+              "$ref": "robot-physical-model-v1.schema.json#/definitions/Vec2"
+            }
+          },
+          "exitPoints": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 16,
+            "items": {
+              "$ref": "robot-physical-model-v1.schema.json#/definitions/Vec2"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "polygonM",
+          "entryPoints",
+          "exitPoints"
+        ]
+      }
+    },
+    "clock": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tickMs": {
+          "const": 20
+        }
+      },
+      "required": [
+        "tickMs"
+      ]
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "const": "irsim_2d"
+        },
+        "version": {
+          "const": "2.12.0"
+        },
+        "collisionMode": {
+          "const": "stop"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "collisionMode"
+      ]
+    },
+    "policy": {
+      "$ref": "#/definitions/NavigationPolicyV1"
+    },
+    "files": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "$ref": "robot-physical-model-v1.schema.json#/definitions/ArtifactRef"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "sceneDigest",
+    "inputs",
+    "compilerVersion",
+    "schemaHash",
+    "robots",
+    "world",
+    "actors",
+    "zones",
+    "clock",
+    "engine",
+    "policy",
+    "files",
+    "limitations"
+  ],
+  "definitions": {
+    "NavigationPolicyV1": {
+      "title": "NavigationPolicyV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "hash": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "source": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "safetyMarginM": {
+              "type": "number",
+              "minimum": 0
+            },
+            "controller": {
+              "const": "grid-diff-v1"
+            },
+            "gridResolutionM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "headingCount": {
+              "type": "integer",
+              "minimum": 4,
+              "maximum": 64
+            },
+            "distanceCostPerM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "rotationCostPerRad": {
+              "type": "number",
+              "minimum": 0
+            },
+            "maxPlannerStates": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50000000
+            },
+            "maxLinearMps": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "maxAngularRadps": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "maxAccelerationMps2": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "maxAngularAccelerationRadps2": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "goalPositionToleranceM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "goalYawToleranceRad": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "stoppedLinearMps": {
+              "type": "number",
+              "minimum": 0
+            },
+            "stoppedAngularRadps": {
+              "type": "number",
+              "minimum": 0
+            },
+            "arrivalHoldTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "replanEveryTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "scanFreshnessTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "noProgressTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "goalDeadlineTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30000
+            }
+          },
+          "required": [
+            "safetyMarginM",
+            "controller",
+            "gridResolutionM",
+            "headingCount",
+            "distanceCostPerM",
+            "rotationCostPerRad",
+            "maxPlannerStates",
+            "maxLinearMps",
+            "maxAngularRadps",
+            "maxAccelerationMps2",
+            "maxAngularAccelerationRadps2",
+            "goalPositionToleranceM",
+            "goalYawToleranceRad",
+            "stoppedLinearMps",
+            "stoppedAngularRadps",
+            "arrivalHoldTicks",
+            "replanEveryTicks",
+            "scanFreshnessTicks",
+            "noProgressTicks",
+            "goalDeadlineTicks"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "revision",
+        "hash",
+        "source",
+        "parameters"
+      ]
+    }
+  }
+}

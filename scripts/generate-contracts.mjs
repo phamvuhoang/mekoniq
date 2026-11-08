@@ -41,15 +41,33 @@ for (const [name, type] of Object.entries(engFiles)) {
 }
 const engOutput = "/* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */\nimport type { LabProjectV2, AssetRevision, CoffeeRecipe } from './lab-v2';\n" + await compile({ title: 'EngineeringContracts', type: 'object', additionalProperties: false, properties: {}, definitions: engDefinitions }, 'EngineeringContracts', { bannerComment: '', style: { singleQuote: true, semi: true, tabWidth: 2 }, unknownAny: false, unreachableDefinitions: true });
 const engFile = new URL('../packages/contracts/generated/engineering.ts', import.meta.url);
+// Navigation/validation schemas reference each other by file and the engineering schemas by type name (imported, never re-declared).
+const navFiles = { 'robot-physical-model-v1': 'RobotPhysicalModelV1', 'navigation-model-2d-v1': 'NavigationModel2DV1', 'navigation-scene-v1': 'NavigationSceneV1', 'model-validation-report-v1': 'ModelValidationReportV1', 'irsim-worker-v1': 'IRSimRequestV1', 'navigation-run-evidence-v1': 'NavigationRunEvidenceV1' };
+const navRoots = Object.fromEntries(Object.entries(navFiles).map(([n, t]) => [`${n}.schema.json`, `#/definitions/${t}`]));
+const foldNav = (v) => Array.isArray(v) ? v.map(foldNav) : v && typeof v === 'object'
+  ? (typeof v.$ref === 'string' && !v.$ref.startsWith('#') ? (v.$ref.startsWith('engineering-component.schema.json#/definitions/') ? { tsType: v.$ref.split('/').pop() } : { $ref: navRoots[v.$ref] ?? v.$ref.replace(/^[^#]*#/, '#') }) : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, foldNav(x)])))
+  : v;
+const navDefinitions = {};
+for (const [name, type] of Object.entries(navFiles)) {
+  const root = JSON.parse(await readFile(new URL(`${name}.schema.json`, v2Dir), 'utf8'));
+  const definitions = root.definitions ?? {};
+  for (const k of ['$schema', '$id', 'definitions']) delete root[k];
+  Object.assign(navDefinitions, foldNav(definitions));
+  navDefinitions[type] = foldNav(root);
+}
+const navOutput = "/* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */\nimport type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';\n" + await compile({ title: 'Navigation2DContracts', type: 'object', additionalProperties: false, properties: {}, definitions: navDefinitions }, 'Navigation2DContracts', { bannerComment: '', ignoreMinAndMaxItems: true, style: { singleQuote: true, semi: true, tabWidth: 2 }, unknownAny: false, unreachableDefinitions: true });
+const navFile = new URL('../packages/contracts/generated/navigation2d.ts', import.meta.url);
 if (process.argv.includes('--check')) {
   const actual = await readFile(outputFile, 'utf8').catch(() => '');
   if (actual !== output) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate');
   if ((await readFile(v2File, 'utf8').catch(() => '')) !== v2Output) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate (lab-v2)');
   if ((await readFile(engFile, 'utf8').catch(() => '')) !== engOutput) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate (engineering)');
+  if ((await readFile(navFile, 'utf8').catch(() => '')) !== navOutput) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate (navigation2d)');
   console.log('Contract generation matches schema.');
 } else {
   await writeFile(outputFile, output);
   await writeFile(v2File, v2Output);
   await writeFile(engFile, engOutput);
-  console.log('Generated packages/contracts/generated/wire.ts, lab-v2.ts and engineering.ts');
+  await writeFile(navFile, navOutput);
+  console.log('Generated packages/contracts/generated/wire.ts, lab-v2.ts, engineering.ts and navigation2d.ts');
 }

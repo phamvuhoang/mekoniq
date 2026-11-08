@@ -1,0 +1,768 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.irsim-worker.v1",
+  "title": "IRSimRequestV1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "mekoniq-irsim/1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "expectedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "op": {
+          "const": "describe"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "protocol",
+        "requestId",
+        "runId",
+        "expectedTick",
+        "op",
+        "payload"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "mekoniq-irsim/1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "expectedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "op": {
+          "const": "create"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sceneRef": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          },
+          "required": [
+            "sceneRef",
+            "seed"
+          ]
+        }
+      },
+      "required": [
+        "protocol",
+        "requestId",
+        "runId",
+        "expectedTick",
+        "op",
+        "payload"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "mekoniq-irsim/1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "expectedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "op": {
+          "const": "start"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "protocol",
+        "requestId",
+        "runId",
+        "expectedTick",
+        "op",
+        "payload"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "mekoniq-irsim/1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "expectedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "op": {
+          "const": "step"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "targetTick": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "velocities": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 2,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "robotId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "vMps": {
+                    "type": "number"
+                  },
+                  "omegaRadps": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "robotId",
+                  "vMps",
+                  "omegaRadps"
+                ]
+              }
+            },
+            "actorUpdates": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 16,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "actorId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "poseMap": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "actorId",
+                  "poseMap"
+                ]
+              }
+            },
+            "singleStep": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "targetTick",
+            "velocities",
+            "actorUpdates"
+          ]
+        }
+      },
+      "required": [
+        "protocol",
+        "requestId",
+        "runId",
+        "expectedTick",
+        "op",
+        "payload"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "mekoniq-irsim/1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "expectedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "op": {
+          "const": "pause"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "protocol",
+        "requestId",
+        "runId",
+        "expectedTick",
+        "op",
+        "payload"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "mekoniq-irsim/1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "expectedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "op": {
+          "const": "resume"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "protocol",
+        "requestId",
+        "runId",
+        "expectedTick",
+        "op",
+        "payload"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "mekoniq-irsim/1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "expectedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "op": {
+          "const": "getState"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "protocol",
+        "requestId",
+        "runId",
+        "expectedTick",
+        "op",
+        "payload"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "mekoniq-irsim/1"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "expectedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "op": {
+          "const": "stop"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "reason"
+          ]
+        }
+      },
+      "required": [
+        "protocol",
+        "requestId",
+        "runId",
+        "expectedTick",
+        "op",
+        "payload"
+      ]
+    }
+  ],
+  "definitions": {
+    "LidarScanV1": {
+      "title": "LidarScanV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sensorId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "frameId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "simTimeNs": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "angleMinRad": {
+          "type": "number"
+        },
+        "angleIncrementRad": {
+          "type": "number"
+        },
+        "rangeMinM": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rangeMaxM": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "rangesM": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1080,
+          "items": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "states": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1080,
+          "items": {
+            "enum": [
+              "hit",
+              "no_return",
+              "below_min",
+              "invalid"
+            ]
+          }
+        }
+      },
+      "required": [
+        "sensorId",
+        "frameId",
+        "tick",
+        "simTimeNs",
+        "angleMinRad",
+        "angleIncrementRad",
+        "rangeMinM",
+        "rangeMaxM",
+        "rangesM",
+        "states"
+      ]
+    },
+    "IRSimSnapshotV1": {
+      "title": "IRSimSnapshotV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "bootId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "simTimeNs": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "seq": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "sceneDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "robots": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "robotId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "poseDriveMap": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "bodyVelocity": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "scans": {
+                "type": "array",
+                "minItems": 0,
+                "maxItems": 16,
+                "items": {
+                  "$ref": "#/definitions/LidarScanV1"
+                }
+              },
+              "collisionIds": {
+                "type": "array",
+                "minItems": 0,
+                "maxItems": 64,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              }
+            },
+            "required": [
+              "robotId",
+              "poseDriveMap",
+              "bodyVelocity",
+              "scans",
+              "collisionIds"
+            ]
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "runId",
+        "bootId",
+        "tick",
+        "simTimeNs",
+        "seq",
+        "sceneDigest",
+        "robots"
+      ]
+    },
+    "IRSimResponseV1": {
+      "title": "IRSimResponseV1",
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocol": {
+              "const": "mekoniq-irsim/1"
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "bootId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "tick": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "ok": {
+              "const": true
+            },
+            "result": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/IRSimSnapshotV1"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "state": {
+                      "enum": [
+                        "created",
+                        "running",
+                        "paused",
+                        "stopped",
+                        "failed"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "state"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "packageVersion": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "pythonVersion": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "lockDigest": {
+                      "$ref": "engineering-component.schema.json#/definitions/Digest"
+                    },
+                    "ops": {
+                      "type": "array",
+                      "minItems": 0,
+                      "maxItems": 16,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      }
+                    }
+                  },
+                  "required": [
+                    "packageVersion",
+                    "pythonVersion",
+                    "lockDigest",
+                    "ops"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "runId",
+            "bootId",
+            "tick",
+            "ok",
+            "result"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocol": {
+              "const": "mekoniq-irsim/1"
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "bootId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "tick": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "ok": {
+              "const": false
+            },
+            "error": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "detail": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                }
+              },
+              "required": [
+                "code",
+                "detail"
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "runId",
+            "bootId",
+            "tick",
+            "ok",
+            "error"
+          ]
+        }
+      ]
+    }
+  }
+}

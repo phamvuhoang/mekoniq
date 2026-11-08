@@ -144,6 +144,13 @@ const sensorRules=(m:SensorModel):Problem[]=>{
  field(out,m.latency,['s'],'/latency',nonNegative,'latency must not be negative');
  field(out,m.dropoutProbability,['1'],'/dropoutProbability',v=>v>=0&&v<=1,'probability must be in [0, 1]');
  field(out,m.noise.stddev,units,'/noise/stddev',nonNegative,'standard deviation must not be negative');
+ // a 2D LiDAR is metric, spins at most one turn and its beam count is bounded by the schema
+ if(m.sensorType==='lidar_2d'){
+  field(out,m.range.min,['m'],'/range/min',nonNegative,'range minimum must not be negative');
+  field(out,m.range.max,['m'],'/range/max',positive,'range maximum must be positive');
+  field(out,m.noise.stddev,['m'],'/noise/stddev',nonNegative,'standard deviation must not be negative');
+  field(out,m.fieldOfView,['rad'],'/fieldOfView',v=>v>0&&v<=2*Math.PI+1e-12,'field of view must be in (0, 2*pi] rad');
+ }
  return out;
 };
 // Legacy process fixtures use `1` to mean the unit named by that field (never an arbitrary dimensionless scale).

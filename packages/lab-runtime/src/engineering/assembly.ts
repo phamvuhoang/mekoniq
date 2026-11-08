@@ -13,6 +13,8 @@ export interface ResolveOptions{
  models?:Record<string,Record<string,unknown>>;
  /** Valid quotations by component digest (from loadCatalog().quotes). */
  quotes?:Record<string,Quote>;
+ /** 1 collects a drive binding per AMR (models.drivesByEntity) and refuses ambiguous sensor models. Implied by requestedProfile 'engineering-irsim-2d-v1'; legacy resolutions are unchanged. */
+ driveBindingsVersion?:1;
 }
 const EPS=1e-9;
 const IDENTITY:FramePose={position:[0,0,0],quaternionXyzw:[0,0,0,1]};
@@ -59,12 +61,12 @@ function shapeBounds(geometry:Link['visual'][number]['geometry'],world:FramePose
 // ponytail: world-axis AABBs over-report for rotated shapes; upgrade to oriented-box SAT if false positives appear.
 const overlaps=(a:Aabb,b:Aabb)=>[0,1,2].every(k=>Math.min(a.max[k]!,b.max[k]!)-Math.max(a.min[k]!,b.min[k]!)>EPS);
 
-const sourceKey=(s:SourceRef)=>`${s.documentId}\u0000${s.revision}\u0000${s.locator}\u0000${s.contentSha256}`;
-function uniqueSources(list:SourceRef[]):SourceRef[]{
+export const sourceKey=(s:SourceRef)=>`${s.documentId}\u0000${s.revision}\u0000${s.locator}\u0000${s.contentSha256}`;
+export function uniqueSources(list:SourceRef[]):SourceRef[]{
  const map=new Map(list.map(s=>[sourceKey(s),s]));
  return [...map.entries()].sort(([a],[b])=>a<b?-1:1).map(([,s])=>s);
 }
-const linkSources=(l:Link):SourceRef[]=>[l.massKg.source,l.inertialSource,...l.visual.map(s=>s.source),...l.collision.map(s=>s.source)];
+export const linkSources=(l:Link):SourceRef[]=>[l.massKg.source,l.inertialSource,...l.visual.map(s=>s.source),...l.collision.map(s=>s.source)];
 
 export function resolveAssembly(project:EngineeringProject,components:Record<string,ComponentRevision>,options:ResolveOptions={}):{problems:Problem[];resolved:ResolvedAssembly|null}{
  const shape=validateEngineeringProject(project);
@@ -189,7 +191,9 @@ export function resolveAssembly(project:EngineeringProject,components:Record<str
   const {schemaVersion:_v,kind:_k,id:_i,...parameters}=m as Record<string,unknown>;void _v;void _k;void _i;
   return {schemaVersion:1,kind:ref.kind as ModelDocument['kind'],id:ref.id,digest:ref.digest,parameters};
  };
+ const perEntity=options.driveBindingsVersion===1||project.requestedProfile==='engineering-irsim-2d-v1';
  const models:ResolvedAssembly['models']={drive:null,arm:{},sensor:{},process:{}};
+ const drives:Record<string,NonNullable<ResolvedAssembly['models']['drive']>>={};
  const wheelJoints=new Set<string>();
  const docs=new Map<string,ModelDocument[]>();
  for(const i of instances){
@@ -220,12 +224,17 @@ export function resolveAssembly(project:EngineeringProject,components:Record<str
     const a=composePose(hw,port(holder,drive.leftMountPort)).position,b=composePose(hw,port(holder,drive.rightMountPort)).position,sep=Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
     if(Math.abs(sep-drive.wheelSeparationM.value)>EPS)add('WHEEL_GEOMETRY_MISMATCH',at('entityBindings',entityId),`drive model separation ${drive.wheelSeparationM.value} m, mounts are ${sep} m apart`);
    }
-   if(left&&right){models.drive={entityId,instanceId:holder,model:doc,leftJointId:left,rightJointId:right};wheelJoints.add(left).add(right);}
+   if(left&&right){models.drive=drives[entityId]={entityId,instanceId:holder,model:doc,leftJointId:left,rightJointId:right};wheelJoints.add(left).add(right);}
   }
+ }
+ if(perEntity){
+  const list=Object.values(drives);
+  // several AMRs: no singleton, each binding lives under its own entity; one AMR: the singleton is that same binding
+  models.driveBindingsVersion=1;models.drivesByEntity=drives;models.drive=list.length===1?list[0]!:null;
  }
  for(const [id,list] of docs)for(const d of list){
   const entityKind=[...bindings.values()].find(b=>b.instanceIds.includes(id));
-  if(d.kind==='sensor')models.sensor[id]=d;
+  if(d.kind==='sensor'){if(perEntity&&models.sensor[id])add('MULTIPLE_SENSOR_MODELS_UNSUPPORTED',at('instances',id,'models'),`instance carries several sensor models (${models.sensor[id]!.id}, ${d.id}); the model is not chosen implicitly`);else models.sensor[id]=d;}
   else if(d.kind==='process')models.process[id]=d;
   else if(!d.parameters.drive&&entityKinds.get(entityKind?.entityId??'')==='arm')models.arm[models.arm[id]?`${id}/${d.id}`:id]=d;
  }

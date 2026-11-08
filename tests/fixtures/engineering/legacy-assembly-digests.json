@@ -1,0 +1,8 @@
+{
+  "capturedAt": "before multi-drive (A01 baseline)",
+  "digests": {
+    "valid": "ac118d50bcb5ba69ba3c4cc34b3f8e8370791dcb56430695a7342df8713a2c31",
+    "battery-offset": "402908b9f7ca68c5808869bd879a092f0dc961cfff300d63dd6a4785bbf05239",
+    "wheel-r075": "6f751fef2c96fd7dba8c9c2f7ee71e0305e7866ba3bec414cfdc02b98e3a5c3d"
+  }
+}

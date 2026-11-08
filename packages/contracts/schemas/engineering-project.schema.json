@@ -152,7 +152,8 @@
       "title": "EngineeringProfile",
       "enum": [
         "engineering-rigid-v1",
-        "engineering-contact-v1"
+        "engineering-contact-v1",
+        "engineering-irsim-2d-v1"
       ]
     }
   }

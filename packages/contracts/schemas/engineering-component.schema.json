@@ -907,6 +907,27 @@
         },
         "dropoutProbability": {
           "$ref": "#/definitions/Scalar"
+        },
+        "sensorType": {
+          "const": "lidar_2d"
+        },
+        "lidar2d": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "beamCount": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 1080
+            },
+            "beamCountSource": {
+              "$ref": "#/definitions/SourceRef"
+            }
+          },
+          "required": [
+            "beamCount",
+            "beamCountSource"
+          ]
         }
       },
       "required": [
@@ -920,7 +941,15 @@
         "noise",
         "latency",
         "dropoutProbability"
-      ]
+      ],
+      "dependencies": {
+        "sensorType": [
+          "lidar2d"
+        ],
+        "lidar2d": [
+          "sensorType"
+        ]
+      }
     },
     "ProcessModel": {
       "title": "ProcessModel",

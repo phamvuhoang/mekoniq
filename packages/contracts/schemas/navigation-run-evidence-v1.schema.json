@@ -1,0 +1,547 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.navigation-run-evidence.v1",
+  "title": "NavigationRunEvidenceV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "navigation-run-evidence"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "sceneDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "sceneRef": {
+      "$ref": "robot-physical-model-v1.schema.json#/definitions/ArtifactRef"
+    },
+    "modelDigests": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "$ref": "engineering-component.schema.json#/definitions/Digest"
+      }
+    },
+    "policyRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "hash": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "hash"
+      ]
+    },
+    "controller": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "const": "grid-diff-v1"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ]
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "const": "irsim_2d"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "pythonVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "lockDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "pythonVersion",
+        "platform",
+        "lockDigest"
+      ]
+    },
+    "clock": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tickMs": {
+          "const": 20
+        },
+        "tickHorizon": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30000
+        },
+        "businessEpochMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "tickMs",
+        "tickHorizon",
+        "businessEpochMs"
+      ]
+    },
+    "seed": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runSeed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "engineSeed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "engineSeedAlgorithm": {
+          "const": "irsim-env-seed-v1"
+        },
+        "sensorSeeds": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "robotId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "sensorId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "noiseSeed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              }
+            },
+            "required": [
+              "robotId",
+              "sensorId",
+              "noiseSeed"
+            ]
+          }
+        },
+        "actorRng": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          },
+          "required": [
+            "algorithm",
+            "seed"
+          ]
+        }
+      },
+      "required": [
+        "runSeed",
+        "engineSeed",
+        "engineSeedAlgorithm",
+        "sensorSeeds",
+        "actorRng"
+      ]
+    },
+    "validationReportRef": {
+      "anyOf": [
+        {
+          "$ref": "robot-physical-model-v1.schema.json#/definitions/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trajectory": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "firstTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "lastTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes",
+              "firstTick",
+              "lastTick"
+            ]
+          }
+        },
+        "sensors": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "firstTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "lastTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes",
+              "firstTick",
+              "lastTick"
+            ]
+          }
+        },
+        "control": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "firstTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "lastTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes",
+              "firstTick",
+              "lastTick"
+            ]
+          }
+        },
+        "collisions": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "firstTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "lastTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes",
+              "firstTick",
+              "lastTick"
+            ]
+          }
+        }
+      },
+      "required": [
+        "trajectory",
+        "sensors",
+        "control",
+        "collisions"
+      ]
+    },
+    "digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trajectoryDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "sensorDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "assertionDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "trajectoryDigest",
+        "sensorDigest",
+        "assertionDigest"
+      ]
+    },
+    "assertions": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "inconclusive",
+              "not_run"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "id",
+          "result",
+          "detail"
+        ]
+      }
+    },
+    "metricCoverage": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "metric": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "status": {
+            "enum": [
+              "available",
+              "unavailable"
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "metric",
+          "status",
+          "reason"
+        ]
+      }
+    },
+    "recordingGaps": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fromTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "toTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "fromTick",
+          "toTick",
+          "reason"
+        ]
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "runId",
+    "sceneDigest",
+    "sceneRef",
+    "modelDigests",
+    "policyRef",
+    "controller",
+    "engine",
+    "clock",
+    "seed",
+    "validationReportRef",
+    "artifacts",
+    "digests",
+    "assertions",
+    "metricCoverage",
+    "recordingGaps",
+    "limitations"
+  ]
+}

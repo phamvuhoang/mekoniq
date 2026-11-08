@@ -84,7 +84,7 @@ export type Joint =
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
  * via the `definition` "EngineeringProfile".
  */
-export type EngineeringProfile = 'engineering-rigid-v1' | 'engineering-contact-v1';
+export type EngineeringProfile = 'engineering-rigid-v1' | 'engineering-contact-v1' | 'engineering-irsim-2d-v1';
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
  * via the `definition` "BundleReceipt".
@@ -302,6 +302,11 @@ export interface SensorModel {
   };
   latency: Scalar;
   dropoutProbability: Scalar;
+  sensorType?: 'lidar_2d';
+  lidar2d?: {
+    beamCount: number;
+    beamCountSource: SourceRef;
+  };
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
@@ -751,6 +756,10 @@ export interface ResolvedModels {
   };
   process: {
     [k: string]: ModelDocument;
+  };
+  driveBindingsVersion?: 1;
+  drivesByEntity?: {
+    [k: string]: DriveBinding;
   };
 }
 /**

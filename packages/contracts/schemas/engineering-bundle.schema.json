@@ -169,6 +169,15 @@
           "additionalProperties": {
             "$ref": "#/definitions/ModelDocument"
           }
+        },
+        "driveBindingsVersion": {
+          "const": 1
+        },
+        "drivesByEntity": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/DriveBinding"
+          }
         }
       },
       "required": [
@@ -176,7 +185,15 @@
         "arm",
         "sensor",
         "process"
-      ]
+      ],
+      "dependencies": {
+        "driveBindingsVersion": [
+          "drivesByEntity"
+        ],
+        "drivesByEntity": [
+          "driveBindingsVersion"
+        ]
+      }
     },
     "BomPrice": {
       "title": "BomPrice",
