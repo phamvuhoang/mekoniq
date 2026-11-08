@@ -25,7 +25,7 @@ import {TelemetryRecorder,TELEMETRY_RATE_TICKS} from '../telemetry';
 import type {JournalEvents} from '../event-stream';
 import {validateNavigationDocument,type IRSimResponseV1,type IRSimSnapshotV1,type NavigationSceneV1} from './contracts';
 import {createNavigationController,NAVIGATION_CONTROLLER,type NavigationController} from './controller';
-import {buildNavigationEvidence,engineSeedOf,EVIDENCE_LIMITS,navigationMetrics,openNavigationRecorder,readNavigationEvidence,type EvidenceIdentity,type NavigationRecorder} from './evidence';
+import {buildNavigationEvidence,engineSeedOf,EVIDENCE_LIMITS,navigationMetrics,openNavigationRecorder,readNavigationEvidence,type EvidenceIdentity,type Gap,type NavigationRecorder} from './evidence';
 import {spawnIRSimWorker,WorkerLostError,type IRSimWorkerClient} from './worker-client';
 import {baseInMap,yawOf} from '../../engineering/navigation-model';
 import {framePose} from '../../engineering/inertia';
@@ -56,6 +56,8 @@ interface Checkpoint {
  plant:PlantCheckpoint;adapters:Record<string,IRSimAdapterState>;distanceM:Record<string,number>;maxConcurrentMovers:number;
  /** what the worker's describe reported when the plant started */
  engine?:{packageVersion:string;pythonVersion:string};
+ /** gaps the run asked the recorder for (a lost step ACK, a refused append): re-recorded on reopen when the manifest never got them */
+ evidenceGaps?:Gap[];
 }
 
 /** The locked navigation scene and the worker files it lists, verified against the bundle's project and this run's world. */
@@ -133,7 +135,7 @@ export async function createIRSimScenarioRun(input:RunManifestInput,providers:IR
  // the recording limit is the run's tick budget too: the scenario's maxTicks, never above the 30,000-tick quota
  const recorder=await openNavigationRecorder({directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.irsim.evidence,maxTicks:Math.min(providers.irsim.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
  const run=new IRSimRun(dir,cp,scenario,project,scene,providers.irsim,{mapId,mapRevision},recorder,identity);
- run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh);
+ run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
  try{
   if(!fresh)run.telemetry.gap('RUNTIME_RESTART',null,cp.tick);
   // ticks the previous process committed but never made durable are a recorded hole, never filled in
@@ -142,6 +144,8 @@ export async function createIRSimScenarioRun(input:RunManifestInput,providers:IR
   // an action was in flight on a live plant: a step may have been applied and never acknowledged; that tick is unknown, never assumed clean
   const unknown=Math.max(cp.tick,durable)+1;
   if(!fresh&&cp.inFlight&&cp.plant.status==='live'&&!recorder.committed().gaps.some(g=>g.fromTick===unknown))await recorder.gap({fromTick:unknown,toTick:unknown,reason:'STEP_ACK_LOST'});
+  // a gap the checkpoint knows of but the manifest never got (its write failed before the process ended) is recorded now, never forgotten
+  for(const g of cp.evidenceGaps??[])if(!recorder.committed().gaps.some(x=>x.fromTick===g.fromTick&&x.toTick===g.toTick&&x.reason===g.reason))await recorder.gap(g);
   // the worker of a started run died with the previous process: its legs are unknown, never continued
   if(cp.inFlight||cp.plant.status==='live')await run.recover();
   run.record();await run.persist();
@@ -160,7 +164,8 @@ class IRSimRun implements ScenarioRun {
  private worker?:IRSimWorkerClient;
  private queue:Promise<unknown>=Promise.resolve();
  private closed=false;
- private batching=false;
+ /** step actions queued or running: a pause/cancel arriving meanwhile is taken at that batch's next tick boundary (or after its refusal), never behind it */
+ private steps=0;
  private controls:{raw:unknown;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
  private engineSeed:number;
  constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>){
@@ -226,7 +231,9 @@ class IRSimRun implements ScenarioRun {
   await this.rec.flush();await this.drain();
  }
  /** A step that was sent but not verified: the plant may be at tick+1 with a state nobody saw (a contact included). That tick is a recorded gap, then the plant is lost. */
- private async stepLost(code:string){const t=this.cp.tick+1;await this.rec.gap({fromTick:t,toTick:t,reason:'STEP_ACK_LOST'}).catch(()=>{});await this.plantLost(code);}
+ private async stepLost(code:string){const t=this.cp.tick+1;await this.recordGap({fromTick:t,toTick:t,reason:'STEP_ACK_LOST'});await this.plantLost(code);}
+ /** A gap the run knows of goes into the checkpoint as well: if the recorder cannot write it now (it retries on every flush), a reopen records it from there. */
+ private async recordGap(g:Gap){const c=this.cp;(c.evidenceGaps??=[]).push(g);await this.rec.gap(g).catch(()=>{});}
  /** A recording that ended (quota, tick limit, failed write) ends the plant too: no motion is ever left unrecorded. Legs in flight become unknown. */
  private evidenceEnded(){return this.plantLost(`EVIDENCE:${this.rec.terminal}`,'EVIDENCE_INCOMPLETE');}
  /** Reopened after a crash or restart: the journal is the truth. A leg the journal still shows travelling is unknown; cargo, reservations and custody stay. */
@@ -352,7 +359,7 @@ class IRSimRun implements ScenarioRun {
   this.clock.advance(1);c.tick=this.clock.tick;c.plant.snapshot=next;
   // the verified tick goes to the evidence store with the step that produced it, before anything is derived from it
   // a refused append is never skipped silently: it ends the recording (and so the plant) with the reason
-  await this.rec.append(next,payload).catch(async(e:Error)=>{const why=`EVIDENCE_REJECTED:${e.message.slice(0,60)}`;await this.rec.gap({fromTick:c.tick,toTick:c.tick,reason:why});await this.rec.terminate(why);});
+  await this.rec.append(next,payload).catch(async(e:Error)=>{const why=`EVIDENCE_REJECTED:${e.message.slice(0,60)}`;await this.recordGap({fromTick:c.tick,toTick:c.tick,reason:why});await this.rec.terminate(why);});
   // live view distance at the robot base origin (the report's metric is recomputed from the durable evidence)
   for(const r of next.robots){const p=prev.robots.find(x=>x.robotId===r.robotId);if(!p||c.distanceM[r.robotId]===undefined)continue;const a=this.basePose(r.robotId,r.poseDriveMap),b=this.basePose(r.robotId,p.poseDriveMap);c.distanceM[r.robotId]+=Math.hypot(a[0]-b[0],a[1]-b[1]);}
   c.maxConcurrentMovers=Math.max(c.maxConcurrentMovers,c.roles.robots.filter(r=>this.moving(r.id)).length);
@@ -387,9 +394,11 @@ class IRSimRun implements ScenarioRun {
  }
  start(){return this.snapshot().then(v=>this.action({actionId:'start',expectedRevision:v.run.runRevision,kind:'start',payload:{}}));}
  action(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
-  const kind=(a as {kind?:unknown}|null)?.kind;
-  if(this.batching&&(kind==='pause'||kind==='cancel'))return new Promise((resolve,reject)=>this.controls.push({raw:a,resolve,reject}));
-  const p=this.queue.then(()=>this.execute(a,beforeExecute));this.queue=p.catch(()=>{});return p;}
+  const kind=(a as {kind?:unknown}|null)?.kind,step=kind==='step';
+  // from the moment a step is queued (synchronously, before any await of its admission) a pause/cancel waits for its next tick boundary instead of queueing behind it
+  if(this.steps&&(kind==='pause'||kind==='cancel'))return new Promise((resolve,reject)=>this.controls.push({raw:a,resolve,reject}));
+  if(step)this.steps++;
+  const p=this.queue.then(async()=>{try{return await this.execute(a,beforeExecute);}finally{if(step){this.steps--;await this.takeControls();}}});this.queue=p.catch(()=>{});return p;}
  private async execute(raw:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
   if(this.closed)throw new Error('RUN_CLOSED');
   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
@@ -421,7 +430,6 @@ class IRSimRun implements ScenarioRun {
    else if(a.kind==='resume'){if(this.worker)await this.ask('resume',{}).catch(e=>this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED'));c.paused=false;this.clock.resume();}
    else if(a.kind==='step'){
     // pause/cancel sent during the batch are taken at the next tick boundary (workers-runtime §2), and the batch ends there
-    this.batching=true;
     try{for(let i=0;i<Number(p.ticks)&&!this.controls.length;i++){if(!await this.tick())break;}}finally{await this.takeControls();}
    }
    else if(a.kind==='confirm')await this.confirmStop(pending![0],String(p.actorProvenance??'human'));
@@ -462,11 +470,10 @@ class IRSimRun implements ScenarioRun {
   return !this.cp.roles.robots.some(r=>this.moving(r.id));
  }
  private async finished(){const c=this.cp;return c.started&&!c.attention.length&&(c.cancelled?await this.cancelDone():await this.missionsDone());}
- /** Pause/cancel received while a step batch runs: each is executed as its own action (own admission, revision check and receipt) at a tick boundary. */
- private async takeControls(){
-  for(let x=this.controls.shift();x;x=this.controls.shift())await this.execute(x.raw).then(x.resolve,x.reject);
-  this.batching=false; // in the same turn as the last empty check: nothing can be left behind in the control queue
- }
+ /** Pause/cancel received while a step was queued or ran: each is executed as its own action (own admission, revision check and receipt) at a tick boundary,
+  * or right after a batch refused at admission. Once no step is pending, new controls take the ordinary queue (nothing is left behind: the last empty check and
+  * the steps decrement happen before any await). */
+ private async takeControls(){for(let x=this.controls.shift();x;x=this.controls.shift())await this.execute(x.raw).then(x.resolve,x.reject);}
  private async missionsDone(){
   const c=this.cp;
   if(c.workload.some(w=>w.status!=='placed'))return false;
@@ -497,8 +504,10 @@ class IRSimRun implements ScenarioRun {
    return {id,kind:'amr' as const,pose:{x,y,yawRad},quality:this.verified()?'valid' as const:'stale' as const,moving:c.plant.status==='live'&&this.moving(id),hold:this.holds[id]??null,goal:g?{commandId:g.commandId,state:g.state}:null,path:[],distanceM:c.distanceM[id]??0};
   });
  }
- async report():Promise<RunReport>{
-  await this.queue;if(this.closed)throw new Error('RUN_CLOSED');
+ /** One critical section: no action interleaves while the report reads the checkpoint, the journal, the evidence listing and the clock (one moment, never two). */
+ report():Promise<RunReport>{const p=this.queue.then(()=>this.buildReport());this.queue=p.catch(()=>{});return p;}
+ private async buildReport():Promise<RunReport>{
+  if(this.closed)throw new Error('RUN_CLOSED');
   const c=this.cp,v=await this.view();
   // every plant metric comes from the evidence as read back from disk now: what is not durable yet is not measured
   const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed,{scene:this.scene,runTick:c.started?c.tick:null}),m=navigationMetrics(this.scene,read);
@@ -518,5 +527,5 @@ class IRSimRun implements ScenarioRun {
     'Stop requests are model stops only (physicalStopConfirmed false).',...this.scene.limitations],
    telemetry:this.telemetry.report(),navigation2d};
  }
- async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;this.releaseSlot();try{await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{await this.source.close();}}}
+ async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;this.releaseSlot();try{await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{await this.rec.close().catch(()=>{});await this.source.close();}}}
 }

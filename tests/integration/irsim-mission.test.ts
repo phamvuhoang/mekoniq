@@ -205,3 +205,21 @@ test.skipIf(!irsimAvailable)('review B04-2 #3: entities and telemetry carry the 
  const t=run.telemetry.latest().find(s=>s.entityId==='amr-1')!.observed as {xM:number;yM:number;yawRad:number};
  base({x:t.xM,y:t.yM,yawRad:t.yawRad});
 },240_000);
+
+test.skipIf(!irsimAvailable)('review4 #9: a cancel (or pause) sent while a step batch is still being admitted is taken at its first tick boundary, not refused as stale',async()=>{
+ const {run,dir}=await open({entry:[double('logged.py')]});
+ await run.start();
+ const moving=await stepUntil(run,()=>speed(dir)>0.2,10),rev=moving.run.runRevision,from=moving.tick;
+ // both sent against the same revision in the same turn: the batch has not reached its first tick when the cancel arrives
+ const batch=run.action({actionId:'r4-9-batch',expectedRevision:rev,kind:'step',payload:{ticks:100}});
+ const cancel=run.action({actionId:'r4-9-cancel',expectedRevision:rev,kind:'cancel',payload:{}});
+ const [c,s]=await Promise.all([cancel,batch]);
+ expect([c.tick,s.tick,lastStep(dir).tick]).toEqual([from,from,from]);
+ expect([c.run.runRevision,s.run.runRevision]).toEqual([rev+1,rev+2]);
+ // a batch refused at admission still hands its pending control on: the pause is executed on its own, against its own revision
+ const stale=run.action({actionId:'r4-9-stale',expectedRevision:rev,kind:'step',payload:{ticks:50}});
+ const pause=run.action({actionId:'r4-9-pause',expectedRevision:rev+2,kind:'pause',payload:{}});
+ await expect(stale).rejects.toThrow('REVISION_CONFLICT');
+ expect((await pause).run.runRevision).toBe(rev+3);
+ expect(lastStep(dir).tick).toBe(from);
+},240_000);

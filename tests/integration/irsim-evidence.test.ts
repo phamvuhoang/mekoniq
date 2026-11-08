@@ -259,3 +259,47 @@ test.skipIf(!irsimAvailable)('review B05 #2: an append the store refuses stops t
  expect(e.recordingGaps.map(g=>[g.fromTick,g.toTick,g.reason.split(':')[0]])).toEqual([[11,11,'EVIDENCE_REJECTED']]);
  expect(e.completeness!.status).toBe('incomplete');
 },240_000);
+
+// ---- review 4 ----
+test.skipIf(!irsimAvailable)('review4 #2: a lost ACK whose gap the unwritable evidence directory refused survives a crash image and a graceful reopen',async()=>{
+ const {run,dir}=await open({over:{entry:[double('logged.py')]}});
+ await run.start();
+ await act(run,'step',{ticks:130}); // durable to 130 at the end of the action
+ await chmod(join(dir,'evidence'),0o500);
+ await writeFile(join(dir,'worker','crash-next-step'),'');
+ const v=await act(run,'step',{ticks:5});
+ expect(v.tick).toBe(130);
+ const lost={fromTick:131,toTick:131,reason:'STEP_ACK_LOST'};
+ expect(evidenceOf(await run.report()).recordingGaps).toContainEqual(lost);
+ // the process dies here: the manifest on disk never got the gap
+ const image=await temp('irsim-crash-');dirs.push(image);
+ await cp(dir,image,{recursive:true});await chmod(join(image,'evidence'),0o700);
+ const crashed=await open({dir:image}),cr=await crashed.run.report();
+ expect(evidenceOf(cr).recordingGaps).toContainEqual(lost);
+ nothingClaimed(cr);
+ await crashed.run.close();runs.splice(runs.indexOf(crashed.run),1);
+ // the original: the directory is writable again and the run closes gracefully (its flush retries the manifest), then reopens
+ await chmod(join(dir,'evidence'),0o700);
+ await run.close();runs.splice(runs.indexOf(run),1);
+ const again=await open({dir}),ar=await again.run.report();
+ expect(evidenceOf(ar).recordingGaps).toContainEqual(lost);
+ expect(evidenceOf(ar).recording).toMatchObject({gaps:expect.arrayContaining([lost])});
+ nothingClaimed(ar);
+},240_000);
+
+test.skipIf(!irsimAvailable)('review4 #3: a report requested together with a step describes one moment: outcome tick, sim time and evidence horizon agree',async()=>{
+ const {run}=await open();
+ await run.start();
+ await act(run,'step',{ticks:500}); // durable to 500: a report reads several chunks back from disk
+ for(let i=0;i<4;i++){
+  const v=await run.snapshot();
+  const report=run.report(),step=run.action({actionId:`r4-3-step-${i}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:50}});
+  const [r]=await Promise.all([report,step]),e=evidenceOf(r);
+  expect(BigInt(r.outcome.simTimeNs),`round ${i}`).toBe(BigInt(r.outcome.tick)*20_000_000n);
+  expect(r.metrics.navigation!.horizon).toBe(e.clock.tickHorizon);
+  // the report was asked first: it is the state before the step (durable, or explicitly pending for the ticks still buffered)
+  expect(r.outcome.tick,`round ${i}`).toBe(v.tick);
+  if(e.completeness!.status==='complete')expect(e.clock.tickHorizon).toBe(r.outcome.tick);
+  else{expect(e.recordingGaps.at(-1)).toMatchObject({reason:'EVIDENCE_PENDING',toTick:r.outcome.tick});nothingClaimed(r);}
+ }
+},240_000);

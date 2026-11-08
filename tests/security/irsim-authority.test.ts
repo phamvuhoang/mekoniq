@@ -127,3 +127,21 @@ test.skipIf(!irsimAvailable)('review B04-2 #6: a project with a fault schedule i
  const created=await post(g,a,'/runs',runBody({engineeringRef:ref}));
  expect(created.status).toBe(422);expect((await created.json()).reasonCodes).toContain('FAULT_SCHEDULE_UNSUPPORTED');
 },240_000);
+
+test.skipIf(!irsimAvailable)('review4 #9 over HTTP: a step batch and a cancel sent together against the same revision: the cancel is honoured, never a stale 409 after the whole batch',async()=>{
+ const {g,f}=await gateway(true),a=await pair(g),ref=await compile(g,a,f.project);
+ const created=await post(g,a,'/runs',runBody({engineeringRef:ref}));expect(created.status,await created.clone().text()).toBe(201);
+ const run=(await created.json() as {run:{id:string;runRevision:number}}).run;
+ const started=await post(g,a,`/runs/${run.id}/actions`,{actionId:'start',expectedRevision:run.runRevision,kind:'start',payload:{}});
+ expect(started.status,await started.clone().text()).toBe(200);
+ const s=await started.json() as {tick:number;run:{runRevision:number}};
+ const [step,cancel]=await Promise.all([post(g,a,`/runs/${run.id}/actions`,{actionId:'batch',expectedRevision:s.run.runRevision,kind:'step',payload:{ticks:100}}),
+  post(g,a,`/runs/${run.id}/actions`,{actionId:'cancel',expectedRevision:s.run.runRevision,kind:'cancel',payload:{}})]);
+ expect(cancel.status,await cancel.clone().text()).toBe(200);
+ const c=await cancel.json() as {tick:number};
+ expect(c.tick-s.tick).toBeLessThanOrEqual(1);
+ // the batch either ran after the cancel at the next boundary (stopping there) or arrived second and is the stale one
+ if(step.status===200)expect((await step.json() as {tick:number}).tick).toBe(c.tick);
+ else expect([step.status,(await step.json() as {error:string}).error]).toEqual([409,'REVISION_CONFLICT']);
+ await post(g,a,`/runs/${run.id}/archive`,{});
+},120_000);
