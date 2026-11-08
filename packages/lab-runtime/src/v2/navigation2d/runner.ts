@@ -139,6 +139,9 @@ export async function createIRSimScenarioRun(input:RunManifestInput,providers:IR
   // ticks the previous process committed but never made durable are a recorded hole, never filled in
   const durable=recorder.lastTick??-1;
   if(!fresh&&cp.started&&cp.tick>durable&&!recorder.committed().gaps.some(g=>g.fromTick===durable+1&&g.toTick===cp.tick))await recorder.gap({fromTick:durable+1,toTick:cp.tick,reason:'RUNTIME_RESTART'});
+  // an action was in flight on a live plant: a step may have been applied and never acknowledged; that tick is unknown, never assumed clean
+  const unknown=Math.max(cp.tick,durable)+1;
+  if(!fresh&&cp.inFlight&&cp.plant.status==='live'&&!recorder.committed().gaps.some(g=>g.fromTick===unknown))await recorder.gap({fromTick:unknown,toTick:unknown,reason:'STEP_ACK_LOST'});
   // the worker of a started run died with the previous process: its legs are unknown, never continued
   if(cp.inFlight||cp.plant.status==='live')await run.recover();
   run.record();await run.persist();
@@ -222,6 +225,8 @@ class IRSimRun implements ScenarioRun {
   c.attention.push({reason,subjectId:code,tick:c.tick});this.suspend();
   await this.rec.flush();await this.drain();
  }
+ /** A step that was sent but not verified: the plant may be at tick+1 with a state nobody saw (a contact included). That tick is a recorded gap, then the plant is lost. */
+ private async stepLost(code:string){const t=this.cp.tick+1;await this.rec.gap({fromTick:t,toTick:t,reason:'STEP_ACK_LOST'}).catch(()=>{});await this.plantLost(code);}
  /** A recording that ended (quota, tick limit, failed write) ends the plant too: no motion is ever left unrecorded. Legs in flight become unknown. */
  private evidenceEnded(){return this.plantLost(`EVIDENCE:${this.rec.terminal}`,'EVIDENCE_INCOMPLETE');}
  /** Reopened after a crash or restart: the journal is the truth. A leg the journal still shows travelling is unknown; cargo, reservations and custody stay. */
@@ -339,10 +344,10 @@ class IRSimRun implements ScenarioRun {
    payload={targetTick:c.tick+1,velocities:out.velocities,actorUpdates:[]};
    const r=await this.worker.request({protocol:'mekoniq-irsim/1',requestId:`step-${c.tick+1}`,runId:c.runId,expectedTick:c.tick,op:'step',payload});
    // a refused step is as unverifiable as a lost one: the legs become unknown, the step is not retried
-   if(!r.ok){await this.plantLost(`STEP_REFUSED:${(r as {error:{code:string}}).error.code}`);return false;}
+   if(!r.ok){await this.stepLost(`STEP_REFUSED:${(r as {error:{code:string}}).error.code}`);return false;}
    next=r.result as IRSimSnapshotV1;
-   if(hashJson(next.robots.map(x=>x.robotId).sort())!==hashJson(this.scene.robots.map(x=>x.robotId).sort())||next.robots.some(x=>![...x.poseDriveMap,...x.bodyVelocity].every(Number.isFinite))){await this.plantLost('SNAPSHOT_INVALID');return false;}
-  }catch(e){await this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED');return false;}
+   if(hashJson(next.robots.map(x=>x.robotId).sort())!==hashJson(this.scene.robots.map(x=>x.robotId).sort())||next.robots.some(x=>![...x.poseDriveMap,...x.bodyVelocity].every(Number.isFinite))){await this.stepLost('SNAPSHOT_INVALID');return false;}
+  }catch(e){await this.stepLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED');return false;}
   const prev=c.plant.snapshot!;
   this.clock.advance(1);c.tick=this.clock.tick;c.plant.snapshot=next;
   // the verified tick goes to the evidence store with the step that produced it, before anything is derived from it
@@ -496,7 +501,7 @@ class IRSimRun implements ScenarioRun {
   await this.queue;if(this.closed)throw new Error('RUN_CLOSED');
   const c=this.cp,v=await this.view();
   // every plant metric comes from the evidence as read back from disk now: what is not durable yet is not measured
-  const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed),m=navigationMetrics(this.scene,read);
+  const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed,{scene:this.scene,runTick:c.started?c.tick:null}),m=navigationMetrics(this.scene,read);
   const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??IRSIM_AMR.version,pythonVersion:c.engine?.pythonVersion??'not_started'}},listed,read,m,c.started?c.tick:null);
   const available=m.coverage==='complete',why=m.coverageReasons.join(', ').slice(0,500)||'EVIDENCE_INCOMPLETE';
   const businessEvents:BusinessEvent[]=(await this.source.journal()).flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({sequence:entry.sequence,at:entry.recordedAt,type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject})));

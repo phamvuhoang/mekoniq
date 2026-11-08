@@ -1,11 +1,12 @@
 // Durable navigation evidence (B05): chunk integrity, crash/reopen, limits, and metrics computed only from what was read back from disk.
-import {afterEach,expect,test} from 'vitest';
-import {chmod,mkdtemp,readFile,readdir,rm,writeFile} from 'node:fs/promises';
+import {afterEach,expect,test,vi} from 'vitest';
+import {chmod,mkdir,mkdtemp,readFile,readdir,rm,truncate,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {createHash} from 'node:crypto';
 import {gunzipSync,gzipSync} from 'node:zlib';
-import {compareEvidence,evidenceDigests,evidenceAssertions,navigationMetrics,openNavigationRecorder,readNavigationEvidence,replayAt,NORMALIZED_OMITS,type StepPayload} from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
+import {buildNavigationEvidence,compareEvidence,evidenceDigests,evidenceAssertions,navigationMetrics,openNavigationRecorder,readNavigationEvidence,replayAt,NORMALIZED_OMITS,READ_LIMITS,type Assertion,type EvidenceIdentity,type StepPayload} from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
+import {validateNavigationEvidence} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import type {IRSimSnapshotV1,NavigationSceneV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import {assessTrajectory} from '../../packages/lab-runtime/src/v2/navigation2d/oracle';
 import {navigationScene} from '../support/navigation2d';
@@ -26,7 +27,7 @@ async function record(dir:string,n:number,pose:(t:number)=>Pose=aisle,o:{scene?:
  if(o.flush!==false)await rec.flush();
  return rec;
 }
-const read=(dir:string,rec:{committed():ReturnType<Awaited<ReturnType<typeof openNavigationRecorder>>['committed']>})=>readNavigationEvidence(dir,rec.committed());
+const read=(dir:string,rec:{committed():ReturnType<Awaited<ReturnType<typeof openNavigationRecorder>>['committed']>},scene=serve)=>readNavigationEvidence(dir,rec.committed(),{scene});
 const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
 const id={lockDigest:'a'.repeat(64),runSeed:5,controller:{id:'grid-diff-v1' as const,version:'1'}};
 
@@ -73,7 +74,7 @@ test('EVI append: an exact duplicate is a no-op, a different repeat or a mismatc
 test('EVI02 integrity: a truncated, corrupted, missing, reordered or escaping chunk is detected on read, left out, and the metrics are unavailable',async()=>{
  const dir=await temp(),rec=await record(dir,120),good=rec.committed();
  const verify=async(edit:(c:typeof good)=>Promise<void>|void,code:string)=>{
-  const c=structuredClone(good);await edit(c);const r=await readNavigationEvidence(dir,c);
+  const c=structuredClone(good);await edit(c);const r=await readNavigationEvidence(dir,c,{scene:serve});
   expect(r.issues.map(i=>i.code),code).toContain(code);expect(r.complete).toBe(false);
   const m=navigationMetrics(serve,r);expect(m.coverage).toBe('incomplete');expect(m.distanceM).toBeNull();expect(m.collisionEpisodes).toBeNull();
   const a=evidenceAssertions(r,m,119,null);
@@ -92,7 +93,7 @@ test('EVI02 integrity: a truncated, corrupted, missing, reordered or escaping ch
  const forged=gzipSync('{"tick":1}\n');await writeFile(file,forged);
  await verify(c=>{c.chunks.trajectory[1]={...t1,sha256:sha(forged),bytes:forged.length};},'EVIDENCE_CHUNK_CORRUPT');
  await writeFile(file,original);
- expect((await readNavigationEvidence(dir,good)).complete).toBe(true); // nothing was repaired: the original bytes verify again
+ expect((await readNavigationEvidence(dir,good,{scene:serve})).complete).toBe(true); // nothing was repaired: the original bytes verify again
  const s0=join(dir,good.chunks.sensors[0]!.path),kept=await readFile(s0);
  await rm(s0);
  await verify(()=>{},'EVIDENCE_CHUNK_MISSING');
@@ -160,7 +161,7 @@ test('IR06/07 metrics from evidence: driving into table-05 is found by the oracl
  const rec=await record(dir,100,north,{collisions:t=>t>=70?['table-05']:[]});
  // a live report sees a growing prefix first: the incremental assessment of the longer read must equal the oracle over the whole trace
  const prefix=structuredClone(rec.committed());prefix.chunks.trajectory=prefix.chunks.trajectory.slice(0,2);
- expect(navigationMetrics(serve,await readNavigationEvidence(dir,prefix)).horizon).toBe(79);
+ expect(navigationMetrics(serve,await readNavigationEvidence(dir,prefix,{scene:serve})).horizon).toBe(79);
  const r=await read(dir,rec),m=navigationMetrics(serve,r);
  const whole=assessTrajectory(serve,r.trajectory.map(x=>({schemaVersion:1,runId:'',bootId:'',tick:x.tick,simTimeNs:x.simTimeNs,seq:'0',sceneDigest:serve.sceneDigest,robots:x.robots.map(y=>({...y,scans:[]}))})));
  expect({contacts:m.contacts,minClearanceM:m.minClearanceM}).toEqual({contacts:whole.contacts,minClearanceM:whole.minClearanceM});
@@ -184,16 +185,16 @@ test('IR06/07 metrics from evidence: driving into table-05 is found by the oracl
   const bytes=gzipSync(lines.map(l=>JSON.stringify(l)+'\n').join(''));await writeFile(join(dir,ref.path),bytes);edited.chunks.trajectory[i]={...ref,sha256:sha(bytes),bytes:bytes.length};
  }
  edited.chunks.collisions=[];
- expect(navigationMetrics(serve,await readNavigationEvidence(dir,edited)).collisionEpisodes).toBe(0);
+ expect(navigationMetrics(serve,await readNavigationEvidence(dir,edited,{scene:serve})).collisionEpisodes).toBe(0);
  // the original manifest no longer matches those bytes: unavailable, never "no contact"
- const stale=navigationMetrics(serve,await readNavigationEvidence(dir,rec.committed()));
+ const stale=navigationMetrics(serve,await readNavigationEvidence(dir,rec.committed(),{scene:serve}));
  expect([stale.coverage,stale.collisionEpisodes]).toEqual(['incomplete',null]);
 });
 
 test('distance: the report measures the robot base origin path, not the drive axle (offset-axle robot turning in place)',async()=>{
  const scene=offset,start=scene.robots[0]!.initialPoseMap as Pose,dir=await temp();
  const rec=await record(dir,51,t=>[start[0],start[1],start[2]+t*0.02],{scene});
- const m=navigationMetrics(scene,await read(dir,rec));
+ const m=navigationMetrics(scene,await read(dir,rec,scene));
  expect(m.driveDistanceM!['amr-1']).toBe(0);
  // the base origin is 0.2 m behind the axle: turning 1 rad about the axle moves it along a 0.2 m arc
  expect(m.distanceM!['amr-1']).toBeCloseTo(0.2,4);
@@ -226,4 +227,211 @@ test('EVI03 replay cursor: pose, scans, contacts and controls only from samples 
  expect(at.scans.map(s=>s.tick)).toEqual([15]);expect(at.scans[0]!.scan.rangesM[0]).toBeCloseTo(3.15,12);
  expect(at.controls.at(-1)).toMatchObject({tick:17,targetTick:18}); // sent after observing tick 17
  expect(replayAt(r,35)).toMatchObject({available:false,robots:null,gaps:[{fromTick:30,toTick:39}]});
+});
+
+// ---- review B05: unknown, incomplete, unflushed or unverifiable evidence is never reported as pass, available or clean ----
+const ident:EvidenceIdentity={runId:'run-a',sourceCommit:'c0ffee',sceneRef:{path:'bundle/navigation-scene.json',sha256:'b'.repeat(64),bytes:100},lockDigest:'a'.repeat(64),engine:{version:'2.12.0',pythonVersion:'3.11.9'},numpyVersion:'2.4.6',runSeed:5,actorRng:{algorithm:'xoshiro128** v1',seed:5},controller:{id:'grid-diff-v1',version:'1'},businessEpochMs:1};
+type Listing=ReturnType<Awaited<ReturnType<typeof openNavigationRecorder>>['committed']>;
+type Line=Record<string,unknown>&{tick:number};
+let forged=0;
+/** Lists a rewritten copy of one chunk (new file, recorded size, hash and range) as a tampered or foreign export would; the original file stays as it was. */
+async function rewrite(dir:string,l:Listing,s:'trajectory'|'sensors'|'control'|'collisions',i:number,edit:(lines:Line[])=>Line[]|string){
+ const ref=l.chunks[s][i]!,lines=gunzipSync(await readFile(join(dir,ref.path))).toString().trim().split('\n').map(x=>JSON.parse(x) as Line),out=edit(lines);
+ const bytes=gzipSync(typeof out==='string'?out:out.map(x=>JSON.stringify(x)+'\n').join('')),path=ref.path.replace(/-[0-9a-f]{8}\./,`-${(++forged).toString(16).padStart(8,'0')}.`);
+ await writeFile(join(dir,path),bytes);
+ l.chunks[s][i]={...ref,path,sha256:sha(bytes),bytes:bytes.length,...typeof out==='string'?{}:{firstTick:out[0]!.tick,lastTick:out.at(-1)!.tick}};
+}
+const verdicts=(a:Assertion[])=>Object.fromEntries(a.map(x=>[x.id,x.result]));
+
+test('review B05 #1: ticks the run reached but the disk does not hold yet make every evidence verdict incomplete; evidence ahead of the checkpoint is not a pass either',async()=>{
+ // flushed 0..130, buffered 131..160, an engine contact at 150 that only the unflushed tail knows about
+ const dir=await temp(),rec=await record(dir,161,aisle,{flush:false,chunkTicks:131,collisions:t=>t===150?['table-05']:[]}),c=rec.committed();
+ expect(c.lastTick).toBe(130);
+ const r=await readNavigationEvidence(dir,c,{scene:serve,runTick:160}),m=navigationMetrics(serve,r),a=evidenceAssertions(r,m,160,null);
+ expect(r.complete).toBe(false);expect(r.gaps).toContainEqual({fromTick:131,toTick:160,reason:'EVIDENCE_PENDING'});
+ expect(m).toMatchObject({coverage:'incomplete',collisionEpisodes:null,distanceM:null,minClearanceM:null,sensorPublications:{complete:false}});
+ expect(verdicts(a)).toMatchObject({EVIDENCE_COVERAGE:'inconclusive',NO_PHYSICAL_CONTACT:'inconclusive',SENSOR_PUBLICATIONS:'inconclusive'});
+ const doc=buildNavigationEvidence(serve,ident,c,r,m,160);
+ expect(doc.completeness!.status).toBe('incomplete');expect(doc.completeness!.reasons.join()).toContain('EVIDENCE_PENDING');
+ expect(doc.metricCoverage.filter(x=>x.status==='available')).toEqual([]);
+ // M18: EVIDENCE_COVERAGE compares with the run tick on its own too (a read taken without it)
+ const plain=await readNavigationEvidence(dir,c,{scene:serve}),pm=navigationMetrics(serve,plain);
+ expect(plain.complete).toBe(true);
+ expect(evidenceAssertions(plain,pm,160,null).find(x=>x.id==='EVIDENCE_COVERAGE')!.result).toBe('inconclusive');
+ expect(evidenceAssertions(plain,pm,130,null).find(x=>x.id==='EVIDENCE_COVERAGE')!.result).toBe('pass');
+ // a crash image whose checkpoint is behind the durable evidence: the evidence describes ticks the run never committed
+ const ahead=await readNavigationEvidence(dir,c,{scene:serve,runTick:10}),am=navigationMetrics(serve,ahead);
+ expect(ahead.complete).toBe(false);expect(ahead.reasons).toContain('EVIDENCE_AHEAD_OF_CHECKPOINT:11-130');
+ expect(verdicts(evidenceAssertions(ahead,am,10,null))).toMatchObject({EVIDENCE_COVERAGE:'inconclusive',NO_PHYSICAL_CONTACT:'inconclusive',SENSOR_PUBLICATIONS:'inconclusive'});
+});
+
+test('review B05 #2: a recorded gap is on disk at once (M26)',async()=>{
+ const dir=await temp(),rec=await record(dir,20);
+ await rec.gap({fromTick:20,toTick:20,reason:'STEP_ACK_LOST'});
+ const again=await openNavigationRecorder({directory:dir,scene:serve,runId:'run-a',chunkTicks:40});
+ expect(again.committed().gaps).toEqual([{fromTick:20,toTick:20,reason:'STEP_ACK_LOST'}]);
+ const r=await readNavigationEvidence(dir,again.committed(),{scene:serve,runTick:19});
+ expect([r.complete,verdicts(evidenceAssertions(r,navigationMetrics(serve,r),19,null)).NO_PHYSICAL_CONTACT]).toEqual([false,'inconclusive']);
+});
+
+test('review B05 #3: gaps and the terminal reason travel with the exported document; an import without them cannot claim a complete recording (M09)',async()=>{
+ const q=await temp(),quota=await record(q,400,aisle,{maxBytes:6000,chunkTicks:20}),c=quota.committed();
+ const committed=await readNavigationEvidence(q,c,{scene:serve}),doc=buildNavigationEvidence(serve,ident,c,committed,navigationMetrics(serve,committed),null);
+ expect(doc.recording).toEqual({gaps:c.gaps,terminal:'EVIDENCE_QUOTA_EXCEEDED',lastTick:c.lastTick});
+ expect(validateNavigationEvidence(doc)).toMatchObject({ok:true});
+ const imported=await readNavigationEvidence(q,{chunks:doc.artifacts,...doc.recording},{scene:serve}),im=navigationMetrics(serve,imported);
+ expect(imported.complete).toBe(false);expect(imported.terminal).toBe('EVIDENCE_QUOTA_EXCEEDED');
+ expect(imported.gaps).toContainEqual(c.gaps.at(-1));
+ expect(verdicts(evidenceAssertions(imported,im,null,null))).toMatchObject({EVIDENCE_LIMITS:'fail',EVIDENCE_COVERAGE:'inconclusive',NO_PHYSICAL_CONTACT:'inconclusive'});
+ const bare=await readNavigationEvidence(q,{chunks:doc.artifacts},{scene:serve}),bm=navigationMetrics(serve,bare);
+ expect(bare.complete).toBe(false);expect(bare.reasons).toContain('EVIDENCE_END_UNKNOWN');
+ expect(verdicts(evidenceAssertions(bare,bm,null,null))).toMatchObject({EVIDENCE_LIMITS:'inconclusive',EVIDENCE_COVERAGE:'inconclusive',NO_PHYSICAL_CONTACT:'inconclusive'});
+ // a clean recording imported with its recording block is complete; a listing cut short against its declared last tick is not
+ const d=await temp(),clean=await record(d,100),cc=clean.committed(),cr=await readNavigationEvidence(d,cc,{scene:serve});
+ const cdoc=buildNavigationEvidence(serve,ident,cc,cr,navigationMetrics(serve,cr),99);
+ expect((await readNavigationEvidence(d,{chunks:cdoc.artifacts,...cdoc.recording!},{scene:serve})).complete).toBe(true);
+ const cut={chunks:{...cdoc.artifacts,trajectory:cdoc.artifacts.trajectory.slice(0,-1),sensors:cdoc.artifacts.sensors.slice(0,-1),control:cdoc.artifacts.control.slice(0,-1)},...cdoc.recording!};
+ const short=await readNavigationEvidence(d,cut,{scene:serve});
+ expect(short.complete).toBe(false);expect(short.issues.map(i=>i.code)).toContain('EVIDENCE_END_MISMATCH');
+ // M09: a terminal reason alone (no gap) is never complete
+ expect((await readNavigationEvidence(d,{...cc,terminal:'EVIDENCE_TICK_LIMIT'},{scene:serve})).complete).toBe(false);
+ // a restart gap survives the export
+ const g=await temp(),gr=await record(g,60,aisle,{flush:false});
+ const reopened=await openNavigationRecorder({directory:g,scene:serve,runId:'run-a',chunkTicks:40});await reopened.gap({fromTick:40,toTick:59,reason:'RUNTIME_RESTART'});void gr;
+ const gc=reopened.committed(),gread=await readNavigationEvidence(g,gc,{scene:serve}),gdoc=buildNavigationEvidence(serve,ident,gc,gread,navigationMetrics(serve,gread),59);
+ const gi=await readNavigationEvidence(g,{chunks:gdoc.artifacts,...gdoc.recording!},{scene:serve});
+ expect(gi.gaps).toContainEqual({fromTick:40,toTick:59,reason:'RUNTIME_RESTART'});expect(gi.complete).toBe(false);
+ // the recording block is re-validated on read
+ const bad=await readNavigationEvidence(d,{chunks:cdoc.artifacts,gaps:[{fromTick:'x'}] as never,terminal:null,lastTick:99},{scene:serve});
+ expect(bad.complete).toBe(false);expect(bad.issues.map(i=>i.code)).toContain('EVIDENCE_LISTING_INVALID');
+});
+
+test('review B05 #4: untrusted chunks are read within size, inflate, line and record limits; malformed or non-finite records reject the chunk, never throw, never complete',async()=>{
+ const dir=await temp(),rec=await record(dir,100),good=rec.committed();
+ const t0=good.chunks.trajectory[0]!,file=join(dir,t0.path),original=await readFile(file);
+ const check=async(l:Listing,code:string)=>{const r=await readNavigationEvidence(dir,l,{scene:serve});expect(r.issues.map(i=>i.code),code).toContain(code);expect(r.complete).toBe(false);
+  const m=navigationMetrics(serve,r);expect(m.coverage).toBe('incomplete');expect(evidenceAssertions(r,m,99,null).find(a=>a.id==='NO_PHYSICAL_CONTACT')!.result).toBe('inconclusive');return r;};
+ // a listed file far larger than recorded is refused from its size, not read (a 3 GiB sparse file would not even fit a buffer)
+ await truncate(file,3*2**30);
+ await check(good,'EVIDENCE_CHUNK_TRUNCATED');
+ await writeFile(file,original);
+ // a gzip bomb: a few KB stored, more than the per-chunk inflate cap when expanded
+ const bomb=gzipSync(Buffer.alloc(READ_LIMITS.chunkInflated+1024,0x20));
+ await writeFile(file,bomb);
+ await check({...good,chunks:{...good.chunks,trajectory:[{...t0,sha256:sha(bomb),bytes:bomb.length},...good.chunks.trajectory.slice(1)]}},'EVIDENCE_READ_LIMIT');
+ await writeFile(file,original);
+ // a stored size above the per-chunk cap is refused before reading
+ await check({...good,chunks:{...good.chunks,trajectory:[{...t0,bytes:READ_LIMITS.chunkBytes+1},...good.chunks.trajectory.slice(1)]}},'EVIDENCE_READ_LIMIT');
+ // a record line above the line cap
+ let l=structuredClone(good);await rewrite(dir,l,'trajectory',0,x=>[{...x[0]!,pad:'x'.repeat(READ_LIMITS.lineBytes)},...x.slice(1)]);await check(l,'EVIDENCE_READ_LIMIT');
+ // records that are JSON but not trajectory records
+ l=structuredClone(good);await rewrite(dir,l,'trajectory',0,x=>x.map(y=>({tick:y.tick})));
+ const shape=await check(l,'EVIDENCE_RECORD_INVALID');
+ expect(()=>navigationMetrics(serve,shape)).not.toThrow();
+ // a pose of 1e999 parses as Infinity
+ l=structuredClone(good);await rewrite(dir,l,'trajectory',0,x=>x.map(y=>JSON.stringify(y)).join('\n').replace(/"poseDriveMap":\[[^,]+,/g,'"poseDriveMap":[1e999,')+'\n');
+ const inf=await check(l,'EVIDENCE_RECORD_INVALID');
+ expect(navigationMetrics(serve,inf).distanceM).toBeNull();
+ // more chunks than a recording can hold
+ const many={...good,chunks:{...good.chunks,collisions:Array.from({length:READ_LIMITS.chunksPerStream+1},(_,i)=>({...t0,path:`collisions-${String(i).padStart(6,'0')}-00000000.ndjson.gz`}))}};
+ await check(many,'EVIDENCE_LISTING_INVALID');
+ await writeFile(file,original);
+});
+
+test('review B05 #4: a reopened manifest is size-capped and validated; a write that fails leaves nothing claimed; orphans count in the quota; a live second writer is refused',async()=>{
+ const dir=await temp();await record(dir,30);
+ const manifest=join(dir,'manifest.json'),text=await readFile(manifest,'utf8');
+ const open=()=>openNavigationRecorder({directory:dir,scene:serve,runId:'run-a'});
+ await writeFile(manifest,JSON.stringify({...JSON.parse(text) as object,chunks:{trajectory:'nope'}}));
+ await expect(open()).rejects.toThrow('EVIDENCE_MANIFEST_INVALID');
+ await writeFile(manifest,'{"x":"'+'y'.repeat(READ_LIMITS.manifestBytes)+'"}');
+ await expect(open()).rejects.toThrow('EVIDENCE_MANIFEST_INVALID');
+ await writeFile(manifest,'{not json');
+ await expect(open()).rejects.toThrow('EVIDENCE_MANIFEST_INVALID');
+ await writeFile(manifest,text);
+ // another live process holds the directory
+ await writeFile(join(dir,'writer.lock'),String(process.ppid));
+ await expect(open()).rejects.toThrow('EVIDENCE_WRITER_LOCKED');
+ await writeFile(join(dir,'writer.lock'),'999999999'); // a dead writer (crash): taken over
+ await open();
+ // orphan chunks and tmp files left by a crash are stored bytes: they count against the quota
+ const q=await temp();await writeFile(join(q,'trajectory-000009-deadbeef.ndjson.gz'),Buffer.alloc(5000));await writeFile(join(q,'.manifest.json.tmp'),Buffer.alloc(500));
+ const quota=await record(q,60,aisle,{maxBytes:6000,chunkTicks:20});
+ expect(quota.terminal).toBe('EVIDENCE_QUOTA_EXCEEDED');
+});
+
+test('review B05 #4: a manifest write that fails rolls back the in-memory recording; the reopened disk shows only what was committed',async()=>{
+ const dir=await temp(),rec=await record(dir,40,aisle,{flush:false,chunkTicks:1000});
+ await rec.flush();const before=rec.committed();
+ for(let t=40;t<60;t++)await rec.append(snap(serve,t,aisle(t)),step(t));
+ // the chunks can be written but the manifest cannot be replaced
+ await mkdir(join(dir,'.manifest.json.tmp'));
+ await rec.flush();
+ await rm(join(dir,'.manifest.json.tmp'),{recursive:true});
+ expect(rec.terminal).toMatch(/^EVIDENCE_WRITE_FAILED/);
+ const c=rec.committed();
+ expect([c.lastTick,c.bytes,c.chunks]).toEqual([before.lastTick,before.bytes,before.chunks]);
+ const r=await readNavigationEvidence(dir,c,{scene:serve,runTick:59});
+ expect(r.complete).toBe(false);
+});
+
+test('review B05 #5: every stream is held to its expectation; a stream left out, mislabelled, duplicated or off cadence is incomplete (M13, M28)',async()=>{
+ const dir=await temp(),rec=await record(dir,100,aisle,{collisions:t=>t>=90?['table-05']:[]}),good=rec.committed();
+ expect((await readNavigationEvidence(dir,good,{scene:serve})).complete).toBe(true);
+ const check=async(l:Listing,code:string)=>{const r=await readNavigationEvidence(dir,l,{scene:serve});expect(r.issues.map(i=>i.code),code).toContain(code);expect(r.complete).toBe(false);
+  expect(verdicts(evidenceAssertions(r,navigationMetrics(serve,r),99,null))).toMatchObject({EVIDENCE_INTEGRITY:'fail',NO_PHYSICAL_CONTACT:'inconclusive'});return r;};
+ for(const s of ['control','sensors','collisions'] as const)await check({...good,chunks:{...good.chunks,[s]:[]}},'EVIDENCE_STREAM_MISMATCH');
+ // a trajectory chunk listed under control: refused by name, and comparing it later never crashes
+ const swapped=await check({...good,chunks:{...good.chunks,control:[good.chunks.trajectory[0]!,...good.chunks.control.slice(1)]}},'EVIDENCE_PATH_REJECTED');
+ expect(()=>compareEvidence(swapped,swapped)).not.toThrow();
+ const renamed=structuredClone(good),tp=good.chunks.trajectory[0]!.path,cp0=tp.replace(/^trajectory/,'control');
+ await writeFile(join(dir,cp0),await readFile(join(dir,tp)));renamed.chunks.control[0]={...good.chunks.trajectory[0]!,path:cp0};
+ await check(renamed,'EVIDENCE_RECORD_INVALID');
+ // M13: a duplicated control record inside one chunk
+ let l=structuredClone(good);await rewrite(dir,l,'control',0,x=>[x[0]!,...x]);await check(l,'EVIDENCE_CHUNK_CORRUPT');
+ // control coverage: one step missing from the ledger
+ l=structuredClone(good);await rewrite(dir,l,'control',0,x=>[x[0]!,...x.slice(2)]);await check(l,'EVIDENCE_STREAM_MISMATCH');
+ // M28: same count, wrong cadence (a publication moved from tick 5 to tick 6)
+ l=structuredClone(good);await rewrite(dir,l,'sensors',0,x=>x.map(y=>y.tick===5?{...y,tick:6,scan:{...(y.scan as object),tick:6}}:y));
+ const cadence=await check(l,'EVIDENCE_STREAM_MISMATCH');
+ expect(navigationMetrics(serve,cadence).sensorPublications.complete).toBe(false);
+ // contact records that disagree with the trajectory's collision ids
+ l=structuredClone(good);await rewrite(dir,l,'collisions',0,x=>x.slice(1));await check(l,'EVIDENCE_STREAM_MISMATCH');
+ // without the scene the sensor cadence cannot be verified: never complete
+ const blind=await readNavigationEvidence(dir,good);
+ expect(blind.complete).toBe(false);expect(blind.reasons).toContain('SENSOR_CADENCE_UNVERIFIED');
+});
+
+test('review B05 #5: the trajectory digest covers the control ledger (M27)',async()=>{
+ const a=await temp(),b=await temp();await record(a,60);
+ const rb=await openNavigationRecorder({directory:b,scene:serve,runId:'run-a',chunkTicks:40});
+ for(let t=0;t<60;t++)await rb.append(snap(serve,t,aisle(t)),t?step(t,t===30?0.4:0.5):null); // same observed motion, one different command sent
+ await rb.flush();
+ const digest=async(d:string)=>{const r=await readNavigationEvidence(d,(await openNavigationRecorder({directory:d,scene:serve,runId:'run-a'})).committed(),{scene:serve}),m=navigationMetrics(serve,r);return evidenceDigests(serve,ident,r,m,evidenceAssertions(r,m,59,null));};
+ const [da,db]=[await digest(a),await digest(b)];
+ expect(db.trajectoryDigest).not.toBe(da.trajectoryDigest);expect(db.sensorDigest).toBe(da.sensorDigest);
+});
+
+test('review B05 #6: every input, version and platform field is in the digests; only the listed omissions are left out; assertion details carry no random names',async()=>{
+ const dir=await temp(),r=await readNavigationEvidence(dir,(await record(dir,60)).committed(),{scene:serve}),m=navigationMetrics(serve,r),as=evidenceAssertions(r,m,59,null);
+ const host={platform:'darwin-arm64',os:'darwin 25.0.0',arch:'arm64',node:'v24.22.2'};
+ const base=evidenceDigests(serve,ident,r,m,as,host),pick=(d:typeof base)=>[d.trajectoryDigest,d.sensorDigest,d.assertionDigest];
+ const leaves=(o:object,prefix:string[]=[]):string[][]=>Object.entries(o).flatMap(([k,v])=>v&&typeof v==='object'?leaves(v as object,[...prefix,k]):[[...prefix,k]]);
+ const perturb=<T extends object>(o:T,path:string[]):T=>{const c=structuredClone(o) as Record<string,unknown>;let x=c;for(const k of path.slice(0,-1))x=x[k] as Record<string,unknown>;const k=path.at(-1)!,v=x[k];x[k]=typeof v==='number'?v+1:`${String(v)}-other`;return c as T;};
+ for(const p of leaves(ident)){
+  const d=evidenceDigests(serve,perturb(ident,p),r,m,as,host),changed=pick(d).map((x,i)=>x!==pick(base)[i]);
+  if(p.join('.')==='runId')expect(changed,'runId is omitted').toEqual([false,false,false]);
+  else expect(changed,p.join('.')).toEqual([true,true,true]);
+ }
+ for(const p of leaves(host))expect(pick(evidenceDigests(serve,ident,r,m,as,perturb(host,p))).map((x,i)=>x!==pick(base)[i]),p.join('.')).toEqual([true,true,true]);
+ expect(NORMALIZED_OMITS).toEqual(['runId','worker bootId','artifacts.*.path (random chunk names)','chunk boundaries (artifacts.*.sha256/bytes/firstTick/lastTick)','wall-clock time (never recorded in chunks)']);
+ // boot id, chunk names and boundaries, and the wall clock leave every digest unchanged
+ const other=await temp(),ro=await readNavigationEvidence(other,(await record(other,60,aisle,{runId:'run-z',bootId:'boot-z',chunkTicks:7})).committed(),{scene:serve});
+ vi.useFakeTimers();vi.setSystemTime(new Date('2031-01-01T00:00:00Z'));
+ try{const mo=navigationMetrics(serve,ro);expect(evidenceDigests(serve,{...ident,runId:'run-z'},ro,mo,evidenceAssertions(ro,mo,59,null),host)).toEqual(base);}finally{vi.useRealTimers();}
+ // two runs corrupted the same way (different random chunk names) give the same assertions and assertion digest
+ const corrupt=async()=>{const d=await temp(),c=(await record(d,60)).committed(),f=join(d,c.chunks.trajectory[1]!.path);await writeFile(f,(await readFile(f)).subarray(0,10));
+  const x=await readNavigationEvidence(d,c,{scene:serve}),xm=navigationMetrics(serve,x),xa=evidenceAssertions(x,xm,59,null);return {xa,d:evidenceDigests(serve,ident,x,xm,xa,host)};};
+ const [c1,c2]=[await corrupt(),await corrupt()];
+ expect(c2.xa).toEqual(c1.xa);expect(c2.d.assertionDigest).toBe(c1.d.assertionDigest);
 });

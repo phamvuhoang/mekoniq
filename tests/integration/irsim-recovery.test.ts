@@ -1,10 +1,11 @@
 // Worker loss and source restarts on IR-FD01: an unverifiable step leaves the command unknown, the motion is never resent, and a reopened run only
 // reads its journal and checkpoint (cargo, reservations and custody stay where the source put them). Skipped where the IR-SIM venv is missing.
-import {afterEach,beforeAll,expect,test} from 'vitest';
+import {afterAll,afterEach,beforeAll,expect,test} from 'vitest';
 import {rm,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
-import {act,double,irsimAvailable,irsimBundle,openRun,stepUntil,temp,workerLog} from '../support/irsim-mission';
+import {act,double,irsimAvailable,irsimBundle,openRun,removeBundles,stepUntil,temp,workerLog} from '../support/irsim-mission';
+afterAll(removeBundles);
 
 let bundle:Awaited<ReturnType<typeof irsimBundle>>;
 const runs:ScenarioRun[]=[],dirs:string[]=[];

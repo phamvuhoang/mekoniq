@@ -1,6 +1,6 @@
 // Provider-specific readiness and registration of the portable IR-SIM provider. The flag, interpreter and worker are operator options; test doubles only
 // qualify the wiring and never make the provider installed. Cases that need the real worker are skipped where the IR-SIM venv is missing.
-import {afterEach,expect,test,vi} from 'vitest';
+import {afterAll,afterEach,expect,test,vi} from 'vitest';
 import {rm} from 'node:fs/promises';
 import {join} from 'node:path';
 import {defaultCatalog,type CapabilityCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
@@ -10,8 +10,9 @@ import {scenarioHash,scenarioRegistry} from '../../packages/lab-runtime/src/v2/s
 import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
 import {createScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
 import {portableSimulationFromOptions} from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
-import {double,irPython,irsimAvailable,irsimBundle,irsimInput,temp,workerRoot} from '../support/irsim-mission';
+import {double,irPython,irsimAvailable,irsimBundle,irsimInput,removeBundles,temp,workerRoot} from '../support/irsim-mission';
 import {executeFixture} from '../support/lab-v2';
+afterAll(removeBundles);
 
 const IR='engineering-irsim-2d-v1',ir=scenarioRegistry.get('IR-FD01')!,fd01=scenarioRegistry.get('FD01')!,lockPath=join(workerRoot,'requirements.lock');
 const dirs:string[]=[];

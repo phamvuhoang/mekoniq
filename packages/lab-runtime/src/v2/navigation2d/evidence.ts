@@ -4,7 +4,7 @@
 // Readers verify every chunk (bytes, hash, gzip, line ticks, order, coverage) and report what is missing; nothing is repaired, adopted or guessed.
 import {createHash,randomBytes} from 'node:crypto';
 import {gunzipSync,gzipSync} from 'node:zlib';
-import {lstat,mkdir,open,readFile,realpath,rename} from 'node:fs/promises';
+import {lstat,mkdir,open,readdir,readFile,realpath,rename} from 'node:fs/promises';
 import {join,sep} from 'node:path';
 import {arch,platform,release} from 'node:os';
 import {assessTrajectory,type Contact,type ContactSource,type TrajectoryAssessment} from './oracle';
@@ -21,7 +21,10 @@ export const EVIDENCE_LIMITS={maxBytes:100*1024*1024,maxTicks:30000};
 export const EVIDENCE_FORMAT='navigation-evidence-ndjson-gzip-v1',DIGEST_ALGORITHM='navigation-evidence-digest-v1';
 /** Everything the normalized digests leave out, and nothing else: the digests hash the record lines themselves, so chunking and file names never matter. */
 export const NORMALIZED_OMITS=['runId','worker bootId','artifacts.*.path (random chunk names)','chunk boundaries (artifacts.*.sha256/bytes/firstTick/lastTick)','wall-clock time (never recorded in chunks)'];
-const CHUNK_NAME=/^(trajectory|sensors|control|collisions)-\d{6}-[0-9a-f]{8}\.ndjson\.gz$/,MANIFEST='manifest.json';
+const CHUNK_NAME=/^(trajectory|sensors|control|collisions)-\d{6}-[0-9a-f]{8}\.ndjson\.gz$/,MANIFEST='manifest.json',LOCK='writer.lock',MiB=1024*1024;
+/** Reader caps for untrusted evidence (an import is as untrusted as a tampered disk): stored and inflated bytes per chunk and in total (inflated: 4x the stored quota),
+ * bytes per record line, lines per chunk, chunks per stream, manifest size and recorded gaps. Past a cap the chunk is refused with EVIDENCE_READ_LIMIT, never read on. */
+export const READ_LIMITS={chunkBytes:16*MiB,chunkInflated:64*MiB,totalInflated:4*EVIDENCE_LIMITS.maxBytes,lineBytes:256*1024,linesPerChunk:65536,chunksPerStream:2000,manifestBytes:8*MiB,gaps:10000};
 
 export interface ChunkRef{path:string;sha256:string;bytes:number;firstTick:number;lastTick:number}
 export type Chunks=Record<EvidenceStream,ChunkRef[]>;
@@ -33,9 +36,26 @@ export interface TrajectoryRecord{tick:number;simTimeNs:string;robots:{robotId:s
 export interface ControlRecord{tick:number;targetTick:number;singleStep:boolean;velocities:StepPayload['velocities'];actorUpdates:unknown[]}
 export interface SensorRecord{tick:number;robotId:string;scan:LidarScanV1}
 export interface CollisionRecord{tick:number;robotId:string;collisionIds:string[]}
+/** The recorder's committed listing: chunks, the gaps it recorded, the terminal reason (null: not ended early) and the last durable tick. */
+export interface Committed{chunks:Chunks;gaps:Gap[];terminal:string|null;lastTick:number|null;bytes:number}
 interface Manifest{schemaVersion:1;format:typeof EVIDENCE_FORMAT;runId:string;sceneDigest:string;chunks:Chunks;gaps:Gap[];terminal:string|null;lastTick:number|null;lastKey:string|null;bytes:number;boots:{bootId:string;firstTick:number}[]}
 
 const sha256=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
+const nat=(x:unknown):x is number=>Number.isSafeInteger(x)&&(x as number)>=0,finite=(x:unknown):x is number=>typeof x==='number'&&Number.isFinite(x);
+const text=(x:unknown,max=200):x is string=>typeof x==='string'&&x.length>0&&x.length<=max;
+const obj=(x:unknown,keys:readonly string[]):x is Record<string,unknown>=>!!x&&typeof x==='object'&&!Array.isArray(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));
+const isGap=(g:unknown)=>obj(g,['fromTick','toTick','reason'])&&nat(g.fromTick)&&nat(g.toTick)&&g.toTick>=g.fromTick&&text(g.reason,500);
+const isRef=(r:unknown)=>obj(r,['path','sha256','bytes','firstTick','lastTick'])&&text(r.path,512)&&typeof r.sha256==='string'&&/^[0-9a-f]{64}$/.test(r.sha256)&&nat(r.bytes)&&nat(r.firstTick)&&nat(r.lastTick)&&r.lastTick>=r.firstTick;
+/** What a listing (the manifest, or an imported evidence document's artifacts + recording) must look like before any chunk is opened; null when it does. */
+function listingProblem(l:{chunks?:unknown;gaps?:unknown;terminal?:unknown;lastTick?:unknown}):string|null{
+ const c=l.chunks;
+ if(!c||typeof c!=='object'||Array.isArray(c)||Object.keys(c).some(k=>!(STREAMS as readonly string[]).includes(k)))return 'chunks must list only the four streams';
+ for(const s of STREAMS){const list=(c as Record<string,unknown>)[s];if(list===undefined)continue;if(!Array.isArray(list)||list.length>READ_LIMITS.chunksPerStream||!list.every(isRef))return `${s}: at most ${READ_LIMITS.chunksPerStream} well-formed chunk refs`;}
+ if(l.gaps!==undefined&&(!Array.isArray(l.gaps)||l.gaps.length>READ_LIMITS.gaps||!l.gaps.every(isGap)))return 'gaps must be well-formed tick ranges';
+ if(l.terminal!==undefined&&l.terminal!==null&&!text(l.terminal,500))return 'terminal must be a reason or null';
+ if(l.lastTick!==undefined&&l.lastTick!==null&&!nat(l.lastTick))return 'lastTick must be a tick or null';
+ return null;
+}
 const empty=():Chunks=>({trajectory:[],sensors:[],control:[],collisions:[]});
 async function syncDir(dir:string){const h=await open(dir,'r');try{await h.sync();}finally{await h.close();}}
 /** tmp file, fsync, rename, fsync the directory: after this returns the bytes survive a crash under `name`. */
@@ -62,16 +82,35 @@ export interface NavigationRecorder{
  /** Ends the recording incomplete (a run limit reached elsewhere). */
  terminate(reason:string):Promise<void>;
  /** The committed manifest: only what is on disk. */
- committed():{chunks:Chunks;gaps:Gap[];terminal:string|null;lastTick:number|null;bytes:number};
+ committed():Committed;
 }
 
+/** The manifest on disk (null when there is none yet), size-capped and validated: a manifest that is not one the recorder wrote is refused, never repaired. */
+async function readManifest(dir:string):Promise<Manifest|null>{
+ const file=join(dir,MANIFEST),st=await lstat(file).catch(e=>{if((e as NodeJS.ErrnoException).code==='ENOENT')return null;throw e;});
+ if(!st)return null;
+ const bad=()=>new Error('EVIDENCE_MANIFEST_INVALID');
+ if(!st.isFile()||st.size>READ_LIMITS.manifestBytes)throw bad();
+ let x:unknown;try{x=JSON.parse(await readFile(file,'utf8'));}catch{throw bad();}
+ const keys=['schemaVersion','format','runId','sceneDigest','chunks','gaps','terminal','lastTick','lastKey','bytes','boots'] as const;
+ if(!obj(x,keys)||x.schemaVersion!==1||!text(x.runId)||!text(x.sceneDigest)||!obj(x.chunks,STREAMS)||!Array.isArray(x.gaps)||listingProblem(x as never)||!nat(x.bytes)
+  ||!(x.lastKey===null||typeof x.lastKey==='string')||!(x.lastTick===null||nat(x.lastTick))||!Array.isArray(x.boots)||!x.boots.every(b=>obj(b,['bootId','firstTick'])&&text(b.bootId)&&nat(b.firstTick)))throw bad();
+ return x as unknown as Manifest;
+}
 /** Opens (or reopens after a crash) the run's recorder: committed chunks come from the manifest on disk; files it does not list are never adopted. */
 export async function openNavigationRecorder(o:RecorderOptions):Promise<NavigationRecorder>{
  const dir=o.directory,maxBytes=o.maxBytes??EVIDENCE_LIMITS.maxBytes,maxTicks=o.maxTicks??EVIDENCE_LIMITS.maxTicks,chunkTicks=o.chunkTicks??250;
  await mkdir(dir,{recursive:true,mode:0o700});
- const raw=await readFile(join(dir,MANIFEST),'utf8').catch(e=>{if((e as NodeJS.ErrnoException).code==='ENOENT')return null;throw e;});
- const m:Manifest=raw?JSON.parse(raw) as Manifest:{schemaVersion:1,format:EVIDENCE_FORMAT,runId:o.runId,sceneDigest:o.scene.sceneDigest,chunks:empty(),gaps:[],terminal:null,lastTick:null,lastKey:null,bytes:0,boots:[]};
+ // one writer per recording: a lock naming another live process refuses this one; a dead writer's lock (a crash) is taken over
+ // ponytail: pid liveness only (pid reuse could keep a stale lock; one process opening the same directory twice is not refused here — the run registry does that)
+ const holder=Number.parseInt(await readFile(join(dir,LOCK),'utf8').catch(()=>''),10);
+ if(Number.isSafeInteger(holder)&&holder>0&&holder!==process.pid&&(()=>{try{process.kill(holder,0);return true;}catch(e){return (e as NodeJS.ErrnoException).code==='EPERM';}})())throw new Error('EVIDENCE_WRITER_LOCKED');
+ await writeDurable(dir,LOCK,String(process.pid));
+ const m:Manifest=await readManifest(dir)??{schemaVersion:1,format:EVIDENCE_FORMAT,runId:o.runId,sceneDigest:o.scene.sceneDigest,chunks:empty(),gaps:[],terminal:null,lastTick:null,lastKey:null,bytes:0,boots:[]};
  if(m.runId!==o.runId||m.sceneDigest!==o.scene.sceneDigest||m.format!==EVIDENCE_FORMAT)throw new Error('EVIDENCE_IDENTITY_MISMATCH');
+ // files the manifest does not list (a chunk or tmp file a crash left behind) are never adopted, but they are stored bytes: they count against the quota
+ const listedNames=new Set(STREAMS.flatMap(s=>m.chunks[s].map(r=>r.path)));
+ let orphanBytes=0;for(const f of await readdir(dir))if(f!==MANIFEST&&f!==LOCK&&!listedNames.has(f))orphanBytes+=(await lstat(join(dir,f))).size;
  const every=new Map(o.scene.robots.flatMap(r=>r.model.sensors.map(s=>[`${r.robotId}/${s.id}`,s.publishEveryTicks] as const)));
  let buf:Record<EvidenceStream,{tick:number;line:string}[]>={trajectory:[],sensors:[],control:[],collisions:[]},last={tick:m.lastTick,key:m.lastKey},bufBoots:Manifest['boots']=[],writing=Promise.resolve();
  const saveManifest=async()=>{const text=JSON.stringify(m);await writeDurable(dir,MANIFEST,text);};
@@ -88,8 +127,8 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
   const parts=STREAMS.flatMap(s=>buf[s].length?[{s,lines:buf[s],bytes:gzipSync(buf[s].map(x=>x.line+'\n').join(''))}]:[]);
   const add=parts.reduce((n,p)=>n+p.bytes.length,0);
   // the quota counts every stored byte: the chunks and the manifest that lists them
-  if(m.bytes+add+JSON.stringify(m).length+256*(parts.length+1)>maxBytes)return end('EVIDENCE_QUOTA_EXCEEDED',{...range,reason:'EVIDENCE_QUOTA_EXCEEDED'});
-  const refs:[EvidenceStream,ChunkRef][]=[];
+  if(m.bytes+orphanBytes+add+JSON.stringify(m).length+256*(parts.length+1)>maxBytes)return end('EVIDENCE_QUOTA_EXCEEDED',{...range,reason:'EVIDENCE_QUOTA_EXCEEDED'});
+  const refs:[EvidenceStream,ChunkRef][]=[],before={bytes:m.bytes,lastTick:m.lastTick,lastKey:m.lastKey,boots:m.boots.length};
   try{
    for(const p of parts){
     const path=`${p.s}-${String(seq).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`;
@@ -100,7 +139,9 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
    m.bytes+=add;m.lastTick=last.tick;m.lastKey=last.key;m.boots.push(...bufBoots);
    await saveManifest();
   }catch(e){
-   for(const [s,r] of refs){const i=m.chunks[s].indexOf(r);if(i>=0)m.chunks[s].splice(i,1);}
+   // nothing of this flush is claimed: the manifest in memory goes back to what is on disk (the written chunks stay unlisted orphans, counted in the quota)
+   for(const [s,r] of refs){const i=m.chunks[s].indexOf(r);if(i>=0)m.chunks[s].splice(i,1);orphanBytes+=r.bytes;}
+   m.bytes=before.bytes;m.lastTick=before.lastTick;m.lastKey=before.lastKey;m.boots.length=before.boots;
    return end(`EVIDENCE_WRITE_FAILED:${(e as NodeJS.ErrnoException).code??'IO'}`,{...range,reason:'EVIDENCE_WRITE_FAILED'});
   }
   buf={trajectory:[],sensors:[],control:[],collisions:[]};bufBoots=[];
@@ -142,57 +183,126 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
 }
 
 // ---- reading (pure artifact decoding; no worker, no source session) ----
-export interface EvidenceIssue{path:string;code:string;detail:string}
+export interface EvidenceIssue{path:string;code:string;detail:string;/** stream and chunk index (or the stream, or 'listing'): what assertion details name instead of the random chunk path */at:string}
 export interface EvidenceRead{trajectory:TrajectoryRecord[];control:ControlRecord[];sensors:SensorRecord[];collisions:CollisionRecord[];issues:EvidenceIssue[];gaps:Gap[];horizon:number|null;complete:boolean;
+ /** Why the read is incomplete besides issues and gaps: the end of the recording is unknown, the evidence runs ahead of the run, the sensor cadence was not verifiable. */reasons:string[];
+ /** The listed terminal reason (null when the listing says the recording was not ended early, or says nothing: see EVIDENCE_END_UNKNOWN). */terminal:string|null;
  /** Uncompressed record text per stream, in tick order: what the normalized digests hash. */text:Record<EvidenceStream,string>}
 type Parsed={text:string;records:{tick:number}[]};
 const cache=new Map<string,Parsed>();
-/** Reads one listed chunk inside `root`. The name must be a recorder chunk name (no directories, no traversal), the file a regular file inside the root (no symlink). */
-async function readChunk(root:string,realRoot:string,ref:ChunkRef,issues:EvidenceIssue[]):Promise<Parsed|null>{
- const bad=(code:string,detail:string)=>{issues.push({path:String(ref.path),code,detail});return null;};
- if(typeof ref.path!=='string'||!CHUNK_NAME.test(ref.path))return bad('EVIDENCE_PATH_REJECTED','not a recorder chunk name');
+const vec=(x:unknown,n:number)=>Array.isArray(x)&&x.length===n&&x.every(finite);
+const ids=(x:unknown)=>Array.isArray(x)&&x.length<=64&&x.every(y=>text(y));
+const BEAMS=new Set<unknown>(['hit','no_return','below_min','invalid']),NS=BigInt(20_000_000);
+const SCAN_KEYS=['sensorId','frameId','tick','simTimeNs','angleMinRad','angleIncrementRad','rangeMinM','rangeMaxM','rangesM','states'] as const;
+const scanOk=(x:unknown,tick:unknown)=>obj(x,SCAN_KEYS)&&text(x.sensorId)&&text(x.frameId)&&x.tick===tick&&typeof x.simTimeNs==='string'&&/^[0-9]{1,30}$/.test(x.simTimeNs)&&finite(x.angleMinRad)&&finite(x.angleIncrementRad)
+ &&finite(x.rangeMinM)&&x.rangeMinM>=0&&finite(x.rangeMaxM)&&x.rangeMaxM>0&&Array.isArray(x.rangesM)&&Array.isArray(x.states)&&x.rangesM.length<=1080&&x.rangesM.length===x.states.length&&x.rangesM.every(v=>v===null||finite(v))&&x.states.every(v=>BEAMS.has(v));
+/** The record shape of each stream, as the recorder writes it: exact keys, finite numbers (a JSON 1e999 parses as Infinity and is refused), bounded arrays. */
+const RECORD:Record<EvidenceStream,(r:unknown)=>boolean>={
+ trajectory:r=>obj(r,['tick','simTimeNs','robots'])&&nat(r.tick)&&r.simTimeNs===String(BigInt(r.tick)*NS)&&Array.isArray(r.robots)&&r.robots.length>0&&r.robots.length<=32
+  &&r.robots.every(x=>obj(x,['robotId','poseDriveMap','bodyVelocity','collisionIds'])&&text(x.robotId)&&vec(x.poseDriveMap,3)&&vec(x.bodyVelocity,2)&&ids(x.collisionIds)),
+ control:r=>obj(r,['tick','targetTick','singleStep','velocities','actorUpdates'])&&nat(r.tick)&&r.targetTick===r.tick+1&&typeof r.singleStep==='boolean'&&Array.isArray(r.velocities)&&r.velocities.length<=32
+  &&r.velocities.every(v=>obj(v,['robotId','vMps','omegaRadps'])&&text(v.robotId)&&finite(v.vMps)&&finite(v.omegaRadps))&&Array.isArray(r.actorUpdates)&&r.actorUpdates.length<=1000,
+ sensors:r=>obj(r,['tick','robotId','scan'])&&nat(r.tick)&&text(r.robotId)&&scanOk(r.scan,r.tick),
+ collisions:r=>obj(r,['tick','robotId','collisionIds'])&&nat(r.tick)&&text(r.robotId)&&ids(r.collisionIds)&&(r.collisionIds as unknown[]).length>0,
+};
+/**
+ * Reads one listed chunk of stream `s` inside `root`. The name must be a recorder chunk name of that stream (no directories, no traversal), the file a regular file inside
+ * the root (no symlink) whose size is the recorded one before a byte is read; it inflates within the caps and every line is a record of that stream in tick order.
+ */
+async function readChunk(root:string,realRoot:string,s:EvidenceStream,at:string,ref:ChunkRef,issues:EvidenceIssue[],budget:{left:number}):Promise<Parsed|null>{
+ const bad=(code:string,detail:string)=>{issues.push({path:ref.path,code,detail,at});return null;};
+ if(!CHUNK_NAME.test(ref.path))return bad('EVIDENCE_PATH_REJECTED','not a recorder chunk name');
+ if(!ref.path.startsWith(`${s}-`))return bad('EVIDENCE_PATH_REJECTED',`a ${ref.path.split('-')[0]!} chunk listed under ${s}`);
+ if(ref.bytes>READ_LIMITS.chunkBytes)return bad('EVIDENCE_READ_LIMIT',`${ref.bytes} bytes recorded, above the ${READ_LIMITS.chunkBytes}-byte chunk cap`);
  const file=join(root,ref.path);
  const st=await lstat(file).catch(()=>null);
  if(!st)return bad('EVIDENCE_CHUNK_MISSING','listed chunk is not on disk');
  if(!st.isFile())return bad('EVIDENCE_PATH_REJECTED','not a regular file');
  const real=await realpath(file);
  if(!real.startsWith(realRoot+sep))return bad('EVIDENCE_PATH_REJECTED','outside the recording root');
+ if(st.size!==ref.bytes)return bad('EVIDENCE_CHUNK_TRUNCATED',`${st.size} bytes stored, ${ref.bytes} recorded`);
  const bytes=await readFile(file);
  if(bytes.length!==ref.bytes)return bad('EVIDENCE_CHUNK_TRUNCATED',`${bytes.length} bytes stored, ${ref.bytes} recorded`);
  const digest=sha256(bytes);
  if(digest!==ref.sha256)return bad('EVIDENCE_CHUNK_CORRUPT','stored bytes do not match the recorded SHA-256');
- const hit=cache.get(digest);if(hit)return hit;
- let lines:string[];
- try{lines=gunzipSync(bytes).toString('utf8').split('\n');}catch{return bad('EVIDENCE_CHUNK_CORRUPT','not a gzip stream');}
- if(lines.pop()!=='')return bad('EVIDENCE_CHUNK_CORRUPT','last record is not terminated');
- let records:{tick:number}[];
- try{records=lines.map(l=>JSON.parse(l) as {tick:number});}catch{return bad('EVIDENCE_CHUNK_CORRUPT','a record is not JSON');}
- if(!records.length||records.some((r,i)=>!Number.isSafeInteger(r.tick)||i>0&&r.tick<records[i-1]!.tick)||records[0]!.tick!==ref.firstTick||records.at(-1)!.tick!==ref.lastTick)return bad('EVIDENCE_CHUNK_CORRUPT','record ticks do not match the chunk range');
- const parsed={text:lines.map(l=>l+'\n').join(''),records};cache.set(digest,parsed);if(cache.size>4096)cache.delete(cache.keys().next().value!);
- return parsed;
+ const take=(p:Parsed)=>{if(p.text.length>budget.left)return bad('EVIDENCE_READ_LIMIT','the recording inflates past the total read cap');budget.left-=p.text.length;return p;};
+ const key=`${s}:${digest}`,hit=cache.get(key);if(hit)return take(hit);
+ if(budget.left<1)return bad('EVIDENCE_READ_LIMIT','the recording inflates past the total read cap');
+ let body:string;
+ try{body=gunzipSync(bytes,{maxOutputLength:Math.min(READ_LIMITS.chunkInflated,budget.left)}).toString('utf8');}
+ catch(e){return (e as NodeJS.ErrnoException).code==='ERR_BUFFER_TOO_LARGE'?bad('EVIDENCE_READ_LIMIT','inflates past the read cap'):bad('EVIDENCE_CHUNK_CORRUPT','not a gzip stream');}
+ if(!body.endsWith('\n'))return bad('EVIDENCE_CHUNK_CORRUPT','last record is not terminated');
+ const lines=body.slice(0,-1).split('\n');
+ if(lines.length>READ_LIMITS.linesPerChunk||lines.some(l=>l.length>READ_LIMITS.lineBytes))return bad('EVIDENCE_READ_LIMIT',`more than ${READ_LIMITS.linesPerChunk} records or a record above ${READ_LIMITS.lineBytes} bytes`);
+ let records:unknown[];
+ try{records=lines.map(l=>JSON.parse(l) as unknown);}catch{return bad('EVIDENCE_CHUNK_CORRUPT','a record is not JSON');}
+ // trajectory and control hold one record per tick; sensors and contacts one per robot (and sensor) per tick
+ const tickOf=(r:unknown)=>(r as {tick?:unknown}|null)?.tick,strict=s==='trajectory'||s==='control';
+ if(!records.length||records.some((r,i)=>!nat(tickOf(r))||i>0&&(strict?tickOf(r)!<=tickOf(records[i-1])!:tickOf(r)!<tickOf(records[i-1])!))||tickOf(records[0])!==ref.firstTick||tickOf(records.at(-1))!==ref.lastTick)
+  return bad('EVIDENCE_CHUNK_CORRUPT','record ticks do not match the chunk range or repeat');
+ if(!records.every(RECORD[s]))return bad('EVIDENCE_RECORD_INVALID',`a record is not a ${s} record`);
+ const parsed={text:body,records:records as {tick:number}[]};cache.set(key,parsed);if(cache.size>4096)cache.delete(cache.keys().next().value!);
+ return take(parsed);
+}
+export interface ReadOptions{
+ /** The scene the recording was made for: the robots and every sensor's publication cadence are checked against it. Without it the read is never complete. */
+ scene?:NavigationSceneV1;
+ /** The run's committed logical tick: the evidence must reach it exactly (later ticks still buffered are EVIDENCE_PENDING; evidence beyond it is ahead of the checkpoint). */
+ runTick?:number|null;
 }
 /**
- * Verifies and decodes the chunks an evidence document (or the recorder's manifest) lists. A chunk that is missing, truncated, corrupted, out of order or outside the root
- * is reported and its records are left out; the trajectory must then cover every tick from 0 to the horizon or the read is incomplete.
+ * Verifies and decodes the chunks a listing names: the recorder's manifest, or an imported evidence document's `{chunks:artifacts,...recording}`. The listing is checked first;
+ * a chunk that is missing, truncated, corrupted, oversized, out of order, of the wrong stream, malformed or outside the root is reported and its records are left out. Each stream
+ * is then held to its expectation (trajectory every tick from 0, one control record per recorded step, contact records equal to the trajectory's collision ids, LiDAR at
+ * the scene's cadence) and the end of the recording must be known: a listing without its gaps, terminal reason and last tick cannot be complete.
  */
-export async function readNavigationEvidence(root:string,listed:{chunks:Chunks;gaps?:Gap[];terminal?:string|null}):Promise<EvidenceRead>{
- const realRoot=await realpath(root),issues:EvidenceIssue[]=[],out={trajectory:[],control:[],sensors:[],collisions:[]} as unknown as Record<EvidenceStream,{tick:number}[]>,text={trajectory:'',sensors:'',control:'',collisions:''};
- for(const s of STREAMS){
-  let prev=-1;
-  for(const ref of listed.chunks[s]??[]){
-   if(!(ref.firstTick>prev)){issues.push({path:String(ref.path),code:'EVIDENCE_CHUNK_ORDER',detail:`starts at ${ref.firstTick}, the previous chunk ended at ${prev}`});continue;}
-   const p=await readChunk(root,realRoot,ref,issues);if(!p)continue;
-   prev=ref.lastTick;for(const r of p.records)out[s].push(r);text[s]+=p.text;
+export async function readNavigationEvidence(root:string,listed:{chunks:Chunks;gaps?:Gap[];terminal?:string|null;lastTick?:number|null},o:ReadOptions={}):Promise<EvidenceRead>{
+ const realRoot=await realpath(root),issues:EvidenceIssue[]=[],reasons:string[]=[],out={trajectory:[],control:[],sensors:[],collisions:[]} as unknown as Record<EvidenceStream,{tick:number}[]>,text={trajectory:'',sensors:'',control:'',collisions:''};
+ const problem=listingProblem(listed),refused:[number,number][]=[];
+ if(problem)issues.push({path:'listing',code:'EVIDENCE_LISTING_INVALID',detail:problem,at:'listing'});
+ else{
+  const budget={left:READ_LIMITS.totalInflated};
+  for(const s of STREAMS){
+   let prev=-1;
+   for(const [i,ref] of (listed.chunks[s]??[]).entries()){
+    if(!(ref.firstTick>prev)){issues.push({path:ref.path,code:'EVIDENCE_CHUNK_ORDER',detail:`starts at ${ref.firstTick}, the previous chunk ended at ${prev}`,at:`${s}[${i}]`});refused.push([ref.firstTick,ref.lastTick]);continue;}
+    const p=await readChunk(root,realRoot,s,`${s}[${i}]`,ref,issues,budget);if(!p){refused.push([ref.firstTick,ref.lastTick]);continue;}
+    prev=ref.lastTick;for(const r of p.records)out[s].push(r);text[s]+=p.text;
+   }
   }
  }
- const traj=out.trajectory as TrajectoryRecord[],gaps=[...listed.gaps??[]];
+ const traj=out.trajectory as TrajectoryRecord[],gaps=[...problem?[]:listed.gaps??[]];
  // every tick from 0 to the last recorded one exactly once; a hole is a gap whatever caused it
  let expect=0;
- for(const r of traj){if(r.tick>expect)gaps.push({fromTick:expect,toTick:r.tick-1,reason:'EVIDENCE_TICKS_MISSING'});if(r.tick<expect)issues.push({path:'trajectory',code:'EVIDENCE_TICK_DUPLICATE',detail:`tick ${r.tick}`});expect=Math.max(expect,r.tick+1);}
+ for(const r of traj){if(r.tick>expect)gaps.push({fromTick:expect,toTick:r.tick-1,reason:'EVIDENCE_TICKS_MISSING'});if(r.tick<expect)issues.push({path:'trajectory',code:'EVIDENCE_TICK_DUPLICATE',detail:`tick ${r.tick}`,at:'trajectory'});expect=Math.max(expect,r.tick+1);}
  const horizon=traj.length?traj.at(-1)!.tick:null;
+ // the other streams against the trajectory, outside the ranges of chunks already refused (those failed on their own)
+ const skip=(t:number)=>refused.some(([a,b])=>t+1>=a&&t<=b),mismatch=(s:string,detail:string)=>issues.push({path:s,code:'EVIDENCE_STREAM_MISMATCH',detail,at:s});
+ const same=(a:string[],b:string[])=>{if(a.length!==b.length)return false;a.sort();b.sort();return a.every((x,i)=>x===b[i]);};
+ const steps=traj.flatMap(r=>r.tick>0&&!skip(r.tick-1)?[String(r.tick-1)]:[]),sent=(out.control as ControlRecord[]).filter(r=>!skip(r.tick)).map(r=>String(r.tick));
+ if(!same(steps,sent))mismatch('control',`${sent.length} control records for ${steps.length} recorded steps`);
+ const key=(t:number,id:string,c:string[])=>JSON.stringify([t,id,c]);
+ const touching=traj.flatMap(r=>skip(r.tick)?[]:r.robots.filter(x=>x.collisionIds.length).map(x=>key(r.tick,x.robotId,x.collisionIds))),contacts=(out.collisions as CollisionRecord[]).filter(r=>!skip(r.tick)).map(r=>key(r.tick,r.robotId,r.collisionIds));
+ if(!same(touching,contacts))mismatch('collisions',`${contacts.length} contact records for ${touching.length} recorded robot contacts`);
+ if(o.scene){
+  const robots=o.scene.robots.map(r=>r.robotId).sort().join('|'),pubs=o.scene.robots.flatMap(r=>r.model.sensors.map(s=>({robotId:r.robotId,id:s.id,every:s.publishEveryTicks})));
+  if(traj.some(r=>r.robots.map(x=>x.robotId).sort().join('|')!==robots))mismatch('trajectory','recorded robots differ from the scene');
+  const due=traj.flatMap(r=>skip(r.tick)?[]:pubs.filter(p=>r.tick%p.every===0).map(p=>`${r.tick}|${p.robotId}|${p.id}`)),published=(out.sensors as SensorRecord[]).filter(r=>!skip(r.tick)).map(r=>`${r.tick}|${r.robotId}|${r.scan.sensorId}`);
+  if(!same(due,published))mismatch('sensors',`${published.length} LiDAR publications for ${due.length} due at the scene's cadence`);
+ }else reasons.push('SENSOR_CADENCE_UNVERIFIED');
+ // the end of the recording: what the recorder committed (its gaps, terminal reason and last durable tick) or nothing can be claimed about the tail
+ if(listed.gaps===undefined||listed.terminal===undefined||listed.lastTick===undefined)reasons.push('EVIDENCE_END_UNKNOWN');
+ else if(!problem&&listed.lastTick!==horizon)issues.push({path:'listing',code:'EVIDENCE_END_MISMATCH',detail:`the recording declares its last durable tick ${listed.lastTick}, the verified chunks end at ${horizon}`,at:'listing'});
+ const runTick=o.runTick??null;
+ if(runTick!==null){
+  const from=(horizon??-1)+1;
+  if(from<=runTick&&!gaps.some(g=>g.fromTick<=from&&g.toTick>=runTick))gaps.push({fromTick:from,toTick:runTick,reason:'EVIDENCE_PENDING'});
+  if(horizon!==null&&horizon>runTick)reasons.push(`EVIDENCE_AHEAD_OF_CHECKPOINT:${runTick+1}-${horizon}`);
+ }
  const merged=gaps.filter((g,i)=>gaps.findIndex(x=>x.fromTick===g.fromTick&&x.toTick===g.toTick)===i).sort((a,b)=>a.fromTick-b.fromTick);
- return {trajectory:traj,control:out.control as ControlRecord[],sensors:out.sensors as SensorRecord[],collisions:out.collisions as CollisionRecord[],issues,gaps:merged,horizon,
-  complete:!issues.length&&!merged.length&&!listed.terminal&&horizon!==null,text};
+ const terminal=problem?null:listed.terminal??null;
+ return {trajectory:traj,control:out.control as ControlRecord[],sensors:out.sensors as SensorRecord[],collisions:out.collisions as CollisionRecord[],issues,gaps:merged,horizon,reasons,terminal,
+  complete:!issues.length&&!merged.length&&!reasons.length&&!problem&&listed.terminal===null&&horizon!==null,text};
 }
 
 // ---- metrics (computed from the durable read only; independent of any renderer and of the controller's own verdicts) ----
@@ -238,7 +348,7 @@ function assess(scene:NavigationSceneV1,snaps:IRSimSnapshotV1[],text:string):Tra
 export function navigationMetrics(scene:NavigationSceneV1,read:EvidenceRead):NavigationMetrics{
  const snaps=read.trajectory.map(r=>({schemaVersion:1,runId:'',bootId:'',tick:r.tick,simTimeNs:r.simTimeNs,seq:'0',sceneDigest:scene.sceneDigest,robots:r.robots.map(x=>({...x,scans:[]}))}) as IRSimSnapshotV1);
  const a=assess(scene,snaps,read.text.trajectory),complete=read.complete&&a.coverage==='complete',episodes=collisionEpisodes(a.contacts);
- const reasons=[...read.issues.map(i=>i.code),...read.gaps.map(g=>`${g.reason}:${g.fromTick}-${g.toTick}`),...read.horizon===null?['NO_TRAJECTORY_RECORDED']:a.coverage==='complete'?[]:['ORACLE_COVERAGE_INCOMPLETE']].filter((x,i,l)=>l.indexOf(x)===i);
+ const reasons=[...read.issues.map(i=>i.code),...read.gaps.map(g=>`${g.reason}:${g.fromTick}-${g.toTick}`),...read.reasons,...read.horizon===null?['NO_TRAJECTORY_RECORDED']:a.coverage==='complete'?[]:['ORACLE_COVERAGE_INCOMPLETE']].filter((x,i,l)=>l.indexOf(x)===i);
  const distance:Record<string,number>={},drive:Record<string,number>={};
  for(const r of scene.robots){distance[r.robotId]=0;drive[r.robotId]=0;}
  read.trajectory.forEach((s,i)=>{const p=read.trajectory[i-1];if(!p||s.tick!==p.tick+1)return;
@@ -265,43 +375,58 @@ export interface EvidenceIdentity{
  controller:{id:'grid-diff-v1';version:string};businessEpochMs:number;
 }
 export interface Assertion{id:string;result:'pass'|'fail'|'inconclusive'|'not_run';detail:string}
-/** Assertions the evidence alone can decide. Repeatability needs a second run and stays not_run here; cross-platform stays not_run until a platform is qualified. */
+/** Assertions the evidence alone can decide. Repeatability needs a second run and stays not_run here; cross-platform stays not_run until a platform is qualified.
+ * Details never name a chunk file (random names): an issue is named by its stream and chunk index, so two runs failing the same way assert the same text. */
 export function evidenceAssertions(read:EvidenceRead,m:NavigationMetrics,runTick:number|null,terminal:string|null):Assertion[]{
- const reasons=m.coverageReasons.join(', ').slice(0,900)||'none';
+ const reasons=m.coverageReasons.join(', ').slice(0,900)||'none',end=terminal??read.terminal,unknownEnd=read.reasons.includes('EVIDENCE_END_UNKNOWN');
  return [
-  {id:'EVIDENCE_INTEGRITY',result:read.issues.length?'fail':'pass',detail:read.issues.length?`chunks failed verification: ${read.issues.map(i=>`${i.code} ${i.path}`).join('; ').slice(0,900)}`:'every listed chunk matched its size and SHA-256 and decoded in order'},
-  {id:'EVIDENCE_COVERAGE',result:m.coverage==='complete'&&(runTick===null||read.horizon===runTick)?'pass':'inconclusive',detail:m.coverage==='complete'?`ticks 0..${read.horizon} recorded without a gap${runTick!==null&&read.horizon!==runTick?`; the run is at tick ${runTick}, later ticks are not yet durable`:''}`:`incomplete: ${reasons}`},
-  {id:'EVIDENCE_LIMITS',result:terminal?'fail':'pass',detail:terminal?`recording ended early: ${terminal}`:`within ${EVIDENCE_LIMITS.maxTicks} ticks and the stored-bytes quota`},
+  {id:'EVIDENCE_INTEGRITY',result:read.issues.length?'fail':'pass',detail:read.issues.length?`chunks failed verification: ${read.issues.map(i=>`${i.code} ${i.at}`).join('; ').slice(0,900)}`:'every listed chunk matched its size and SHA-256, decoded in order and agreed with the other streams'},
+  {id:'EVIDENCE_COVERAGE',result:m.coverage==='complete'&&(runTick===null||read.horizon===runTick)?'pass':'inconclusive',detail:m.coverage==='complete'?`ticks 0..${read.horizon} recorded without a gap${runTick!==null&&read.horizon!==runTick?`; the run is at tick ${runTick}, the durable evidence does not match it`:''}`:`incomplete: ${reasons}`},
+  {id:'EVIDENCE_LIMITS',result:end?'fail':unknownEnd?'inconclusive':'pass',detail:end?`recording ended early: ${end}`:unknownEnd?'the end of the recording is unknown: no committed terminal record was given':`within ${EVIDENCE_LIMITS.maxTicks} ticks and the stored-bytes quota`},
   {id:'NO_PHYSICAL_CONTACT',result:m.coverage!=='complete'?'inconclusive':m.collisionEpisodes?'fail':'pass',detail:m.coverage!=='complete'?'not decidable without complete trajectory evidence':`${m.collisionEpisodes} contact episode(s) from engine_discrete/swept_oracle; ${m.safetyEnvelopeEpisodes} safety-envelope breach episode(s)`},
   {id:'SENSOR_PUBLICATIONS',result:m.sensorPublications.complete?'pass':m.sensorPublications.expected===0?'not_run':'inconclusive',detail:`${m.sensorPublications.recorded} of ${m.sensorPublications.expected} LiDAR publications recorded and verified`},
   {id:'REPEATABILITY_SAME_PLATFORM',result:'not_run',detail:'needs a rerun with the same lock, platform and seed; compare the normalized digests'},
   {id:'REPEATABILITY_CROSS_PLATFORM',result:'not_run',detail:'no second platform is qualified; only declared tolerances could be compared'},
  ];
 }
+/** The host that ran the source and spawned the worker (same host). Part of every digest: a same-platform rerun matches, another platform never does by omission. */
+export interface HostIdentity{platform:string;os:string;arch:string;node:string}
+export const hostIdentity=():HostIdentity=>({platform:`${platform()}-${arch()}`,os:`${platform()} ${release()}`,arch:arch(),node:process.version});
+type DigestIdentity=Pick<EvidenceIdentity,'lockDigest'|'runSeed'|'controller'>&Partial<EvidenceIdentity>;
 const digestOf=(header:unknown,...texts:string[])=>{const h=createHash('sha256').update(JSON.stringify(header)+'\n');for(const t of texts)h.update(t).update('\u0000');return h.digest('hex');};
-export function evidenceDigests(scene:NavigationSceneV1,id:Pick<EvidenceIdentity,'lockDigest'|'runSeed'|'controller'>,read:EvidenceRead,m:NavigationMetrics,assertions:readonly Assertion[]){
- const header={algorithm:DIGEST_ALGORITHM,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:id.controller,lockDigest:id.lockDigest,seed:{runSeed:id.runSeed,engineSeed:engineSeedOf(id.runSeed,scene).engineSeed},horizon:read.horizon,gaps:read.gaps,issues:read.issues.map(i=>i.code)};
+/**
+ * Normalized digests: the record text of the streams under a header holding every input, version and platform field of the run (the identity without its runId, the
+ * scene/policy/compiler identity, the host) and what the read found (horizon, gaps, issue codes, reasons, terminal). NORMALIZED_OMITS is everything left out.
+ * The trajectory digest covers the control ledger and the contact records with the trajectory: the same motion under different commands is not the same run.
+ */
+export function evidenceDigests(scene:NavigationSceneV1,id:DigestIdentity,read:EvidenceRead,m:NavigationMetrics,assertions:readonly Assertion[],host:HostIdentity=hostIdentity()){
+ const {runId:_,...inputs}=id;void _;
+ const header={algorithm:DIGEST_ALGORITHM,evidenceFormat:EVIDENCE_FORMAT,scene:{sceneDigest:scene.sceneDigest,policy:scene.policy.hash,compilerVersion:scene.compilerVersion,schemaHash:scene.schemaHash},inputs,host,
+  seed:{runSeed:id.runSeed,engineSeed:engineSeedOf(id.runSeed,scene).engineSeed},horizon:read.horizon,gaps:read.gaps,issues:read.issues.map(i=>`${i.code} ${i.at}`),reasons:read.reasons,terminal:read.terminal};
  return {trajectoryDigest:digestOf({...header,stream:'trajectory+control+collisions'},read.text.trajectory,read.text.control,read.text.collisions),
   sensorDigest:digestOf({...header,stream:'sensors'},read.text.sensors),
-  assertionDigest:hashJson({algorithm:DIGEST_ALGORITHM,assertions,episodes:m.episodes,coverage:m.coverage,horizon:m.horizon}),algorithm:DIGEST_ALGORITHM as typeof DIGEST_ALGORITHM,normalizedOmits:[...NORMALIZED_OMITS]};
+  assertionDigest:hashJson({header,assertions,episodes:m.episodes,coverage:m.coverage,horizon:m.horizon}),algorithm:DIGEST_ALGORITHM as typeof DIGEST_ALGORITHM,normalizedOmits:[...NORMALIZED_OMITS]};
 }
-/** The report extension (navigation-run-evidence-v1) for the evidence as read from disk now. Artifact paths are relative to the recording root. */
-export function buildNavigationEvidence(scene:NavigationSceneV1,id:EvidenceIdentity,listed:{chunks:Chunks;terminal:string|null},read:EvidenceRead,m:NavigationMetrics,runTick:number|null):NavigationRunEvidenceV1{
- const assertions=evidenceAssertions(read,m,runTick,listed.terminal),{engineSeed,sensorSeeds}=engineSeedOf(id.runSeed,scene);
+/** The report extension (navigation-run-evidence-v1) for the evidence as read from disk now. Artifact paths are relative to the recording root; `recording` is the
+ * recorder's own end-of-recording record, which an import passes back to readNavigationEvidence with the artifacts. */
+export function buildNavigationEvidence(scene:NavigationSceneV1,id:EvidenceIdentity,listed:Omit<Committed,'bytes'>,read:EvidenceRead,m:NavigationMetrics,runTick:number|null,host:HostIdentity=hostIdentity()):NavigationRunEvidenceV1{
+ const terminal=listed.terminal??read.terminal,assertions=evidenceAssertions(read,m,runTick,terminal),{engineSeed,sensorSeeds}=engineSeedOf(id.runSeed,scene);
  const metric=(name:string,ok:boolean,why:string|null)=>({metric:name,status:ok?'available' as const:'unavailable' as const,reason:ok?null:(why??'EVIDENCE_INCOMPLETE').slice(0,500)});
  const why=m.coverageReasons.join(', ')||null,complete=m.coverage==='complete';
  return {schemaVersion:1,documentType:'navigation-run-evidence',runId:id.runId,sceneDigest:scene.sceneDigest,sceneRef:id.sceneRef,modelDigests:scene.robots.map(r=>r.model.modelDigest),
   policyRef:{id:scene.policy.id,revision:scene.policy.revision,hash:scene.policy.hash},controller:id.controller,
-  engine:{id:'irsim_2d',version:id.engine.version,pythonVersion:id.engine.pythonVersion,platform:`${platform()}-${arch()}`,lockDigest:id.lockDigest},
-  identity:{sourceCommit:id.sourceCommit,compilerVersion:scene.compilerVersion,sceneSchemaHash:scene.schemaHash,evidenceFormat:EVIDENCE_FORMAT,os:`${platform()} ${release()}`,arch:arch(),node:process.version},
+  engine:{id:'irsim_2d',version:id.engine.version,pythonVersion:id.engine.pythonVersion,platform:host.platform,lockDigest:id.lockDigest},
+  identity:{sourceCommit:id.sourceCommit,compilerVersion:scene.compilerVersion,sceneSchemaHash:scene.schemaHash,evidenceFormat:EVIDENCE_FORMAT,os:host.os,arch:host.arch,node:host.node},
   clock:{tickMs:20,tickHorizon:Math.min(read.horizon??0,EVIDENCE_LIMITS.maxTicks),businessEpochMs:id.businessEpochMs},
   seed:{runSeed:id.runSeed,engineSeed,engineSeedAlgorithm:'irsim-env-seed-v1',sensorSeeds,actorRng:id.actorRng,engineRng:{library:'numpy',version:id.numpyVersion,algorithm:'numpy.random.default_rng(engineSeed) PCG64, one generator per environment',seed:engineSeed}},
-  validationReportRef:null,artifacts:structuredClone(listed.chunks),digests:evidenceDigests(scene,id,read,m,assertions),assertions,
+  validationReportRef:null,artifacts:structuredClone(listed.chunks),digests:evidenceDigests(scene,id,read,m,assertions,host),assertions,
   metricCoverage:[metric('travelledDistanceM',complete,why),metric('collisionEpisodes',complete,why),metric('minObstacleClearanceM',m.minClearanceM!==null,why),
    metric('minRobotSeparationM',m.minSeparationM!==null,complete?'ONE_ROBOT':why),metric('sensorPublications',m.sensorPublications.complete,why??'SENSOR_PUBLICATIONS_INCOMPLETE')],
-  recordingGaps:read.gaps.slice(0,500),completeness:{status:read.complete?'complete':'incomplete',reasons:[...listed.terminal?[listed.terminal]:[],...m.coverageReasons].slice(0,50)},
+  recordingGaps:read.gaps.slice(0,500),completeness:{status:complete?'complete':'incomplete',reasons:[...terminal?[terminal]:[],...m.coverageReasons].slice(0,50)},
+  recording:{gaps:structuredClone(listed.gaps).slice(0,READ_LIMITS.gaps),terminal:listed.terminal,lastTick:listed.lastTick},
   limitations:['planar kinematic plant (IR-SIM diff drive): no dynamics, contact physics or hardware behaviour','LiDAR publications are recorded at the sensor cadence (publishEveryTicks); the engine scan between publications is not recorded',
-   'actor schedule: none (scripted actors arrive with C02); every control record carries its actorUpdates','cross-platform repeatability not qualified (not_run)']};
+   'actor schedule: none (scripted actors arrive with C02); every control record carries its actorUpdates','cross-platform repeatability not qualified (not_run)',
+   'the evidence is not anchored or signed: a chunk edited together with a re-hashed manifest or listing is not detected (only stored-byte hashes against the listing are verified)']};
 }
 
 // ---- replay and comparison (read-only) ----
@@ -319,7 +444,7 @@ export function compareEvidence(a:EvidenceRead,b:EvidenceRead,tol={pose:1e-9,lid
  a.trajectory.forEach((x,i)=>{const y=b.trajectory[i];if(!y||y.tick!==x.tick)return note(`tick ${x.tick}`);
   x.robots.forEach((r,j)=>{const q=y.robots[j];if(!q||q.robotId!==r.robotId||JSON.stringify(q.collisionIds)!==JSON.stringify(r.collisionIds))return note(`robot/collisions at ${x.tick}`);
    if(r.poseDriveMap.some((v,k)=>Math.abs(v-q.poseDriveMap[k]!)>tol.pose))note(`pose ${r.robotId} at ${x.tick}`);});});
- if(a.control.length!==b.control.length||a.control.some((c,i)=>{const d=b.control[i]!;return c.tick!==d.tick||c.velocities.some((v,k)=>Math.abs(v.vMps-d.velocities[k]!.vMps)>tol.pose||Math.abs(v.omegaRadps-d.velocities[k]!.omegaRadps)>tol.pose);}))note('control ledger');
+ if(a.control.length!==b.control.length||a.control.some((c,i)=>{const d=b.control[i]!;return c.tick!==d.tick||c.velocities.length!==d.velocities.length||c.velocities.some((v,k)=>Math.abs(v.vMps-d.velocities[k]!.vMps)>tol.pose||Math.abs(v.omegaRadps-d.velocities[k]!.omegaRadps)>tol.pose);}))note('control ledger');
  if(a.sensors.length!==b.sensors.length)note(`sensors ${a.sensors.length} vs ${b.sensors.length}`);
  a.sensors.forEach((s,i)=>{const t=b.sensors[i];if(!t||t.tick!==s.tick||t.robotId!==s.robotId||JSON.stringify(t.scan.states)!==JSON.stringify(s.scan.states))return note(`beam states at ${s.tick}`);
   if(s.scan.rangesM.some((v,k)=>{const w=t.scan.rangesM[k];return v===null||w===null||w===undefined?v!==w:Math.abs(v-w)>tol.lidar;}))note(`ranges at ${s.tick}`);});

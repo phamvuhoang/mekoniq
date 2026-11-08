@@ -772,4 +772,20 @@ export interface NavigationRunEvidenceV1 {
      */
     reasons: string[];
   };
+  /**
+   * Optional (added with the B05 review): the recorder's own end-of-recording record as committed in its manifest (the gaps it recorded, the terminal reason or null for a recording that was not ended early, and the last durable tick). An import without it cannot claim a complete recording.
+   */
+  recording?: {
+    /**
+     * @minItems 0
+     * @maxItems 10000
+     */
+    gaps: {
+      fromTick: number;
+      toTick: number;
+      reason: string;
+    }[];
+    terminal: string | null;
+    lastTick: number | null;
+  };
 }

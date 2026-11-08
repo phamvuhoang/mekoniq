@@ -1,7 +1,7 @@
 // B05 on the real IR-SIM plant: the durable evidence of IR-FD01 runs, its limits, restarts and repeatability. Every check reads the stored chunks back from disk.
 // Skipped, with the reason, where the pinned IR-SIM venv is not provisioned.
 import {afterAll,afterEach,beforeAll,expect,test} from 'vitest';
-import {chmod,cp,readFile,rm} from 'node:fs/promises';
+import {chmod,cp,readFile,rm,writeFile} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {createNavigationCompiler} from '../../packages/lab-runtime/src/engineering/navigation-compiler';
 import {lockDigestOf} from '../../packages/lab-runtime/src/engineering/linkforge';
@@ -20,7 +20,8 @@ afterAll(removeBundles);
 afterEach(async()=>{for(const r of runs.splice(0))await r.close().catch(()=>{});for(const d of dirs.splice(0)){await chmod(join(d,'evidence'),0o700).catch(()=>{});await rm(d,{recursive:true,force:true});}});
 async function open(o:{b?:typeof bundle;dir?:string;seed?:number;over?:Parameters<typeof openRun>[2]}={}){const dir=o.dir??await temp('irsim-evidence-');if(!o.dir)dirs.push(dir);const run=await openRun(dir,o.b??bundle,o.over??{},o.seed??5);runs.push(run);return {run,dir};}
 const evidenceOf=(r:RunReport)=>r.navigation2d!;
-const readBack=(dir:string,e:NavigationRunEvidenceV1)=>readNavigationEvidence(join(dir,'evidence'),{chunks:e.artifacts});
+/** The exported evidence read back as an import would: the document's artifacts and recording block, against the run's own locked scene. */
+const readBack=async(dir:string,e:NavigationRunEvidenceV1)=>readNavigationEvidence(join(dir,'evidence'),{chunks:e.artifacts,...e.recording},{scene:JSON.parse(await readFile(join(dir,'bundle','navigation-scene.json'),'utf8')) as NavigationSceneV1});
 const assertion=(e:NavigationRunEvidenceV1,id:string)=>e.assertions.find(a=>a.id===id)!;
 async function complete(o:Parameters<typeof open>[0]={}){const x=await open(o);await x.run.start();await stepUntil(x.run,v=>v.run.status==='completed');return {...x,report:await x.run.report()};}
 
@@ -182,7 +183,7 @@ test.skipIf(!irsimAvailable)('IR06 from evidence: a raw drive into table-05 on t
   for(let k=1;k<=300;k++){const payload={targetTick:k,velocities:[{robotId:'amr-1',vMps:0.4,omegaRadps:0}],actorUpdates:[]};await rec.append(await ask('step',payload),payload);}
   await rec.flush();
  }finally{await w.close('test over');}
- const read=await readNavigationEvidence(join(root,'evidence'),rec.committed()),m=navigationMetrics(scene,read);
+ const read=await readNavigationEvidence(join(root,'evidence'),rec.committed(),{scene}),m=navigationMetrics(scene,read);
  expect(m.coverage).toBe('complete');
  const engine=m.episodes.filter(x=>x.source==='engine_discrete'),oracle=m.episodes.filter(x=>x.source!=='engine_discrete');
  expect(engine.map(x=>x.pair.join('|'))).toEqual(['amr-1|table-05']);
@@ -190,6 +191,71 @@ test.skipIf(!irsimAvailable)('IR06 from evidence: a raw drive into table-05 on t
  expect(m.collisionEpisodes).toBeGreaterThanOrEqual(1);expect(m.minClearanceM).toBeLessThan(1e-9);
  expect(read.collisions.length).toBeGreaterThan(0);
  // the same stored run with its collision chunk gone: the contact is not reported as absent, the metric is unavailable
- const without=await readNavigationEvidence(join(root,'evidence'),{...rec.committed(),chunks:{...rec.committed().chunks,collisions:rec.committed().chunks.collisions.map(x=>({...x,sha256:'0'.repeat(64)}))}});
+ const without=await readNavigationEvidence(join(root,'evidence'),{...rec.committed(),chunks:{...rec.committed().chunks,collisions:rec.committed().chunks.collisions.map(x=>({...x,sha256:'0'.repeat(64)}))}},{scene});
  expect(navigationMetrics(scene,without)).toMatchObject({coverage:'incomplete',collisionEpisodes:null});
+},240_000);
+
+// ---- review B05 ----
+const verdicts=(e:NavigationRunEvidenceV1)=>Object.fromEntries(e.assertions.map(a=>[a.id,a.result]));
+const nothingClaimed=(r:RunReport)=>{
+ const e=evidenceOf(r);
+ expect(r.metrics.collision).toMatchObject({available:false,contacts:null});expect(r.coverage.sensorEvidence).toBe(false);
+ expect(e.completeness!.status).toBe('incomplete');
+ expect(verdicts(e)).toMatchObject({EVIDENCE_COVERAGE:'inconclusive',NO_PHYSICAL_CONTACT:'inconclusive',SENSOR_PUBLICATIONS:'inconclusive'});
+ expect(e.metricCoverage.filter(x=>x.status==='available')).toEqual([]);
+};
+
+test.skipIf(!irsimAvailable)('review B05 #1 live: a report taken while the latest ticks are still buffered claims nothing about them',async()=>{
+ const {run}=await open();
+ await run.start();
+ for(let i=0;i<7;i++)await act(run,'step',{ticks:30}); // flushed at 120 (>= 100 buffered at the end of an action), 121..210 only in memory
+ const r=await run.report(),e=evidenceOf(r);
+ expect([r.outcome.tick,e.clock.tickHorizon]).toEqual([210,120]);
+ expect(e.recordingGaps).toEqual([{fromTick:121,toTick:210,reason:'EVIDENCE_PENDING'}]);
+ nothingClaimed(r);
+},240_000);
+
+test.skipIf(!irsimAvailable)('review B05 #1/#2 crash image: evidence ahead of a checkpoint taken mid-action is not complete, and the step in flight is a recorded unknown tick',async()=>{
+ const {run,dir}=await open();
+ await run.start();
+ await act(run,'step',{ticks:130});
+ const image=await temp('irsim-crash-');dirs.push(image);
+ await cp(dir,image,{recursive:true}); // run.json at tick 130 ...
+ await act(run,'step',{ticks:130}); // ... while the evidence went on to 260 before the crash
+ await rm(join(image,'evidence'),{recursive:true});await cp(join(dir,'evidence'),join(image,'evidence'),{recursive:true});
+ const checkpoint=JSON.parse(await readFile(join(image,'run.json'),'utf8')) as {inFlight:boolean};checkpoint.inFlight=true; // the crash came during that action
+ await writeFile(join(image,'run.json'),JSON.stringify(checkpoint));
+ const reopened=await open({dir:image}),r=await reopened.run.report(),e=evidenceOf(r);
+ expect([r.outcome.tick,e.clock.tickHorizon]).toEqual([130,260]);
+ expect(e.completeness!.reasons).toContain('EVIDENCE_AHEAD_OF_CHECKPOINT:131-260');
+ expect(e.recordingGaps).toEqual([{fromTick:261,toTick:261,reason:'STEP_ACK_LOST'}]);
+ nothingClaimed(r);
+},240_000);
+
+test.skipIf(!irsimAvailable)('review B05 #2: a step applied but never acknowledged is a recorded unknown tick; the ticks before it are flushed (M16)',async()=>{
+ const {run,dir}=await open({over:{entry:[double('logged.py')]}});
+ await run.start();
+ const moving=await stepUntil(run,v=>v.entities[0]!.moving,10);
+ await writeFile(join(dir,'worker','crash-next-step'),'');
+ const v=await act(run,'step',{ticks:5});
+ expect(v.tick).toBe(moving.tick);
+ const r=await run.report(),e=evidenceOf(r);
+ expect(e.clock.tickHorizon).toBe(v.tick); // everything acknowledged is durable once the plant is lost
+ expect(e.recordingGaps).toEqual([{fromTick:v.tick+1,toTick:v.tick+1,reason:'STEP_ACK_LOST'}]);
+ expect(e.recording).toMatchObject({lastTick:v.tick,gaps:[{fromTick:v.tick+1,toTick:v.tick+1,reason:'STEP_ACK_LOST'}]});
+ nothingClaimed(r);
+},240_000);
+
+test.skipIf(!irsimAvailable)('review B05 #2: an append the store refuses stops the plant with EVIDENCE_INCOMPLETE and its own gap, never a silent TICK_GAP (M25)',async()=>{
+ const {run,dir}=await open({over:{entry:[double('logged.py')]}});
+ await run.start();
+ await act(run,'step',{ticks:10});
+ await writeFile(join(dir,'worker','foreign-scan-next-step'),'');
+ const v=await act(run,'step',{ticks:10});
+ expect(v.tick).toBe(11);
+ expect(v.attention).toContainEqual(expect.objectContaining({reason:'EVIDENCE_INCOMPLETE',subjectId:expect.stringMatching(/^EVIDENCE:EVIDENCE_REJECTED:EVIDENCE_SENSOR_FOREIGN/)}));
+ await expect(act(run,'step',{ticks:1})).rejects.toThrow('INVALID_STATE:PLANT_LOST');
+ const e=evidenceOf(await run.report());
+ expect(e.recordingGaps.map(g=>[g.fromTick,g.toTick,g.reason.split(':')[0]])).toEqual([[11,11,'EVIDENCE_REJECTED']]);
+ expect(e.completeness!.status).toBe('incomplete');
 },240_000);
