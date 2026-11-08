@@ -145,3 +145,9 @@ test('CMP05: equal inputs give equal scenes; each declared input change gives a 
   const other: NavigationModel2DV1 = projectNavigationModel(physical('serve'), { ...policy, parameters: { ...policy.parameters, safetyMarginM: 0.05 }, hash: hashJson('other-policy') }, {});
   expect(other.modelDigest).not.toBe(m.modelDigest);
 });
+
+test('review2 #5: a robot mounted upside down is refused, not projected as an upright one', () => {
+  const upsideDown = () => sceneOf('serve', (i) => { const p = i.resolved.placements.find((x) => x.instanceId === 'chassis')!; p.world = { ...p.world, quaternionXyzw: [1, 0, 0, 0] } as typeof p.world; });
+  expect(codes(upsideDown)).toContain('NON_PLANAR_DRIVE');
+  expect(codes(() => sceneOf('serve'))).toEqual([]); // the control: the same mutation path with an upright pose compiles
+});

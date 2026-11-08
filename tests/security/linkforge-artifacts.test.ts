@@ -47,3 +47,12 @@ test.skipIf(!existsSync(lfPython))('the worker only reads inside the bundle root
     expect(report.result).not.toBe('pass');
   }
 });
+
+test('review2 #9: concurrent writes of one report for many bundles keep every ownership link', async () => {
+  const store = createValidationStore(await temp('vs-'));
+  const report = sealDocument({ schemaVersion: 1, documentType: 'model-validation-report', reportDigest: '', physicalModelDigest: 'a'.repeat(64), assemblyDigest: 'b'.repeat(64), robotId: 'amr-1', execution: 'not_run', result: 'inconclusive', mode: 'shadow', engine: null,
+    checks: [], issues: [], nameMapRef: null, inputUrdfRef: null, referenceUrdfRef: null, referenceSrdfRef: null, assumptions: [], limitations: [] }, 'reportDigest') as never;
+  const owners = Array.from({ length: 10 }, (_, i) => i.toString(16).repeat(64));
+  await Promise.all(owners.map((bundleDigest) => store.putReport({ bundleDigest, cacheKey: null, report })));
+  expect((await store.readReport((report as { reportDigest: string }).reportDigest))!.bundleDigests).toEqual(owners);
+});

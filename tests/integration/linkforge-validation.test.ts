@@ -112,7 +112,9 @@ test.skipIf(!available)('authorization and identity: other sessions, bad refs, u
   expect(await code(s.service.validateRobotModel('s1', s.ref, 'amr-9'))).toBe('PHYSICAL_MODEL_UNAVAILABLE:UNKNOWN_ROBOT');
   expect(await code(s.service.validateRobotModel('s1', s.ref, '../../etc'))).toBe('INVALID_ROBOT_ID:');
   const legacy = await setup({ profile: false });
-  expect(await code(legacy.service.validateRobotModel('s1', legacy.ref, 'amr-1'))).toBe('PHYSICAL_MODEL_UNAVAILABLE:DRIVE_BINDINGS_REQUIRED');
+  // review2 #3: a bundle compiled by the existing engineering-rigid-v1 path validates with its singleton drive as the binding
+  const legacyReport = await legacy.service.validateRobotModel('s1', legacy.ref, 'amr-1');
+  expect(legacyReport).toMatchObject({ report: { documentType: 'model-validation-report', robotId: 'amr-1' } });
   expect(await code(s.service.readValidation('intruder', 'f'.repeat(64)))).toBe('NOT_FOUND:');
 });
 

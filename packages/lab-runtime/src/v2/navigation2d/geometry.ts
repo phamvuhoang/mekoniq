@@ -52,12 +52,16 @@ export function pointInPolygon(p:P,poly:readonly P[]):boolean{
 export const pointDistance=(p:P,poly:readonly P[])=>pointInPolygon(p,poly)?0:Math.min(...poly.map((a,i)=>segDist(p,p,a,poly[(i+1)%poly.length]!)));
 export const wrapPi=(a:number)=>{const m=(a+Math.PI)%(2*Math.PI);return (m<=0?m+2*Math.PI:m)-Math.PI;};
 /**
- * Hulls that cover a body moving linearly from `from` to `to`: the convex hull of two consecutive sampled poses is the exact swept area of a pure translation,
- * and the yaw is sampled finely enough (0.2 rad) that the remaining error is inside the sampled-hull. A thin wall between two ticks cannot be skipped.
+ * Hulls that cover a body moving linearly from `from` to `to`. Each hull spans two consecutive sampled poses (0.2 rad apart at most). A corner turning between them follows an arc,
+ * which bulges outside the chord, so the hull also carries the footprint scaled by 1/cos(half the step) at the middle pose: that is the tangent polygon of every corner arc, so
+ * no part of the true swept area lies outside the hull however thin the obstacle.
  */
 export function sweptHulls(footprint:readonly P[],from:Pose2,to:Pose2):P[][]{
- const steps=Math.max(1,Math.ceil(Math.abs(wrapPi(to[2]-from[2]))/0.2)),pose=(t:number):Pose2=>[from[0]+(to[0]-from[0])*t,from[1]+(to[1]-from[1])*t,from[2]+wrapPi(to[2]-from[2])*t];
+ const dyaw=wrapPi(to[2]-from[2]),steps=Math.max(1,Math.ceil(Math.abs(dyaw)/0.2)),pose=(t:number):Pose2=>[from[0]+(to[0]-from[0])*t,from[1]+(to[1]-from[1])*t,from[2]+dyaw*t];
  const out:P[][]=[];
- for(let i=0;i<steps;i++){const a=pose(i/steps),b=pose((i+1)/steps);out.push(convexHull([...place(footprint,...a),...place(footprint,...b)]));}
+ for(let i=0;i<steps;i++){
+  const a=pose(i/steps),b=pose((i+1)/steps),mid=pose((i+0.5)/steps),k=1/Math.cos(Math.abs(dyaw)/steps/2);
+  out.push(convexHull([...place(footprint,...a),...place(footprint,...b),...(dyaw===0?[]:place(footprint.map(([x,y]):P=>[x*k,y*k]),...mid))]));
+ }
  return out;
 }

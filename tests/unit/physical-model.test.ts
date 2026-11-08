@@ -72,12 +72,21 @@ test('the digest covers everything but itself, is stable, and differs per robot'
 test('refuses what it cannot project instead of guessing', () => {
   const { compile } = input('two-amr');
   expect(thrownCodes(() => projectPhysicalModel(compile, 'amr-9', SCHEMA_HASH))).toEqual(['UNKNOWN_ROBOT']);
-  const legacy = input('valid').compile;
-  expect(thrownCodes(() => projectPhysicalModel(legacy, 'amr-1', SCHEMA_HASH))).toEqual(['DRIVE_BINDINGS_REQUIRED']);
+  const wide = input('wide-wheels', (f) => { f.project.requestedProfile = 'engineering-irsim-2d-v1'; });
+  expect(thrownCodes(() => projectPhysicalModel(wide.compile, 'amr-1', SCHEMA_HASH))).toEqual(['DRIVE_SEPARATION_MISMATCH']); // review2 #4: the mounts agree with the model, the real wheel centres do not
   const badFrame = input('lidar-bad-frame', (f) => { f.project.requestedProfile = 'engineering-irsim-2d-v1'; });
   expect(thrownCodes(() => projectPhysicalModel(badFrame.compile, 'amr-1', SCHEMA_HASH))).toEqual(['SENSOR_FRAME_MISSING']);
   const skew = input('skew-axle', (f) => { f.project.requestedProfile = 'engineering-irsim-2d-v1'; });
   expect(thrownCodes(() => projectPhysicalModel(skew.compile, 'amr-1', SCHEMA_HASH))).toEqual(['NON_PLANAR_DRIVE']);
   const swapped = input('swapped-axle', (f) => { f.project.requestedProfile = 'engineering-irsim-2d-v1'; });
   expect(thrownCodes(() => projectPhysicalModel(swapped.compile, 'amr-1', SCHEMA_HASH))).toEqual(['DRIVE_SIDES_SWAPPED']);
+});
+
+test('review2 #3: a legacy single-drive resolution (engineering-rigid-v1) projects its singleton drive, without changing the resolved assembly', () => {
+  const { compile, resolved } = input('valid');
+  const before = JSON.stringify(resolved);
+  expect(resolved.models.drivesByEntity).toBeUndefined();
+  const model = projectPhysicalModel(compile, 'amr-1', SCHEMA_HASH);
+  expect(model.drive).toMatchObject({ entityId: 'amr-1', leftJointId: resolved.models.drive!.leftJointId, rightJointId: resolved.models.drive!.rightJointId });
+  expect(JSON.stringify(resolved)).toBe(before);
 });

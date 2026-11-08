@@ -22,12 +22,12 @@ export const driveModel=makeDriveModel();
 /** Generic 2D LiDAR model fixture; every number is `assumed`. `frame` names a link of the chassis component. */
 export const makeLidarModel=(id='fixture-lidar',beams=360,frame='base')=>({schemaVersion:1 as const,kind:'sensor' as const,id,frame,rateHz:scalar(10,'Hz'),range:{min:scalar(0.05,'m'),max:scalar(10,'m')},fieldOfView:scalar(2*Math.PI,'rad'),
  noise:{distribution:'none' as const,stddev:scalar(0,'m'),seed:7},latency:scalar(0,'s'),dropoutProbability:scalar(0,'1'),sensorType:'lidar_2d' as const,lidar2d:{beamCount:beams,beamCountSource:assumed}});
-type Rig={axleX?:number;rightAxle?:[number,number,number];lidars?:string[];lidarFrame?:string};
+type Rig={wheelOffsetY?:number;axleX?:number;rightAxle?:[number,number,number];lidars?:string[];lidarFrame?:string};
 const chassis=(bayX=-0.1,radius=0.1,separation=0.45,rig:Rig={})=>component('amr-chassis','chassis',{models:[{kind:'actuator',id:'fixture-drive',digest:hashJson(makeDriveModel(radius,separation))},...(rig.lidars??[]).map(id=>({kind:'sensor' as const,id,digest:hashJson(makeLidarModel(id,360,rig.lidarFrame))}))],links:[boxLink('base',[0.5,0.4,0.15],20)],ports:[
  mount('left-axle','axle-hub',rig.axleX??0,separation/2,0),mount('right-axle','axle-hub',...(rig.rightAxle??[rig.axleX??0,-separation/2,0])),mount('battery-bay','battery-tray',bayX,0,0.075),mount('tray-plate','tray',0.05,0,0.2),
  {id:'power-in',kind:'power',frame:pose(-0.2,0,0),mate:'dc-bus',direction:'in',voltageRangeV:[18,30],continuousCurrentA:scalar(40,'A')}]});
-const wheel=(r=0.1)=>component('drive-wheel','wheel',{links:[boxLink('hub',[0.04,0.04,0.04],0.2),{id:'rim',visual:[{pose:pose(0,0,0,QUARTER_X),geometry:{kind:'cylinder',radiusM:r,lengthM:0.05},source:assumed}],collision:[{pose:pose(0,0,0,QUARTER_X),geometry:{kind:'cylinder',radiusM:r,lengthM:0.05},source:assumed}],massKg:scalar(1.5,'kg'),comM:[0,0,0],inertiaKgM2:[1.5*(3*r*r+0.0025)/12,0,0,1.5*r*r/2,0,1.5*(3*r*r+0.0025)/12],inertialSource:assumed}],
- joints:[{id:'axle',kind:'continuous',parent:'hub',child:'rim',origin:pose(),axis:[0,1,0],limits:{velocity:scalar(30,'rad/s'),effort:scalar(8,'N*m')}}],ports:[mount('mount','axle-hub',0,0,0)]});
+const wheel=(r=0.1,dy=0)=>component('drive-wheel','wheel',{links:[boxLink('hub',[0.04,0.04,0.04],0.2),{id:'rim',visual:[{pose:pose(0,0,0,QUARTER_X),geometry:{kind:'cylinder',radiusM:r,lengthM:0.05},source:assumed}],collision:[{pose:pose(0,0,0,QUARTER_X),geometry:{kind:'cylinder',radiusM:r,lengthM:0.05},source:assumed}],massKg:scalar(1.5,'kg'),comM:[0,0,0],inertiaKgM2:[1.5*(3*r*r+0.0025)/12,0,0,1.5*r*r/2,0,1.5*(3*r*r+0.0025)/12],inertialSource:assumed}],
+ joints:[{id:'axle',kind:'continuous',parent:'hub',child:'rim',origin:pose(0,dy,0),axis:[0,1,0],limits:{velocity:scalar(30,'rad/s'),effort:scalar(8,'N*m')}}],ports:[mount('mount','axle-hub',0,0,0)]});
 const battery=(id:string,volts:[number,number],inertia=true)=>component(id,'battery',{links:[boxLink('pack',[0.2,0.15,0.1],6,inertia?{}:{inertiaKgM2:null})],ports:[mount('mount','battery-tray',0,0,-0.05),{id:'out',kind:'power',frame:pose(0,0,0.05),mate:'dc-bus',direction:'out',voltageRangeV:volts,continuousCurrentA:scalar(60,'A')}],...(inertia?{}:{identity:{manufacturer:'fixture',family:'battery',sku:null,status:'candidate'}})});
 const tray=()=>component('service-tray','tray',{links:[boxLink('plate',[0.4,0.35,0.01],1.2)],ports:[mount('mount','tray',0,0,0)]});
 const spacer=()=>component('spacer','spacer',{links:[boxLink('body',[0.1,0.1,0.05],0.3)],ports:[mount('top','spacer',0,0,0.025),mount('bottom','spacer',0,0,-0.025)]});
@@ -45,13 +45,13 @@ const project=(instances:Instance[],connections:EngineeringProject['assembly']['
 type AmrOpts={chassisBayX?:number;batteryVolts?:[number,number];batteryInertia?:boolean;wheelRadius?:number;wheelSeparation?:number}&Rig;
 /** One AMR's instances/connections; `prefix` namespaces instance ids ('' keeps the legacy single-robot names), `at` places the chassis in the world. */
 function amrParts(opts:AmrOpts,prefix='',at:Pose=pose()){
- const c=chassis(opts.chassisBayX,opts.wheelRadius,opts.wheelSeparation,opts),w=wheel(opts.wheelRadius),b=battery(opts.batteryVolts?.[1]===13?'battery-12v':'battery-24v',opts.batteryVolts??[22,29],opts.batteryInertia),t=tray();
+ const c=chassis(opts.chassisBayX,opts.wheelRadius,opts.wheelSeparation,opts),wl=wheel(opts.wheelRadius,opts.wheelOffsetY),wr=wheel(opts.wheelRadius,-(opts.wheelOffsetY??0)),b=battery(opts.batteryVolts?.[1]===13?'battery-12v':'battery-24v',opts.batteryVolts??[22,29],opts.batteryInertia),t=tray();
  const n=(id:string)=>prefix+id;
- const instances=[instance(n('chassis'),c,at),instance(n('wheel-left'),w),instance(n('wheel-right'),w),instance(n('battery'),b),instance(n('tray'),t)];
+ const instances=[instance(n('chassis'),c,at),instance(n('wheel-left'),wl),instance(n('wheel-right'),wr),instance(n('battery'),b),instance(n('tray'),t)];
  const connections:EngineeringProject['assembly']['connections']=[
   {from:n('chassis/left-axle'),to:n('wheel-left/mount'),kind:'mount'},{from:n('chassis/right-axle'),to:n('wheel-right/mount'),kind:'mount'},
   {from:n('chassis/battery-bay'),to:n('battery/mount'),kind:'mount'},{from:n('chassis/tray-plate'),to:n('tray/mount'),kind:'mount'},{from:n('battery/out'),to:n('chassis/power-in'),kind:'power'}];
- return {instances,connections,components:digested(c,w,b,t),models:{...models(opts.wheelRadius,opts.wheelSeparation),...Object.fromEntries((opts.lidars??[]).map(id=>{const m=makeLidarModel(id,360,opts.lidarFrame);return [hashJson(m),m];}))}};
+ return {instances,connections,components:digested(c,wl,wr,b,t),models:{...models(opts.wheelRadius,opts.wheelSeparation),...Object.fromEntries((opts.lidars??[]).map(id=>{const m=makeLidarModel(id,360,opts.lidarFrame);return [hashJson(m),m];}))}};
 }
 function amr(opts:AmrOpts={}){
  const p=amrParts(opts);
@@ -81,6 +81,7 @@ const FIXTURES:Record<string,()=>Fixture>={
  'two-lidars':()=>amr({lidars:['lidar-a','lidar-b']}),
  'lidar-bad-frame':()=>amr({lidars:['lidar-a'],lidarFrame:'no-such-link'}),
  'swapped-axle':()=>amr({wheelSeparation:0.45,rightAxle:[0,0.675,0]}),
+ 'wide-wheels':()=>amr({wheelOffsetY:0.05}),
  'skew-axle':()=>amr({wheelSeparation:0.45,rightAxle:[0,-(Math.sqrt(0.45**2-0.1**2)-0.225),0.1]}),
 };
 export function engineeringFixture(name:string):Fixture{

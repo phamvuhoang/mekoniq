@@ -36,7 +36,6 @@ export function projectPhysicalModel(input:EngineeringCompileInput,robotId:strin
  const fail=():never=>{throw new EngineeringInputError(problems);};
  const binding=resolved.entityBindings.find(b=>b.entityId===robotId);
  if(!binding){add('UNKNOWN_ROBOT',`/entityBindings/${robotId}`,'no entity binding with this robot id');fail();}
- if(!resolved.models.drivesByEntity){add('DRIVE_BINDINGS_REQUIRED','/models','the resolved assembly has no per-entity drive bindings; resolve it with the engineering-irsim-2d-v1 profile');fail();}
  const mine=new Set(binding!.instanceIds),owner=(id:string)=>id.split('/')[0]!;
  const links=resolved.links.filter(l=>mine.has(owner(l.id))),linkIds=new Set(links.map(l=>l.id));
  const joints=resolved.joints.filter(j=>linkIds.has(j.parent)||linkIds.has(j.child));
@@ -48,7 +47,8 @@ export function projectPhysicalModel(input:EngineeringCompileInput,robotId:strin
  const inBase=(linkId:string):FramePose=>composePose(toBase,poses.get(linkId)!);
 
  let drive:RobotPhysicalModelV1['drive']=null;
- const binding2=resolved.models.drivesByEntity![robotId];
+ // a legacy resolution has only the singleton, which is that entity's binding; it is read in memory and the resolved assembly is not touched
+ const binding2=resolved.models.drivesByEntity?resolved.models.drivesByEntity[robotId]:resolved.models.drive?.entityId===robotId?resolved.models.drive:undefined;
  if(binding2){
   const params=binding2.model.parameters.drive as {wheelRadiusM:Scalar;wheelSeparationM:Scalar},table=binding2.model.parameters.torqueSpeedTable as {speed:Scalar}[]|undefined,top=table?.at(-1)?.speed;
   if(!top)add('ACTUATOR_SPEED_LIMIT_MISSING',`/models/drivesByEntity/${robotId}`,'the drive model has no torque-speed table, so the wheel speed limit is unknown');
@@ -57,8 +57,11 @@ export function projectPhysicalModel(input:EngineeringCompileInput,robotId:strin
   const span=[0,1,2].map(k=>L.pose.position[k]!-R.pose.position[k]!),len=norm(span),y=span.map(v=>v/len);
   const axis=(w:ReturnType<typeof wheel>)=>qrotate(w.pose.quaternionXyzw,w.joint.axis);
   const aL=axis(L),aR=axis(R);
+  const sepBad=Math.abs(len-params.wheelSeparationM.value)>EPS;
+  if(sepBad)add('DRIVE_SEPARATION_MISMATCH',`/entityBindings/${robotId}`,`the drive model says ${params.wheelSeparationM.value} m between the wheels but the resolved wheel joints are ${len} m apart`);
   const planar=Math.abs(span[2]!)<EPS&&norm(cross(aL,aR))<EPS&&norm(cross(aL,y))<EPS;
-  if(!planar)add('NON_PLANAR_DRIVE',`/entityBindings/${robotId}`,'wheel axes must be parallel and the wheel centres coplanar with a horizontal axle line');
+  if(sepBad){/* reported above */}
+  else if(!planar)add('NON_PLANAR_DRIVE',`/entityBindings/${robotId}`,'wheel axes must be parallel and the wheel centres coplanar with a horizontal axle line');
   else if(span[1]!<=0)add('DRIVE_SIDES_SWAPPED',`/entityBindings/${robotId}`,'the left drive joint must sit on the +y side of the base frame');
   else{
    const z=[0,0,1],x=cross(y,z),mid=[0,1,2].map(k=>(L.pose.position[k]!+R.pose.position[k]!)/2);

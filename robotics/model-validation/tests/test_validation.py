@@ -161,3 +161,16 @@ def test_validation_never_writes_to_stdout(tmp_path):
     with redirect_stdout(buf):
         run(tmp_path, m)
     assert buf.getvalue() == ""
+
+
+def test_review2_the_inertial_frame_rotation_and_mimic_are_part_of_parity(tmp_path):
+    m = model([link("chassis/base"), link("wheel-left/rim", (0.1, 0.05, 0.1), 1.5), link("wheel-right/rim", (0.1, 0.05, 0.1), 1.5)],
+              [joint("wheel-left/axle", "chassis/base", "wheel-left/rim", "continuous", axis=(0.0, 1.0, 0.0)), joint("wheel-right/axle", "chassis/base", "wheel-right/rim", "continuous", axis=(0.0, 1.0, 0.0))])
+    good = urdf(m)
+    assert check(run(tmp_path, m, good), "SOURCE-URDF")["result"] == "pass"  # the control
+    rotated = good.replace('rpy="0 0 0"/><mass', 'rpy="0.3 0 0"/><mass', 1)
+    mimic = good.replace("</joint>", '<mimic joint="wheel-left/axle" multiplier="2" offset="0.5"/></joint>', 2).replace('<mimic joint="wheel-left/axle" multiplier="2" offset="0.5"/></joint>', "</joint>", 1)
+    for why, xml in (("inertial rotation", rotated), ("mimic", mimic)):
+        assert xml != good, why
+        r = run(tmp_path, m, xml)
+        assert r["report"]["result"] != "pass" and "URDF_MODEL_MISMATCH" in codes(r), why

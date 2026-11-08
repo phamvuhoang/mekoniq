@@ -16,16 +16,16 @@ const target = (s: NavigationSceneV1, id: string, robot = 0) => { const b = s.ro
 type Body = { x: number; y: number; yaw: number; v: number; w: number };
 interface Run { snapshots: IRSimSnapshotV1[]; decisions: (Decision & { tick: number })[]; commands: { tick: number; robotId: string; v: number; w: number }[]; bodies: Record<string, Body> }
 /** A kinematic stand-in for the engine: unicycle, acceleration limits, the new velocity applied before the pose integrates (as IR-SIM does). */
-function simulate(scene: NavigationSceneV1, goals: Record<string, [number, number, number]>, ticks: number, opts: { scan?: (tick: number, b: Body) => IRSimSnapshotV1['robots'][number]['scans']; reservations?: Record<string, string | null>; stopWhen?: (r: Run) => boolean } = {}): Run {
+function simulate(scene: NavigationSceneV1, goals: Record<string, [number, number, number]>, ticks: number, opts: { scan?: (tick: number, b: Body) => IRSimSnapshotV1['robots'][number]['scans']; sensorIds?: false; reservations?: Record<string, string | null> | ((tick: number) => Record<string, string | null>); stopWhen?: (r: Run) => boolean } = {}): Run {
   const c = createNavigationController(scene), p = scene.policy.parameters;
   const bodies: Record<string, Body> = Object.fromEntries(scene.robots.map((r) => [r.robotId, { x: r.initialPoseMap[0], y: r.initialPoseMap[1], yaw: r.initialPoseMap[2], v: 0, w: 0 }]));
   for (const [robotId, t] of Object.entries(goals)) c.setGoal({ robotId, commandId: `cmd-${robotId}`, target: t });
   const run: Run = { snapshots: [], decisions: [], commands: [], bodies };
   for (let tick = 0; tick < ticks; tick++) {
     const snap: IRSimSnapshotV1 = { schemaVersion: 1, runId: 'r', bootId: 'b', tick, simTimeNs: String(tick * 20_000_000), seq: String(tick + 1), sceneDigest: scene.sceneDigest,
-      robots: scene.robots.map((r) => { const b = bodies[r.robotId]!; return { robotId: r.robotId, poseDriveMap: [b.x, b.y, ((b.yaw + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI], bodyVelocity: [b.v, b.w], scans: opts.scan?.(tick, b) ?? [], collisionIds: [] }; }) };
+      robots: scene.robots.map((r) => { const b = bodies[r.robotId]!; return { robotId: r.robotId, poseDriveMap: [b.x, b.y, ((b.yaw + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI], bodyVelocity: [b.v, b.w], scans: (opts.scan?.(tick, b) ?? []).map((sc, i) => ({ ...sc, sensorId: opts.sensorIds === false ? sc.sensorId : r.model.sensors[i]?.id ?? sc.sensorId })), collisionIds: [] }; }) };
     run.snapshots.push(snap);
-    const out = c.advance(snap, opts.reservations ?? {});
+    const out = c.advance(snap, (typeof opts.reservations === 'function' ? opts.reservations(tick) : opts.reservations) ?? {});
     out.decisions.forEach((d) => run.decisions.push({ ...d, tick }));
     for (const cmd of out.velocities) {
       run.commands.push({ tick, robotId: cmd.robotId, v: cmd.vMps, w: cmd.omegaRadps });
@@ -124,6 +124,20 @@ test('a lost or stale LiDAR means no clear path: zero velocity and attention, ne
   expect(stale.commands.every((c) => c.v === 0)).toBe(true);
 });
 
+test('review2 #2: unknown is not free: an all-invalid, mostly-invalid or wrongly-identified scan holds the robot, only a sound scan lets it go', () => {
+  const s = clone(navigationScene('serve')); s.policy.parameters.noProgressTicks = 3000;
+  const withStates = (fill: (i: number) => 'invalid' | 'no_return') => (tick: number) => { const [sc] = scanHit(tick, null); return [{ ...sc!, rangesM: sc!.rangesM.map((_, i) => (fill(i) === 'invalid' ? null : null)), states: sc!.states.map((_, i) => fill(i)) }]; };
+  for (const [why, scan] of [['all invalid', withStates(() => 'invalid')], ['most invalid', withStates((i) => (i % 2 ? 'invalid' : 'no_return'))]] as const) {
+    const r = simulate(s, { 'amr-1': target(s, 't-05') }, 60, { scan });
+    expect(r.commands.every((c) => c.v === 0 && c.w === 0), why).toBe(true);
+    expect(r.decisions.find((d) => d.status === 'executing'), why).toMatchObject({ reason: 'SENSOR_INVALID' });
+  }
+  const foreign = simulate(s, { 'amr-1': target(s, 't-05') }, 60, { scan: (tick) => scanHit(tick, null).map((x) => ({ ...x, sensorId: 'someone-elses' })) , sensorIds: false });
+  expect(foreign.commands.every((c) => c.v === 0)).toBe(true);
+  const ok = simulate(s, { 'amr-1': target(s, 't-05') }, 60, { scan: (tick) => scanHit(tick, null) });
+  expect(ok.commands.some((c) => c.v > 0)).toBe(true); // the control: no_return everywhere is a clear view
+});
+
 test('IR02: a person standing in the aisle stops the robot short of contact (not a no_path); when they leave it carries on to the goal', () => {
   const s = clone(navigationScene('serve')), person = { x: 6, y: 6, r: 0.25 };
   s.robots[0]!.initialPoseMap = [3, 6, 0];
@@ -162,6 +176,17 @@ test('a denied zone is planned around; once the reservation is granted to this r
   expect(enters(granted, s2)).toBe(true);
   expect(terminal(denied)!.tick).toBeGreaterThan(terminal(granted)!.tick);
   expect(simulate(build(), { 'amr-1': [14, 6, 0] }, 8000, { reservations: { corridor: 'amr-2' }, stopWhen: doneAll }).snapshots.some((x) => polygonsOverlap(place(s1.robots[0]!.model.footprint.verticesM as [number, number][], ...(x.robots[0]!.poseDriveMap as [number, number, number])), zone))).toBe(false); // granted to someone else is denied too
+});
+
+test('review2 #7: a zone that is only temporarily denied is waited for, not reported as no_path; a zone-free dead end still is', () => {
+  const s = blind('serve'); s.robots[0]!.initialPoseMap = [6, 6, 0];
+  s.zones.push({ id: 'goal-room', polygonM: [[13, 4.5], [15.5, 4.5], [15.5, 7.5], [13, 7.5]], entryPoints: [], exitPoints: [] }); // covers the only place the goal can be reached
+  const zone = s.zones[0]!.polygonM as [number, number][];
+  const r = simulate(s, { 'amr-1': [14, 6, 0] }, 9000, { reservations: (tick) => ({ 'goal-room': tick < 300 ? null : 'amr-1' }), stopWhen: doneAll });
+  expect(r.decisions.filter((d) => d.status === 'no_path')).toEqual([]);
+  expect(terminal(r)).toMatchObject({ status: 'arrived' });
+  expect(terminal(r)!.tick).toBeGreaterThan(300);
+  expect(r.snapshots.filter((x) => x.tick < 300).some((x) => polygonsOverlap(place(s.robots[0]!.model.footprint.verticesM as [number, number][], ...(x.robots[0]!.poseDriveMap as [number, number, number])), zone))).toBe(false);
 });
 
 test('wheel limits scale a command before it is sent', () => {

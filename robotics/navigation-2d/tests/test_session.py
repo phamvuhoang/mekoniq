@@ -104,6 +104,8 @@ def test_idempotent_repeat_returns_the_same_receipt_and_does_not_step_twice(run)
     assert first["ok"] and again == first and call.s.tick == 1
     conflict = call("step", {"targetTick": 1, "velocities": [{"robotId": "amr-1", "vMps": 0.2, "omegaRadps": 0.0}], "actorUpdates": []}, rid="same", tick=0)
     assert not conflict["ok"] and conflict["error"]["code"] == "IDEMPOTENCY_CONFLICT" and call.s.tick == 1
+    # review2 #6: the refused request must not replace the evidence of the applied one
+    assert call("step", payload, rid="same", tick=0) == first
 
 
 def test_wrong_ticks_missing_robots_limits_and_actors_are_refused_without_effect(run):

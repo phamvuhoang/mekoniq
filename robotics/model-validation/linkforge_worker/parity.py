@@ -48,12 +48,13 @@ def from_model(m, ids=None):
     links, joints = {}, {}
     for l in m["links"]:
         inertia = l.get("inertiaKgM2")
-        links[ln.get(l["id"], l["id"])] = {"mass": float(l["massKg"]["value"]), "com": [float(v) for v in l["comM"]], "inertia": None if inertia is None else [float(v) for v in inertia],
+        links[ln.get(l["id"], l["id"])] = {"mass": float(l["massKg"]["value"]), "com": [float(v) for v in l["comM"]], "inertia": None if inertia is None else [float(v) for v in inertia], "irot": rot_from_rpy(0, 0, 0),  # the model carries no inertial-frame rotation: its tensor is in the link frame
                                            "visual": [_shape_model(s) for s in l["visual"]], "collision": [_shape_model(s) for s in l["collision"]]}
     for j in m["joints"]:
         fixed = j["kind"] == "fixed"
         joints[jn.get(j["id"], j["id"])] = {"type": j["kind"], "parent": ln.get(j["parent"], j["parent"]), "child": ln.get(j["child"], j["child"]), "xyz": [float(v) for v in j["origin"]["xyzM"]],
-                                            "rot": rot_from_quat(j["origin"]["quaternionXyzw"]), "axis": None if fixed else [float(v) for v in j["axis"]], "limits": _limits(j)}
+                                            "rot": rot_from_quat(j["origin"]["quaternionXyzw"]), "axis": None if fixed else [float(v) for v in j["axis"]], "limits": _limits(j),
+                                            "mimic": None}  # the model has no mimic joints
     return {"links": links, "joints": joints}
 
 
@@ -89,20 +90,23 @@ def from_urdf_xml(text):
         inertial = l.find("inertial")
         mass = inertia = None
         com = [0.0, 0.0, 0.0]
+        irot = rot_from_rpy(0, 0, 0)
         if inertial is not None:
-            com, _ = _origin_xml(inertial)
+            com, irot = _origin_xml(inertial)
             mass = float(inertial.find("mass").get("value"))
             i = inertial.find("inertia")
             inertia = [float(i.get(k, 0)) for k in ("ixx", "ixy", "ixz", "iyy", "iyz", "izz")] if i is not None else None
-        links[l.get("name")] = {"mass": mass, "com": com, "inertia": inertia, "visual": [_shape_xml(v) for v in l.findall("visual")], "collision": [_shape_xml(c) for c in l.findall("collision")]}
+        links[l.get("name")] = {"mass": mass, "com": com, "inertia": inertia, "irot": irot, "visual": [_shape_xml(v) for v in l.findall("visual")], "collision": [_shape_xml(c) for c in l.findall("collision")]}
     for j in root.findall("joint"):
         xyz, rot = _origin_xml(j)
         kind = j.get("type")
         lim = j.find("limit")
         limits = {} if lim is None or kind == "fixed" else {k: float(lim.get(k)) for k in ("lower", "upper", "effort", "velocity") if lim.get(k) is not None}
         axis = j.find("axis")
+        mim = j.find("mimic")
+        mimic = None if mim is None else {"joint": mim.get("joint"), "multiplier": float(mim.get("multiplier", 1)), "offset": float(mim.get("offset", 0))}
         joints[j.get("name")] = {"type": kind, "parent": j.find("parent").get("link"), "child": j.find("child").get("link"), "xyz": xyz, "rot": rot,
-                                 "axis": None if kind == "fixed" else _vec(axis.get("xyz") if axis is not None else None, (1, 0, 0)), "limits": limits}
+                                 "axis": None if kind == "fixed" else _vec(axis.get("xyz") if axis is not None else None, (1, 0, 0)), "limits": limits, "mimic": mimic}
     return {"links": links, "joints": joints}
 
 
@@ -134,18 +138,22 @@ def from_lf(robot):
     for l in robot.links:
         mass = inertia = None
         com = [0.0, 0.0, 0.0]
+        irot = rot_from_rpy(0, 0, 0)
         if l.inertial is not None:
             i = l.inertial.inertia
             mass, com = l.inertial.mass, [l.inertial.origin.xyz.x, l.inertial.origin.xyz.y, l.inertial.origin.xyz.z]
+            irot = rot_from_rpy(l.inertial.origin.rpy.x, l.inertial.origin.rpy.y, l.inertial.origin.rpy.z)
             inertia = [i.ixx, i.ixy, i.ixz, i.iyy, i.iyz, i.izz]
-        links[l.name] = {"mass": mass, "com": com, "inertia": inertia, "visual": [_shape_lf(v) for v in l.visuals], "collision": [_shape_lf(c) for c in l.collisions]}
+        links[l.name] = {"mass": mass, "com": com, "inertia": inertia, "irot": irot, "visual": [_shape_lf(v) for v in l.visuals], "collision": [_shape_lf(c) for c in l.collisions]}
     for j in robot.joints:
         kind = getattr(j.type, "value", j.type)
         lim = j.limits
         limits = {} if lim is None or kind == "fixed" else {k: float(getattr(lim, k)) for k in ("lower", "upper", "effort", "velocity") if getattr(lim, k, None) is not None}
         a = j.axis
+        mim = getattr(j, "mimic", None)
+        mimic = None if mim is None else {"joint": mim.joint, "multiplier": float(mim.multiplier), "offset": float(mim.offset)}
         joints[j.name] = {"type": kind, "parent": j.parent, "child": j.child, "xyz": [j.origin.xyz.x, j.origin.xyz.y, j.origin.xyz.z], "rot": rot_from_rpy(j.origin.rpy.x, j.origin.rpy.y, j.origin.rpy.z),
-                          "axis": None if kind == "fixed" or a is None else [a.x, a.y, a.z], "limits": limits}
+                          "axis": None if kind == "fixed" or a is None else [a.x, a.y, a.z], "limits": limits, "mimic": mimic}
     return {"links": links, "joints": joints}
 
 
@@ -202,6 +210,7 @@ def compare(a, b, scope):
                 nums(f"{path}/mass", name, "mass", x["mass"], y["mass"], "mass", **ids)
                 nums(f"{path}/com", name, "com", x["com"], y["com"], "pose", **ids)
                 nums(f"{path}/inertia", name, "inertia", x["inertia"], y["inertia"], "inertia", **ids)
+                nums(f"{path}/inertialRotation", name, "inertial frame rotation", x["irot"], y["irot"], "pose", **ids)
                 shapes(path, name, "visual", x["visual"], y["visual"], **ids)
                 shapes(path, name, "collision", x["collision"], y["collision"], **ids)
             else:
@@ -211,6 +220,10 @@ def compare(a, b, scope):
                 nums(f"{path}/xyz", name, "origin", x["xyz"], y["xyz"], "pose", **ids)
                 nums(f"{path}/rot", name, "origin rotation", x["rot"], y["rot"], "pose", **ids)
                 nums(f"{path}/axis", name, "axis", x["axis"], y["axis"], "other", **ids)
+                if (x["mimic"] is None) != (y["mimic"] is None) or (x["mimic"] and x["mimic"]["joint"] != y["mimic"]["joint"]):
+                    add(mut, f"{path}/mimic", name, f"mimic: {x['mimic']} became {y['mimic']}", **ids)
+                elif x["mimic"]:
+                    nums(f"{path}/mimic", name, "mimic", [x["mimic"]["multiplier"], x["mimic"]["offset"]], [y["mimic"]["multiplier"], y["mimic"]["offset"]], "other", **ids)
                 if set(x["limits"]) != set(y["limits"]):
                     add(mut, f"{path}/limits", name, f"limits: {sorted(x['limits'])} became {sorted(y['limits'])}", **ids)
                 else:

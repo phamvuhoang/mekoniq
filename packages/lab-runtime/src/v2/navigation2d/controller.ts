@@ -14,7 +14,9 @@ export interface NavigationController{
 const DT=0.02,TURN_TOL=0.01,LEG_TOL=0.02,EPS=1e-9;
 type Step={kind:'rotate';yaw:number}|{kind:'translate';to:[number,number]};
 type Plan={ok:true;steps:Step[]}|{ok:false;reason:'no_path'|'PLANNER_BUDGET_EXCEEDED'};
-interface Goal{commandId:string;target:Pose2;startTick:number|null;steps:Step[]|null;stepIndex:number;hold:number;best:number;stagnant:number;lastPlanTick:number;zonesKey:string;waiting:boolean}
+/** More unusable beams than this and the scan says nothing reliable about the way ahead. */
+const MAX_INVALID_BEAM_FRACTION=0.1;
+interface Goal{commandId:string;target:Pose2;startTick:number|null;steps:Step[]|null;stepIndex:number;hold:number;best:number;stagnant:number;lastPlanTick:number;zonesKey:string;waiting:boolean;/** the goal is reachable on the static map alone: a later failure is a reservation to wait for, never no_path */staticOk?:boolean}
 
 /** Binary min-heap ordered by (f, g, x, y, heading): equal costs break the same way on every run. */
 class Heap{
@@ -199,17 +201,20 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
     const others=[...fleet.values()].filter(r=>r.robotId!==robotId).map(r=>place(robots.get(r.robotId)!.hull,...(r.poseDriveMap as Pose2)));
     const dyn=dynamicPoints(robotId,obs,pose,statics);
     const zoneObstacles=denied.map(z=>z.polygonM as P[]);
-    const needsPlan=!goal.steps||zonesKey!==goal.zonesKey||(goal.waiting&&tick-goal.lastPlanTick>=pol.replanEveryTicks);
+    const needsPlan=(!goal.steps&&!goal.waiting)||zonesKey!==goal.zonesKey||(goal.waiting&&tick-goal.lastPlanTick>=pol.replanEveryTicks);
     if(needsPlan){
      const global=!goal.steps;
      const fixed=[...statics,...zoneObstacles];
-     const result=plan(robotId,pose,goal.target,global?fixed:[...fixed,...others,...dyn.map(p=>[[p[0]-0.1,p[1]-0.1],[p[0]+0.1,p[1]-0.1],[p[0]+0.1,p[1]+0.1],[p[0]-0.1,p[1]+0.1]] as P[])]);
+     let result:ReturnType<typeof plan>|undefined;
+     // reachability is judged on the static map alone; a zone that is merely not granted yet is a wait, not a missing path
+     if(global&&!goal.staticOk){const base=plan(robotId,pose,goal.target,statics);if(base.ok)goal.staticOk=true;if(!base.ok||!zoneObstacles.length)result=base;}
+     result??=plan(robotId,pose,goal.target,global?fixed:[...fixed,...others,...dyn.map(p=>[[p[0]-0.1,p[1]-0.1],[p[0]+0.1,p[1]-0.1],[p[0]+0.1,p[1]+0.1],[p[0]-0.1,p[1]+0.1]] as P[])]);
      goal.lastPlanTick=tick;goal.zonesKey=zonesKey;
      if(result.ok){goal.steps=result.steps;goal.stepIndex=0;goal.waiting=false;goal.best=Infinity;}
-     else if(global||result.reason==='PLANNER_BUDGET_EXCEEDED'){
+     else if(!goal.staticOk||result.reason==='PLANNER_BUDGET_EXCEEDED'){
       goals.delete(robotId);stop();
       decisions.push({robotId,commandId:goal.commandId,status:result.reason==='no_path'?'no_path':'blocked',reason:result.reason==='no_path'?'NO_PATH':result.reason});continue;
-     }else{goal.waiting=true;}  // a path existed, the current obstruction hides it: hold still and look again
+     }else{goal.waiting=true;}  // a path exists on the static map; a reservation or an obstruction hides it: hold still and look again
     }
     // goal reached? pose and velocity within tolerance for arrivalHoldTicks consecutive ticks
     const dist=Math.hypot(goal.target[0]-pose[0],goal.target[1]-pose[1]),yawErr=Math.abs(wrapPi(goal.target[2]-pose[2]));
@@ -222,6 +227,8 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
     if(m.sensors.length){
      const scans=obs.scans,fresh=scans.length>0&&scans.every(s=>tick-s.tick<=pol.scanFreshnessTicks);
      if(!fresh){hold=true;reason='SENSOR_STALE';}
+     // unknown is not free: every expected sensor must report, as itself, and mostly with usable beams ('no_return' is a valid clear view, 'invalid' is not)
+     else if(scans.length!==m.sensors.length||scans.some((s,i)=>s.sensorId!==m.sensors[i]!.id||s.states.length===0||s.states.filter(x=>x==='invalid').length/s.states.length>MAX_INVALID_BEAM_FRACTION)){hold=true;reason='SENSOR_INVALID';}
     }
     const next=goal.steps?goal.steps[goal.stepIndex]:undefined;
     if(!hold&&next&&dyn.length){
@@ -236,7 +243,9 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
     }
     // progress and deadline
     const metric=remaining(goal,pose,dist);
-    if(metric<goal.best-0.01){goal.best=metric;goal.stagnant=0;}else goal.stagnant+=1;
+    // waiting for a reservation (no route exists until the zone is granted) is the domain's timeout to enforce, not lack of progress; the goal deadline still bounds it
+    if(!goal.steps)reason??='RESERVATION_PENDING';
+    else if(metric<goal.best-0.01){goal.best=metric;goal.stagnant=0;}else goal.stagnant+=1;
     if(goal.stagnant>=pol.noProgressTicks&&goal.hold===0){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:reason??'NO_PROGRESS'});continue;}
     if(tick-goal.startTick>=pol.goalDeadlineTicks){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:'GOAL_DEADLINE'});continue;}
     if(!hold&&goal.waiting)goal.waiting=false;

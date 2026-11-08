@@ -43,8 +43,8 @@ export function compileNavigationScene(input:EngineeringCompileInput,models:read
   const base=poses.get(m.baseFrameId),place0=input.resolved.placements.find(p=>m.baseFrameId.startsWith(p.instanceId+'/'));
   if(!base||!place0){add('INITIAL_POSE_INVALID',`/robots/${m.robotId}`,'the base link has no resolved placement');return null;}
   const drive=composePose(base,framePose(m.driveFrameInBase));
-  const tilt=qrotateZ(drive.quaternionXyzw);
-  if(tilt>1e-6)add('NON_PLANAR_DRIVE',`/robots/${m.robotId}`,'the drive frame is not upright in the map frame');
+  const up=zAxisInMap(drive.quaternionXyzw);
+  if(up.tilt>1e-6||up.z<=0)add('NON_PLANAR_DRIVE',`/robots/${m.robotId}`,'the drive frame is not upright in the map frame (tilted or upside down)');
   const [x,y]=drive.position as [number,number],yaw=yawOf(drive.quaternionXyzw);
   admit(m,x,y,yaw,'INITIAL_POSE_INVALID',`/robots/${m.robotId}/initialPose`,'the initial pose');
   const targetBindings=[...w.points].sort((a,b)=>a.id<b.id?-1:1).flatMap(pt=>{
@@ -75,8 +75,8 @@ export function compileNavigationScene(input:EngineeringCompileInput,models:read
  if(!checked.ok)throw new EngineeringInputError(checked.issues.slice(0,20).map(i=>({code:i.code,path:i.path,blocking:true,detail:i.message})));
  return scene;
 }
-/** Tilt of the +z axis away from vertical for a quaternion [x,y,z,w]. */
-const qrotateZ=(q:readonly number[])=>Math.hypot(2*(q[0]!*q[2]!+q[3]!*q[1]!),2*(q[1]!*q[2]!-q[3]!*q[0]!));
+/** Horizontal part and vertical component of the rotated +z axis for a quaternion [x,y,z,w]; upright means no horizontal part and z > 0. */
+const zAxisInMap=(q:readonly number[])=>({tilt:Math.hypot(2*(q[0]!*q[2]!+q[3]!*q[1]!),2*(q[1]!*q[2]!-q[3]!*q[0]!)),z:1-2*(q[0]!*q[0]!+q[1]!*q[1]!)});
 
 /** The YAML and name map are derived from the scene, so they are added afterwards and the scene digest then covers them. */
 export function withSceneFiles(scene:NavigationSceneV1,files:ArtifactRef[]):NavigationSceneV1{

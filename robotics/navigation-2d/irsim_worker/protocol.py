@@ -84,6 +84,8 @@ class Receipts:
         return known[1]
 
     def store(self, request, response):
+        if request["requestId"] in self._items:
+            return  # the first receipt is the evidence of what was applied; a refused reuse of the id never replaces it
         self._items[request["requestId"]] = (payload_hash(request), response)
         while len(self._items) > RECEIPT_LIMIT:
             self._items.pop(next(iter(self._items)))

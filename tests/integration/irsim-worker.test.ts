@@ -25,7 +25,7 @@ async function bundle(name: NavigationFixtureName) {
   await createNavigationCompiler({ python: irPython, workerRoot, descriptionHelperRoot: resolve('robotics/simulation') }).compileResolved(navigationFixture(name).input, dir);
   return dir;
 }
-async function start(name: NavigationFixtureName = 'serve', over: { entry?: string[]; deadlinesMs?: Record<string, number> } = {}) {
+async function start(name: NavigationFixtureName = 'serve', over: { entry?: string[]; deadlinesMs?: Record<string, number>; sceneDigest?: string } = {}) {
   const bundleRoot = await bundle(name), runDirectory = await temp('irsim-run-');
   const client = await spawnIRSimWorker({ python: irPython, workerRoot, runId: 'run-1', bundleRoot, runDirectory, lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), schemaDir, ...over });
   clients.push(client);
@@ -154,4 +154,17 @@ test('review #6: a worker that cannot be spawned fails the request and close() s
   expect(lost).toBeInstanceOf(WorkerLostError);
   await Promise.race([client.close('never started'), new Promise((_, no) => setTimeout(() => no(new Error('close() hung')), 5000))]);
   expect(client.state).toBe('failed');
+});
+
+test('review2 #1: a snapshot that contradicts the envelope, the run or the bound scene is never accepted', async () => {
+  for (const [mode, why] of [['tick', 'tick'], ['run', 'run'], ['boot', 'boot'], ['scene', 'scene']] as const) {
+    const { client, ask } = await start('serve', { entry: [double('snapshot.py'), '--mode', mode], sceneDigest: 'a'.repeat(64) });
+    const lost = await ask('getState', {}, { expectedTick: 0 }).catch((e) => e);
+    expect(lost, why).toBeInstanceOf(WorkerLostError);
+    expect((lost as WorkerLostError).code).toBe('WORKER_PROTOCOL');
+    expect(client.state).toBe('failed');
+  }
+  const { client, ask } = await start('serve', { entry: [double('snapshot.py'), '--mode', 'ok'], sceneDigest: 'a'.repeat(64) });
+  expect((await ask('getState', {}, { expectedTick: 0 })).ok).toBe(true); // the control: a consistent snapshot passes
+  expect(client.state).toBe('ready');
 });

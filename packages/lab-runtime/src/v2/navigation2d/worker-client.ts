@@ -2,7 +2,7 @@ import {spawn} from 'node:child_process';
 import {mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {validateIRSimRequest,validateIRSimResponse} from './contracts';
-import type {IRSimRequestV1,IRSimResponseV1} from './contracts';
+import type {IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1} from './contracts';
 
 export const MAX_LINE_BYTES=2*1024*1024,QUEUE_LIMIT=64;
 /** Default wall-clock ACK deadlines (workers-runtime §2): create 15 s, step 5 s, pause/cancel 2 s. */
@@ -39,7 +39,7 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
  // fixed argv, allowlisted environment (no credentials, no ROS discovery), a private working directory; the venv isolates dependencies but is not a sandbox
  const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,PYTHONDONTWRITEBYTECODE:'1',PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg'} as unknown as NodeJS.ProcessEnv;
  const child=spawn(o.python,args,{cwd:resolve(o.runDirectory),env,stdio:['pipe','pipe','pipe'],detached:true});
- let state:'ready'|'failed'|'closed'='ready',bootId:string|null=null,buffer='',stderrTail='',lastTick=0,timer:NodeJS.Timeout|undefined,closing:Promise<void>|undefined;
+ let state:'ready'|'failed'|'closed'='ready',bootId:string|null=null,buffer='',stderrTail='',lastTick=0,sceneDigest=o.sceneDigest,timer:NodeJS.Timeout|undefined,closing:Promise<void>|undefined;
  const queue:Pending[]=[];let inFlight:Pending|undefined;
  // 'close' also fires when the process never started (spawn error), where 'exit' does not
  const exited=new Promise<void>(done=>child.once('close',()=>done()));
@@ -72,6 +72,16 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
   if(!current||r.requestId!==current.request.requestId||r.runId!==o.runId)return fail('WORKER_PROTOCOL','late, duplicate or foreign response');
   if(bootId===null)bootId=r.bootId;else if(r.bootId!==bootId)return fail('WORKER_PROTOCOL','bootId changed within one run');
   if(r.tick<lastTick)return fail('WORKER_PROTOCOL','tick went backwards');
+  if(r.ok){
+   const snap=(r.result as {schemaVersion?:number}).schemaVersion===1?r.result as IRSimSnapshotV1:null;
+   // a snapshot describes the run it was cut from: same process, run, tick and scene as the envelope and as every earlier one
+   if(snap){
+    if(snap.runId!==o.runId||snap.bootId!==r.bootId||snap.tick!==r.tick)return fail('WORKER_PROTOCOL','the snapshot contradicts its own envelope (run, boot or tick)');
+    sceneDigest??=snap.sceneDigest;
+    if(snap.sceneDigest!==sceneDigest)return fail('WORKER_PROTOCOL','the snapshot is for a different scene than this run was bound to');
+   }
+   if(current.request.op==='step'&&(!snap||r.tick!==current.request.payload.targetTick))return fail('WORKER_PROTOCOL','a step was acknowledged without a snapshot at its target tick');
+  }
   lastTick=r.tick;clearTimeout(timer);inFlight=undefined;
   current.resolve(r);
   if(!r.ok&&['INVALID_JSON','INVALID_REQUEST','REQUEST_TOO_LARGE','WORKER_FAILED','CLOCK_DRIFT','SENSOR_INCONSISTENT'].includes((r as {error:{code:string}}).error.code))fail('WORKER_FATAL',(r as {error:{code:string}}).error.code);

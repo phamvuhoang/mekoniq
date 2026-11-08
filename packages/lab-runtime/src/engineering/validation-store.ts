@@ -15,6 +15,8 @@ export interface StoredValidation{bundleDigests:string[];report:ModelValidationR
  */
 export function createValidationStore(root:string){
  const reports=join(root,'reports'),artifacts=join(root,'artifacts'),cache=join(root,'cache');
+ // read-merge-write of one report is serialized per digest in this process, so concurrent owners cannot overwrite each other's association
+ const writing=new Map<string,Promise<void>>();
  const ready=Promise.all([reports,artifacts,cache].map(d=>mkdir(d,{recursive:true})));
  return {
   root,
@@ -29,6 +31,14 @@ export function createValidationStore(root:string){
    await ready;
    const {report}=entry;
    if(documentDigest(report,'reportDigest')!==report.reportDigest)throw new Error('VALIDATION_REPORT_DIGEST_MISMATCH');
+   const turn=(writing.get(report.reportDigest)??Promise.resolve()).then(()=>this.merge(entry));
+   const settled=turn.catch(()=>undefined);
+   writing.set(report.reportDigest,settled);
+   void settled.then(()=>{if(writing.get(report.reportDigest)===settled)writing.delete(report.reportDigest);});
+   return turn;
+  },
+  async merge(entry:{bundleDigest:string;cacheKey:string|null;report:ModelValidationReportV1}):Promise<void>{
+   const {report}=entry;
    // the same report can serve several bundles (identical model and URDF): remember every one, so each owner session may read it
    const known=(await this.readReport(report.reportDigest))?.bundleDigests??[];
    await atomicWrite(join(reports,`${report.reportDigest}.json`),JSON.stringify({bundleDigests:[...new Set([...known,entry.bundleDigest])].sort(),report}));
