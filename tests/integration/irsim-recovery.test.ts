@@ -90,3 +90,46 @@ test.skipIf(!irsimAvailable)('cancel ACK loss: a cancel whose stopping step is n
  await act(run,'reconcile',{subjectId:'amr-1'});
  expect((await run.report()).reconciliations).toMatchObject([{subjectId:'amr-1',commandId,nativeState:'unknown'}]);
 },240_000);
+
+/** Fails the source commit of the first `completed` observation once, as a busy or full store would. */
+function failCompletedOnce(run:ScenarioRun){
+ const source=(run as unknown as {source:{submit:(...a:unknown[])=>Promise<unknown>}}).source,real=source.submit.bind(source);let failed=false;
+ source.submit=async(...a:unknown[])=>{const payload=a[1] as {type?:string};if(!failed&&a[0]==='Robot.Observe'&&payload.type==='completed'){failed=true;throw new Error('SQLITE_BUSY');}return real(...a);};
+ return ()=>failed;
+}
+async function stepToDroppedCompletion(run:ScenarioRun){
+ const failed=failCompletedOnce(run);
+ for(let i=0;i<4000&&!failed();i++){try{await act(run,'step',{ticks:5});}catch(e){if(!failed())throw e;}}
+ expect(failed()).toBe(true);
+}
+
+test.skipIf(!irsimAvailable)('review B04 #1: a completed observation that the source could not commit is not lost: it is retried, and the leg is never left silently travelling',async()=>{
+ const {run}=await open(undefined,{});
+ await run.start();
+ await stepToDroppedCompletion(run);
+ // the dropped observation goes back on the queue: the next tick commits it and the source sees the arrival
+ for(let i=0;i<20;i++)await act(run,'step',{ticks:5}); // the interrupted action left its own attention; stepping stays allowed
+ expect((await run.report()).businessEvents.filter(e=>e.type==='MissionArrived').length).toBeGreaterThanOrEqual(1);
+},240_000);
+
+test.skipIf(!irsimAvailable)('review B04 #1: after a restart, a leg whose completion never reached the journal is unknown and reconcile does not report completed',async()=>{
+ const {run,dir}=await open(undefined,{});
+ await run.start();
+ await stepToDroppedCompletion(run);
+ await run.close();runs.splice(runs.indexOf(run),1);
+ const reopened=(await open(dir,{})).run,r=await reopened.report();
+ const commandId=r.businessEvents.filter(e=>e.type==='RobotCommandObserved').at(-1)!.id;
+ expect(r.businessEvents.filter(e=>e.type==='RobotCommandObserved'&&e.id===commandId).map(e=>e.state.status)).toEqual(['accepted','unknown']);
+ await act(reopened,'reconcile',{subjectId:'amr-1'});
+ expect((await reopened.report()).reconciliations).toMatchObject([{subjectId:'amr-1',commandId,nativeState:'unknown'}]);
+},240_000);
+
+test.skipIf(!irsimAvailable)('review B04 #2: closing and reopening a finished run keeps it completed (nothing was in flight, so nothing is unknown)',async()=>{
+ const {run,dir}=await open(undefined,{});
+ await run.start();
+ await stepUntil(run,v=>v.run.status==='completed',50);
+ const before=await run.snapshot();
+ await run.close();runs.splice(runs.indexOf(run),1);
+ const after=await (await open(dir,{})).run.snapshot();
+ expect([after.run.status,after.served,after.attention]).toEqual(['completed',before.served,[]]);
+},240_000);

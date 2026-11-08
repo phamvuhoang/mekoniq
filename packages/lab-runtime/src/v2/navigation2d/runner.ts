@@ -190,11 +190,14 @@ class IRSimRun implements ScenarioRun {
   c.pendingOps=[];
   if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RUNTIME_RESTART';}
   for(const a of this.adapters.values())a.state.plantLost=c.plant.status==='lost';
+  let travelling=0;
   for(const {id} of c.roles.robots){
    const robot=await this.source.read('robot',id);if(typeof robot.state.missionId!=='string')continue;
    const m=await this.source.read('mission',robot.state.missionId),stop=(m.state.stops as JsonObject[]).find(s=>s.id===m.state.currentStopId);
-   if(!FINAL.includes(String(m.state.status))&&stop?.status==='travelling'&&typeof m.state.commandId==='string')this.adapters.get(id)!.sink.reportUnknown((await this.source.read('robot-command',m.state.commandId)).state as unknown as RobotCommand,'RECOVERY_UNKNOWN');
+   if(!FINAL.includes(String(m.state.status))&&stop?.status==='travelling'&&typeof m.state.commandId==='string'){travelling++;this.adapters.get(id)!.sink.reportUnknown((await this.source.read('robot-command',m.state.commandId)).state as unknown as RobotCommand,'RECOVERY_UNKNOWN');}
   }
+  // a finished run had nothing in flight: reopening it is a read, not a recovery
+  if(!travelling&&!c.inFlight&&await this.missionsDone())return;
   c.attention.push({reason:'RECOVERY_UNKNOWN',tick:c.tick});c.suspended=true;c.confirmations={};
   await this.drain();await this.scanArrivals();
   c.inFlight=false;c.dispatchDue=true;c.revision++;
@@ -249,7 +252,8 @@ class IRSimRun implements ScenarioRun {
   const c=this.cp;let arrived=false;
   while(this.observations.length){
    const e=this.observations.shift()!,robotId=String(e.payload.robotId);
-   const r=await this.submit('Robot.Observe',robotEventCommand(e),robotId);
+   // an observation the source could not commit (busy or full store) is not lost: it goes back and is submitted again
+   const r=await this.submit('Robot.Observe',robotEventCommand(e),robotId).catch(error=>{this.observations.unshift(e);throw error;});
    if(r.status!=='accepted'){c.rejectedObservations.push({eventId:e.id,commandId:e.commandId,type:e.type,code:r.code??r.status,tick:c.tick});if(c.rejectedObservations.length>1000)c.rejectedObservations.shift();continue;}
    if(['failed','rejected','unknown'].includes(e.type))c.attention.push({reason:e.type==='unknown'?'EXECUTION_UNKNOWN':typeof e.payload.reason==='string'?e.payload.reason:`ROBOT_${e.type.toUpperCase()}`,robotId,subjectId:String(e.payload.missionId),commandId:e.commandId,tick:c.tick});
    if(e.type==='completed')arrived=true;

@@ -64,7 +64,7 @@ export function createIRSimNavigationAdapter(o:{robotId:string;scene:NavigationS
    st.plantLost=true;st.bootId=randomUUID();st.seq=0;
    let g=st.goals.find(x=>x.commandId===command.commandId);
    if(!g){g={commandId:command.commandId,hash:hashPayload(command as never),command:structuredClone(command),state:'unknown',receipt:{accepted:true,nativeGoalId:command.commandId,unknown:true}};st.goals.push(g);}
-   else if(FINAL.includes(g.state)&&g.state!=='unknown')return;
+   // the journal decides: a leg it still shows travelling is unknown whatever this memory says (a completion that never reached the journal is not a completion)
    g.state='unknown';emit(g,'unknown',{reason});
   },
  };
