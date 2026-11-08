@@ -105,6 +105,11 @@ function reportRules(r:ModelValidationReportV1):NavigationIssue[]{
  return bad?[issue('/result','REPORT_INCONSISTENT',`result "pass" is not allowed: ${bad}`)]:[];
 }
 
+const requestValidator=ajv.getSchema('irsim-worker-v1.schema.json')!,responseValidator=ajv.getSchema('irsim-worker-v1.schema.json#/definitions/IRSimResponseV1')!;
+/** The worker wire is validated with the same schema at both ends (the Python worker loads the same file). */
+export const validateIRSimRequest=(input:unknown):{ok:true;value:IRSimRequestV1}|{ok:false;issues:NavigationIssue[]}=>requestValidator(input)?{ok:true,value:input as IRSimRequestV1}:{ok:false,issues:schemaIssues(requestValidator.errors)};
+export const validateIRSimResponse=(input:unknown):{ok:true;value:IRSimResponseV1}|{ok:false;issues:NavigationIssue[]}=>responseValidator(input)?{ok:true,value:input as IRSimResponseV1}:{ok:false,issues:schemaIssues(responseValidator.errors)};
+
 export function validateNavigationDocument(input:unknown):NavigationCheck{
  const type=input&&typeof input==='object'?(input as Record<string,unknown>).documentType:undefined;
  const meta=typeof type==='string'&&Object.hasOwn(KEYS,type)?KEYS[type]:undefined;
