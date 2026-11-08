@@ -7,7 +7,7 @@ import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {mkdtempSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
-import {nativeToolClosure} from './native-sim/tool-identity.mjs';
+import {nativeToolClosure,portableToolClosure,PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
 import {auditBundle} from './lab-runtime-audit.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const out=resolve(process.argv.slice(2).find(a=>!a.startsWith('--'))??join(root,'packages/lab-runtime/dist'));
@@ -50,6 +50,14 @@ await walk(simDir);
 const simHash=createHash('sha256');for(const f of simFiles)simHash.update(f+'\n').update(await readFile(join(simDir,f)));
 const imageLock=JSON.parse(await readFile(join(simDir,'image.lock.json'),'utf8'));
 const simulationTools={distribution:'separate',path:'robotics/simulation',digest:simHash.digest('hex'),files:simFiles.length,image:imageLock.image,imageDigest:imageLock.digest,requires:['linux','ros2-jazzy','gazebo-harmonic','python3+rfc8785+jsonschema'],note:'not bundled; verify with scripts/lab-sil.mjs doctor on the Linux host'};
-const manifest={sourceCommit,schemaHash,protocolMajor:2,protocolMajors:[1,2],artifactSha256,entrypoint:'runtime.mjs',nodeMajor:24,packageVersion:pkg.version,dirty:Boolean(dirty),schemas:names,toolchain:{node:process.version},simulationTools,nativeTools};
+// Portable developer tools (IR-SIM 2D plant, LinkForge shadow validation): also distributed separately (the operator provisions each worker's Python 3.11 venv from its
+// lock), described apart from the Linux simulationTools so neither overwrites the other. The Lab importer verifies this closure; the launcher re-hashes the files it runs.
+const portable=portableToolClosure(root),lockOf=(path)=>{const f=portable.files.find(x=>x.path===path);if(!f)throw new Error(`PORTABLE_LOCK_MISSING:${path}`);return {path,sha256:f.sha256};};
+const portableSimulationTools={distribution:'separate',version:1,python:{implementation:'cpython',version:'3.11'},flags:['MEKONIQ_LAB_IRSIM','MEKONIQ_LAB_LINKFORGE'],
+ tools:[{id:'irsim_worker',provider:'irsim_2d',protocol:'mekoniq-irsim/1',root:'robotics/navigation-2d',module:'irsim_worker',lock:lockOf('robotics/navigation-2d/requirements.lock')},
+  {id:'linkforge_worker',provider:'linkforge_shadow',root:'robotics/model-validation',module:'linkforge_worker',lock:lockOf('robotics/model-validation/requirements.lock')},
+  {id:'description_helper',root:'robotics/simulation/compiler'}],
+ roots:PORTABLE_TOOL_PATHS,closure:portable,note:'not bundled; provision each venv from its lock (no download at run time), then lab:irsim verifies these files'};
+const manifest={sourceCommit,schemaHash,protocolMajor:2,protocolMajors:[1,2],artifactSha256,entrypoint:'runtime.mjs',nodeMajor:24,packageVersion:pkg.version,dirty:Boolean(dirty),schemas:names,toolchain:{node:process.version},simulationTools,nativeTools,portableSimulationTools};
 await writeFile(join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');
 console.log(JSON.stringify({output:out,...manifest},null,2));
