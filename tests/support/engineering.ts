@@ -7,12 +7,12 @@ const IDENTITY:Pose['quaternionXyzw']=[0,0,0,1];
 export const assumed:SourceRef={kind:'assumed',documentId:'fixture-assumptions',revision:'1',locator:'tests/support/engineering.ts',contentSha256:createHash('sha256').update('fixture-assumptions-v1').digest('hex')};
 export const scalar=(value:number,unit:string):Scalar=>({value,unit,source:assumed});
 export const pose=(x=0,y=0,z=0,q:Pose['quaternionXyzw']=IDENTITY):Pose=>({xyzM:[x,y,z],quaternionXyzw:q});
-const QUARTER_X:Pose['quaternionXyzw']=[Math.SQRT1_2,0,0,Math.SQRT1_2]; // rotates a cylinder's Z axis onto Y (wheel axle)
+export const QUARTER_X:Pose['quaternionXyzw']=[Math.SQRT1_2,0,0,Math.SQRT1_2]; // rotates a cylinder's Z axis onto Y (wheel axle)
 /** Solid-box inertia at the COM in link axes: [ixx,ixy,ixz,iyy,iyz,izz]. */
 export const boxInertia=(m:number,[x,y,z]:Vec3):Link['inertiaKgM2']=>[m*(y*y+z*z)/12,0,0,m*(x*x+z*z)/12,0,m*(x*x+y*y)/12];
 export const boxLink=(id:string,size:Vec3,massKg:number,over:Partial<Link>={}):Link=>({id,visual:[{pose:pose(),geometry:{kind:'box',sizeM:size},source:assumed}],collision:[{pose:pose(),geometry:{kind:'box',sizeM:size},source:assumed}],massKg:scalar(massKg,'kg'),comM:[0,0,0],inertiaKgM2:boxInertia(massKg,size),inertialSource:assumed,...over});
-const mount=(id:string,mate:string,x:number,y:number,z:number):Port=>({id,kind:'mount',frame:pose(x,y,z),mate,direction:'bidirectional'});
-const component=(id:string,family:string,rest:Pick<ComponentRevision,'links'|'ports'>&Partial<ComponentRevision>):ComponentRevision=>({schemaVersion:1,id,revision:'1',identity:{manufacturer:'fixture',family,sku:null,status:'candidate'},joints:[],models:[],documents:[],...rest});
+export const mount=(id:string,mate:string,x:number,y:number,z:number):Port=>({id,kind:'mount',frame:pose(x,y,z),mate,direction:'bidirectional'});
+export const component=(id:string,family:string,rest:Pick<ComponentRevision,'links'|'ports'>&Partial<ComponentRevision>):ComponentRevision=>({schemaVersion:1,id,revision:'1',identity:{manufacturer:'fixture',family,sku:null,status:'candidate'},joints:[],models:[],documents:[],...rest});
 
 /** AMR drive: wheel radius/separation are explicit and must agree with the wheel geometry and mounts (resolver cross-checks both). */
 export const makeDriveModel=(radius=0.1,separation=0.45)=>({schemaVersion:1 as const,kind:'actuator' as const,id:'fixture-drive',jointIds:['axle'],transmission:{ratio:scalar(10,'1'),efficiency:scalar(0.8,'1')},commandInterface:'velocity' as const,
@@ -34,9 +34,9 @@ const spacer=()=>component('spacer','spacer',{links:[boxLink('body',[0.1,0.1,0.0
 
 export type Fixture={project:EngineeringProject;components:Record<string,ComponentRevision>;models:Record<string,unknown>};
 const models=(radius=0.1,separation=0.45):Record<string,unknown>=>{const m=makeDriveModel(radius,separation);return {[hashJson(m)]:m};};
-const digested=(...cs:ComponentRevision[])=>Object.fromEntries(cs.map(c=>[hashJson(c),c]));
+export const digested=(...cs:ComponentRevision[])=>Object.fromEntries(cs.map(c=>[hashJson(c),c]));
 const digestOf=(c:ComponentRevision)=>hashJson(c);
-const instance=(id:string,c:ComponentRevision,p:Pose=pose()):Instance=>({id,componentDigest:digestOf(c),pose:p});
+export const instance=(id:string,c:ComponentRevision,p:Pose=pose()):Instance=>({id,componentDigest:digestOf(c),pose:p});
 const world=()=>({id:'fixture-world',revision:1,width:6,height:4,points:[{id:'t1',name:'T1',kind:'table' as const,x:4,y:2},{id:'park',name:'Park',kind:'parking' as const,x:1,y:1},{id:'pass',name:'Kitchen pass',kind:'kitchen' as const,x:1,y:3}],handoffPoints:[],obstacles:[]});
 const runtime=(entityIds=['amr-1'])=>({schemaVersion:2 as const,id:'fixture-runtime',name:'Fixture',revision:1,updatedAt:'2026-11-07T00:00:00Z',entities:entityIds.map(id=>({id,kind:'amr' as const,assetRef:{id:'engineering-amr',revision:1,contentHash:'c'.repeat(64)}})),world:world()});
 const project=(instances:Instance[],connections:EngineeringProject['assembly']['connections'],entityInstances=instances.map(i=>i.id)):EngineeringProject=>({documentType:'engineering-project',schemaVersion:1,id:'fixture-amr',revision:1,runtimeProject:runtime(),assembly:{instances,connections},entityBindings:[{entityId:'amr-1',instanceIds:entityInstances}],requestedProfile:'engineering-rigid-v1'});

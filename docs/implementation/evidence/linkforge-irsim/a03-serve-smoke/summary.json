@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "kind": "a03-serve-linkforge-smoke",
+  "gate": "G-LF1 input only; not tested, not accepted",
+  "fixture": "serve-demo-v1",
+  "projectDigest": "1672c015e379622d7871b7b07a1a95d69ef502140ca8a7e7e4b10c33a5b8a7bf",
+  "assemblyDigest": "f32b3e5a9c4189581fe40886d9c5494a03836f487d63382ceb08ccc64a2ea145",
+  "physicalModelDigest": "5929685615246bb09741307dfff72940bf055f29798c806279c675d3ea6bfc57",
+  "reportDigest": "00c0fdfe0cbf5a0163572d5fde37e0af00d0ba173e29625fdcfd507335d5b6e6",
+  "execution": "ran",
+  "result": "pass",
+  "checks": [
+    {
+      "id": "MEKONIQ-RAW",
+      "result": "pass"
+    },
+    {
+      "id": "SENSOR-FRAMES",
+      "result": "pass"
+    },
+    {
+      "id": "COLLISION-COVERAGE",
+      "result": "pass"
+    },
+    {
+      "id": "SOURCE-URDF",
+      "result": "pass"
+    },
+    {
+      "id": "LF-IMPORT",
+      "result": "pass"
+    },
+    {
+      "id": "LF-PARITY",
+      "result": "pass"
+    },
+    {
+      "id": "LF-VALIDATOR",
+      "result": "pass"
+    },
+    {
+      "id": "REFERENCE-EXPORT",
+      "result": "not_run"
+    },
+    {
+      "id": "SRDF",
+      "result": "not_run"
+    }
+  ],
+  "issues": [
+    {
+      "code": "LF_EXPORT_MISMATCH",
+      "severity": "warning",
+      "entityId": "lidar/head"
+    },
+    {
+      "code": "LF_EXPORT_MISMATCH",
+      "severity": "warning",
+      "entityId": "support-left/rod"
+    },
+    {
+      "code": "LF_EXPORT_MISMATCH",
+      "severity": "warning",
+      "entityId": "support-right/rod"
+    },
+    {
+      "code": "LF_EXPORT_MISMATCH",
+      "severity": "warning",
+      "entityId": "tray-1/plate"
+    },
+    {
+      "code": "LF_EXPORT_MISMATCH",
+      "severity": "warning",
+      "entityId": "tray-2/plate"
+    },
+    {
+      "code": "LF_EXPORT_MISMATCH",
+      "severity": "warning",
+      "entityId": "tray-3/plate"
+    }
+  ],
+  "assumptionCount": 20,
+  "engine": {
+    "package": "linkforge-core",
+    "packageVersion": "1.6.0",
+    "pythonVersion": "3.11.15",
+    "lockDigest": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+    "adapterVersion": "linkforge-adapter/1",
+    "policyVersion": "mekoniq-model-policy/1"
+  }
+}

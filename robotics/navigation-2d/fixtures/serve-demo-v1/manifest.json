@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "documentType": "navigation2d-fixture-manifest",
+  "id": "serve-demo-v1",
+  "generator": "scripts/export-navigation2d-fixtures.ts",
+  "note": "Illustrative geometry. Dimensions, masses, LiDAR cadence and beam count are assumed inputs; inertia is derived from them. Nothing here is a measured or vendor-locked value.",
+  "files": [
+    {
+      "path": "serve-project.json",
+      "sha256": "5ca48410be47efe5e2cdc3afe7f492c43c69f799b6624955d76a26388f570d38",
+      "bytes": 11028
+    },
+    {
+      "path": "serve-components.json",
+      "sha256": "a34809b35a1e688588e6559882cfd75ac7bef4d4dbc03bc8613bf76aaa50cbe6",
+      "bytes": 32647
+    },
+    {
+      "path": "serve-sensor-model.json",
+      "sha256": "b93879192cf9b9e505e6cece0f02d9491e5abcf1d5f2e6a1e1bcc5dbb35b6691",
+      "bytes": 2646
+    },
+    {
+      "path": "restaurant-10-tables.json",
+      "sha256": "8276f8ef026b17083d889e818d2c4322aa0f0e01e3e8354d5353833ca0bf4f25",
+      "bytes": 4872
+    },
+    {
+      "path": "navigation-policy.json",
+      "sha256": "7a0a75ed094c57a4c317eaaddf56b8941b6aa14446969c22f0508bc1213b1a83",
+      "bytes": 1050
+    }
+  ]
+}
