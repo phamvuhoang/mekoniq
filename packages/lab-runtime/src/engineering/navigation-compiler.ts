@@ -4,6 +4,8 @@ import {mkdir,unlink,writeFile} from 'node:fs/promises';
 import {basename,dirname,join,resolve} from 'node:path';
 import {promisify} from 'node:util';
 import {composePose} from '../v2/frames';
+import {grow,place,polygonsOverlap as overlaps,rect} from '../v2/navigation2d/geometry';
+import type {P} from '../v2/navigation2d/geometry';
 import {NAVIGATION_SCHEMA_HASH,defaultNavigationPolicy,sealDocument,validateNavigationDocument} from '../v2/navigation2d/contracts';
 import type {ArtifactRef,NavigationModel2DV1,NavigationPolicyV1,NavigationSceneV1} from '../v2/navigation2d/contracts';
 import {hashJson} from '../v2/hash';
@@ -17,21 +19,7 @@ import {projectPhysicalModel} from './physical-model';
 const run=promisify(execFile);
 
 export const NAVIGATION_COMPILER_VERSION='navigation-compiler/1';
-type P=[number,number];
 const WALL_M=0.1; // boundary walls are 0.1 m thick inside the world rectangle, like the native compiler's
-const rect=(x:number,y:number,w:number,h:number):P[]=>[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
-const place=(footprint:P[],x:number,y:number,yaw:number):P[]=>footprint.map(([a,b])=>[x+a*Math.cos(yaw)-b*Math.sin(yaw),y+a*Math.sin(yaw)+b*Math.cos(yaw)]);
-/** Separating-axis test for two convex polygons: true when they overlap by more than numerical noise. */
-function overlaps(a:P[],b:P[]):boolean{
- for(const poly of [a,b])for(let i=0;i<poly.length;i++){
-  const p=poly[i]!,q=poly[(i+1)%poly.length]!,nx=q[1]-p[1],ny=p[0]-q[0];
-  const range=(s:P[])=>{const d=s.map(([x,y])=>x*nx+y*ny);return [Math.min(...d),Math.max(...d)];};
-  const [a0,a1]=range(a),[b0,b1]=range(b),scale=Math.hypot(nx,ny);
-  if(Math.min(a1,b1)-Math.max(a0,b0)<=1e-9*scale)return false;
- }
- return true;
-}
-const grow=(r:P[],m:number):P[]=>{const xs=r.map(p=>p[0]),ys=r.map(p=>p[1]),x0=Math.min(...xs)-m,x1=Math.max(...xs)+m,y0=Math.min(...ys)-m,y1=Math.max(...ys)+m;return rect(x0,y0,x1-x0,y1-y0);};
 
 /** Immutable NavigationSceneV1 (without worker files yet) for every robot in `models`. Fails closed: targets and starts that collide or leave the world are refused, never moved. */
 export function compileNavigationScene(input:EngineeringCompileInput,models:readonly NavigationModel2DV1[],policy:NavigationPolicyV1,schemaHash:string=NAVIGATION_SCHEMA_HASH):NavigationSceneV1{
