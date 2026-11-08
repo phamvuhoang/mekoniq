@@ -95,7 +95,7 @@ export function projectNavigationModel(model:RobotPhysicalModelV1,policy:Navigat
   if(m.noise.distribution==='uniform')unsupported('uniform noise is not modelled (none or gaussian only)');
   if(Math.abs(every-Math.round(every))>EPS||Math.round(every)<1)unsupported(`50 / ${rate} Hz is not a whole number of 20 ms ticks`);
   const at=composePose(toDrive,framePose(s.poseInBase)),tiltRoll=qrotate(at.quaternionXyzw,[0,0,1]);
-  if(Math.hypot(tiltRoll[0]!,tiltRoll[1]!)>1e-6)unsupported('a tilted scan plane is not modelled');
+  if(Math.hypot(tiltRoll[0]!,tiltRoll[1]!)>1e-6||tiltRoll[2]!<0)unsupported('a tilted or upside-down scan plane is not modelled (beam order would be mirrored)');
   sensors.push({id:s.sensorId,type:'lidar_2d',sourceModelDigest:s.sensorModelDigest,parentLinkId:s.parentLinkId,poseInDrive:[clean(at.position[0]!),clean(at.position[1]!),clean(yawOf(at.quaternionXyzw))],heightM:clean(at.position[2]!),
    rangeMinM:scalarIn(m.range.min,'m',add,`${path}/range/min`),rangeMaxM:scalarIn(m.range.max,'m',add,`${path}/range/max`),fieldOfViewRad:scalarIn(m.fieldOfView,'rad',add,`${path}/fieldOfView`),beamCount:m.lidar2d.beamCount,publishEveryTicks:Math.round(every),
    noise:{distribution:m.noise.distribution as 'none'|'gaussian',stddevM:m.noise.stddev.value,seed:m.noise.seed}});

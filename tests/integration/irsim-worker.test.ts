@@ -145,3 +145,13 @@ test.skipIf(!available)('queue overflow is refused before it is sent; the worker
     expect(keys).toEqual(expect.arrayContaining(['PATH', 'PYTHONPATH']));
   } finally { delete process.env.SECRET_TOKEN; delete process.env.ROS_DOMAIN_ID; }
 });
+
+test('review #6: a worker that cannot be spawned fails the request and close() still returns', async () => {
+  const bundleRoot = await bundle('serve');
+  const client = await spawnIRSimWorker({ python: '/nonexistent/python', workerRoot, runId: 'run-1', bundleRoot, runDirectory: await temp('irsim-run-'), lockDigest: '1'.repeat(64), schemaDir });
+  clients.push(client);
+  const lost = await client.request({ protocol: 'mekoniq-irsim/1', requestId: 'q1', runId: 'run-1', expectedTick: 0, op: 'describe', payload: {} }).catch((e) => e);
+  expect(lost).toBeInstanceOf(WorkerLostError);
+  await Promise.race([client.close('never started'), new Promise((_, no) => setTimeout(() => no(new Error('close() hung')), 5000))]);
+  expect(client.state).toBe('failed');
+});

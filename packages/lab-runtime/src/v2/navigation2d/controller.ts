@@ -65,8 +65,19 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
   };
   return {free,moveFree,discReach};
  }
+ /** Every turn in place is swept (including the first turn from the actual yaw and the final one) and the goal pose itself must be free. */
+ function verified(steps:Step[],from:Pose2,to:Pose2,moveFree:(a:Pose2,b:Pose2)=>boolean,free:(x:number,y:number,yaw:number)=>boolean):Plan{
+  let x=from[0],y=from[1],yaw=from[2];
+  for(const st of steps){
+   if(st.kind==='rotate'){if(!moveFree([x,y,yaw],[x,y,st.yaw]))return {ok:false,reason:'no_path'};yaw=st.yaw;}
+   else{x=st.to[0];y=st.to[1];}
+  }
+  return free(to[0],to[1],to[2])?{ok:true,steps}:{ok:false,reason:'no_path'};
+ }
  function plan(robotId:string,from:Pose2,to:Pose2,obstacles:P[][]):Plan{
   const {free,moveFree,discReach}=planner(robotId,obstacles),cache=new Map<number,boolean>();
+  // already within the position tolerance: only the turn to the goal heading is needed (no drive away and back to a lattice cell)
+  if(Math.hypot(to[0]-from[0],to[1]-from[1])<=pol.goalPositionToleranceM/2)return verified([{kind:'rotate',yaw:to[2]}],from,to,moveFree,free);
   const key=(ix:number,iy:number,h:number)=>(h*ny+iy)*nx+ix;
   const ok=(ix:number,iy:number,h:number)=>{const k=key(ix,iy,h);let v=cache.get(k);if(v===undefined){v=ix>=0&&iy>=0&&ix<nx&&iy<ny&&free(ix*res,iy*res,h*2*Math.PI/H);cache.set(k,v);}return v;};
   const sx=Math.round(from[0]/res),sy=Math.round(from[1]/res),sh=((Math.round(wrapPi(from[2])/(2*Math.PI/H))%H)+H)%H,gx=Math.round(to[0]/res),gy=Math.round(to[1]/res);
@@ -86,7 +97,9 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
    if(++expanded>pol.maxPlannerStates)return {ok:false,reason:'PLANNER_BUDGET_EXCEEDED'};
    if(n.x===gx&&n.y===gy){
     const t:[number,number]=[to[0],to[1]];
-    if(legFree([n.x*res,n.y*res],t)){goalKey=n.id;break;}
+    // the last turn (from this arrival heading to the goal heading) must also be free here; otherwise keep searching for another approach
+    const here=Math.hypot(t[0]-n.x*res,t[1]-n.y*res)<EPS;
+    if(legFree([n.x*res,n.y*res],t)&&(!here||moveFree([n.x*res,n.y*res,n.h*2*Math.PI/H],[t[0],t[1],to[2]]))){goalKey=n.id;break;}
     continue;
    }
    const relax=(ix:number,iy:number,h:number,cost:number)=>{
@@ -124,7 +137,15 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
   const lastCell=states.at(-1)!;
   if(Math.hypot(to[0]-lastCell.x*res,to[1]-lastCell.y*res)>EPS)steps.push({kind:'rotate',yaw:Math.atan2(to[1]-lastCell.y*res,to[0]-lastCell.x*res)},{kind:'translate',to:[to[0],to[1]]});
   steps.push({kind:'rotate',yaw:to[2]});
-  return {ok:true,steps};
+  return verified(steps,from,to,moveFree,free);
+ }
+
+ /** Path still to be driven: remaining leg lengths plus 0.1 m per rad of turning. A detour that first moves away from the goal still makes this fall. */
+ function remaining(goal:Goal,pose:Pose2,straight:number){
+  if(!goal.steps)return straight;
+  let r=0,x=pose[0],y=pose[1],yaw=pose[2];
+  for(let i=goal.stepIndex;i<goal.steps.length;i++){const st=goal.steps[i]!;if(st.kind==='rotate'){r+=Math.abs(wrapPi(st.yaw-yaw))*0.1;yaw=st.yaw;}else{r+=Math.hypot(st.to[0]-x,st.to[1]-y);x=st.to[0];y=st.to[1];}}
+  return r;
  }
 
  // ---- following ----
@@ -184,7 +205,7 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
      const fixed=[...statics,...zoneObstacles];
      const result=plan(robotId,pose,goal.target,global?fixed:[...fixed,...others,...dyn.map(p=>[[p[0]-0.1,p[1]-0.1],[p[0]+0.1,p[1]-0.1],[p[0]+0.1,p[1]+0.1],[p[0]-0.1,p[1]+0.1]] as P[])]);
      goal.lastPlanTick=tick;goal.zonesKey=zonesKey;
-     if(result.ok){goal.steps=result.steps;goal.stepIndex=0;goal.waiting=false;}
+     if(result.ok){goal.steps=result.steps;goal.stepIndex=0;goal.waiting=false;goal.best=Infinity;}
      else if(global||result.reason==='PLANNER_BUDGET_EXCEEDED'){
       goals.delete(robotId);stop();
       decisions.push({robotId,commandId:goal.commandId,status:result.reason==='no_path'?'no_path':'blocked',reason:result.reason==='no_path'?'NO_PATH':result.reason});continue;
@@ -208,10 +229,13 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
      const stopDist=speed*speed/(2*pol.maxAccelerationMps2)+speed*(scanAge*DT+DT)+margin;
      const heading=next.kind==='translate'?Math.atan2(next.to[1]-pose[1],next.to[0]-pose[0]):pose[2];
      const ahead=convexHull([...place(robots.get(robotId)!.hull,pose[0],pose[1],heading),...place(robots.get(robotId)!.hull,pose[0]+stopDist*Math.cos(heading),pose[1]+stopDist*Math.sin(heading),heading)]);
-     if(dyn.some(p=>pointDistance(p,ahead)<=0.05)||(next.kind==='rotate'&&dyn.some(p=>pointDistance(p,place(robots.get(robotId)!.hull,pose[0],pose[1],pose[2]))<=margin))){hold=true;reason='DYNAMIC_OBSTACLE';if(!goal.waiting)goal.waiting=true;}
+     // a turn in place sweeps the whole footprint through the yaw change, not just the body as it stands now
+     const turnTo=next.kind==='rotate'?next.yaw:Math.abs(wrapPi(heading-pose[2]))>0.3?heading:null;
+     const sweptTurn=turnTo!==null&&Math.abs(wrapPi(turnTo-pose[2]))>0.02?sweptHulls(robots.get(robotId)!.hull,pose,[pose[0],pose[1],turnTo]):[];
+     if(dyn.some(p=>pointDistance(p,ahead)<=0.05)||dyn.some(p=>sweptTurn.some(h=>pointDistance(p,h)<=margin))){hold=true;reason='DYNAMIC_OBSTACLE';if(!goal.waiting)goal.waiting=true;}
     }
     // progress and deadline
-    const metric=dist+yawErr*0.1;
+    const metric=remaining(goal,pose,dist);
     if(metric<goal.best-0.01){goal.best=metric;goal.stagnant=0;}else goal.stagnant+=1;
     if(goal.stagnant>=pol.noProgressTicks&&goal.hold===0){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:reason??'NO_PROGRESS'});continue;}
     if(tick-goal.startTick>=pol.goalDeadlineTicks){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:'GOAL_DEADLINE'});continue;}

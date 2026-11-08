@@ -191,3 +191,38 @@ test('same inputs, same decisions, same velocities; a tiny state budget is block
   expect(out.decisions).toEqual([{ robotId: 'amr-1', commandId: 'c1', status: 'cancelled', reason: null }]);
   expect(out.velocities).toEqual([{ robotId: 'amr-1', vMps: 0, omegaRadps: 0 }]);
 });
+
+// ---- fix pass after the independent review ----
+test('review #1: a long legitimate detour is not "no progress" (progress is remaining path, not straight-line distance)', () => {
+  const s = blind('wide');
+  s.world.obstacles.push({ id: 'wall', verticesM: [[2.8, 0.1], [2.9, 0.1], [2.9, 3.6], [2.8, 3.6]] });
+  // the goal is behind the wall: a long way round, arriving heading west (a turn in place against the wall would not fit, so a goal heading of 0 is no_path)
+  const r = simulate(s, { 'amr-1': [3.3, 1.5, Math.PI] }, 6000, { stopWhen: doneAll });
+  expect(terminal(r)).toMatchObject({ status: 'arrived' });
+  expect(terminal(simulate(s, { 'amr-1': [3.3, 1.5, 0] }, 50, { stopWhen: doneAll }))).toMatchObject({ status: 'no_path' });
+});
+
+test('review #2: a turn in place is held while a person stands inside the swept area, even if the current body is clear of them', () => {
+  const s = clone(navigationScene('serve')), start = s.robots[0]!.initialPoseMap;
+  s.policy.parameters.noProgressTicks = 3000;
+  const person = { x: start[0], y: start[1] + 0.6, r: 0.25 }; // surface 0.35 m from the axle: 0.08 m clear of the body, inside the 0.47 m turning radius
+  const r = simulate(s, { 'amr-1': [start[0], start[1], Math.PI / 2] }, 120, { scan: (tick, b) => discScan(tick, b, [person]) });
+  expect(Math.abs(r.bodies['amr-1']!.yaw - start[2])).toBeLessThan(0.05);
+  expect(r.decisions.some((d) => d.reason === 'DYNAMIC_OBSTACLE')).toBe(true);
+});
+
+test('review #3: a goal whose final heading would sweep into an obstacle is no_path, not a plan that ends in contact', () => {
+  const s = blind('serve');
+  s.world.obstacles.push({ id: 'bar-n', verticesM: [[5, 6.33], [7, 6.33], [7, 7], [5, 7]] }, { id: 'bar-s', verticesM: [[5, 5], [7, 5], [7, 5.67], [5, 5.67]] });
+  s.robots[0]!.initialPoseMap = [3, 6, 0];
+  expect(terminal(simulate(s, { 'amr-1': [6, 6, 0] }, 3000, { stopWhen: doneAll }))).toMatchObject({ status: 'arrived' }); // facing along the lane fits
+  expect(terminal(simulate(s, { 'amr-1': [6, 6, Math.PI / 2] }, 3000, { stopWhen: doneAll }))).toMatchObject({ status: 'no_path' }); // turning across it does not
+});
+
+test('review #4: a robot already inside the position tolerance only turns to the goal heading, it does not drive away and back', () => {
+  const s = blind('serve'), st = s.robots[0]!.initialPoseMap;
+  const r = simulate(s, { 'amr-1': [st[0] + 0.013, st[1] + 0.013, st[2]] }, 400, { stopWhen: doneAll });
+  expect(terminal(r)).toMatchObject({ status: 'arrived' });
+  expect(terminal(r)!.tick).toBeLessThan(30);
+  expect(Math.max(...r.commands.map((c) => Math.abs(c.w)))).toBeLessThan(0.2);
+});

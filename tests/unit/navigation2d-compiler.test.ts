@@ -97,6 +97,9 @@ test('LiDAR projection: pose in the drive frame, cadence in ticks, and anything 
   expect(edit((m) => { (m as never as { dropoutProbability: { value: number } }).dropoutProbability.value = 0.1; })).toEqual(['SENSOR_FIDELITY_UNSUPPORTED']);
   expect(edit((m) => { (m as never as { noise: { distribution: string } }).noise.distribution = 'uniform'; })).toEqual(['SENSOR_FIDELITY_UNSUPPORTED']);
   expect(edit((m) => { (m as never as { rateHz: { value: number } }).rateHz.value = 7; })).toEqual(['SENSOR_FIDELITY_UNSUPPORTED']); // 50/7 is not a whole number of ticks
+  const flipped = clone(physical('serve'));
+  flipped.sensors[0]!.poseInBase.quaternionXyzw = [1, 0, 0, 0]; // mounted upside down: the beam order would be mirrored
+  expect(codes(() => projectNavigationModel(reseal(flipped), policy))).toEqual(['SENSOR_FIDELITY_UNSUPPORTED']);
   expect(edit((m) => { delete (m as Record<string, unknown>).sensorType; delete (m as Record<string, unknown>).lidar2d; })).toEqual(['SENSOR_TYPE_REQUIRED']);
 });
 

@@ -41,7 +41,8 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
  const child=spawn(o.python,args,{cwd:resolve(o.runDirectory),env,stdio:['pipe','pipe','pipe'],detached:true});
  let state:'ready'|'failed'|'closed'='ready',bootId:string|null=null,buffer='',stderrTail='',lastTick=0,timer:NodeJS.Timeout|undefined,closing:Promise<void>|undefined;
  const queue:Pending[]=[];let inFlight:Pending|undefined;
- const exited=new Promise<void>(done=>child.once('exit',()=>done()));
+ // 'close' also fires when the process never started (spawn error), where 'exit' does not
+ const exited=new Promise<void>(done=>child.once('close',()=>done()));
  child.stderr.on('data',(d:Buffer)=>{stderrTail=(stderrTail+d.toString()).slice(-4096);});
  child.stdin.on('error',()=>{});
  const killGroup=()=>{try{if(child.pid)process.kill(-child.pid,'SIGKILL');}catch{/* already gone */}};
