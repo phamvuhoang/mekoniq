@@ -3,10 +3,10 @@
   "kind": "a03-serve-linkforge-smoke",
   "gate": "G-LF1 input only; not tested, not accepted",
   "fixture": "serve-demo-v1",
-  "projectDigest": "1672c015e379622d7871b7b07a1a95d69ef502140ca8a7e7e4b10c33a5b8a7bf",
+  "projectDigest": "604360a8d22406210dabae8dd9e12047ef4cb1378b3d562a3dbb40953a876f9a",
   "assemblyDigest": "f32b3e5a9c4189581fe40886d9c5494a03836f487d63382ceb08ccc64a2ea145",
-  "physicalModelDigest": "5929685615246bb09741307dfff72940bf055f29798c806279c675d3ea6bfc57",
-  "reportDigest": "00c0fdfe0cbf5a0163572d5fde37e0af00d0ba173e29625fdcfd507335d5b6e6",
+  "physicalModelDigest": "4f8c67cf4a5bcabcbe44a6cc27d5c69068169d0c391d1cf818b58cbee39058c7",
+  "reportDigest": "dee56b5f090445da4545e958efaa9a2a0bda127ab4302ebf65a5c431bf3207ea",
   "execution": "ran",
   "result": "pass",
   "checks": [

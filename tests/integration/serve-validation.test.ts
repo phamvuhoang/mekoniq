@@ -7,26 +7,23 @@ import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createPythonCompiler } from '../../packages/lab-runtime/src/engineering/compiler';
 import { createEngineeringService } from '../../packages/lab-runtime/src/engineering/gateway';
+import { createNavigationCompiler } from '../../packages/lab-runtime/src/engineering/navigation-compiler';
 import { createLinkForgeValidator, lockDigestOf } from '../../packages/lab-runtime/src/engineering/linkforge';
-import { engineeringFixture, writeFixtureCatalog } from '../support/engineering';
+import { writeFixtureCatalog } from '../support/engineering';
 import { navigationFixture } from '../support/navigation2d';
 
-void engineeringFixture;
-const simPython = resolve('.venv/bin/python'), lfPython = resolve('.venv-linkforge/bin/python'), workerRoot = resolve('robotics/model-validation');
+const irPython = resolve('.venv-irsim/bin/python'), simPython = resolve('.venv/bin/python'), lfPython = resolve('.venv-linkforge/bin/python'), workerRoot = resolve('robotics/model-validation');
 const ok = (py: string, code: string) => { try { execFileSync(py, ['-c', code], { stdio: 'ignore' }); return true; } catch { return false; } };
-const available = existsSync(simPython) && existsSync(lfPython) && ok(simPython, 'import rfc8785, jsonschema, referencing, yaml') && ok(lfPython, 'import linkforge.core');
+const available = existsSync(simPython) && existsSync(lfPython) && existsSync(irPython) && ok(irPython, 'import irsim, yaml, rfc8785') && ok(simPython, 'import rfc8785, jsonschema, referencing, yaml') && ok(lfPython, 'import linkforge.core');
 const roots: string[] = [];
 afterEach(async () => { for (const d of roots.splice(0)) await rm(d, { recursive: true, force: true }); });
 const temp = async (p: string) => { const d = await mkdtemp(join(tmpdir(), p)); roots.push(d); return d; };
 
 test.skipIf(!available)('the Serve fixture compiles and its robot passes LinkForge shadow validation with the assumptions still visible', async () => {
   const f = structuredClone(navigationFixture('serve').fixture), catalogRoot = await temp('serve-cat-');
-  // The native compiler wants every target point to clear a footprint-radius circle, so it cannot take a table *centre* inside its obstacle. Present it the
-  // handoff positions as the points (what the portable compiler targets anyway); this smoke only needs the compiled URDF of the robot.
-  const w = f.project.runtimeProject.world;
-  w.points = w.points.map((p) => { const h = w.handoffPoints!.find((x) => x.id === `${p.id}.handoff`); return h ? { ...p, x: h.position[0]!, y: h.position[1]! } : p; });
   await writeFixtureCatalog(catalogRoot, f);
   const service = createEngineeringService({ directory: await temp('serve-'), catalogRoot, compiler: createPythonCompiler({ python: simPython, simulationRoot: 'robotics/simulation' }),
+    compilers: { 'engineering-irsim-2d-v1': createNavigationCompiler({ python: irPython, workerRoot: resolve('robotics/navigation-2d'), descriptionHelperRoot: resolve('robotics/simulation') }) },
     validator: createLinkForgeValidator({ python: lfPython, workerRoot, timeoutMs: 30_000, lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')) }) });
   const receipt = await service.compileEngineeringProject(f.project, 's');
   expect(receipt.problems.filter((p) => p.blocking), JSON.stringify(receipt.problems)).toEqual([]);

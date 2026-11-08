@@ -29,6 +29,16 @@
       "path": "navigation-policy.json",
       "sha256": "7a0a75ed094c57a4c317eaaddf56b8941b6aa14446969c22f0508bc1213b1a83",
       "bytes": 1050
+    },
+    {
+      "path": "navigation-scene.json",
+      "sha256": "4aff7df1b8daa33bd4b180a19f0f4e0783cce1f3880ce1ff17af3f3f476c6e82",
+      "bytes": 12909
+    },
+    {
+      "path": "navigation-scene-two-robot.json",
+      "sha256": "3cedbc43e631cffea94a57e80e47c63ecb935dc944c9faf9a454b960873820d6",
+      "bytes": 18473
     }
   ]
 }

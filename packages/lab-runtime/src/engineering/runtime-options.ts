@@ -6,6 +6,8 @@ import {createPythonCompiler} from './compiler';
 import {loadCatalog} from './catalog';
 import {createEngineeringService,type EngineeringService} from './gateway';
 import {createLinkForgeValidator,lockDigestOf,type RobotModelValidator} from './linkforge';
+import {createNavigationCompiler} from './navigation-compiler';
+import type {CompilerPort} from './gateway';
 
 const run=promisify(execFile);
 export interface EngineeringRuntimeOptions{
@@ -20,6 +22,11 @@ export interface EngineeringRuntimeOptions{
   * Present but unusable (no interpreter, linkforge-core missing) leaves the engineering service up and reports `LF_WORKER_UNAVAILABLE`: compile and run are unaffected.
   */
  linkforge?:{python:string;workerRoot:string;timeoutMs?:number};
+ /**
+  * Portable (IR-SIM 2D) bundles, MEKONIQ_LAB_IRSIM=1. `python` is the IR-SIM venv; `descriptionHelperRoot` defaults to the simulation root. Omitted or unusable
+  * means the engineering-irsim-2d-v1 profile has no compiler and its receipts are blocked (PROFILE_COMPILER_UNAVAILABLE): never compiled by the native compiler.
+  */
+ portable?:{python:string;workerRoot:string;descriptionHelperRoot?:string};
 }
 /**
  * Builds the engineering service only when the operator asked for it and everything it needs works right now: a readable catalog and a compiler whose Python
@@ -45,5 +52,13 @@ export async function engineeringFromOptions(o:EngineeringRuntimeOptions):Promis
    validator=createLinkForgeValidator({python:o.linkforge.python,workerRoot,timeoutMs:o.linkforge.timeoutMs??30_000,lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock'))});
   }catch{validationUnavailable='LF_WORKER_UNAVAILABLE';}
  }
- return createEngineeringService({directory:join(o.directory,'engineering'),catalogRoot,compiler:createPythonCompiler({python,simulationRoot}),validator,validationUnavailable});
+
+ const compilers:Record<string,CompilerPort>={};
+ if(o.portable){
+  try{
+   await run(o.portable.python,['-c','import yaml, rfc8785'],{timeout:15_000});
+   compilers['engineering-irsim-2d-v1']=createNavigationCompiler({python:o.portable.python,workerRoot:resolve(o.portable.workerRoot),descriptionHelperRoot:resolve(o.portable.descriptionHelperRoot??simulationRoot)});
+  }catch{/* the profile stays without a compiler: its receipts say so */}
+ }
+ return createEngineeringService({directory:join(o.directory,'engineering'),catalogRoot,compiler:createPythonCompiler({python,simulationRoot}),compilers,validator,validationUnavailable});
 }

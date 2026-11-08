@@ -26,7 +26,9 @@ export interface CompilerPort{
 export interface EngineeringLimits{timeoutMs:number;maxJsonBytes:number;maxLinks:number;maxBundleBytes:number}
 export const DEFAULT_LIMITS:EngineeringLimits={timeoutMs:60_000,maxJsonBytes:2*1024*1024,maxLinks:1000,maxBundleBytes:200*1024*1024};
 export interface EngineeringServiceOptions{
- directory:string;catalogRoot:string;compiler:CompilerPort;recipes?:CoffeeRecipe[];limits?:Partial<EngineeringLimits>;
+ directory:string;catalogRoot:string;compiler:CompilerPort;
+ /** Compilers by requested profile. A profile listed in IR_PROFILES never falls back to `compiler` (the native one): without its own compiler the receipt is blocked. */
+ compilers?:Partial<Record<string,CompilerPort>>;recipes?:CoffeeRecipe[];limits?:Partial<EngineeringLimits>;
  /** LinkForge shadow validation. Absent means every validation is `not_run` with `validationUnavailable` as the reason; compile and run never depend on it. */
  validator?:RobotModelValidator;validationUnavailable?:string;
 }
@@ -34,6 +36,8 @@ export interface EngineeringServiceOptions{
 export class EngineeringError extends Error{constructor(readonly code:string,readonly status:number,readonly reasonCodes:string[]=[]){super(code);this.name='EngineeringError';}}
 export interface LockedEngineering{ref:EngineeringRef;project:EngineeringProject;runtimeProjection:{project:LabProjectV2;assets:AssetRevision[]}}
 export const ENGINEERING_CAPABILITY='engineering_bundle_v1';
+/** Profiles whose bundles are produced by the portable compiler only. */
+export const PORTABLE_PROFILES:readonly string[]=['engineering-irsim-2d-v1'];
 
 const sha256=(bytes:Uint8Array|string)=>createHash('sha256').update(bytes).digest('hex');
 const SEGMENT=/^(?!\.+$)[A-Za-z0-9._-]+$/;
@@ -69,11 +73,13 @@ export function createEngineeringService(options:EngineeringServiceOptions){
   try{input=prepareEngineeringCompileInput(project,resolved,recipes.filter(r=>refs.some(x=>x.id===r.id&&x.revision===r.revision)));}
   catch(e){if(e instanceof EngineeringInputError)return blocked(e.problems);throw e;}
 
+  const compiler=options.compilers?.[profile]??(PORTABLE_PROFILES.includes(profile)?undefined:options.compiler);
+  if(!compiler)return blocked([{code:'PROFILE_COMPILER_UNAVAILABLE',path:'/requestedProfile',blocking:true,detail:`no compiler is registered for profile ${profile}; it is not compiled by another profile's compiler`}]);
   const staging=join(options.directory,'staging',randomUUID());
   await mkdir(staging,{recursive:true});
   try{
    let output:Awaited<ReturnType<CompilerPort['compileResolved']>>;
-   try{output=await withTimeout(options.compiler.compileResolved(input,staging),limits.timeoutMs);}
+   try{output=await withTimeout(compiler.compileResolved(input,staging),limits.timeoutMs);}
    catch(e){
     if(e instanceof EngineeringError)throw e;
     return blocked([{code:'COMPILER_FAILED',path:'/compiler',blocking:true,detail:e instanceof Error?e.message:String(e)}]);
@@ -99,10 +105,10 @@ export function createEngineeringService(options:EngineeringServiceOptions){
    }
    const total=files.reduce((n,f)=>n+f.bytes.length,0);
    if(total>limits.maxBundleBytes)return blocked([{code:'BUNDLE_BUDGET_EXCEEDED',path:'/bundle',blocking:true,detail:`${total} bytes exceed ${limits.maxBundleBytes}`}]);
-   const runnable=(await options.compiler.runnable?.())===true;
-   const {bundleDigest}=await store.publish(sessionId,files,{projectDigest,assemblyDigest:resolved.assemblyDigest,sceneDigest:output.sceneDigest,profile,compilerVersion:options.compiler.version,catalogDigest:hashJson([...used].sort())});
+   const runnable=(await compiler.runnable?.())===true;
+   const {bundleDigest}=await store.publish(sessionId,files,{projectDigest,assemblyDigest:resolved.assemblyDigest,sceneDigest:output.sceneDigest,profile,compilerVersion:compiler.version,catalogDigest:hashJson([...used].sort())});
    const receipt:BundleReceipt={projectDigest,profile,state:'compiled',bundleDigest,assemblyDigest:resolved.assemblyDigest,sceneDigest:output.sceneDigest,runnable,
-    problems:runnable?[]:[{code:'MODEL_UNQUALIFIED',path:'/compiler',blocking:false,detail:`compiler ${options.compiler.version} has no native qualification; the bundle can be inspected but not run`}]};
+    problems:runnable?[]:[{code:'MODEL_UNQUALIFIED',path:'/compiler',blocking:false,detail:`compiler ${compiler.version} has no native qualification; the bundle can be inspected but not run`}]};
    const check=validateBundleReceipt(receipt);
    if(!check.ok)throw new Error(`RECEIPT_INVALID ${check.problems.map(p=>p.code).join(',')}`);
    return receipt;

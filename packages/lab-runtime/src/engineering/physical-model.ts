@@ -50,7 +50,8 @@ export function projectPhysicalModel(input:EngineeringCompileInput,robotId:strin
  let drive:RobotPhysicalModelV1['drive']=null;
  const binding2=resolved.models.drivesByEntity![robotId];
  if(binding2){
-  const params=binding2.model.parameters.drive as {wheelRadiusM:Scalar;wheelSeparationM:Scalar};
+  const params=binding2.model.parameters.drive as {wheelRadiusM:Scalar;wheelSeparationM:Scalar},table=binding2.model.parameters.torqueSpeedTable as {speed:Scalar}[]|undefined,top=table?.at(-1)?.speed;
+  if(!top)add('ACTUATOR_SPEED_LIMIT_MISSING',`/models/drivesByEntity/${robotId}`,'the drive model has no torque-speed table, so the wheel speed limit is unknown');
   const wheel=(jointId:string)=>{const j=resolved.joints.find(x=>x.id===jointId)!;return {joint:j,pose:inBase(j.child)};};
   const L=wheel(binding2.leftJointId),R=wheel(binding2.rightJointId);
   const span=[0,1,2].map(k=>L.pose.position[k]!-R.pose.position[k]!),len=norm(span),y=span.map(v=>v/len);
@@ -61,7 +62,7 @@ export function projectPhysicalModel(input:EngineeringCompileInput,robotId:strin
   else if(span[1]!<=0)add('DRIVE_SIDES_SWAPPED',`/entityBindings/${robotId}`,'the left drive joint must sit on the +y side of the base frame');
   else{
    const z=[0,0,1],x=cross(y,z),mid=[0,1,2].map(k=>(L.pose.position[k]!+R.pose.position[k]!)/2);
-   drive={entityId:robotId,leftJointId:binding2.leftJointId,rightJointId:binding2.rightJointId,wheelRadiusM:params.wheelRadiusM,wheelSeparationM:params.wheelSeparationM,
+   drive={entityId:robotId,leftJointId:binding2.leftJointId,rightJointId:binding2.rightJointId,wheelRadiusM:params.wheelRadiusM,wheelSeparationM:params.wheelSeparationM,actuatorMaxSpeedRadps:top!,
     driveFrameInBase:engineeringPose({position:mid.map(v=>v+0),quaternionXyzw:quaternionFromBasis(x,y,z)})};
   }
  }

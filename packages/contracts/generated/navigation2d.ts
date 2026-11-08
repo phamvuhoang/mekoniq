@@ -213,6 +213,7 @@ export interface RobotPhysicalModelV1 {
     rightJointId: EngineeringId;
     wheelRadiusM: Scalar;
     wheelSeparationM: Scalar;
+    actuatorMaxSpeedRadps: Scalar;
     driveFrameInBase: Pose;
   } | null;
   /**

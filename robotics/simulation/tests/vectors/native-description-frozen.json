@@ -1,0 +1,48 @@
+{
+  "cases": {
+    "compile-radius-075": {
+      "scene.json": "3257a3ab77f502085144acda890bc84bfa9e7ea70cd4137988495e4aaac26f4d",
+      "urdf": {
+        "robots/amr-1.urdf": "ea5c91b637f064354dfd21bc30d99b641da0f74d4a94e31dc6185a5f2b705ba7"
+      }
+    },
+    "compile-radius-100": {
+      "scene.json": "ecec4b7f012ef7f1d796fb2f6e81f258547742b371ccb0ccb0268617951457d4",
+      "urdf": {
+        "robots/amr-1.urdf": "74460697d987568a90ef41a7261a2855079680846748b721aa103def9d4fd947"
+      }
+    },
+    "compile-world-variants/base": {
+      "scene.json": "ecec4b7f012ef7f1d796fb2f6e81f258547742b371ccb0ccb0268617951457d4",
+      "urdf": {
+        "robots/amr-1.urdf": "74460697d987568a90ef41a7261a2855079680846748b721aa103def9d4fd947"
+      }
+    },
+    "compile-world-variants/bigger": {
+      "scene.json": "940265457839d23e9c928088df07a01606d13bf5bf83a8f15e794d029d8cdcbb",
+      "urdf": {
+        "robots/amr-1.urdf": "74460697d987568a90ef41a7261a2855079680846748b721aa103def9d4fd947"
+      }
+    },
+    "compile-world-variants/handoff": {
+      "scene.json": "01b9117f7acc19855d050f04579bb0dab4ccc46699d44481b2062cd2bc99599b",
+      "urdf": {
+        "robots/amr-1.urdf": "74460697d987568a90ef41a7261a2855079680846748b721aa103def9d4fd947"
+      }
+    },
+    "compile-world-variants/obstacle": {
+      "scene.json": "51ab6f02d4e72e0b33feff2dfc9dbabf1fb62585a0436e2db889a63e44bd7142",
+      "urdf": {
+        "robots/amr-1.urdf": "74460697d987568a90ef41a7261a2855079680846748b721aa103def9d4fd947"
+      }
+    },
+    "compile-world-variants/speed": {
+      "scene.json": "ecec4b7f012ef7f1d796fb2f6e81f258547742b371ccb0ccb0268617951457d4",
+      "urdf": {
+        "robots/amr-1.urdf": "74460697d987568a90ef41a7261a2855079680846748b721aa103def9d4fd947"
+      }
+    }
+  },
+  "note": "sha256 of the native compiler robots/*.urdf and scene.json, frozen BEFORE the description helpers were extracted (B01); byte parity must hold afterwards.",
+  "schemaVersion": 1
+}

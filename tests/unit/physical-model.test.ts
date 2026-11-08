@@ -44,6 +44,7 @@ test('the drive frame is the wheel-axle midpoint in the base frame: x forward, y
   expect(two.driveFrameInBase.quaternionXyzw.map((v) => +v.toFixed(9))).toEqual([0, 0, 0, 1]);
   expect([one.wheelRadiusM.value, one.wheelSeparationM.value, two.wheelRadiusM.value, two.wheelSeparationM.value]).toEqual([0.075, 0.36, 0.1, 0.42]);
   expect([one.leftJointId, two.rightJointId]).toEqual(['r1-wheel-left/axle', 'r2-wheel-right/axle']);
+  expect([one.actuatorMaxSpeedRadps.value, one.actuatorMaxSpeedRadps.unit]).toEqual([30, 'rad/s']); // last row of the drive model's torque-speed table
 });
 
 test('sensors belong to their own robot and keep the authored model and mount pose', () => {

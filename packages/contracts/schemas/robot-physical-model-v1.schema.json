@@ -60,6 +60,9 @@
             "wheelSeparationM": {
               "$ref": "engineering-component.schema.json#/definitions/Scalar"
             },
+            "actuatorMaxSpeedRadps": {
+              "$ref": "engineering-component.schema.json#/definitions/Scalar"
+            },
             "driveFrameInBase": {
               "$ref": "engineering-component.schema.json#/definitions/Pose"
             }
@@ -70,6 +73,7 @@
             "rightJointId",
             "wheelRadiusM",
             "wheelSeparationM",
+            "actuatorMaxSpeedRadps",
             "driveFrameInBase"
           ]
         },

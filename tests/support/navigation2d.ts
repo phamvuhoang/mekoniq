@@ -3,7 +3,10 @@
 import {createHash} from 'node:crypto';
 import {prepareEngineeringCompileInput,resolveAssembly} from '../../packages/lab-runtime/src/engineering/assembly';
 import type {ComponentRevision,EngineeringCompileInput,EngineeringProject,Instance,Link,Pose,Scalar,SourceRef} from '../../packages/lab-runtime/src/engineering/contracts';
-import {defaultNavigationPolicy} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
+import {defaultNavigationPolicy,NAVIGATION_SCHEMA_HASH} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
+import {projectNavigationModel} from '../../packages/lab-runtime/src/engineering/navigation-model';
+import {compileNavigationScene} from '../../packages/lab-runtime/src/engineering/navigation-compiler';
+import {projectPhysicalModel} from '../../packages/lab-runtime/src/engineering/physical-model';
 import type {NavigationPolicyV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import {qrotate} from '../../packages/lab-runtime/src/v2/frames';
 import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
@@ -116,9 +119,14 @@ export function navigationFixture(name:NavigationFixtureName):{input:Engineering
  if(!resolved)throw new Error(`NAVIGATION_FIXTURE_UNRESOLVED ${name}: ${problems.map(p=>`${p.code} ${p.path}`).join('; ')}`);
  return {input:prepareEngineeringCompileInput(fixture.project,resolved,[]),policy:defaultNavigationPolicy(),fixture};
 }
+/** NavigationSceneV1 (no worker files yet) of every robot in a fixture, through the real projection and compiler. */
+export function navigationScene(name:NavigationFixtureName){
+ const {input,policy}=navigationFixture(name);
+ return compileNavigationScene(input,input.project.runtimeProject.entities.map(e=>e.id).sort().map(id=>projectNavigationModel(projectPhysicalModel(input,id,NAVIGATION_SCHEMA_HASH),policy,{entitySpeedLimitMps:input.project.runtimeProject.entities.find(x=>x.id===id)?.speedLimitMps})),policy);
+}
 /** The reviewed JSON files of the base 'serve' fixture (also exported to robotics/navigation-2d/fixtures/serve-demo-v1 by scripts/export-navigation2d-fixtures.ts). */
 export function exportedFixtureFiles():Record<string,unknown>{
  const {fixture,policy}=navigationFixture('serve');
  return {'serve-project.json':fixture.project,'serve-components.json':{schemaVersion:1,components:fixture.components,models:fixture.models},'serve-sensor-model.json':serveLidarModel(),
-  'restaurant-10-tables.json':fixture.project.runtimeProject.world,'navigation-policy.json':policy};
+  'restaurant-10-tables.json':fixture.project.runtimeProject.world,'navigation-policy.json':policy,'navigation-scene.json':navigationScene('serve'),'navigation-scene-two-robot.json':navigationScene('two-robot')};
 }

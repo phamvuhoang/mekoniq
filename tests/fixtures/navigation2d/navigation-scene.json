@@ -1,0 +1,612 @@
+{
+  "schemaVersion": 1,
+  "documentType": "navigation-scene",
+  "sceneDigest": "fce23a16cdfe79f57eb2e2b79e9f6c952e7ad25da22cccf2deaba6785be77075",
+  "inputs": {
+    "project": {
+      "id": "serve-serve",
+      "revision": 1,
+      "digest": "604360a8d22406210dabae8dd9e12047ef4cb1378b3d562a3dbb40953a876f9a"
+    },
+    "assemblyDigest": "f32b3e5a9c4189581fe40886d9c5494a03836f487d63382ceb08ccc64a2ea145",
+    "world": {
+      "id": "restaurant-10-tables",
+      "revision": 1,
+      "hash": "a5438dfb7edb9a1ba18501797d9bee70d3928e2e53df7a7e06caeead55708555"
+    }
+  },
+  "compilerVersion": "navigation-compiler/1",
+  "schemaHash": "fff187d6bcb83424cf32717975819f23dcafe5ff084af52d44e08baee7090039",
+  "robots": [
+    {
+      "robotId": "amr-1",
+      "model": {
+        "schemaVersion": 1,
+        "documentType": "navigation-model-2d",
+        "modelDigest": "4c42fd899a1e4c41e848853cff4dc9d93b5793873f97257734f3b99731aaac58",
+        "inputs": {
+          "project": {
+            "id": "serve-serve",
+            "revision": 1,
+            "digest": "604360a8d22406210dabae8dd9e12047ef4cb1378b3d562a3dbb40953a876f9a"
+          },
+          "assemblyDigest": "f32b3e5a9c4189581fe40886d9c5494a03836f487d63382ceb08ccc64a2ea145",
+          "world": {
+            "id": "restaurant-10-tables",
+            "revision": 1,
+            "hash": "a5438dfb7edb9a1ba18501797d9bee70d3928e2e53df7a7e06caeead55708555"
+          }
+        },
+        "robotId": "amr-1",
+        "physicalModelDigest": "4f8c67cf4a5bcabcbe44a6cc27d5c69068169d0c391d1cf818b58cbee39058c7",
+        "baseFrameId": "chassis/base",
+        "driveFrameInBase": {
+          "xyzM": [
+            0,
+            0,
+            0
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "kinematics": {
+          "type": "differential_drive",
+          "wheelRadiusM": 0.09,
+          "wheelSeparationM": 0.36,
+          "maxLinearMps": 0.5,
+          "maxAngularRadps": 1,
+          "maxWheelRadps": {
+            "left": 20,
+            "right": 20
+          }
+        },
+        "footprint": {
+          "frame": "drive",
+          "verticesM": [
+            [
+              -0.40534674241424906,
+              -0.23
+            ],
+            [
+              -0.3,
+              -0.27
+            ],
+            [
+              0.3,
+              -0.27
+            ],
+            [
+              0.3,
+              0.27
+            ],
+            [
+              -0.3,
+              0.27
+            ],
+            [
+              -0.40534674241424906,
+              0.23
+            ]
+          ],
+          "method": "convex-hull-primitive-bounds-v1",
+          "contributingShapeIds": [
+            "chassis/base:c0",
+            "lidar/head:c0",
+            "support-left/rod:c0",
+            "support-right/rod:c0",
+            "tray-1/plate:c0",
+            "tray-2/plate:c0",
+            "tray-3/plate:c0",
+            "wheel-left/hub:c0",
+            "wheel-left/rim:c0",
+            "wheel-right/hub:c0",
+            "wheel-right/rim:c0"
+          ],
+          "conservative": true
+        },
+        "navigationPolicyRef": {
+          "id": "irsim-2d-default-v1",
+          "revision": 1,
+          "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+        },
+        "sensors": [
+          {
+            "id": "lidar-2d",
+            "type": "lidar_2d",
+            "sourceModelDigest": "e6dfbf96920493281123a48eaa13a4d8c938cf7853391e15bd4fbb651416c322",
+            "parentLinkId": "lidar/head",
+            "poseInDrive": [
+              0.2200000000000002,
+              0,
+              0
+            ],
+            "heightM": 0.12,
+            "rangeMinM": 0.05,
+            "rangeMaxM": 10,
+            "fieldOfViewRad": 6.283185307179586,
+            "beamCount": 360,
+            "publishEveryTicks": 5,
+            "noise": {
+              "distribution": "none",
+              "stddevM": 0,
+              "seed": 7
+            }
+          }
+        ],
+        "limitations": [
+          "planar kinematics only: no slip, torque, battery or tipping model",
+          "footprint is a conservative hull of primitive bounds, so a no_path result does not prove the real robot cannot pass",
+          "LiDAR rays and collisions share one plane (PLANAR_OCCLUSION_NO_HEIGHT_FILTER); sensor height is for display",
+          "policy limits are fixture values, not measured hardware limits"
+        ]
+      },
+      "initialPoseMap": [
+        2,
+        1.5,
+        0
+      ],
+      "targetBindings": [
+        {
+          "pointId": "bay-1",
+          "x": 2,
+          "y": 1.5,
+          "yaw": 0
+        },
+        {
+          "pointId": "bay-2",
+          "x": 3.5,
+          "y": 1.5,
+          "yaw": 0
+        },
+        {
+          "pointId": "pass",
+          "x": 1.9,
+          "y": 6,
+          "yaw": 3.141592653589793
+        },
+        {
+          "pointId": "t-01",
+          "x": 4,
+          "y": 3.9,
+          "yaw": -1.5707963267948966
+        },
+        {
+          "pointId": "t-02",
+          "x": 4,
+          "y": 8.1,
+          "yaw": 1.5707963267948966
+        },
+        {
+          "pointId": "t-03",
+          "x": 7,
+          "y": 3.9,
+          "yaw": -1.5707963267948966
+        },
+        {
+          "pointId": "t-04",
+          "x": 7,
+          "y": 8.1,
+          "yaw": 1.5707963267948966
+        },
+        {
+          "pointId": "t-05",
+          "x": 10,
+          "y": 3.9,
+          "yaw": -1.5707963267948966
+        },
+        {
+          "pointId": "t-06",
+          "x": 10,
+          "y": 8.1,
+          "yaw": 1.5707963267948966
+        },
+        {
+          "pointId": "t-07",
+          "x": 13,
+          "y": 3.9,
+          "yaw": -1.5707963267948966
+        },
+        {
+          "pointId": "t-08",
+          "x": 13,
+          "y": 8.1,
+          "yaw": 1.5707963267948966
+        },
+        {
+          "pointId": "t-09",
+          "x": 16,
+          "y": 3.9,
+          "yaw": -1.5707963267948966
+        },
+        {
+          "pointId": "t-10",
+          "x": 16,
+          "y": 8.1,
+          "yaw": 1.5707963267948966
+        }
+      ]
+    }
+  ],
+  "world": {
+    "id": "restaurant-10-tables",
+    "revision": 1,
+    "hash": "a5438dfb7edb9a1ba18501797d9bee70d3928e2e53df7a7e06caeead55708555",
+    "widthM": 20,
+    "heightM": 12,
+    "obstacles": [
+      {
+        "id": "kitchen-counter",
+        "verticesM": [
+          [
+            0.2,
+            4.5
+          ],
+          [
+            1,
+            4.5
+          ],
+          [
+            1,
+            7.5
+          ],
+          [
+            0.2,
+            7.5
+          ]
+        ]
+      },
+      {
+        "id": "table-01",
+        "verticesM": [
+          [
+            3.6,
+            2.6
+          ],
+          [
+            4.4,
+            2.6
+          ],
+          [
+            4.4,
+            3.4000000000000004
+          ],
+          [
+            3.6,
+            3.4000000000000004
+          ]
+        ]
+      },
+      {
+        "id": "table-02",
+        "verticesM": [
+          [
+            3.6,
+            8.6
+          ],
+          [
+            4.4,
+            8.6
+          ],
+          [
+            4.4,
+            9.4
+          ],
+          [
+            3.6,
+            9.4
+          ]
+        ]
+      },
+      {
+        "id": "table-03",
+        "verticesM": [
+          [
+            6.6,
+            2.6
+          ],
+          [
+            7.3999999999999995,
+            2.6
+          ],
+          [
+            7.3999999999999995,
+            3.4000000000000004
+          ],
+          [
+            6.6,
+            3.4000000000000004
+          ]
+        ]
+      },
+      {
+        "id": "table-04",
+        "verticesM": [
+          [
+            6.6,
+            8.6
+          ],
+          [
+            7.3999999999999995,
+            8.6
+          ],
+          [
+            7.3999999999999995,
+            9.4
+          ],
+          [
+            6.6,
+            9.4
+          ]
+        ]
+      },
+      {
+        "id": "table-05",
+        "verticesM": [
+          [
+            9.6,
+            2.6
+          ],
+          [
+            10.4,
+            2.6
+          ],
+          [
+            10.4,
+            3.4000000000000004
+          ],
+          [
+            9.6,
+            3.4000000000000004
+          ]
+        ]
+      },
+      {
+        "id": "table-06",
+        "verticesM": [
+          [
+            9.6,
+            8.6
+          ],
+          [
+            10.4,
+            8.6
+          ],
+          [
+            10.4,
+            9.4
+          ],
+          [
+            9.6,
+            9.4
+          ]
+        ]
+      },
+      {
+        "id": "table-07",
+        "verticesM": [
+          [
+            12.6,
+            2.6
+          ],
+          [
+            13.4,
+            2.6
+          ],
+          [
+            13.4,
+            3.4000000000000004
+          ],
+          [
+            12.6,
+            3.4000000000000004
+          ]
+        ]
+      },
+      {
+        "id": "table-08",
+        "verticesM": [
+          [
+            12.6,
+            8.6
+          ],
+          [
+            13.4,
+            8.6
+          ],
+          [
+            13.4,
+            9.4
+          ],
+          [
+            12.6,
+            9.4
+          ]
+        ]
+      },
+      {
+        "id": "table-09",
+        "verticesM": [
+          [
+            15.6,
+            2.6
+          ],
+          [
+            16.4,
+            2.6
+          ],
+          [
+            16.4,
+            3.4000000000000004
+          ],
+          [
+            15.6,
+            3.4000000000000004
+          ]
+        ]
+      },
+      {
+        "id": "table-10",
+        "verticesM": [
+          [
+            15.6,
+            8.6
+          ],
+          [
+            16.4,
+            8.6
+          ],
+          [
+            16.4,
+            9.4
+          ],
+          [
+            15.6,
+            9.4
+          ]
+        ]
+      }
+    ],
+    "boundaries": [
+      {
+        "id": "boundary-east",
+        "verticesM": [
+          [
+            19.9,
+            0
+          ],
+          [
+            20,
+            0
+          ],
+          [
+            20,
+            12
+          ],
+          [
+            19.9,
+            12
+          ]
+        ]
+      },
+      {
+        "id": "boundary-north",
+        "verticesM": [
+          [
+            0,
+            11.9
+          ],
+          [
+            20,
+            11.9
+          ],
+          [
+            20,
+            12
+          ],
+          [
+            0,
+            12
+          ]
+        ]
+      },
+      {
+        "id": "boundary-south",
+        "verticesM": [
+          [
+            0,
+            0
+          ],
+          [
+            20,
+            0
+          ],
+          [
+            20,
+            0.1
+          ],
+          [
+            0,
+            0.1
+          ]
+        ]
+      },
+      {
+        "id": "boundary-west",
+        "verticesM": [
+          [
+            0,
+            0
+          ],
+          [
+            0.1,
+            0
+          ],
+          [
+            0.1,
+            12
+          ],
+          [
+            0,
+            12
+          ]
+        ]
+      }
+    ]
+  },
+  "actors": [],
+  "zones": [],
+  "clock": {
+    "tickMs": 20
+  },
+  "engine": {
+    "id": "irsim_2d",
+    "version": "2.12.0",
+    "collisionMode": "stop"
+  },
+  "policy": {
+    "schemaVersion": 1,
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "source": {
+      "kind": "assumed",
+      "documentId": "irsim-2d-default-v1",
+      "revision": "1",
+      "locator": "specs/2026-11-08-linkforge-irsim/contracts.md#navigation-policy",
+      "contentSha256": "13460438bfa34b6c6413e161118819414cb0b9843855a358e5cfb76361089e45"
+    },
+    "parameters": {
+      "safetyMarginM": 0.02,
+      "controller": "grid-diff-v1",
+      "gridResolutionM": 0.05,
+      "headingCount": 8,
+      "distanceCostPerM": 1,
+      "rotationCostPerRad": 0.2,
+      "maxPlannerStates": 2000000,
+      "maxLinearMps": 0.5,
+      "maxAngularRadps": 1,
+      "maxAccelerationMps2": 0.5,
+      "maxAngularAccelerationRadps2": 1.5,
+      "goalPositionToleranceM": 0.05,
+      "goalYawToleranceRad": 0.05,
+      "stoppedLinearMps": 0.01,
+      "stoppedAngularRadps": 0.02,
+      "arrivalHoldTicks": 5,
+      "replanEveryTicks": 50,
+      "scanFreshnessTicks": 5,
+      "noProgressTicks": 250,
+      "goalDeadlineTicks": 6000
+    },
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+  },
+  "files": [],
+  "limitations": [
+    "known static map plus simulated LiDAR: not SLAM or localisation",
+    "obstacles extend over all heights: PLANAR_OCCLUSION_NO_HEIGHT_FILTER",
+    "collision_mode stop: a contact stops the plant, it is not a contact-dynamics result",
+    "table and kitchen points are semantic targets; robots stand at their handoff"
+  ]
+}

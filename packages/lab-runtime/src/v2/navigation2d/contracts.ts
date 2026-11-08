@@ -71,6 +71,7 @@ function physicalRules(m:RobotPhysicalModelV1):NavigationIssue[]{
  if(m.drive){
   if(m.drive.wheelRadiusM.unit!=='m')out.push(issue('/drive/wheelRadiusM/unit','UNIT_NOT_ALLOWED','must be m'));
   if(m.drive.wheelSeparationM.unit!=='m')out.push(issue('/drive/wheelSeparationM/unit','UNIT_NOT_ALLOWED','must be m'));
+  if(m.drive.actuatorMaxSpeedRadps.unit!=='rad/s'||!(m.drive.actuatorMaxSpeedRadps.value>0))out.push(issue('/drive/actuatorMaxSpeedRadps','UNIT_NOT_ALLOWED','must be a positive rad/s value'));
  }
  return out;
 }

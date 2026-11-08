@@ -10,23 +10,27 @@ import { createEngineeringService, EngineeringError } from '../../packages/lab-r
 import { createLinkForgeValidator, lockDigestOf, type RobotModelValidator } from '../../packages/lab-runtime/src/engineering/linkforge';
 import { validateNavigationDocument } from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import { engineeringFixture, writeFixtureCatalog } from '../support/engineering';
+import { createNavigationCompiler } from '../../packages/lab-runtime/src/engineering/navigation-compiler';
+import { navigationFixture } from '../support/navigation2d';
 
-const simPython = resolve('.venv/bin/python'), lfPython = resolve('.venv-linkforge/bin/python'), workerRoot = resolve('robotics/model-validation');
+const irPython = resolve('.venv-irsim/bin/python'), simPython = resolve('.venv/bin/python'), lfPython = resolve('.venv-linkforge/bin/python'), workerRoot = resolve('robotics/model-validation');
 const ok = (py: string, code: string) => { try { execFileSync(py, ['-c', code], { stdio: 'ignore' }); return true; } catch { return false; } };
-const available = existsSync(simPython) && existsSync(lfPython) && ok(simPython, 'import rfc8785, jsonschema, referencing, yaml') && ok(lfPython, 'import linkforge.core');
+const available = existsSync(simPython) && existsSync(lfPython) && existsSync(irPython) && ok(irPython, 'import irsim, yaml, rfc8785') && ok(simPython, 'import rfc8785, jsonschema, referencing, yaml') && ok(lfPython, 'import linkforge.core');
 const roots: string[] = [];
 afterEach(async () => { for (const d of roots.splice(0)) await rm(d, { recursive: true, force: true }); });
 const temp = async (p: string) => { const d = await mkdtemp(join(tmpdir(), p)); roots.push(d); return d; };
 const lockDigest = () => lockDigestOf(join(workerRoot, 'requirements.lock'));
 
 async function setup(over: { fixture?: string; profile?: boolean; validator?: RobotModelValidator | 'none'; unavailable?: string } = {}) {
-  const directory = await temp('lf-'), catalogRoot = await temp('lf-cat-'), f = structuredClone(engineeringFixture(over.fixture ?? 'valid'));
-  if (over.profile !== false) f.project.requestedProfile = 'engineering-irsim-2d-v1';
+  const directory = await temp('lf-'), catalogRoot = await temp('lf-cat-');
+  // IR-SIM profile bundles come from the Serve/restaurant fixtures through the portable compiler; profile:false is a legacy native bundle
+  const f = over.profile === false ? structuredClone(engineeringFixture('valid')) : structuredClone(navigationFixture((over.fixture ?? 'serve') as never).fixture);
   await writeFixtureCatalog(catalogRoot, f);
   const real = createLinkForgeValidator({ python: lfPython, workerRoot, timeoutMs: 20_000, lockDigest: await lockDigest() });
   const calls = { n: 0 };
   const counting: RobotModelValidator = { identity: real.identity, validate: async (i) => { calls.n += 1; return (over.validator && over.validator !== 'none' ? over.validator : real).validate(i); } };
   const service = createEngineeringService({ directory, catalogRoot, compiler: createPythonCompiler({ python: simPython, simulationRoot: 'robotics/simulation' }),
+    compilers: { 'engineering-irsim-2d-v1': createNavigationCompiler({ python: irPython, workerRoot: resolve('robotics/navigation-2d'), descriptionHelperRoot: resolve('robotics/simulation') }) },
     ...(over.validator === 'none' ? { validationUnavailable: over.unavailable ?? 'LINKFORGE_DISABLED' } : { validator: counting }) });
   const receipt = await service.compileEngineeringProject(f.project, 's1');
   if (receipt.state !== 'compiled') throw new Error('FIXTURE_NOT_COMPILED ' + JSON.stringify(receipt.problems));
@@ -59,7 +63,7 @@ test.skipIf(!available)('the report is cached by full identity, not re-run, and 
   expect(second.cached).toBe(true);
   expect(second.report.reportDigest).toBe(first.report.reportDigest);
   expect(s.calls.n).toBe(1);
-  const other = await setup({ fixture: 'wheel-r075' });
+  const other = await setup({ fixture: 'wide' });
   const changed = await other.service.validateRobotModel('s1', other.ref, 'amr-1');
   expect(changed.report.physicalModelDigest).not.toBe(first.report.physicalModelDigest);
   expect(other.calls.n).toBe(1);
@@ -138,10 +142,9 @@ test.skipIf(!available)('the HTTP routes: validate needs a session and CSRF, tak
 
 test.skipIf(!available)('runtime options: an unusable LinkForge interpreter leaves engineering up and validation reports why', async () => {
   const { engineeringFromOptions } = await import('../../packages/lab-runtime/src/engineering/runtime-options');
-  const directory = await temp('lf-opt-'), catalogRoot = await temp('lf-opt-cat-'), f = structuredClone(engineeringFixture('valid'));
-  f.project.requestedProfile = 'engineering-irsim-2d-v1';
+  const directory = await temp('lf-opt-'), catalogRoot = await temp('lf-opt-cat-'), f = structuredClone(navigationFixture('serve').fixture);
   await writeFixtureCatalog(catalogRoot, f);
-  const base = { directory, catalogRoot, simulationRoot: resolve('robotics/simulation'), python: simPython };
+  const base = { directory, catalogRoot, simulationRoot: resolve('robotics/simulation'), python: simPython, portable: { python: irPython, workerRoot: resolve('robotics/navigation-2d') } };
   for (const [linkforge, code] of [[undefined, 'LINKFORGE_DISABLED'], [{ python: '/nonexistent/python', workerRoot }, 'LF_WORKER_UNAVAILABLE']] as const) {
     const service = (await engineeringFromOptions({ ...base, directory: await temp('lf-opt-run-'), linkforge }))!;
     const receipt = await service.compileEngineeringProject(f.project, 's');
