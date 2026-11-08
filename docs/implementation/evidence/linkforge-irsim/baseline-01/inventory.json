@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "documentType": "linkforge-irsim-baseline-inventory",
+  "capturedOn": "2026-11-08",
+  "repos": {
+    "source": {
+      "branch": "main",
+      "head": "12ca273f418cc94de9c4f72e40c94a27cd623fcb",
+      "dirtyAtCapture": false
+    },
+    "lab": {
+      "branch": "main",
+      "head": "c971b5c1e6a269eda442e3bc7853d70ef913f63f",
+      "dirtyAtCapture": false,
+      "runtimePin": "899a83769726aa6840c40a32fb0e89d17a137cb7",
+      "schemaHash": "7f93a1e1d27b345a64e766c8d67df93a3dc2bbffd92aa7ee16754bccbfc6f222",
+      "protocols": [
+        1,
+        2
+      ]
+    }
+  },
+  "backendIds": [
+    "mock",
+    "gazebo_nav2",
+    "cell_native",
+    "valetudo_native"
+  ],
+  "scenarioIds": [
+    "ARM01-06",
+    "BV01-08",
+    "CAMPAIGN-FD02-FD07-BV01-BV03",
+    "FD01-08",
+    "SYS01-06"
+  ],
+  "externalGates": {
+    "R-MOCK": "not accepted",
+    "native": "blocked_external/not_run (unchanged)",
+    "hardware": "blocked_external/not_run (unchanged)"
+  },
+  "regressionInventory": "NR01-NR12 per lab/docs/specs/2026-11-06-physical-robot-lab/compatibility.md; recorded by reference, not re-run here",
+  "baselineRuns": [
+    {
+      "repo": "source",
+      "cmd": "pnpm contracts:check",
+      "exit": 0,
+      "result": "Contract generation matches schema"
+    },
+    {
+      "repo": "source",
+      "cmd": "vitest engineering-contracts engineering-assembly lab-v2-mock lab-v2-stream lab-v2-bv01-ports",
+      "exit": 0,
+      "result": "5 files; 66 pass, 1 skipped (opt-in LAB_V2_MEASURE)"
+    },
+    {
+      "repo": "lab",
+      "cmd": "pnpm check:source",
+      "exit": 0,
+      "result": "pin 899a837 schema ok, protocol 1/2"
+    },
+    {
+      "repo": "lab",
+      "cmd": "pnpm typecheck",
+      "exit": 0,
+      "result": "tsc clean"
+    },
+    {
+      "repo": "lab",
+      "cmd": "pnpm test",
+      "exit": 0,
+      "result": "43 files pass, 1 skipped; 279 pass, 1 skipped"
+    }
+  ],
+  "notRun": [
+    "native Gazebo/Nav2",
+    "LinuxCNC/PUMA",
+    "hardware",
+    "Supabase-backed suites",
+    "browser e2e"
+  ],
+  "toolchain": {
+    "node": "24.22.2",
+    "pnpm": "10.32.1",
+    "venvs": {
+      "linkforge": ".venv-linkforge/bin/python",
+      "irsim": ".venv-irsim/bin/python"
+    }
+  },
+  "workerLocks": {
+    "linkforge": {
+      "schemaVersion": 1,
+      "documentType": "portable-worker-lock",
+      "pythonVersion": "3.11.15",
+      "platform": "darwin-arm64",
+      "packages": [
+        {
+          "name": "attrs",
+          "version": "26.1.0"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.3.1"
+        },
+        {
+          "name": "jsonschema",
+          "version": "4.26.0"
+        },
+        {
+          "name": "jsonschema-specifications",
+          "version": "2025.9.1"
+        },
+        {
+          "name": "linkforge-core",
+          "version": "1.6.0"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.7.0"
+        },
+        {
+          "name": "pygments",
+          "version": "2.21.0"
+        },
+        {
+          "name": "pytest",
+          "version": "9.2.0"
+        },
+        {
+          "name": "pyyaml",
+          "version": "6.0.3"
+        },
+        {
+          "name": "referencing",
+          "version": "0.37.0"
+        },
+        {
+          "name": "rfc8785",
+          "version": "0.1.4"
+        },
+        {
+          "name": "rpds-py",
+          "version": "2026.9.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        }
+      ],
+      "requirementsSha256": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c"
+    },
+    "irsim": {
+      "schemaVersion": 1,
+      "documentType": "portable-worker-lock",
+      "pythonVersion": "3.11.15",
+      "platform": "darwin-arm64",
+      "packages": [
+        {
+          "name": "attrs",
+          "version": "26.1.0"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.3"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.68.0"
+        },
+        {
+          "name": "imageio",
+          "version": "2.38.1"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.3.1"
+        },
+        {
+          "name": "ir-sim",
+          "version": "2.12.0"
+        },
+        {
+          "name": "jsonschema",
+          "version": "4.26.0"
+        },
+        {
+          "name": "jsonschema-specifications",
+          "version": "2025.9.1"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.5.1"
+        },
+        {
+          "name": "loguru",
+          "version": "0.7.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.11.2"
+        },
+        {
+          "name": "numpy",
+          "version": "2.4.6"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pillow",
+          "version": "13.0.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.7.0"
+        },
+        {
+          "name": "pygments",
+          "version": "2.21.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "9.2.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "4.0.0"
+        },
+        {
+          "name": "pyyaml",
+          "version": "6.0.3"
+        },
+        {
+          "name": "referencing",
+          "version": "0.37.0"
+        },
+        {
+          "name": "rfc8785",
+          "version": "0.1.4"
+        },
+        {
+          "name": "rpds-py",
+          "version": "2026.9.1"
+        },
+        {
+          "name": "scipy",
+          "version": "1.17.1"
+        },
+        {
+          "name": "shapely",
+          "version": "2.2.0"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.6"
+        }
+      ],
+      "requirementsSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4"
+    }
+  }
+}

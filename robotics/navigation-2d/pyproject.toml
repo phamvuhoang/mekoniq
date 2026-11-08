@@ -1,0 +1,9 @@
+[project]
+name = "mekoniq-irsim-worker"
+version = "0.1.0"
+description = "IR-SIM 2D navigation plant worker, isolated venv"
+requires-python = ">=3.11,<3.12"
+dependencies = ["ir-sim==2.12.0"]
+
+[project.optional-dependencies]
+test = ["pytest==9.2.0", "jsonschema==4.26.0", "rfc8785==0.1.4"]

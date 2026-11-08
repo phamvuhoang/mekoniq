@@ -1,0 +1,5 @@
+linkforge-core==1.6.0
+PyYAML>=6.0.3
+pytest==9.2.0
+jsonschema==4.26.0
+rfc8785==0.1.4

@@ -1,0 +1,4 @@
+ir-sim==2.12.0
+pytest==9.2.0
+jsonschema==4.26.0
+rfc8785==0.1.4

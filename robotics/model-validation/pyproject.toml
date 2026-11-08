@@ -1,0 +1,9 @@
+[project]
+name = "mekoniq-linkforge-worker"
+version = "0.1.0"
+description = "Shadow robot-model validation worker (LinkForge core), isolated venv"
+requires-python = ">=3.11,<3.12"
+dependencies = ["linkforge-core==1.6.0", "PyYAML>=6.0.3"]
+
+[project.optional-dependencies]
+test = ["pytest==9.2.0", "jsonschema==4.26.0", "rfc8785==0.1.4"]
