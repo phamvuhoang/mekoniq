@@ -53,7 +53,15 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
    if(x0<0||y0<0||x1>W||y1>Hm)return false; // bounding box inside the world implies every vertex is
    return !hit(body,x0,x1,y0,y1);
   };
-  const moveFree=(a:Pose2,b:Pose2)=>sweptHulls(hull,a,b).every(h=>{const xs=h.map(p=>p[0]),ys=h.map(p=>p[1]);return !hit(h,Math.min(...xs),Math.max(...xs),Math.min(...ys),Math.max(...ys));})&&b[0]>=0;
+  // a turn in place has the same swept shape at every cell: computed once per yaw pair at the origin, then translated
+  const turns=new Map<string,P[][]>();
+  const swept=(a:Pose2,b:Pose2):P[][]=>{
+   if(a[0]!==b[0]||a[1]!==b[1])return sweptHulls(hull,a,b);
+   const key=`${a[2]},${b[2]}`;let at0=turns.get(key);
+   if(!at0){at0=sweptHulls(hull,[0,0,a[2]],[0,0,b[2]]);turns.set(key,at0);}
+   return at0.map(h=>h.map(([x,y]):P=>[x+a[0],y+a[1]]));
+  };
+  const moveFree=(a:Pose2,b:Pose2)=>swept(a,b).every(h=>{const xs=h.map(p=>p[0]),ys=h.map(p=>p[1]);return !hit(h,Math.min(...xs),Math.max(...xs),Math.min(...ys),Math.max(...ys));})&&b[0]>=0;
   // 2D connectivity of the robot's inscribed disc: if even that cannot get from A to B, nothing of the robot's shape can
   const inscribed=Math.min(...hull.map((p,i)=>{const q=hull[(i+1)%hull.length]!,dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy);return l===0?Infinity:Math.abs(p[0]*dy-p[1]*dx)/l;}));
   const discReach=(from:[number,number],to:[number,number])=>{
