@@ -16,7 +16,7 @@ type Step={kind:'rotate';yaw:number}|{kind:'translate';to:[number,number]};
 type Plan={ok:true;steps:Step[]}|{ok:false;reason:'no_path'|'PLANNER_BUDGET_EXCEEDED'};
 /** More unusable beams than this and the scan says nothing reliable about the way ahead. */
 const MAX_INVALID_BEAM_FRACTION=0.1;
-interface Goal{commandId:string;target:Pose2;startTick:number|null;steps:Step[]|null;stepIndex:number;hold:number;best:number;stagnant:number;lastPlanTick:number;zonesKey:string;waiting:boolean;/** the goal is reachable on the static map alone: a later failure is a reservation to wait for, never no_path */staticOk?:boolean}
+interface Goal{commandId:string;target:Pose2;startTick:number|null;steps:Step[]|null;stepIndex:number;hold:number;best:number;stagnant:number;lastPlanTick:number;zonesKey:string;waiting:boolean;/** the goal is reachable on the static map alone: a later failure is a reservation to wait for, never no_path */staticOk?:boolean;/** the local route is hidden only by a zone that is not (or no longer) granted */zoneWait?:boolean}
 
 /** Binary min-heap ordered by (f, g, x, y, heading): equal costs break the same way on every run. */
 class Heap{
@@ -210,11 +210,15 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
      if(global&&!goal.staticOk){const base=plan(robotId,pose,goal.target,statics);if(base.ok)goal.staticOk=true;if(!base.ok||!zoneObstacles.length)result=base;}
      result??=plan(robotId,pose,goal.target,global?fixed:[...fixed,...others,...dyn.map(p=>[[p[0]-0.1,p[1]-0.1],[p[0]+0.1,p[1]-0.1],[p[0]+0.1,p[1]+0.1],[p[0]-0.1,p[1]+0.1]] as P[])]);
      goal.lastPlanTick=tick;goal.zonesKey=zonesKey;
-     if(result.ok){goal.steps=result.steps;goal.stepIndex=0;goal.waiting=false;goal.best=Infinity;}
+     if(result.ok){goal.steps=result.steps;goal.stepIndex=0;goal.waiting=false;goal.zoneWait=false;goal.best=Infinity;}
      else if(!goal.staticOk||result.reason==='PLANNER_BUDGET_EXCEEDED'){
       goals.delete(robotId);stop();
       decisions.push({robotId,commandId:goal.commandId,status:result.reason==='no_path'?'no_path':'blocked',reason:result.reason==='no_path'?'NO_PATH':result.reason});continue;
-     }else{goal.waiting=true;}  // a path exists on the static map; a reservation or an obstruction hides it: hold still and look again
+     }else{
+      goal.waiting=true;  // a path exists on the static map; a reservation or an obstruction hides it: hold still and look again
+      // hidden by a zone alone (the same search without the zones finds a way) means the reservation is what is awaited
+      goal.zoneWait=!global&&zoneObstacles.length>0&&plan(robotId,pose,goal.target,[...statics,...others,...dyn.map(p=>[[p[0]-0.1,p[1]-0.1],[p[0]+0.1,p[1]-0.1],[p[0]+0.1,p[1]+0.1],[p[0]-0.1,p[1]+0.1]] as P[])]).ok;
+     }
     }
     // goal reached? pose and velocity within tolerance for arrivalHoldTicks consecutive ticks
     const dist=Math.hypot(goal.target[0]-pose[0],goal.target[1]-pose[1]),yawErr=Math.abs(wrapPi(goal.target[2]-pose[2]));
@@ -241,10 +245,11 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
      const sweptTurn=turnTo!==null&&Math.abs(wrapPi(turnTo-pose[2]))>0.02?sweptHulls(robots.get(robotId)!.hull,pose,[pose[0],pose[1],turnTo]):[];
      if(dyn.some(p=>pointDistance(p,ahead)<=0.05)||dyn.some(p=>sweptTurn.some(h=>pointDistance(p,h)<=margin))){hold=true;reason='DYNAMIC_OBSTACLE';if(!goal.waiting)goal.waiting=true;}
     }
+    if(!hold&&m.sensors.length&&invalidAhead(robotId,obs,pose,!next||next.kind==='rotate'||Math.abs(wrapPi(Math.atan2(next.to[1]-pose[1],next.to[0]-pose[0])-pose[2]))>0.3?null:Math.atan2(next.to[1]-pose[1],next.to[0]-pose[0]))){hold=true;reason='SENSOR_INVALID';}
     // progress and deadline
     const metric=remaining(goal,pose,dist);
     // waiting for a reservation (no route exists until the zone is granted) is the domain's timeout to enforce, not lack of progress; the goal deadline still bounds it
-    if(!goal.steps)reason??='RESERVATION_PENDING';
+    if(!goal.steps||goal.zoneWait)reason??='RESERVATION_PENDING';
     else if(metric<goal.best-0.01){goal.best=metric;goal.stagnant=0;}else goal.stagnant+=1;
     if(goal.stagnant>=pol.noProgressTicks&&goal.hold===0){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:reason??'NO_PROGRESS'});continue;}
     if(tick-goal.startTick>=pol.goalDeadlineTicks){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:'GOAL_DEADLINE'});continue;}
@@ -257,19 +262,31 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
   },
  };
 
- // LiDAR hits the static map does not explain, in the map frame
- function dynamicPoints(robotId:string,obs:IRSimSnapshotV1['robots'][number],pose:Pose2,solids:P[][]):P[]{
-  const model=robots.get(robotId)!.model,out:P[]=[];
+ // world-frame direction and kind of every beam of every sensor
+ function beams(robotId:string,obs:IRSimSnapshotV1['robots'][number],pose:Pose2,visit:(angle:number,range:number|null,state:string,origin:P,min:number)=>void){
+  const model=robots.get(robotId)!.model;
   obs.scans.forEach((scan,i)=>{
    const mount=model.sensors[i];
    if(!mount)return;
-   const [ox,oy,oyaw]=mount.poseInDrive,cx=pose[0]+ox*Math.cos(pose[2])-oy*Math.sin(pose[2]),cy=pose[1]+ox*Math.sin(pose[2])+oy*Math.cos(pose[2]),base=pose[2]+oyaw;
-   scan.rangesM.forEach((r,b)=>{
-    if(r===null||scan.states[b]!=='hit'||r>3)return;
-    const a=base+scan.angleMinRad+b*scan.angleIncrementRad,p:P=[cx+r*Math.cos(a),cy+r*Math.sin(a)];
-    if(!solids.some(s=>pointDistance(p,s)<=0.1))out.push(p);
-   });
+   const [ox,oy,oyaw]=mount.poseInDrive,origin:P=[pose[0]+ox*Math.cos(pose[2])-oy*Math.sin(pose[2]),pose[1]+ox*Math.sin(pose[2])+oy*Math.cos(pose[2])],base=pose[2]+oyaw;
+   scan.rangesM.forEach((r,b)=>visit(base+scan.angleMinRad+b*scan.angleIncrementRad,r,scan.states[b]!,origin,scan.rangeMinM));
+  });
+ }
+ // LiDAR returns the static map does not explain, in the map frame; 'below_min' is something closer than the minimum range, so it is placed at that range (nearer is the safe side)
+ function dynamicPoints(robotId:string,obs:IRSimSnapshotV1['robots'][number],pose:Pose2,solids:P[][]):P[]{
+  const out:P[]=[];
+  beams(robotId,obs,pose,(a,r,state,[cx,cy],min)=>{
+   const range=state==='hit'&&r!==null&&r<=3?r:state==='below_min'?min:null;
+   if(range===null)return;
+   const p:P=[cx+range*Math.cos(a),cy+range*Math.sin(a)];
+   if(!solids.some(s=>pointDistance(p,s)<=0.1))out.push(p);
   });
   return out;
+ }
+ // beams that say nothing: the way they point is unknown space. Any invalid beam in the half-plane the robot moves into (every direction while it turns) is a hold.
+ function invalidAhead(robotId:string,obs:IRSimSnapshotV1['robots'][number],pose:Pose2,heading:number|null):boolean{
+  let bad=false;
+  beams(robotId,obs,pose,(a,_r,state)=>{if(state==='invalid'&&(heading===null||Math.abs(wrapPi(a-heading))<Math.PI/2))bad=true;});
+  return bad;
  }
 }

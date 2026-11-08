@@ -49,6 +49,8 @@ export function projectPhysicalModel(input:EngineeringCompileInput,robotId:strin
  let drive:RobotPhysicalModelV1['drive']=null;
  // a legacy resolution has only the singleton, which is that entity's binding; it is read in memory and the resolved assembly is not touched
  const binding2=resolved.models.drivesByEntity?resolved.models.drivesByEntity[robotId]:resolved.models.drive?.entityId===robotId?resolved.models.drive:undefined;
+ // an AMR without a drive binding is never projected as a driveless robot: a legacy multi-AMR resolution only keeps the last one's singleton
+ if(!binding2&&project.runtimeProject.entities.find(e=>e.id===robotId)?.kind==='amr')add('DRIVE_BINDINGS_REQUIRED',`/entityBindings/${robotId}`,'this AMR has no drive binding in the resolved assembly (a legacy resolution keeps one singleton drive); resolve it with the engineering-irsim-2d-v1 profile');
  if(binding2){
   const params=binding2.model.parameters.drive as {wheelRadiusM:Scalar;wheelSeparationM:Scalar},table=binding2.model.parameters.torqueSpeedTable as {speed:Scalar}[]|undefined,top=table?.at(-1)?.speed;
   if(!top)add('ACTUATOR_SPEED_LIMIT_MISSING',`/models/drivesByEntity/${robotId}`,'the drive model has no torque-speed table, so the wheel speed limit is unknown');

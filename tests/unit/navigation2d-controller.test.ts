@@ -138,6 +138,32 @@ test('review2 #2: unknown is not free: an all-invalid, mostly-invalid or wrongly
   expect(ok.commands.some((c) => c.v > 0)).toBe(true); // the control: no_return everywhere is a clear view
 });
 
+test('review3 #1: below_min is an obstacle and an invalid beam ahead is unknown, not free (a few beams are enough)', () => {
+  const s = clone(navigationScene('serve')); s.policy.parameters.noProgressTicks = 3000;
+  const i0 = Math.round(Math.PI / ((2 * Math.PI) / 359)), mark = (state: 'below_min' | 'invalid', pick: (i: number) => boolean) => (tick: number) => {
+    const [sc] = scanHit(tick, null);
+    return [{ ...sc!, states: sc!.states.map((x, i) => (pick(i) ? state : x)) }];
+  };
+  const cases: [string, ReturnType<typeof mark>][] = [
+    ['all below_min', mark('below_min', () => true)],
+    ['below_min dead ahead', mark('below_min', (i) => Math.abs(i - i0) <= 2)],
+    ['35 invalid beams dead ahead', mark('invalid', (i) => Math.abs(i - i0) <= 17)],
+  ];
+  for (const [why, scan] of cases) {
+    const r = simulate(s, { 'amr-1': target(s, 't-05') }, 200, { scan });
+    expect(Math.max(...r.commands.map((c) => Math.abs(c.v))), why).toBe(0);
+    expect(r.decisions.find((d) => d.status === 'executing')!.reason, why).not.toBeNull();
+  }
+});
+
+test('review3 #2: a reservation revoked mid-route is waited for, not "no progress"', () => {
+  const s = blind('serve'); s.robots[0]!.initialPoseMap = [6, 6, 0];
+  s.zones.push({ id: 'goal-room', polygonM: [[13, 4.5], [15.5, 4.5], [15.5, 7.5], [13, 7.5]], entryPoints: [], exitPoints: [] });
+  const r = simulate(s, { 'amr-1': [14, 6, 0] }, 12000, { reservations: (tick) => ({ 'goal-room': tick < 100 || tick >= 1000 ? 'amr-1' : null }), stopWhen: doneAll });
+  expect(terminal(r)).toMatchObject({ status: 'arrived' });
+  expect(r.decisions.filter((d) => d.tick >= 150 && d.tick < 1000).every((d) => d.status === 'executing' && d.reason === 'RESERVATION_PENDING')).toBe(true);
+});
+
 test('IR02: a person standing in the aisle stops the robot short of contact (not a no_path); when they leave it carries on to the goal', () => {
   const s = clone(navigationScene('serve')), person = { x: 6, y: 6, r: 0.25 };
   s.robots[0]!.initialPoseMap = [3, 6, 0];

@@ -168,3 +168,16 @@ test('review2 #1: a snapshot that contradicts the envelope, the run or the bound
   expect((await ask('getState', {}, { expectedTick: 0 })).ok).toBe(true); // the control: a consistent snapshot passes
   expect(client.state).toBe('ready');
 });
+
+test('review3 #4: the protocol is held to the letter: result kind per op, tick x 20 ms, a monotonic seq, and the envelope tick of a non-step op is the expected tick', async () => {
+  for (const [mode, op] of [['statecreate', 'getState'], ['simtime', 'getState'], ['etick', 'getState']] as const) {
+    const { client, ask } = await start('serve', { entry: [double('snapshot.py'), '--mode', mode], sceneDigest: 'a'.repeat(64) });
+    const lost = await ask(op, {}, { expectedTick: 0 }).catch((e) => e);
+    expect(lost, mode).toBeInstanceOf(WorkerLostError);
+    expect(client.state, mode).toBe('failed');
+  }
+  const { client, ask } = await start('serve', { entry: [double('snapshot.py'), '--mode', 'seq'], sceneDigest: 'a'.repeat(64) });
+  expect((await ask('getState', {}, { expectedTick: 0 })).ok).toBe(true);
+  expect(await ask('getState', {}, { expectedTick: 0 }).catch((e) => e)).toBeInstanceOf(WorkerLostError); // seq 5 then 3
+  expect(client.state).toBe('failed');
+});

@@ -90,3 +90,11 @@ test('review2 #3: a legacy single-drive resolution (engineering-rigid-v1) projec
   expect(model.drive).toMatchObject({ entityId: 'amr-1', leftJointId: resolved.models.drive!.leftJointId, rightJointId: resolved.models.drive!.rightJointId });
   expect(JSON.stringify(resolved)).toBe(before);
 });
+
+test('review3 #3: a legacy assembly with several AMRs gives only the singleton holder a drive; the others fail explicitly instead of projecting drive:null', () => {
+  const { compile, resolved } = input('two-amr', (f) => { f.project.requestedProfile = 'engineering-rigid-v1'; });
+  expect(resolved.models.drivesByEntity).toBeUndefined();
+  const holder = resolved.models.drive!.entityId, other = holder === 'amr-1' ? 'amr-2' : 'amr-1';
+  expect(projectPhysicalModel(compile, holder, SCHEMA_HASH).drive).not.toBeNull();
+  expect(thrownCodes(() => projectPhysicalModel(compile, other, SCHEMA_HASH))).toEqual(['DRIVE_BINDINGS_REQUIRED']);
+});

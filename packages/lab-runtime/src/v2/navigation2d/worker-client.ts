@@ -4,6 +4,7 @@ import {resolve} from 'node:path';
 import {validateIRSimRequest,validateIRSimResponse} from './contracts';
 import type {IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1} from './contracts';
 
+const TICK_NS=20_000_000n;
 export const MAX_LINE_BYTES=2*1024*1024,QUEUE_LIMIT=64;
 /** Default wall-clock ACK deadlines (workers-runtime §2): create 15 s, step 5 s, pause/cancel 2 s. */
 export const DEFAULT_DEADLINES_MS:Record<string,number>={describe:5000,create:15000,start:5000,step:5000,pause:2000,resume:2000,getState:5000,stop:2000};
@@ -39,7 +40,7 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
  // fixed argv, allowlisted environment (no credentials, no ROS discovery), a private working directory; the venv isolates dependencies but is not a sandbox
  const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,PYTHONDONTWRITEBYTECODE:'1',PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg'} as unknown as NodeJS.ProcessEnv;
  const child=spawn(o.python,args,{cwd:resolve(o.runDirectory),env,stdio:['pipe','pipe','pipe'],detached:true});
- let state:'ready'|'failed'|'closed'='ready',bootId:string|null=null,buffer='',stderrTail='',lastTick=0,sceneDigest=o.sceneDigest,timer:NodeJS.Timeout|undefined,closing:Promise<void>|undefined;
+ let state:'ready'|'failed'|'closed'='ready',bootId:string|null=null,buffer='',stderrTail='',lastTick=0,lastSeq=0n,sceneDigest=o.sceneDigest,timer:NodeJS.Timeout|undefined,closing:Promise<void>|undefined;
  const queue:Pending[]=[];let inFlight:Pending|undefined;
  // 'close' also fires when the process never started (spawn error), where 'exit' does not
  const exited=new Promise<void>(done=>child.once('close',()=>done()));
@@ -73,14 +74,24 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
   if(bootId===null)bootId=r.bootId;else if(r.bootId!==bootId)return fail('WORKER_PROTOCOL','bootId changed within one run');
   if(r.tick<lastTick)return fail('WORKER_PROTOCOL','tick went backwards');
   if(r.ok){
-   const snap=(r.result as {schemaVersion?:number}).schemaVersion===1?r.result as IRSimSnapshotV1:null;
-   // a snapshot describes the run it was cut from: same process, run, tick and scene as the envelope and as every earlier one
+   const op=current.request.op,result=r.result as {schemaVersion?:number;state?:string;packageVersion?:string},snap=result.schemaVersion===1?r.result as IRSimSnapshotV1:null;
+   // each op answers with its own kind of result; a snapshot is never replaced by a bare state, and a state op carries no snapshot
+   const wantsSnapshot=op==='create'||op==='step'||op==='getState';
+   if(wantsSnapshot&&!snap)return fail('WORKER_PROTOCOL',`${op} was acknowledged without a snapshot`);
+   if(!wantsSnapshot&&snap)return fail('WORKER_PROTOCOL',`${op} was answered with a snapshot`);
+   if(op==='describe'?result.packageVersion===undefined:op!=='create'&&op!=='step'&&op!=='getState'&&result.state===undefined)return fail('WORKER_PROTOCOL',`${op} was answered with the wrong kind of result`);
+   // time moves only on a step: any other op answers at the tick it was asked for
+   if(op!=='step'&&op!=='describe'&&r.tick!==current.request.expectedTick)return fail('WORKER_PROTOCOL',`${op} answered at tick ${r.tick}, not the expected ${current.request.expectedTick}`);
+   if(op==='step'&&r.tick!==current.request.payload.targetTick)return fail('WORKER_PROTOCOL','a step was acknowledged at a tick other than its target');
+   // a snapshot describes the run it was cut from: same process, run, tick (x 20 ms) and scene as the envelope and as every earlier one, in order
    if(snap){
     if(snap.runId!==o.runId||snap.bootId!==r.bootId||snap.tick!==r.tick)return fail('WORKER_PROTOCOL','the snapshot contradicts its own envelope (run, boot or tick)');
+    if(BigInt(snap.simTimeNs)!==BigInt(snap.tick)*TICK_NS)return fail('WORKER_PROTOCOL','simTimeNs is not tick x 20 ms');
+    if(BigInt(snap.seq)<lastSeq)return fail('WORKER_PROTOCOL','snapshot sequence went backwards');
+    lastSeq=BigInt(snap.seq);
     sceneDigest??=snap.sceneDigest;
     if(snap.sceneDigest!==sceneDigest)return fail('WORKER_PROTOCOL','the snapshot is for a different scene than this run was bound to');
    }
-   if(current.request.op==='step'&&(!snap||r.tick!==current.request.payload.targetTick))return fail('WORKER_PROTOCOL','a step was acknowledged without a snapshot at its target tick');
   }
   lastTick=r.tick;clearTimeout(timer);inFlight=undefined;
   current.resolve(r);
