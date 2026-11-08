@@ -4,7 +4,7 @@
 // Readers verify every chunk (bytes, hash, gzip, line ticks, order, coverage) and report what is missing; nothing is repaired, adopted or guessed.
 import {createHash,randomBytes} from 'node:crypto';
 import {gunzipSync,gzipSync} from 'node:zlib';
-import {lstat,mkdir,open,readdir,readFile,realpath,rename} from 'node:fs/promises';
+import {link,lstat,mkdir,open,readdir,readFile,realpath,rename,unlink} from 'node:fs/promises';
 import {join,sep} from 'node:path';
 import {arch,platform,release} from 'node:os';
 import {assessTrajectory,type Contact,type ContactSource,type TrajectoryAssessment} from './oracle';
@@ -25,6 +25,9 @@ const CHUNK_NAME=/^(trajectory|sensors|control|collisions)-\d{6}-[0-9a-f]{8}\.nd
 /** Reader caps for untrusted evidence (an import is as untrusted as a tampered disk): stored and inflated bytes per chunk and in total (inflated: 4x the stored quota),
  * bytes per record line, lines per chunk, chunks per stream, manifest size and recorded gaps. Past a cap the chunk is refused with EVIDENCE_READ_LIMIT, never read on. */
 export const READ_LIMITS={chunkBytes:16*MiB,chunkInflated:64*MiB,totalInflated:4*EVIDENCE_LIMITS.maxBytes,lineBytes:256*1024,linesPerChunk:65536,chunksPerStream:2000,manifestBytes:8*MiB,gaps:10000};
+/** The writer splits a flush into chunks at tick boundaries within half the reader's caps (12 MiB inflated keeps the stored size under its 16 MiB cap too), so its own
+ * output always reads back; what still would not (one tick above a cap, too many chunks or gaps, the total inflate cap) ends the recording with EVIDENCE_READ_LIMIT. */
+const WRITE_CHUNK={inflated:12*MiB,lines:READ_LIMITS.linesPerChunk/2};
 
 export interface ChunkRef{path:string;sha256:string;bytes:number;firstTick:number;lastTick:number}
 export type Chunks=Record<EvidenceStream,ChunkRef[]>;
@@ -38,7 +41,9 @@ export interface SensorRecord{tick:number;robotId:string;scan:LidarScanV1}
 export interface CollisionRecord{tick:number;robotId:string;collisionIds:string[]}
 /** The recorder's committed listing: chunks, the gaps it recorded, the terminal reason (null: not ended early) and the last durable tick. */
 export interface Committed{chunks:Chunks;gaps:Gap[];terminal:string|null;lastTick:number|null;bytes:number}
-interface Manifest{schemaVersion:1;format:typeof EVIDENCE_FORMAT;runId:string;sceneDigest:string;chunks:Chunks;gaps:Gap[];terminal:string|null;lastTick:number|null;lastKey:string|null;bytes:number;boots:{bootId:string;firstTick:number}[]}
+/** A listing to read: the recorder's committed one, or an imported document's `{chunks:artifacts,...recording}`; `runTick` is the run's logical tick when it was exported. */
+export interface Listing{chunks:Chunks;gaps?:Gap[];terminal?:string|null;lastTick?:number|null;runTick?:number|null}
+interface Manifest{schemaVersion:1;format:typeof EVIDENCE_FORMAT;runId:string;sceneDigest:string;chunks:Chunks;gaps:Gap[];terminal:string|null;lastTick:number|null;lastKey:string|null;bytes:number;inflated:number;boots:{bootId:string;firstTick:number}[]}
 
 const sha256=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 const nat=(x:unknown):x is number=>Number.isSafeInteger(x)&&(x as number)>=0,finite=(x:unknown):x is number=>typeof x==='number'&&Number.isFinite(x);
@@ -47,13 +52,14 @@ const obj=(x:unknown,keys:readonly string[]):x is Record<string,unknown>=>!!x&&t
 const isGap=(g:unknown)=>obj(g,['fromTick','toTick','reason'])&&nat(g.fromTick)&&nat(g.toTick)&&g.toTick>=g.fromTick&&text(g.reason,500);
 const isRef=(r:unknown)=>obj(r,['path','sha256','bytes','firstTick','lastTick'])&&text(r.path,512)&&typeof r.sha256==='string'&&/^[0-9a-f]{64}$/.test(r.sha256)&&nat(r.bytes)&&nat(r.firstTick)&&nat(r.lastTick)&&r.lastTick>=r.firstTick;
 /** What a listing (the manifest, or an imported evidence document's artifacts + recording) must look like before any chunk is opened; null when it does. */
-function listingProblem(l:{chunks?:unknown;gaps?:unknown;terminal?:unknown;lastTick?:unknown}):string|null{
+function listingProblem(l:{chunks?:unknown;gaps?:unknown;terminal?:unknown;lastTick?:unknown;runTick?:unknown}):string|null{
  const c=l.chunks;
  if(!c||typeof c!=='object'||Array.isArray(c)||Object.keys(c).some(k=>!(STREAMS as readonly string[]).includes(k)))return 'chunks must list only the four streams';
  for(const s of STREAMS){const list=(c as Record<string,unknown>)[s];if(list===undefined)continue;if(!Array.isArray(list)||list.length>READ_LIMITS.chunksPerStream||!list.every(isRef))return `${s}: at most ${READ_LIMITS.chunksPerStream} well-formed chunk refs`;}
  if(l.gaps!==undefined&&(!Array.isArray(l.gaps)||l.gaps.length>READ_LIMITS.gaps||!l.gaps.every(isGap)))return 'gaps must be well-formed tick ranges';
  if(l.terminal!==undefined&&l.terminal!==null&&!text(l.terminal,500))return 'terminal must be a reason or null';
  if(l.lastTick!==undefined&&l.lastTick!==null&&!nat(l.lastTick))return 'lastTick must be a tick or null';
+ if(l.runTick!==undefined&&l.runTick!==null&&!nat(l.runTick))return 'runTick must be a tick or null';
  return null;
 }
 const empty=():Chunks=>({trajectory:[],sensors:[],control:[],collisions:[]});
@@ -81,8 +87,10 @@ export interface NavigationRecorder{
  gap(gap:Gap):Promise<void>;
  /** Ends the recording incomplete (a run limit reached elsewhere). */
  terminate(reason:string):Promise<void>;
- /** The committed manifest: only what is on disk. */
+ /** The committed manifest (plus a gap or terminal reason whose manifest write is still being retried: claimed, never dropped). */
  committed():Committed;
+ /** Releases the writer lock (after pending writes); the recorder accepts nothing afterwards. */
+ close():Promise<void>;
 }
 
 /** The manifest on disk (null when there is none yet), size-capped and validated: a manifest that is not one the recorder wrote is refused, never repaired. */
@@ -92,28 +100,56 @@ async function readManifest(dir:string):Promise<Manifest|null>{
  const bad=()=>new Error('EVIDENCE_MANIFEST_INVALID');
  if(!st.isFile()||st.size>READ_LIMITS.manifestBytes)throw bad();
  let x:unknown;try{x=JSON.parse(await readFile(file,'utf8'));}catch{throw bad();}
- const keys=['schemaVersion','format','runId','sceneDigest','chunks','gaps','terminal','lastTick','lastKey','bytes','boots'] as const;
- if(!obj(x,keys)||x.schemaVersion!==1||!text(x.runId)||!text(x.sceneDigest)||!obj(x.chunks,STREAMS)||!Array.isArray(x.gaps)||listingProblem(x as never)||!nat(x.bytes)
+ const keys=['schemaVersion','format','runId','sceneDigest','chunks','gaps','terminal','lastTick','lastKey','bytes','inflated','boots'] as const;
+ if(!obj(x,keys)||x.schemaVersion!==1||!text(x.runId)||!text(x.sceneDigest)||!obj(x.chunks,STREAMS)||!Array.isArray(x.gaps)||listingProblem(x as never)||!nat(x.bytes)||!nat(x.inflated)
   ||!(x.lastKey===null||typeof x.lastKey==='string')||!(x.lastTick===null||nat(x.lastTick))||!Array.isArray(x.boots)||!x.boots.every(b=>obj(b,['bootId','firstTick'])&&text(b.bootId)&&nat(b.firstTick)))throw bad();
  return x as unknown as Manifest;
 }
+const errno=(e:unknown)=>(e as NodeJS.ErrnoException).code;
+const alive=(pid:number)=>{try{process.kill(pid,0);return true;}catch(e){return errno(e)==='EPERM';}};
+/** The pid a lock file names (`{"pid":..}`, or a bare pid from an older writer); null for anything else. */
+const holderOf=(t:string)=>{try{const x=JSON.parse(t) as unknown,pid=typeof x==='number'?x:(x as {pid?:unknown}|null)?.pid;return Number.isSafeInteger(pid)&&(pid as number)>0?pid as number:null;}catch{return null;}};
+/**
+ * One writer per recording directory, across processes. The lock is published complete with link() (atomic, EEXIST when held). A lock naming another live process
+ * refuses this one; a dead holder's lock (a crash), an unreadable one or this process's own is removed under an exclusive takeover guard after re-reading it unchanged,
+ * then the exclusive create is tried again: two takers never both win. Returns the lock text, which release compares before removing the file.
+ * ponytail: pid liveness only (a reused pid keeps a stale lock until removed by hand; one process may reopen its own directory: the run registry refuses doubles)
+ */
+async function lockWriter(dir:string):Promise<string>{
+ const file=join(dir,LOCK),guard=join(dir,`.${LOCK}.takeover`),mine=JSON.stringify({pid:process.pid,startedAt:new Date().toISOString(),nonce:randomBytes(8).toString('hex')});
+ for(let i=0;i<100;i++){
+  const tmp=join(dir,`.${LOCK}.${process.pid}-${randomBytes(4).toString('hex')}.tmp`),h=await open(tmp,'wx',0o600);
+  try{await h.writeFile(mine);await h.sync();}finally{await h.close();}
+  try{await link(tmp,file);await syncDir(dir);return mine;}catch(e){if(errno(e)!=='EEXIST')throw e;}finally{await unlink(tmp).catch(()=>{});}
+  const seen=await readFile(file,'utf8').catch(()=>null);if(seen===null)continue;
+  const pid=holderOf(seen);
+  if(pid!==null&&pid!==process.pid&&alive(pid))throw new Error('EVIDENCE_WRITER_LOCKED');
+  // a guard left by a crash in the middle of a takeover is cleared after 10 s
+  try{await (await open(guard,'wx',0o600)).close();}
+  catch(e){if(errno(e)!=='EEXIST')throw e;const g=await lstat(guard).catch(()=>null);if(g&&Date.now()-g.mtimeMs>10_000)await unlink(guard).catch(()=>{});await new Promise(r=>setTimeout(r,5));continue;}
+  try{if(await readFile(file,'utf8').catch(()=>null)===seen)await unlink(file);}finally{await unlink(guard).catch(()=>{});}
+ }
+ throw new Error('EVIDENCE_WRITER_LOCKED');
+}
+const unlockWriter=async(dir:string,mine:string)=>{const file=join(dir,LOCK);if(await readFile(file,'utf8').catch(()=>null)===mine)await unlink(file).catch(()=>{});};
 /** Opens (or reopens after a crash) the run's recorder: committed chunks come from the manifest on disk; files it does not list are never adopted. */
 export async function openNavigationRecorder(o:RecorderOptions):Promise<NavigationRecorder>{
  const dir=o.directory,maxBytes=o.maxBytes??EVIDENCE_LIMITS.maxBytes,maxTicks=o.maxTicks??EVIDENCE_LIMITS.maxTicks,chunkTicks=o.chunkTicks??250;
  await mkdir(dir,{recursive:true,mode:0o700});
- // one writer per recording: a lock naming another live process refuses this one; a dead writer's lock (a crash) is taken over
- // ponytail: pid liveness only (pid reuse could keep a stale lock; one process opening the same directory twice is not refused here — the run registry does that)
- const holder=Number.parseInt(await readFile(join(dir,LOCK),'utf8').catch(()=>''),10);
- if(Number.isSafeInteger(holder)&&holder>0&&holder!==process.pid&&(()=>{try{process.kill(holder,0);return true;}catch(e){return (e as NodeJS.ErrnoException).code==='EPERM';}})())throw new Error('EVIDENCE_WRITER_LOCKED');
- await writeDurable(dir,LOCK,String(process.pid));
- const m:Manifest=await readManifest(dir)??{schemaVersion:1,format:EVIDENCE_FORMAT,runId:o.runId,sceneDigest:o.scene.sceneDigest,chunks:empty(),gaps:[],terminal:null,lastTick:null,lastKey:null,bytes:0,boots:[]};
- if(m.runId!==o.runId||m.sceneDigest!==o.scene.sceneDigest||m.format!==EVIDENCE_FORMAT)throw new Error('EVIDENCE_IDENTITY_MISMATCH');
- // files the manifest does not list (a chunk or tmp file a crash left behind) are never adopted, but they are stored bytes: they count against the quota
- const listedNames=new Set(STREAMS.flatMap(s=>m.chunks[s].map(r=>r.path)));
- let orphanBytes=0;for(const f of await readdir(dir))if(f!==MANIFEST&&f!==LOCK&&!listedNames.has(f))orphanBytes+=(await lstat(join(dir,f))).size;
+ const lock=await lockWriter(dir);
+ let m:Manifest,orphanBytes=0;
+ try{
+  m=await readManifest(dir)??{schemaVersion:1,format:EVIDENCE_FORMAT,runId:o.runId,sceneDigest:o.scene.sceneDigest,chunks:empty(),gaps:[],terminal:null,lastTick:null,lastKey:null,bytes:0,inflated:0,boots:[]};
+  if(m.runId!==o.runId||m.sceneDigest!==o.scene.sceneDigest||m.format!==EVIDENCE_FORMAT)throw new Error('EVIDENCE_IDENTITY_MISMATCH');
+  // files the manifest does not list (a chunk or tmp file a crash left behind) are never adopted, but they are stored bytes: they count against the quota
+  const listedNames=new Set(STREAMS.flatMap(s=>m.chunks[s].map(r=>r.path)));
+  for(const f of await readdir(dir))if(f!==MANIFEST&&f!==LOCK&&!listedNames.has(f))orphanBytes+=(await lstat(join(dir,f)).catch(()=>({size:0}))).size;
+ }catch(e){await unlockWriter(dir,lock);throw e;}
  const every=new Map(o.scene.robots.flatMap(r=>r.model.sensors.map(s=>[`${r.robotId}/${s.id}`,s.publishEveryTicks] as const)));
- let buf:Record<EvidenceStream,{tick:number;line:string}[]>={trajectory:[],sensors:[],control:[],collisions:[]},last={tick:m.lastTick,key:m.lastKey},bufBoots:Manifest['boots']=[],writing=Promise.resolve();
- const saveManifest=async()=>{const text=JSON.stringify(m);await writeDurable(dir,MANIFEST,text);};
+ let buf:Record<EvidenceStream,{tick:number;line:string}[]>={trajectory:[],sensors:[],control:[],collisions:[]},last={tick:m.lastTick,key:m.lastKey},bufBoots:Manifest['boots']=[],writing=Promise.resolve(),closed=false;
+ // dirty: the manifest in memory holds a gap or terminal reason that is not on disk yet; every later flush writes it again until one succeeds
+ let dirty=false;
+ const saveManifest=async()=>{dirty=true;await writeDurable(dir,MANIFEST,JSON.stringify(m));dirty=false;};
  const end=async(reason:string,gap?:Gap)=>{
   if(m.terminal)return;
   m.terminal=reason;if(gap&&gap.toTick>=gap.fromTick)m.gaps.push(gap);
@@ -121,32 +157,46 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
   await saveManifest().catch(()=>{}); // a failing disk may refuse this too: the terminal state is then also held in memory and the run stops
  };
  const bufferRange=():Gap|undefined=>{const t=buf.trajectory;return t.length?{fromTick:t[0]!.tick,toTick:t.at(-1)!.tick,reason:''}:undefined;};
+ /** Lines of one stream in chunks cut at tick boundaries (sensors and contacts hold several lines per tick) within WRITE_CHUNK. */
+ const pack=(lines:{tick:number;line:string}[])=>{
+  const out:{tick:number;line:string}[][]=[];let cur:typeof lines=[],size=0;
+  for(let i=0;i<lines.length;){
+   let j=i,n=0;while(j<lines.length&&lines[j]!.tick===lines[i]!.tick){n+=Buffer.byteLength(lines[j]!.line)+1;j++;}
+   if(cur.length&&(size+n>WRITE_CHUNK.inflated||cur.length+j-i>WRITE_CHUNK.lines)){out.push(cur);cur=[];size=0;}
+   cur.push(...lines.slice(i,j));size+=n;i=j;
+  }
+  if(cur.length)out.push(cur);return out;
+ };
  const doFlush=async(min:number)=>{
-  if(m.terminal||!buf.trajectory.length||buf.trajectory.length<min)return;
-  const range=bufferRange()!,seq=m.chunks.trajectory.length+1;
-  const parts=STREAMS.flatMap(s=>buf[s].length?[{s,lines:buf[s],bytes:gzipSync(buf[s].map(x=>x.line+'\n').join(''))}]:[]);
-  const add=parts.reduce((n,p)=>n+p.bytes.length,0);
+  if(m.terminal||!buf.trajectory.length||buf.trajectory.length<min){if(dirty)await saveManifest().catch(()=>{});return;}
+  const range=bufferRange()!;
+  const parts=STREAMS.flatMap(s=>pack(buf[s]).map((lines,k)=>{const body=lines.map(x=>x.line+'\n').join('');return {s,k,lines,inflated:Buffer.byteLength(body),bytes:gzipSync(body)};}));
+  const add=parts.reduce((n,p)=>n+p.bytes.length,0),inflated=parts.reduce((n,p)=>n+p.inflated,0);
   // the quota counts every stored byte: the chunks and the manifest that lists them
   if(m.bytes+orphanBytes+add+JSON.stringify(m).length+256*(parts.length+1)>maxBytes)return end('EVIDENCE_QUOTA_EXCEEDED',{...range,reason:'EVIDENCE_QUOTA_EXCEEDED'});
-  const refs:[EvidenceStream,ChunkRef][]=[],before={bytes:m.bytes,lastTick:m.lastTick,lastKey:m.lastKey,boots:m.boots.length};
+  // never commit what the reader refuses: a chunk above its caps, more chunks per stream than it lists, more inflated bytes than it reads in total
+  if(m.inflated+inflated>READ_LIMITS.totalInflated||STREAMS.some(s=>m.chunks[s].length+parts.filter(p=>p.s===s).length>READ_LIMITS.chunksPerStream)
+   ||parts.some(p=>p.inflated>READ_LIMITS.chunkInflated||p.bytes.length>READ_LIMITS.chunkBytes||p.lines.length>READ_LIMITS.linesPerChunk||p.lines.some(l=>l.line.length>READ_LIMITS.lineBytes)))
+   return end('EVIDENCE_READ_LIMIT',{...range,reason:'EVIDENCE_READ_LIMIT'});
+  const refs:[EvidenceStream,ChunkRef][]=[],before={bytes:m.bytes,inflated:m.inflated,lastTick:m.lastTick,lastKey:m.lastKey,boots:m.boots.length};
   try{
    for(const p of parts){
-    const path=`${p.s}-${String(seq).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`;
+    const path=`${p.s}-${String(m.chunks[p.s].length+p.k+1).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`;
     await writeDurable(dir,path,p.bytes);
     refs.push([p.s,{path,sha256:sha256(p.bytes),bytes:p.bytes.length,firstTick:p.lines[0]!.tick,lastTick:p.lines.at(-1)!.tick}]);
    }
    for(const [s,r] of refs)m.chunks[s].push(r);
-   m.bytes+=add;m.lastTick=last.tick;m.lastKey=last.key;m.boots.push(...bufBoots);
+   m.bytes+=add;m.inflated+=inflated;m.lastTick=last.tick;m.lastKey=last.key;m.boots.push(...bufBoots);
    await saveManifest();
   }catch(e){
    // nothing of this flush is claimed: the manifest in memory goes back to what is on disk (the written chunks stay unlisted orphans, counted in the quota)
    for(const [s,r] of refs){const i=m.chunks[s].indexOf(r);if(i>=0)m.chunks[s].splice(i,1);orphanBytes+=r.bytes;}
-   m.bytes=before.bytes;m.lastTick=before.lastTick;m.lastKey=before.lastKey;m.boots.length=before.boots;
+   m.bytes=before.bytes;m.inflated=before.inflated;m.lastTick=before.lastTick;m.lastKey=before.lastKey;m.boots.length=before.boots;
    return end(`EVIDENCE_WRITE_FAILED:${(e as NodeJS.ErrnoException).code??'IO'}`,{...range,reason:'EVIDENCE_WRITE_FAILED'});
   }
   buf={trajectory:[],sensors:[],control:[],collisions:[]};bufBoots=[];
  };
- const serial=<T>(f:()=>Promise<T>)=>{const p=writing.then(f);writing=p.then(()=>{},()=>{});return p;};
+ const serial=<T>(f:()=>Promise<T>)=>{const p=writing.then(()=>{if(closed)throw new Error('EVIDENCE_RECORDER_CLOSED');return f();});writing=p.then(()=>{},()=>{});return p;};
  return {
   directory:dir,
   get terminal(){return m.terminal;},
@@ -166,7 +216,7 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
    if(last.tick!==null&&tick<=last.tick){if(tick===last.tick&&key===last.key)return;throw new Error('EVIDENCE_APPEND_CONFLICT');}
    // the created plant (tick 0 of a fresh recording) has no step; every later tick was produced by exactly the step recorded with it
    if(controls?controls.targetTick!==tick:last.tick!==null)throw new Error('EVIDENCE_CONTROL_MISMATCH');
-   if(last.tick!==null&&tick>last.tick+1)m.gaps.push({fromTick:last.tick+1,toTick:tick-1,reason:'TICK_GAP'});
+   if(last.tick!==null&&tick>last.tick+1){if(m.gaps.length>=READ_LIMITS.gaps-1)return end('EVIDENCE_READ_LIMIT',{fromTick:last.tick+1,toTick:tick,reason:'EVIDENCE_READ_LIMIT'});m.gaps.push({fromTick:last.tick+1,toTick:tick-1,reason:'TICK_GAP'});}
    const boots=[...m.boots,...bufBoots];if(boots.at(-1)?.bootId!==s.bootId)bufBoots.push({bootId:s.bootId,firstTick:tick});
    buf.trajectory.push({tick,line:lines.trajectory});
    if(lines.control)buf.control.push({tick:tick-1,line:lines.control});
@@ -176,9 +226,11 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
    if(buf.trajectory.length>=chunkTicks)await doFlush(0);
   }),
   flush:(min=0)=>serial(()=>doFlush(min)),
-  gap:g=>serial(async()=>{if(g.toTick<g.fromTick)return;m.gaps.push(g);await saveManifest();}),
+  // a gap that cannot be written stays in memory (claimed by committed()) and the manifest stays dirty: every later flush writes it again
+  gap:g=>serial(async()=>{if(g.toTick<g.fromTick)return;if(m.gaps.length>=READ_LIMITS.gaps-1)return end('EVIDENCE_READ_LIMIT',{...g,reason:'EVIDENCE_READ_LIMIT'});m.gaps.push(g);await saveManifest();}),
   terminate:reason=>serial(async()=>{await doFlush(0);await end(reason);}),
   committed:()=>structuredClone({chunks:m.chunks,gaps:m.gaps,terminal:m.terminal,lastTick:m.lastTick,bytes:m.bytes}),
+  close:()=>serial(async()=>{closed=true;await unlockWriter(dir,lock);}),
  };
 }
 
@@ -189,13 +241,19 @@ export interface EvidenceRead{trajectory:TrajectoryRecord[];control:ControlRecor
  /** The listed terminal reason (null when the listing says the recording was not ended early, or says nothing: see EVIDENCE_END_UNKNOWN). */terminal:string|null;
  /** Uncompressed record text per stream, in tick order: what the normalized digests hash. */text:Record<EvidenceStream,string>}
 type Parsed={text:string;records:{tick:number}[]};
+/** Decoded chunks by stream and stored-byte hash: content only (never a verdict about a listing), deeply frozen so no reader of a result can change the next read. */
 const cache=new Map<string,Parsed>();
+const freeze=<T>(x:T):T=>{if(x&&typeof x==='object'&&!Object.isFrozen(x)){Object.freeze(x);for(const v of Object.values(x))freeze(v);}return x;};
 const vec=(x:unknown,n:number)=>Array.isArray(x)&&x.length===n&&x.every(finite);
 const ids=(x:unknown)=>Array.isArray(x)&&x.length<=64&&x.every(y=>text(y));
 const BEAMS=new Set<unknown>(['hit','no_return','below_min','invalid']),NS=BigInt(20_000_000);
 const SCAN_KEYS=['sensorId','frameId','tick','simTimeNs','angleMinRad','angleIncrementRad','rangeMinM','rangeMaxM','rangesM','states'] as const;
-const scanOk=(x:unknown,tick:unknown)=>obj(x,SCAN_KEYS)&&text(x.sensorId)&&text(x.frameId)&&x.tick===tick&&typeof x.simTimeNs==='string'&&/^[0-9]{1,30}$/.test(x.simTimeNs)&&finite(x.angleMinRad)&&finite(x.angleIncrementRad)
- &&finite(x.rangeMinM)&&x.rangeMinM>=0&&finite(x.rangeMaxM)&&x.rangeMaxM>0&&Array.isArray(x.rangesM)&&Array.isArray(x.states)&&x.rangesM.length<=1080&&x.rangesM.length===x.states.length&&x.rangesM.every(v=>v===null||finite(v))&&x.states.every(v=>BEAMS.has(v));
+const RANGE_TOL=1e-6;
+/** A scan at its tick's sim time whose ranges agree with their beam states (snapshot.py): a hit carries a finite range within [rangeMin, rangeMax]; no_return,
+ * below_min and invalid carry none. A negative range, a range on a beam that did not hit or a hit without a range is not a scan the engine produced. */
+const scanOk=(x:unknown,tick:unknown)=>obj(x,SCAN_KEYS)&&text(x.sensorId)&&text(x.frameId)&&nat(tick)&&x.tick===tick&&x.simTimeNs===String(BigInt(tick)*NS)&&finite(x.angleMinRad)&&finite(x.angleIncrementRad)
+ &&finite(x.rangeMinM)&&x.rangeMinM>=0&&finite(x.rangeMaxM)&&x.rangeMaxM>x.rangeMinM&&Array.isArray(x.rangesM)&&Array.isArray(x.states)&&x.rangesM.length<=1080&&x.rangesM.length===x.states.length&&x.states.every(v=>BEAMS.has(v))
+ &&x.rangesM.every((v,i)=>(x.states as unknown[])[i]==='hit'?finite(v)&&v>=(x.rangeMinM as number)-RANGE_TOL&&v<=(x.rangeMaxM as number)+RANGE_TOL:v===null);
 /** The record shape of each stream, as the recorder writes it: exact keys, finite numbers (a JSON 1e999 parses as Infinity and is refused), bounded arrays. */
 const RECORD:Record<EvidenceStream,(r:unknown)=>boolean>={
  trajectory:r=>obj(r,['tick','simTimeNs','robots'])&&nat(r.tick)&&r.simTimeNs===String(BigInt(r.tick)*NS)&&Array.isArray(r.robots)&&r.robots.length>0&&r.robots.length<=32
@@ -225,8 +283,16 @@ async function readChunk(root:string,realRoot:string,s:EvidenceStream,at:string,
  if(bytes.length!==ref.bytes)return bad('EVIDENCE_CHUNK_TRUNCATED',`${bytes.length} bytes stored, ${ref.bytes} recorded`);
  const digest=sha256(bytes);
  if(digest!==ref.sha256)return bad('EVIDENCE_CHUNK_CORRUPT','stored bytes do not match the recorded SHA-256');
- const take=(p:Parsed)=>{if(p.text.length>budget.left)return bad('EVIDENCE_READ_LIMIT','the recording inflates past the total read cap');budget.left-=p.text.length;return p;};
- const key=`${s}:${digest}`,hit=cache.get(key);if(hit)return take(hit);
+ const key=`${s}:${digest}`,p=cache.get(key)??decode(bytes,s,ref,budget,bad);if(!p)return null;
+ cache.set(key,p);if(cache.size>4096)cache.delete(cache.keys().next().value!);
+ // what the listing claims is checked on every read, a cache hit included: the cache holds decoded content, never a verdict
+ if(!spans(p.records,ref))return bad('EVIDENCE_CHUNK_CORRUPT',`records span ${p.records[0]!.tick}..${p.records.at(-1)!.tick}, the listing says ${ref.firstTick}..${ref.lastTick}`);
+ if(p.text.length>budget.left)return bad('EVIDENCE_READ_LIMIT','the recording inflates past the total read cap');
+ budget.left-=p.text.length;return p;
+}
+const spans=(records:readonly {tick:number}[],ref:ChunkRef)=>records[0]!.tick===ref.firstTick&&records.at(-1)!.tick===ref.lastTick;
+/** Inflates and parses one chunk's verified bytes within the caps; every line a record of stream `s`, in tick order, over the listed range (re-checked on cache hits). */
+function decode(bytes:Buffer,s:EvidenceStream,ref:ChunkRef,budget:{left:number},bad:(code:string,detail:string)=>null):Parsed|null{
  if(budget.left<1)return bad('EVIDENCE_READ_LIMIT','the recording inflates past the total read cap');
  let body:string;
  try{body=gunzipSync(bytes,{maxOutputLength:Math.min(READ_LIMITS.chunkInflated,budget.left)}).toString('utf8');}
@@ -238,11 +304,11 @@ async function readChunk(root:string,realRoot:string,s:EvidenceStream,at:string,
  try{records=lines.map(l=>JSON.parse(l) as unknown);}catch{return bad('EVIDENCE_CHUNK_CORRUPT','a record is not JSON');}
  // trajectory and control hold one record per tick; sensors and contacts one per robot (and sensor) per tick
  const tickOf=(r:unknown)=>(r as {tick?:unknown}|null)?.tick,strict=s==='trajectory'||s==='control';
- if(!records.length||records.some((r,i)=>!nat(tickOf(r))||i>0&&(strict?tickOf(r)!<=tickOf(records[i-1])!:tickOf(r)!<tickOf(records[i-1])!))||tickOf(records[0])!==ref.firstTick||tickOf(records.at(-1))!==ref.lastTick)
-  return bad('EVIDENCE_CHUNK_CORRUPT','record ticks do not match the chunk range or repeat');
+ if(!records.length||records.some((r,i)=>!nat(tickOf(r))||i>0&&(strict?tickOf(r)!<=tickOf(records[i-1])!:tickOf(r)!<tickOf(records[i-1])!)))
+  return bad('EVIDENCE_CHUNK_CORRUPT','record ticks are out of order or repeat');
+ if(!spans(records as {tick:number}[],ref))return bad('EVIDENCE_CHUNK_CORRUPT','record ticks do not match the chunk range');
  if(!records.every(RECORD[s]))return bad('EVIDENCE_RECORD_INVALID',`a record is not a ${s} record`);
- const parsed={text:body,records:records as {tick:number}[]};cache.set(key,parsed);if(cache.size>4096)cache.delete(cache.keys().next().value!);
- return take(parsed);
+ return freeze({text:body,records:records as {tick:number}[]});
 }
 export interface ReadOptions{
  /** The scene the recording was made for: the robots and every sensor's publication cadence are checked against it. Without it the read is never complete. */
@@ -256,7 +322,7 @@ export interface ReadOptions{
  * is then held to its expectation (trajectory every tick from 0, one control record per recorded step, contact records equal to the trajectory's collision ids, LiDAR at
  * the scene's cadence) and the end of the recording must be known: a listing without its gaps, terminal reason and last tick cannot be complete.
  */
-export async function readNavigationEvidence(root:string,listed:{chunks:Chunks;gaps?:Gap[];terminal?:string|null;lastTick?:number|null},o:ReadOptions={}):Promise<EvidenceRead>{
+export async function readNavigationEvidence(root:string,listed:Listing,o:ReadOptions={}):Promise<EvidenceRead>{
  const realRoot=await realpath(root),issues:EvidenceIssue[]=[],reasons:string[]=[],out={trajectory:[],control:[],sensors:[],collisions:[]} as unknown as Record<EvidenceStream,{tick:number}[]>,text={trajectory:'',sensors:'',control:'',collisions:''};
  const problem=listingProblem(listed),refused:[number,number][]=[];
  if(problem)issues.push({path:'listing',code:'EVIDENCE_LISTING_INVALID',detail:problem,at:'listing'});
@@ -289,11 +355,17 @@ export async function readNavigationEvidence(root:string,listed:{chunks:Chunks;g
   if(traj.some(r=>r.robots.map(x=>x.robotId).sort().join('|')!==robots))mismatch('trajectory','recorded robots differ from the scene');
   const due=traj.flatMap(r=>skip(r.tick)?[]:pubs.filter(p=>r.tick%p.every===0).map(p=>`${r.tick}|${p.robotId}|${p.id}`)),published=(out.sensors as SensorRecord[]).filter(r=>!skip(r.tick)).map(r=>`${r.tick}|${r.robotId}|${r.scan.sensorId}`);
   if(!same(due,published))mismatch('sensors',`${published.length} LiDAR publications for ${due.length} due at the scene's cadence`);
+  // each publication is a scan of the declared sensor: its beam count and range limits (the record check already tied ranges to beam states and the tick's time)
+  const declared=new Map(o.scene.robots.flatMap(r=>r.model.sensors.map(x=>[`${r.robotId}|${x.id}`,x] as const)));
+  const wrong=(out.sensors as SensorRecord[]).filter(r=>{if(skip(r.tick))return false;const d=declared.get(`${r.robotId}|${r.scan.sensorId}`);
+   return !!d&&(r.scan.rangesM.length!==d.beamCount||Math.abs(r.scan.rangeMinM-d.rangeMinM)>RANGE_TOL||Math.abs(r.scan.rangeMaxM-d.rangeMaxM)>RANGE_TOL);});
+  if(wrong.length)issues.push({path:'sensors',code:'SENSOR_SCAN_MISMATCH',detail:`${wrong.length} LiDAR publication(s) differ from the scene's sensor (beam count or range limits), first at tick ${wrong[0]!.tick}`,at:'sensors'});
  }else reasons.push('SENSOR_CADENCE_UNVERIFIED');
  // the end of the recording: what the recorder committed (its gaps, terminal reason and last durable tick) or nothing can be claimed about the tail
  if(listed.gaps===undefined||listed.terminal===undefined||listed.lastTick===undefined)reasons.push('EVIDENCE_END_UNKNOWN');
  else if(!problem&&listed.lastTick!==horizon)issues.push({path:'listing',code:'EVIDENCE_END_MISMATCH',detail:`the recording declares its last durable tick ${listed.lastTick}, the verified chunks end at ${horizon}`,at:'listing'});
- const runTick=o.runTick??null;
+ // the run's logical tick: given by the live run, or carried by an exported recording block (an export taken before the disk caught up stays incomplete)
+ const runTick=o.runTick!==undefined?o.runTick:problem?null:listed.runTick??null;
  if(runTick!==null){
   const from=(horizon??-1)+1;
   if(from<=runTick&&!gaps.some(g=>g.fromTick<=from&&g.toTick>=runTick))gaps.push({fromTick:from,toTick:runTick,reason:'EVIDENCE_PENDING'});
@@ -408,7 +480,7 @@ export function evidenceDigests(scene:NavigationSceneV1,id:DigestIdentity,read:E
   assertionDigest:hashJson({header,assertions,episodes:m.episodes,coverage:m.coverage,horizon:m.horizon}),algorithm:DIGEST_ALGORITHM as typeof DIGEST_ALGORITHM,normalizedOmits:[...NORMALIZED_OMITS]};
 }
 /** The report extension (navigation-run-evidence-v1) for the evidence as read from disk now. Artifact paths are relative to the recording root; `recording` is the
- * recorder's own end-of-recording record, which an import passes back to readNavigationEvidence with the artifacts. */
+ * recorder's own end-of-recording record plus the run's logical tick at export (runTick), which an import passes back to readNavigationEvidence with the artifacts. */
 export function buildNavigationEvidence(scene:NavigationSceneV1,id:EvidenceIdentity,listed:Omit<Committed,'bytes'>,read:EvidenceRead,m:NavigationMetrics,runTick:number|null,host:HostIdentity=hostIdentity()):NavigationRunEvidenceV1{
  const terminal=listed.terminal??read.terminal,assertions=evidenceAssertions(read,m,runTick,terminal),{engineSeed,sensorSeeds}=engineSeedOf(id.runSeed,scene);
  const metric=(name:string,ok:boolean,why:string|null)=>({metric:name,status:ok?'available' as const:'unavailable' as const,reason:ok?null:(why??'EVIDENCE_INCOMPLETE').slice(0,500)});
@@ -423,7 +495,7 @@ export function buildNavigationEvidence(scene:NavigationSceneV1,id:EvidenceIdent
   metricCoverage:[metric('travelledDistanceM',complete,why),metric('collisionEpisodes',complete,why),metric('minObstacleClearanceM',m.minClearanceM!==null,why),
    metric('minRobotSeparationM',m.minSeparationM!==null,complete?'ONE_ROBOT':why),metric('sensorPublications',m.sensorPublications.complete,why??'SENSOR_PUBLICATIONS_INCOMPLETE')],
   recordingGaps:read.gaps.slice(0,500),completeness:{status:complete?'complete':'incomplete',reasons:[...terminal?[terminal]:[],...m.coverageReasons].slice(0,50)},
-  recording:{gaps:structuredClone(listed.gaps).slice(0,READ_LIMITS.gaps),terminal:listed.terminal,lastTick:listed.lastTick},
+  recording:{gaps:structuredClone(listed.gaps).slice(0,READ_LIMITS.gaps),terminal:listed.terminal,lastTick:listed.lastTick,runTick},
   limitations:['planar kinematic plant (IR-SIM diff drive): no dynamics, contact physics or hardware behaviour','LiDAR publications are recorded at the sensor cadence (publishEveryTicks); the engine scan between publications is not recorded',
    'actor schedule: none (scripted actors arrive with C02); every control record carries its actorUpdates','cross-platform repeatability not qualified (not_run)',
    'the evidence is not anchored or signed: a chunk edited together with a re-hashed manifest or listing is not detected (only stored-byte hashes against the listing are verified)']};

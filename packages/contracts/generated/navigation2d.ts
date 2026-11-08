@@ -787,5 +787,9 @@ export interface NavigationRunEvidenceV1 {
     }[];
     terminal: string | null;
     lastTick: number | null;
+    /**
+     * Optional (added with review 4): the run's logical tick when the document was built (null before start). An import compares the durable horizon with it: ticks the run reached that the chunks do not hold are EVIDENCE_PENDING, never complete.
+     */
+    runTick?: number | null;
   };
 }
