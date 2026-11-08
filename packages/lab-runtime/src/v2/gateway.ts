@@ -66,11 +66,18 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   }
   const sessionId=new RegExp(`(?:^|;\\s*)${COOKIE}=([A-Za-z0-9_-]+)`).exec(request.headers.cookie??'')?.[1]??'',session=sessions.get(sessionId);
   if(!session||deps.now()>=session.expiresAt)return deny(response,401,'SESSION_REQUIRED',[]);
-  const engineeringRoute=/^\/engineering\/(?:(compile)|bundles\/([^/]+)\/manifest|blobs\/([^/]+))$/.exec(sub);
+  const engineeringRoute=/^\/engineering\/(?:(compile|validate)|bundles\/([^/]+)\/manifest|blobs\/([^/]+)|validations\/([^/]+))$/.exec(sub);
   if(engineeringRoute){
    if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);
-   const [,compile,manifestDigest,blobDigest]=engineeringRoute;
-   if(compile){
+   const [,action,manifestDigest,blobDigest,validationDigest]=engineeringRoute;
+   if(action==='validate'){
+    if(method!=='POST')return deny(response,405,'METHOD_NOT_ALLOWED',[]);
+    if(!deps.same(String(request.headers['x-csrf-token']??''),session.csrf))return deny(response,403,'CSRF_INVALID',[]);
+    const body=await deps.readBody(request,64*1024),extra=Object.keys(body).filter(k=>!['engineeringRef','robotId'].includes(k));
+    if(extra.length||!body.engineeringRef||typeof body.robotId!=='string'){const issues=extra.map(k=>({path:'',code:classifyField(k),message:`Property "${k}" is not allowed`}));return deny(response,422,'INVALID_ENGINEERING_REQUEST',codesOf(issues),issues);}
+    try{return send(response,200,await deps.engineering.validateRobotModel(sessionId,body.engineeringRef,body.robotId));}catch(e){return engineeringFailed(response,e);}
+   }
+   if(action==='compile'){
     if(method!=='POST')return deny(response,405,'METHOD_NOT_ALLOWED',[]);
     if(!deps.same(String(request.headers['x-csrf-token']??''),session.csrf))return deny(response,403,'CSRF_INVALID',[]);
     const body=await deps.readBody(request,2*1024*1024),extra=Object.keys(body).filter(k=>k!=='project');
@@ -78,9 +85,10 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     try{return send(response,200,await deps.engineering.compileEngineeringProject(body.project as never,sessionId));}catch(e){return engineeringFailed(response,e);}
    }
    if(method!=='GET')return deny(response,405,'METHOD_NOT_ALLOWED',[]);
-   const digest=manifestDigest??blobDigest;
+   const digest=manifestDigest??blobDigest??validationDigest;
    if(!/^[0-9a-f]{64}$/.test(digest!))return deny(response,404,'NOT_FOUND',[]);
    try{
+    if(validationDigest)return send(response,200,await deps.engineering.readValidation(sessionId,validationDigest));
     if(manifestDigest)return send(response,200,await deps.engineering.readManifest(sessionId,manifestDigest));
     const bytes=await deps.engineering.readBlob(sessionId,blobDigest!);
     response.writeHead(200,{'content-type':'application/octet-stream','cache-control':'no-store','x-content-type-options':'nosniff','content-length':bytes.length});

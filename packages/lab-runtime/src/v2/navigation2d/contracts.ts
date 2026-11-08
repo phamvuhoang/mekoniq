@@ -13,6 +13,9 @@ import {hashJson} from '../hash';
 export type {IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1};
 export type {InputIdentity,ArtifactRef,Vec2,SensorMount,Lidar2DProjection} from '../../../../contracts/generated/navigation2d';
 
+/** Content hash of the schemas a physical model is projected against; recorded as projection.sourceSchemaHash. */
+export const NAVIGATION_SCHEMA_HASH=hashJson([componentSchema,physicalSchema]);
+
 export interface NavigationIssue{path:string;code:string;message:string;}
 export type NavigationDocument=RobotPhysicalModelV1|NavigationModel2DV1|NavigationSceneV1|ModelValidationReportV1;
 export type NavigationCheck={ok:true;value:NavigationDocument}|{ok:false;issues:NavigationIssue[]};
@@ -92,10 +95,12 @@ function sceneRules(s:NavigationSceneV1):NavigationIssue[]{
  s.zones.forEach((z,i)=>out.push(...polygonIssues(z.polygonM as [number,number][],`/zones/${i}/polygonM`,false)));
  return out;
 }
-/** pass requires: ran, no blocking issue, and every check pass. */
+/** Optional artifacts (SRDF needs a semantic profile; the reference URDF can be withheld for serializer precision) may be not_run in a passing report. */
+const OPTIONAL_CHECKS=new Set(['SRDF','REFERENCE-EXPORT']);
+/** pass requires: ran, no blocking issue, and every check pass (or an optional one not run). */
 function reportRules(r:ModelValidationReportV1):NavigationIssue[]{
  if(r.result!=='pass')return r.result==='fail'&&r.execution==='not_run'?[issue('/result','REPORT_INCONSISTENT','a report that did not run cannot fail')]:[];
- const bad=r.execution!=='ran'?'execution is '+r.execution:r.issues.some(i=>i.severity==='error')?'it lists error issues':r.checks.some(c=>c.result!=='pass')?'a check did not pass':r.checks.length===0?'no check ran':'';
+ const bad=r.execution!=='ran'?'execution is '+r.execution:r.issues.some(i=>i.severity==='error')?'it lists error issues':r.checks.some(c=>c.result!=='pass'&&!(c.result==='not_run'&&OPTIONAL_CHECKS.has(c.id)))?'a check did not pass':r.checks.length===0?'no check ran':'';
  return bad?[issue('/result','REPORT_INCONSISTENT',`result "pass" is not allowed: ${bad}`)]:[];
 }
 

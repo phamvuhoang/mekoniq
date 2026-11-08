@@ -111,6 +111,9 @@ test('a pass report needs execution=ran, no error issue and every check passing'
   expect(codes(report({ checks: [{ id: 'c', source: 'parity', result: 'inconclusive', coverageScope: 's' }] }))).toContain('REPORT_INCONSISTENT');
   expect(codes(report({ issues: [{ code: 'LF_IMPORT_LOSS', severity: 'error', path: '/links', entityId: 'amr-1', source: 'parity', detail: 'x' }] }))).toContain('REPORT_INCONSISTENT');
   expect(validateNavigationDocument(report({ execution: 'not_run', result: 'inconclusive', engine: null, checks: [] }))).toMatchObject({ ok: true });
+  const optional = [...report().checks, { id: 'SRDF', source: 'linkforge' as const, result: 'not_run' as const, coverageScope: 'SEMANTIC_PROFILE_NOT_SUPPLIED' }];
+  expect(validateNavigationDocument(report({ checks: optional }))).toMatchObject({ ok: true });
+  expect(codes(report({ checks: [{ id: 'LF-PARITY', source: 'parity', result: 'not_run', coverageScope: 's' }] }))).toContain('REPORT_INCONSISTENT');
 });
 
 test('driveBindingsVersion and drivesByEntity travel together; legacy projects still validate', () => {

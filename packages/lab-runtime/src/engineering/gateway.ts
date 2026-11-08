@@ -1,5 +1,6 @@
-import {mkdir,readFile,rm} from 'node:fs/promises';
-import {join} from 'node:path';
+import {mkdir,mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {dirname,join} from 'node:path';
 import {createHash,randomUUID} from 'node:crypto';
 import {hashJson} from '../v2/hash';
 import {ESPRESSO,ICED_MILK_COFFEE} from '../v2/scenarios/coffee';
@@ -8,7 +9,12 @@ import {EngineeringInputError,prepareEngineeringCompileInput,resolveAssembly} fr
 import {createBundleStore,type BundleManifest} from './bundle-store';
 import {loadCatalog,type CatalogResult} from './catalog';
 import {validateBundleReceipt,validateEngineeringProject,validateEngineeringRef} from './contracts';
-import type {BundleReceipt,EngineeringCompileInput,EngineeringProject,EngineeringRef,Problem} from './contracts';
+import type {BundleReceipt,EngineeringCompileInput,EngineeringProject,EngineeringRef,Problem,ResolvedAssembly} from './contracts';
+import {incompleteReport,validationCacheKey,type RobotModelValidator} from './linkforge';
+import {projectPhysicalModel} from './physical-model';
+import {createValidationStore} from './validation-store';
+import {NAVIGATION_SCHEMA_HASH,validateNavigationDocument} from '../v2/navigation2d/contracts';
+import type {ArtifactRef,ModelValidationReportV1} from '../v2/navigation2d/contracts';
 
 /** Production implementation arrives with B02; A04 only defines the port and runs a test double through it. */
 export interface CompilerPort{
@@ -19,7 +25,11 @@ export interface CompilerPort{
 }
 export interface EngineeringLimits{timeoutMs:number;maxJsonBytes:number;maxLinks:number;maxBundleBytes:number}
 export const DEFAULT_LIMITS:EngineeringLimits={timeoutMs:60_000,maxJsonBytes:2*1024*1024,maxLinks:1000,maxBundleBytes:200*1024*1024};
-export interface EngineeringServiceOptions{directory:string;catalogRoot:string;compiler:CompilerPort;recipes?:CoffeeRecipe[];limits?:Partial<EngineeringLimits>}
+export interface EngineeringServiceOptions{
+ directory:string;catalogRoot:string;compiler:CompilerPort;recipes?:CoffeeRecipe[];limits?:Partial<EngineeringLimits>;
+ /** LinkForge shadow validation. Absent means every validation is `not_run` with `validationUnavailable` as the reason; compile and run never depend on it. */
+ validator?:RobotModelValidator;validationUnavailable?:string;
+}
 /** Typed failure mapped to HTTP by the v2 gateway: 400 shape/capability, 403 ownership, 409 identity/closure, 503 timeout. */
 export class EngineeringError extends Error{constructor(readonly code:string,readonly status:number,readonly reasonCodes:string[]=[]){super(code);this.name='EngineeringError';}}
 export interface LockedEngineering{ref:EngineeringRef;project:EngineeringProject;runtimeProjection:{project:LabProjectV2;assets:AssetRevision[]}}
@@ -36,6 +46,7 @@ function withTimeout<T>(work:Promise<T>,ms:number):Promise<T>{
 
 export function createEngineeringService(options:EngineeringServiceOptions){
  const limits={...DEFAULT_LIMITS,...options.limits},store=createBundleStore(options.directory),recipes=options.recipes??([ESPRESSO,ICED_MILK_COFFEE] as unknown as CoffeeRecipe[]);
+ const validations=createValidationStore(join(options.directory,'validations'));
  let catalog:Promise<CatalogResult>|undefined;
  // ponytail: catalog is read once per process; restart (or a future explicit reload) picks up catalog edits.
  const loadedCatalog=()=>catalog??=loadCatalog(options.catalogRoot);
@@ -103,6 +114,7 @@ export function createEngineeringService(options:EngineeringServiceOptions){
   if(!blob||!('bytes' in blob))throw new EngineeringError('ENGINEERING_CLOSURE_MISSING',409,[`${path}`]);
   return JSON.parse(Buffer.from(blob.bytes).toString('utf8')) as T;
  }
+ const ROBOT_ID=/^[A-Za-z0-9_.:-]{1,200}$/;
  return {
   store,
   compileEngineeringProject,
@@ -136,6 +148,58 @@ export function createEngineeringService(options:EngineeringServiceOptions){
    const runtime=await readFileJson<LabProjectV2>(manifest,'runtime-project.json'),assets=await readFileJson<AssetRevision[]>(manifest,'assets.json');
    if(supplied!==undefined&&hashJson(supplied)!==hashJson(runtime))throw new EngineeringError('ENGINEERING_IDENTITY_MISMATCH',409);
    return {ref:r,project,runtimeProjection:{project:runtime,assets}};
+  },
+  /**
+   * Shadow validation of one robot of a compiled bundle. The physical model is re-derived from the bundle's own files (never from caller input), the URDF is the
+   * one the compiler published, and the report is stored beside the bundle so its digest never changes. Cached by full identity; only `ran` reports are cached.
+   */
+  async validateRobotModel(sessionId:string,ref:unknown,robotId:unknown):Promise<{report:ModelValidationReportV1;cached:boolean}>{
+   if(typeof robotId!=='string'||!ROBOT_ID.test(robotId))throw new EngineeringError('INVALID_ROBOT_ID',400);
+   if(!validateEngineeringRef(ref).ok)throw new EngineeringError('INVALID_ENGINEERING_REF',400);
+   const r=ref as EngineeringRef;
+   if(!await store.authorizeBundle(sessionId,r.bundleDigest))throw new EngineeringError('ENGINEERING_BUNDLE_FORBIDDEN',403);
+   const manifest=await store.readManifest(r.bundleDigest);
+   if(!manifest)throw new EngineeringError('ENGINEERING_CLOSURE_MISSING',409,['MANIFEST']);
+   if(manifest.projectDigest!==r.projectDigest)throw new EngineeringError('ENGINEERING_IDENTITY_MISMATCH',409);
+   const closure=await store.verifyClosure(r.bundleDigest);
+   if(closure.length)throw new EngineeringError('ENGINEERING_CLOSURE_MISSING',409,closure);
+   const project=await readFileJson<EngineeringProject>(manifest,'engineering-project.json');
+   if(hashJson(project)!==r.projectDigest)throw new EngineeringError('ENGINEERING_IDENTITY_MISMATCH',409);
+   const input:EngineeringCompileInput={schemaVersion:1,project,projectDigest:r.projectDigest,resolved:await readFileJson<ResolvedAssembly>(manifest,'resolved-assembly.json'),
+    runtimeProjection:{project:await readFileJson<LabProjectV2>(manifest,'runtime-project.json'),assets:await readFileJson<AssetRevision[]>(manifest,'assets.json')},recipes:await readFileJson<CoffeeRecipe[]>(manifest,'recipes.json')};
+   let model;
+   try{model=projectPhysicalModel(input,robotId,NAVIGATION_SCHEMA_HASH);}
+   catch(e){if(e instanceof EngineeringInputError)throw new EngineeringError('PHYSICAL_MODEL_UNAVAILABLE',422,[...new Set(e.problems.map(p=>p.code))]);throw e;}
+   const checked=validateNavigationDocument(model);
+   if(!checked.ok)throw new EngineeringError('PHYSICAL_MODEL_UNAVAILABLE',422,[...new Set(checked.issues.map(i=>i.code))]);
+   const urdfPath=`robots/${robotId}.urdf`,entry=manifest.files.find(f=>f.path===urdfPath);
+   if(!entry)throw new EngineeringError('ENGINEERING_CLOSURE_MISSING',409,[urdfPath]);
+   const urdf:ArtifactRef={path:urdfPath,sha256:entry.sha256,bytes:entry.sizeBytes};
+   const remember=(report:ModelValidationReportV1,cacheKey:string|null)=>validations.putReport({bundleDigest:r.bundleDigest,cacheKey,report});
+   if(!options.validator){
+    const report=incompleteReport(model,urdf,'not_run',options.validationUnavailable??'LINKFORGE_DISABLED','shadow validation is not enabled on this runtime');
+    await remember(report,null);return {report,cached:false};
+   }
+   const key=validationCacheKey(options.validator.identity,model.modelDigest,urdf.sha256),hit=await validations.findCached(key);
+   if(hit){await remember(hit.report,null);return {report:hit.report,cached:true};}
+   const root=await mkdtemp(join(tmpdir(),'lf-bundle-'));
+   try{
+    // only what the worker may read: the entity URDF and the mesh closure, laid out like the bundle so relative mesh paths resolve
+    for(const f of manifest.files.filter(x=>x.path===urdfPath||x.path.startsWith('meshes/'))){
+     await mkdir(dirname(join(root,f.path)),{recursive:true});
+     await writeFile(join(root,f.path),await this.readBlobUnchecked(f.sha256),{mode:0o600});
+    }
+    const report=await options.validator.validate({model,urdf,bundleRoot:root,putArtifact:async(name,bytes)=>({path:`validation-artifacts/${name}`,...await validations.putArtifact(bytes)})});
+    await remember(report,report.execution==='ran'?key:null);
+    return {report,cached:false};
+   }finally{await rm(root,{recursive:true,force:true});}
+  },
+  async readBlobUnchecked(digest:string):Promise<Uint8Array>{const blob=await store.readBlob(digest);if('bytes' in blob)return blob.bytes;throw new EngineeringError('ENGINEERING_CLOSURE_MISSING',409,[digest]);},
+  /** A report is readable by any session that may read one of the bundles it was produced for; everyone else gets the same 404 as for an unknown digest. */
+  async readValidation(sessionId:string,reportDigest:string):Promise<ModelValidationReportV1>{
+   const stored=await validations.readReport(reportDigest);
+   if(stored)for(const b of stored.bundleDigests)if(await store.authorizeBundle(sessionId,b))return stored.report;
+   throw new EngineeringError('NOT_FOUND',404);
   },
   bindRun:store.bindRun,
   verifyClosure:store.verifyClosure,
