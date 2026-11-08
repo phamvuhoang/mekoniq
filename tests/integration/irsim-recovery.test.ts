@@ -133,3 +133,25 @@ test.skipIf(!irsimAvailable)('review B04 #2: closing and reopening a finished ru
  const after=await (await open(dir,{})).run.snapshot();
  expect([after.run.status,after.served,after.attention]).toEqual(['completed',before.served,[]]);
 },240_000);
+
+test.skipIf(!irsimAvailable)('review B04-2 #4: a cancelled, stopped run reopens cancelled; a cancel still stopping reopens unknown',async()=>{
+ const {run,dir}=await open();
+ await run.start();
+ await stepUntil(run,movingWith(dir,0.2),10);
+ await act(run,'cancel');
+ let v=await run.snapshot();
+ for(let i=0;i<300&&v.run.status!=='cancelled';i++)v=await act(run,'step',{ticks:1});
+ expect(v.run.status).toBe('cancelled');
+ await run.close();runs.splice(runs.indexOf(run),1);
+ const after=await (await open(dir)).run.snapshot();
+ expect([after.run.status,after.attention]).toEqual(['cancelled',[]]);
+ // the other direction: the cancel was requested but the stop was never observed before the process ended
+ const b=await open();
+ await b.run.start();
+ await stepUntil(b.run,movingWith(b.dir,0.2),10);
+ await act(b.run,'cancel');await act(b.run,'step',{ticks:1});
+ expect((await b.run.snapshot()).run.status).toBe('running');
+ await b.run.close();runs.splice(runs.indexOf(b.run),1);
+ const again=await (await open(b.dir)).run.snapshot();
+ expect(again.run.status).toBe('needs_attention');expect(again.attention.map(a=>a.reason)).toContain('RECOVERY_UNKNOWN');
+},240_000);

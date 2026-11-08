@@ -36,7 +36,7 @@ const COOKIE='mekoniq_lab_session_v2';
 const PAIRING_ACCESS:readonly Access[]=['simulated','shadow'];
 const UUID='[0-9a-f-]{36}';
 const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
-const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_)/.test(m)?422:500;
+const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_SCHEDULE_UNSUPPORTED$)/.test(m)?422:500;
 export function createV2Gateway(deps:V2Deps){
  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
  const sessions=new Map<string,{csrf:string;expiresAt:number}>();
@@ -213,7 +213,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    const beforeExecute=action.value.kind==='start'||action.value.kind==='resume'?async()=>{
     // the bundle a run was created from must still be whole before any motion is started or resumed
     if(entry.input.engineering&&deps.engineering&&(await deps.engineering.verifyClosure(entry.input.engineering.ref.bundleDigest)).length)throw new Error('ENGINEERING_CLOSURE_MISSING');
-    const readiness=await collectReadiness({scenarioId:entry.input.scenarioId,backendSetId:entry.input.backendSetId,project:entry.input.project,...entry.input.engineering?{engineering:entry.input.engineering.ref}:{}},readinessOptions());
+    const readiness=await collectReadiness({scenarioId:entry.input.scenarioId,backendSetId:entry.input.backendSetId,project:entry.input.project,...entry.input.engineering?{engineering:entry.input.engineering.ref}:{},runId:entry.run.id},readinessOptions());
     if(!readiness.canStart)throw new Error(`BACKEND_UNAVAILABLE:${readiness.checks.flatMap(c=>c.reasonCodes).join(',')}`);
    }:undefined;
    try{return send(response,200,await entry.run.action(action.value,beforeExecute));}catch(e){return failed(response,e);}

@@ -1,6 +1,7 @@
 // IR-SIM runs through the real /lab/v2 gateway: the server locks the bundle's projections by session ownership; a caller cannot supply endpoints,
 // actors, interpreters, YAML or code, cannot borrow another session's bundle or run, and an IR scenario never lands on a legacy set (or a legacy one on the IR set).
 import {afterEach,expect,test} from 'vitest';
+import {execFileSync} from 'node:child_process';
 import {readdir,rm} from 'node:fs/promises';
 import {join} from 'node:path';
 import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
@@ -89,3 +90,40 @@ test.skipIf(!irsimAvailable)('without the provider configured nothing is adverti
  expect(refused.status).toBe(422);
  expect((await refused.json()).reasonCodes).toEqual(expect.arrayContaining(['BACKEND_NOT_INSTALLED']));
 },120_000);
+
+const compile=async(g:LabGateway,h:Record<string,string>,project:unknown)=>{const r=await (await post(g,h,'/engineering/compile',{project})).json() as {state:string;bundleDigest:string;projectDigest:string};expect(r.state).toBe('compiled');return {bundleDigest:r.bundleDigest,projectDigest:r.projectDigest};};
+const workers=(runId:string)=>execFileSync('ps',['-axww','-o','command'],{encoding:'utf8'}).split('\n').filter(l=>l.includes(`--run-id ${runId}`)).length;
+
+test.skipIf(!irsimAvailable)('review B04-2 #5: at most two IR-SIM runs hold a worker per host; the third start is refused with IRSIM_CAPACITY and spawns nothing',async()=>{
+ const {g,f}=await gateway(true),a=await pair(g),ref=await compile(g,a,f.project);
+ const create=async()=>{const r=await post(g,a,'/runs',runBody({engineeringRef:ref}));expect(r.status,await r.clone().text()).toBe(201);return (await r.json() as {run:{id:string;runRevision:number}}).run;};
+ const start=(run:{id:string;runRevision:number})=>post(g,a,`/runs/${run.id}/actions`,{actionId:`start-${run.id}`,expectedRevision:run.runRevision,kind:'start',payload:{}});
+ const [x,y,z]=[await create(),await create(),await create()];
+ expect((await start(x)).status).toBe(200);expect((await start(y)).status).toBe(200);
+ const third=await start(z);
+ expect(third.status).toBe(409);expect(await third.json()).toMatchObject({error:'IRSIM_CAPACITY'});
+ expect([x,y,z].map(r=>workers(r.id))).toEqual([1,1,0]);
+ // the refused start changed nothing on the run; readiness and creation see the host full
+ expect((await (await get(g,a,`/runs/${z.id}`)).json() as {run:unknown}).run).toMatchObject({status:'ready',runRevision:z.runRevision});
+ const ready=await (await post(g,a,'/readiness',{scenarioId:'IR-FD01',backendSetId:IR,engineeringRef:ref})).json() as {canStart:boolean;checks:{status:string;reasonCodes:string[]}[]};
+ expect(ready.canStart).toBe(false);expect(ready.checks.find(c=>c.reasonCodes.includes('IRSIM_CAPACITY'))!.status).toBe('blocked');
+ const full=await post(g,a,'/runs',runBody({engineeringRef:ref}));
+ expect(full.status).toBe(422);expect((await full.json()).reasonCodes).toContain('IRSIM_CAPACITY');
+ // closing a run frees its slot (and its process); the next start then goes through
+ expect((await post(g,a,`/runs/${x.id}/archive`,{})).status).toBe(200);
+ expect(workers(x.id)).toBe(0);
+ expect((await start(z)).status).toBe(200);
+ expect([y,z].map(r=>workers(r.id))).toEqual([1,1]);
+ await g.close();gateways.splice(gateways.indexOf(g),1);
+ expect([y,z].map(r=>workers(r.id))).toEqual([0,0]);
+},240_000);
+
+test.skipIf(!irsimAvailable)('review B04-2 #6: a project with a fault schedule is blocked by readiness and refused at creation with FAULT_SCHEDULE_UNSUPPORTED, never a 500',async()=>{
+ const {g,f}=await gateway(true),a=await pair(g),project=structuredClone(f.project);
+ (project.runtimeProject as {faultSchedule?:unknown[]}).faultSchedule=[{id:'f1',faultId:'amr-disconnect',targetId:'amr-1',trigger:{kind:'elapsed_sim_ms',value:1000},durationMs:1000}];
+ const ref=await compile(g,a,project);
+ const ready=await (await post(g,a,'/readiness',{scenarioId:'IR-FD01',backendSetId:IR,engineeringRef:ref})).json() as {canStart:boolean;checks:{status:string;reasonCodes:string[]}[]};
+ expect(ready.canStart).toBe(false);expect(ready.checks.find(c=>c.reasonCodes.includes('FAULT_SCHEDULE_UNSUPPORTED'))!.status).toBe('blocked');
+ const created=await post(g,a,'/runs',runBody({engineeringRef:ref}));
+ expect(created.status).toBe(422);expect((await created.json()).reasonCodes).toContain('FAULT_SCHEDULE_UNSUPPORTED');
+},240_000);

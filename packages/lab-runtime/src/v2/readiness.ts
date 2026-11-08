@@ -8,8 +8,8 @@ import {TICK_MS} from './clock';
 import {resolveBackends} from './scenario-matrix';
 export interface ReadinessCheck {id:string;status:'ready'|'blocked'|'unknown';reasonCodes:string[];evidenceRef:string|null}
 export interface ReadinessSnapshot {checkedAt:string;expiresAt:string;scenarioId:string;backendSetId:string;checks:ReadinessCheck[];canStart:boolean}
-/** `engineering`: the bundle the gateway admitted for this session (engineering sets only); never a caller-chosen path. */
-export interface ReadinessContext {scenarioId:string;backendSetId:string;project?:unknown;engineering?:{bundleDigest:string;projectDigest:string}}
+/** `engineering`: the bundle the gateway admitted for this session (engineering sets only); never a caller-chosen path. `runId`: the existing run asking (start/resume), server-set. */
+export interface ReadinessContext {scenarioId:string;backendSetId:string;project?:unknown;engineering?:{bundleDigest:string;projectDigest:string};runId?:string}
 export type ReadinessProbe=(context:ReadinessContext,signal:AbortSignal)=>Promise<Omit<ReadinessCheck,'id'>>;
 export type NativeReadinessChecks=(context:ReadinessContext,signal:AbortSignal)=>Promise<ReadinessCheck[]>;
 /** `portableChecks` answer for portable_python sets (irsim_2d) only; `nativeChecks` for the native simulation sets only. */

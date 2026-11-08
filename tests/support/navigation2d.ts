@@ -12,7 +12,7 @@ import {qrotate} from '../../packages/lab-runtime/src/v2/frames';
 import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
 import {QUARTER_X,component,digested,instance,mount,pose,type Fixture} from './engineering';
 
-export type NavigationFixtureName='serve'|'wide'|'overhang'|'two-robot'|'enclosed-goal';
+export type NavigationFixtureName='serve'|'wide'|'overhang'|'two-robot'|'enclosed-goal'|'offset-axle';
 const sha=(t:string)=>createHash('sha256').update(t).digest('hex');
 const assumed=(locator:string):SourceRef=>({kind:'assumed',documentId:'serve-fixture-assumptions',revision:'1',locator,contentSha256:sha('serve-fixture-assumptions-v1')});
 const derived=(formula:string,inputs:unknown):SourceRef=>({kind:'derived',documentId:'serve-fixture-inertia-formulas',revision:'1',locator:formula,contentSha256:hashJson(inputs)});
@@ -54,11 +54,11 @@ export const serveLidarModel=()=>({schemaVersion:1 as const,kind:'sensor' as con
  noise:{distribution:'none' as const,stddev:scalar(0,'m','noise'),seed:7},latency:scalar(0,'s','latency'),dropoutProbability:scalar(0,'1','dropout'),sensorType:'lidar_2d' as const,
  lidar2d:{beamCount:360,beamCountSource:assumed('360 beams: demo assumption, not a vendor value')}});
 
-function components(s:RobotSpec){
+function components(s:RobotSpec,axleX=0){
  const drive=driveModel(s),lidar=serveLidarModel(),rodY=s.trayWidth/2+0.02,half=s.separation/2;
  const ident=(family:string)=>({manufacturer:'fixture',family,sku:null,status:'candidate' as const});
  const chassis=component('serve-chassis','chassis',{identity:ident('chassis'),models:[{kind:'actuator',id:drive.id,digest:hashJson(drive)}],links:[solid('base',box(0.6,s.chassisWidth,0.14,pose(0,0,0.05)),14)],ports:[
-  mount('left-axle','axle-hub',0,half,0),mount('right-axle','axle-hub',0,-half,0),
+  mount('left-axle','axle-hub',axleX,half,0),mount('right-axle','axle-hub',axleX,-half,0),
   {...mount('support-left','rod-foot',-0.1,rodY,0.12),frame:pose(-0.1,rodY,0.12,tilt(TILT))},{...mount('support-right','rod-foot',-0.1,-rodY,0.12),frame:pose(-0.1,-rodY,0.12,tilt(TILT))},
   mount('lidar-mount','lidar-foot',0.22,0,0.12)]});
  const r=s.wheelRadius;
@@ -70,9 +70,9 @@ function components(s:RobotSpec){
  const head=component('serve-lidar','lidar',{identity:ident('lidar'),models:[{kind:'sensor',id:lidar.id,digest:hashJson(lidar)}],links:[solid('head',{pose:pose(0,0,0.02),geometry:{kind:'cylinder',radiusM:0.04,lengthM:0.04}},0.19)],ports:[mount('foot','lidar-foot',0,0,0)]});
  return {parts:{chassis,wheel,rod,tray,head},models:{[hashJson(drive)]:drive,[hashJson(lidar)]:lidar}};
 }
-/** One robot's instances and connections; `prefix` namespaces the instance ids and `at` places the chassis (axle height = wheel radius). */
-function robot(s:RobotSpec,prefix:string,x:number,y:number){
- const {parts,models}=components(s),n=(id:string)=>prefix+id,at=pose(x,y,s.wheelRadius);
+/** One robot's instances and connections; `prefix` namespaces the instance ids and `at` places the chassis (axle height = wheel radius), `axleX` moves the axle forward of the base origin. */
+function robot(s:RobotSpec,prefix:string,x:number,y:number,o:{axleX?:number;yaw?:number}={}){
+ const {parts,models}=components(s,o.axleX),n=(id:string)=>prefix+id,at=pose(x,y,s.wheelRadius,o.yaw?[0,0,Math.sin(o.yaw/2),Math.cos(o.yaw/2)]:undefined);
  const instances:Instance[]=[instance(n('chassis'),parts.chassis,at),instance(n('wheel-left'),parts.wheel),instance(n('wheel-right'),parts.wheel),instance(n('support-left'),parts.rod),instance(n('support-right'),parts.rod),
   ...[1,2,3].map(i=>instance(n(`tray-${i}`),parts.tray)),instance(n('lidar'),parts.head)];
  const m=(from:string,to:string)=>({from:n(from),to:n(to),kind:'mount' as const});
@@ -109,7 +109,8 @@ function build(name:NavigationFixtureName):Fixture{
   const a=robot(SPECS.serve!,'r1-',2,1.5),b=robot(SPECS.second!,'r2-',3.5,1.5);
   return {project:project(name,[...a.instances,...b.instances],[...a.connections,...b.connections],[{id:'amr-1',instanceIds:a.instances.map(i=>i.id)},{id:'amr-2',instanceIds:b.instances.map(i=>i.id)}]),components:{...a.components,...b.components},models:{...a.models,...b.models}};
  }
- const r=robot(SPECS[name==='enclosed-goal'?'serve':name]!,'',2,1.5);
+ // offset-axle: the axle 0.2 m forward of the base origin, the base turned +90 deg, so the drive frame (2, 1.7) is not the base origin (2, 1.5)
+ const r=name==='offset-axle'?robot(SPECS.serve!,'',2,1.5,{axleX:0.2,yaw:Math.PI/2}):robot(SPECS[name==='enclosed-goal'?'serve':name]!,'',2,1.5);
  return {project:project(name,r.instances,r.connections,[{id:'amr-1',instanceIds:r.instances.map(i=>i.id)}]),components:r.components,models:r.models};
 }
 

@@ -136,3 +136,72 @@ test('adapter cancel: requested, then cancelled only on a stopped observation; a
  expect(b.ev).toEqual(['accepted','unknown']);
  expect((await b.a.reconcile('c1')).status).toBe('unknown');
 });
+
+const lastStep=(dir:string)=>workerLog(dir).filter(l=>l.op==='step').at(-1)!;
+const speed=(dir:string)=>Math.abs(workerLog(dir).filter(l=>l.op==='step').at(-1)?.robots[0]!.bodyVelocity[0]??0);
+const stopped=(dir:string)=>{const r=lastStep(dir).robots[0]!;return Math.abs(r.bodyVelocity[0]!)<=0.01&&Math.abs(r.bodyVelocity[1]!)<=0.02;};
+
+test.skipIf(!irsimAvailable)('review B04-2 #1: a cancel on the return-to-parking leg cancels the parking mission and ends cancelled only once the robot is stopped',async()=>{
+ const {run,dir}=await open({entry:[double('logged.py')]});
+ await run.start();
+ // after the handoff the robot drives back to its bay on a standby mission that is not in the workload
+ await stepUntil(run,async v=>(await events(run)).some(e=>e.type==='DeliveryHandedOff')&&v.entities[0]!.moving);
+ const moving=await stepUntil(run,()=>speed(dir)>0.2,5),commandId=moving.entities[0]!.goal!.commandId;
+ const r0=await run.report();
+ expect(r0.businessEvents.filter(e=>e.type==='RobotGoalCompleted').map(e=>e.state.position)).toEqual(['pass','t-01']); // still on the way to bay-1
+ const after=await act(run,'cancel');
+ expect(after.run.status).not.toBe('cancelled');
+ expect((await run.report()).effects.filter(e=>e.type==='robot.cancel').map(e=>String(e.payload.commandId))).toContain(commandId);
+ let v=after;
+ for(let i=0;i<300&&v.run.status!=='cancelled';i++){v=await act(run,'step',{ticks:1});if(!stopped(dir))expect(v.run.status).not.toBe('cancelled');}
+ expect(v.run.status).toBe('cancelled');
+ expect(stopped(dir)).toBe(true);
+ expect(v.entities[0]!.moving).toBe(false);
+ const r=await run.report();
+ expect(r.businessEvents.filter(e=>e.type==='RobotCommandObserved'&&e.id===commandId).map(e=>e.state.status)).toContain('cancelled');
+ expect(r.businessEvents.filter(e=>e.type==='RobotGoalCompleted').map(e=>e.state.position)).toEqual(['pass','t-01']); // it never reached the bay
+ // a finished run holds no plant: nothing can drive the robot afterwards
+ const ticks=workerLog(dir).filter(l=>l.op==='step').length;
+ await expect(act(run,'step',{ticks:5})).rejects.toThrow('INVALID_STATE');
+ expect(workerLog(dir).filter(l=>l.op==='step')).toHaveLength(ticks);
+},240_000);
+
+test.skipIf(!irsimAvailable)('review B04-2 #2: a cancel sent during a long step batch is taken between ticks, against the revision current when it was sent',async()=>{
+ const {run,dir}=await open({entry:[double('logged.py')]});
+ await run.start();
+ const moving=await stepUntil(run,()=>speed(dir)>0.2,10),rev=moving.run.runRevision,from=moving.tick;
+ const batch=run.action({actionId:'long-batch',expectedRevision:rev,kind:'step',payload:{ticks:500}});
+ while(run.pulse().tick<from+20)await new Promise(r=>setTimeout(r,2));
+ const sentAt=run.pulse().tick;
+ const cancel=await run.action({actionId:'mid-cancel',expectedRevision:rev,kind:'cancel',payload:{}});
+ const stepped=await batch;
+ // the cancel was taken at the next tick boundary and the batch ended there, far short of 500 ticks
+ expect(cancel.tick-sentAt).toBeLessThanOrEqual(1);
+ expect(stepped.tick).toBe(cancel.tick);
+ expect(lastStep(dir).tick).toBe(cancel.tick);
+ expect([cancel.run.runRevision,stepped.run.runRevision]).toEqual([rev+1,rev+2]);
+ expect(cancel.run.status).not.toBe('cancelled');
+ // receipts stay exact: replays answer the first result, the same id with another payload conflicts
+ expect(await run.action({actionId:'mid-cancel',expectedRevision:rev,kind:'cancel',payload:{}})).toEqual(cancel);
+ expect(await run.action({actionId:'long-batch',expectedRevision:rev,kind:'step',payload:{ticks:500}})).toEqual(stepped);
+ await expect(run.action({actionId:'mid-cancel',expectedRevision:rev+2,kind:'cancel',payload:{}})).rejects.toThrow('ACTION_CONFLICT');
+ // a stale revision is still refused, also mid-batch
+ const second=run.action({actionId:'batch-2',expectedRevision:rev+2,kind:'step',payload:{ticks:200}});
+ await expect(run.action({actionId:'stale-pause',expectedRevision:rev,kind:'pause',payload:{}})).rejects.toThrow('REVISION_CONFLICT');
+ let v=await second;
+ for(let i=0;i<300&&v.run.status!=='cancelled';i++){v=await act(run,'step',{ticks:1});if(!stopped(dir))expect(v.run.status).not.toBe('cancelled');}
+ expect(v.run.status).toBe('cancelled');expect(stopped(dir)).toBe(true);
+},240_000);
+
+test.skipIf(!irsimAvailable)('review B04-2 #3: entities and telemetry carry the robot base origin (T_map_base = T_map_drive x inv(T_base_drive)), not the drive axle',async()=>{
+ const b=await irsimBundle('offset-axle'),dir=await temp('irsim-offset-');dirs.push(dir);
+ const run=await openRun(dir,b,{entry:[double('logged.py')]});runs.push(run);
+ // the axle is 0.2 m ahead of the base origin and the base faces +y: the drive frame is at (2, 1.7), the base at (2, 1.5)
+ const base=(p:{x:number;y:number;yawRad:number})=>{expect(p.x).toBeCloseTo(2,6);expect(p.y).toBeCloseTo(1.5,6);expect(p.yawRad).toBeCloseTo(Math.PI/2,6);};
+ base((await run.snapshot()).entities[0]!.pose);
+ const v=await run.start();
+ expect(workerLog(dir).find(l=>l.op==='create')!.robots[0]!.poseDriveMap[1]).toBeCloseTo(1.7,6);
+ base(v.entities[0]!.pose);
+ const t=run.telemetry.latest().find(s=>s.entityId==='amr-1')!.observed as {xM:number;yM:number;yawRad:number};
+ base({x:t.xM,y:t.yM,yawRad:t.yawRad});
+},240_000);

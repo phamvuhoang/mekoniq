@@ -13,7 +13,7 @@ import {lockDigestOf} from '../../engineering/linkforge';
 import {validateNavigationDocument,type NavigationSceneV1} from './contracts';
 import {spawnIRSimWorker,WorkerLostError} from './worker-client';
 import {IRSIM_AMR} from './adapter';
-import {createIRSimScenarioRun,IRSIM_BACKEND,type IRSimRuntimeOptions} from './runner';
+import {createIRSimScenarioRun,irsimCapacity,IRSIM_BACKEND,type IRSimRuntimeOptions} from './runner';
 
 /** The server catalog with irsim_2d marked usable (`usable`) or left unconfigured. Production code sets it usable only after a real worker describe. */
 export const portableCatalog=(usable:boolean,base:CapabilityCatalog=defaultCatalog,reason?:string):CapabilityCatalog=>({...base,backends:base.backends.map(b=>{
@@ -27,7 +27,8 @@ export interface PortableSimulationOptions {enabled:boolean;python:string;worker
  /** Catalog to extend (the native one when native is configured). */baseCatalog?:CapabilityCatalog;
  /** Admitted-bundle reader (the engineering service), for readiness. */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;
  schemaDir?:string;
- /** Test/fault option: the worker entry (a double). Never exposed through a request. */entry?:string[];}
+ /** Test/fault option: the worker entry (a double). Never exposed through a request. */entry?:string[];
+ /** Live IR-SIM workers allowed on this host at once (default 2, workers-runtime §6). */maxActiveRuns?:number;}
 export interface PortableSimulation {catalog:CapabilityCatalog;enabledBackends:string[];simulationFactory:SimulationFactory;readinessChecks?:NativeReadinessChecks;unavailable?:string;describe?:{packageVersion:string;pythonVersion:string;lockDigest:string}}
 const MIN_FREE_BYTES=2*100*1024*1024; // two active runs at the 100 MiB evidence quota
 const SMOKE_TTL_MS=60_000;
@@ -68,7 +69,7 @@ export async function portableSimulationFromOptions(o:PortableSimulationOptions)
  if(describe.packageVersion!==IRSIM_AMR.version)return off(`IRSIM_VERSION_MISMATCH: ir-sim ${describe.packageVersion}, pinned ${IRSIM_AMR.version}`);
  if(!describe.pythonVersion.startsWith('3.11.'))return off(`PYTHON_311_REQUIRED: ${describe.pythonVersion}`);
  if(describe.lockDigest!==lockDigest)return off('IRSIM_LOCK_MISMATCH');
- const runtime:IRSimRuntimeOptions={python:o.python,workerRoot,schemaDir,lockDigest,...o.entry?{entry:o.entry}:{}},catalog=portableCatalog(true,base);
+ const runtime:IRSimRuntimeOptions={python:o.python,workerRoot,schemaDir,lockDigest,...o.entry?{entry:o.entry}:{},...o.maxActiveRuns!==undefined?{maxActiveRuns:o.maxActiveRuns}:{}},catalog=portableCatalog(true,base);
  return {catalog,enabledBackends:[IRSIM_BACKEND],simulationFactory:dispatcher(catalog,runtime,o.nativeFactory),describe,readinessChecks:portableReadiness(runtime,describe,o,probeDir)};
 }
 
@@ -95,6 +96,8 @@ function portableReadiness(runtime:IRSimRuntimeOptions,described:NonNullable<Por
     if(!project.ok)fixture.push('PROJECT_INVALID');
     else{
      if(scene.world.hash!==hashJson(project.value.world))fixture.push('SCENE_WORLD_MISMATCH');
+     // ponytail: the runner refuses scheduled faults/obstacles until C02 compiles actors into the plant; readiness says so instead of a later failure
+     if(project.value.faultSchedule?.length||scenario?.obstacles?.length)fixture.push('FAULT_SCHEDULE_UNSUPPORTED');
      try{if(scenario&&!resolveRoles(scenario,project.value).robots.every(r=>scene!.robots.some(x=>x.robotId===r.id)))fixture.push('SCENARIO_ROLE_UNBOUND');}catch(e){fixture.push((e as Error).message);}
     }
    }
@@ -103,6 +106,8 @@ function portableReadiness(runtime:IRSimRuntimeOptions,described:NonNullable<Por
   const runner:string[]=[];
   const free=await statfs(o.directory).then(s=>s.bavail*s.bsize,()=>0);
   if(free<MIN_FREE_BYTES)runner.push('DISK_SPACE_LOW');
+  // a full host is a blocked start, not a failure: the run that already holds a slot (context.runId, server-set) is never counted against itself
+  if(!irsimCapacity(runtime.maxActiveRuns,context.runId))runner.push('IRSIM_CAPACITY');
   // a real process, the real scene: describe + create, then a clean stop. Success is cached briefly per scene and lock; a failure is never cached.
   if(scene&&!model.length&&!fixture.length&&!profile.length&&!runner.length&&!((smoked.get(scene.sceneDigest)??0)>Date.now())){
    const scratch=await mkdtemp(join(probeDir,'smoke-'));

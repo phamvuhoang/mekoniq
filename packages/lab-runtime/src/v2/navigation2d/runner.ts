@@ -26,17 +26,24 @@ import type {JournalEvents} from '../event-stream';
 import {validateNavigationDocument,type IRSimResponseV1,type IRSimSnapshotV1,type NavigationSceneV1} from './contracts';
 import {createNavigationController,type NavigationController} from './controller';
 import {spawnIRSimWorker,WorkerLostError,type IRSimWorkerClient} from './worker-client';
+import {baseInMap,yawOf} from '../../engineering/navigation-model';
+import {framePose} from '../../engineering/inertia';
+import {quaternionFromYaw} from '../frames';
 import {createIRSimNavigationAdapter,initialAdapterState,IRSIM_AMR,type IRSimAdapterState,type IRSimNavigationAdapter} from './adapter';
 
-/** Operator-owned worker options (never from a request). `entry`/`deadlinesMs` exist for test doubles and fault tests. */
-export interface IRSimRuntimeOptions {python:string;workerRoot:string;schemaDir:string;lockDigest:string;entry?:string[];deadlinesMs?:Record<string,number>}
+/** Operator-owned worker options (never from a request). `entry`/`deadlinesMs` exist for test doubles and fault tests; `maxActiveRuns` (default 2) caps live workers per host. */
+export interface IRSimRuntimeOptions {python:string;workerRoot:string;schemaDir:string;lockDigest:string;entry?:string[];deadlinesMs?:Record<string,number>;maxActiveRuns?:number}
+/** Process-wide worker slots (workers-runtime §6: two active runs per host). A run holds one from its start until its plant stops, is lost or the run closes. */
+const activeRuns=new Set<string>();
+/** Whether `runId` (or, without one, a new run) may hold a live worker now. */
+export const irsimCapacity=(limit=2,runId?:string)=>runId!==undefined&&activeRuns.has(runId)||activeRuns.size<limit;
 /** `bundleFile` (RunProviders) is needed only for a new run: the gateway authorised the bundle for the session before the run exists. */
 export interface IRSimRunProviders extends RunProviders {irsim:IRSimRuntimeOptions}
 export const IRSIM_BACKEND='irsim_2d';
 const EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'],FINAL=['completed','cancelled','failed'],SCENE='navigation-scene.json';
 const sha256=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 interface Confirmation {due:number|null;type:string;robotId:string}
-interface PlantCheckpoint {status:'none'|'live'|'lost';reason:string|null;bootId:string|null;requests:number;snapshot:IRSimSnapshotV1|null}
+interface PlantCheckpoint {status:'none'|'live'|'lost'|'stopped';reason:string|null;bootId:string|null;requests:number;snapshot:IRSimSnapshotV1|null}
 interface Checkpoint {
  schemaVersion:1;provider:'irsim_2d';runId:string;manifestHash:string;manifest:RunReport['manifest'];roles:Roles;trays:Record<string,number>;
  tick:number;started:boolean;paused:boolean;cancelled:boolean;suspended:boolean;revision:number;ordinal:number;dispatchDue:boolean;telemetrySeq?:number;reclaimed?:boolean;
@@ -136,6 +143,8 @@ class IRSimRun implements ScenarioRun {
  private worker?:IRSimWorkerClient;
  private queue:Promise<unknown>=Promise.resolve();
  private closed=false;
+ private batching=false;
+ private controls:{raw:unknown;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
  constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,map:{mapId:string;mapRevision:string}){
   this.clock=createClock(EPOCH,cp.tick,cp.paused);
   this.controller=createNavigationController(scene);
@@ -150,12 +159,23 @@ class IRSimRun implements ScenarioRun {
  journal(){return this.queue.then(async()=>{if(this.closed)throw new Error('RUN_CLOSED');return (await this.source.journal()).map(entry=>({sequence:entry.sequence,at:entry.recordedAt,events:(entry.payload.events as unknown as DomainEvent[]).map(e=>({type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject}))})) as JournalEvents[];});}
  private robotObs(id:string){return this.cp.plant.snapshot?.robots.find(r=>r.robotId===id);}
  private moving(id:string){const r=this.robotObs(id),p=this.scene.policy.parameters;return !!r&&(Math.abs(r.bodyVelocity[0]!)>p.stoppedLinearMps||Math.abs(r.bodyVelocity[1]!)>p.stoppedAngularRadps);}
+ /** The last snapshot is the plant's verified state: live, or deliberately stopped with the finished run. */
+ private verified(){return this.cp.plant.status==='live'||this.cp.plant.status==='stopped';}
+ /** The Digital Twin shows the robot base origin: T_map_base = T_map_drive x inverse(T_base_drive). The controller and evidence stay in the drive frame. */
+ private basePose(id:string,d:readonly number[]):[number,number,number]{
+  const b=baseInMap({position:[d[0]!,d[1]!,0],quaternionXyzw:quaternionFromYaw(d[2]!)},framePose(this.scene.robots.find(x=>x.robotId===id)!.model.driveFrameInBase));
+  return [b.position[0]!,b.position[1]!,yawOf(b.quaternionXyzw)];
+ }
+ private releaseSlot(){activeRuns.delete(this.cp.runId);}
+ /** A finished run needs no plant: the worker stops and its slot is free; the persisted last snapshot stays the run's state. */
+ private async stopPlant(){const c=this.cp,w=this.worker;this.worker=undefined;c.plant.status='stopped';c.plant.reason='RUN_FINISHED';this.releaseSlot();await w?.close('RUN_FINISHED').catch(()=>{});}
  record(){
-  const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;const at=String(process.hrtime.bigint()),stale=c.plant.status!=='live';
+  const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;const at=String(process.hrtime.bigint()),stale=!this.verified();
   // ponytail: in-memory lossy samples only; the durable per-tick trajectory/sensor record is B05 (navigation-run-evidence-v1)
   this.telemetry.record(c.roles.robots.flatMap(({id}):TwinSampleV2[]=>{const r=this.robotObs(id),g=this.adapters.get(id)!.goal(),live=g&&(g.state==='executing'||g.state==='cancelling');if(!r)return [];
+   const [xM,yM,yawRad]=this.basePose(id,r.poseDriveMap);
    return [{schemaVersion:2,runId:c.runId,entityId:id,providerId:IRSIM_BACKEND,bootId:c.plant.bootId??c.adapters[id]!.bootId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:'physics_sim',
-    quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:live?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM:r.poseDriveMap[0]!,yM:r.poseDriveMap[1]!,yawRad:r.poseDriveMap[2]!,moving:this.moving(id),hold:this.holds[id]??null},estimated:null,causationId:live?g.commandId:null} as TwinSampleV2];}));
+    quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:live?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM,yM,yawRad,moving:this.moving(id),hold:this.holds[id]??null},estimated:null,causationId:live?g.commandId:null} as TwinSampleV2];}));
  }
  // ---- plant (one worker process per run, never a second one) ----
  private async ask(op:'describe'|'create'|'start'|'pause'|'resume',payload:Record<string,unknown>):Promise<Extract<IRSimResponseV1,{ok:true}>>{
@@ -173,12 +193,12 @@ class IRSimRun implements ScenarioRun {
    await this.ask('start',{});
    c.plant={status:'live',reason:null,bootId:this.worker.bootId,requests:c.plant.requests,snapshot:snap};
    for(const a of this.adapters.values())a.sink.observe(snap);
-  }catch(e){await this.worker.close('START_FAILED').catch(()=>{});this.worker=undefined;throw new Error(`PLANT_START_FAILED:${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,80)}`);}
+  }catch(e){await this.worker.close('START_FAILED').catch(()=>{});this.worker=undefined;this.releaseSlot();throw new Error(`PLANT_START_FAILED:${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,80)}`);}
  }
  private async plantLost(code:string){
   const c=this.cp;if(c.plant.status==='lost')return;
   c.plant.status='lost';c.plant.reason=code;
-  const w=this.worker;this.worker=undefined;await w?.close(code).catch(()=>{});
+  const w=this.worker;this.worker=undefined;this.releaseSlot();await w?.close(code).catch(()=>{});
   for(const a of this.adapters.values())a.sink.lost('WORKER_LOST');
   c.attention.push({reason:'WORKER_LOST',subjectId:code,tick:c.tick});this.suspend();
   await this.drain();
@@ -196,8 +216,8 @@ class IRSimRun implements ScenarioRun {
    const m=await this.source.read('mission',robot.state.missionId),stop=(m.state.stops as JsonObject[]).find(s=>s.id===m.state.currentStopId);
    if(!FINAL.includes(String(m.state.status))&&stop?.status==='travelling'&&typeof m.state.commandId==='string'){travelling++;this.adapters.get(id)!.sink.reportUnknown((await this.source.read('robot-command',m.state.commandId)).state as unknown as RobotCommand,'RECOVERY_UNKNOWN');}
   }
-  // a finished run had nothing in flight: reopening it is a read, not a recovery
-  if(!travelling&&!c.inFlight&&await this.missionsDone())return;
+  // a finished run had nothing in flight: reopening it is a read, not a recovery; so is a journal-confirmed cancel whose robots were observed stopped
+  if(!travelling&&!c.inFlight&&(await this.missionsDone()||c.cancelled&&!c.attention.length&&await this.cancelDone()))return;
   c.attention.push({reason:'RECOVERY_UNKNOWN',tick:c.tick});c.suspended=true;c.confirmations={};
   await this.drain();await this.scanArrivals();
   c.inFlight=false;c.dispatchDue=true;c.revision++;
@@ -317,7 +337,7 @@ class IRSimRun implements ScenarioRun {
    if(!c.reclaimed){
     this.suspend();c.paused=true;this.clock.pause();
     for(const a of this.adapters.values())await a.requestStop('LOCAL_RECLAIM');await this.drain();
-    if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RECLAIMED';const w=this.worker;this.worker=undefined;await w?.close('RECLAIMED').catch(()=>{});}
+    if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RECLAIMED';const w=this.worker;this.worker=undefined;this.releaseSlot();await w?.close('RECLAIMED').catch(()=>{});}
     if(c.started&&!await this.missionsDone()){
      let targets=0;
      for(const {id:robotId} of c.roles.robots){
@@ -333,7 +353,10 @@ class IRSimRun implements ScenarioRun {
   });this.queue=p.catch(()=>{});return p;
  }
  start(){return this.snapshot().then(v=>this.action({actionId:'start',expectedRevision:v.run.runRevision,kind:'start',payload:{}}));}
- action(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{const p=this.queue.then(()=>this.execute(a,beforeExecute));this.queue=p.catch(()=>{});return p;}
+ action(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
+  const kind=(a as {kind?:unknown}|null)?.kind;
+  if(this.batching&&(kind==='pause'||kind==='cancel'))return new Promise((resolve,reject)=>this.controls.push({raw:a,resolve,reject}));
+  const p=this.queue.then(()=>this.execute(a,beforeExecute));this.queue=p.catch(()=>{});return p;}
  private async execute(raw:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
   if(this.closed)throw new Error('RUN_CLOSED');
   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
@@ -347,7 +370,7 @@ class IRSimRun implements ScenarioRun {
   if(a.kind==='pause'&&c.paused||a.kind==='resume'&&!c.paused)throw new Error('INVALID_STATE');
   if(a.kind==='step'&&c.paused)throw new Error('RUN_PAUSED');
   // no plant, no motion: a lost worker is never replaced and its steps are never replayed
-  if(a.kind==='step'&&c.plant.status!=='live')throw new Error('INVALID_STATE:PLANT_LOST');
+  if(a.kind==='step'&&c.plant.status!=='live')throw new Error(c.plant.status==='stopped'?'INVALID_STATE:RUN_FINISHED':'INVALID_STATE:PLANT_LOST');
   if(a.kind==='step'&&c.tick+Number(p.ticks)>this.scenario.maxTicks)throw new Error('RUN_DURATION_EXCEEDED');
   if(a.kind==='reconcile'&&status!=='needs_attention')throw new Error('INVALID_STATE');
   if(a.kind==='cancel'&&(c.cancelled||['completed','cancelled'].includes(status)))throw new Error('INVALID_STATE');
@@ -356,17 +379,23 @@ class IRSimRun implements ScenarioRun {
   if(a.kind==='confirm'&&!pending)throw new Error('CONFIRMATION_NOT_PENDING');
   if(pending&&pending[1].type!==p.confirmationType)throw new Error('CONFIRMATION_TYPE_MISMATCH');
   if(pending&&c.plant.status==='lost')throw new Error('INVALID_STATE:LOCALIZATION_LOST');
-  await beforeExecute?.();
-  c.inFlight=true;await this.persist();
+  // a worker slot is taken at admission (no state change when the host is full) and given back if the plant never goes live
+  if(a.kind==='start'){if(!irsimCapacity(this.irsim.maxActiveRuns,c.runId))throw new Error('IRSIM_CAPACITY');activeRuns.add(c.runId);}
+  try{await beforeExecute?.();c.inFlight=true;await this.persist();}catch(e){if(!this.worker)this.releaseSlot();throw e;}
   try{
    if(a.kind==='start'){await this.startPlant();c.started=true;}
    else if(a.kind==='pause'){c.paused=true;this.clock.pause();if(this.worker)await this.ask('pause',{}).catch(e=>this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED'));}
    else if(a.kind==='resume'){if(this.worker)await this.ask('resume',{}).catch(e=>this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED'));c.paused=false;this.clock.resume();}
-   else if(a.kind==='step')for(let i=0;i<Number(p.ticks);i++){if(!await this.tick())break;}
+   else if(a.kind==='step'){
+    // pause/cancel sent during the batch are taken at the next tick boundary (workers-runtime §2), and the batch ends there
+    this.batching=true;
+    try{for(let i=0;i<Number(p.ticks)&&!this.controls.length;i++){if(!await this.tick())break;}}finally{await this.takeControls();}
+   }
    else if(a.kind==='confirm')await this.confirmStop(pending![0],String(p.actorProvenance??'human'));
    else if(a.kind==='cancel'){
     c.cancelled=true;this.suspend();
-    for(const w of c.workload.filter((x,i,all)=>all.findIndex(y=>y.missionId===x.missionId)===i))if(w.missionId){const m=await this.source.read('mission',w.missionId);if(!FINAL.includes(String(m.state.status))&&m.state.status!=='cancelling'){const r=await this.submit('Mission.Cancel',{missionId:m.ref.id,expectedVersion:m.version});if(r.status!=='accepted')c.attention.push({reason:'CANCEL_REJECTED',subjectId:m.ref.id,tick:c.tick});}}
+    // every open mission of the run's robots, the return-to-parking standby included
+    for(const id of await this.runMissions()){const m=await this.source.read('mission',id);if(!FINAL.includes(String(m.state.status))&&m.state.status!=='cancelling'){const r=await this.submit('Mission.Cancel',{missionId:m.ref.id,expectedVersion:m.version});if(r.status!=='accepted')c.attention.push({reason:'CANCEL_REJECTED',subjectId:m.ref.id,tick:c.tick});}}
     c.confirmations={};await this.scanArrivals();
    }
    else if(a.kind==='reconcile'){
@@ -378,9 +407,28 @@ class IRSimRun implements ScenarioRun {
     const robotId=c.roles.robots[index]!.id,missionId=(await this.source.read('robot',robotId)).state.missionId,commandId=typeof missionId==='string'?String((await this.source.read('mission',missionId)).state.commandId):null;
     c.reconciliations.push({subjectId:subject,commandId,nativeState:commandId?(await this.adapters.get(robotId)!.reconcile(commandId)).status:'idle',tick:c.tick});
    }
-   c.revision++;c.pendingOps=[];c.inFlight=false;this.record();
+   c.revision++;c.pendingOps=[];c.inFlight=false;
+   if(c.plant.status==='live'&&await this.finished())await this.stopPlant();
+   this.record();
    const after=await this.view();c.receipts[a.actionId]={hash,view:after};await this.persist();return structuredClone(after);
   }catch(e){c.attention.push({reason:'ACTION_INTERRUPTED',tick:c.tick});c.revision++;c.inFlight=false;await this.persist();throw e;}
+ }
+ /** Every mission the run created: the workload's, the parking standbys, and whatever a robot is assigned now. */
+ private async runMissions(){
+  const c=this.cp,ids=new Set([...c.workload.flatMap(w=>w.missionId?[w.missionId]:[]),...Object.values(c.parking)]);
+  for(const {id} of c.roles.robots){const m=(await this.source.read('robot',id)).state.missionId;if(typeof m==='string')ids.add(m);}
+  return [...ids];
+ }
+ /** Cancelled only when the journal shows every run mission final and the last verified snapshot shows every robot stopped. */
+ private async cancelDone(){
+  for(const id of await this.runMissions())if(!FINAL.includes(String((await this.source.read('mission',id)).state.status)))return false;
+  return !this.cp.roles.robots.some(r=>this.moving(r.id));
+ }
+ private async finished(){const c=this.cp;return c.started&&!c.attention.length&&(c.cancelled?await this.cancelDone():await this.missionsDone());}
+ /** Pause/cancel received while a step batch runs: each is executed as its own action (own admission, revision check and receipt) at a tick boundary. */
+ private async takeControls(){
+  for(let x=this.controls.shift();x;x=this.controls.shift())await this.execute(x.raw).then(x.resolve,x.reject);
+  this.batching=false; // in the same turn as the last empty check: nothing can be left behind in the control queue
  }
  private async missionsDone(){
   const c=this.cp;
@@ -396,7 +444,7 @@ class IRSimRun implements ScenarioRun {
   const awaiting=Object.entries(c.confirmations).filter(([,x])=>x.due===null).map(([k,x])=>({subjectId:k.split('/')[1]!,confirmationType:x.type,missionId:k.split('/')[0]!,robotId:x.robotId}));
   if(!c.started)status='ready';
   else if(c.attention.length)status='needs_attention';
-  else if(c.cancelled){let open=false;for(const w of c.workload)if(w.missionId&&!FINAL.includes(String((await this.source.read('mission',w.missionId)).state.status)))open=true;status=open?'running':'cancelled';}
+  else if(c.cancelled)status=await this.cancelDone()?'cancelled':'running';
   else if(await this.missionsDone())status='completed';
   else if(c.paused)status='paused';
   else if(awaiting.length)status='awaiting_confirmation';
@@ -408,8 +456,8 @@ class IRSimRun implements ScenarioRun {
  private entities():EntityView[]{
   const c=this.cp;
   return c.roles.robots.map(({id})=>{
-   const r=this.robotObs(id),start=this.scene.robots.find(x=>x.robotId===id)!.initialPoseMap,pose=r?.poseDriveMap??start,g=this.adapters.get(id)!.goal();
-   return {id,kind:'amr' as const,pose:{x:pose[0]!,y:pose[1]!,yawRad:pose[2]!},quality:c.plant.status==='live'?'valid' as const:'stale' as const,moving:c.plant.status==='live'&&this.moving(id),hold:this.holds[id]??null,goal:g?{commandId:g.commandId,state:g.state}:null,path:[],distanceM:c.distanceM[id]??0};
+   const r=this.robotObs(id),start=this.scene.robots.find(x=>x.robotId===id)!.initialPoseMap,[x,y,yawRad]=this.basePose(id,r?.poseDriveMap??start),g=this.adapters.get(id)!.goal();
+   return {id,kind:'amr' as const,pose:{x,y,yawRad},quality:this.verified()?'valid' as const:'stale' as const,moving:c.plant.status==='live'&&this.moving(id),hold:this.holds[id]??null,goal:g?{commandId:g.commandId,state:g.state}:null,path:[],distanceM:c.distanceM[id]??0};
   });
  }
  async report():Promise<RunReport>{
@@ -428,5 +476,5 @@ class IRSimRun implements ScenarioRun {
     'Stop requests are model stops only (physicalStopConfirmed false).',...this.scene.limitations],
    telemetry:this.telemetry.report()};
  }
- async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;try{await w?.close('RUN_CLOSED');}finally{await this.source.close();}}}
+ async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;this.releaseSlot();try{await w?.close('RUN_CLOSED');}finally{await this.source.close();}}}
 }
