@@ -1,0 +1,64 @@
+obstacle:
+- shape:
+    length: 0.2
+    name: rectangle
+    width: 1
+  state:
+  - 4
+  - 2
+  - 0
+robot:
+- goal:
+  - 6
+  - 2
+  - 0
+  kinematics:
+    name: diff
+  name: r1
+  sensors:
+  - angle_range: 1.5707963267948966
+    name: lidar2d
+    noise: false
+    number: 3
+    offset:
+    - 0.1
+    - 0
+    - 0
+    range_max: 10
+    range_min: 0.05
+  shape:
+    name: polygon
+    vertices:
+    - - -0.3
+      - -0.27
+    - - 0.4
+      - -0.27
+    - - 0.4
+      - 0.27
+    - - -0.3
+      - 0.27
+  state:
+  - 1
+  - 2
+  - 0
+- goal:
+  - 6
+  - 4
+  - 0
+  kinematics:
+    name: diff
+  name: r2
+  shape:
+    name: circle
+    radius: 0.2
+  state:
+  - 1
+  - 4
+  - 0
+world:
+  collision_mode: stop
+  control_mode: auto
+  height: 6
+  sample_time: 0.1
+  step_time: 0.02
+  width: 8

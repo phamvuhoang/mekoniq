@@ -12,6 +12,10 @@ Nền tảng nhà hàng và robot phục vụ, được thiết kế lại từ 
 
 Hai file HTML chạy độc lập/offline, chuyển Việt / Nhật / Anh ngay trên màn hình. Các kiểm thử giao diện của tài liệu được ghi riêng trong `artifacts`; trạng thái triển khai production không thay đổi.
 
+## Nghiên cứu và đề xuất mới
+
+- **[LinkForge + IR-SIM cho MEKONIQ Lab — 2026-11-08](docs/superpowers/specs/2026-11-08-linkforge-irsim/README.md)**: [nghiên cứu code và probe thư viện](docs/research/2026-11-08-linkforge-irsim.md), [plan phát triển theo task](docs/superpowers/plans/2026-11-08-linkforge-irsim/README.md). Spec đề xuất, chưa triển khai tích hợp; R-MOCK và các gate native/hardware giữ trạng thái riêng.
+
 ## Thiết kế đã duyệt và kế hoạch triển khai
 
 1. [Kết quả đọc trial và nghiên cứu nguồn chính thức](docs/research/2026-10-30-trial-and-platform-research.md).
