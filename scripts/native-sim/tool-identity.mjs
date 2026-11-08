@@ -9,6 +9,7 @@ function toolClosure(root,paths,symlink){
  files.sort((a,b)=>a.path<b.path?-1:1);return {version:1,digest:createHash('sha256').update(JSON.stringify(files)).digest('hex'),files};
 }
 export const nativeToolClosure=(root)=>toolClosure(root,['robotics/simulation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','tests/fixtures/digital-twin'],'NATIVE_TOOL_SYMLINK');
-/** Portable (macOS/Linux developer) Python tools: IR-SIM worker + its fixtures, LinkForge shadow worker, the shared description/compiler helper and the contract schemas. Separate from the native closure; neither replaces the other. */
-export const PORTABLE_TOOL_PATHS=['robotics/navigation-2d','robotics/model-validation','robotics/simulation/compiler','packages/contracts/schemas'];
+/** Portable (macOS/Linux developer) Python tools: IR-SIM worker + its fixtures, LinkForge shadow worker, the shared description/compiler helper with the robotics/simulation
+ * packages it imports (compiler/__init__ -> compile_world -> worlds.generate_restaurant, actors.blocker/scenario/pedestrian) and the contract schemas. Separate from the native closure; neither replaces the other. */
+export const PORTABLE_TOOL_PATHS=['robotics/navigation-2d','robotics/model-validation','robotics/simulation/compiler','robotics/simulation/actors','robotics/simulation/worlds','packages/contracts/schemas'];
 export const portableToolClosure=(root)=>toolClosure(root,PORTABLE_TOOL_PATHS,'PORTABLE_TOOL_SYMLINK');
