@@ -34,7 +34,8 @@ export interface EngineeringServiceOptions{
 }
 /** Typed failure mapped to HTTP by the v2 gateway: 400 shape/capability, 403 ownership, 409 identity/closure, 503 timeout. */
 export class EngineeringError extends Error{constructor(readonly code:string,readonly status:number,readonly reasonCodes:string[]=[]){super(code);this.name='EngineeringError';}}
-export interface LockedEngineering{ref:EngineeringRef;project:EngineeringProject;runtimeProjection:{project:LabProjectV2;assets:AssetRevision[]}}
+/** `navigation` (portable profiles only): the bundle's navigation scene identity, pinned at admission so the run executes exactly that scene. */
+export interface LockedEngineering{ref:EngineeringRef;project:EngineeringProject;runtimeProjection:{project:LabProjectV2;assets:AssetRevision[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
 export const ENGINEERING_CAPABILITY='engineering_bundle_v1';
 /** Profiles whose bundles are produced by the portable compiler only. */
 export const PORTABLE_PROFILES:readonly string[]=['engineering-irsim-2d-v1'];
@@ -153,7 +154,12 @@ export function createEngineeringService(options:EngineeringServiceOptions){
    if(hashJson(project)!==r.projectDigest)throw new EngineeringError('ENGINEERING_IDENTITY_MISMATCH',409);
    const runtime=await readFileJson<LabProjectV2>(manifest,'runtime-project.json'),assets=await readFileJson<AssetRevision[]>(manifest,'assets.json');
    if(supplied!==undefined&&hashJson(supplied)!==hashJson(runtime))throw new EngineeringError('ENGINEERING_IDENTITY_MISMATCH',409);
-   return {ref:r,project,runtimeProjection:{project:runtime,assets}};
+   if(!PORTABLE_PROFILES.includes(manifest.profile))return {ref:r,project,runtimeProjection:{project:runtime,assets}};
+   // the navigation scene the run will execute: validated here and pinned by hash, never taken from the caller
+   const entry=manifest.files.find(f=>f.path==='navigation-scene.json'),scene=await readFileJson<{sceneDigest?:string;inputs?:{project?:{digest?:string}}}>(manifest,'navigation-scene.json');
+   const checked=validateNavigationDocument(scene);
+   if(!entry||!checked.ok||checked.value.documentType!=='navigation-scene'||scene.inputs?.project?.digest!==r.projectDigest)throw new EngineeringError('ENGINEERING_IDENTITY_MISMATCH',409,['NAVIGATION_SCENE']);
+   return {ref:r,project,runtimeProjection:{project:runtime,assets},navigation:{path:'navigation-scene.json',sha256:entry.sha256,sceneDigest:String(scene.sceneDigest)}};
   },
   /**
    * Shadow validation of one robot of a compiled bundle. The physical model is re-derived from the bundle's own files (never from caller input), the URDF is the
@@ -206,6 +212,12 @@ export function createEngineeringService(options:EngineeringServiceOptions){
    const stored=await validations.readReport(reportDigest);
    if(stored)for(const b of stored.bundleDigests)if(await store.authorizeBundle(sessionId,b))return stored.report;
    throw new EngineeringError('NOT_FOUND',404);
+  },
+  /** Server-internal read of one file of a bundle a session was already admitted to (admitRun); verified against the manifest digest. */
+  async bundleFile(bundleDigest:string,path:string):Promise<Uint8Array>{
+   const manifest=await store.readManifest(bundleDigest),entry=manifest?.files.find(f=>f.path===path),blob=entry&&await store.readBlob(entry.sha256);
+   if(!blob||!('bytes' in blob)||sha256(blob.bytes)!==entry!.sha256)throw new EngineeringError('ENGINEERING_CLOSURE_MISSING',409,[path]);
+   return blob.bytes;
   },
   bindRun:store.bindRun,
   verifyClosure:store.verifyClosure,

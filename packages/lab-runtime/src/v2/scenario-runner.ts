@@ -31,9 +31,9 @@ import {TelemetryRecorder,TELEMETRY_RATE_TICKS} from './telemetry';
 import {projectSamples} from './twin-projection';
 import type {JournalEvents} from './event-stream';
 /** Locked engineering extension: the bundle ref plus the exact project and projection it was compiled from (absent for every legacy run). */
-export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]}}
+export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
 export interface RunManifestInput {project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
-export interface RunProviders {directory:string;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>}
+export interface RunProviders {directory:string;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>}
 export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'}
 export interface ScenarioRun {readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
  /** Cheap, synchronous liveness for stream heartbeats: never reads the journal. `paused` is the acknowledged pause of the virtual clock. */
@@ -62,7 +62,7 @@ class SimulatedCrash extends Error {constructor(){super('SIMULATED_CRASH');}}
 const ID=/^[A-Za-z0-9_.:-]{1,200}$/;
 function activeFaultEntities(project:LabProjectV2,roles:Roles){const ids=new Set([...roles.robots.map(r=>r.id),...roles.coffee?[roles.coffee.cellId,roles.coffee.armId]:[]]);return project.entities.filter(e=>ids.has(e.id));}
 /** Runtime checks the JSON schema cannot express: unique ids, everything inside the world. */
-function checkWorld(p:LabProjectV2){
+export function checkWorld(p:LabProjectV2){
  if(p.armCollisionProfile)validateArmCollisionProfile(p.armCollisionProfile);
  const w=p.world,ids=new Set<string>();
  for(const o of [...w.points,...w.obstacles,...p.entities]){if(ids.has(o.id)||!ID.test(o.id))throw new Error('INVALID_PROJECT');ids.add(o.id);}

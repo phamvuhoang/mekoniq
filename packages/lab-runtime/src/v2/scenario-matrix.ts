@@ -92,6 +92,10 @@ export const scenarioMatrix:readonly MatrixRow[]=[
   tests:['tests/integration/lab-v2-report.test.ts',ACC('SYS05')],backendSupport:amr,oracle:'no effect or control network call from a replay; unknown input refused or kept inert by schema',measurements:['replay-inert'],invariants:[]},
  {id:'SYS06',title:'Backend missing or wrong version; mode change mid-run; backend death mid-run',requirementIds:['UX-19','QA-07','SIM-10'],runnerScenarios:[],fixtures:[R],cell:false,
   tests:['tests/integration/lab-v2-scenario-matrix.test.ts::missing required backend cannot silently produce a passing run','tests/integration/lab-v2-contracts.test.ts',ACC('SYS06')],backendSupport:amr,oracle:'blocked with a reason; no fallback; the run backend is immutable; unknown stays unknown',measurements:['backend-admission'],invariants:[]},
+ {id:'IR-FD01',title:'One order, one robot on the IR-SIM 2D plant: kitchen -> table -> parking (FD01 business template)',requirementIds:['FD-01','FD-02','FD-04','FD-08','SIM-10'],runnerScenarios:['IR-FD01'],fixtures:['robotics/navigation-2d/fixtures/serve-demo-v1/serve-project.json'],cell:false,
+  tests:['tests/integration/irsim-mission.test.ts','tests/integration/irsim-recovery.test.ts','tests/integration/irsim-readiness.test.ts','tests/security/irsim-authority.test.ts'],
+  backendSupport:{mock:false,simulation:true,hardware:false},oracle:'served only after CargoLoaded and DeliveryHandedOff in the journal; navigation arrival ends a leg only; cancel only on a stopped observation; a lost step ACK stays unknown and is never resent',
+  measurements:['sampled-trajectory','worker-loss-unknown'],invariants:[...FOOD,'no-false-arrival','parked-not-charging']},
  {id:'CAMPAIGN-FD02-FD07-BV01-BV03',title:'Concurrent food, corridor and coffee deliveries sharing robots and the cell',requirementIds:['FD-01','FD-07','BV-01','BV-02','BV-07','SIM-10'],runnerScenarios:['CAMPAIGN-FD02-FD07-BV01-BV03'],fixtures:[R,CUP,'tests/fixtures/digital-twin/campaigns/food-beverage.json'],cell:true,
   tests:[MIX('the versioned food, corridor and coffee campaign executes both AMRs and queues the second coffee job without sharing a cup'),'tests/unit/lab-sil-cli.test.ts'],
   backendSupport:amr,oracle:'drinks count as served only after the final handoff; queue, travel, human wait and cell busy measured apart',measurements:PHYS,invariants:BEV},
@@ -115,13 +119,15 @@ const BACKENDS:Record<'mock'|'simulation',{amr:string;cell:string[]}>={mock:{amr
 const needsCell=(target:ScenarioDefinition|MatrixRow)=>'cell' in target?target.cell:!!target.coffee;
 export interface BackendResolution {ok:boolean;required:string[];reasonCodes:string[]}
 const ownedScenarios=(target:ScenarioDefinition|MatrixRow)=>'runnerScenarios' in target?[target.id,...target.runnerScenarios]:[target.id];
+/** IR-* scenarios run only on a set that lists them; the legacy mode formula never maps them onto mock or Gazebo backends. */
+const providerVariant=(target:ScenarioDefinition|MatrixRow)=>ownedScenarios(target).some(id=>id.startsWith('IR-'));
 /**
  * Non-throwing form of requiredBackends. Without a set id the answer is the legacy mode formula. With one, the set must exist and match the mode (no fallback);
  * engineering sets (those declaring scenarioIds) must support the scenario and supply every role it needs; legacy sets keep the legacy formula.
  */
 export function resolveBackends(target:ScenarioDefinition|MatrixRow,mode:'mock'|'simulation',backendSetId?:string,catalog:CapabilityCatalog=defaultCatalog):BackendResolution{
  const fail=(code:string):BackendResolution=>({ok:false,required:[],reasonCodes:[code]});
- const legacy=():BackendResolution=>({ok:true,required:[BACKENDS[mode].amr,...needsCell(target)?BACKENDS[mode].cell:[]],reasonCodes:[]});
+ const legacy=():BackendResolution=>providerVariant(target)?fail('SCENARIO_UNSUPPORTED_BY_SET'):{ok:true,required:[BACKENDS[mode].amr,...needsCell(target)?BACKENDS[mode].cell:[]],reasonCodes:[]};
  if(backendSetId===undefined)return legacy();
  const set=Object.hasOwn(catalog.sets,backendSetId)?catalog.sets[backendSetId]:undefined;
  if(!set)return fail('BACKEND_SET_UNKNOWN');

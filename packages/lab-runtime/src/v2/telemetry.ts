@@ -10,7 +10,7 @@ const same=(a:{bootId:string;seq:string}|undefined,b:{bootId:string;seq:string})
 export class TelemetryRecorder {
  private ring:TwinSampleV2[]=[];private last=new Map<string,TwinSampleV2>();dropped=0;readonly gaps:TelemetryGap[]=[];
  // ponytail: ~20k samples (~10 MB) per run in memory; the spec's 100 MiB/run quota needs an on-disk segment store when runs get long
- constructor(private cap=20000){}
+ constructor(private cap=20000,private source='mock plant/device state (modeled)'){}
  /** Keeps only samples that changed (new boot or seq) per entity; the oldest are evicted and counted once the buffer is full. */
  record(samples:readonly TwinSampleV2[]){
   for(const s of samples){if(same(this.last.get(s.entityId),s))continue;this.last.set(s.entityId,s);this.ring.push(s);if(this.ring.length>this.cap){this.ring.shift();this.dropped++;}}
@@ -21,7 +21,7 @@ export class TelemetryRecorder {
  countBetween(fromSeq:string,toSeq:string){const from=BigInt(fromSeq),to=BigInt(toSeq);return this.ring.filter(s=>BigInt(s.seq)>from&&BigInt(s.seq)<=to).length;}
  report():TelemetryReport{
   const sampleCounts:Record<string,number>={};for(const s of this.ring)sampleCounts[s.entityId]=(sampleCounts[s.entityId]??0)+1;
-  return {lossy:true,coalesced:true,rateHz:1000/(20*TELEMETRY_RATE_TICKS),source:'mock plant/device state (modeled)',samples:structuredClone(this.ring),sampleCounts,dropped:this.dropped,gaps:structuredClone(this.gaps)};
+  return {lossy:true,coalesced:true,rateHz:1000/(20*TELEMETRY_RATE_TICKS),source:this.source,samples:structuredClone(this.ring),sampleCounts,dropped:this.dropped,gaps:structuredClone(this.gaps)};
  }
 }
 /**

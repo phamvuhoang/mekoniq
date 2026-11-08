@@ -26,13 +26,16 @@ export interface ScenarioDefinition {
  loadMinor?:string;
  /** Request the first robot by id, so admission answers with that robot's own first reason instead of NO_CAPABLE_ROBOT. */
  requestRobot?:boolean;
+ /** A provider variant of a business template (IR-*): the same roles, workload and confirmations as the template, recorded under its own id. */
+ basedOn?:{id:string;revision:number};
 }
 // FD03/FD04 obstacles are world coordinates of the fixture layouts (restaurant-v2: kitchen lane x~1, table T01 at 3,1.1; corridor: gap at x 4.5-5.5,
 // y 2.5-3.5). On another layout they land elsewhere; the run still reports what the model did, but the scenario intent then does not hold.
+const FD01={orders:[{actor:'guest-1',table:0,quantity:1,atTick:[25,500] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true};
 const fixedOrder={robots:1,orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,10] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true,maxTicks:90000};
 const corridorGap={x:4.5,y:2.5,width:1,height:1};
 export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<string,ScenarioDefinition>([
- ['FD01',{id:'FD01',revision:1,title:'One order, one robot: kitchen -> table -> parking',robots:1,orders:[{actor:'guest-1',table:0,quantity:1,atTick:[25,500]}],confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:90000}],
+ ['FD01',{id:'FD01',revision:1,title:'One order, one robot: kitchen -> table -> parking',robots:1,...FD01,maxTicks:90000}],
  ['FD07',{id:'FD07',revision:1,title:'Two robots contend for one narrow corridor',robots:2,orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,10]},{actor:'guest-2',table:1,quantity:1,atTick:[12,12]}],confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:180000}],
  ['FD02',{id:'FD02',revision:1,title:'Two tables on one batched mission: each handoff transfers only its own allocation',robots:1,batch:true,orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,200]},{actor:'guest-2',table:1,quantity:2,atTick:[10,200]}],confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:90000}],
  // a person (0.4 m) walks across the kitchen lane in 0.2 m steps every 15 ticks (0.67 m/s) while the robot drives up it
@@ -46,7 +49,9 @@ export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<str
  ['FD05-binding',{id:'FD05-binding',revision:1,title:'Missing target binding is refused before native start',...fixedOrder,requestRobot:true,fleet:{unbindTables:true}}],
  ['BV01',{id:'BV01',revision:1,title:'Espresso and iced milk coffee: recipe -> verify -> arm -> robot -> table',robots:1,orders:[],coffee:{orders:[{actor:'guest-1',table:0,recipe:'espresso',atTick:[10,10]},{actor:'guest-2',table:0,recipe:'iced-milk-coffee',atTick:[20,20]}]},confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:180000}],
  ['FD02-cups',{id:'FD02-cups',revision:1,title:'One mission loads food and an identified coffee cup, then hands off both allocations',robots:1,batch:true,mixFoodCoffee:true,orders:[{actor:'food-guest',table:0,quantity:1,atTick:[10,10]}],coffee:{orders:[{actor:'coffee-guest',table:0,recipe:'espresso',atTick:[12,12]}]},confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:180000}],
- ['CAMPAIGN-FD02-FD07-BV01-BV03',{id:'CAMPAIGN-FD02-FD07-BV01-BV03',revision:1,title:'Concurrent food, corridor and coffee deliveries (ends after customer handoffs)',robots:2,orders:[{actor:'food-a',table:0,quantity:1,atTick:[10,10]},{actor:'food-b',table:1,quantity:1,atTick:[12,12]}],coffee:{orders:[{actor:'coffee-a',table:0,recipe:'espresso',atTick:[10,10]},{actor:'coffee-b',table:0,recipe:'iced-milk-coffee',atTick:[12,12]}]},confirm:{mode:'scripted',delayTicks:50},park:false,maxTicks:180000}]
+ ['CAMPAIGN-FD02-FD07-BV01-BV03',{id:'CAMPAIGN-FD02-FD07-BV01-BV03',revision:1,title:'Concurrent food, corridor and coffee deliveries (ends after customer handoffs)',robots:2,orders:[{actor:'food-a',table:0,quantity:1,atTick:[10,10]},{actor:'food-b',table:1,quantity:1,atTick:[12,12]}],coffee:{orders:[{actor:'coffee-a',table:0,recipe:'espresso',atTick:[10,10]},{actor:'coffee-b',table:0,recipe:'iced-milk-coffee',atTick:[12,12]}]},confirm:{mode:'scripted',delayTicks:50},park:false,maxTicks:180000}],
+ // IR-SIM 2D variant of FD01 (same business template); capped at the provider's 30,000-tick (10 min sim) run quota
+ ['IR-FD01',{id:'IR-FD01',revision:1,title:'One order, one robot on the IR-SIM 2D plant: kitchen -> table -> parking',robots:1,...FD01,maxTicks:30000,basedOn:{id:'FD01',revision:1}}]
 ]);
 export const scenarioHash=(d:ScenarioDefinition)=>hashJson(d);
 const ID=/^[A-Za-z0-9_.:-]{1,200}$/,int=(n:unknown,min:number,max:number)=>Number.isSafeInteger(n)&&(n as number)>=min&&(n as number)<=max;

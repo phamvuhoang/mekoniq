@@ -5,7 +5,7 @@ import type {IncomingMessage,ServerResponse} from 'node:http';
 import {admitBackend,defaultCatalog,type CapabilityCatalog,type Access} from './capabilities';
 import {classifyField,validateProjectV2,validateRunRequestV2,validateActionV2,type Issue} from './contracts';
 import {collectReadiness,type ReadinessProbe,type NativeReadinessChecks} from './readiness';
-import {requirementsByBackendSet,requiredBackends,resolveBackends} from './scenario-matrix';
+import {requirementsByBackendSet,resolveBackends} from './scenario-matrix';
 import {scenarioRegistry} from './scenario-registry';
 import {createScenarioRun,type ScenarioRun,type RunManifestInput,type RunProviders} from './scenario-runner';
 import {serveRunStream,STREAM_DEFAULTS,type StreamOptions} from './event-stream';
@@ -24,6 +24,9 @@ export interface V2Deps {
  stream?:Partial<StreamOptions>;
  readinessProbes?:Readonly<Record<string,ReadinessProbe>>;
  nativeChecks?:NativeReadinessChecks;
+ /** Readiness of portable (portable_python) sets, from portableSimulationFromOptions; native sets never consult it. */
+ portableChecks?:NativeReadinessChecks;
+ /** Server-owned and dispatched by backend set (navigation2d/readiness.ts): portable sets run IR-SIM, native sets the native factory, anything else is refused. */
  simulationFactory?:(input:RunManifestInput,providers:RunProviders)=>Promise<ScenarioRun>;
  /** Present only when this runtime can admit engineering bundles; its absence is what makes ENGINEERING_CAPABILITY_REQUIRED a hard refusal. */
  engineering?:EngineeringService;
@@ -45,12 +48,16 @@ export function createV2Gateway(deps:V2Deps){
  const deny=(response:ServerResponse,status:number,error:string,reasonCodes:string[],issues?:Issue[])=>deps.send(response,status,{error,reasonCodes,...issues?{issues}:{}});
  const failed=(response:ServerResponse,e:unknown)=>{const m=e instanceof Error?e.message:'RUNTIME_FAILURE',status=statusOf(m.split(':')[0]!);return deny(response,status,status===500&&m!=='SIMULATED_CRASH'?'RUNTIME_FAILURE':m.split(':')[0]!,m.includes(':')?m.split(':')[1]!.split(','):[]);};
 const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof EngineeringError?deny(response,e.status,e.code,e.reasonCodes):failed(response,e);
+ const bundleFile=deps.engineering?(digest:string,path:string)=>deps.engineering!.bundleFile(digest,path):undefined;
+ const readinessOptions=()=>({catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks,portableChecks:deps.portableChecks});
  const handle=async function handle(request:IncomingMessage,response:ServerResponse,path:string,origin:string|undefined){
   const method=request.method,{send}=deps,sub=path.slice('/lab/v2'.length);
   if(method==='GET'&&sub==='/health')return send(response,200,{
    protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
-   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends})),scenarioIds:[...scenarioRegistry.keys()],scenarioRequirements:Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,{mock:requiredBackends(def,'mock'),simulation:requiredBackends(def,'simulation')}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true},capabilities:deps.engineering?[ENGINEERING_CAPABILITY]:[],
+   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:[...scenarioRegistry.keys()],scenarioRequirements:Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true},
+   // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
+   capabilities:[...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[]],
   });
   if(method==='POST'&&!origin)return deny(response,403,'ORIGIN_REQUIRED',[]);
   if(method==='POST'&&sub==='/sessions'){
@@ -97,7 +104,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   }
   if(sub==='/readiness'){
    const params=new URL(request.url??'/','http://127.0.0.1').searchParams;
-   let context:{scenarioId:string;backendSetId:string;project?:unknown};
+   let context:{scenarioId:string;backendSetId:string;project?:unknown;engineering?:{bundleDigest:string;projectDigest:string}};
    let engineeringChecked=false;
    if(method==='GET'){
     if([...params.keys()].some(k=>!['scenarioId','backendSetId'].includes(k))||['scenarioId','backendSetId'].some(k=>params.getAll(k).length!==1||!/^[A-Za-z0-9_.:-]{1,200}$/.test(params.get(k)??'')))return deny(response,400,'INVALID_READINESS_QUERY',[]);
@@ -110,12 +117,12 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     if(Object.hasOwn(body,'engineeringRef')){
      // the project is the bundle's locked projection; a supplied one can only be checked for equality against it
      if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);
-     try{context.project=(await deps.engineering.admitRun(sessionId,body.engineeringRef,context.backendSetId,body.project)).runtimeProjection.project;engineeringChecked=true;}catch(e){return engineeringFailed(response,e);}
+     try{const locked=await deps.engineering.admitRun(sessionId,body.engineeringRef,context.backendSetId,body.project);context.project=locked.runtimeProjection.project;context.engineering=locked.ref;engineeringChecked=true;}catch(e){return engineeringFailed(response,e);}
     }
    }else return deny(response,405,'METHOD_NOT_ALLOWED',[]);
    const readinessSet=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]:undefined;
    if(readinessSet?.scenarioIds&&!(method==='POST'&&context.project!==undefined&&engineeringChecked))return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
-   return send(response,200,await collectReadiness(context,{catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks}));
+   return send(response,200,await collectReadiness(context,readinessOptions()));
   }
   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
   const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|events|telemetry|reclaim|archive))?$`).exec(sub);
@@ -158,7 +165,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(!admission.ok)return deny(response,422,'BACKEND_UNAVAILABLE',admission.reasonCodes);
    // Contract admission and execution availability are separate; native runs require a server-owned factory.
    if((set.mode!=='mock'&&!(set.mode==='simulation'&&deps.simulationFactory))||!required.every(b=>enabled.has(b)))return deny(response,501,'BACKEND_UNAVAILABLE',['BACKEND_EXECUTION_DISABLED']);
-   const readiness=await collectReadiness({scenarioId:r.scenarioId,backendSetId:r.backendSetId,project},{catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks});
+   const readiness=await collectReadiness({scenarioId:r.scenarioId,backendSetId:r.backendSetId,project,...engineering?{engineering:engineering.ref}:{}},readinessOptions());
    if(!readiness.canStart)return deny(response,422,'BACKEND_UNAVAILABLE',readiness.checks.flatMap(c=>c.reasonCodes));
    // Expired sessions free active slots. Their durable checkpoints can later be reclaimed with local ownership proof.
    for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});}}
@@ -166,7 +173,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
    try{
     const input:RunManifestInput={project,scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...engineering?{engineering}:{}};
-    run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...engineering?{assets:engineering.runtimeProjection.assets as never}:{}});
+    run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...engineering?{assets:engineering.runtimeProjection.assets as never,bundleFile}:{}});
     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
     // the run → bundle association is durable before the client hears about the run
     if(engineering)await deps.engineering!.bindRun(run.id,engineering.ref);
@@ -206,7 +213,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    const beforeExecute=action.value.kind==='start'||action.value.kind==='resume'?async()=>{
     // the bundle a run was created from must still be whole before any motion is started or resumed
     if(entry.input.engineering&&deps.engineering&&(await deps.engineering.verifyClosure(entry.input.engineering.ref.bundleDigest)).length)throw new Error('ENGINEERING_CLOSURE_MISSING');
-    const readiness=await collectReadiness({scenarioId:entry.input.scenarioId,backendSetId:entry.input.backendSetId,project:entry.input.project},{catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks});
+    const readiness=await collectReadiness({scenarioId:entry.input.scenarioId,backendSetId:entry.input.backendSetId,project:entry.input.project,...entry.input.engineering?{engineering:entry.input.engineering.ref}:{}},readinessOptions());
     if(!readiness.canStart)throw new Error(`BACKEND_UNAVAILABLE:${readiness.checks.flatMap(c=>c.reasonCodes).join(',')}`);
    }:undefined;
    try{return send(response,200,await entry.run.action(action.value,beforeExecute));}catch(e){return failed(response,e);}
