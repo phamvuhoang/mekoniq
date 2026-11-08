@@ -4,7 +4,8 @@ import type {IRSimSnapshotV1,NavigationSceneV1} from './contracts';
 
 export type ContactSource='engine_discrete'|'swept_oracle'|'safety_envelope';
 export interface Contact{tick:number;pair:[string,string];source:ContactSource}
-export interface TrajectoryAssessment{contacts:Contact[];minSeparationM:number|null;coverage:'complete'|'incomplete'}
+/** minSeparationM: robot-robot surface separation (null for one robot); minClearanceM: robot to obstacle/boundary; both null without complete coverage. */
+export interface TrajectoryAssessment{contacts:Contact[];minSeparationM:number|null;minClearanceM:number|null;coverage:'complete'|'incomplete'}
 
 /**
  * Independent collision oracle: it reads only observed poses and the physical hulls. It never asks the controller whether it collided, and it reports
@@ -21,7 +22,7 @@ export function assessTrajectory(scene:NavigationSceneV1,snapshots:readonly IRSi
  };
  let complete=snapshots.length>0;
  const poseOf=(s:IRSimSnapshotV1,id:string):Pose2|null=>{const r=s.robots.find(x=>x.robotId===id);return r?[r.poseDriveMap[0],r.poseDriveMap[1],r.poseDriveMap[2]]:null;};
- let minSeparation=Infinity;
+ let minSeparation=Infinity,minClearance=Infinity;
  snapshots.forEach((s,i)=>{
   const prev=snapshots[i-1];
   if(s.sceneDigest!==scene.sceneDigest||robots.some(r=>!poseOf(s,r.id))||(prev&&s.tick!==prev.tick+1))complete=false;
@@ -30,6 +31,7 @@ export function assessTrajectory(scene:NavigationSceneV1,snapshots:readonly IRSi
   for(const b of bodies){
    for(const o of solids){
     const d=polygonDistance(b.poly,o.poly);
+    minClearance=Math.min(minClearance,d);
     if(d===0)add(s.tick,b.id,o.id,'swept_oracle');else if(d<margin)add(s.tick,b.id,o.id,'safety_envelope');
    }
   }
@@ -44,5 +46,5 @@ export function assessTrajectory(scene:NavigationSceneV1,snapshots:readonly IRSi
    for(const hull of sweptHulls(b.hull,from,b.pose))for(const o of solids)if(polygonsOverlap(hull,o.poly))add(s.tick,b.id,o.id,'swept_oracle');
   }
  });
- return {contacts:contacts.sort((a,b)=>a.tick-b.tick||(a.pair<b.pair?-1:1)||(a.source<b.source?-1:1)),minSeparationM:complete&&robots.length>1&&Number.isFinite(minSeparation)?minSeparation:null,coverage:complete?'complete':'incomplete'};
+ return {contacts:contacts.sort((a,b)=>a.tick-b.tick||(a.pair<b.pair?-1:1)||(a.source<b.source?-1:1)),minSeparationM:complete&&robots.length>1&&Number.isFinite(minSeparation)?minSeparation:null,minClearanceM:complete&&Number.isFinite(minClearance)?minClearance:null,coverage:complete?'complete':'incomplete'};
 }

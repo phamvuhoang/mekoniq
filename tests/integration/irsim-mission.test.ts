@@ -3,13 +3,13 @@
 import {afterAll,afterEach,beforeAll,expect,test} from 'vitest';
 import {rm} from 'node:fs/promises';
 import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
-import {act,double,irsimAvailable,irsimBundle,openRun,stepUntil,temp,tickOf,workerLog} from '../support/irsim-mission';
+import {act,double,irsimAvailable,irsimBundle,openRun,removeBundles,stepUntil,temp,tickOf,workerLog} from '../support/irsim-mission';
 
 let bundle:Awaited<ReturnType<typeof irsimBundle>>;
 const runs:ScenarioRun[]=[],dirs:string[]=[];
 beforeAll(async()=>{if(irsimAvailable)bundle=await irsimBundle();},120_000);
 afterEach(async()=>{for(const r of runs.splice(0))await r.close().catch(()=>{});for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
-afterAll(async()=>{});
+afterAll(removeBundles);
 async function open(over:Parameters<typeof openRun>[2]={}){const dir=await temp('irsim-mission-');dirs.push(dir);const run=await openRun(dir,bundle,over);runs.push(run);return {run,dir};}
 const events=async(run:ScenarioRun)=>(await run.report()).businessEvents;
 

@@ -1,5 +1,7 @@
 import type {FaultScheduleEntry,FaultFireRecord} from './fault-schedule';
 import type {RunVerification} from '../../../contracts/generated/lab-v2';
+import type {NavigationRunEvidenceV1} from '../../../contracts/generated/navigation2d';
+import type {NavigationMetrics} from './navigation2d/evidence';
 import type {JsonObject} from '../../../contracts/src/index';
 import {hashJson} from './hash';
 import type {TelemetryReport} from './telemetry';
@@ -27,7 +29,9 @@ export interface RunReport {
  attention:Attention[];workload:WorkloadItem[];entities:EntityView[];businessEvents:BusinessEvent[];effects:{id:string;type:string;status:string;attempts:number;payload:JsonObject}[];
  metrics:{maxConcurrentMovers:number;
   /** Plant hold transitions (cause of each wait and its end, null = moving again), from the mock model. */
-  holds?:{at:string;robotId:string;hold:string|null}[];distanceM:Record<string,number>;collision:{available:boolean;reason?:string;contacts:number|null;minSeparationM:number|null}};
+  holds?:{at:string;robotId:string;hold:string|null}[];distanceM:Record<string,number>;collision:{available:boolean;reason?:string;contacts:number|null;minSeparationM:number|null};
+  /** IR-SIM only: plant metrics recomputed from the durable evidence (navigation2d), with their coverage. */
+  navigation?:Omit<NavigationMetrics,'contacts'|'coverageReasons'>&{reasons:string[]}};
  rejectedObservations:{eventId:string;commandId:string;type:string;code:string;tick:number}[];
  reconciliations:{subjectId:string;commandId:string|null;nativeState:string;tick:number}[];
  recoveredOps:{ordinal:number;operationId:string;type:string;committed:boolean}[];
@@ -38,6 +42,8 @@ export interface RunReport {
  verification?:RunVerification;
  /** Lossy coalesced samples, kept apart from the durable businessEvents; not part of canonicalOutcome. */
  telemetry:TelemetryReport;
+ /** IR-SIM only (navigation-run-evidence-v1): durable evidence manifest, identities, seeds, digests and assertions. Not part of canonicalOutcome. */
+ navigation2d?:NavigationRunEvidenceV1;
 }
 const UUID=/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
 /**

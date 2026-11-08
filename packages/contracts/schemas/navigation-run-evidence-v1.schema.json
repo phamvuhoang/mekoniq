@@ -106,6 +106,53 @@
         "lockDigest"
       ]
     },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional (added with B05): the versions a rerun must match besides the engine and lock.",
+      "properties": {
+        "sourceCommit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "compilerVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sceneSchemaHash": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "evidenceFormat": {
+          "const": "navigation-evidence-ndjson-gzip-v1"
+        },
+        "os": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "arch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "node": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "sourceCommit",
+        "compilerVersion",
+        "sceneSchemaHash",
+        "evidenceFormat",
+        "os",
+        "arch",
+        "node"
+      ]
+    },
     "clock": {
       "type": "object",
       "additionalProperties": false,
@@ -190,6 +237,37 @@
             }
           },
           "required": [
+            "algorithm",
+            "seed"
+          ]
+        },
+        "engineRng": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Optional (added with B05): the IR-SIM NumPy stream, separate from the source actor stream.",
+          "properties": {
+            "library": {
+              "const": "numpy"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "algorithm": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          },
+          "required": [
+            "library",
+            "version",
             "algorithm",
             "seed"
           ]
@@ -401,6 +479,19 @@
         },
         "assertionDigest": {
           "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "algorithm": {
+          "const": "navigation-evidence-digest-v1"
+        },
+        "normalizedOmits": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
         }
       },
       "required": [
@@ -522,6 +613,33 @@
         "minLength": 1,
         "maxLength": 500
       }
+    },
+    "completeness": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional (added with B05): incomplete whenever a chunk fails verification, ticks are missing or a limit ended the recording.",
+      "properties": {
+        "status": {
+          "enum": [
+            "complete",
+            "incomplete"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "required": [
+        "status",
+        "reasons"
+      ]
     }
   },
   "required": [

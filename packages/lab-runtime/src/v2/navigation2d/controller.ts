@@ -2,6 +2,8 @@ import {convexHull,grow,place,pointDistance,polygonsOverlap,sweptHulls,wrapPi,is
 import type {P,Pose2} from './geometry';
 import type {IRSimSnapshotV1,NavigationSceneV1} from './contracts';
 
+/** Controller identity recorded with every run's evidence; bump the version with any change that can move a trajectory. */
+export const NAVIGATION_CONTROLLER={id:'grid-diff-v1',version:'1'} as const;
 export type DecisionStatus='executing'|'arrived'|'blocked'|'no_path'|'cancelled';
 export interface Decision{robotId:string;commandId:string;status:DecisionStatus;reason:string|null}
 export interface Velocity{robotId:string;vMps:number;omegaRadps:number}

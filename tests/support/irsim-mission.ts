@@ -2,7 +2,7 @@
 // the worker is the real one, or the logging/crashing double in tests/support/irsim_doubles. Nothing here sets a production provider installed.
 import {execFileSync} from 'node:child_process';
 import {existsSync,readFileSync} from 'node:fs';
-import {mkdtemp} from 'node:fs/promises';
+import {mkdtemp,rm} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {createEngineeringService,type EngineeringService,type LockedEngineering} from '../../packages/lab-runtime/src/engineering/gateway';
@@ -18,19 +18,22 @@ export const irPython=resolve('.venv-irsim/bin/python'),workerRoot=resolve('robo
 export const irsimAvailable=existsSync(irPython)&&(()=>{try{execFileSync(irPython,['-c','import irsim, yaml, rfc8785, jsonschema, referencing'],{stdio:'ignore'});return true;}catch{return false;}})();
 export const double=(name:string)=>resolve('tests/support/irsim_doubles',name);
 export const temp=(p:string)=>mkdtemp(join(tmpdir(),p));
+const bundleDirs:string[]=[];
+/** Removes the catalog/engineering directories every irsimBundle call of this test file created (call from afterAll). */
+export const removeBundles=()=>Promise.all(bundleDirs.splice(0).map(d=>rm(d,{recursive:true,force:true})));
 
 /** Compiles the fixture once through the engineering service and admits it for `owner` (the gateway's admitRun: projections come from the bundle). */
 export async function irsimBundle(name:NavigationFixtureName='serve',owner='owner'):Promise<{service:EngineeringService;locked:LockedEngineering}>{
- const f=navigationFixture(name).fixture,catalogRoot=await temp('irsim-cat-');
+ const f=navigationFixture(name).fixture,catalogRoot=await temp('irsim-cat-'),engineering=await temp('irsim-eng-');bundleDirs.push(catalogRoot,engineering);
  await writeFixtureCatalog(catalogRoot,f as never);
- const service=createEngineeringService({directory:await temp('irsim-eng-'),catalogRoot,compiler:testCompiler,compilers:{'engineering-irsim-2d-v1':createNavigationCompiler({python:irPython,workerRoot,descriptionHelperRoot:resolve('robotics/simulation')})}});
+ const service=createEngineeringService({directory:engineering,catalogRoot,compiler:testCompiler,compilers:{'engineering-irsim-2d-v1':createNavigationCompiler({python:irPython,workerRoot,descriptionHelperRoot:resolve('robotics/simulation')})}});
  const receipt=await service.compileEngineeringProject(f.project,owner);
  if(receipt.state!=='compiled')throw new Error(`IRSIM_BUNDLE_NOT_COMPILED ${JSON.stringify(receipt.problems)}`);
  return {service,locked:await service.admitRun(owner,{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},'engineering-irsim-2d-v1',undefined)};
 }
 export const irsimInput=(locked:LockedEngineering,seed=5):RunManifestInput=>({project:locked.runtimeProjection.project,scenarioId:'IR-FD01',scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId:'engineering-irsim-2d-v1',sourceCommit:'test-commit',engineering:locked});
 /** Test wiring only: the catalog marks irsim_2d usable because this test provisions the venv itself. */
-export async function irsimProviders(directory:string,service:EngineeringService,over:{entry?:string[];deadlinesMs?:Record<string,number>}={}):Promise<IRSimRunProviders>{
+export async function irsimProviders(directory:string,service:EngineeringService,over:{entry?:string[];deadlinesMs?:Record<string,number>;evidence?:IRSimRunProviders['irsim']['evidence']}={}):Promise<IRSimRunProviders>{
  return {directory,catalog:portableCatalog(true),enabledBackends:['irsim_2d'],bundleFile:(d,p)=>service.bundleFile(d,p),
   irsim:{python:irPython,workerRoot,schemaDir,lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock')),...over}};
 }

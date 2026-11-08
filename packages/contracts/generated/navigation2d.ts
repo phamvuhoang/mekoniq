@@ -627,6 +627,18 @@ export interface NavigationRunEvidenceV1 {
     platform: string;
     lockDigest: Digest;
   };
+  /**
+   * Optional (added with B05): the versions a rerun must match besides the engine and lock.
+   */
+  identity?: {
+    sourceCommit: string;
+    compilerVersion: string;
+    sceneSchemaHash: Digest;
+    evidenceFormat: 'navigation-evidence-ndjson-gzip-v1';
+    os: string;
+    arch: string;
+    node: string;
+  };
   clock: {
     tickMs: 20;
     tickHorizon: number;
@@ -646,6 +658,15 @@ export interface NavigationRunEvidenceV1 {
       noiseSeed: number;
     }[];
     actorRng: {
+      algorithm: string;
+      seed: number;
+    };
+    /**
+     * Optional (added with B05): the IR-SIM NumPy stream, separate from the source actor stream.
+     */
+    engineRng?: {
+      library: 'numpy';
+      version: string;
       algorithm: string;
       seed: number;
     };
@@ -701,6 +722,12 @@ export interface NavigationRunEvidenceV1 {
     trajectoryDigest: Digest;
     sensorDigest: Digest;
     assertionDigest: Digest;
+    algorithm?: 'navigation-evidence-digest-v1';
+    /**
+     * @minItems 0
+     * @maxItems 20
+     */
+    normalizedOmits?: string[];
   };
   /**
    * @minItems 0
@@ -734,4 +761,15 @@ export interface NavigationRunEvidenceV1 {
    * @maxItems 100
    */
   limitations: string[];
+  /**
+   * Optional (added with B05): incomplete whenever a chunk fails verification, ticks are missing or a limit ended the recording.
+   */
+  completeness?: {
+    status: 'complete' | 'incomplete';
+    /**
+     * @minItems 0
+     * @maxItems 50
+     */
+    reasons: string[];
+  };
 }

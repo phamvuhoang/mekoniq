@@ -110,6 +110,10 @@ const requestValidator=ajv.getSchema('irsim-worker-v1.schema.json')!,responseVal
 export const validateIRSimRequest=(input:unknown):{ok:true;value:IRSimRequestV1}|{ok:false;issues:NavigationIssue[]}=>requestValidator(input)?{ok:true,value:input as IRSimRequestV1}:{ok:false,issues:schemaIssues(requestValidator.errors)};
 export const validateIRSimResponse=(input:unknown):{ok:true;value:IRSimResponseV1}|{ok:false;issues:NavigationIssue[]}=>responseValidator(input)?{ok:true,value:input as IRSimResponseV1}:{ok:false,issues:schemaIssues(responseValidator.errors)};
 
+const evidenceValidator=ajv.getSchema('navigation-run-evidence-v1.schema.json')!;
+/** navigation-run-evidence-v1 (report extension). It has no self digest: its artifacts carry the stored-byte hashes and its digests the normalized record identity. */
+export const validateNavigationEvidence=(input:unknown):{ok:true;value:NavigationRunEvidenceV1}|{ok:false;issues:NavigationIssue[]}=>evidenceValidator(input)?{ok:true,value:input as NavigationRunEvidenceV1}:{ok:false,issues:schemaIssues(evidenceValidator.errors)};
+
 export function validateNavigationDocument(input:unknown):NavigationCheck{
  const type=input&&typeof input==='object'?(input as Record<string,unknown>).documentType:undefined;
  const meta=typeof type==='string'&&Object.hasOwn(KEYS,type)?KEYS[type]:undefined;

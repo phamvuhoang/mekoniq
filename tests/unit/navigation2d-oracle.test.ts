@@ -23,7 +23,8 @@ test('geometry: overlap, touching and surface distance are exact on axis-aligned
 
 test('a clean drive along the aisle is complete coverage with no contact and no robot-robot metric for one robot', () => {
   const a = assessTrajectory(serve, run(serve, 51, (k) => ({ 'amr-1': [3 + k * 0.02, 6, 0] })));
-  expect(a).toEqual({ contacts: [], minSeparationM: null, coverage: 'complete' });
+  expect(a).toEqual({ contacts: [], minSeparationM: null, minClearanceM: expect.any(Number), coverage: 'complete' });
+  expect(a.minClearanceM!).toBeGreaterThan(1); // nearest solid is the kitchen counter, well clear of the aisle
 });
 
 test('engine contacts, overlaps found here and margin breaches are three different kinds of evidence', () => {
@@ -59,6 +60,7 @@ test('coverage gaps never become a clean pass: missing ticks, robots or a foreig
   expect(assessTrajectory(two, [{ ...ok[0]!, sceneDigest: 'f'.repeat(64) }]).coverage).toBe('incomplete');
   const gap = assessTrajectory(two, [ok[0]!, ok[2]!]);
   expect(gap.minSeparationM).toBeNull();
+  expect(gap.minClearanceM).toBeNull();
   expect(assessTrajectory(two, []).coverage).toBe('incomplete');
 });
 
