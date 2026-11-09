@@ -1,0 +1,62 @@
+{
+ "id": "010-IR-FD01-serve-demo-v1-s15-r1",
+ "index": 5,
+ "scenarioId": "IR-FD01",
+ "fixtureId": "serve-demo-v1",
+ "seed": 15,
+ "repeat": 1,
+ "expectedAssertions": [
+  "EVIDENCE_COMPLETE",
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "NO_PHYSICAL_CONTACT"
+ ],
+ "kind": "scenario",
+ "label": "IR01: one order, one robot, kitchen -> table -> parking",
+ "stepTicks": 500,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "completed",
+  "served": "1",
+  "tick": 2702,
+  "simTimeNs": "54040000000"
+ },
+ "horizon": 2702,
+ "evidenceComplete": true,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "ddd3d181a31a10431017cefc43f88a1ac4988092484fab1319d07c5fab8a77c3",
+  "sensorDigest": "1794610600ad61dfc6fce4d08ded71a61b8f7fe57f1352740df6b9209a81cf65",
+  "assertionDigest": "6ccb86e8dd2c1575e0d19d6100b91bd59feb32403e39a3d0fe0730c67866936d",
+  "outcomeDigest": "06ca721a88d529a0cde17593df0ce2c1be5623026c02cee6d756a7d9ec86384b"
+ },
+ "assertions": [
+  {
+   "id": "EVIDENCE_COMPLETE",
+   "result": "pass"
+  },
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "NO_PHYSICAL_CONTACT",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 10319,
+ "provider": {
+  "id": "irsim_2d",
+  "kind": "irsim_worker"
+ }
+}

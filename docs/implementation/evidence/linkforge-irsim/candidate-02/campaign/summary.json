@@ -1,0 +1,1488 @@
+{
+ "schemaVersion": 1,
+ "documentType": "irsim-campaign-summary",
+ "status": "completed",
+ "campaignId": "c02-qualification",
+ "campaignSha256": "2af4682ec97e65eef6e9f6540d3500f9b5ec3387f49f08d00121a6d3a876ec43",
+ "sourceCommit": "fc21c1ee700499e624f229f9e336efeb88f2c7e7",
+ "identity": {
+  "toolClosures": {
+   "portable": "d383331a0abae82527ce3f58782ddb225d79a4defa38a3fdf37a0e771ea2210b",
+   "native": "11814623733136e80d337cec10613c12b9be6e295460513be32e21db5693935d"
+  }
+ },
+ "provider": {
+  "id": "irsim_2d",
+  "kind": "irsim_worker"
+ },
+ "concurrency": 1,
+ "startedAt": "2026-11-09T12:16:50.077Z",
+ "finishedAt": "2026-11-09T12:22:01.010Z",
+ "reasons": [],
+ "complete": true,
+ "evidenceComplete": false,
+ "runs": [
+  {
+   "id": "001-IR-FD01-serve-demo-v1-s11-r1",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 11,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "b4f46bc9dfece69c9a9373bb467ce7a675ac41571270d9c1d5fcc6e31f029946",
+    "sensorDigest": "31e6779498220008f18394ec957fb39522c3f331fb4e658b51dac236d86dbffb",
+    "assertionDigest": "2201f5b86add1a55232c9e276e89b4001b4ffa679532696c9f6ddbebec64a096",
+    "outcomeDigest": "a7de9ee1a68174653e45d8b529de5223f2410155f7e3b8e149b76fa9bbbe23f5"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2706,
+    "simTimeNs": "54120000000"
+   },
+   "wallMs": 10919
+  },
+  {
+   "id": "002-IR-FD01-serve-demo-v1-s11-r2",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 11,
+   "repeat": 2,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 25,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "b4f46bc9dfece69c9a9373bb467ce7a675ac41571270d9c1d5fcc6e31f029946",
+    "sensorDigest": "31e6779498220008f18394ec957fb39522c3f331fb4e658b51dac236d86dbffb",
+    "assertionDigest": "2201f5b86add1a55232c9e276e89b4001b4ffa679532696c9f6ddbebec64a096",
+    "outcomeDigest": "a7de9ee1a68174653e45d8b529de5223f2410155f7e3b8e149b76fa9bbbe23f5"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2706,
+    "simTimeNs": "54120000000"
+   },
+   "wallMs": 11332
+  },
+  {
+   "id": "003-IR-FD01-serve-demo-v1-s11-r3",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 11,
+   "repeat": 3,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 100,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "b4f46bc9dfece69c9a9373bb467ce7a675ac41571270d9c1d5fcc6e31f029946",
+    "sensorDigest": "31e6779498220008f18394ec957fb39522c3f331fb4e658b51dac236d86dbffb",
+    "assertionDigest": "2201f5b86add1a55232c9e276e89b4001b4ffa679532696c9f6ddbebec64a096",
+    "outcomeDigest": "a7de9ee1a68174653e45d8b529de5223f2410155f7e3b8e149b76fa9bbbe23f5"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2706,
+    "simTimeNs": "54120000000"
+   },
+   "wallMs": 11094
+  },
+  {
+   "id": "004-IR-FD01-serve-noisy-v1-s11-r1",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-noisy-v1",
+   "seed": 11,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    },
+    {
+     "id": "NOISE_VISIBLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "c0d2c3261b40b1f8ae64f02e791fd9cd5aed829b9fa2705be561631c34882de6",
+    "sensorDigest": "d865f45d0abc301abb969ae6b343b85dc3eaabaae45c38b011a774671090d384",
+    "assertionDigest": "089659f854a0c3875d56ec8b233bdfef9c2daf2b9ebc912534cd9716f930878a",
+    "outcomeDigest": "17063bdf0dfc7696546faa36afb41cb5fe892e0418be1fd4878b7ad3a5931cf4"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2706,
+    "simTimeNs": "54120000000"
+   },
+   "wallMs": 11170
+  },
+  {
+   "id": "005-IR-FD01-serve-noisy-v1-s11-r2",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-noisy-v1",
+   "seed": 11,
+   "repeat": 2,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 25,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    },
+    {
+     "id": "NOISE_VISIBLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "c0d2c3261b40b1f8ae64f02e791fd9cd5aed829b9fa2705be561631c34882de6",
+    "sensorDigest": "d865f45d0abc301abb969ae6b343b85dc3eaabaae45c38b011a774671090d384",
+    "assertionDigest": "089659f854a0c3875d56ec8b233bdfef9c2daf2b9ebc912534cd9716f930878a",
+    "outcomeDigest": "17063bdf0dfc7696546faa36afb41cb5fe892e0418be1fd4878b7ad3a5931cf4"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2706,
+    "simTimeNs": "54120000000"
+   },
+   "wallMs": 11157
+  },
+  {
+   "id": "006-IR-FD01-serve-noisy-v1-s11-r3",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-noisy-v1",
+   "seed": 11,
+   "repeat": 3,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 100,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    },
+    {
+     "id": "NOISE_VISIBLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "c0d2c3261b40b1f8ae64f02e791fd9cd5aed829b9fa2705be561631c34882de6",
+    "sensorDigest": "d865f45d0abc301abb969ae6b343b85dc3eaabaae45c38b011a774671090d384",
+    "assertionDigest": "089659f854a0c3875d56ec8b233bdfef9c2daf2b9ebc912534cd9716f930878a",
+    "outcomeDigest": "17063bdf0dfc7696546faa36afb41cb5fe892e0418be1fd4878b7ad3a5931cf4"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2706,
+    "simTimeNs": "54120000000"
+   },
+   "wallMs": 11044
+  },
+  {
+   "id": "007-IR-FD01-serve-demo-v1-s12-r1",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 12,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "ea1cf12fb789720fc8283f9c80142144129d0fd17fc8a53d63807ce3380e3183",
+    "sensorDigest": "02105de7e5f6495ca112e9a537d90003b431dd3b30c456dca51a762c89b80557",
+    "assertionDigest": "d713b2d741bd4bc4810bf0c6add41772d85182ef26de16c7ee1fa18907efc4e8",
+    "outcomeDigest": "f12b4d2afdf062f79c57bdb2ebf9edf7dc9587db32bf392675803ea3eae7e27a"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2945,
+    "simTimeNs": "58900000000"
+   },
+   "wallMs": 10804
+  },
+  {
+   "id": "008-IR-FD01-serve-demo-v1-s13-r1",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 13,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "7f9ff4b209402439d08197da6f46b19e6fe9a6054d187c42f8c6835373118155",
+    "sensorDigest": "f021cedc2da2bd68dfe3095e82646cf3397e202d2b44792fd0d73dc1cacb0209",
+    "assertionDigest": "6c8eb0cabdc8f0de362033f8ff50df8cc7c8c1519b0791ab09b870a2ef0dc5d1",
+    "outcomeDigest": "f4b68142a3e734328413ba1595d2d10be76c096e9dedbfeb06f4b2722dbb8a39"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2735,
+    "simTimeNs": "54700000000"
+   },
+   "wallMs": 10504
+  },
+  {
+   "id": "009-IR-FD01-serve-demo-v1-s14-r1",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 14,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "b1aab4ea171fdb94f55483f0d222afba38541c13863bb409444994988ef1b488",
+    "sensorDigest": "a6c49ba7748ecd01e861c2910a7f741f347ae73ac4c4a4b5c3d7547c615e4bfc",
+    "assertionDigest": "e95e8927812762a7293b2dba4a4e9fe44e5135dfb240fe3a2fe46a6ca45f968f",
+    "outcomeDigest": "4039eacf33b4881f9131f8f0084fb85d4774c230986f0d189e44977384f2ef44"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2897,
+    "simTimeNs": "57940000000"
+   },
+   "wallMs": 10861
+  },
+  {
+   "id": "010-IR-FD01-serve-demo-v1-s15-r1",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 15,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "ddd3d181a31a10431017cefc43f88a1ac4988092484fab1319d07c5fab8a77c3",
+    "sensorDigest": "1794610600ad61dfc6fce4d08ded71a61b8f7fe57f1352740df6b9209a81cf65",
+    "assertionDigest": "6ccb86e8dd2c1575e0d19d6100b91bd59feb32403e39a3d0fe0730c67866936d",
+    "outcomeDigest": "06ca721a88d529a0cde17593df0ce2c1be5623026c02cee6d756a7d9ec86384b"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2702,
+    "simTimeNs": "54040000000"
+   },
+   "wallMs": 10319
+  },
+  {
+   "id": "011-IR-FD01-serve-demo-v1-s16-r1",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 16,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "0dec62c0527f80bafeb91a003770f9d7c291fe94839b621f98a6f929978812d9",
+    "sensorDigest": "6e5549016cc386dca1fc3810f3293d934b249e041156c7ed1b7f8ec887f01f30",
+    "assertionDigest": "8eb48bb4fe4fa4075f3a1a21a0a9685c78188e537e4da67e7b64823c7294f550",
+    "outcomeDigest": "e06992600b30b47507ebc6e425008229a455ac89a7cf50d00faf9b703b761ea2"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 3053,
+    "simTimeNs": "61060000000"
+   },
+   "wallMs": 10995
+  },
+  {
+   "id": "012-IR-FD01-serve-demo-v1-s17-r1",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 17,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "d1907bf13479372a0171dc9b260e6f548f57164eab39f13d338324257e2e69a6",
+    "sensorDigest": "de6c65556ea971dd8cb34cef8dc39feffe24ee6a2b307941d123e4ec40263bf2",
+    "assertionDigest": "b7905c7c536e5a89fad1ab02bb5b34d8ea9a3f0dc4990a92aadff9a1733b2daf",
+    "outcomeDigest": "479b39e354cb8f8cef68bbed5f248ef0402cbb1ca95b9bb9b42c8111e652c43b"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2686,
+    "simTimeNs": "53720000000"
+   },
+   "wallMs": 10301
+  },
+  {
+   "id": "013-IR-FD01-serve-demo-v1-s18-r1",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 18,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "4a7ab88d9b730c397fb48a4e251b9d2e78ed1d77d201038df6409aa2790b1018",
+    "sensorDigest": "357eb06adabca14f63291405de3f7418044c0881ac4a99970d414b2ffa6f1bd0",
+    "assertionDigest": "cde0d4d5740643f57a7af6402472db8fa65ee1505823d4792bbce0498f37c66c",
+    "outcomeDigest": "4f4daf856f2576d463a9c36d7629c1d08c94d240069e27f9d9a097bdca53059a"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 3046,
+    "simTimeNs": "60920000000"
+   },
+   "wallMs": 10944
+  },
+  {
+   "id": "014-IR-FD01-serve-demo-v1-s19-r1",
+   "scenarioId": "IR-FD01",
+   "fixtureId": "serve-demo-v1",
+   "seed": 19,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR01: one order, one robot, kitchen -> table -> parking",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "4008153f23ae83d1458e0212f8447c8450d5078732146d8b830ed290318b8c01",
+    "sensorDigest": "13401d796ef7fde7518802a711b36694a28e18dd274c358ea865f7bb822b5805",
+    "assertionDigest": "14e8184a04ee39823cfb083be9e9dad0bfa5534490ada2b22e3e99bf27c1da8a",
+    "outcomeDigest": "3d5c878a20e3e4546bb1adf77b2cf0cc756a399733220a73e02117fd60b8f9a8"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 2719,
+    "simTimeNs": "54380000000"
+   },
+   "wallMs": 10434
+  },
+  {
+   "id": "015-IR-FD03-serve-demo-v1-s21-r1",
+   "scenarioId": "IR-FD03",
+   "fixtureId": "serve-demo-v1",
+   "seed": 21,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR02: a person crosses the bay -> kitchen lane while the robot drives up it; the robot must see it, yield and resume",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "ACTOR_SCHEDULE_APPLIED",
+     "result": "pass"
+    },
+    {
+     "id": "ACTOR_OBSERVED",
+     "result": "pass"
+    },
+    {
+     "id": "NO_ACTOR_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "ACTOR_YIELD",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "980c0f6c4fbcb1e36d31f1e70ec1f580b12795b46c9731cee237b0595399b0c8",
+    "sensorDigest": "303a8765bb4d26fc8389d12642378359691b127c4f98fd87949e70c2205e5d38",
+    "assertionDigest": "746bcd4f3a03ae8807f3d9e0aade4552ac97642ee01a1dae719317abed708dfe",
+    "outcomeDigest": "71d1724a9aaac0f18ee42df136b79380ee4c14d9b0776b9c071ffde96c146587"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 3119,
+    "simTimeNs": "62380000000"
+   },
+   "wallMs": 16138
+  },
+  {
+   "id": "016-IR-FD03-serve-demo-v1-s21-r2",
+   "scenarioId": "IR-FD03",
+   "fixtureId": "serve-demo-v1",
+   "seed": 21,
+   "repeat": 2,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR02: a person crosses the bay -> kitchen lane while the robot drives up it; the robot must see it, yield and resume",
+   "stepTicks": 25,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "ACTOR_SCHEDULE_APPLIED",
+     "result": "pass"
+    },
+    {
+     "id": "ACTOR_OBSERVED",
+     "result": "pass"
+    },
+    {
+     "id": "NO_ACTOR_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "ACTOR_YIELD",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "980c0f6c4fbcb1e36d31f1e70ec1f580b12795b46c9731cee237b0595399b0c8",
+    "sensorDigest": "303a8765bb4d26fc8389d12642378359691b127c4f98fd87949e70c2205e5d38",
+    "assertionDigest": "746bcd4f3a03ae8807f3d9e0aade4552ac97642ee01a1dae719317abed708dfe",
+    "outcomeDigest": "71d1724a9aaac0f18ee42df136b79380ee4c14d9b0776b9c071ffde96c146587"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 3119,
+    "simTimeNs": "62380000000"
+   },
+   "wallMs": 16530
+  },
+  {
+   "id": "017-IR-FD04-serve-enclosed-v1-s22-r1",
+   "scenarioId": "IR-FD04",
+   "fixtureId": "serve-enclosed-v1",
+   "seed": 22,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR03: the T01 handoff is walled in: no_path before driving",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PATH_NOT_BLOCKED",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "187c05bf431d561dea486854dbc7a8e81078bd9ad6f6fe6a16a05bbd524643ea",
+    "sensorDigest": "075cce90bc2bbe148e3a76530bb2370d5db3393d3cfbcb68644a9cf8ebc106a3",
+    "assertionDigest": "35359800139ea54ebd0b9ff5d6a60e2148241411d754f680ef29695bbd544af5",
+    "outcomeDigest": "96dca11f4e90477769f061aa17d591522f0f92102be57e8904d557301f1227a0"
+   },
+   "outcome": {
+    "status": "needs_attention",
+    "served": "0",
+    "tick": 876,
+    "simTimeNs": "17520000000"
+   },
+   "wallMs": 5726
+  },
+  {
+   "id": "018-IR-FD04-blocked-serve-demo-v1-s23-r1",
+   "scenarioId": "IR-FD04-blocked",
+   "fixtureId": "serve-demo-v1",
+   "seed": 23,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR03: a person stands on the T01 handoff: blocked after the no-progress window",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "BLOCKED_NOT_NO_PATH",
+     "result": "pass"
+    },
+    {
+     "id": "ACTOR_SCHEDULE_APPLIED",
+     "result": "pass"
+    },
+    {
+     "id": "ACTOR_OBSERVED",
+     "result": "pass"
+    },
+    {
+     "id": "NO_ACTOR_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "435c34d0f4964a3049a2efe46f58525f2be393ead748b9281c6ab87bf3f3b530",
+    "sensorDigest": "dc66a8ef4454e73becbd2c49a1950a6a5f07e3b0ed7dcb149478cbd36443391a",
+    "assertionDigest": "d9776dfa2bc8fe46cc3549bb114b1002a59f7f486af46c0adfef73401b05ed5f",
+    "outcomeDigest": "d33403779afa195402123bc1a56171249b1c6908a9c1c08aae31add21859c5e4"
+   },
+   "outcome": {
+    "status": "needs_attention",
+    "served": "0",
+    "tick": 1736,
+    "simTimeNs": "34720000000"
+   },
+   "wallMs": 8390
+  },
+  {
+   "id": "019-IR-FD07-serve-fleet-v1-s31-r1",
+   "scenarioId": "IR-FD07",
+   "fixtureId": "serve-fleet-v1",
+   "seed": 31,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR-FD07 (source-driven): two robots serialized by the venue-movement reservation; aisle zone reserved/released per leg, never contended; customer away from the routes",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "ACTOR_SCHEDULE_APPLIED",
+     "result": "pass"
+    },
+    {
+     "id": "NO_ACTOR_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "36ef96851248ce0a5b645c22659389b32b3ee360784dfcbe7bd6345a934e01a5",
+    "sensorDigest": "e153371102bf2e56f17385c1383552a008b4ce472c5ccceec14234712d4e3241",
+    "assertionDigest": "dbb7829958f85664249cb43e07d7942a76dea552bdd7b3083826af8c06406a1b",
+    "outcomeDigest": "d974989e8b50ae5dc57b546aa4507f1deb019f794d736d7543fe31f3fd5b5d1b"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 5920,
+    "simTimeNs": "118400000000"
+   },
+   "wallMs": 36709
+  },
+  {
+   "id": "020-IR-FD07-serve-fleet-v1-s31-r2",
+   "scenarioId": "IR-FD07",
+   "fixtureId": "serve-fleet-v1",
+   "seed": 31,
+   "repeat": 2,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "IR-FD07 (source-driven): two robots serialized by the venue-movement reservation; aisle zone reserved/released per leg, never contended; customer away from the routes",
+   "stepTicks": 25,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "ACTOR_SCHEDULE_APPLIED",
+     "result": "pass"
+    },
+    {
+     "id": "NO_ACTOR_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "36ef96851248ce0a5b645c22659389b32b3ee360784dfcbe7bd6345a934e01a5",
+    "sensorDigest": "e153371102bf2e56f17385c1383552a008b4ce472c5ccceec14234712d4e3241",
+    "assertionDigest": "dbb7829958f85664249cb43e07d7942a76dea552bdd7b3083826af8c06406a1b",
+    "outcomeDigest": "d974989e8b50ae5dc57b546aa4507f1deb019f794d736d7543fe31f3fd5b5d1b"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 5920,
+    "simTimeNs": "118400000000"
+   },
+   "wallMs": 36879
+  },
+  {
+   "id": "021-IR-RIG-ZONE-serve-fleet-v1-s32-r1",
+   "scenarioId": "IR-RIG-ZONE",
+   "fixtureId": "serve-fleet-v1",
+   "seed": 32,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "contention_rig",
+   "label": "CONTENTION RIG (not a production scenario): goals given to the controller directly, no missions, so the venue-movement serialization is bypassed; proves zone contention on the real plant",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "RIG_GOALS_ARRIVED",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_CONTENDED",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_PROMOTED_AT_RELEASE",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "0295024d0143bb4fb259c7124b1a8ebb33a705261fc5a6642417a0d94f0aba70",
+    "sensorDigest": "e789019344dcc9797dd904d634778397e4888a850311ce03e018e9305fc64977",
+    "assertionDigest": "8a4311d84527d215da1ca3c4963274fe3b72dd3c55cf1cfda2e461d98a1ecf1c",
+    "outcomeDigest": "fc3b3ddaf03940bc2526152add404661fc6a073400b8b672b87468a58e66f5a7"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "0",
+    "tick": 1676,
+    "simTimeNs": "33520000000"
+   },
+   "wallMs": 14097
+  },
+  {
+   "id": "022-IR-RIG-ZONE-serve-fleet-v1-s32-r2",
+   "scenarioId": "IR-RIG-ZONE",
+   "fixtureId": "serve-fleet-v1",
+   "seed": 32,
+   "repeat": 2,
+   "result": "pass",
+   "kind": "contention_rig",
+   "label": "CONTENTION RIG (not a production scenario): goals given to the controller directly, no missions, so the venue-movement serialization is bypassed; proves zone contention on the real plant",
+   "stepTicks": 25,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "RIG_GOALS_ARRIVED",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_CONTENDED",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_PROMOTED_AT_RELEASE",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "0295024d0143bb4fb259c7124b1a8ebb33a705261fc5a6642417a0d94f0aba70",
+    "sensorDigest": "e789019344dcc9797dd904d634778397e4888a850311ce03e018e9305fc64977",
+    "assertionDigest": "8a4311d84527d215da1ca3c4963274fe3b72dd3c55cf1cfda2e461d98a1ecf1c",
+    "outcomeDigest": "fc3b3ddaf03940bc2526152add404661fc6a073400b8b672b87468a58e66f5a7"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "0",
+    "tick": 1676,
+    "simTimeNs": "33520000000"
+   },
+   "wallMs": 11474
+  },
+  {
+   "id": "023-IR-FD01-cancel-serve-demo-v1-s33-r1",
+   "scenarioId": "IR-FD01-cancel",
+   "fixtureId": "serve-demo-v1",
+   "seed": 33,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "operator_fault",
+   "label": "IR05: operator cancel mid-route on the kitchen leg; cancelled, nothing served, bounded simulated stop",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "CANCEL_BOUNDED_STOP",
+     "result": "pass"
+    },
+    {
+     "id": "ONE_TERMINAL_PER_MISSION",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "b4cac7852fdd51248fec32cc195879212402c1fe910fb79b3d04ac46bc8cae5d",
+    "sensorDigest": "de4bd0d67281c6a3b16bcc70b8c7f28275435c15573b61921815a8cde863185e",
+    "assertionDigest": "66f1aa8dccc3e5620b75f0f932cce66c34a773260ff040867265cf30ee31ef18",
+    "outcomeDigest": "e749375bdb3b7a3b269f5bb82fb537888d7a375d9509e18631608179fb476ec5"
+   },
+   "outcome": {
+    "status": "cancelled",
+    "served": "0",
+    "tick": 424,
+    "simTimeNs": "8480000000"
+   },
+   "wallMs": 3626
+  },
+  {
+   "id": "024-IR-FD01-workerkill-serve-demo-v1-s34-r1",
+   "scenarioId": "IR-FD01-workerkill",
+   "fixtureId": "serve-demo-v1",
+   "seed": 34,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "operator_fault",
+   "label": "IR10: worker process killed between steps on the table leg; leg unknown, no resend, no second worker, cargo kept, the unknown tick a recorded gap",
+   "stepTicks": 500,
+   "evidenceComplete": false,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "EVIDENCE_GAP_AS_DECLARED",
+     "result": "pass"
+    },
+    {
+     "id": "CARGO_KEPT",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SECOND_WORKER",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "3ed978250b6e8ea936b0eb9469de0718a85fb657bdd1bb8797a70945b572d8ee",
+    "sensorDigest": "25ddd0f722d74379268e22ca9b2720deeffc1942521dc6935c90392adf2dc63f",
+    "assertionDigest": "5849a319950d1614969805b3d0a438d8c32943bcdd053d1de4bfd0ca7ae490e3",
+    "outcomeDigest": "134c5247dfb400e505bd873029973f72fbbf4c8031bab8e101e3f1ff52b070d0"
+   },
+   "outcome": {
+    "status": "needs_attention",
+    "served": "0",
+    "tick": 1250,
+    "simTimeNs": "25000000000"
+   },
+   "wallMs": 5844
+  },
+  {
+   "id": "025-IR-RAW-PAIR-CONTACT-serve-fleet-v1-s35-r1",
+   "scenarioId": "IR-RAW-PAIR-CONTACT",
+   "fixtureId": "serve-fleet-v1",
+   "seed": 35,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "raw_drive",
+   "label": "IR06 (test-only raw drive, controller bypassed): robot01 driven into robot02; contact named by robotId, one episode per pair, oracle agrees",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "CONTACT_NAMED_BY_ID",
+     "result": "pass"
+    },
+    {
+     "id": "ONE_ENGINE_EPISODE_PER_PAIR",
+     "result": "pass"
+    },
+    {
+     "id": "ORACLE_AGREES_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "STOPPED_AT_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "wallMs": 2236
+  }
+ ]
+}

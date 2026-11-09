@@ -1,0 +1,88 @@
+{
+ "id": "021-IR-RIG-ZONE-serve-fleet-v1-s32-r1",
+ "index": 14,
+ "scenarioId": "IR-RIG-ZONE",
+ "fixtureId": "serve-fleet-v1",
+ "seed": 32,
+ "repeat": 1,
+ "expectedAssertions": [
+  "EVIDENCE_COMPLETE",
+  "IDENTITY_BOUND",
+  "BUSINESS_OUTCOME",
+  "RIG_GOALS_ARRIVED",
+  "ZONE_CONTENDED",
+  "ZONE_PROMOTED_AT_RELEASE",
+  "ZONE_SINGLE_OWNER",
+  "ZONE_RELEASE_AFTER_EXIT",
+  "NO_PHYSICAL_CONTACT",
+  "MIN_SEPARATION_AVAILABLE",
+  "REPEATABLE"
+ ],
+ "kind": "contention_rig",
+ "label": "CONTENTION RIG (not a production scenario): goals given to the controller directly, no missions, so the venue-movement serialization is bypassed; proves zone contention on the real plant",
+ "stepTicks": 500,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "completed",
+  "served": "0",
+  "tick": 1676,
+  "simTimeNs": "33520000000"
+ },
+ "horizon": 1676,
+ "evidenceComplete": true,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "0295024d0143bb4fb259c7124b1a8ebb33a705261fc5a6642417a0d94f0aba70",
+  "sensorDigest": "e789019344dcc9797dd904d634778397e4888a850311ce03e018e9305fc64977",
+  "assertionDigest": "8a4311d84527d215da1ca3c4963274fe3b72dd3c55cf1cfda2e461d98a1ecf1c",
+  "outcomeDigest": "fc3b3ddaf03940bc2526152add404661fc6a073400b8b672b87468a58e66f5a7"
+ },
+ "assertions": [
+  {
+   "id": "EVIDENCE_COMPLETE",
+   "result": "pass"
+  },
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "RIG_GOALS_ARRIVED",
+   "result": "pass"
+  },
+  {
+   "id": "ZONE_CONTENDED",
+   "result": "pass"
+  },
+  {
+   "id": "ZONE_PROMOTED_AT_RELEASE",
+   "result": "pass"
+  },
+  {
+   "id": "ZONE_SINGLE_OWNER",
+   "result": "pass"
+  },
+  {
+   "id": "ZONE_RELEASE_AFTER_EXIT",
+   "result": "pass"
+  },
+  {
+   "id": "NO_PHYSICAL_CONTACT",
+   "result": "pass"
+  },
+  {
+   "id": "MIN_SEPARATION_AVAILABLE",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 14097,
+ "provider": {
+  "id": "irsim_2d",
+  "kind": "irsim_worker"
+ }
+}

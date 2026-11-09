@@ -1,0 +1,19 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+stdout | tests/integration/irsim-batch.test.ts > INT03 twenty-five sequential runs (IR01-IR06, IR08-IR10, contention rig): every run passes its own oracles with the evidence its case requires, seeds reproduce across pacing, noise is visible, outputs are separate, and no child outlives the campaign
+INT03 sequential: 25 runs in 222 s; per run IR-FD01 7.4s, IR-FD01 7.7s, IR-FD01 7.6s, IR-FD01 7.0s, IR-FD01 8.3s, IR-FD01 7.5s, IR-FD01 7.4s, IR-FD01 7.9s, IR-FD01 7.7s, IR-FD01 7.1s, IR-FD01 7.6s, IR-FD01 7.2s, IR-FD01 7.6s, IR-FD01 7.1s, IR-FD03 9.8s, IR-FD03 10.9s, IR-FD04 3.6s, IR-FD04 5.6s, IR-FD07 30.6s, IR-FD07 30.7s, IR-RIG 7.2s, IR-RIG 7.5s, IR-FD01 2.6s, IR-FD01 4.5s, IR-RAW 2.1s
+
+ ✓ tests/integration/irsim-batch.test.ts (5 tests) 297912ms
+   ✓ INT03 twenty-five sequential runs (IR01-IR06, IR08-IR10, contention rig): every run passes its own oracles with the evidence its case requires, seeds reproduce across pacing, noise is visible, outputs are separate, and no child outlives the campaign  221826ms
+   ✓ INT03 two worlds at once: a one-robot and a two-robot world run concurrently (never more than two workers), and each gives the digests it gives alone  65183ms
+   ✓ crash image: a campaign process killed (SIGKILL) mid-run leaves status running, complete false and unfinished runs not_run; its workers end with their stdin; verify refuses it  3313ms
+   ✓ SIGINT on the campaign CLI: exit 130 latched at the signal, the run in progress is closed (worker group gone), the rest recorded not_run, status interrupted  5340ms
+   ✓ protocol_double: a worker double that dies on its first step fails every run (labelled protocol_double, never pass); a double that answers garbage is a missing prerequisite (not_run)  2102ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  19:28:20
+   Duration  299.32s (transform 565ms, setup 0ms, import 1.32s, tests 297.91s, environment 0ms)
+
+JSON report written to <workspace>/source/docs/implementation/evidence/linkforge-irsim/candidate-02/suites/batch.json
