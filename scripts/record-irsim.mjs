@@ -14,7 +14,8 @@ import {arch,homedir,platform,release,tmpdir} from 'node:os';
 import {dirname,join,relative,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {closureIdentity,ownOutput,parse,treeState} from './lab-irsim.mjs';
-import {SUITES,checkQualification,qualify} from './irsim-qualification.mjs';
+import {SUITES,bytecodeUnder,checkQualification,qualify} from './irsim-qualification.mjs';
+import {PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const fail=(code,m)=>{console.error(`${code}: ${m}`);process.exit(code==='NOT_RUN'?2:1);};
 // own options first; the rest is exactly lab-irsim's `run` argv (same parser, same refusals)
@@ -38,6 +39,7 @@ const labInfo=()=>{if(!labDir)return null;const git=(...a)=>spawnSync('git',a,{c
  return {path:labDir,commit:git('rev-parse','HEAD'),dirty:git('status','--porcelain','--untracked-files=all').length>0,pin:{sourceCommit:pin.sourceCommit,artifactSha256:pin.artifactSha256,portableToolsDigest:pin.portableToolsDigest,schemaHash:pin.schemaHash}};};
 const labBefore=labInfo();
 if(labBefore){
+ const bytecode=bytecodeUnder(root,PORTABLE_TOOL_PATHS);if(bytecode.length)fail('NOT_RUN',`PORTABLE_BYTECODE: ${bytecode.slice(0,5).join(', ')}${bytecode.length>5?` (+${bytecode.length-5})`:''} — the Lab launcher refuses a closure with bytecode; remove it yourself (find <root> -name __pycache__ -prune -exec rm -rf {} +)`);
  if(labBefore.dirty)fail('NOT_RUN','LAB_DIRTY: commit the Lab before recording evidence');
  if(labBefore.pin.sourceCommit!==before.sourceCommit)fail('NOT_RUN',`LAB_PIN_MISMATCH: the Lab pins ${labBefore.pin.sourceCommit}, this source is ${before.sourceCommit} (export, import and pin first)`);
  if(labBefore.pin.portableToolsDigest!==before.toolClosures.portable)fail('NOT_RUN',`LAB_PORTABLE_DIGEST_MISMATCH: Lab ${labBefore.pin.portableToolsDigest}, tree ${before.toolClosures.portable}`);

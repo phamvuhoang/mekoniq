@@ -2,6 +2,8 @@
 // tests them, shared by scripts/record-irsim.mjs (which writes qualification.json) and tests/acceptance/linkforge-irsim.acceptance.test.ts (which refuses it).
 // `tested` means the named campaign cases passed and the named suites ran green on the recorded candidate; it is never `accepted` (a reviewer sets that).
 import {createHash} from 'node:crypto';
+import {existsSync,readdirSync} from 'node:fs';
+import {join} from 'node:path';
 const sha=(b)=>createHash('sha256').update(b).digest('hex');
 const V=(files)=>({repo:'source',kind:'vitest',files});
 /** The suites record-irsim runs. `files` is passed to vitest / pytest; `python` names the pinned interpreter (relative to source); `command` is a Lab script. */
@@ -108,3 +110,12 @@ export function checkQualification(m,read){
  for(const g of GATE_IDS){const x=m.gates?.[g];if(!x)r.push(`GATE_MISSING:${g}`);else{if(x.status!==q.gates[g].status)r.push(`GATE_STATUS_MISMATCH:${g}`);if(x.accepted!==false)r.push(`GATE_ACCEPTED:${g}`);}}
  return r;
 }
+
+/** Bytecode under the given tool roots (relative paths, sorted): every `__pycache__` directory (not descended) and every loose `.pyc`/`.pyo`. The Lab's
+ * IR-SIM launcher fails closed on any of these inside the pinned closure, so a recording checks before it spends ten minutes finding out. */
+export const bytecodeUnder=(root,paths)=>{
+ const found=[],walk=(rel)=>{for(const e of readdirSync(join(root,rel),{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name,'en'))){
+  const r=`${rel}/${e.name}`;if(e.name==='__pycache__'||/\.py[co]$/.test(e.name))found.push(r);else if(e.isDirectory()&&!e.isSymbolicLink())walk(r);}};
+ for(const p of paths)if(existsSync(join(root,p)))walk(p);
+ return found.sort();
+};

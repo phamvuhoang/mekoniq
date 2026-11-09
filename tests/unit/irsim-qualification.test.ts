@@ -3,7 +3,7 @@
 import {expect,test} from 'vitest';
 import {createHash} from 'node:crypto';
 // @ts-expect-error plain ESM script without types
-import {CASES,GATES,SUITES,checkQualification,qualify} from '../../scripts/irsim-qualification.mjs';
+import {CASES,GATES,SUITES,bytecodeUnder,checkQualification,qualify} from '../../scripts/irsim-qualification.mjs';
 type Manifest=Record<string,any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 const sha=(s:string)=>createHash('sha256').update(s).digest('hex');
 const HEX='a'.repeat(64),HEX2='b'.repeat(64),COMMIT='c'.repeat(40);
@@ -86,4 +86,12 @@ test('guard: a complete consistent candidate has no reasons; each single defect 
  one(m=>{m.commands=[{id:'licenses',exitCode:1}];},/COMMAND_FAILED:licenses/);
  one((m,f)=>{f.set('campaign/identity.json',JSON.stringify({stable:false}));},/CLOSURE_CHANGED/);
  one((m,f)=>{f.set('campaign/campaign.json','{"c":2}');},/CAMPAIGN_CORRUPT|ARTIFACT_CORRUPT/);
+});
+
+test('bytecodeUnder lists __pycache__ directories and loose .pyc/.pyo under the given roots, and nothing else',async()=>{
+    const {mkdtempSync,mkdirSync,writeFileSync}=await import('node:fs');const {tmpdir}=await import('node:os');const {join}=await import('node:path');
+  const root=mkdtempSync(join(tmpdir(),'bytecode-'));
+  mkdirSync(join(root,'tool/pkg/__pycache__'),{recursive:true});writeFileSync(join(root,'tool/pkg/__pycache__/a.cpython-313.pyc'),'');
+  writeFileSync(join(root,'tool/pkg/a.py'),'');writeFileSync(join(root,'tool/loose.pyo'),'');mkdirSync(join(root,'other/__pycache__'),{recursive:true});
+  expect(bytecodeUnder(root,['tool','missing'])).toEqual(['tool/loose.pyo','tool/pkg/__pycache__']);
 });
