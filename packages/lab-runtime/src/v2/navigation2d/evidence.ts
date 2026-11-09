@@ -414,7 +414,8 @@ function assess(scene:NavigationSceneV1,snaps:IRSimSnapshotV1[],text:string):Tra
   const both=hit.a.coverage==='complete'&&tail.coverage==='complete',min=(x:number|null,y:number|null)=>!both?null:x===null?y:y===null?x:Math.min(x,y);
   a={contacts:[...hit.a.contacts,...tail.contacts.filter(c=>!seen.has(key(c)))],minSeparationM:min(hit.a.minSeparationM,tail.minSeparationM),minClearanceM:min(hit.a.minClearanceM,tail.minClearanceM),coverage:both?'complete':'incomplete'};
  }else a=assessTrajectory(scene,snaps);
- memo.set(scene.sceneDigest,{text,n:snaps.length,a});if(memo.size>16)memo.delete(memo.keys().next().value!);
+ // the memo is shared by every later read: frozen, so a returned contact (or an episode pair taken from one) can never change the next verdict
+ freeze(a);memo.set(scene.sceneDigest,{text,n:snaps.length,a});if(memo.size>16)memo.delete(memo.keys().next().value!);
  return a;
 }
 export function navigationMetrics(scene:NavigationSceneV1,read:EvidenceRead):NavigationMetrics{

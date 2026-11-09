@@ -484,6 +484,25 @@ test('review4 #4: data a read or a replay returns is not shared with the decode 
  expect(navigationMetrics(serve,again).distanceM!['amr-1']).toBeCloseTo(0.59,9);
 });
 
+test('review5 #3: metrics a read returns are not shared with the oracle memo: mutating them never changes the next read',async()=>{
+ 'use strict';
+ const north=(t:number):Pose=>[10,1.6+t*0.01,Math.PI/2],dir=await temp(),rec=await record(dir,100,north,{collisions:t=>t>=70?['table-05']:[]});
+ const first=navigationMetrics(serve,await read(dir,rec)),before=JSON.stringify(first);
+ expect(first.collisionEpisodes).toBe(2);
+ const tamper=(f:()=>void)=>{try{f();}catch{/* frozen data refuses the write: also isolated */}};
+ tamper(()=>{first.contacts.splice(0);});tamper(()=>{first.contacts[0]!.tick=-1;});
+ tamper(()=>{first.contacts[0]!.pair[1]='x';});tamper(()=>{first.episodes[0]!.pair[1]='x';});tamper(()=>{first.episodes[0]!.fromTick=-5;});tamper(()=>{first.coverageReasons.push('x');});
+ const again=navigationMetrics(serve,await read(dir,rec));
+ expect(JSON.stringify(again)).toBe(before);
+ expect(evidenceAssertions(await read(dir,rec),again,99,null).find(a=>a.id==='NO_PHYSICAL_CONTACT')!.result).toBe('fail');
+ // a growing prefix (the incremental path) merges from the memo: it must not see the mutation either
+ const longer=await temp(),lr=await record(longer,120,north,{collisions:t=>t>=70?['table-05']:[]});
+ const p=structuredClone(lr.committed());p.chunks.trajectory=p.chunks.trajectory.slice(0,2);
+ const pm=navigationMetrics(serve,await readNavigationEvidence(longer,p,{scene:serve}));
+ tamper(()=>{pm.contacts.splice(0);});
+ expect(navigationMetrics(serve,await read(longer,lr)).contacts.length).toBeGreaterThan(0);
+});
+
 test('review4 #5: a cache hit still checks the listing: a chunk listed under the wrong tick range is refused after a correct read',async()=>{
  // the last trajectory chunk really holds 80..99; the forged listing says 81..100 (same bytes, size and hash)
  const dir=await temp(),rec=await record(dir,100),good=rec.committed(),last=good.chunks.trajectory.at(-1)!;
