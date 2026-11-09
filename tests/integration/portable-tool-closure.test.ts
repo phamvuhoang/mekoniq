@@ -50,7 +50,7 @@ test.skipIf(!available)('review5 #6: a planted __pycache__ whose header matches 
 });
 test('review5 #6: every spawn site of a pinned Python tool sets the bytecode environment', async () => {
   const { readFile } = await import('node:fs/promises');
-  for (const f of ['packages/lab-runtime/src/v2/navigation2d/worker-client.ts', 'packages/lab-runtime/src/engineering/linkforge.ts', 'packages/lab-runtime/src/engineering/navigation-compiler.ts', 'packages/lab-runtime/src/engineering/runtime-options.ts']) {
+  for (const f of ['packages/lab-runtime/src/v2/navigation2d/worker-client.ts', 'packages/lab-runtime/src/engineering/linkforge.ts', 'packages/lab-runtime/src/engineering/navigation-compiler.ts', 'packages/lab-runtime/src/engineering/runtime-options.ts', 'packages/lab-runtime/src/engineering/compiler.ts']) {
     const text = await readFile(resolve(f), 'utf8'), spawns = text.match(/\b(spawn|execFile|run)\(/g)?.length ?? 0;
     expect(spawns, f).toBeGreaterThan(0);
     expect(text.match(/bytecodeEnv\(\)/g)?.length ?? 0, f).toBeGreaterThanOrEqual(f.endsWith('runtime-options.ts') ? 3 : 1);

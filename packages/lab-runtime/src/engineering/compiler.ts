@@ -3,6 +3,7 @@ import {unlink,writeFile} from 'node:fs/promises';
 import {basename,dirname,join,resolve} from 'node:path';
 import {promisify} from 'node:util';
 import type {CompilerPort} from './gateway';
+import {bytecodeEnv} from './python-env';
 
 const run=promisify(execFile);
 export interface PythonCompilerOptions{
@@ -27,7 +28,8 @@ export function createPythonCompiler(o:PythonCompilerOptions):CompilerPort{
    const file=join(dirname(outDir),`${basename(outDir)}.input.json`);
    await writeFile(file,JSON.stringify(input),{mode:0o600});
    try{
-    const env={...process.env,PYTHONPATH:[root,join(root,'..','agent')].join(':'),...o.schemaDir?{MEKONIQ_SCHEMA_DIR:resolve(o.schemaDir)}:{}};
+    // the native compiler runs from robotics/simulation, whose compiler/ is also a pinned portable closure root: it writes and reads no bytecode there
+    const env={...process.env,...bytecodeEnv(),PYTHONPATH:[root,join(root,'..','agent')].join(':'),...o.schemaDir?{MEKONIQ_SCHEMA_DIR:resolve(o.schemaDir)}:{}};
     const {stdout}=await run(o.python??'python3',['-m','compiler','engineering','--input',file,'--out',outDir],{cwd:root,env,timeout:o.timeoutMs??55_000,maxBuffer:8*1024*1024}).catch((e:{stderr?:string;message:string})=>{throw new Error((e.stderr||e.message).trim().split('\n').pop());});
     return JSON.parse(stdout) as {sceneDigest:string;files:{path:string;sha256:string}[]};
    }finally{await unlink(file).catch(()=>{});}
