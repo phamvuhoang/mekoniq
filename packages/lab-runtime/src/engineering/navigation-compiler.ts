@@ -15,6 +15,7 @@ import {framePose} from './inertia';
 import type {CompilerPort} from './gateway';
 import {projectNavigationModel,yawOf} from './navigation-model';
 import {projectPhysicalModel} from './physical-model';
+import {bytecodeEnv} from './python-env';
 
 const run=promisify(execFile);
 
@@ -113,7 +114,7 @@ export function createNavigationCompiler(o:NavigationCompilerOptions):CompilerPo
    await writeFile(request,JSON.stringify({compileInput:input,scene}),{mode:0o600});
    let listed:{path:string;sha256:string;bytes:number}[];
    try{
-    const root=resolve(o.workerRoot),env={PATH:'/usr/bin:/bin',PYTHONPATH:[root,resolve(o.descriptionHelperRoot)].join(':'),PYTHONDONTWRITEBYTECODE:'1',PYTHONNOUSERSITE:'1',LANG:'C.UTF-8'} as unknown as NodeJS.ProcessEnv;
+    const root=resolve(o.workerRoot),env={PATH:'/usr/bin:/bin',PYTHONPATH:[root,resolve(o.descriptionHelperRoot)].join(':'),...bytecodeEnv(),PYTHONNOUSERSITE:'1',LANG:'C.UTF-8'} as unknown as NodeJS.ProcessEnv;
     const {stdout}=await run(o.python,['-m','irsim_worker.compile','--input',request,'--out',outDir],{cwd:root,env,timeout:o.timeoutMs??55_000,maxBuffer:8*1024*1024}).catch((e:{stderr?:string;message:string})=>{throw new Error((e.stderr||e.message).trim().slice(-600));});
     listed=(JSON.parse(stdout) as {files:typeof listed}).files;
    }finally{await unlink(request).catch(()=>{});}

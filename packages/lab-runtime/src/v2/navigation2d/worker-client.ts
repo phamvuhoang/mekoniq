@@ -3,6 +3,7 @@ import {mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {validateIRSimRequest,validateIRSimResponse} from './contracts';
 import type {IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1} from './contracts';
+import {bytecodeEnv} from '../../engineering/python-env';
 
 const TICK_NS=20_000_000n;
 export const MAX_LINE_BYTES=2*1024*1024,QUEUE_LIMIT=64;
@@ -38,7 +39,7 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
  const deadlines={...DEFAULT_DEADLINES_MS,...o.deadlinesMs},root=resolve(o.workerRoot);
  const args=[...(o.entry??['-m','irsim_worker']),'--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[]];
  // fixed argv, allowlisted environment (no credentials, no ROS discovery), a private working directory; the venv isolates dependencies but is not a sandbox
- const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,PYTHONDONTWRITEBYTECODE:'1',PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg'} as unknown as NodeJS.ProcessEnv;
+ const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,...bytecodeEnv(),PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg'} as unknown as NodeJS.ProcessEnv;
  const child=spawn(o.python,args,{cwd:resolve(o.runDirectory),env,stdio:['pipe','pipe','pipe'],detached:true});
  let state:'ready'|'failed'|'closed'='ready',bootId:string|null=null,buffer='',stderrTail='',lastTick=0,lastSeq=0n,sceneDigest=o.sceneDigest,timer:NodeJS.Timeout|undefined,closing:Promise<void>|undefined;
  const queue:Pending[]=[];let inFlight:Pending|undefined;

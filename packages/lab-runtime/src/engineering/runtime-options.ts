@@ -8,6 +8,7 @@ import {createEngineeringService,type EngineeringService} from './gateway';
 import {createLinkForgeValidator,lockDigestOf,type RobotModelValidator} from './linkforge';
 import {createNavigationCompiler} from './navigation-compiler';
 import type {CompilerPort} from './gateway';
+import {bytecodeEnv} from './python-env';
 
 const run=promisify(execFile);
 export interface EngineeringRuntimeOptions{
@@ -41,14 +42,14 @@ export async function engineeringFromOptions(o:EngineeringRuntimeOptions):Promis
  if(!await stat(join(simulationRoot,'compiler','engineering.py')).then(s=>s.isFile(),()=>false))throw new Error('ENGINEERING_SIMULATION_ROOT_INVALID');
  const catalog=await loadCatalog(catalogRoot);
  if(!Object.keys(catalog.components).length)throw new Error(`ENGINEERING_CATALOG_UNREADABLE: ${catalog.problems[0]?.code??'empty'}`);
- try{await run(python,['-c','import rfc8785, jsonschema, referencing, yaml'],{timeout:15_000});}
+ try{await run(python,['-c','import rfc8785, jsonschema, referencing, yaml'],{timeout:15_000,env:{...process.env,...bytecodeEnv()}});}
  catch{throw new Error('ENGINEERING_COMPILER_UNAVAILABLE: the Python interpreter lacks rfc8785, jsonschema, referencing or PyYAML (see robotics/simulation/requirements-dev.txt)');}
 
  let validator:RobotModelValidator|undefined,validationUnavailable='LINKFORGE_DISABLED';
  if(o.linkforge){
   const workerRoot=resolve(o.linkforge.workerRoot);
   try{
-   await run(o.linkforge.python,['-c','import linkforge.core'],{timeout:15_000});
+   await run(o.linkforge.python,['-c','import linkforge.core'],{timeout:15_000,env:{...process.env,...bytecodeEnv()}});
    validator=createLinkForgeValidator({python:o.linkforge.python,workerRoot,timeoutMs:o.linkforge.timeoutMs??30_000,lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock'))});
   }catch{validationUnavailable='LF_WORKER_UNAVAILABLE';}
  }
@@ -56,7 +57,7 @@ export async function engineeringFromOptions(o:EngineeringRuntimeOptions):Promis
  const compilers:Record<string,CompilerPort>={};
  if(o.portable){
   try{
-   await run(o.portable.python,['-c','import yaml, rfc8785'],{timeout:15_000});
+   await run(o.portable.python,['-c','import yaml, rfc8785'],{timeout:15_000,env:{...process.env,...bytecodeEnv()}});
    compilers['engineering-irsim-2d-v1']=createNavigationCompiler({python:o.portable.python,workerRoot:resolve(o.portable.workerRoot),descriptionHelperRoot:resolve(o.portable.descriptionHelperRoot??simulationRoot)});
   }catch{/* the profile stays without a compiler: its receipts say so */}
  }

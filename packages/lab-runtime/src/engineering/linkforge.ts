@@ -6,6 +6,7 @@ import {join,resolve} from 'node:path';
 import {hashJson} from '../v2/hash';
 import {sealDocument,validateNavigationDocument} from '../v2/navigation2d/contracts';
 import type {ArtifactRef,ModelValidationReportV1,RobotPhysicalModelV1} from '../v2/navigation2d/contracts';
+import {bytecodeEnv} from './python-env';
 
 export const LINKFORGE_PROTOCOL='mekoniq-linkforge/1';
 export const ADAPTER_VERSION='linkforge-adapter/1',POLICY_VERSION='mekoniq-model-policy/1',CORE_VERSION='1.6.0';
@@ -45,7 +46,7 @@ export function createLinkForgeValidator(o:LinkForgeOptions):RobotModelValidator
    try{
     const out=await new Promise<{stdout:string;stderr:string;error:ExecFileException|null}>(done=>{
      const child=execFile(o.python,['-m','linkforge_worker'],{cwd,timeout:o.timeoutMs,killSignal:'SIGKILL',maxBuffer:16*1024*1024,encoding:'utf8',
-      env:{PYTHONPATH:resolve(o.workerRoot),PYTHONDONTWRITEBYTECODE:'1',PYTHONNOUSERSITE:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',PATH:'/usr/bin:/bin'} as unknown as NodeJS.ProcessEnv},(error:ExecFileException|null,stdout:string,stderr:string)=>done({stdout,stderr,error}));
+      env:{PYTHONPATH:resolve(o.workerRoot),...bytecodeEnv(),PYTHONNOUSERSITE:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',PATH:'/usr/bin:/bin'} as unknown as NodeJS.ProcessEnv},(error:ExecFileException|null,stdout:string,stderr:string)=>done({stdout,stderr,error}));
      child.stdin?.on('error',()=>{});child.stdin?.end(JSON.stringify(request));
     });
     const stopped=(execution:'not_run'|'failed',code:string,detail:string)=>incompleteReport(model,urdf,execution,code,detail,identity);
