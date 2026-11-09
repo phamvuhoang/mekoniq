@@ -138,7 +138,7 @@ export async function createIRSimScenarioRun(input:RunManifestInput,providers:IR
  // the recording limit is the run's tick budget too: the scenario's maxTicks, never above the 30,000-tick quota
  // every terminal the recorder produces (any flush, the tick limit, close) goes into the checkpoint before its manifest write is attempted
  const owner:{run?:IRSimRun}={},opened=cp;
- const recorder=await openNavigationRecorder({onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.irsim.evidence,maxTicks:Math.min(providers.irsim.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
+ const recorder=await openNavigationRecorder({knownTerminal:cp.evidenceTerminal??null,onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.irsim.evidence,maxTicks:Math.min(providers.irsim.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
  const run=new IRSimRun(dir,cp,scenario,project,scene,providers.irsim,{mapId,mapRevision},recorder,identity);owner.run=run;
  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
  try{

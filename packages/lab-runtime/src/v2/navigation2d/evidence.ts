@@ -21,7 +21,9 @@ export const EVIDENCE_LIMITS={maxBytes:100*1024*1024,maxTicks:30000};
 export const EVIDENCE_FORMAT='navigation-evidence-ndjson-gzip-v1',DIGEST_ALGORITHM='navigation-evidence-digest-v1';
 /** Everything the normalized digests leave out, and nothing else: the digests hash the record lines themselves, so chunking and file names never matter. */
 export const NORMALIZED_OMITS=['runId','worker bootId','artifacts.*.path (random chunk names)','chunk boundaries (artifacts.*.sha256/bytes/firstTick/lastTick)','wall-clock time (never recorded in chunks)'];
-const CHUNK_NAME=/^(trajectory|sensors|control|collisions)-\d{6}-[0-9a-f]{8}\.ndjson\.gz$/,MANIFEST='manifest.json',LOCK='writer.lock',MiB=1024*1024;
+const CHUNK_NAME=/^(trajectory|sensors|control|collisions)-\d{6}-[0-9a-f]{8}\.ndjson\.gz$/,MANIFEST='manifest.json',LOCK='writer.lock',
+ /** written (durably) before every flush or terminal write, removed only once its manifest write landed: on reopen it means "a write was under way and its outcome is unknown" */
+ INTENT='write.intent',MiB=1024*1024;
 /** Reader caps for untrusted evidence (an import is as untrusted as a tampered disk): stored and inflated bytes per chunk and in total (inflated: 4x the stored quota),
  * bytes per record line, lines per chunk, chunks per stream, manifest size and recorded gaps. Past a cap the chunk is refused with EVIDENCE_READ_LIMIT, never read on. */
 export const READ_LIMITS={chunkBytes:16*MiB,chunkInflated:64*MiB,totalInflated:4*EVIDENCE_LIMITS.maxBytes,lineBytes:256*1024,linesPerChunk:65536,chunksPerStream:2000,manifestBytes:8*MiB,gaps:10000};
@@ -74,7 +76,9 @@ async function writeDurable(dir:string,name:string,bytes:Uint8Array|string){
 export interface RecorderOptions{directory:string;scene:NavigationSceneV1;runId:string;maxBytes?:number;maxTicks?:number;/** ticks per chunk before an automatic flush */chunkTicks?:number;
  /** Called with every terminal reason, and awaited, BEFORE its manifest write is attempted: the owner makes it durable elsewhere (the run checkpoint), so a manifest
   * write that fails or never lands cannot leave a crash image that reopens as a recording that was not ended. Its failure does not stop the manifest attempt. */
- onTerminal?:(reason:string)=>Promise<void>}
+ onTerminal?:(reason:string)=>Promise<void>;
+ /** The terminal the owner already holds durably (the run checkpoint), preferred over the generic unknown end when an interrupted write is found on reopen. */
+ knownTerminal?:string|null}
 export interface NavigationRecorder{
  readonly directory:string;
  /** Set once a limit or a write failure ended the recording; nothing after it is recorded. */
@@ -146,19 +150,29 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
   if(m.runId!==o.runId||m.sceneDigest!==o.scene.sceneDigest||m.format!==EVIDENCE_FORMAT)throw new Error('EVIDENCE_IDENTITY_MISMATCH');
   // files the manifest does not list (a chunk or tmp file a crash left behind) are never adopted, but they are stored bytes: they count against the quota
   const listedNames=new Set(STREAMS.flatMap(s=>m.chunks[s].map(r=>r.path)));
-  for(const f of await readdir(dir))if(f!==MANIFEST&&f!==LOCK&&!listedNames.has(f))orphanBytes+=(await lstat(join(dir,f)).catch(()=>({size:0}))).size;
+  for(const f of await readdir(dir))if(f!==MANIFEST&&f!==LOCK&&f!==INTENT&&!listedNames.has(f))orphanBytes+=(await lstat(join(dir,f)).catch(()=>({size:0}))).size;
  }catch(e){await unlockWriter(dir,lock);throw e;}
  const every=new Map(o.scene.robots.flatMap(r=>r.model.sensors.map(s=>[`${r.robotId}/${s.id}`,s.publishEveryTicks] as const)));
  let buf:Record<EvidenceStream,{tick:number;line:string}[]>={trajectory:[],sensors:[],control:[],collisions:[]},last={tick:m.lastTick,key:m.lastKey},bufBoots:Manifest['boots']=[],writing=Promise.resolve(),closed=false;
  // dirty: the manifest in memory holds a gap or terminal reason that is not on disk yet; every later flush writes it again until one succeeds
  let dirty=false;
  const saveManifest=async()=>{dirty=true;await writeDurable(dir,MANIFEST,JSON.stringify(m));dirty=false;};
+ const intentOn=()=>writeDurable(dir,INTENT,JSON.stringify({lastTick:m.lastTick}));
+ const intentOff=async()=>{await unlink(join(dir,INTENT));await syncDir(dir);};
+ // a write that was under way when the previous process ended (its intent is still on disk): whatever it was, its record is unknown, so the recording ends here,
+ // never reads as a clean prefix. If this cannot be recorded the reopen fails (explicit), as for any unwritable evidence directory.
+ if(await lstat(join(dir,INTENT)).then(()=>true,()=>false)){
+  try{if(!m.terminal){m.terminal=o.knownTerminal??'EVIDENCE_END_UNKNOWN:WRITE_INTERRUPTED';await saveManifest();}await intentOff();}catch(e){await unlockWriter(dir,lock);throw e;}
+ }
  const end=async(reason:string,gap?:Gap)=>{
   if(m.terminal)return;
   m.terminal=reason;if(gap&&gap.toTick>=gap.fromTick)m.gaps.push(gap);
   buf={trajectory:[],sensors:[],control:[],collisions:[]};bufBoots=[];
+  // the intent first (a flush that ends here wrote it already): if the checkpoint and the manifest both refuse the terminal, the intent left on disk still says so
+  const marked=await intentOn().then(()=>true,()=>false);
   await o.onTerminal?.(reason).catch(()=>{});
-  await saveManifest().catch(()=>{}); // a failing disk may refuse this too: the terminal state is then also held in memory and the run stops
+  // a failing disk may refuse the manifest too: the terminal is then held in memory (the run stops) and the intent stays on disk; it is removed only after the manifest landed
+  try{await saveManifest();if(marked)await intentOff();}catch{/* state kept: dirty manifest + intent */}
  };
  const bufferRange=():Gap|undefined=>{const t=buf.trajectory;return t.length?{fromTick:t[0]!.tick,toTick:t.at(-1)!.tick,reason:''}:undefined;};
  /** Lines of one stream in chunks cut at tick boundaries (sensors and contacts hold several lines per tick) within WRITE_CHUNK. */
@@ -182,6 +196,8 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
   if(m.inflated+inflated>READ_LIMITS.totalInflated||STREAMS.some(s=>m.chunks[s].length+parts.filter(p=>p.s===s).length>READ_LIMITS.chunksPerStream)
    ||parts.some(p=>p.inflated>READ_LIMITS.chunkInflated||p.bytes.length>READ_LIMITS.chunkBytes||p.lines.length>READ_LIMITS.linesPerChunk||p.lines.some(l=>l.line.length>READ_LIMITS.lineBytes)))
    return end('EVIDENCE_READ_LIMIT',{...range,reason:'EVIDENCE_READ_LIMIT'});
+  // no chunk is written before the intent is durable: a recorder that cannot even mark the write fails closed (ends the recording) instead of carrying on as clean
+  try{await intentOn();}catch(e){return end(`EVIDENCE_WRITE_FAILED:${(e as NodeJS.ErrnoException).code??'IO'}`,{...range,reason:'EVIDENCE_WRITE_FAILED'});}
   const refs:[EvidenceStream,ChunkRef][]=[],before={bytes:m.bytes,inflated:m.inflated,lastTick:m.lastTick,lastKey:m.lastKey,boots:m.boots.length};
   try{
    for(const p of parts){
@@ -192,6 +208,7 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
    for(const [s,r] of refs)m.chunks[s].push(r);
    m.bytes+=add;m.inflated+=inflated;m.lastTick=last.tick;m.lastKey=last.key;m.boots.push(...bufBoots);
    await saveManifest();
+   await intentOff().catch(()=>{});// a stale intent only ever makes a reopen incomplete (fail closed)
   }catch(e){
    // nothing of this flush is claimed: the manifest in memory goes back to what is on disk (the written chunks stay unlisted orphans, counted in the quota)
    for(const [s,r] of refs){const i=m.chunks[s].indexOf(r);if(i>=0)m.chunks[s].splice(i,1);orphanBytes+=r.bytes;}
