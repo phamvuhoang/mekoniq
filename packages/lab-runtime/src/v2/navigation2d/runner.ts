@@ -58,6 +58,8 @@ interface Checkpoint {
  engine?:{packageVersion:string;pythonVersion:string};
  /** gaps the run asked the recorder for (a lost step ACK, a refused append): re-recorded on reopen when the manifest never got them */
  evidenceGaps?:Gap[];
+ /** the recording's terminal reason once it ended: re-recorded on reopen when the manifest never got it (its write failed), so the evidence never turns complete */
+ evidenceTerminal?:string|null;
 }
 
 /** The locked navigation scene and the worker files it lists, verified against the bundle's project and this run's world. */
@@ -104,6 +106,7 @@ export async function createIRSimScenarioRun(input:RunManifestInput,providers:IR
  const fresh=!cp;
  if(fresh&&(await readdir(dir)).length)throw new Error('RECOVERY_CHECKPOINT_MISSING');
  if(cp&&cp.provider!=='irsim_2d')throw new Error('RUN_IDENTITY_MISMATCH');
+ if(cp?.evidenceTerminal!=null&&(typeof cp.evidenceTerminal!=='string'||!cp.evidenceTerminal||cp.evidenceTerminal.length>500))throw new Error('RECOVERY_CHECKPOINT_INVALID');
  // a new run copies its locked scene out of the bundle; a reopened one reads (and re-verifies) only its own copy
  const read=fresh?(path:string)=>{if(!providers.bundleFile)throw new Error('ENGINEERING_CLOSURE_MISSING');return providers.bundleFile(input.engineering!.ref.bundleDigest,path);}:(path:string)=>readFile(join(bundleDir,path));
  const {scene,files}=await lockScene(input,project,roles,read);
@@ -146,6 +149,8 @@ export async function createIRSimScenarioRun(input:RunManifestInput,providers:IR
   if(!fresh&&cp.inFlight&&cp.plant.status==='live'&&!recorder.committed().gaps.some(g=>g.fromTick===unknown))await recorder.gap({fromTick:unknown,toTick:unknown,reason:'STEP_ACK_LOST'});
   // a gap the checkpoint knows of but the manifest never got (its write failed before the process ended) is recorded now, never forgotten
   for(const g of cp.evidenceGaps??[])if(!recorder.committed().gaps.some(x=>x.fromTick===g.fromTick&&x.toTick===g.toTick&&x.reason===g.reason))await recorder.gap(g);
+  // so is the terminal reason: a recording the checkpoint says ended is never reopened as one that did not
+  if(cp.evidenceTerminal&&!recorder.terminal)await recorder.terminate(cp.evidenceTerminal);
   // the worker of a started run died with the previous process: its legs are unknown, never continued
   if(cp.inFlight||cp.plant.status==='live')await run.recover();
   run.record();await run.persist();
@@ -235,7 +240,7 @@ class IRSimRun implements ScenarioRun {
  /** A gap the run knows of goes into the checkpoint as well: if the recorder cannot write it now (it retries on every flush), a reopen records it from there. */
  private async recordGap(g:Gap){const c=this.cp;(c.evidenceGaps??=[]).push(g);await this.rec.gap(g).catch(()=>{});}
  /** A recording that ended (quota, tick limit, failed write) ends the plant too: no motion is ever left unrecorded. Legs in flight become unknown. */
- private evidenceEnded(){return this.plantLost(`EVIDENCE:${this.rec.terminal}`,'EVIDENCE_INCOMPLETE');}
+ private evidenceEnded(){this.cp.evidenceTerminal=this.rec.terminal?.slice(0,500)??null;return this.plantLost(`EVIDENCE:${this.rec.terminal}`,'EVIDENCE_INCOMPLETE');}
  /** Reopened after a crash or restart: the journal is the truth. A leg the journal still shows travelling is unknown; cargo, reservations and custody stay. */
  async recover(){
   const c=this.cp;

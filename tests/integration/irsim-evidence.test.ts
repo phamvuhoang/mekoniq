@@ -287,7 +287,33 @@ test.skipIf(!irsimAvailable)('review4 #2: a lost ACK whose gap the unwritable ev
  nothingClaimed(ar);
 },240_000);
 
-test.skipIf(!irsimAvailable)('review4 #3: a report requested together with a step describes one moment: outcome tick, sim time and evidence horizon agree',async()=>{
+test.skipIf(!irsimAvailable)('review5 #2: a terminal whose manifest write was lost after the final tick became durable survives a crash image; the evidence never turns complete',async()=>{
+ const {run,dir}=await open({over:{evidence:{maxTicks:60}}});
+ await run.start();
+ const v=await act(run,'step',{ticks:60});
+ expect([v.tick,v.run.status]).toEqual([60,'needs_attention']);
+ const before=evidenceOf(await run.report());
+ expect(assertion(before,'EVIDENCE_LIMITS').result).toBe('fail');
+ // the crash image of a process whose terminal manifest write failed: the manifest on disk is the one the final flush wrote (every tick listed, no terminal)
+ const image=await temp('irsim-crash-');dirs.push(image);
+ await cp(dir,image,{recursive:true});
+ const mf=join(image,'evidence','manifest.json'),m=JSON.parse(await readFile(mf,'utf8')) as {terminal:string|null;lastTick:number};
+ expect([m.terminal,m.lastTick]).toEqual(['EVIDENCE_TICK_LIMIT',60]);
+ await writeFile(mf,JSON.stringify({...m,terminal:null}));
+ const crashed=await open({dir:image,over:{evidence:{maxTicks:60}}}),e=evidenceOf(await crashed.run.report());
+ expect(e.recording!.terminal).toBe('EVIDENCE_TICK_LIMIT');
+ expect(e.completeness!.status).toBe('incomplete');
+ expect(assertion(e,'EVIDENCE_LIMITS').result).toBe('fail');
+ expect(assertion(e,'NO_PHYSICAL_CONTACT').result).not.toBe('pass');
+ await crashed.run.close();runs.splice(runs.indexOf(crashed.run),1);
+ // the checkpoint's claim is schema-checked: a reason that is not bounded text refuses the reopen
+ const bad=await temp('irsim-crash-');dirs.push(bad);
+ await cp(image,bad,{recursive:true});
+ const cpf=join(bad,'run.json'),c=JSON.parse(await readFile(cpf,'utf8')) as Record<string,unknown>;
+ for(const t of [{x:1},'',`x${'y'.repeat(500)}`]){await writeFile(cpf,JSON.stringify({...c,evidenceTerminal:t}));await expect(openRun(bad,bundle,{evidence:{maxTicks:60}})).rejects.toThrow('RECOVERY_CHECKPOINT_INVALID');}
+},240_000);
+
+test.skipIf(!irsimAvailable)('review4 #3:a report requested together with a step describes one moment: outcome tick, sim time and evidence horizon agree',async()=>{
  const {run}=await open();
  await run.start();
  await act(run,'step',{ticks:500}); // durable to 500: a report reads several chunks back from disk
