@@ -10,7 +10,7 @@ import {spawn,spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {existsSync,readFileSync,readdirSync,statSync,writeFileSync} from 'node:fs';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
-import {arch,homedir,platform,release,tmpdir} from 'node:os';
+import {arch,homedir,hostname,platform,release,tmpdir} from 'node:os';
 import {dirname,join,relative,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {closureIdentity,ownOutput,parse,treeState} from './lab-irsim.mjs';
@@ -45,7 +45,7 @@ if(labBefore){
  if(labBefore.pin.portableToolsDigest!==before.toolClosures.portable)fail('NOT_RUN',`LAB_PORTABLE_DIGEST_MISMATCH: Lab ${labBefore.pin.portableToolsDigest}, tree ${before.toolClosures.portable}`);
 }
 await mkdir(join(o.out,'suites'),{recursive:true,mode:0o700});await mkdir(join(o.out,'screens'),{recursive:true});
-const scrub=(t)=>t.replaceAll(resolve(root,'..'),'<workspace>').replaceAll(homedir(),'<home>').replaceAll(tmpdir(),'<tmp>');
+const scrub=(t)=>t.replaceAll(resolve(root,'..'),'<workspace>').replaceAll(homedir(),'<home>').replaceAll(tmpdir(),'<tmp>').replaceAll(hostname(),'<host>');// pytest's JUnit carries hostname=
 const commands=[],suites=[],notRun=[];
 let signalled=0;const children=new Set();
 for(const [sig,code] of [['SIGINT',130],['SIGTERM',143]])process.on(sig,()=>{signalled||=code;for(const c of children)c.kill(sig);});

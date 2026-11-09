@@ -16,6 +16,8 @@ export const SUITES=[
  {id:'ir',...V(['tests/integration/irsim-worker.test.ts','tests/integration/irsim-navigation.test.ts','tests/integration/irsim-mission.test.ts','tests/integration/irsim-recovery.test.ts','tests/integration/irsim-faults.test.ts','tests/integration/irsim-fleet.test.ts','tests/integration/irsim-readiness.test.ts','tests/security/irsim-authority.test.ts','tests/unit/navigation2d-controller.test.ts','tests/unit/navigation2d-oracle.test.ts'])},
  {id:'evi',...V(['tests/integration/irsim-evidence.test.ts','tests/integration/irsim-evidence-terminal.test.ts','tests/security/irsim-replay.test.ts','tests/unit/navigation2d-metrics.test.ts'])},
  {id:'int',...V(['tests/unit/irsim-cli.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/portable-simulation-bootstrap.test.ts','tests/unit/irsim-qualification.test.ts'])},
+ // INT03 proper: twenty-five sequential runs and two worlds at once (concurrency 2, child count back to baseline) on the real worker
+ {id:'batch',...V(['tests/integration/irsim-batch.test.ts'])},
  {id:'lab-unit',repo:'lab',kind:'vitest',files:['tests/unit/model-validation.test.ts','tests/unit/irsim-controls.test.ts','tests/unit/lidar-overlay.test.ts','tests/unit/navigation2d-report.test.ts','tests/unit/readiness.test.ts','tests/integration/irsim-launcher.test.ts','tests/integration/runtime-artifact.test.ts','tests/integration/source-report-import.test.ts']},
  // one spec per launcher: the launcher's pairing code is one-use, so a second spec behind the same launcher can never pair
  {id:'lab-e2e-journey',repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs','irsim-journey.spec.ts']},
@@ -32,12 +34,14 @@ export const CASES={
  IR08:IR(['IR-FD01'],{suites:['ir','cmp-py']}),IR09:IR(['IR-FD01'],{suites:['ir','cmp-py']}),IR10:IR(['IR-FD01-workerkill']),
  SEN01:{suites:['cmp-py','ir']},SEN02:{suites:['cmp-py','ir']},
  EVI01:{suites:['evi']},EVI02:{suites:['evi']},EVI03:{suites:['evi']},
- INT01:{lab:true,suites:['lab-e2e-journey','lab-e2e-fleet']},INT02:{suites:['int','lab-unit']},INT03:{campaign:'*',suites:['int']},INT04:{lab:true,suites:['lab-e2e-journey','lab-e2e-fleet']},
+ INT01:{lab:true,suites:['lab-e2e-journey','lab-e2e-fleet']},INT02:{suites:['int','lab-unit']},INT03:{campaign:'*',suites:['int','batch']},INT04:{lab:true,suites:['lab-e2e-journey','lab-e2e-fleet']},
 };
 export const GATES={'G-LF1':['LF01'],'G-LF2':['LF02','LF03','LF04','LF05','LF06'],'G-IR1':['IR01'],'G-IR2':['IR04'],'G-IR3':['IR02','IR03','IR05','IR06','IR07','IR08','IR09','IR10'],'G-INT1':['INT01','INT02','INT03','INT04']};
 export const GATE_IDS=Object.keys(GATES);
-/** Green = exit 0, no failure, at least one test ran. */
-const suiteState=(s)=>!s?'not_run':s.exitCode!==0||(s.result?.summary??s.summary)?.failed>0||(s.result?.summary??s.summary)?.unexpected>0?'failed':((s.result?.summary??s.summary)?.passed??(s.result?.summary??s.summary)?.expected??0)>0?'tested':'not_run';
+/** Green = exit 0, no failure, no skipped test (a skipIf that fired is not_run, never pass), at least one test ran. */
+const summaryOf=(s)=>s.result?.summary??s.summary??{};
+const skippedOf=(s)=>Number(summaryOf(s).skipped??0);
+const suiteState=(s)=>!s?'not_run':s.exitCode!==0||summaryOf(s).failed>0||summaryOf(s).unexpected>0?'failed':skippedOf(s)>0?'not_run':(summaryOf(s).passed??summaryOf(s).expected??0)>0?'tested':'not_run';
 /** Case and gate statuses from a campaign summary (or null), the suite records and whether the Lab was recorded. failed > not_run > tested. */
 export function qualify({campaign,suites,lab}){
  const byId=new Map((suites??[]).map(s=>[s.id,s])),cases={},notRun=[];
@@ -46,7 +50,7 @@ export function qualify({campaign,suites,lab}){
   const worse=(s,reason)=>{if(s==='failed'||status!=='failed')status=s;why.push(reason);};
   if(c.notRun){cases[id]={status:'not_run',evidence,reason:c.notRun};notRun.push({id,reason:c.notRun});continue;}
   if(c.lab&&!lab)worse('not_run','Lab not recorded');
-  for(const sid of c.suites??[]){const st=suiteState(byId.get(sid));if(st==='tested')evidence.push(`suite:${sid}`);else worse(st,`suite ${sid} ${st}`);}
+  for(const sid of c.suites??[]){const s=byId.get(sid),st=suiteState(s);if(st==='tested')evidence.push(`suite:${sid}`);else worse(st,`suite ${sid} ${st}${s&&skippedOf(s)>0?` (${skippedOf(s)} skipped)`:''}`);}
   if(c.campaign){
    if(!campaign)worse('not_run','campaign not recorded');
    else if(c.campaign==='*'){if(campaign.complete&&campaign.runs.every(r=>r.result==='pass'))evidence.push('campaign:*');else worse(campaign.runs.some(r=>r.result==='fail')?'failed':'not_run','campaign not complete');}
@@ -96,8 +100,11 @@ export function checkQualification(m,read){
    if(report&&rec.evidenceComplete!==false&&report.metrics?.navigation?.sensorPublications?.complete!==true)r.push(`SENSOR_COVERAGE_LOST:${run.id}`);
   }
  }
+ // every suite of the table must be in the record: a record that left suites out is not a consistent all-not_run pass, it is incomplete
+ for(const s of SUITES)if(!(m.suites??[]).some(su=>su.id===s.id))r.push(`SUITE_MISSING:${s.id}`);
+ if(!(m.commands??[]).some(c=>c.id==='licenses'))r.push('COMMAND_MISSING:licenses');
  for(const su of m.suites??[]){
-  const st=suiteState(su);if(st==='failed')r.push(`SUITE_FAILED:${su.id}`);else if(st==='not_run')r.push(`SUITE_EMPTY:${su.id}`);
+  const st=suiteState(su);if(st==='failed')r.push(`SUITE_FAILED:${su.id}`);else if(skippedOf(su)>0)r.push(`SUITE_SKIPPED:${su.id}`);else if(st==='not_run')r.push(`SUITE_EMPTY:${su.id}`);
   if(su.result&&(!read(su.result.file)||sha(read(su.result.file))!==su.result.sha256))r.push(`SUITE_RESULT_CORRUPT:${su.id}`);
  }
  for(const c of m.commands??[])if(c.exitCode!==0)r.push(`COMMAND_FAILED:${c.id}`);

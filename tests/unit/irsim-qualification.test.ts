@@ -52,7 +52,7 @@ function candidate(over:(m:Manifest,files:Map<string,string>)=>void=()=>{}){
  const m:Manifest={schemaVersion:1,documentType:'linkforge-irsim-qualification',candidateId:'candidate-01',accepted:false,acceptedBy:null,acceptedAt:null,note:'evidence input',
   identity:{before,after:structuredClone(before),identityStable:true},lab:{commit:'d'.repeat(40),dirty:false,pin:{sourceCommit:COMMIT,artifactSha256:HEX,portableToolsDigest:HEX,schemaHash:HEX}},
   campaign:{command:'node scripts/lab-irsim.mjs run …',exitCode:0,summary:{path:'campaign/summary.json',sha256:summaryRef.sha256,status:summary.status,complete:summary.complete,runs:summary.runs.length,provider:summary.provider}},
-  suites,cases:q.cases,gates:q.gates,notRun:q.notRun,artifacts:[...files.keys()].sort().map(p=>({file:p,sha256:sha(files.get(p)!),bytes:Buffer.byteLength(files.get(p)!)}))};
+  suites,commands:[{id:'licenses',exitCode:0},{id:'performance',exitCode:0}],cases:q.cases,gates:q.gates,notRun:q.notRun,artifacts:[...files.keys()].sort().map(p=>({file:p,sha256:sha(files.get(p)!),bytes:Buffer.byteLength(files.get(p)!)}))};
  over(m,files);
  return {m,read:(p:string)=>files.has(p)?Buffer.from(files.get(p)!):null};
 }
@@ -84,6 +84,10 @@ test('guard: a complete consistent candidate has no reasons; each single defect 
  one(m=>{m.suites.find((s:Manifest)=>s.id==='ir').exitCode=1;},/SUITE_FAILED:ir|CASE_STATUS_MISMATCH/);
  one(m=>{m.campaign.summary.complete=false;},/CAMPAIGN_INCOMPLETE|SUMMARY_CORRUPT/);
  one(m=>{m.commands=[{id:'licenses',exitCode:1}];},/COMMAND_FAILED:licenses/);
+ // a record that simply left suites or the license check out must not read as a consistent (all not_run) pass
+ one(m=>{m.suites=m.suites.filter((s:{id:string})=>s.id!=='int');},/SUITE_MISSING:int/);
+ one(m=>{m.commands=[{id:'performance',exitCode:0}];},/COMMAND_MISSING:licenses/);
+ one(m=>{m.suites.find((s:{id:string})=>s.id==='evi').result.summary={passed:3,failed:0,skipped:2,total:5};},/SUITE_SKIPPED:evi/);
  one((m,f)=>{f.set('campaign/identity.json',JSON.stringify({stable:false}));},/CLOSURE_CHANGED/);
  one((m,f)=>{f.set('campaign/campaign.json','{"c":2}');},/CAMPAIGN_CORRUPT|ARTIFACT_CORRUPT/);
 });
@@ -99,4 +103,14 @@ test('bytecodeUnder lists __pycache__ directories and loose .pyc/.pyo under the 
 test('every Playwright suite runs exactly one spec behind its own launcher (the pairing code is one-use)',()=>{
  for(const s of SUITES.filter((x:{kind:string})=>x.kind==='playwright'))expect((s as {command:string[]}).command.filter(a=>a.endsWith('.spec.ts'))).toHaveLength(1);
  expect(CASES.INT01.suites).toEqual(expect.arrayContaining(['lab-e2e-journey','lab-e2e-fleet']));
+});
+
+test('qualify: a suite with skipped tests is not_run for its cases (skipped is never pass), and INT03 needs the batch suite that runs two worlds at once',()=>{
+ const batch=SUITES.find((s:{id:string})=>s.id==='batch') as {files:string[]}|undefined;
+ expect(batch?.files).toEqual(['tests/integration/irsim-batch.test.ts']);
+ expect(CASES.INT03.suites).toEqual(expect.arrayContaining(['int','batch']));
+ const suites=SUITES.map((s:{id:string})=>({id:s.id,exitCode:0,result:{summary:s.id==='evi'?{passed:3,failed:0,skipped:2,total:5}:{passed:1,failed:0,skipped:0,total:1}}}));
+ const q=qualify({campaign:campaignSummary(),suites,lab:true});
+ expect(q.cases.EVI01.status).toBe('not_run');expect(q.cases.EVI01.reason).toMatch(/suite evi not_run \(2 skipped\)/);
+ expect(q.cases.INT03.status).toBe('tested');
 });
