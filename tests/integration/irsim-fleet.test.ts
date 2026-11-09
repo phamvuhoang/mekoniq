@@ -220,3 +220,17 @@ test.skipIf(!irsimAvailable)('F2 plant lost while a robot holds the aisle zone: 
  const last=r.businessEvents.filter(e=>e.kind==='reservation'&&e.state.zoneId==='aisle-west').at(-1)!;
  expect(last.state.status).toBe('granted');
 },600_000);
+
+// review C02-2 #2: the runner turns a traffic notice into attention (and suspends), whatever raised it
+test.skipIf(!irsimAvailable)('zone traffic notices become run attention: a conflict is ZONE_OWNERSHIP_CONFLICT, a stranded owner ZONE_HELD_BY_STOPPED_ROBOT, and the run needs attention at that tick',async()=>{
+ const dir=await temp('irsim-fleet-notice-');dirs.push(dir);
+ const run=await createIRSimScenarioRun({project:fleet.locked.runtimeProjection.project,scenarioId:'IR-FD07',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-irsim-2d-v1',sourceCommit:'test-commit',engineering:fleet.locked},await irsimProviders(dir,fleet.service));runs.push(run);
+ await run.start();
+ // the traffic of this run is replaced by one that grants nothing and raises two notices once (the domain is not involved: this tests the runner's mapping only)
+ const notices=[{kind:'conflict' as const,zoneId:'aisle-west',robotId:'robot02',owner:'robot01',tick:0},{kind:'stranded' as const,zoneId:'aisle-west',robotId:'robot01',tick:0}];
+ (run as unknown as {traffic:unknown}).traffic={owners:()=>({'aisle-west':'robot01'}),notices:()=>notices.splice(0),async update(){return {'aisle-west':'robot01'};}};
+ const v=await act(run,'step',{ticks:50});
+ expect(v.run.status).toBe('needs_attention');
+ expect(v.attention.map(a=>[a.reason,a.robotId,a.subjectId,a.tick])).toEqual([['ZONE_OWNERSHIP_CONFLICT','robot02','aisle-west',0],['ZONE_HELD_BY_STOPPED_ROBOT','robot01','aisle-west',0]]);
+ expect(v.tick).toBe(1); // the batch stopped at the tick that needed attention
+},300_000);

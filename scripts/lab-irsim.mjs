@@ -9,7 +9,7 @@ import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
 import {realpathSync} from 'node:fs';
-import {dirname,join,resolve} from 'node:path';
+import {dirname,isAbsolute,join,relative,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {nativeToolClosure,portableToolClosure,PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -39,15 +39,18 @@ const HARMLESS_IGNORED=/(^|\/)(__pycache__\/[^/]+\.pyc|\.pytest_cache\/.*|tests\
  * What the checked-out tree is: HEAD, and every reason it is not exactly HEAD. Dirty = any tracked change, any untracked file anywhere (an untracked
  * sitecustomize.py next to the worker would otherwise pass as clean), or any ignored file inside a portable tool root other than HARMLESS_IGNORED.
  */
-export function treeState(dir=root){
+export function treeState(dir=root,exclude=[]){
  const git=(...a)=>spawnSync('git',a,{cwd:dir,encoding:'utf8'}),head=git('rev-parse','HEAD').stdout.trim()||'unknown';
- const changed=git('status','--porcelain','--untracked-files=all').stdout.split('\n').filter(Boolean);
+ // `exclude`: repository-relative directories whose files are this process's own output (a campaign/record written inside the repo), never code that can run
+ const changed=git('status','--porcelain','--untracked-files=all','--','.',...exclude.map(p=>`:(exclude)${p}`)).stdout.split('\n').filter(Boolean);
  const ignored=git('status','--porcelain','--ignored','--untracked-files=all','--',...PORTABLE_TOOL_PATHS).stdout.split('\n').filter(l=>l.startsWith('!! ')).map(l=>l.slice(3)).filter(p=>!HARMLESS_IGNORED.test(p));
  const reasons=[...changed.map(l=>`${l.slice(0,2).trim()||'?'} ${l.slice(3)}`),...ignored.map(p=>`ignored-in-tool-root ${p}`)];
  return {head,dirty:reasons.length>0,reasons};
 }
 /** The checked-out commit; a tree that is not exactly that commit is named as such, never passed off as it. */
-export const sourceCommit=(dir=root)=>{const s=treeState(dir);return s.dirty?`${s.head}-dirty`:s.head;};
+export const sourceCommit=(dir=root,exclude=[])=>{const s=treeState(dir,exclude);return s.dirty?`${s.head}-dirty`:s.head;};
+/** The output directory as a repository-relative pathspec to leave out of the dirty check when it lies inside the repository (else nothing is excluded). */
+export const ownOutput=(out,dir=root)=>{const rel=relative(realpathSync(dir),resolve(out));return rel&&!rel.startsWith('..')&&!isAbsolute(rel)?[rel]:[];};
 /** Digests of the tool trees the worker and compilers actually run (files as on disk, not as committed). */
 export const closureIdentity=(dir=root)=>({portable:portableToolClosure(dir).digest,native:nativeToolClosure(dir).digest});
 
@@ -75,12 +78,12 @@ async function run(o){
  // the tool trees that will run, before: refused at once when an expected pin is given and differs
  const before=closureIdentity();
  if(o['expect-portable-digest']&&before.portable!==o['expect-portable-digest']){console.error(`NOT_RUN: TOOL_CLOSURE_MISMATCH: portable tools ${before.portable}, expected ${o['expect-portable-digest']}`);process.exit(2);}
- let s;
- try{s=await runIRSimBatch({campaignPath:o.campaign,outDir:o.out,concurrency,sourceCommit:sourceCommit(),identity:{toolClosures:before},...o['irsim-python']?{python:o['irsim-python']}:{},...o['run-timeout-s']?{runTimeoutMs:o['run-timeout-s']*1000}:{},signal:abort.signal});}
+ const own=ownOutput(o.out);let s;
+ try{s=await runIRSimBatch({campaignPath:o.campaign,outDir:o.out,concurrency,sourceCommit:sourceCommit(root,own),identity:{toolClosures:before},...o['irsim-python']?{python:o['irsim-python']}:{},...o['run-timeout-s']?{runTimeoutMs:o['run-timeout-s']*1000}:{},signal:abort.signal});}
  catch(e){if(e instanceof BatchError){console.error(`NOT_RUN: ${e.message}`);process.exit(signalled||2);}throw e;}
  // and after: a tree that changed under the campaign makes every result untrustworthy
  const after=closureIdentity(),stable=after.portable===before.portable&&after.native===before.native;
- await writeFile(join(o.out,'identity.json'),JSON.stringify({sourceCommit:sourceCommit(),toolClosures:{before,after},stable},null,1)+'\n',{flag:'wx'});
+ await writeFile(join(o.out,'identity.json'),JSON.stringify({sourceCommit:sourceCommit(root,own),toolClosures:{before,after},stable},null,1)+'\n',{flag:'wx'});
  if(!stable){console.error(`NOT_RUN: TOOL_CLOSURE_CHANGED during the campaign: portable ${before.portable} -> ${after.portable}, native ${before.native} -> ${after.native}`);process.exit(signalled||2);}
  const pass=s.runs.filter(r=>r.result==='pass').length,fail=s.runs.filter(r=>r.result==='fail').length,notRun=s.runs.length-pass-fail;
  console.log(`campaign ${s.status}: ${s.runs.length} runs, ${pass} pass, ${fail} fail, ${notRun} not_run, complete ${s.complete} (${s.summaryPath})${s.reasons.length?` reasons ${s.reasons.join(',')}`:''}`);

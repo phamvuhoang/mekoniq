@@ -11,13 +11,15 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {arch,platform,release} from 'node:os';
 import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {closureIdentity,parse,treeState} from './lab-irsim.mjs';
+import {closureIdentity,ownOutput,parse,treeState} from './lab-irsim.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const fail=(code,m)=>{console.error(`${code}: ${m}`);process.exit(code==='NOT_RUN'?2:1);};
 const argv=process.argv.slice(2),o=parse('run',['--campaign',argv.includes('--campaign')?argv[argv.indexOf('--campaign')+1]:'c02-qualification',...argv.filter((a,i)=>a!=='--campaign'&&argv[i-1]!=='--campaign')]);
 if(!o.out)fail('NOT_RUN','MISSING_OPTION:--out');
 if(existsSync(o.out))fail('NOT_RUN',`OUT_EXISTS: ${o.out} (a record is written once, into a new directory)`);
-const identity=()=>{const tree=treeState(),lock=join(root,'robotics/navigation-2d/requirements.lock');
+// the record's own files (when --out lies inside the repository, as docs/implementation/evidence does) are not what makes the tree dirty
+const own=o.out?ownOutput(o.out):[];
+const identity=()=>{const tree=treeState(root,own),lock=join(root,'robotics/navigation-2d/requirements.lock');
  return {sourceCommit:tree.head,dirty:tree.dirty,dirtyReasons:tree.reasons.slice(0,50),toolClosures:closureIdentity(),node:process.version,os:`${platform()} ${release()}`,arch:arch(),lockSha256:existsSync(lock)?createHash('sha256').update(readFileSync(lock)).digest('hex'):null,at:new Date().toISOString()};};
 const before=identity();
 if(before.dirty)fail('NOT_RUN',`SOURCE_DIRTY: commit the source before recording evidence (${before.dirtyReasons.slice(0,5).join('; ')})`);

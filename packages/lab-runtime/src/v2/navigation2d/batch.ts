@@ -114,6 +114,20 @@ export const summaryPreview=(r:RunRecord)=>({id:r.id,scenarioId:r.scenarioId,fix
 /** complete = the campaign proved what it set out to: every run ran and passed, its evidence is as its case requires, and every expected assertion is present and passes.
  * Evidence completeness alone is reported apart (summary.evidenceComplete) and never makes a failed campaign complete. */
 export const campaignComplete=(records:readonly RunRecord[])=>records.length>0&&records.every(r=>r.result==='pass'&&r.evidenceAsExpected===true&&(r.assertions?.length??0)>0&&r.assertions!.every(a=>a.result==='pass'));
+/**
+ * pass only with the evidence the case requires, every expected run-level assertion present and passing, and no oracle of the case failing: an oracle the
+ * campaign did not list still belongs to the case, so its failure fails the run (it is recorded in assertions.json either way); `r.assertions` lists the expected ones.
+ */
+export const judgeRun=(r:RunRecord,e:Pick<CampaignEntry,'expectedAssertions'>,oracles:readonly ScenarioAssertion[],timeout:string|null,evidenceReasons:readonly string[])=>{
+ r.assertions=e.expectedAssertions.filter(a=>!(CAMPAIGN_ASSERTIONS as readonly string[]).includes(a)).map(a=>({id:a,result:oracles.find(x=>x.id===a)?.result??'missing'}));
+ const why:string[]=[];
+ if(timeout)why.push(timeout);
+ if(!r.evidenceAsExpected)why.push(`EVIDENCE_NOT_AS_EXPECTED:${evidenceReasons.join(',')}`);
+ for(const a of r.assertions){const x=oracles.find(y=>y.id===a.id);
+  if(!x)why.push(`ASSERTION_MISSING:${a.id}`);else if(x.result==='inconclusive')why.push(`INCONCLUSIVE:${a.id}: ${x.actual}`);else if(x.result==='fail')why.push(`FAIL:${a.id}: expected ${x.expected}; actual ${x.actual}`);}
+ for(const x of oracles)if(x.result==='fail'&&!r.assertions.some(a=>a.id===x.id))why.push(`FAIL:${x.id} (not listed by the campaign): expected ${x.expected}; actual ${x.actual}`);
+ r.result=why.length?'fail':'pass';r.reasons=why;
+};
 /** A native compiler port that refuses: the portable profile has its own compiler, and nothing in a campaign may reach the native one. */
 const refusingNative:CompilerPort={version:'refused',async compileResolved(){throw new Error('NATIVE_COMPILER_DISABLED');},runnable:()=>false};
 
@@ -176,16 +190,7 @@ export async function runIRSimBatch(o:BatchOptions):Promise<BatchSummary>{
  const providerOf={catalog:{...portable.catalog,sets:{...portable.catalog.sets,[SET]:{...set,scenarioIds:[...set.scenarioIds??[],...RIG_SCENARIOS.keys()]}}},enabledBackends:portable.enabledBackends,scenarios};
  /** Worker processes of one run: their argv names the run's own bundle root (never matched by pattern on anything else). */
  const workersOf=(dir:string)=>{try{return execFileSync('ps',['-A','-o','pid=,command='],{encoding:'utf8'}).split('\n').filter(l=>l.includes(`--bundle-root ${join(dir,'run','bundle')} `)&&!l.includes('lab-irsim')).map(l=>Number(l.trim().split(/\s+/)[0]));}catch{return [];}};
- /** pass only with the evidence the case requires and every expected run-level assertion present and passing */
- const judge=(r:RunRecord,e:CampaignEntry,oracles:readonly ScenarioAssertion[],timeout:string|null,evidenceReasons:readonly string[])=>{
-  r.assertions=e.expectedAssertions.filter(a=>!(CAMPAIGN_ASSERTIONS as readonly string[]).includes(a)).map(a=>({id:a,result:oracles.find(x=>x.id===a)?.result??'missing'}));
-  const why:string[]=[];
-  if(timeout)why.push(timeout);
-  if(!r.evidenceAsExpected)why.push(`EVIDENCE_NOT_AS_EXPECTED:${evidenceReasons.join(',')}`);
-  for(const a of r.assertions){const x=oracles.find(y=>y.id===a.id);
-   if(!x)why.push(`ASSERTION_MISSING:${a.id}`);else if(x.result==='inconclusive')why.push(`INCONCLUSIVE:${a.id}: ${x.actual}`);else if(x.result==='fail')why.push(`FAIL:${a.id}: expected ${x.expected}; actual ${x.actual}`);}
-  r.result=why.length?'fail':'pass';r.reasons=why;
- };
+ const judge=judgeRun;
  /** IR06 raw drive (test-only, never admitted by the gateway): the compiled scene, the real worker, raw velocities, the evidence recorder; no controller, no source session. */
  const rawDrive=async(r:RunRecord,e:CampaignEntry,spec:ScenarioFixtureSpec,locked:LockedEngineering,scene:NavigationSceneV1,dir:string)=>{
   const bundle=join(dir,'run','bundle');

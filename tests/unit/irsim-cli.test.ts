@@ -8,7 +8,7 @@ import {existsSync} from 'node:fs';
 import {copyFile,mkdir,mkdtemp,readFile,rm,symlink,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {dirname,join,resolve} from 'node:path';
-import {campaignComplete,loadCampaign,summaryPreview,type RunRecord} from '../../packages/lab-runtime/src/v2/navigation2d/batch';
+import {campaignComplete,judgeRun,loadCampaign,summaryPreview,type RunRecord} from '../../packages/lab-runtime/src/v2/navigation2d/batch';
 
 const cli=(...args:string[])=>{const r=spawnSync(process.execPath,['scripts/lab-irsim.mjs',...args],{encoding:'utf8',timeout:120000});return {code:r.status,out:r.stdout,err:r.stderr};};
 const real=JSON.parse(await readFile('robotics/navigation-2d/campaigns/c02-concurrent.json','utf8')) as {runs:Record<string,unknown>[]};
@@ -82,6 +82,20 @@ test('F4 campaign complete: a failed oracle with complete evidence is never comp
  expect(campaignComplete([run({evidenceAsExpected:false})])).toBe(false);
  expect(campaignComplete([run({result:'not_run'})])).toBe(false);
  expect(campaignComplete([])).toBe(false);
+});
+
+test('review C02-2 #4 judgeRun: a failing oracle of the case fails the run even when the campaign did not list it; expected ones are reported as before',()=>{
+ const rec=():RunRecord=>({id:'x',index:0,scenarioId:'IR-FD01',fixtureId:'serve-demo-v1',seed:1,repeat:1,expectedAssertions:['BUSINESS_OUTCOME','REPEATABLE'],result:'not_run',reasons:[],evidenceComplete:true,evidenceAsExpected:true});
+ const entry={scenarioId:'IR-FD01',scenarioRevision:1,fixtureId:'serve-demo-v1',seed:1,repeat:2,policyRef:{id:'p',revision:1,hash:'0'.repeat(64)},expectedAssertions:['BUSINESS_OUTCOME','REPEATABLE']};
+ const say=(id:string,result:'pass'|'fail'|'inconclusive')=>({id,result,expected:'e',actual:'a',oracle:'o'});
+ let r=rec();judgeRun(r,entry,[say('BUSINESS_OUTCOME','pass'),say('NO_PHYSICAL_CONTACT','pass')],null,[]);
+ expect([r.result,r.reasons,r.assertions]).toEqual(['pass',[],[{id:'BUSINESS_OUTCOME',result:'pass'}]]);
+ r=rec();judgeRun(r,entry,[say('BUSINESS_OUTCOME','pass'),say('NO_PHYSICAL_CONTACT','fail')],null,[]);
+ expect(r.result).toBe('fail');expect(r.reasons).toEqual([expect.stringMatching(/^FAIL:NO_PHYSICAL_CONTACT \(not listed by the campaign\)/)]);
+ r=rec();judgeRun(r,entry,[say('BUSINESS_OUTCOME','fail')],'RUN_TIMEOUT:1ms',[]);
+ expect(r.result).toBe('fail');expect(r.reasons).toEqual(['RUN_TIMEOUT:1ms',expect.stringMatching(/^FAIL:BUSINESS_OUTCOME/)]);
+ r={...rec(),evidenceAsExpected:false};judgeRun(r,entry,[say('BUSINESS_OUTCOME','pass')],null,['GAP']);
+ expect(r.reasons).toEqual(['EVIDENCE_NOT_AS_EXPECTED:GAP']);
 });
 
 test('summary preview: reasons are bounded for display while the record (and the run.json written from it) keeps every reason in full',()=>{
@@ -172,7 +186,7 @@ test('scenario fixtures: resolved deep-frozen and identical per seed; a zone ove
 });
 
 // ---- C02 fix pass F3: "clean" means nothing outside the commit can run; the tool trees are stamped before and after ----
-const {treeState}=await import('../../scripts/lab-irsim.mjs' as string) as {treeState:(dir:string)=>{dirty:boolean;reasons:string[]}};
+const {treeState}=await import('../../scripts/lab-irsim.mjs' as string) as {treeState:(dir:string,exclude?:string[])=>{dirty:boolean;reasons:string[]}};
 import {cp as copyTree} from 'node:fs/promises';
 test('F3 tree state: an untracked file anywhere, or an ignored file in a tool root that could run, makes the tree dirty; bytecode in __pycache__, pytest caches and tests/ do not',async()=>{
  const repo=await mkdtemp(join(tmpdir(),'irsim-tree-'));
@@ -190,6 +204,13 @@ test('F3 tree state: an untracked file anywhere, or an ignored file in a tool ro
   await writeFile(join(repo,'robotics/navigation-2d/irsim_worker/evil.so'),'x');
   await writeFile(join(repo,'robotics/navigation-2d/irsim_worker/session.pyc'),'x');   // a loose sourceless module is importable
   expect(treeState(repo).reasons.sort()).toEqual(['ignored-in-tool-root robotics/navigation-2d/irsim_worker/evil.so','ignored-in-tool-root robotics/navigation-2d/irsim_worker/session.pyc']);
+  await rm(join(repo,'robotics/navigation-2d/irsim_worker/evil.so'));await rm(join(repo,'robotics/navigation-2d/irsim_worker/session.pyc'));
+  // review C02-2 #1: a recorder's own output inside the repo (docs/implementation/evidence is not ignored) is not what makes the tree dirty; anything else still is
+  await mkdir(join(repo,'docs/evidence/c1/campaign'),{recursive:true});await writeFile(join(repo,'docs/evidence/c1/campaign/summary.json'),'{}');
+  expect(treeState(repo).dirty).toBe(true);
+  expect(treeState(repo,['docs/evidence/c1'])).toMatchObject({dirty:false,reasons:[]});
+  await writeFile(join(repo,'robotics/navigation-2d/planted.py'),'');
+  expect(treeState(repo,['docs/evidence/c1']).reasons).toEqual(['?? robotics/navigation-2d/planted.py']);
  }finally{await rm(repo,{recursive:true,force:true});}
 });
 test('F3 tool closures: a campaign is refused before it starts when the portable tools differ from the expected pin, and stopped as not_run when they change while it runs',async()=>{
