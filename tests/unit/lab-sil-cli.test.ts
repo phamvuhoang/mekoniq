@@ -2,12 +2,34 @@
 // On a host without ROS 2/Gazebo `run` must stop at the doctor gate and write an honest not_run manifest; it never produces a pass.
 import {expect,test} from 'vitest';
 import {spawnSync} from 'node:child_process';
-import {mkdtemp,mkdir,readFile,writeFile} from 'node:fs/promises';
+import {copyFile,mkdtemp,mkdir,readFile,readdir,rm,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 const cli=(...args:string[])=>{const r=spawnSync(process.execPath,['scripts/lab-sil.mjs',...args],{encoding:'utf8',timeout:120000});return {code:r.status,out:r.stdout,err:r.stderr};};
 const sha=(s:string)=>createHash('sha256').update(s).digest('hex');
+
+test.skipIf(spawnSync('python3',['--version']).status!==0)('doctor imports Python tools without writing bytecode into their source tree',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'lab-sil-doctor-'));
+ try{
+  await mkdir(join(root,'scripts/native-sim'),{recursive:true});
+  await copyFile('scripts/lab-sil.mjs',join(root,'scripts/lab-sil.mjs'));
+  await copyFile('scripts/native-sim/profile-report.mjs',join(root,'scripts/native-sim/profile-report.mjs'));
+  const simulation=join(root,'robotics/simulation');
+  // Minimal packages isolate the doctor's import side effects from optional ROS/Python dependencies.
+  for(const name of ['compiler','bridge','actors','metrics','collision','beverage_cell','cup_transfer','worlds']){
+   await mkdir(join(simulation,name),{recursive:true});
+   await writeFile(join(simulation,name,'__init__.py'),name==='compiler'?'import worlds\n':'');
+  }
+  const r=spawnSync(process.execPath,[join(root,'scripts/lab-sil.mjs'),'doctor','--backend','gazebo_nav2','--json'],{
+   encoding:'utf8',timeout:30000,env:{...process.env,PYTHONDONTWRITEBYTECODE:undefined,PYTHONPYCACHEPREFIX:undefined},
+  });
+  expect(r.status,r.stderr).toBe(2);// No image lock/native stack in this fixture; never native evidence.
+  const report=JSON.parse(r.stdout);
+  expect(report.checks.find((c:{id:string})=>c.id==='compiler')).toMatchObject({ok:true});
+  expect((await readdir(simulation,{recursive:true})).filter(p=>p.includes('__pycache__')||p.endsWith('.pyc'))).toEqual([]);
+ }finally{await rm(root,{recursive:true,force:true});}
+});
 
 test('doctor reports every prerequisite with a reason, a report digest and the pinned image; exit 0 only when all are met',()=>{
  const r=cli('doctor','--backend','gazebo_nav2','--json');

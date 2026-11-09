@@ -38,7 +38,7 @@ export async function doctor(backend,environmentProfile,nativeConfig){
  if(backend==='linuxcnc_sim'&&environmentProfile)return {backend,prerequisitesMet:false,checks:[{id:'remote-controller-config',ok:false,detail:'NATIVE_SERVER_CONFIG_REQUIRED'}]};
  if(!BACKENDS.includes(backend))usage(`BACKEND_UNSUPPORTED:${backend}`);
  let image=null;try{image=JSON.parse(await readFile(join(SIM,'image.lock.json'),'utf8'));}catch{image=null;}
- const env={...process.env,PYTHONPATH:`${SIM}:${join(root,'robotics/agent')}`};
+ const env={...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:`${SIM}:${join(root,'robotics/agent')}`};
  const py=ok('python3',['--version']);
  let environment=null;
  if(environmentProfile){
