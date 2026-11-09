@@ -1,0 +1,1 @@
+{"robots":{"robot01":"r_0a759534f5985610","robot02":"r_22b74d5bef4517d1"},"schemaVersion":1,"sensors":{"robot01":["lidar-2d"],"robot02":["lidar-2d"]},"solids":["boundary-east","boundary-north","boundary-south","boundary-west","kitchen-counter","table-01","table-02","table-03","table-04","table-05","table-06","table-07","table-08","table-09","table-10"]}

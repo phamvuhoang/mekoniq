@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "documentType": "navigation-model-2d",
+  "modelDigest": "cfbf53a06c3d7b5ec102c599363bc4ec3d859aaa00eca5f0c76c7b3d435de70c",
+  "inputs": {
+    "project": {
+      "id": "serve-enclosed-table",
+      "revision": 1,
+      "digest": "4f07aa3cdb8f94500b2050b662d817ad1ece584ce3ea233f4689958a5a73befc"
+    },
+    "assemblyDigest": "f32b3e5a9c4189581fe40886d9c5494a03836f487d63382ceb08ccc64a2ea145",
+    "world": {
+      "id": "restaurant-10-tables",
+      "revision": 1,
+      "hash": "02e03a5eabb912e359c495f05ca9ea942eea64eb2515e67ead0d575e62acb1d7"
+    }
+  },
+  "robotId": "amr-1",
+  "physicalModelDigest": "98d2fc18f0e6f61a8fd229f9dbd2451f779e24543c5d1619f068e4543a782c2e",
+  "baseFrameId": "chassis/base",
+  "driveFrameInBase": {
+    "xyzM": [
+      0,
+      0,
+      0
+    ],
+    "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "kinematics": {
+    "type": "differential_drive",
+    "wheelRadiusM": 0.09,
+    "wheelSeparationM": 0.36,
+    "maxLinearMps": 0.5,
+    "maxAngularRadps": 1,
+    "maxWheelRadps": {
+      "left": 20,
+      "right": 20
+    }
+  },
+  "footprint": {
+    "frame": "drive",
+    "verticesM": [
+      [
+        -0.40534674241424906,
+        -0.23
+      ],
+      [
+        -0.3,
+        -0.27
+      ],
+      [
+        0.3,
+        -0.27
+      ],
+      [
+        0.3,
+        0.27
+      ],
+      [
+        -0.3,
+        0.27
+      ],
+      [
+        -0.40534674241424906,
+        0.23
+      ]
+    ],
+    "method": "convex-hull-primitive-bounds-v1",
+    "contributingShapeIds": [
+      "chassis/base:c0",
+      "lidar/head:c0",
+      "support-left/rod:c0",
+      "support-right/rod:c0",
+      "tray-1/plate:c0",
+      "tray-2/plate:c0",
+      "tray-3/plate:c0",
+      "wheel-left/hub:c0",
+      "wheel-left/rim:c0",
+      "wheel-right/hub:c0",
+      "wheel-right/rim:c0"
+    ],
+    "conservative": true
+  },
+  "navigationPolicyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+  },
+  "sensors": [
+    {
+      "id": "lidar-2d",
+      "type": "lidar_2d",
+      "sourceModelDigest": "e6dfbf96920493281123a48eaa13a4d8c938cf7853391e15bd4fbb651416c322",
+      "parentLinkId": "lidar/head",
+      "poseInDrive": [
+        0.2200000000000002,
+        0,
+        0
+      ],
+      "heightM": 0.12,
+      "rangeMinM": 0.05,
+      "rangeMaxM": 10,
+      "fieldOfViewRad": 6.283185307179586,
+      "beamCount": 360,
+      "publishEveryTicks": 5,
+      "noise": {
+        "distribution": "none",
+        "stddevM": 0,
+        "seed": 7
+      }
+    }
+  ],
+  "limitations": [
+    "planar kinematics only: no slip, torque, battery or tipping model",
+    "footprint is a conservative hull of primitive bounds, so a no_path result does not prove the real robot cannot pass",
+    "LiDAR rays and collisions share one plane (PLANAR_OCCLUSION_NO_HEIGHT_FILTER); sensor height is for display",
+    "policy limits are fixture values, not measured hardware limits"
+  ]
+}

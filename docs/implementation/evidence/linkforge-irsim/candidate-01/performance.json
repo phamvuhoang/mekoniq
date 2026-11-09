@@ -1,0 +1,70 @@
+{
+ "schemaVersion": 1,
+ "documentType": "irsim-performance-measurement",
+ "note": "a measurement on this host, not a gate; per-tick values are means over 50-tick step batches, p50/p95 across batches",
+ "host": {
+  "platform": "darwin",
+  "release": "25.5.0",
+  "arch": "arm64",
+  "cpu": "Apple M2 Pro",
+  "cpus": 10,
+  "memGiB": 16,
+  "node": "v24.22.2",
+  "python": "3.11.15",
+  "irsim": "2.12.0"
+ },
+ "workload": {
+  "scenarioId": "IR-FD07",
+  "fixtureId": "serve-fleet-v1",
+  "robots": [
+   {
+    "robotId": "robot01",
+    "beams": [
+     360
+    ],
+    "publishEveryTicks": [
+     5
+    ]
+   },
+   {
+    "robotId": "robot02",
+    "beams": [
+     180
+    ],
+    "publishEveryTicks": [
+     5
+    ]
+   }
+  ],
+  "ticks": 3000,
+  "simSeconds": 60,
+  "finalStatus": "running",
+  "maxConcurrentMovers": 1
+ },
+ "steadyState": {
+  "batches": 60,
+  "perTickMs": {
+   "p50": 5.075919160000001,
+   "p95": 9.87636,
+   "max": 11.5499975
+  },
+  "realtimeFactor": 3.3073464859806068,
+  "wallSeconds": 18.141431584000003,
+  "workerRssMiB": {
+   "max": 123.6875,
+   "samples": 60
+  },
+  "evidenceBytes": 1522442
+ },
+ "targets": {
+  "realtimeFactorAt1x": ">= 1 (median)",
+  "stepP95Ms": "<= 20",
+  "workerRssMiB": "<= 1024",
+  "source": "specs/2026-11-08-linkforge-irsim/verification.md §4 (Mac arm64 reference, 2 robots, 360 beams each, publish 10 Hz)"
+ },
+ "meetsTargets": {
+  "realtimeFactor": true,
+  "stepP95": true,
+  "workerRss": true
+ }
+}

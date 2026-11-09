@@ -1,0 +1,379 @@
+{
+ "schemaVersion": 1,
+ "id": "c02-qualification",
+ "title": "C02 IR-SIM 2D qualification on the pinned worker: IR01-IR06, IR08-IR10 (repeats paced 500/25/100 ticks per request) and the IR04 contention rig; IR07 not_run (see ledger)",
+ "runs": [
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 11,
+   "repeat": 3,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT",
+    "REPEATABLE"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-noisy-v1",
+   "seed": 11,
+   "repeat": 3,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT",
+    "REPEATABLE",
+    "NOISE_VISIBLE"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 12,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 13,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 14,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 15,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 16,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 17,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 18,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 19,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD03",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 21,
+   "repeat": 2,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT",
+    "ACTOR_SCHEDULE_APPLIED",
+    "ACTOR_OBSERVED",
+    "NO_ACTOR_CONTACT",
+    "ACTOR_YIELD",
+    "REPEATABLE"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD04",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-enclosed-v1",
+   "seed": 22,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PATH_NOT_BLOCKED",
+    "NO_PHYSICAL_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD04-blocked",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 23,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "BLOCKED_NOT_NO_PATH",
+    "ACTOR_SCHEDULE_APPLIED",
+    "ACTOR_OBSERVED",
+    "NO_ACTOR_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD07",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-fleet-v1",
+   "seed": 31,
+   "repeat": 2,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT",
+    "ACTOR_SCHEDULE_APPLIED",
+    "NO_ACTOR_CONTACT",
+    "BOTH_ROBOTS_MOVED",
+    "ROBOT_MAPPING",
+    "ZONE_SINGLE_OWNER",
+    "ZONE_RELEASE_AFTER_EXIT",
+    "MIN_SEPARATION_AVAILABLE",
+    "WITHIN_TICKS",
+    "REPEATABLE"
+   ]
+  },
+  {
+   "scenarioId": "IR-RIG-ZONE",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-fleet-v1",
+   "seed": 32,
+   "repeat": 2,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "BUSINESS_OUTCOME",
+    "RIG_GOALS_ARRIVED",
+    "ZONE_CONTENDED",
+    "ZONE_PROMOTED_AT_RELEASE",
+    "ZONE_SINGLE_OWNER",
+    "ZONE_RELEASE_AFTER_EXIT",
+    "NO_PHYSICAL_CONTACT",
+    "MIN_SEPARATION_AVAILABLE",
+    "REPEATABLE"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01-cancel",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 33,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT",
+    "CANCEL_BOUNDED_STOP",
+    "ONE_TERMINAL_PER_MISSION"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD01-workerkill",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 34,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "EVIDENCE_GAP_AS_DECLARED",
+    "CARGO_KEPT",
+    "NO_SECOND_WORKER"
+   ]
+  },
+  {
+   "scenarioId": "IR-RAW-PAIR-CONTACT",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-fleet-v1",
+   "seed": 35,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "CONTACT_NAMED_BY_ID",
+    "ONE_ENGINE_EPISODE_PER_PAIR",
+    "ORACLE_AGREES_CONTACT",
+    "STOPPED_AT_CONTACT"
+   ]
+  }
+ ]
+}
