@@ -6,6 +6,7 @@ import {mkdir,rm,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
+const workers=()=>{try{return execFileSync('pgrep',['-P',String(process.pid)],{encoding:'utf8'}).trim().split('\n').filter(Boolean).filter(p=>{try{return execFileSync('ps',['-o','command=','-p',p],{encoding:'utf8'}).includes('irsim_worker');}catch{return false;}}).map(Number);}catch{return [];}};
 import {lockDigestOf} from '../../packages/lab-runtime/src/engineering/linkforge';
 import {spawnIRSimWorker} from '../../packages/lab-runtime/src/v2/navigation2d/worker-client';
 import {createNavigationController} from '../../packages/lab-runtime/src/v2/navigation2d/controller';
@@ -165,4 +166,57 @@ test.skipIf(!irsimAvailable)('IR04 unknown holder: an owner that is no longer ob
   expect(x.entered).toEqual(['robot01@0']);
   expect(x.traffic.owners().band).toBe('robot01');
  }finally{await x.close();}
+},600_000);
+
+// ---- C02 fix pass F2: the domain's TTL lapse of an idle holder must never move a zone our traffic holds ----
+async function sessionOnly(dir:string){
+ const scene=await sceneOf(fleet);let tick=0;await mkdir(join(dir,'source'),{recursive:true});
+ const source=await SourceSession.open(join(dir,'source'),'lapse',()=>EPOCH_MS+tick*20,{epochMs:EPOCH_MS,navigation:{mapId:scene.world.id,mapRevision:scene.sceneDigest,bindings:Object.fromEntries(scene.robots[0]!.targetBindings.map(t=>[t.pointId,{waypointId:t.pointId,mapId:scene.world.id,mapRevision:scene.sceneDigest,frame:'map' as const,x:t.x,y:t.y,yaw:t.yaw}]))},
+  project:fleet.locked.runtimeProjection.project,robots:[{id:'robot01',parkingId:'bay-1',trays:3},{id:'robot02',parkingId:'bay-2',trays:3}],stationIds:['pass']},true);
+ const fp=(id:string)=>scene.robots.find(r=>r.robotId===id)!.model.footprint.verticesM as P[];
+ // robot01 stands INSIDE the band; robot02 wants to cross it
+ const r1=(live:boolean)=>({robotId:'robot01',footprint:fp('robot01'),pose:[2.875,6,0] as Pose2,live,route:live?[[2.875,6],[1,6]] as P[]:null});
+ const r2={robotId:'robot02',footprint:fp('robot02'),pose:[6,6,Math.PI] as Pose2,live:true,route:[[6,6],[1,6]] as P[]};
+ return {source,r1,r2,setTick:(t:number)=>{tick=t;},state:async(id:string)=>(await source.store.snapshots(source.scope)).find(s=>s.ref.kind==='reservation'&&s.ref.id===id)?.state};
+}
+test.skipIf(!irsimAvailable)('F2 lapse: an owner whose leg ended inside the zone keeps it past the 60 s TTL (renewed through Zone.Reserve), the other robot stays pending, and one stranded notice is raised',async()=>{
+ const dir=await temp('irsim-lapse-');dirs.push(dir);const x=await sessionOnly(dir);
+ try{
+  const traffic=createZoneTraffic(createZoneBridge(x.source,{async enter(){}}),[{id:'band',polygonM:BAND}],{clearanceM:0.1});
+  expect((await traffic.update(0,[x.r1(true)])).band).toBe('robot01');
+  const notices=[];
+  for(let t=1;t<=3600;t++){x.setTick(t);const o=await traffic.update(t,[x.r1(false),x.r2]);notices.push(...traffic.notices());expect(o.band,`tick ${t}`).toBe('robot01');}
+  expect(await x.state('band@robot01')).toMatchObject({status:'granted'});
+  expect(await x.state('band@robot02')).toMatchObject({status:'pending'});
+  expect(notices).toEqual([{kind:'stranded',zoneId:'band',robotId:'robot01',tick:1}]);
+ }finally{await x.source.close();}
+},120_000);
+test.skipIf(!irsimAvailable)('F2 refusal: if the domain ever grants the zone to another robot while traffic holds it (renewal off here), traffic keeps its owner, never lets the other in, and raises a conflict once',async()=>{
+ const dir=await temp('irsim-conflict-');dirs.push(dir);const x=await sessionOnly(dir);
+ try{
+  const traffic=createZoneTraffic(createZoneBridge(x.source,{async enter(){}}),[{id:'band',polygonM:BAND}],{clearanceM:0.1,renewEveryTicks:Infinity});
+  await traffic.update(0,[x.r1(true)]);
+  const notices=[];
+  for(let t=1;t<=3300;t++){x.setTick(t);const o=await traffic.update(t,[x.r1(false),x.r2]);notices.push(...traffic.notices());expect(o.band,`tick ${t}`).toBe('robot01');}
+  // the domain did lapse robot01 (TTL, idle holder) and granted robot02: that is exactly the contradiction traffic must not act on
+  expect(await x.state('band@robot01')).toMatchObject({status:'released',releaseReason:'ttl_lapsed'});
+  expect(await x.state('band@robot02')).toMatchObject({status:'granted'});
+  expect(notices.filter(n=>n.kind==='conflict')).toEqual([{kind:'conflict',zoneId:'band',robotId:'robot02',owner:'robot01',tick:expect.any(Number)}]);
+ }finally{await x.source.close();}
+},120_000);
+test.skipIf(!irsimAvailable)('F2 plant lost while a robot holds the aisle zone: the run needs attention with ZONE_HELD_UNKNOWN; the reservation is not released',async()=>{
+ const dir=await temp('irsim-fleet-lost-');dirs.push(dir);
+ const run=await createIRSimScenarioRun({project:fleet.locked.runtimeProjection.project,scenarioId:'IR-FD07',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-irsim-2d-v1',sourceCommit:'test-commit',engineering:fleet.locked},await irsimProviders(dir,fleet.service));runs.push(run);
+ const before=workers();await run.start();
+ let v=await run.snapshot();
+ // step until robot01's footprint is inside aisle-west (from the live entities, base pose ~ drive pose for the Serve)
+ while(v.tick<6000&&!(await run.report()).businessEvents.some(e=>e.kind==='reservation'&&e.state.zoneId==='aisle-west'&&e.state.status==='granted'))v=await act(run,'step',{ticks:25});
+ v=await act(run,'step',{ticks:150});
+ const live=workers().filter(p=>!before.includes(p));expect(live).toHaveLength(1);process.kill(live[0]!,'SIGKILL');
+ v=await act(run,'step',{ticks:5});
+ const r=await run.report();
+ expect(v.run.status).toBe('needs_attention');
+ expect(r.attention.filter(a=>a.reason==='ZONE_HELD_UNKNOWN').map(a=>a.subjectId)).toEqual(['aisle-west']);
+ const last=r.businessEvents.filter(e=>e.kind==='reservation'&&e.state.zoneId==='aisle-west').at(-1)!;
+ expect(last.state.status).toBe('granted');
 },600_000);

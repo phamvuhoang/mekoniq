@@ -5,6 +5,7 @@ import {hashJson} from '../hash';
 import {TICK_MS} from '../clock';
 import {actorStream} from '../random';
 import type {RunReport} from '../report';
+import type {ScenarioDefinition} from '../scenario-registry';
 import type {NavigationSceneV1} from './contracts';
 import type {EvidenceRead} from './evidence';
 import {place,pointDistance,polygonDistance,polygonsOverlap,isConvex,type P,type Pose2} from './geometry';
@@ -21,26 +22,54 @@ export const FIXTURE_DIRECTORY='fixtures/serve-demo-v1',FIXTURE_COMPONENTS='serv
 /** A scripted person: stands at path[0] until its start tick (drawn once from its own PRNG stream in [a, b]), then walks the polyline at speedMps and stays at the end. */
 export interface ActorSpec{id:string;radiusM:number;startTick:readonly [number,number];speedMps:number;path:readonly (readonly [number,number])[]}
 export interface ZoneSpec{id:string;polygonM:readonly (readonly [number,number])[];entryPoints:readonly (readonly [number,number])[];exitPoints:readonly (readonly [number,number])[]}
-/** `oracles` are the scenario assertions a run of this scenario is judged by (a campaign's expectedAssertions must be among them). */
-export interface ScenarioFixtureSpec{scenarioId:string;fixtures:readonly string[];worldId:string;actors:readonly ActorSpec[];zones:readonly ZoneSpec[];oracles:readonly string[]}
+/**
+ * A campaign case. `scenarioId` is the case id a campaign names; `runs` the scenario definition it executes (default: the same id; a rig definition from RIG_SCENARIOS
+ * or a registry scenario). `oracles` are the assertions a run of this case is judged by (a campaign's expectedAssertions must be among them).
+ * kind: scenario (a registry scenario as the gateway would run it) | contention_rig (campaign-only, goals given to the controller directly, no missions: bypasses the
+ * venue-movement serialization; labelled in every report) | operator_fault (a registry scenario plus a scripted operator act: cancel, worker kill) | raw_drive
+ * (controller bypassed, test-only velocities straight to the worker: never admitted by the gateway). `label` is the honest one-liner shown with every result.
+ */
+export interface ScenarioFixtureSpec{scenarioId:string;runs?:string;kind?:'scenario'|'contention_rig'|'operator_fault'|'raw_drive';label:string;
+ operator?:{cancelWhenMoving?:true;killWorkerOnTableLeg?:true};expectOutcome?:{status:string;served:string;reasons?:readonly string[]};evidence?:'complete'|'step_ack_lost';
+ raw?:{ticks:number;velocities:readonly {robotId:string;vMps:number;omegaRadps:number}[]};
+ fixtures:readonly string[];worldId:string;actors:readonly ActorSpec[];zones:readonly ZoneSpec[];oracles:readonly string[]}
 const COMMON=['EVIDENCE_COMPLETE','IDENTITY_BOUND','NO_SERVED_BEFORE_HANDOFF'];
 const deepFreeze=<T>(v:T):T=>{if(v&&typeof v==='object'){for(const x of Object.values(v))deepFreeze(x);Object.freeze(v);}return v;};
 // All coordinates are the restaurant-10-tables fixture world (20 x 12 m; tables at x 4/7/10/13/16, rows y 3 and 9; aisle between y 3.4 and 8.6; kitchen pass handoff at 1.9, 6).
 const SPECS:ScenarioFixtureSpec[]=[
- {scenarioId:'IR-FD01',fixtures:['serve-demo-v1','serve-noisy-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT']},
+ {scenarioId:'IR-FD01',label:'IR01: one order, one robot, kitchen -> table -> parking',fixtures:['serve-demo-v1','serve-noisy-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT']},
  // IR02: a person (r 0.25 m, 0.5 m/s) crosses the bay -> kitchen lane at y 3.2 from tick 100, while the robot drives up it
- {scenarioId:'IR-FD03',fixtures:['serve-demo-v1'],worldId:'restaurant-10-tables',actors:[{id:'person-1',radiusM:0.25,startTick:[100,100],speedMps:0.5,path:[[0.45,3.2],[3.2,3.2],[3.2,0.45]]}],zones:[],
+ {scenarioId:'IR-FD03',label:'IR02: a person crosses the bay -> kitchen lane while the robot drives up it; the robot must see it, yield and resume',fixtures:['serve-demo-v1'],worldId:'restaurant-10-tables',actors:[{id:'person-1',radiusM:0.25,startTick:[100,100],speedMps:0.5,path:[[0.45,3.2],[3.2,3.2],[3.2,0.45]]}],zones:[],
   oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT','ACTOR_SCHEDULE_APPLIED','ACTOR_OBSERVED','NO_ACTOR_CONTACT','ACTOR_YIELD']},
  // IR03: table T01's handoff is walled in (serve-enclosed-v1): admitted, then no_path before the robot drives; nothing served
- {scenarioId:'IR-FD04',fixtures:['serve-enclosed-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PATH_NOT_BLOCKED','NO_PHYSICAL_CONTACT']},
+ {scenarioId:'IR-FD04',label:'IR03: the T01 handoff is walled in: no_path before driving',fixtures:['serve-enclosed-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PATH_NOT_BLOCKED','NO_PHYSICAL_CONTACT']},
  // IR03 blocked: a person stands on table T01's handoff for the whole run: a dynamic obstacle that never leaves -> blocked after the no-progress window, never no_path
- {scenarioId:'IR-FD04-blocked',fixtures:['serve-demo-v1'],worldId:'restaurant-10-tables',actors:[{id:'person-1',radiusM:0.25,startTick:[0,0],speedMps:0.5,path:[[4,4.05]]}],zones:[],
+ {scenarioId:'IR-FD04-blocked',label:'IR03: a person stands on the T01 handoff: blocked after the no-progress window',fixtures:['serve-demo-v1'],worldId:'restaurant-10-tables',actors:[{id:'person-1',radiusM:0.25,startTick:[0,0],speedMps:0.5,path:[[4,4.05]]}],zones:[],
   oracles:[...COMMON,'BUSINESS_OUTCOME','BLOCKED_NOT_NO_PATH','ACTOR_SCHEDULE_APPLIED','ACTOR_OBSERVED','NO_ACTOR_CONTACT']},
- // IR04: two robots, one reservation zone across the aisle between the kitchen pass and the first table column (every pass <-> T01/T02 route), a customer crossing at x 5.5
- {scenarioId:'IR-FD07',fixtures:['serve-fleet-v1'],worldId:'restaurant-10-tables',actors:[{id:'customer-1',radiusM:0.25,startTick:[600,600],speedMps:0.5,path:[[5.5,1.0],[5.5,11.0]]}],
+ // IR-FD07: two robots through the SOURCE (missions): the venue-movement reservation serializes them, so the aisle zone is reserved and released per leg but never
+ // contended here, and the customer walks at x 5.5, away from both routes (schedule applied, no contact; not an avoidance test). Contention is the rig below.
+ {scenarioId:'IR-FD07',label:'IR-FD07 (source-driven): two robots serialized by the venue-movement reservation; aisle zone reserved/released per leg, never contended; customer away from the routes',fixtures:['serve-fleet-v1'],worldId:'restaurant-10-tables',actors:[{id:'customer-1',radiusM:0.25,startTick:[600,600],speedMps:0.5,path:[[5.5,1.0],[5.5,11.0]]}],
   zones:[{id:'aisle-west',polygonM:[[2.6,3.45],[3.4,3.45],[3.4,8.55],[2.6,8.55]],entryPoints:[[2.3,6]],exitPoints:[[3.7,6]]}],
   oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT','ACTOR_SCHEDULE_APPLIED','NO_ACTOR_CONTACT','BOTH_ROBOTS_MOVED','ROBOT_MAPPING','ZONE_SINGLE_OWNER','ZONE_RELEASE_AFTER_EXIT','MIN_SEPARATION_AVAILABLE','WITHIN_TICKS']},
+ // IR04 contention rig: robot01 (west) -> T01 and robot02 (east) -> kitchen pass at tick 0 through one band zone from wall to wall; both move at once
+ {scenarioId:'IR-RIG-ZONE',kind:'contention_rig',label:'CONTENTION RIG (not a production scenario): goals given to the controller directly, no missions, so the venue-movement serialization is bypassed; proves zone contention on the real plant',
+  fixtures:['serve-fleet-v1'],worldId:'restaurant-10-tables',actors:[],zones:[{id:'band',polygonM:[[2.75,0.15],[3,0.15],[3,11.85],[2.75,11.85]],entryPoints:[],exitPoints:[]}],
+  oracles:['EVIDENCE_COMPLETE','IDENTITY_BOUND','BUSINESS_OUTCOME','RIG_GOALS_ARRIVED','ZONE_CONTENDED','ZONE_PROMOTED_AT_RELEASE','ZONE_SINGLE_OWNER','ZONE_RELEASE_AFTER_EXIT','NO_PHYSICAL_CONTACT','MIN_SEPARATION_AVAILABLE']},
+ // IR05: IR-FD01 cancelled by the operator as soon as the robot drives its first leg (before any load)
+ {scenarioId:'IR-FD01-cancel',runs:'IR-FD01',kind:'operator_fault',label:'IR05: operator cancel mid-route on the kitchen leg; cancelled, nothing served, bounded simulated stop',operator:{cancelWhenMoving:true},expectOutcome:{status:'cancelled',served:'0'},
+  fixtures:['serve-demo-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT','CANCEL_BOUNDED_STOP','ONE_TERMINAL_PER_MISSION']},
+ // IR10: the real worker is SIGKILLed between steps on the table leg (cargo aboard)
+ {scenarioId:'IR-FD01-workerkill',runs:'IR-FD01',kind:'operator_fault',label:'IR10: worker process killed between steps on the table leg; leg unknown, no resend, no second worker, cargo kept, the unknown tick a recorded gap',operator:{killWorkerOnTableLeg:true},
+  expectOutcome:{status:'needs_attention',served:'0',reasons:['WORKER_LOST','EXECUTION_UNKNOWN']},evidence:'step_ack_lost',
+  fixtures:['serve-demo-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:['IDENTITY_BOUND','NO_SERVED_BEFORE_HANDOFF','BUSINESS_OUTCOME','EVIDENCE_GAP_AS_DECLARED','CARGO_KEPT','NO_SECOND_WORKER']},
+ // IR06: robot01 driven into robot02 (standing) by raw velocities with the controller bypassed (test-only, never admitted by the gateway)
+ {scenarioId:'IR-RAW-PAIR-CONTACT',kind:'raw_drive',label:'IR06 (test-only raw drive, controller bypassed): robot01 driven into robot02; contact named by robotId, one episode per pair, oracle agrees',
+  raw:{ticks:300,velocities:[{robotId:'robot01',vMps:0.3,omegaRadps:0},{robotId:'robot02',vMps:0,omegaRadps:0}]},
+  fixtures:['serve-fleet-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:['EVIDENCE_COMPLETE','CONTACT_NAMED_BY_ID','ONE_ENGINE_EPISODE_PER_PAIR','ORACLE_AGREES_CONTACT','STOPPED_AT_CONTACT']},
 ];
+/** Campaign-only scenario definitions (never in the gateway's registry): the IR04 contention rig. */
+export const RIG_SCENARIOS:ReadonlyMap<string,ScenarioDefinition>=new Map([['IR-RIG-ZONE',deepFreeze({id:'IR-RIG-ZONE',revision:1,title:'CONTENTION RIG: two robots cross one band zone at once (no missions)',robots:2,orders:[],confirm:{mode:'scripted' as const,delayTicks:0},park:false,maxTicks:6000,
+ rig:{goals:[{robot:0,pointId:'t-01',atTick:0},{robot:1,pointId:'pass',atTick:0}],note:'goals are given to the controller directly with no order or mission, so the venue-movement reservation that serializes source-driven runs does not apply; this run proves zone contention, not delivery'}})]]);
 export const SCENARIO_FIXTURES:ReadonlyMap<string,ScenarioFixtureSpec>=new Map(SPECS.map(s=>[s.scenarioId,deepFreeze(s)]));
 
 export interface ResolvedActor{id:string;radiusM:number;initialPoseMap:[number,number,number];startTick:number;speedMps:number;path:[number,number][];scheduleRef:{id:string;revision:number;hash:string}}
@@ -104,11 +133,13 @@ export const actorUpdatesAt=(f:ResolvedFixture,tick:number)=>f.actors.map(a=>({a
 // ---- scenario oracles ----
 export interface ScenarioAssertion{id:string;result:'pass'|'fail'|'inconclusive';expected:string;actual:string;oracle:string}
 /** `expectOutcome` replaces the scenario's expected business outcome for an operator-driven case (a cancel mid-route): the oracle is the same, only the expectation moves. */
-export interface OracleInput{report:RunReport;read:EvidenceRead;scene:NavigationSceneV1;fixture:ResolvedFixture;expectOutcome?:{status:string;served:string;reasons?:readonly string[]}}
+export interface OracleInput{report:RunReport;read:EvidenceRead;scene:NavigationSceneV1;fixture:ResolvedFixture;expectOutcome?:{status:string;served:string;reasons?:readonly string[]};
+ /** the case being judged (default: the run's scenario id) and what the operator did: the tick a cancel was sent / a worker was killed, and the worker processes seen after the kill */
+ caseId?:string;operator?:{cancelTick?:number;killTick?:number;workersAfterKill?:number}}
 const tickOf=(r:RunReport,at:string)=>Math.round((Date.parse(at)-(r.manifest.clock as {businessEpochMs?:number}).businessEpochMs!)/TICK_MS);
 const say=(id:string,ok:boolean|null,expected:string,actual:string,oracle:string):ScenarioAssertion=>({id,result:ok===null?'inconclusive':ok?'pass':'fail',expected,actual,oracle});
 /** Expected business outcome per scenario: status, served count and, for a failed leg, the attention reasons that are acceptable. */
-const OUTCOME:Record<string,{status:string;served:string;reasons?:readonly string[]}>={
+const OUTCOME:Record<string,{status:string;served:string;reasons?:readonly string[]}>={'IR-RIG-ZONE':{status:'completed',served:'0'},
  'IR-FD01':{status:'completed',served:'1'},'IR-FD03':{status:'completed',served:'1'},'IR-FD07':{status:'completed',served:'2'},
  'IR-FD04':{status:'needs_attention',served:'0',reasons:['NO_PATH']},'IR-FD04-blocked':{status:'needs_attention',served:'0',reasons:['DYNAMIC_OBSTACLE','NO_PROGRESS']},
 };
@@ -117,7 +148,7 @@ const inZone=(scene:NavigationSceneV1,robotId:string,pose:readonly number[],zone
 
 /** Every oracle of the scenario. Without complete evidence a trace-based oracle is inconclusive, never a pass; business oracles read the journal only. */
 export function scenarioAssertions(o:OracleInput):ScenarioAssertion[]{
- const {report:r,read,scene,fixture}=o,spec=SCENARIO_FIXTURES.get(r.manifest.scenario.id),ev=r.navigation2d,complete=read.complete&&ev?.completeness?.status==='complete';
+ const {report:r,read,scene,fixture}=o,spec=SCENARIO_FIXTURES.get(o.caseId??r.manifest.scenario.id),ev=r.navigation2d,complete=read.complete&&ev?.completeness?.status==='complete';
  const out:ScenarioAssertion[]=[],trace=read.trajectory,events=r.businessEvents;
  const want=(id:string)=>!spec||spec.oracles.includes(id);
  if(want('EVIDENCE_COMPLETE'))out.push(say('EVIDENCE_COMPLETE',complete&&['EVIDENCE_INTEGRITY','EVIDENCE_COVERAGE','EVIDENCE_LIMITS'].every(id=>ev?.assertions.find(a=>a.id===id)?.result==='pass'),
@@ -139,7 +170,7 @@ export function scenarioAssertions(o:OracleInput):ScenarioAssertion[]{
   out.push(say('NO_SERVED_BEFORE_HANDOFF',!bad,'served only after DeliveryHandedOff; CargoLoaded before any handoff',bad??`${events.filter(e=>e.type==='DeliveryHandedOff').length} handoff(s), ${events.filter(e=>e.type==='CargoLoaded').length} load(s), in order`,'journal event order'));
  }
  if(want('BUSINESS_OUTCOME')){
-  const x=o.expectOutcome??OUTCOME[r.manifest.scenario.id],reasons=r.attention.map(a=>a.reason);
+  const x=o.expectOutcome??spec?.expectOutcome??OUTCOME[r.manifest.scenario.id],reasons=r.attention.map(a=>a.reason);
   const ok=!!x&&r.outcome.status===x.status&&r.outcome.served===x.served&&(x.reasons?reasons.length>0&&reasons.every(a=>x.reasons!.includes(a)):reasons.length===0);
   out.push(say('BUSINESS_OUTCOME',ok,x?`${x.status}, served ${x.served}${x.reasons?`, attention only ${x.reasons.join('|')}`:', no attention'}`:'a known scenario',`${r.outcome.status}, served ${r.outcome.served}, attention ${reasons.join(',')||'none'}`,'journal outcome (served from fulfillment state)'));
  }
@@ -223,9 +254,47 @@ export function scenarioAssertions(o:OracleInput):ScenarioAssertion[]{
    for(const e of grants.filter(e=>e.type==='ZoneReservationReleased')){releases++;const t=tickOf(r,e.at),pose=trace.find(x=>x.tick===t)?.robots.find(x=>x.robotId===String(e.state.robotId))?.poseDriveMap;
     if(!pose||inZone(scene,String(e.state.robotId),pose,z.polygonM))bad2.push(`${String(e.state.robotId)} released ${z.id} at ${t} ${pose?'while inside':'without an observation'}`);}
   }
+  // contention: some robot asked (pending) while another held the grant, and the release itself promoted it (same journal transaction tick)
+  const contended:string[]=[],promoted:string[]=[],unpromoted:string[]=[];
+  for(const z of fixture.zones){
+   const ev=res.filter(e=>e.state.zoneId===z.id),held=(t:number,robot:string)=>{let g=false;for(const e of ev){if(tickOf(r,e.at)>t)break;if(String(e.state.robotId)===robot)g=e.state.status==='granted';}return g;};
+   const firsts=new Set<string>();
+   for(const p of ev.filter(e=>e.type==='ZoneReservationPending')){
+    const b=String(p.state.robotId),t=tickOf(r,p.at),holder=[...new Set(ev.map(e=>String(e.state.robotId)))].find(a=>a!==b&&held(t,a));if(!holder||firsts.has(`${b}@${holder}`))continue;firsts.add(`${b}@${holder}`);
+    const grant=ev.find(e=>e.type==='ZoneReservationGranted'&&String(e.state.robotId)===b&&tickOf(r,e.at)>=t),release=ev.find(e=>e.type==='ZoneReservationReleased'&&String(e.state.robotId)===holder&&tickOf(r,e.at)>=t);
+    contended.push(`${b} pending on ${z.id} from ${t} while ${holder} held it`);
+    if(grant&&release&&tickOf(r,grant.at)===tickOf(r,release.at))promoted.push(`${b} granted at ${tickOf(r,grant.at)} = ${holder}'s release`);else unpromoted.push(`${b}: grant ${grant?tickOf(r,grant.at):'none'}, ${holder}'s release ${release?tickOf(r,release.at):'none'}`);
+   }
+  }
+  if(want('ZONE_CONTENDED'))out.push(say('ZONE_CONTENDED',contended.length>0,'a robot was pending on the zone while another held it (the zone was actually contended)',contended.join('; ')||'never contended (a run that never contends cannot show exclusion)','journal reservation events'));
+  if(want('ZONE_PROMOTED_AT_RELEASE'))out.push(say('ZONE_PROMOTED_AT_RELEASE',contended.length>0&&!unpromoted.length,'every contended robot is granted exactly at the holder\'s release tick (domain promotion), not earlier or by TTL',[...promoted,...unpromoted].join('; ')||'no contention','journal reservation events'));
   if(want('ZONE_SINGLE_OWNER'))out.push(say('ZONE_SINGLE_OWNER',!complete?null:!bad1.length&&insideTicks>0,'at every tick at most one granted owner per zone, and a robot footprint inside a zone only while it holds the grant',bad1.slice(0,5).join('; ')||`${insideTicks} robot-ticks inside zones, all granted`,'journal reservations x trace footprints'));
   if(want('ZONE_RELEASE_AFTER_EXIT'))out.push(say('ZONE_RELEASE_AFTER_EXIT',!complete?null:!bad2.length&&releases>=scene.robots.length,'every release only when the whole footprint is outside the zone at that tick',bad2.slice(0,5).join('; ')||`${releases} release(s), each after a full exit`,'journal releases x trace footprints'));
  }
+ if(want('RIG_GOALS_ARRIVED')){
+  const rig=RIG_SCENARIOS.get(r.manifest.scenario.id)?.rig,ids=[...scene.robots.map(x=>x.robotId)].sort(),last=trace.at(-1),bad:string[]=[];
+  for(const g of rig?.goals??[]){const id=ids[g.robot]!,t=scene.robots.find(x=>x.robotId===id)!.targetBindings.find(b=>b.pointId===g.pointId)!,p=last?.robots.find(x=>x.robotId===id)?.poseDriveMap;
+   if(!p||Math.hypot(p[0]-t.x,p[1]-t.y)>scene.policy.parameters.goalPositionToleranceM+1e-9)bad.push(`${id} not at ${g.pointId}`);}
+  out.push(say('RIG_GOALS_ARRIVED',!complete?null:!!rig&&!bad.length&&r.outcome.status==='completed','every rig robot ends at its own target (by robotId) and the rig completed',bad.join('; ')||`${rig?.goals.length??0} goal(s) reached, ${r.outcome.status}`,'last trace pose vs scene target bindings'));
+ }
+ if(want('CANCEL_BOUNDED_STOP')){
+  const c=o.operator?.cancelTick,stop=c===undefined?undefined:trace.find(t=>t.tick>=c&&t.robots.every(x=>Math.abs(x.bodyVelocity[0])<=scene.policy.parameters.stoppedLinearMps&&Math.abs(x.bodyVelocity[1])<=scene.policy.parameters.stoppedAngularRadps));
+  const moving=c!==undefined&&trace.find(t=>t.tick===c)?.robots.some(x=>Math.abs(x.bodyVelocity[0])>scene.policy.parameters.stoppedLinearMps||Math.abs(x.bodyVelocity[1])>scene.policy.parameters.stoppedAngularRadps);
+  out.push(say('CANCEL_BOUNDED_STOP',!complete?null:c!==undefined&&!!moving&&!!stop&&stop.tick-c<=60,'the robot was moving at the cancel and stood still within 60 ticks (0.5 m/s at 0.5 m/s2 = 50 ticks + 10)',c===undefined?'no cancel tick':`cancel at ${c} (moving ${moving}), still from ${stop?.tick??'never'}`,'trace velocities after the operator cancel tick'));
+ }
+ if(want('ONE_TERMINAL_PER_MISSION')){
+  const ended=events.filter(e=>e.type==='MissionCancelled'||e.kind==='mission'&&e.state.status==='completed'&&e.type!=='MissionCancelled'),ids=ended.map(e=>e.id);
+  out.push(say('ONE_TERMINAL_PER_MISSION',ids.length>0&&new Set(ids).size===ids.length&&!events.some(e=>e.type==='DeliveryHandedOff'),'each mission ends once (one terminal event), no handoff',`${ids.length} terminal event(s) for ${new Set(ids).size} mission(s); handoffs ${events.filter(e=>e.type==='DeliveryHandedOff').length}`,'journal'));
+ }
+ if(want('EVIDENCE_GAP_AS_DECLARED')){
+  const k=o.operator?.killTick,ok=k!==undefined&&!read.issues.length&&read.gaps.length===1&&read.gaps[0]!.reason==='STEP_ACK_LOST'&&read.gaps[0]!.fromTick===read.gaps[0]!.toTick&&read.gaps[0]!.fromTick===r.outcome.tick+1&&ev?.completeness?.status==='incomplete';
+  out.push(say('EVIDENCE_GAP_AS_DECLARED',ok,'exactly one recorded gap: STEP_ACK_LOST at the step sent to the dead worker (outcome tick + 1); no integrity issue; the evidence says incomplete',`kill at ${k}; gaps ${JSON.stringify(read.gaps)}; issues ${read.issues.length}; completeness ${ev?.completeness?.status}`,'durable evidence read'));
+ }
+ if(want('CARGO_KEPT')){
+  const loaded=events.some(e=>e.type==='CargoLoaded'),gone=events.some(e=>['CargoReturned','AllocationReleased','DeliveryHandedOff'].includes(e.type)),venue=events.filter(e=>e.kind==='reservation'&&e.state.zoneId==='__venue_movement__').at(-1);
+  out.push(say('CARGO_KEPT',loaded&&!gone&&r.outcome.served==='0'&&!!venue&&venue.state.status!=='released','cargo stays loaded (no return/release/handoff), nothing served, the movement reservation still held',`loaded ${loaded}, returned/released/handed ${gone}, served ${r.outcome.served}, venue ${venue?.state.status??'none'}`,'journal'));
+ }
+ if(want('NO_SECOND_WORKER'))out.push(say('NO_SECOND_WORKER',o.operator?.workersAfterKill===0,'no worker process for this run after the kill (nothing respawned or resent)',`${o.operator?.workersAfterKill??'unmeasured'} worker process(es) for this run after the kill`,'process table (pgrep on the run\'s bundle root)'));
  if(want('MIN_SEPARATION_AVAILABLE'))out.push(say('MIN_SEPARATION_AVAILABLE',!complete||!m?null:m.minSeparationM!==null&&m.minSeparationM>0,'robot-robot polygon separation measured and > 0',`minSeparationM ${m?.minSeparationM??'unavailable'}`,'oracle over both robots'));
  if(want('WITHIN_TICKS'))out.push(say('WITHIN_TICKS',r.outcome.status==='completed'&&r.outcome.tick<=12000,'completed within 12,000 ticks (IR-FD07 campaign bound)',`${r.outcome.status} at tick ${r.outcome.tick}`,'outcome tick'));
  return out;

@@ -3,7 +3,7 @@ import {mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {validateIRSimRequest,validateIRSimResponse} from './contracts';
 import type {IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1} from './contracts';
-import {bytecodeEnv} from '../../engineering/python-env';
+import {bytecodeEnv,isolatedPythonArgs} from '../../engineering/python-env';
 
 const TICK_NS=20_000_000n;
 export const MAX_LINE_BYTES=2*1024*1024,QUEUE_LIMIT=64;
@@ -39,7 +39,7 @@ interface Pending{request:IRSimRequestV1;resolve:(r:IRSimResponseV1)=>void;rejec
 export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient>{
  await mkdir(o.runDirectory,{recursive:true});
  const deadlines={...DEFAULT_DEADLINES_MS,...o.deadlinesMs},root=resolve(o.workerRoot);
- const args=[...(o.entry??['-m','irsim_worker']),'--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[],...o.fixtureSha256?['--fixture-sha256',o.fixtureSha256]:[]];
+ const args=isolatedPythonArgs([root],o.entry??['-m','irsim_worker'],['--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[],...o.fixtureSha256?['--fixture-sha256',o.fixtureSha256]:[]]);
  // fixed argv, allowlisted environment (no credentials, no ROS discovery), a private working directory; the venv isolates dependencies but is not a sandbox
  const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,...bytecodeEnv(),PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg'} as unknown as NodeJS.ProcessEnv;
  const child=spawn(o.python,args,{cwd:resolve(o.runDirectory),env,stdio:['pipe','pipe','pipe'],detached:true});

@@ -5,10 +5,10 @@ import {expect,test} from 'vitest';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {existsSync} from 'node:fs';
-import {mkdir,mkdtemp,readFile,rm,symlink,writeFile} from 'node:fs/promises';
+import {copyFile,mkdir,mkdtemp,readFile,rm,symlink,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
-import {join,resolve} from 'node:path';
-import {loadCampaign,summaryPreview,type RunRecord} from '../../packages/lab-runtime/src/v2/navigation2d/batch';
+import {dirname,join,resolve} from 'node:path';
+import {campaignComplete,loadCampaign,summaryPreview,type RunRecord} from '../../packages/lab-runtime/src/v2/navigation2d/batch';
 
 const cli=(...args:string[])=>{const r=spawnSync(process.execPath,['scripts/lab-irsim.mjs',...args],{encoding:'utf8',timeout:120000});return {code:r.status,out:r.stdout,err:r.stderr};};
 const real=JSON.parse(await readFile('robotics/navigation-2d/campaigns/c02-concurrent.json','utf8')) as {runs:Record<string,unknown>[]};
@@ -52,7 +52,7 @@ test('campaign loader: exactly the campaign schema; only IR-SIM scenarios on the
   expect(await bad('top',c([e],{module:'../../x.ts'}))).toMatch(/CAMPAIGN_INVALID.*unknown module/);
   expect(await bad('entry',c([{...e,shell:'rm -rf /'}]))).toMatch(/CAMPAIGN_INVALID.*unknown shell/);
   expect(await bad('missing',c([{...e,policyRef:undefined}]))).toMatch(/CAMPAIGN_INVALID/);
-  expect(await bad('legacy',c([{...e,scenarioId:'FD01'}]))).toMatch(/not an IR-SIM scenario/);
+  expect(await bad('legacy',c([{...e,scenarioId:'FD01'}]))).toMatch(/FD01 is not an IR-SIM case/);
   expect(await bad('revision',c([{...e,scenarioRevision:2}]))).toMatch(/revision 2 is not 1/);
   expect(await bad('fixture',c([{...e,fixtureId:'serve-fleet-v1'}]))).toMatch(/fixture serve-fleet-v1 is not one IR-FD01 runs on/);
   expect(await bad('assertion',c([{...e,expectedAssertions:['ZONE_SINGLE_OWNER']}]))).toMatch(/ZONE_SINGLE_OWNER is not an assertion of IR-FD01/);
@@ -62,7 +62,26 @@ test('campaign loader: exactly the campaign schema; only IR-SIM scenarios on the
   expect(await bad('many',c(Array.from({length:11},()=>({...e,repeat:20}))))).toMatch(/more than 200 runs/);
   expect(await bad('schema',c([e],{schemaVersion:2}))).toMatch(/CAMPAIGN_INVALID/);
   expect(await bad('notjson','{')).toMatch(/not JSON/);
+  // F5: campaign-level checks alone are no verdict: an entry must name at least one oracle of its own run
+  expect(await bad('campaignonly',c([{...e,repeat:2,expectedAssertions:['REPEATABLE']}]))).toMatch(/name no oracle of IR-FD01/);
+  expect(await bad('noiseonly',c([{...e,fixtureId:'serve-noisy-v1',expectedAssertions:['NOISE_VISIBLE']}]))).toMatch(/name no oracle of IR-FD01/);
+  expect(await code(loadCampaign(await put(r,'mixed.json',c([{...e,repeat:2,expectedAssertions:['REPEATABLE','BUSINESS_OUTCOME']}])),r))).toBe('ok');
+  // the contention rig and the fault cases are server-owned cases too; an unknown case is refused
+  expect(await bad('nocase',c([{...e,scenarioId:'IR-FD01-teleport'}]))).toMatch(/not an IR-SIM case/);
+  expect(await code(loadCampaign(await put(r,'rig.json',c([{...e,scenarioId:'IR-RIG-ZONE',fixtureId:'serve-fleet-v1',expectedAssertions:['ZONE_CONTENDED']}])),r))).toBe('ok');
  }finally{await rm(r,{recursive:true,force:true});}
+});
+
+test('F4 campaign complete: a failed oracle with complete evidence is never complete; a declared-gap fault case can be; an empty campaign is not',()=>{
+ const run=(over:Partial<RunRecord>):RunRecord=>({id:'x',index:0,scenarioId:'IR-FD01',fixtureId:'serve-demo-v1',seed:1,repeat:1,expectedAssertions:['BUSINESS_OUTCOME'],result:'pass',reasons:[],evidenceComplete:true,evidenceAsExpected:true,assertions:[{id:'BUSINESS_OUTCOME',result:'pass'}],...over});
+ expect(campaignComplete([run({})])).toBe(true);
+ expect(campaignComplete([run({}),run({result:'fail',reasons:['FAIL:BUSINESS_OUTCOME: …'],assertions:[{id:'BUSINESS_OUTCOME',result:'fail'}]})])).toBe(false);
+ expect(campaignComplete([run({assertions:[{id:'BUSINESS_OUTCOME',result:'inconclusive'}]})])).toBe(false);
+ expect(campaignComplete([run({assertions:[]})])).toBe(false);
+ expect(campaignComplete([run({evidenceComplete:false,evidenceAsExpected:true})])).toBe(true);   // IR10: the declared STEP_ACK_LOST gap, judged by its own oracle
+ expect(campaignComplete([run({evidenceAsExpected:false})])).toBe(false);
+ expect(campaignComplete([run({result:'not_run'})])).toBe(false);
+ expect(campaignComplete([])).toBe(false);
 });
 
 test('summary preview: reasons are bounded for display while the record (and the run.json written from it) keeps every reason in full',()=>{
@@ -101,7 +120,7 @@ test('lab-irsim run: a campaign outside the allowlist is refused (exit 2); a mis
 
 test('lab-irsim verify: exit 0 only for a finished, complete, all-pass irsim_worker campaign whose files agree; a crash image, a missing run record, a tampered campaign or a protocol double is 1',async()=>{
  const d=await mkdtemp(join(tmpdir(),'irsim-cli-verify-'));
- const write=async(over:Record<string,unknown>,runs:{id:string;rec?:Record<string,unknown>}[]=[{id:'001',rec:{result:'pass',evidenceComplete:true}}],campaign='{"x":1}')=>{
+ const write=async(over:Record<string,unknown>,runs:{id:string;rec?:Record<string,unknown>}[]=[{id:'001',rec:{result:'pass',evidenceAsExpected:true}}],campaign='{"x":1}')=>{
   await rm(d,{recursive:true,force:true});await mkdir(d,{recursive:true});await writeFile(join(d,'campaign.json'),campaign);
   await writeFile(join(d,'summary.json'),JSON.stringify({status:'completed',complete:true,campaignSha256:createHash('sha256').update('{"x":1}').digest('hex'),provider:{kind:'irsim_worker'},runs:runs.map(r=>({id:r.id,result:'pass'})),...over}));
   for(const r of runs)if(r.rec){await mkdir(join(d,'runs',r.id),{recursive:true});await writeFile(join(d,'runs',r.id,'run.json'),JSON.stringify(r.rec));}
@@ -110,7 +129,7 @@ test('lab-irsim verify: exit 0 only for a finished, complete, all-pass irsim_wor
   await write({});expect(cli('verify','--input',d).code).toBe(0);
   await write({status:'running',complete:false});expect(cli('verify','--input',d).code).toBe(1);
   await write({},[{id:'001'}]);expect(cli('verify','--input',d).code).toBe(1);
-  await write({},[{id:'001',rec:{result:'pass',evidenceComplete:false}}]);expect(cli('verify','--input',d).code).toBe(1);
+  await write({},[{id:'001',rec:{result:'pass',evidenceAsExpected:false}}]);expect(cli('verify','--input',d).code).toBe(1);
   await write({},undefined,'{"x":2}');expect(cli('verify','--input',d).code).toBe(1);
   await write({provider:{kind:'protocol_double'}});expect(cli('verify','--input',d).code).toBe(1);
   await rm(d,{recursive:true,force:true});expect(cli('verify','--input',d).code).toBe(2);
@@ -151,3 +170,44 @@ test('scenario fixtures: resolved deep-frozen and identical per seed; a zone ove
  expect(actorPoseAt(p,150)[0]).toBeCloseTo(0.95,12);expect(actorPoseAt(p,100000)).toEqual([3.2,0.45,0]);
  expect(actorPoseAt(p,321)).toEqual(actorPoseAt(p,321));
 });
+
+// ---- C02 fix pass F3: "clean" means nothing outside the commit can run; the tool trees are stamped before and after ----
+const {treeState}=await import('../../scripts/lab-irsim.mjs' as string) as {treeState:(dir:string)=>{dirty:boolean;reasons:string[]}};
+import {cp as copyTree} from 'node:fs/promises';
+test('F3 tree state: an untracked file anywhere, or an ignored file in a tool root that could run, makes the tree dirty; bytecode in __pycache__, pytest caches and tests/ do not',async()=>{
+ const repo=await mkdtemp(join(tmpdir(),'irsim-tree-'));
+ const git=(...a:string[])=>spawnSync('git',a,{cwd:repo,encoding:'utf8'});
+ try{
+  await mkdir(join(repo,'robotics/navigation-2d/irsim_worker'),{recursive:true});
+  await writeFile(join(repo,'robotics/navigation-2d/irsim_worker/__init__.py'),'');await writeFile(join(repo,'.gitignore'),'*.so\n*.pyc\n__pycache__/\n.pytest_cache/\n');
+  git('init','-q');git('add','.');git('-c','user.email=t@t','-c','user.name=t','commit','-qm','init');
+  expect(treeState(repo)).toMatchObject({dirty:false,reasons:[]});
+  await writeFile(join(repo,'robotics/navigation-2d/sitecustomize.py'),'print("planted")\n');
+  expect(treeState(repo)).toMatchObject({dirty:true,reasons:['?? robotics/navigation-2d/sitecustomize.py']});
+  await rm(join(repo,'robotics/navigation-2d/sitecustomize.py'));
+  for(const f of ['robotics/navigation-2d/irsim_worker/__pycache__/x.cpython-311.pyc','robotics/navigation-2d/.pytest_cache/v/x','robotics/navigation-2d/tests/__pycache__/t.pyc']){await mkdir(dirname(join(repo,f)),{recursive:true});await writeFile(join(repo,f),'x');}
+  expect(treeState(repo).dirty).toBe(false);
+  await writeFile(join(repo,'robotics/navigation-2d/irsim_worker/evil.so'),'x');
+  await writeFile(join(repo,'robotics/navigation-2d/irsim_worker/session.pyc'),'x');   // a loose sourceless module is importable
+  expect(treeState(repo).reasons.sort()).toEqual(['ignored-in-tool-root robotics/navigation-2d/irsim_worker/evil.so','ignored-in-tool-root robotics/navigation-2d/irsim_worker/session.pyc']);
+ }finally{await rm(repo,{recursive:true,force:true});}
+});
+test('F3 tool closures: a campaign is refused before it starts when the portable tools differ from the expected pin, and stopped as not_run when they change while it runs',async()=>{
+ const out=await mkdtemp(join(tmpdir(),'irsim-cli-pin-'));
+ try{
+  const r=cli('run','--campaign','c02-concurrent','--out',join(out,'x'),'--expect-portable-digest','0'.repeat(64));
+  expect(r.code).toBe(2);expect(r.err).toMatch(/NOT_RUN: TOOL_CLOSURE_MISMATCH: portable tools [0-9a-f]{64}, expected 0{64}/);expect(existsSync(join(out,'x'))).toBe(false);
+  // a copy of the tree whose "python" edits a closure file when it is first started (the prerequisite probe), then fails like a missing interpreter
+  const copy=join(out,'src');
+  for(const d of ['scripts','packages','integrations','robotics','tests/fixtures/digital-twin'])await copyTree(resolve(d),join(copy,d),{recursive:true,verbatimSymlinks:true,filter:(x)=>!/(__pycache__|\.pytest_cache|\/\.venv)/.test(x)});
+  await symlink(resolve('node_modules'),join(copy,'node_modules'));await copyFile('package.json',join(copy,'package.json'));
+  const fake=join(out,'python');await writeFile(fake,`#!/bin/sh\necho "# edited mid-campaign" >> ${join(copy,'robotics/navigation-2d/requirements.in')}\nexit 1\n`,{mode:0o755});
+  const c=spawnSync(process.execPath,[join(copy,'scripts/lab-irsim.mjs'),'run','--campaign','c02-concurrent','--out',join(out,'y'),'--irsim-python',fake],{encoding:'utf8',timeout:120000});
+  expect(c.status,c.stderr).toBe(2);expect(c.stderr).toMatch(/NOT_RUN: TOOL_CLOSURE_CHANGED during the campaign: portable [0-9a-f]{64} -> [0-9a-f]{64}/);
+  const id=JSON.parse(await readFile(join(out,'y','identity.json'),'utf8')) as {stable:boolean;toolClosures:{before:{portable:string};after:{portable:string}}};
+  expect(id.stable).toBe(false);expect(id.toolClosures.before.portable).not.toBe(id.toolClosures.after.portable);
+  const s=JSON.parse(await readFile(join(out,'y','summary.json'),'utf8')) as {identity:{toolClosures:{portable:string}}};
+  expect(s.identity.toolClosures.portable).toBe(id.toolClosures.before.portable);
+  expect(cli('verify','--input',join(out,'y')).code).toBe(2);
+ }finally{await rm(out,{recursive:true,force:true});}
+},180_000);

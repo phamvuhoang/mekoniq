@@ -63,6 +63,8 @@ interface Checkpoint {
  evidenceGaps?:Gap[];
  /** the recording's terminal reason once it ended: re-recorded on reopen when the manifest never got it (its write failed), so the evidence never turns complete */
  evidenceTerminal?:string|null;
+ /** contention rig only (scenario.rig): each robot's directly-given controller goal and its last decision */
+ rig?:Record<string,{commandId:string;state:string;tick:number}>;
 }
 
 /** The locked navigation scene and the worker files it lists, verified against the bundle's project and this run's world. */
@@ -249,6 +251,8 @@ class IRSimRun implements ScenarioRun {
   const w=this.worker;this.worker=undefined;this.releaseSlot();await w?.close(code).catch(()=>{});
   for(const a of this.adapters.values())a.sink.lost(reason);
   c.attention.push({reason,subjectId:code,tick:c.tick});this.suspend();
+  // a zone held when the plant was lost stays held (the domain keeps it; nothing here frees it) and is named, never left implicit
+  for(const [zoneId,robotId] of Object.entries(this.traffic?.owners()??{}))if(robotId)c.attention.push({reason:'ZONE_HELD_UNKNOWN',robotId,subjectId:zoneId,tick:c.tick});
   await this.rec.flush();await this.drain();
  }
  /** A step that was sent but not verified: the plant may be at tick+1 with a state nobody saw (a contact included). That tick is a recorded gap, then the plant is lost. */
@@ -365,11 +369,22 @@ class IRSimRun implements ScenarioRun {
   if(c.dispatchDue)await this.dispatch();
   if(c.plant.status!=='live'||!this.worker)return false;
   if(!this.rec.admits(c.tick+1)){if(!this.rec.terminal)await this.rec.terminate('EVIDENCE_TICK_LIMIT');await this.evidenceEnded();return false;}
+  // contention rig (labelled, campaign-only): goals go to the controller directly at their tick, with no mission, so the venue-movement serialization is bypassed
+  if(this.scenario.rig&&!c.suspended)for(const g of this.scenario.rig.goals){
+   const robotId=c.roles.robots[g.robot]!.id,t=this.scene.robots.find(r=>r.robotId===robotId)!.targetBindings.find(b=>b.pointId===g.pointId)!;
+   if(g.atTick<=c.tick&&!c.rig?.[robotId]){(c.rig??={})[robotId]={commandId:`rig-${robotId}-${g.pointId}`,state:'executing',tick:c.tick};this.controller.setGoal({robotId,commandId:`rig-${robotId}-${g.pointId}`,target:[t.x,t.y,t.yaw]});}
+  }
   // zone traffic on the verified snapshot t: pre-entry requests and whole-footprint releases, then the controller with the granted owners
   const snapT=c.plant.snapshot!,reservations=this.traffic?await this.traffic.update(c.tick,this.scene.robots.map(r=>{const o=snapT.robots.find(x=>x.robotId===r.robotId)!,g=this.adapters.get(r.robotId)!.goal(),pose=o.poseDriveMap as Pose2;
-   return {robotId:r.robotId,footprint:r.model.footprint.verticesM as P[],pose,live:!!g&&g.state==='executing',route:this.controller.route(r.robotId,pose)};})):{};
+   return {robotId:r.robotId,footprint:r.model.footprint.verticesM as P[],pose,live:!!g&&g.state==='executing'||c.rig?.[r.robotId]?.state==='executing',route:this.controller.route(r.robotId,pose)};})):{};
+  // traffic does not decide what it cannot: a grant contradicting the owner it holds, or an owner stopped inside its zone, is attention (the run needs a person)
+  for(const n of this.traffic?.notices()??[]){c.attention.push({reason:n.kind==='conflict'?'ZONE_OWNERSHIP_CONFLICT':'ZONE_HELD_BY_STOPPED_ROBOT',robotId:n.robotId,subjectId:n.zoneId,tick:c.tick});this.suspend();}
   const out=this.controller.advance(snapT,reservations);
-  for(const d of out.decisions){this.adapters.get(d.robotId)?.sink.decide(d);this.holds[d.robotId]=d.status==='executing'?d.reason:null;}
+  for(const d of out.decisions){
+   this.adapters.get(d.robotId)?.sink.decide(d);this.holds[d.robotId]=d.status==='executing'?d.reason:null;
+   const rg=c.rig?.[d.robotId];
+   if(rg&&rg.commandId===d.commandId&&rg.state==='executing'&&d.status!=='executing'){rg.state=d.status;rg.tick=c.tick;if(d.status!=='arrived'){c.attention.push({reason:d.reason??d.status.toUpperCase(),robotId:d.robotId,subjectId:d.commandId,tick:c.tick});this.suspend();}}
+  }
   let next:IRSimSnapshotV1,payload:{targetTick:number;velocities:typeof out.velocities;actorUpdates:ReturnType<typeof actorUpdatesAt>};
   try{
    // every actor at its scheduled pose for tick t+1 (the schedule is a pure function of the tick: nothing a batch or a pause did changes it)
@@ -504,6 +519,7 @@ class IRSimRun implements ScenarioRun {
  private async takeControls(){for(let x=this.controls.shift();x;x=this.controls.shift())await this.execute(x.raw).then(x.resolve,x.reject);}
  private async missionsDone(){
   const c=this.cp;
+  if(this.scenario.rig)return this.scenario.rig.goals.every(g=>c.rig?.[c.roles.robots[g.robot]!.id]?.state==='arrived');
   if(c.workload.some(w=>w.status!=='placed'))return false;
   for(const w of c.workload)if((await this.source.read('mission',w.missionId!)).state.status!=='completed')return false;
   if(!this.scenario.park)return true;
@@ -548,7 +564,7 @@ class IRSimRun implements ScenarioRun {
     navigation:{horizon:m.horizon,coverage:m.coverage,reasons:m.coverageReasons,distanceM:m.distanceM,driveDistanceM:m.driveDistanceM,collisionEpisodes:m.collisionEpisodes,safetyEnvelopeEpisodes:m.safetyEnvelopeEpisodes,episodes:m.episodes,minClearanceM:m.minClearanceM,minSeparationM:m.minSeparationM,sensorPublications:m.sensorPublications}},
    rejectedObservations:structuredClone(c.rejectedObservations),reconciliations:structuredClone(c.reconciliations),recoveredOps:structuredClone(c.recoveredOps),confirmations:structuredClone(c.confirmationLog),faults:structuredClone(c.faults),
    coverage:{businessSimulation:true,kinematicModel:true,dynamics:false,nativeExecution:false,physicalStop:false,sensorEvidence:m.sensorPublications.complete,eventStream:true},
-   limitations:['irsim_2d simulated plant (IR-SIM 2.12.0, planar kinematics, collision_mode stop): no dynamics, contact physics or hardware behaviour.',
+   limitations:[...this.scenario.rig?[`CONTENTION RIG (${this.scenario.id}): ${this.scenario.rig.note}`]:[],'irsim_2d simulated plant (IR-SIM 2.12.0, planar kinematics, collision_mode stop): no dynamics, contact physics or hardware behaviour.',
     'perception: known_map_plus_simulated_lidar; the controller plans on the compiled static map and uses simulated LiDAR for dynamic obstacles.',
     'Distance, collision and clearance metrics are computed from the durable per-tick evidence (navigation2d) by the independent oracle; they are unavailable whenever that evidence is incomplete.',
     'A lost or refused worker step leaves its legs unknown; it is never resent and the run is never continued by a new worker process.',

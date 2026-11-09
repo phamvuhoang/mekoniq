@@ -18,7 +18,11 @@ import type {NavigationSceneV1} from './contracts';
 import {readNavigationEvidence} from './evidence';
 import {portableSimulationFromOptions} from './readiness';
 import {createIRSimScenarioRun,type IRSimRuntimeOptions} from './runner';
-import {FIXTURE_COMPONENTS,FIXTURE_DIRECTORY,NAVIGATION_FIXTURES,SCENARIO_FIXTURES,resolveScenarioFixture,scenarioAssertions,type ScenarioAssertion} from './scenario-fixtures';
+import {FIXTURE_COMPONENTS,FIXTURE_DIRECTORY,NAVIGATION_FIXTURES,RIG_SCENARIOS,SCENARIO_FIXTURES,resolveScenarioFixture,scenarioAssertions,type ScenarioAssertion,type ScenarioFixtureSpec} from './scenario-fixtures';
+import {navigationMetrics,openNavigationRecorder} from './evidence';
+import {spawnIRSimWorker} from './worker-client';
+import type {IRSimSnapshotV1} from './contracts';
+import {execFileSync} from 'node:child_process';
 
 export type BatchResult='pass'|'fail'|'not_run';
 export interface BatchSummary{runs:{id:string;result:BatchResult}[];complete:boolean;
@@ -26,7 +30,8 @@ export interface BatchSummary{runs:{id:string;result:BatchResult}[];complete:boo
  status:'completed'|'failed'|'not_run'|'interrupted';summaryPath:string;reasons:string[]}
 /** Operator-only options (CLI flags), never fields of a campaign or a request. `entry` selects a worker test double: its runs are labelled protocol_double, never irsim_2d evidence. */
 export interface BatchOptions{campaignPath:string;outDir:string;concurrency:1|2;sourceCommit:string;
- sourceRoot?:string;python?:string;entry?:string[];runTimeoutMs?:number;signal?:AbortSignal;stepTicks?:number}
+ sourceRoot?:string;python?:string;entry?:string[];runTimeoutMs?:number;signal?:AbortSignal;stepTicks?:number;
+ /** caller-measured identity stamped into the summary as given (e.g. the tool-closure digests the CLI computed before the run) */identity?:Record<string,unknown>}
 export interface CampaignEntry{scenarioId:string;scenarioRevision:number;fixtureId:string;seed:number;repeat:number;policyRef:{id:string;revision:number;hash:string};expectedAssertions:string[]}
 export interface Campaign{schemaVersion:1;id:string;title:string;runs:CampaignEntry[]}
 const SET='engineering-irsim-2d-v1',MAX_CAMPAIGN_BYTES=64*1024,MAX_RUNS=200,PREVIEW={reasons:10,chars:200};
@@ -71,8 +76,10 @@ export async function loadCampaign(path:string,sourceRoot=SOURCE_ROOT):Promise<{
  const set=defaultCatalog.sets[SET]!;
  const runs=c.runs.map((raw,i):CampaignEntry=>{
   const e=exact(raw,['scenarioId','scenarioRevision','fixtureId','seed','repeat','policyRef','expectedAssertions'],`runs[${i}]`);
-  const scenarioId=id(e.scenarioId,`runs[${i}].scenarioId`),fixtureId=id(e.fixtureId,`runs[${i}].fixtureId`),scenario=scenarioRegistry.get(scenarioId),spec=SCENARIO_FIXTURES.get(scenarioId);
-  if(!scenario||!spec||!set.scenarioIds?.includes(scenarioId))throw new BatchError('CAMPAIGN_INVALID',`runs[${i}]: ${scenarioId} is not an IR-SIM scenario of ${SET}`);
+  // a campaign names a server-owned case: a registry scenario of the IR set, a campaign-only rig, an operator fault on a registry scenario, or a raw drive
+  const scenarioId=id(e.scenarioId,`runs[${i}].scenarioId`),fixtureId=id(e.fixtureId,`runs[${i}].fixtureId`),spec=SCENARIO_FIXTURES.get(scenarioId),base=spec?.runs??scenarioId;
+  const scenario=spec?.kind==='raw_drive'?{revision:1}:spec?.kind==='contention_rig'?RIG_SCENARIOS.get(base):set.scenarioIds?.includes(base)?scenarioRegistry.get(base):undefined;
+  if(!scenario||!spec)throw new BatchError('CAMPAIGN_INVALID',`runs[${i}]: ${scenarioId} is not an IR-SIM case of ${SET}`);
   if(int(e.scenarioRevision,1,2**31,`runs[${i}].scenarioRevision`)!==scenario.revision)throw new BatchError('CAMPAIGN_INVALID',`runs[${i}]: ${scenarioId} revision ${String(e.scenarioRevision)} is not ${scenario.revision}`);
   if(!Object.hasOwn(NAVIGATION_FIXTURES,fixtureId)||!spec.fixtures.includes(fixtureId))throw new BatchError('CAMPAIGN_INVALID',`runs[${i}]: fixture ${fixtureId} is not one ${scenarioId} runs on`);
   const p=exact(e.policyRef,['id','revision','hash'],`runs[${i}].policyRef`);
@@ -83,6 +90,8 @@ export async function loadCampaign(path:string,sourceRoot=SOURCE_ROOT):Promise<{
    if(typeof a!=='string'||!(spec.oracles.includes(a)||(CAMPAIGN_ASSERTIONS as readonly string[]).includes(a)))throw new BatchError('CAMPAIGN_INVALID',`runs[${i}]: ${String(a)} is not an assertion of ${scenarioId}`);
    if(a==='REPEATABLE'&&repeat<2)throw new BatchError('CAMPAIGN_INVALID',`runs[${i}]: REPEATABLE needs repeat >= 2`);
   }
+  // every entry is judged by at least one oracle of its own run: campaign-level checks alone (repeatability, noise) never stand in for a business/trace verdict
+  if(!(e.expectedAssertions as string[]).some(a=>spec.oracles.includes(a)))throw new BatchError('CAMPAIGN_INVALID',`runs[${i}]: expectedAssertions name no oracle of ${scenarioId} (campaign-level checks alone are not a verdict)`);
   return {scenarioId,scenarioRevision:scenario.revision,fixtureId,seed:int(e.seed,0,0xffffffff,`runs[${i}].seed`),repeat,policyRef:{id:p.id as string,revision:p.revision as number,hash:p.hash as string},expectedAssertions:[...new Set(e.expectedAssertions as string[])]};
  });
  if(runs.reduce((n,r)=>n+r.repeat,0)>MAX_RUNS)throw new BatchError('CAMPAIGN_INVALID',`more than ${MAX_RUNS} runs`);
@@ -90,15 +99,21 @@ export async function loadCampaign(path:string,sourceRoot=SOURCE_ROOT):Promise<{
  return {campaign:Object.freeze({schemaVersion:1,id:c.id as string,title:c.title as string,runs:Object.freeze(runs.map(r=>Object.freeze({...r,policyRef:Object.freeze(r.policyRef),expectedAssertions:Object.freeze(r.expectedAssertions)})))}) as unknown as Campaign,bytes,sha256:sha256(bytes)};
 }
 
+/** `evidenceComplete`: the durable evidence read back complete; `evidenceAsExpected`: complete, or exactly the gap a fault case declares (IR10). `kind`/`label` name the case honestly. */
 export interface RunRecord{id:string;index:number;scenarioId:string;fixtureId:string;seed:number;repeat:number;expectedAssertions:string[];result:BatchResult;reasons:string[];
- assertions?:{id:string;result:string}[];digests?:{trajectoryDigest:string;sensorDigest:string;assertionDigest:string;outcomeDigest:string};outcome?:RunReport['outcome'];horizon?:number|null;wallMs?:number;evidenceComplete?:boolean}
+ kind?:string;label?:string;stepTicks?:number;
+ assertions?:{id:string;result:string}[];digests?:{trajectoryDigest:string;sensorDigest:string;assertionDigest:string;outcomeDigest:string};outcome?:RunReport['outcome'];horizon?:number|null;wallMs?:number;evidenceComplete?:boolean;evidenceAsExpected?:boolean}
 /** tmp + fsync + rename: a reader (or a crash) sees the previous summary or this one, never half of it. */
 async function writeDurable(file:string,text:string){const tmp=`${file}.tmp`,h=await open(tmp,'w',0o600);try{await h.writeFile(text);await h.sync();}finally{await h.close();}await rename(tmp,file);}
 /** The summary's per-run preview (what a UI lists). Bounded copies only: the record itself (and the run.json/assertions.json written from it) keeps everything. */
-export const summaryPreview=(r:RunRecord)=>({id:r.id,scenarioId:r.scenarioId,fixtureId:r.fixtureId,seed:r.seed,repeat:r.repeat,result:r.result,
+export const summaryPreview=(r:RunRecord)=>({id:r.id,scenarioId:r.scenarioId,fixtureId:r.fixtureId,seed:r.seed,repeat:r.repeat,result:r.result,...r.kind?{kind:r.kind,label:r.label}:{},...r.stepTicks?{stepTicks:r.stepTicks}:{},
+ ...r.evidenceComplete!==undefined?{evidenceComplete:r.evidenceComplete,evidenceAsExpected:r.evidenceAsExpected}:{},
  // UI preview only: the durable per-run assertions.json/run.json keep every reason and detail in full
  reasons:r.reasons.slice(0,PREVIEW.reasons).map(x=>x.length>PREVIEW.chars?`${x.slice(0,PREVIEW.chars-1)}…`:x),reasonsTruncated:r.reasons.length>PREVIEW.reasons||r.reasons.some(x=>x.length>PREVIEW.chars),
  ...r.assertions?{assertions:r.assertions}:{},...r.digests?{digests:r.digests}:{},...r.outcome?{outcome:r.outcome}:{},...r.wallMs!==undefined?{wallMs:r.wallMs}:{}});
+/** complete = the campaign proved what it set out to: every run ran and passed, its evidence is as its case requires, and every expected assertion is present and passes.
+ * Evidence completeness alone is reported apart (summary.evidenceComplete) and never makes a failed campaign complete. */
+export const campaignComplete=(records:readonly RunRecord[])=>records.length>0&&records.every(r=>r.result==='pass'&&r.evidenceAsExpected===true&&(r.assertions?.length??0)>0&&r.assertions!.every(a=>a.result==='pass'));
 /** A native compiler port that refuses: the portable profile has its own compiler, and nothing in a campaign may reach the native one. */
 const refusingNative:CompilerPort={version:'refused',async compileResolved(){throw new Error('NATIVE_COMPILER_DISABLED');},runnable:()=>false};
 
@@ -113,13 +128,16 @@ export async function runIRSimBatch(o:BatchOptions):Promise<BatchSummary>{
  await writeFile(join(out,'campaign.json'),bytes,{mode:0o600,flag:'wx'});
  const provider=o.entry?{id:'irsim_2d',kind:'protocol_double',note:'worker test double: protocol wiring only, never irsim_2d evidence'}:{id:'irsim_2d',kind:'irsim_worker'};
  const records:RunRecord[]=[];let n=0;
- campaign.runs.forEach((e,i)=>{for(let k=1;k<=e.repeat;k++)records.push({id:`${String(++n).padStart(3,'0')}-${e.scenarioId}-${e.fixtureId}-s${e.seed}-r${k}`,index:i,scenarioId:e.scenarioId,fixtureId:e.fixtureId,seed:e.seed,repeat:k,expectedAssertions:e.expectedAssertions,result:'not_run',reasons:['NOT_STARTED']});});
+ // repeats are paced differently (500, 25, 100 ticks per step request): REPEATABLE across them is also IR09's pacing invariance
+ const PACING=[500,25,100];
+ campaign.runs.forEach((e,i)=>{const spec=SCENARIO_FIXTURES.get(e.scenarioId)!;for(let k=1;k<=e.repeat;k++)records.push({id:`${String(++n).padStart(3,'0')}-${e.scenarioId}-${e.fixtureId}-s${e.seed}-r${k}`,index:i,scenarioId:e.scenarioId,fixtureId:e.fixtureId,seed:e.seed,repeat:k,expectedAssertions:e.expectedAssertions,
+  kind:spec.kind??'scenario',label:spec.label,stepTicks:o.stepTicks??PACING[(k-1)%PACING.length],result:'not_run',reasons:['NOT_STARTED']});});
  let status:BatchSummary['status']='failed';const reasons:string[]=[],started=new Date().toISOString();
  // one writer: every summary write waits for the previous one, so the file on disk always moves forward
  let writing=Promise.resolve();
- const save=(final:boolean)=>{const body=JSON.stringify({schemaVersion:1,documentType:'irsim-campaign-summary',status:final?status:'running',campaignId:campaign.id,campaignSha256:campaignSha,sourceCommit:o.sourceCommit,provider,concurrency:o.concurrency,startedAt:started,...final?{finishedAt:new Date().toISOString()}:{},
-  reasons,complete:final&&isComplete(),runs:records.map(summaryPreview)},null,1)+'\n';writing=writing.then(()=>writeDurable(summaryPath,body));return writing;};
- const isComplete=()=>records.every(r=>r.result!=='not_run'&&r.evidenceComplete===true&&!r.reasons.some(x=>x.startsWith('INCONCLUSIVE:')||x.startsWith('ASSERTION_MISSING:')));
+ const save=(final:boolean)=>{const body=JSON.stringify({schemaVersion:1,documentType:'irsim-campaign-summary',status:final?status:'running',campaignId:campaign.id,campaignSha256:campaignSha,sourceCommit:o.sourceCommit,...o.identity?{identity:o.identity}:{},provider,concurrency:o.concurrency,startedAt:started,...final?{finishedAt:new Date().toISOString()}:{},
+  reasons,complete:final&&isComplete(),evidenceComplete:records.every(r=>r.evidenceComplete===true),runs:records.map(summaryPreview)},null,1)+'\n';writing=writing.then(()=>writeDurable(summaryPath,body));return writing;};
+ const isComplete=()=>campaignComplete(records);
  const finish=async(s:BatchSummary['status']):Promise<BatchSummary>=>{status=s;await save(true);return {runs:records.map(r=>({id:r.id,result:r.result})),complete:isComplete(),status,summaryPath,reasons:[...reasons]};};
  // the durable marker comes first: a campaign that dies from here on leaves status 'running', complete false and every unfinished run not_run
  await save(false);
@@ -153,9 +171,52 @@ export async function runIRSimBatch(o:BatchOptions):Promise<BatchSummary>{
  }
 
  // ---- runs: a pool of at most `concurrency` worlds; a signal stops scheduling and closes what runs ----
- const providerOf={catalog:portable.catalog,enabledBackends:portable.enabledBackends};
+ // campaign-only rig definitions run here and only here: the gateway's catalog and registry never contain them
+ const scenarios=new Map([...scenarioRegistry,...RIG_SCENARIOS]),set=portable.catalog.sets[SET]!;
+ const providerOf={catalog:{...portable.catalog,sets:{...portable.catalog.sets,[SET]:{...set,scenarioIds:[...set.scenarioIds??[],...RIG_SCENARIOS.keys()]}}},enabledBackends:portable.enabledBackends,scenarios};
+ /** Worker processes of one run: their argv names the run's own bundle root (never matched by pattern on anything else). */
+ const workersOf=(dir:string)=>{try{return execFileSync('ps',['-A','-o','pid=,command='],{encoding:'utf8'}).split('\n').filter(l=>l.includes(`--bundle-root ${join(dir,'run','bundle')} `)&&!l.includes('lab-irsim')).map(l=>Number(l.trim().split(/\s+/)[0]));}catch{return [];}};
+ /** pass only with the evidence the case requires and every expected run-level assertion present and passing */
+ const judge=(r:RunRecord,e:CampaignEntry,oracles:readonly ScenarioAssertion[],timeout:string|null,evidenceReasons:readonly string[])=>{
+  r.assertions=e.expectedAssertions.filter(a=>!(CAMPAIGN_ASSERTIONS as readonly string[]).includes(a)).map(a=>({id:a,result:oracles.find(x=>x.id===a)?.result??'missing'}));
+  const why:string[]=[];
+  if(timeout)why.push(timeout);
+  if(!r.evidenceAsExpected)why.push(`EVIDENCE_NOT_AS_EXPECTED:${evidenceReasons.join(',')}`);
+  for(const a of r.assertions){const x=oracles.find(y=>y.id===a.id);
+   if(!x)why.push(`ASSERTION_MISSING:${a.id}`);else if(x.result==='inconclusive')why.push(`INCONCLUSIVE:${a.id}: ${x.actual}`);else if(x.result==='fail')why.push(`FAIL:${a.id}: expected ${x.expected}; actual ${x.actual}`);}
+  r.result=why.length?'fail':'pass';r.reasons=why;
+ };
+ /** IR06 raw drive (test-only, never admitted by the gateway): the compiled scene, the real worker, raw velocities, the evidence recorder; no controller, no source session. */
+ const rawDrive=async(r:RunRecord,e:CampaignEntry,spec:ScenarioFixtureSpec,locked:LockedEngineering,scene:NavigationSceneV1,dir:string)=>{
+  const bundle=join(dir,'run','bundle');
+  for(const f of ['navigation-scene.json',...scene.files.map(x=>x.path)]){await mkdir(dirname(join(bundle,f)),{recursive:true});await writeFile(join(bundle,f),await service.bundleFile(locked.ref.bundleDigest,f),{mode:0o600,flag:'wx'});}
+  const runId=`raw-${r.id}`,w=await spawnIRSimWorker({python,workerRoot,runId,bundleRoot:bundle,runDirectory:join(dir,'run','worker'),lockDigest:runtime.lockDigest,schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...o.entry?{entry:o.entry}:{}});
+  const rec=await openNavigationRecorder({directory:join(dir,'run','evidence'),scene,runId});
+  const named=new Set<string>();
+  try{
+   let q=0,tick=0;
+   const ask=async(op:string,payload:Record<string,unknown>)=>{const res=await w.request({protocol:'mekoniq-irsim/1',requestId:`q${++q}`,runId,expectedTick:tick,op,payload} as never);if(!res.ok)throw new Error(`${op}:${res.error.code}`);tick=res.tick;return res.result as IRSimSnapshotV1;};
+   await rec.append(await ask('create',{sceneRef:'navigation-scene.json',seed:e.seed}),null);await ask('start',{});
+   for(let k=1;k<=spec.raw!.ticks;k++){const payload={targetTick:k,velocities:spec.raw!.velocities.map(v=>({...v})),actorUpdates:[]};const snap=await ask('step',payload);for(const x of snap.robots)for(const c of x.collisionIds)named.add(c);await rec.append(snap,payload);}
+   await rec.flush();
+  }finally{await w.close('raw drive over').catch(()=>{});}
+  const listed=rec.committed();await rec.close().catch(()=>{});
+  const read=await readNavigationEvidence(join(dir,'run','evidence'),listed,{scene}),m=navigationMetrics(scene,read),ids=scene.robots.map(x=>x.robotId).sort();
+  const pair=ids.join('|'),touch=read.trajectory.find(t=>t.robots.some(x=>x.collisionIds.length)),last=read.trajectory.at(-1);
+  const say=(id:string,ok:boolean,expected:string,actual:string,oracle:string):ScenarioAssertion=>({id,result:ok?'pass':'fail',expected,actual,oracle});
+  const oracles=[
+   say('EVIDENCE_COMPLETE',read.complete,'every tick 0..N recorded and verified',`read ${read.complete?'complete':'incomplete'} horizon ${read.horizon}`,'readNavigationEvidence'),
+   say('CONTACT_NAMED_BY_ID',!!touch&&named.size>0&&[...named].every(x=>ids.includes(x))&&touch.robots.every(x=>x.collisionIds.join()===ids.filter(i=>i!==x.robotId).join()),'each robot names the other by robotId, never an engine index',touch?`${JSON.stringify(Object.fromEntries(touch.robots.map(x=>[x.robotId,x.collisionIds])))} at ${touch.tick}; all ids ${[...named].join(',')}`:'no contact','engine snapshots as recorded'),
+   say('ONE_ENGINE_EPISODE_PER_PAIR',m.episodes.filter(x=>x.source==='engine_discrete').map(x=>x.pair.join('|')).join()===pair,'one engine_discrete episode for the unordered pair, though both robots report it',JSON.stringify(m.episodes.filter(x=>x.source==='engine_discrete')),'collisionEpisodes over the trace'),
+   say('ORACLE_AGREES_CONTACT',m.episodes.some(x=>x.source==='swept_oracle'&&x.pair.join('|')===pair)&&m.minSeparationM===0,'the independent polygon oracle finds the same pair in contact',`swept episodes ${m.episodes.filter(x=>x.source==='swept_oracle').length}, minSeparationM ${m.minSeparationM}`,'assessTrajectory'),
+   say('STOPPED_AT_CONTACT',!!last&&!!touch&&last.robots.every(x=>Math.abs(x.bodyVelocity[0])<1e-9),'collision_mode stop: both robots stand still after the contact (no motion through each other)',last?JSON.stringify(last.robots.map(x=>[x.robotId,x.bodyVelocity])):'no trace','last recorded tick'),
+  ];
+  r.horizon=read.horizon;r.evidenceComplete=read.complete;r.evidenceAsExpected=read.complete;
+  await writeFile(join(dir,'assertions.json'),JSON.stringify({runId,scenarioId:e.scenarioId,kind:r.kind,label:r.label,fixtureId:r.fixtureId,seed:e.seed,expected:e.expectedAssertions,oracles,evidence:listed},null,1)+'\n',{mode:0o600,flag:'wx'});
+  judge(r,e,oracles,null,read.reasons);
+ };
  const runOne=async(r:RunRecord)=>{
-  const e=campaign.runs[r.index]!,fx=compiled.get(r.fixtureId)!,dir=join(out,'runs',r.id),t0=Date.now();
+  const e=campaign.runs[r.index]!,spec=SCENARIO_FIXTURES.get(e.scenarioId)!,fx=compiled.get(r.fixtureId)!,dir=join(out,'runs',r.id),t0=Date.now();
   if(o.signal?.aborted){r.reasons=['INTERRUPTED'];return;}
   if('error' in fx){r.result='fail';r.reasons=[`FIXTURE_COMPILE_FAILED:${fx.error}`];return;}
   const {locked,scene}=fx,policy=scene.policy;
@@ -164,32 +225,41 @@ export async function runIRSimBatch(o:BatchOptions):Promise<BatchSummary>{
   r.reasons=['RUNNING'];await save(false);
   let run:ScenarioRun|undefined;
   try{
-   run=await createIRSimScenarioRun({project:locked.runtimeProjection.project,scenarioId:e.scenarioId,scenarioRevision:e.scenarioRevision,seed:e.seed,mode:'simulation',access:'simulated',backendSetId:SET,sourceCommit:o.sourceCommit,engineering:locked},
+   if(spec.kind==='raw_drive'){await rawDrive(r,e,spec,locked,scene,dir);return;}
+   const base=spec.runs??e.scenarioId,def=scenarios.get(base)!;
+   run=await createIRSimScenarioRun({project:locked.runtimeProjection.project,scenarioId:base,scenarioRevision:def.revision,seed:e.seed,mode:'simulation',access:'simulated',backendSetId:SET,sourceCommit:o.sourceCommit,engineering:locked},
     {directory:join(dir,'run'),...providerOf,bundleFile:(d,p)=>service.bundleFile(d,p),irsim:runtime});
    let v=await run.start(),timedOut=false;
-   const deadline=t0+(o.runTimeoutMs??600_000),max=scenarioRegistry.get(e.scenarioId)!.maxTicks;
+   const deadline=t0+(o.runTimeoutMs??600_000),max=def.maxTicks,operator:{cancelTick?:number;killTick?:number;workersAfterKill?:number}={};
+   const start=new Map(v.entities.map(x=>[x.id,x.pose]));
+   const away=()=>v.entities.some(x=>x.moving&&Math.hypot(x.pose.x-start.get(x.id)!.x,x.pose.y-start.get(x.id)!.y)>0.5);
+   const step=async(ticks:number)=>{v=await run!.action({actionId:`campaign-step-${v.tick}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:Math.min(ticks,max-v.tick)}});};
    while(['running','awaiting_confirmation'].includes(v.run.status)&&v.tick<max){
     if(o.signal?.aborted)break;
     if(Date.now()>deadline){timedOut=true;break;}
-    v=await run.action({actionId:`campaign-step-${v.tick}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:Math.min(o.stepTicks??500,max-v.tick)}});
+    // scripted operator acts, checked every 25 ticks (a fixed cadence: the act lands on the same tick for the same seed)
+    if(spec.operator?.cancelWhenMoving&&operator.cancelTick===undefined&&away()){
+     operator.cancelTick=v.tick;v=await run.action({actionId:'campaign-cancel',expectedRevision:v.run.runRevision,kind:'cancel',payload:{}});continue;
+    }
+    if(spec.operator?.killWorkerOnTableLeg&&operator.killTick===undefined&&v.entities.some(x=>x.moving)&&(await run.journal()).some(j=>j.events.some(x=>x.type==='CargoLoaded'))){
+     operator.killTick=v.tick;const pids=workersOf(dir);if(pids.length!==1)throw new Error(`WORKER_NOT_FOUND:${pids.length}`);process.kill(pids[0]!,'SIGKILL');
+     await step(25);operator.workersAfterKill=workersOf(dir).length;continue;
+    }
+    await step(spec.operator?25:r.stepTicks!);
    }
+   if(operator.killTick!==undefined)operator.workersAfterKill=Math.max(operator.workersAfterKill??0,workersOf(dir).length);
    const report=await run.report();
    await writeFile(join(dir,'report.json'),JSON.stringify(report)+'\n',{mode:0o600,flag:'wx'});
    const ev=report.navigation2d,read=ev?await readNavigationEvidence(join(dir,'run','evidence'),{chunks:ev.artifacts,...ev.recording},{scene}):null;
-   const fixture=resolveScenarioFixture(e.scenarioId,scene,e.seed);
-   const oracles:ScenarioAssertion[]=read?scenarioAssertions({report,read,scene,fixture}):[];
+   const fixture=resolveScenarioFixture(base,scene,e.seed);
+   const oracles:ScenarioAssertion[]=read?scenarioAssertions({report,read,scene,fixture,caseId:e.scenarioId,operator}):[];
    const evidence=(ev?.assertions??[]).map(a=>({id:`evidence:${a.id}`,result:a.result,detail:a.detail}));
-   await writeFile(join(dir,'assertions.json'),JSON.stringify({runId:report.manifest.runId,scenarioId:e.scenarioId,fixtureId:r.fixtureId,seed:e.seed,expected:e.expectedAssertions,oracles,evidence},null,1)+'\n',{mode:0o600,flag:'wx'});
+   await writeFile(join(dir,'assertions.json'),JSON.stringify({runId:report.manifest.runId,scenarioId:e.scenarioId,kind:r.kind,label:r.label,fixtureId:r.fixtureId,seed:e.seed,stepTicks:r.stepTicks,operator,expected:e.expectedAssertions,oracles,evidence},null,1)+'\n',{mode:0o600,flag:'wx'});
    r.outcome=report.outcome;r.horizon=read?.horizon??null;r.evidenceComplete=!!read?.complete&&ev?.completeness?.status==='complete';
+   r.evidenceAsExpected=(spec.evidence??'complete')==='complete'?r.evidenceComplete:oracles.find(x=>x.id==='EVIDENCE_GAP_AS_DECLARED')?.result==='pass';
    r.digests=ev?{trajectoryDigest:ev.digests.trajectoryDigest,sensorDigest:ev.digests.sensorDigest,assertionDigest:ev.digests.assertionDigest,outcomeDigest:outcomeDigest(report)}:undefined;
-   r.assertions=e.expectedAssertions.filter(a=>!(CAMPAIGN_ASSERTIONS as readonly string[]).includes(a)).map(a=>({id:a,result:oracles.find(x=>x.id===a)?.result??'missing'}));
-   const why:string[]=[];
    if(o.signal?.aborted&&!['completed','cancelled','needs_attention'].includes(report.outcome.status)){r.result='not_run';r.reasons=['INTERRUPTED'];return;}
-   if(timedOut)why.push(`RUN_TIMEOUT:${o.runTimeoutMs??600_000}ms at tick ${report.outcome.tick}`);
-   if(!r.evidenceComplete)why.push(`EVIDENCE_INCOMPLETE:${(ev?.completeness?.reasons??['no evidence']).join(',')}`);
-   for(const a of r.assertions){const x=oracles.find(y=>y.id===a.id);
-    if(!x)why.push(`ASSERTION_MISSING:${a.id}`);else if(x.result==='inconclusive')why.push(`INCONCLUSIVE:${a.id}: ${x.actual}`);else if(x.result==='fail')why.push(`FAIL:${a.id}: expected ${x.expected}; actual ${x.actual}`);}
-   r.result=why.length?'fail':'pass';r.reasons=why;
+   judge(r,e,oracles,timedOut?`RUN_TIMEOUT:${o.runTimeoutMs??600_000}ms at tick ${report.outcome.tick}`:null,ev?.completeness?.reasons??['no evidence']);
   }catch(err){r.result='fail';r.reasons=[`RUN_ERROR:${(err as Error).message.slice(0,300)}`];}
   finally{await run?.close().catch(()=>{});r.wallMs=Date.now()-t0;
    await writeFile(join(dir,'run.json'),JSON.stringify({...r,provider},null,1)+'\n',{mode:0o600}).catch(()=>{});await save(false);}
@@ -213,7 +283,7 @@ export async function runIRSimBatch(o:BatchOptions):Promise<BatchSummary>{
    r.assertions?.push({id:'NOISE_VISIBLE',result:ok?'pass':'fail'});
    if(!ok)why.push(`FAIL:NOISE_VISIBLE: tick-0 scan vs noise-free ${twin?.id??'(no passing noise-free twin)'}: ${delta?`${delta.beams} hit beams, mean |dr| ${delta.meanAbsM.toFixed(5)} m`:'not comparable'} (expected 0.002..0.03 m for stddev 0.01)`);
   }
-  if(why.length){r.result='fail';r.reasons=why;await writeFile(join(out,'runs',r.id,'run.json'),JSON.stringify(r,null,1)+'\n',{mode:0o600});}
+  if(why.length){r.result='fail';r.reasons=why;await writeFile(join(out,'runs',r.id,'run.json'),JSON.stringify({...r,provider},null,1)+'\n',{mode:0o600});}
  }
  if(o.signal?.aborted){reasons.push('INTERRUPTED');return finish('interrupted');}
  return finish(records.every(r=>r.result==='pass')&&isComplete()?'completed':'failed');

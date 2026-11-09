@@ -56,3 +56,23 @@ test('review5 #6: every spawn site of a pinned Python tool sets the bytecode env
     expect(text.match(/bytecodeEnv\(\)/g)?.length ?? 0, f).toBeGreaterThanOrEqual(f.endsWith('runtime-options.ts') ? 3 : 1);
   }
 });
+
+// ---- C02 fix pass F3: a sitecustomize.py / usercustomize.py planted in a tool root never runs in the worker or the compiler ----
+import { spawnIRSimWorker } from '../../packages/lab-runtime/src/v2/navigation2d/worker-client';
+import { lockDigestOf } from '../../packages/lab-runtime/src/engineering/linkforge';
+import { writeFile } from 'node:fs/promises';
+test.skipIf(!available)('F3: an untracked sitecustomize.py/usercustomize.py in the worker and helper roots is not imported by the worker or the portable compiler (isolated start, roots added after site)', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'mekoniq-sitecustomize-')); roots.push(root);
+  // a copy of the closure files, plus the plants: each writes a marker file if it is ever imported
+  for (const f of closure().files) { await mkdir(dirname(join(root, f.path)), { recursive: true }); await copyFile(resolve(f.path), join(root, f.path)); }
+  const markers = join(root, 'markers');await mkdir(markers);
+  for (const dir of ['robotics/navigation-2d', 'robotics/simulation']) for (const name of ['sitecustomize', 'usercustomize'])
+    await writeFile(join(root, dir, `${name}.py`), `import pathlib\npathlib.Path(${JSON.stringify(markers)}, ${JSON.stringify(`${dir.replace('/', '_')}_${name}`)}).write_text("ran")\n`);
+  const workerRoot = join(root, 'robotics/navigation-2d'), bundle = join(root, 'bundle'); await mkdir(bundle);
+  const w = await spawnIRSimWorker({ python: irPython, workerRoot, runId: 'plant', bundleRoot: bundle, runDirectory: join(root, 'run'), lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), schemaDir: join(root, 'packages/contracts/schemas') });
+  try { const r = await w.request({ protocol: 'mekoniq-irsim/1', requestId: 'd', runId: 'plant', expectedTick: 0, op: 'describe', payload: {} }); expect(r.ok).toBe(true); } finally { await w.close('done'); }
+  const { input } = navigationFixture('serve');
+  await createNavigationCompiler({ python: irPython, workerRoot, descriptionHelperRoot: join(root, 'robotics/simulation') }).compileResolved(input, join(root, 'out'));
+  expect(existsSync(join(root, 'out', 'navigation-scene.json'))).toBe(true);
+  expect(execFileSync('ls', [markers], { encoding: 'utf8' }).trim()).toBe('');
+}, 180_000);

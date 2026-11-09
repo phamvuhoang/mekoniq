@@ -16,18 +16,19 @@ const campaign=(id:string)=>resolve('robotics/navigation-2d/campaigns',`${id}.js
 const children=()=>{try{return execFileSync('pgrep',['-P',String(process.pid)],{encoding:'utf8'}).trim().split('\n').filter(Boolean).map(Number).sort();}catch{return [];}};
 /** Every process whose command line names `dir` (the workers of a campaign carry their run directory in --bundle-root). */
 const under=(dir:string)=>{try{return execFileSync('pgrep',['-f',dir],{encoding:'utf8'}).trim().split('\n').filter(Boolean).map(Number);}catch{return [];}};
+const bySeed0=(s:Summary,seed:number)=>s.runs.filter(r=>r.id.includes(`-IR-FD01-serve-demo-v1-s${seed}-`));
 const json=async<T>(p:string)=>JSON.parse(await readFile(p,'utf8')) as T;
 const cli=(...args:string[])=>spawn(process.execPath,['scripts/lab-irsim.mjs',...args],{stdio:['ignore','pipe','pipe']});
 const exited=(p:ChildProcess)=>new Promise<number|null>(done=>p.once('close',code=>done(code)));
 const until=async(ok:()=>boolean,ms:number)=>{const end=Date.now()+ms;while(!ok()){if(Date.now()>end)return false;await new Promise(r=>setTimeout(r,100));}return true;};
-interface Summary{status:string;complete:boolean;provider:{kind:string};runs:{id:string;result:string;reasons:string[];digests?:Record<string,string>;wallMs?:number;assertions?:{id:string;result:string}[]}[]}
+interface Summary{status:string;complete:boolean;evidenceComplete?:boolean;provider:{kind:string};runs:{id:string;scenarioId:string;result:string;reasons:string[];kind?:string;label?:string;stepTicks?:number;evidenceComplete?:boolean;evidenceAsExpected?:boolean;digests?:Record<string,string>;wallMs?:number;assertions?:{id:string;result:string}[]}[]}
 
-test.skipIf(!irsimAvailable)('INT03 twenty sequential runs: every run passes its own oracles with complete evidence, seeds reproduce, noise is visible, outputs are separate, and no child outlives the campaign',async()=>{
+test.skipIf(!irsimAvailable)('INT03 twenty-five sequential runs (IR01-IR06, IR08-IR10, contention rig): every run passes its own oracles with the evidence its case requires, seeds reproduce across pacing, noise is visible, outputs are separate, and no child outlives the campaign',async()=>{
  const out=await temp('irsim-batch-20-');dirs.push(out);
  const activeChildPidsBeforeStart=children(),t0=Date.now();
  const summary=await runIRSimBatch({campaignPath:campaign('c02-qualification'),outDir:join(out,'c'),concurrency:1,sourceCommit:'test-commit'});
  const activeChildPidsAfterClose=children(),wall=(Date.now()-t0)/1000;
- expect(summary.runs).toHaveLength(20);
+ expect(summary.runs).toHaveLength(25);
  expect(summary.runs.filter(r=>r.result!=='pass')).toEqual([]);
  expect(summary.complete).toBe(true);
  expect(summary.runs.every(r=>r.result==='pass')).toBe(true);
@@ -35,9 +36,18 @@ test.skipIf(!irsimAvailable)('INT03 twenty sequential runs: every run passes its
  const s=await json<Summary>(summary.summaryPath);
  expect(s).toMatchObject({status:'completed',complete:true,provider:{kind:'irsim_worker'}});
  // each run has its own directory, run id, bundle copy and evidence; nothing is shared between two runs
- const reports=await Promise.all(s.runs.map(r=>json<RunReport>(join(out,'c','runs',r.id,'report.json'))));
- expect(new Set(reports.map(r=>r.manifest.runId)).size).toBe(20);
- for(const r of s.runs){for(const f of ['report.json','assertions.json','run.json','run/bundle/navigation-scene.json','run/evidence/manifest.json'])expect(existsSync(join(out,'c','runs',r.id,f)),`${r.id}/${f}`).toBe(true);}
+ const scenarioRuns=s.runs.filter(r=>r.kind!=='raw_drive'),reports=await Promise.all(scenarioRuns.map(r=>json<RunReport>(join(out,'c','runs',r.id,'report.json'))));
+ expect(new Set(reports.map(r=>r.manifest.runId)).size).toBe(24);
+ for(const r of s.runs){for(const f of [...r.kind==='raw_drive'?[]:['report.json'],'assertions.json','run.json','run/bundle/navigation-scene.json','run/evidence/manifest.json'])expect(existsSync(join(out,'c','runs',r.id,f)),`${r.id}/${f}`).toBe(true);}
+ // every case is labelled for what it is: the contention rig (no missions, venue serialization bypassed) says so in the summary and in its report
+ const rig=s.runs.filter(r=>r.kind==='contention_rig');expect(rig).toHaveLength(2);
+ for(const r of rig){expect(r.label).toMatch(/^CONTENTION RIG \(not a production scenario\)/);expect((await json<RunReport>(join(out,'c','runs',r.id,'report.json'))).limitations[0]).toMatch(/^CONTENTION RIG \(IR-RIG-ZONE\)/);}
+ for(const r of rig)expect(r.assertions!.filter(a=>['ZONE_CONTENDED','ZONE_PROMOTED_AT_RELEASE','ZONE_SINGLE_OWNER'].includes(a.id)).map(a=>a.result)).toEqual(['pass','pass','pass']);
+ // IR10: its evidence is incomplete by design (the unknown tick) and that is exactly what its case declares; the campaign is still complete
+ const kill=s.runs.find(r=>r.scenarioId==='IR-FD01-workerkill')!;expect([kill.result,kill.evidenceComplete,kill.evidenceAsExpected]).toEqual(['pass',false,true]);
+ expect([s.complete,s.evidenceComplete]).toEqual([true,false]);
+ // IR09 durable: the three IR-FD01 seed-11 repeats were stepped 500, 25 and 100 ticks per request and give one digest set
+ expect(bySeed0(s,11).map(r=>r.stepTicks)).toEqual([500,25,100]);
  // RNG: a seed reproduces every digest; other seeds draw other order times (the actor stream), so their business events differ
  const bySeed=(seed:number,fixture='serve-demo-v1')=>s.runs.filter(r=>r.id.includes(`-${fixture}-s${seed}-`));
  for(const [seed,fixture] of [[11,'serve-demo-v1'],[11,'serve-noisy-v1'],[21,'serve-demo-v1'],[31,'serve-fleet-v1']] as const){const g=bySeed(seed,fixture);expect(g.length,`${fixture}/${seed}`).toBeGreaterThanOrEqual(2);expect(new Set(g.map(r=>JSON.stringify(r.digests))).size,`${fixture}/${seed}`).toBe(1);}
@@ -50,11 +60,12 @@ test.skipIf(!irsimAvailable)('INT03 twenty sequential runs: every run passes its
  expect(noisy[0]!.digests!.sensorDigest).not.toBe(bySeed(11)[0]!.digests!.sensorDigest);
  // every scenario of C02 ran with every oracle it declares, each written in full with expected/actual/oracle
  for(const r of s.runs){const a=await json<{oracles:{id:string;result:string;expected:string;actual:string;oracle:string}[]}>(join(out,'c','runs',r.id,'assertions.json'));for(const x of a.oracles)expect(x.expected&&x.actual&&x.oracle,`${r.id}/${x.id}`).toBeTruthy();}
- expect(new Set(reports.map(r=>r.manifest.scenario.id))).toEqual(new Set(['IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07']));
+ expect(new Set(reports.map(r=>r.manifest.scenario.id))).toEqual(new Set(['IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','IR-RIG-ZONE']));
+ expect(new Set(s.runs.map(r=>r.scenarioId))).toEqual(new Set(['IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','IR-RIG-ZONE','IR-FD01-cancel','IR-FD01-workerkill','IR-RAW-PAIR-CONTACT']));
  // the headless CLI re-reads the directory from disk and agrees
  const verify=spawn(process.execPath,['scripts/lab-irsim.mjs','verify','--input',join(out,'c')],{stdio:'ignore'});
  expect(await exited(verify)).toBe(0);
- console.info(`INT03 sequential: 20 runs in ${wall.toFixed(0)} s; per run ${s.runs.map(r=>`${r.id.split('-').slice(1,3).join('-')} ${((r.wallMs??0)/1000).toFixed(1)}s`).join(', ')}`);
+ console.info(`INT03 sequential: 25 runs in ${wall.toFixed(0)} s; per run ${s.runs.map(r=>`${r.id.split('-').slice(1,3).join('-')} ${((r.wallMs??0)/1000).toFixed(1)}s`).join(', ')}`);
 },1_800_000);
 
 test.skipIf(!irsimAvailable)('INT03 two worlds at once: a one-robot and a two-robot world run concurrently (never more than two workers), and each gives the digests it gives alone',async()=>{

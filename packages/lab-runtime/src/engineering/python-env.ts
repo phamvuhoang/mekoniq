@@ -12,3 +12,14 @@ export function bytecodeEnv():{PYTHONDONTWRITEBYTECODE:'1';PYTHONPYCACHEPREFIX:s
  prefix??=mkdtempSync(join(tmpdir(),'mekoniq-pycache-'));
  return {PYTHONDONTWRITEBYTECODE:'1',PYTHONPYCACHEPREFIX:prefix};
 }
+/** Isolated bootstrap: the tool roots go onto sys.path only after `site` has run, so nothing in a tool root is imported by site itself (sitecustomize, usercustomize). */
+const BOOT="import sys,runpy\nn=int(sys.argv[1]);sys.path[0:0]=sys.argv[2:2+n];a=sys.argv[2+n:]\nif a[0]=='-m':\n sys.argv=[a[1]]+a[2:];runpy.run_module(a[1],run_name='__main__',alter_sys=True)\nelse:\n sys.argv=a;runpy.run_path(a[0],run_name='__main__')";
+/**
+ * Interpreter argv for a pinned Python tool. `-I` (isolated: no PYTHON* environment, no user site, neither the working directory nor a script directory on sys.path)
+ * stops a planted sitecustomize.py/usercustomize.py in a tool root from running at start-up, which PYTHONPATH would allow; the tool roots are then added explicitly by
+ * a fixed bootstrap. `-I` also ignores bytecodeEnv(), so the same rules come back as flags: `-B` (write none) and `-X pycache_prefix` (read none beside the sources).
+ * `entry` is `['-m', module, ...args]` or `[script, ...args]`; `args` follow it.
+ */
+export function isolatedPythonArgs(paths:readonly string[],entry:readonly string[],args:readonly string[]=[]):string[]{
+ return ['-I','-B','-X',`pycache_prefix=${bytecodeEnv().PYTHONPYCACHEPREFIX}`,'-X','utf8','-u','-c',BOOT,String(paths.length),...paths,...entry,...args];
+}

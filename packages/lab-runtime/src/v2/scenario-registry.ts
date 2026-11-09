@@ -29,6 +29,9 @@ export interface ScenarioDefinition {
  /** A provider variant of a business template (IR-*): the template's business rules (roles, confirmations, parking), recorded under its own id; a workload or
  * duration that differs from the template is pinned in the variant's own definition (and so its hash), never changed under the template's id. */
  basedOn?:{id:string;revision:number};
+ /** Contention rig (campaign-only, never in this registry): goals given to the IR-SIM controller directly at `atTick`, no orders or missions, so the
+  * venue-movement serialization does not apply; `note` says so in every report. */
+ rig?:{goals:readonly {robot:number;pointId:string;atTick:number}[];note:string};
 }
 // FD03/FD04 obstacles are world coordinates of the fixture layouts (restaurant-v2: kitchen lane x~1, table T01 at 3,1.1; corridor: gap at x 4.5-5.5,
 // y 2.5-3.5). On another layout they land elsewhere; the run still reports what the model did, but the scenario intent then does not hold.
@@ -61,13 +64,13 @@ export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<str
  ['IR-FD04',{id:'IR-FD04',revision:1,title:'The destination handoff is walled in on the IR-SIM 2D plant: no_path, no false arrival, nothing served',...irOrder,basedOn:{id:'FD04',revision:1}}],
  ['IR-FD04-blocked',{id:'IR-FD04-blocked',revision:1,title:'A person stands on the destination handoff on the IR-SIM 2D plant: blocked after the no-progress window, never no_path',...irOrder,park:false,basedOn:{id:'FD04-blocked',revision:1}}],
  // the FD07 template exactly (two robots, T01/T02, scripted confirmations, park) under the 12,000-tick campaign bound (verification.md IR04 override, in this hash)
- ['IR-FD07',{id:'IR-FD07',revision:1,title:'Two robots with their own drives and LiDARs share a reserved aisle on the IR-SIM 2D plant while a customer walks across',robots:2,...FD07,maxTicks:12000,basedOn:{id:'FD07',revision:1}}],
+ ['IR-FD07',{id:'IR-FD07',revision:1,title:'Two robots with their own drives and LiDARs take turns through a reserved aisle on the IR-SIM 2D plant (movers serialized by the source; a customer walks elsewhere)',robots:2,...FD07,maxTicks:12000,basedOn:{id:'FD07',revision:1}}],
 ]);
 export const scenarioHash=(d:ScenarioDefinition)=>hashJson(d);
 const ID=/^[A-Za-z0-9_.:-]{1,200}$/,int=(n:unknown,min:number,max:number)=>Number.isSafeInteger(n)&&(n as number)>=min&&(n as number)<=max;
 /** Shape check for definitions handed in by in-process providers (tests); the built-in ones pass it too. Mock duration is capped at 8 h sim. */
 export function checkScenario(d:ScenarioDefinition):void {
- const ok=ID.test(d.id)&&int(d.revision,1,2**31)&&int(d.robots,1,8)&&int(d.maxTicks,1,1440000)&&['scripted','human'].includes(d.confirm.mode)&&int(d.confirm.delayTicks,0,1440000)&&typeof d.park==='boolean'&&d.orders.length+(d.coffee?.orders.length??0)>=1&&d.orders.length<=50&&(d.coffee?.orders.length??0)<=20
+ const ok=ID.test(d.id)&&int(d.revision,1,2**31)&&int(d.robots,1,8)&&int(d.maxTicks,1,1440000)&&['scripted','human'].includes(d.confirm.mode)&&int(d.confirm.delayTicks,0,1440000)&&typeof d.park==='boolean'&&(d.orders.length+(d.coffee?.orders.length??0)>=1||!!d.rig&&!d.orders.length&&!d.coffee&&d.rig.goals.length>=1&&d.rig.goals.length<=8&&d.rig.goals.every(g=>int(g.robot,0,d.robots-1)&&ID.test(g.pointId)&&int(g.atTick,0,d.maxTicks))&&typeof d.rig.note==='string')&&d.orders.length<=50&&(d.coffee?.orders.length??0)<=20
   &&d.orders.every(o=>ID.test(o.actor)&&int(o.table,0,199)&&int(o.quantity,1,10)&&int(o.atTick[0],0,d.maxTicks)&&int(o.atTick[1],o.atTick[0],d.maxTicks))
   &&(d.coffee?.orders??[]).every(o=>ID.test(o.actor)&&ID.test(o.recipe)&&int(o.table,0,199)&&int(o.atTick[0],0,d.maxTicks)&&int(o.atTick[1],o.atTick[0],d.maxTicks))
   &&(d.batch===undefined||typeof d.batch==='boolean')&&(d.mixFoodCoffee===undefined||typeof d.mixFoodCoffee==='boolean'&&(!d.mixFoodCoffee||!!d.batch&&!!d.coffee&&d.orders.length>0))&&(d.requestRobot===undefined||typeof d.requestRobot==='boolean')&&(d.loadMinor===undefined||/^[0-9]{1,12}$/.test(d.loadMinor))
