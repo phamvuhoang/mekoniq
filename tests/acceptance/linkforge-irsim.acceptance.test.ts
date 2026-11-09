@@ -36,8 +36,8 @@ test('no gate is accepted by this record, the six new gates are the only ones it
  for(const g of GATE_IDS)expect(m.gates[g].accepted,g).toBe(false);
  expect(m.accepted).toBe(false);
  for(const n of m.notRun as {id:string;reason:string}[])expect(n.reason,n.id).toMatch(/\S/);
- // IR07 is declared not_run on the real plant (the velocity cap forbids tunnelling); it must never read tested
- expect(m.cases.IR07.status).toBe('not_run');
+ // IR07 is the independent swept oracle only (the plant's velocity cap forbids the tunnelling trigger): tested, and the record must say so in its note
+ expect(m.cases.IR07).toMatchObject({status:'tested',note:expect.stringMatching(/swept/)});
 });
 test('INT04 screenshots (VI/JA/EN, desktop and tablet) are in the candidate when the Lab journey was recorded',()=>{
  const m=manifest();

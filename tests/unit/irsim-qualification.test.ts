@@ -17,7 +17,8 @@ test('mapping: every verification case of the plan has evidence or an explicit n
  expect(Object.keys(CASES).sort()).toEqual([...ids].sort());
  expect(Object.keys(GATES).sort()).toEqual(['G-INT1','G-IR1','G-IR2','G-IR3','G-LF1','G-LF2']);
  for(const [gate,cases] of Object.entries(GATES) as [string,string[]][])for(const c of cases)expect(CASES[c],`${gate}:${c}`).toBeTruthy();
- expect(CASES.IR07.notRun).toMatch(/0\.5 m\/s|tunnel/);
+ // IR07: the spec accepts the independent swept oracle; the plant's 0.5 m/s cap cannot produce the trigger, so the case is the oracle test in suite ir with that note
+ expect(CASES.IR07.notRun).toBeUndefined();expect(CASES.IR07.suites).toEqual(['ir']);expect(CASES.IR07.note).toMatch(/swept.*0\.5 m\/s|0\.5 m\/s.*swept/);
  for(const s of SUITES)expect(s.id&&s.repo&&(s.files?.length||s.command?.length),s.id).toBeTruthy();
 });
 
@@ -25,8 +26,8 @@ test('qualify: a case is tested only when every campaign case it names passed an
  const q=qualify({campaign:campaignSummary(),suites:allSuites(),lab:true});
  expect(q.cases.IR01).toMatchObject({status:'tested',evidence:expect.arrayContaining(['campaign:IR-FD01','suite:ir'])});
  expect(q.cases.IR04).toMatchObject({status:'tested',note:expect.stringMatching(/rig|serialized/)});
- expect(q.cases.IR07).toMatchObject({status:'not_run',reason:expect.any(String)});
- expect(q.gates['G-IR3']).toMatchObject({status:'not_run',accepted:false,cases:expect.arrayContaining(['IR07'])});
+ expect(q.cases.IR07).toMatchObject({status:'tested',evidence:['suite:ir'],note:expect.stringMatching(/swept/)});
+ expect(q.gates['G-IR3']).toMatchObject({status:'tested',accepted:false,cases:expect.arrayContaining(['IR07'])});
  expect(q.gates['G-IR1']).toEqual({status:'tested',accepted:false,cases:['IR01']});
  expect(q.gates['G-INT1'].status).toBe('tested');
  const noLab=qualify({campaign:campaignSummary(),suites:allSuites().filter((s:{id:string})=>!s.id.startsWith('lab')),lab:false});
@@ -71,9 +72,9 @@ test('guard: a complete consistent candidate has no reasons; each single defect 
  one(m=>{m.lab.dirty=true;},/LAB_DIRTY/);
  one(m=>{m.accepted=true;},/ACCEPTED_WITHOUT_REVIEWER/);
  one(m=>{m.gates['R-MOCK']={status:'tested',accepted:true,cases:[]};},/FOREIGN_GATE:R-MOCK/);
- one(m=>{m.gates['G-IR3'].status='tested';},/GATE_STATUS_MISMATCH:G-IR3/);
- one(m=>{m.cases.IR07.status='tested';},/CASE_STATUS_MISMATCH:IR07/);
- one(m=>{delete m.cases.IR07.reason;m.cases.IR07.status='not_run';},/CASE_NOT_RUN_WITHOUT_REASON:IR07|CASE_STATUS_MISMATCH/);
+ one(m=>{m.gates['G-IR3'].status='not_run';},/GATE_STATUS_MISMATCH:G-IR3/);
+ one(m=>{m.cases.IR07.status='not_run';m.cases.IR07.reason='x';},/CASE_STATUS_MISMATCH:IR07/);
+ one(m=>{delete m.cases.IR07.note;},/CASE_NOTE_MISSING:IR07/);
  one(m=>{delete m.cases.EVI02;},/CASE_MISSING:EVI02/);
  one((m,f)=>{f.set('campaign/runs/002-IR-FD03/run.json',JSON.stringify({id:'002-IR-FD03',result:'not_run',evidenceAsExpected:false}));},/RUN_NOT_PASS:002-IR-FD03/);
  one((m,f)=>{f.set('campaign/runs/001-IR-FD01/run.json',JSON.stringify({id:'001-IR-FD01',result:'pass',evidenceAsExpected:false,evidenceComplete:false}));},/EVIDENCE_NOT_AS_EXPECTED:001-IR-FD01/);

@@ -30,7 +30,9 @@ export const CASES={
  IR01:IR(['IR-FD01']),IR02:IR(['IR-FD03']),IR03:IR(['IR-FD04','IR-FD04-blocked']),
  IR04:IR(['IR-FD07','IR-RIG-ZONE'],{note:'zone contention is proven by the campaign-only rig IR-RIG-ZONE; source-driven IR-FD07 missions are serialized by the venue-movement reservation (both robots move, one at a time)'}),
  IR05:IR(['IR-FD01-cancel']),IR06:IR(['IR-RAW-PAIR-CONTACT']),
- IR07:{notRun:'thin-wall tunnelling cannot be produced on the real plant: the worker caps |v| at 0.5 m/s (1 cm per 20 ms tick against a 0.6 m footprint); covered by the B03 swept-oracle unit tests only'},
+ // IR07 per spec §3: "independent swept oracle OR command guard detects" — the swept oracle (navigation2d-oracle.test.ts, source swept_oracle) is in suite ir;
+ // the plant cannot produce the trigger, so no engine discrete collision is claimed (reviewer reading, 2026-11-09; the C02 not_run reading under-claimed)
+ IR07:{suites:['ir'],note:'swept_oracle only: the independent swept check finds a thin wall crossed between two ticks; the real plant caps |v| at 0.5 m/s (1 cm per 20 ms tick against a 0.6 m footprint) so tunnelling cannot be produced there and no engine discrete collision is claimed'},
  IR08:IR(['IR-FD01'],{suites:['ir','cmp-py']}),IR09:IR(['IR-FD01'],{suites:['ir','cmp-py']}),IR10:IR(['IR-FD01-workerkill']),
  SEN01:{suites:['cmp-py','ir']},SEN02:{suites:['cmp-py','ir']},
  EVI01:{suites:['evi']},EVI02:{suites:['evi']},EVI03:{suites:['evi']},
@@ -115,6 +117,7 @@ export function checkQualification(m,read){
   const c=m.cases?.[id];if(!c){r.push(`CASE_MISSING:${id}`);continue;}
   if(c.status!==q.cases[id].status)r.push(`CASE_STATUS_MISMATCH:${id}`);
   if(c.status!=='tested'&&!(typeof c.reason==='string'&&c.reason))r.push(`CASE_NOT_RUN_WITHOUT_REASON:${id}`);
+  if(CASES[id].note&&c.note!==CASES[id].note)r.push(`CASE_NOTE_MISSING:${id}`);// a case tested with a declared limitation must carry it verbatim
  }
  for(const g of GATE_IDS){const x=m.gates?.[g];if(!x)r.push(`GATE_MISSING:${g}`);else{if(x.status!==q.gates[g].status)r.push(`GATE_STATUS_MISMATCH:${g}`);if(x.accepted!==false)r.push(`GATE_ACCEPTED:${g}`);}}
  return r;
