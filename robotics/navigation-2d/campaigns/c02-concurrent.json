@@ -1,0 +1,53 @@
+{
+ "schemaVersion": 1,
+ "id": "c02-concurrent",
+ "title": "C02 two worlds at once: a one-robot and a two-robot world with different seeds (INT03)",
+ "runs": [
+  {
+   "scenarioId": "IR-FD01",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-demo-v1",
+   "seed": 41,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT"
+   ]
+  },
+  {
+   "scenarioId": "IR-FD07",
+   "scenarioRevision": 1,
+   "fixtureId": "serve-fleet-v1",
+   "seed": 42,
+   "repeat": 1,
+   "policyRef": {
+    "id": "irsim-2d-default-v1",
+    "revision": 1,
+    "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+   },
+   "expectedAssertions": [
+    "EVIDENCE_COMPLETE",
+    "IDENTITY_BOUND",
+    "NO_SERVED_BEFORE_HANDOFF",
+    "BUSINESS_OUTCOME",
+    "NO_PHYSICAL_CONTACT",
+    "ACTOR_SCHEDULE_APPLIED",
+    "NO_ACTOR_CONTACT",
+    "BOTH_ROBOTS_MOVED",
+    "ROBOT_MAPPING",
+    "ZONE_SINGLE_OWNER",
+    "ZONE_RELEASE_AFTER_EXIT",
+    "MIN_SEPARATION_AVAILABLE",
+    "WITHIN_TICKS"
+   ]
+  }
+ ]
+}
