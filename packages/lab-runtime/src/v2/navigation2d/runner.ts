@@ -136,8 +136,10 @@ export async function createIRSimScenarioRun(input:RunManifestInput,providers:IR
  const identity:Omit<EvidenceIdentity,'engine'>={runId:cp.runId,sourceCommit:input.sourceCommit,sceneRef:{path:`bundle/${SCENE}`,sha256:sha256(sceneBytes),bytes:sceneBytes.length},lockDigest:lock,numpyVersion:numpy,runSeed:input.seed,
   actorRng:{algorithm:`${PRNG.algorithm} ${PRNG.seeding} v${PRNG.version}`,seed:input.seed},controller:{...NAVIGATION_CONTROLLER},businessEpochMs:EPOCH};
  // the recording limit is the run's tick budget too: the scenario's maxTicks, never above the 30,000-tick quota
- const recorder=await openNavigationRecorder({directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.irsim.evidence,maxTicks:Math.min(providers.irsim.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
- const run=new IRSimRun(dir,cp,scenario,project,scene,providers.irsim,{mapId,mapRevision},recorder,identity);
+ // every terminal the recorder produces (any flush, the tick limit, close) goes into the checkpoint before its manifest write is attempted
+ const owner:{run?:IRSimRun}={},opened=cp;
+ const recorder=await openNavigationRecorder({onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.irsim.evidence,maxTicks:Math.min(providers.irsim.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
+ const run=new IRSimRun(dir,cp,scenario,project,scene,providers.irsim,{mapId,mapRevision},recorder,identity);owner.run=run;
  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
  try{
   if(!fresh)run.telemetry.gap('RUNTIME_RESTART',null,cp.tick);
@@ -183,6 +185,7 @@ class IRSimRun implements ScenarioRun {
   }
  }
  get id(){return this.cp.runId;}
+ get checkpoint(){return this.cp;}
  persist(){return writeCheckpoint(this.dir,this.cp);}
  pulse(){const c=this.cp;return {tick:c.tick,paused:c.paused,runRevision:c.revision};}
  journal(){return this.queue.then(async()=>{if(this.closed)throw new Error('RUN_CLOSED');return (await this.source.journal()).map(entry=>({sequence:entry.sequence,at:entry.recordedAt,events:(entry.payload.events as unknown as DomainEvent[]).map(e=>({type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject}))})) as JournalEvents[];});}

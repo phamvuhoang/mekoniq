@@ -71,7 +71,10 @@ async function writeDurable(dir:string,name:string,bytes:Uint8Array|string){
  await rename(tmp,join(dir,name));await syncDir(dir);
 }
 
-export interface RecorderOptions{directory:string;scene:NavigationSceneV1;runId:string;maxBytes?:number;maxTicks?:number;/** ticks per chunk before an automatic flush */chunkTicks?:number}
+export interface RecorderOptions{directory:string;scene:NavigationSceneV1;runId:string;maxBytes?:number;maxTicks?:number;/** ticks per chunk before an automatic flush */chunkTicks?:number;
+ /** Called with every terminal reason, and awaited, BEFORE its manifest write is attempted: the owner makes it durable elsewhere (the run checkpoint), so a manifest
+  * write that fails or never lands cannot leave a crash image that reopens as a recording that was not ended. Its failure does not stop the manifest attempt. */
+ onTerminal?:(reason:string)=>Promise<void>}
 export interface NavigationRecorder{
  readonly directory:string;
  /** Set once a limit or a write failure ended the recording; nothing after it is recorded. */
@@ -154,6 +157,7 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
   if(m.terminal)return;
   m.terminal=reason;if(gap&&gap.toTick>=gap.fromTick)m.gaps.push(gap);
   buf={trajectory:[],sensors:[],control:[],collisions:[]};bufBoots=[];
+  await o.onTerminal?.(reason).catch(()=>{});
   await saveManifest().catch(()=>{}); // a failing disk may refuse this too: the terminal state is then also held in memory and the run stops
  };
  const bufferRange=():Gap|undefined=>{const t=buf.trajectory;return t.length?{fromTick:t[0]!.tick,toTick:t.at(-1)!.tick,reason:''}:undefined;};
