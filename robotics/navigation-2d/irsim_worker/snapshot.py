@@ -37,10 +37,15 @@ def lidar_scan(scan, sensor_id, tick):
             "rangeMinM": float(scan.range_min), "rangeMaxM": float(scan.range_max), "rangesM": ranges, "states": states}
 
 
-def build_snapshot(env, *, run_id, boot_id, tick, seq, scene_digest, names, sensor_ids, solid_ids):
-    """`names` robotId -> engine name; `sensor_ids` robotId -> [sensorId]; `solid_ids` engine object id -> scene id (obstacles and boundaries)."""
+def build_snapshot(env, *, run_id, boot_id, tick, seq, scene_digest, names, sensor_ids, solid_ids, actor_names=None):
+    """`names` robotId -> engine name; `sensor_ids` robotId -> [sensorId]; `solid_ids` engine object id -> scene id (obstacles and boundaries); `actor_names` actorId -> engine name.
+    Every contact is named by its scene id: another robot by its robotId, an actor by its actorId, a solid by its obstacle id (never an engine index)."""
     msg = env.get_msg(use_inf=True)
     by_name = {r.name: r for r in env.robot_list}
+    by_engine_name = {o.name: o for o in env.objects}
+    engine_to_scene = {**{o.id: sid for o in env.obstacle_list if (sid := solid_ids.get(o.id)) is not None},
+                       **{by_name[name].id: robot_id for robot_id, name in names.items()},
+                       **{by_engine_name[name].id: actor_id for actor_id, name in (actor_names or {}).items()}}
     states = {r.name: r for r in msg.robots}
     robots = []
     for robot_id in sorted(names):
@@ -51,7 +56,6 @@ def build_snapshot(env, *, run_id, boot_id, tick, seq, scene_digest, names, sens
         ids = sensor_ids.get(robot_id, [])
         if len(state.sensors) != len(ids):
             raise SnapshotError("SENSOR_INCONSISTENT", f"{name}: engine reports {len(state.sensors)} sensors, scene declares {len(ids)}")
-        engine_to_scene = {obj.id: robot_id, **{o.id: solid_ids[o.id] for o in env.obstacle_list if o.id in solid_ids}}
         collisions = sorted({str(engine_to_scene.get(c, f"engine:{c}")) for c in state.collision_ids})
         robots.append({"robotId": robot_id, "poseDriveMap": [x, y, wrap_pi(yaw)], "bodyVelocity": velocity, "scans": [lidar_scan(s, sid, tick) for s, sid in zip(state.sensors, ids)], "collisionIds": collisions})
     for r in robots:

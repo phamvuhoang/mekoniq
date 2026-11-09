@@ -71,3 +71,20 @@ test('robot-robot separation is surface to surface (overhang included), not cent
   expect(result.minSeparationM).not.toBeCloseTo(2, 3);
   expect(assessTrajectory(two, [snap(two, 0, { 'amr-1': [6, 6, 0], 'amr-2': [6.2, 6, 0] })]).contacts.map((c) => c.pair.join('|'))).toContain('amr-1|amr-2');
 });
+
+test('C02 actors: a scripted person is a solid for the oracle at its pose of each tick: overlap and sweep are swept_oracle contacts of (robot, actor), a near pass is a margin breach, a far one nothing', () => {
+  // the robot drives east along y 6 at 2 cm/tick; the person stands still at x0 on the same line (radius 0.25)
+  const drive = run(serve, 51, (k) => ({ 'amr-1': [3 + k * 0.02, 6, 0] }));
+  const at = (x: number, y: number) => () => [{ id: 'person-1', x, y, radiusM: 0.25 }];
+  const pairs = (a: ReturnType<typeof assessTrajectory>) => [...new Set(a.contacts.map((c) => `${c.pair.join('|')}/${c.source}`))];
+  expect(pairs(assessTrajectory(serve, drive, at(4.2, 6)))).toEqual(expect.arrayContaining(['amr-1|person-1/swept_oracle']));
+  // abreast at 0.25 + half width + 1 cm: inside the 2 cm safety margin, never touching
+  const half = Math.max(...hullOf(serve).map((v) => v[1]));
+  expect(pairs(assessTrajectory(serve, drive, at(3.5, 6 + half + 0.25 + 0.01)))).toEqual(['amr-1|person-1/safety_envelope']);
+  expect(assessTrajectory(serve, drive, at(3.5, 9)).contacts).toEqual([]);
+  // without the actor feed the same trajectory is clean: the contact above comes from the actor, not from the scene
+  expect(assessTrajectory(serve, drive).contacts).toEqual([]);
+  // a person moving through between two ticks (no snapshot overlap) is caught by the sweep: robot from x 3.0 to 3.4 in one tick, person at 3.65 only then
+  const jump = [snap(serve, 0, { 'amr-1': [3, 6, 0] }), snap(serve, 1, { 'amr-1': [3.4, 6, 0] })], front = Math.max(...hullOf(serve).map((v) => v[0]));
+  expect(pairs(assessTrajectory(serve, jump, (t) => t === 1 ? [{ id: 'p', x: 3.0 + front + 0.2, y: 6, radiusM: 0.1 }] : []))).toContain('amr-1|p/swept_oracle');
+});

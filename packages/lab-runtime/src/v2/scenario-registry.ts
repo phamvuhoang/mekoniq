@@ -26,17 +26,20 @@ export interface ScenarioDefinition {
  loadMinor?:string;
  /** Request the first robot by id, so admission answers with that robot's own first reason instead of NO_CAPABLE_ROBOT. */
  requestRobot?:boolean;
- /** A provider variant of a business template (IR-*): the same roles, workload and confirmations as the template, recorded under its own id. */
+ /** A provider variant of a business template (IR-*): the template's business rules (roles, confirmations, parking), recorded under its own id; a workload or
+ * duration that differs from the template is pinned in the variant's own definition (and so its hash), never changed under the template's id. */
  basedOn?:{id:string;revision:number};
 }
 // FD03/FD04 obstacles are world coordinates of the fixture layouts (restaurant-v2: kitchen lane x~1, table T01 at 3,1.1; corridor: gap at x 4.5-5.5,
 // y 2.5-3.5). On another layout they land elsewhere; the run still reports what the model did, but the scenario intent then does not hold.
 const FD01={orders:[{actor:'guest-1',table:0,quantity:1,atTick:[25,500] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true};
+const FD07={orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,10] as const},{actor:'guest-2',table:1,quantity:1,atTick:[12,12] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true};
 const fixedOrder={robots:1,orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,10] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true,maxTicks:90000};
 const corridorGap={x:4.5,y:2.5,width:1,height:1};
+const irOrder={...fixedOrder,maxTicks:30000};
 export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<string,ScenarioDefinition>([
  ['FD01',{id:'FD01',revision:1,title:'One order, one robot: kitchen -> table -> parking',robots:1,...FD01,maxTicks:90000}],
- ['FD07',{id:'FD07',revision:1,title:'Two robots contend for one narrow corridor',robots:2,orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,10]},{actor:'guest-2',table:1,quantity:1,atTick:[12,12]}],confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:180000}],
+ ['FD07',{id:'FD07',revision:1,title:'Two robots contend for one narrow corridor',robots:2,...FD07,maxTicks:180000}],
  ['FD02',{id:'FD02',revision:1,title:'Two tables on one batched mission: each handoff transfers only its own allocation',robots:1,batch:true,orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,200]},{actor:'guest-2',table:1,quantity:2,atTick:[10,200]}],confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:90000}],
  // a person (0.4 m) walks across the kitchen lane in 0.2 m steps every 15 ticks (0.67 m/s) while the robot drives up it
  ['FD03',{id:'FD03',revision:1,title:'A person crosses the route; the robot waits or replans in the model and resumes',...fixedOrder,obstacles:Array.from({length:12},(_,i)=>({id:`person-${i}`,x:i*0.2,y:5.6,width:0.4,height:0.4,atTick:375+i*15,untilTick:390+i*15}))}],
@@ -51,7 +54,14 @@ export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<str
  ['FD02-cups',{id:'FD02-cups',revision:1,title:'One mission loads food and an identified coffee cup, then hands off both allocations',robots:1,batch:true,mixFoodCoffee:true,orders:[{actor:'food-guest',table:0,quantity:1,atTick:[10,10]}],coffee:{orders:[{actor:'coffee-guest',table:0,recipe:'espresso',atTick:[12,12]}]},confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:180000}],
  ['CAMPAIGN-FD02-FD07-BV01-BV03',{id:'CAMPAIGN-FD02-FD07-BV01-BV03',revision:1,title:'Concurrent food, corridor and coffee deliveries (ends after customer handoffs)',robots:2,orders:[{actor:'food-a',table:0,quantity:1,atTick:[10,10]},{actor:'food-b',table:1,quantity:1,atTick:[12,12]}],coffee:{orders:[{actor:'coffee-a',table:0,recipe:'espresso',atTick:[10,10]},{actor:'coffee-b',table:0,recipe:'iced-milk-coffee',atTick:[12,12]}]},confirm:{mode:'scripted',delayTicks:50},park:false,maxTicks:180000}],
  // IR-SIM 2D variant of FD01 (same business template); capped at the provider's 30,000-tick (10 min sim) run quota
- ['IR-FD01',{id:'IR-FD01',revision:1,title:'One order, one robot on the IR-SIM 2D plant: kitchen -> table -> parking',robots:1,...FD01,maxTicks:30000,basedOn:{id:'FD01',revision:1}}]
+ ['IR-FD01',{id:'IR-FD01',revision:1,title:'One order, one robot on the IR-SIM 2D plant: kitchen -> table -> parking',robots:1,...FD01,maxTicks:30000,basedOn:{id:'FD01',revision:1}}],
+ // C02 IR-SIM variants: the business template of their FD scenario under the 30,000-tick provider quota; actors and reservation zones are the server-owned
+ // scenario fixture (navigation2d/scenario-fixtures.ts), pinned into the run's configuration hash; never the legacy obstacle schedules
+ ['IR-FD03',{id:'IR-FD03',revision:1,title:'A person crosses the route on the IR-SIM 2D plant: the robot holds or replans on LiDAR and resumes',...irOrder,basedOn:{id:'FD03',revision:1}}],
+ ['IR-FD04',{id:'IR-FD04',revision:1,title:'The destination handoff is walled in on the IR-SIM 2D plant: no_path, no false arrival, nothing served',...irOrder,basedOn:{id:'FD04',revision:1}}],
+ ['IR-FD04-blocked',{id:'IR-FD04-blocked',revision:1,title:'A person stands on the destination handoff on the IR-SIM 2D plant: blocked after the no-progress window, never no_path',...irOrder,park:false,basedOn:{id:'FD04-blocked',revision:1}}],
+ // the FD07 template exactly (two robots, T01/T02, scripted confirmations, park) under the 12,000-tick campaign bound (verification.md IR04 override, in this hash)
+ ['IR-FD07',{id:'IR-FD07',revision:1,title:'Two robots with their own drives and LiDARs share a reserved aisle on the IR-SIM 2D plant while a customer walks across',robots:2,...FD07,maxTicks:12000,basedOn:{id:'FD07',revision:1}}],
 ]);
 export const scenarioHash=(d:ScenarioDefinition)=>hashJson(d);
 const ID=/^[A-Za-z0-9_.:-]{1,200}$/,int=(n:unknown,min:number,max:number)=>Number.isSafeInteger(n)&&(n as number)>=min&&(n as number)<=max;

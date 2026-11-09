@@ -12,7 +12,7 @@ import {qrotate} from '../../packages/lab-runtime/src/v2/frames';
 import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
 import {QUARTER_X,component,digested,instance,mount,pose,type Fixture} from './engineering';
 
-export type NavigationFixtureName='serve'|'wide'|'overhang'|'two-robot'|'enclosed-goal'|'offset-axle'|'noisy';
+export type NavigationFixtureName='serve'|'wide'|'overhang'|'two-robot'|'enclosed-goal'|'offset-axle'|'noisy'|'fleet'|'enclosed-table';
 const sha=(t:string)=>createHash('sha256').update(t).digest('hex');
 const assumed=(locator:string):SourceRef=>({kind:'assumed',documentId:'serve-fixture-assumptions',revision:'1',locator,contentSha256:sha('serve-fixture-assumptions-v1')});
 const derived=(formula:string,inputs:unknown):SourceRef=>({kind:'derived',documentId:'serve-fixture-inertia-formulas',revision:'1',locator:formula,contentSha256:hashJson(inputs)});
@@ -50,12 +50,12 @@ const driveModel=(s:RobotSpec)=>({schemaVersion:1 as const,kind:'actuator' as co
  torqueSpeedTable:[{speed:scalar(0,'rad/s'),torque:scalar(2.5,'N*m')},{speed:scalar(20,'rad/s'),torque:scalar(0,'N*m')}],currentLimit:scalar(8,'A'),voltageLimit:scalar(24,'V'),damping:scalar(0.01,'N*m'),friction:scalar(0.02,'N*m'),
  drive:{wheelRadiusM:scalar(s.wheelRadius,'m'),wheelSeparationM:scalar(s.separation,'m'),leftMountPort:'left-axle',rightMountPort:'right-axle'}});
 /** Generic 2D LiDAR: range, cadence and beam count are assumptions for the demo, not the datasheet of any part. */
-export const serveLidarModel=(noiseStddevM=0)=>({schemaVersion:1 as const,kind:'sensor' as const,id:'lidar-2d',frame:'head',rateHz:scalar(10,'Hz','scan cadence'),range:{min:scalar(0.05,'m','range'),max:scalar(10,'m','range')},fieldOfView:scalar(2*Math.PI,'rad','field of view'),
+export const serveLidarModel=(noiseStddevM=0,beams=360,rangeMaxM=10)=>({schemaVersion:1 as const,kind:'sensor' as const,id:'lidar-2d',frame:'head',rateHz:scalar(10,'Hz','scan cadence'),range:{min:scalar(0.05,'m','range'),max:scalar(rangeMaxM,'m','range')},fieldOfView:scalar(2*Math.PI,'rad','field of view'),
  noise:{distribution:(noiseStddevM?'gaussian':'none') as 'none'|'gaussian',stddev:scalar(noiseStddevM,'m','noise'),seed:7},latency:scalar(0,'s','latency'),dropoutProbability:scalar(0,'1','dropout'),sensorType:'lidar_2d' as const,
- lidar2d:{beamCount:360,beamCountSource:assumed('360 beams: demo assumption, not a vendor value')}});
+ lidar2d:{beamCount:beams,beamCountSource:assumed(`${beams} beams: demo assumption, not a vendor value`)}});
 
-function components(s:RobotSpec,axleX=0,noise=0){
- const drive=driveModel(s),lidar=serveLidarModel(noise),rodY=s.trayWidth/2+0.02,half=s.separation/2;
+function components(s:RobotSpec,axleX=0,noise=0,lidarSpec:{beams?:number;rangeMaxM?:number}={}){
+ const drive=driveModel(s),lidar=serveLidarModel(noise,lidarSpec.beams,lidarSpec.rangeMaxM),rodY=s.trayWidth/2+0.02,half=s.separation/2;
  const ident=(family:string)=>({manufacturer:'fixture',family,sku:null,status:'candidate' as const});
  const chassis=component('serve-chassis','chassis',{identity:ident('chassis'),models:[{kind:'actuator',id:drive.id,digest:hashJson(drive)}],links:[solid('base',box(0.6,s.chassisWidth,0.14,pose(0,0,0.05)),14)],ports:[
   mount('left-axle','axle-hub',axleX,half,0),mount('right-axle','axle-hub',axleX,-half,0),
@@ -71,8 +71,8 @@ function components(s:RobotSpec,axleX=0,noise=0){
  return {parts:{chassis,wheel,rod,tray,head},models:{[hashJson(drive)]:drive,[hashJson(lidar)]:lidar}};
 }
 /** One robot's instances and connections; `prefix` namespaces the instance ids and `at` places the chassis (axle height = wheel radius), `axleX` moves the axle forward of the base origin. */
-function robot(s:RobotSpec,prefix:string,x:number,y:number,o:{axleX?:number;yaw?:number;noise?:number}={}){
- const {parts,models}=components(s,o.axleX,o.noise),n=(id:string)=>prefix+id,at=pose(x,y,s.wheelRadius,o.yaw?[0,0,Math.sin(o.yaw/2),Math.cos(o.yaw/2)]:undefined);
+function robot(s:RobotSpec,prefix:string,x:number,y:number,o:{axleX?:number;yaw?:number;noise?:number;lidar?:{beams?:number;rangeMaxM?:number}}={}){
+ const {parts,models}=components(s,o.axleX,o.noise,o.lidar),n=(id:string)=>prefix+id,at=pose(x,y,s.wheelRadius,o.yaw?[0,0,Math.sin(o.yaw/2),Math.cos(o.yaw/2)]:undefined);
  const instances:Instance[]=[instance(n('chassis'),parts.chassis,at),instance(n('wheel-left'),parts.wheel),instance(n('wheel-right'),parts.wheel),instance(n('support-left'),parts.rod),instance(n('support-right'),parts.rod),
   ...[1,2,3].map(i=>instance(n(`tray-${i}`),parts.tray)),instance(n('lidar'),parts.head)];
  const m=(from:string,to:string)=>({from:n(from),to:n(to),kind:'mount' as const});
@@ -98,20 +98,28 @@ export function restaurantWorld(extra:{obstacles?:Rect[];points?:{id:string;name
 const pocket=()=>({obstacles:[{id:'pocket-s',x:16.9,y:0.9,width:1.4,height:0.1},{id:'pocket-n',x:16.9,y:2.2,width:1.4,height:0.1},{id:'pocket-w',x:16.9,y:0.9,width:0.1,height:1.4},{id:'pocket-e',x:18.2,y:0.9,width:0.1,height:1.4}],
  points:[{id:'pocket',name:'Pocket',kind:'dock' as const,x:17.6,y:1.6}],handoffs:[{id:'pocket.handoff',name:'Pocket handoff',kind:'dock' as const,position:[17.6,1.6,0] as [number,number,number],yawRad:0}]});
 
+/** Table T01's handoff (4, 3.9) boxed in by three walls and the table itself (0.4 m slits beside the table): admissible free space that no path reaches (IR03 / IR-FD04). */
+const tablePocket=()=>({obstacles:[{id:'pocket-w',x:3.1,y:2.6,width:0.1,height:2.1},{id:'pocket-e',x:4.8,y:2.6,width:0.1,height:2.1},{id:'pocket-n',x:3.1,y:4.6,width:1.8,height:0.1}]});
+
 function project(name:NavigationFixtureName,instances:Instance[],connections:EngineeringProject['assembly']['connections'],entities:{id:string;instanceIds:string[]}[]):EngineeringProject{
  return {documentType:'engineering-project',schemaVersion:1,id:`serve-${name}`,revision:1,requestedProfile:'engineering-irsim-2d-v1',
   runtimeProject:{schemaVersion:2,id:'serve-runtime',name:`Serve ${name}`,revision:1,updatedAt:'2026-11-08T00:00:00Z',
-   entities:entities.map(e=>({id:e.id,kind:'amr' as const,assetRef:{id:'engineering-amr',revision:1,contentHash:'c'.repeat(64)}})),world:restaurantWorld(name==='enclosed-goal'?pocket():{})},
+   entities:entities.map(e=>({id:e.id,kind:'amr' as const,assetRef:{id:'engineering-amr',revision:1,contentHash:'c'.repeat(64)}})),world:restaurantWorld(name==='enclosed-goal'?pocket():name==='enclosed-table'?tablePocket():{})},
   assembly:{instances,connections},entityBindings:entities.map(e=>({entityId:e.id,instanceIds:e.instanceIds}))};
 }
 function build(name:NavigationFixtureName):Fixture{
+ // fleet (IR-FD07, G-IR2): robot01 is the Serve robot with a 360-beam 10 m LiDAR; robot02 has its own chassis, wheels, axle and a 180-beam 8 m LiDAR
+ if(name==='fleet'){
+  const a=robot(SPECS.serve!,'r1-',2,1.5),b=robot(SPECS.second!,'r2-',3.5,1.5,{lidar:{beams:180,rangeMaxM:8}});
+  return {project:project(name,[...a.instances,...b.instances],[...a.connections,...b.connections],[{id:'robot01',instanceIds:a.instances.map(i=>i.id)},{id:'robot02',instanceIds:b.instances.map(i=>i.id)}]),components:{...a.components,...b.components},models:{...a.models,...b.models}};
+ }
  if(name==='two-robot'){
   const a=robot(SPECS.serve!,'r1-',2,1.5),b=robot(SPECS.second!,'r2-',3.5,1.5);
   return {project:project(name,[...a.instances,...b.instances],[...a.connections,...b.connections],[{id:'amr-1',instanceIds:a.instances.map(i=>i.id)},{id:'amr-2',instanceIds:b.instances.map(i=>i.id)}]),components:{...a.components,...b.components},models:{...a.models,...b.models}};
  }
  // offset-axle: the axle 0.2 m forward of the base origin, the base turned +90 deg, so the drive frame (2, 1.7) is not the base origin (2, 1.5)
  // noisy: the serve robot with gaussian LiDAR noise (stddev 0.01 m, IR08), everything else identical
- const r=name==='offset-axle'?robot(SPECS.serve!,'',2,1.5,{axleX:0.2,yaw:Math.PI/2}):name==='noisy'?robot(SPECS.serve!,'',2,1.5,{noise:0.01}):robot(SPECS[name==='enclosed-goal'?'serve':name]!,'',2,1.5);
+ const r=name==='offset-axle'?robot(SPECS.serve!,'',2,1.5,{axleX:0.2,yaw:Math.PI/2}):name==='noisy'?robot(SPECS.serve!,'',2,1.5,{noise:0.01}):robot(SPECS[name==='enclosed-goal'||name==='enclosed-table'?'serve':name]!,'',2,1.5);
  return {project:project(name,r.instances,r.connections,[{id:'amr-1',instanceIds:r.instances.map(i=>i.id)}]),components:r.components,models:r.models};
 }
 
@@ -126,9 +134,13 @@ export function navigationScene(name:NavigationFixtureName){
  const {input,policy}=navigationFixture(name);
  return compileNavigationScene(input,input.project.runtimeProject.entities.map(e=>e.id).sort().map(id=>projectNavigationModel(projectPhysicalModel(input,id,NAVIGATION_SCHEMA_HASH),policy,{entitySpeedLimitMps:input.project.runtimeProject.entities.find(x=>x.id===id)?.speedLimitMps})),policy);
 }
-/** The reviewed JSON files of the base 'serve' fixture (also exported to robotics/navigation-2d/fixtures/serve-demo-v1 by scripts/export-navigation2d-fixtures.ts). */
+/** Server-owned fixture projects (scenario-fixtures.ts NAVIGATION_FIXTURES) exported beside the base one; their components all live in serve-components.json. */
+export const EXPORTED_PROJECTS={'serve-fleet-project.json':'fleet','serve-enclosed-project.json':'enclosed-table','serve-noisy-project.json':'noisy'} as const;
+/** The reviewed JSON files of the base 'serve' fixture (also exported to robotics/navigation-2d/fixtures/serve-demo-v1 by scripts/export-navigation2d-fixtures.ts).
+ * serve-components.json is the catalog of every exported project: the base Serve parts plus the fleet's second robot and the noisy LiDAR (keyed by digest, so shared parts appear once). */
 export function exportedFixtureFiles():Record<string,unknown>{
- const {fixture,policy}=navigationFixture('serve');
- return {'serve-project.json':fixture.project,'serve-components.json':{schemaVersion:1,components:fixture.components,models:fixture.models},'serve-sensor-model.json':serveLidarModel(),
+ const {fixture,policy}=navigationFixture('serve'),extra=Object.fromEntries(Object.entries(EXPORTED_PROJECTS).map(([file,name])=>[file,navigationFixture(name).fixture]));
+ const components=Object.assign({},fixture.components,...Object.values(extra).map(f=>f.components)),models=Object.assign({},fixture.models,...Object.values(extra).map(f=>f.models));
+ return {'serve-project.json':fixture.project,...Object.fromEntries(Object.entries(extra).map(([file,f])=>[file,f.project])),'serve-components.json':{schemaVersion:1,components,models},'serve-sensor-model.json':serveLidarModel(),
   'restaurant-10-tables.json':fixture.project.runtimeProject.world,'navigation-policy.json':policy,'navigation-scene.json':navigationScene('serve'),'navigation-scene-two-robot.json':navigationScene('two-robot')};
 }

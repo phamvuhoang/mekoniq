@@ -46,7 +46,7 @@ test.skipIf(!irsimAvailable)('EVI01 IR-FD01: the finished run is recorded tick b
  expect(e.seed).toMatchObject({runSeed:5,engineSeed,engineSeedAlgorithm:'irsim-env-seed-v1',actorRng:{seed:5},engineRng:{library:'numpy',version:'2.4.6',seed:engineSeed},sensorSeeds:[{robotId:'amr-1',noiseSeed:7}]});
  expect(e.engine).toMatchObject({id:'irsim_2d',version:'2.12.0',pythonVersion:expect.stringMatching(/^3\.11\./),lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock'))});
  expect(e.identity).toMatchObject({sourceCommit:'test-commit',compilerVersion:scene.compilerVersion,sceneSchemaHash:scene.schemaHash,evidenceFormat:'navigation-evidence-ndjson-gzip-v1'});
- expect(e.controller).toEqual({id:'grid-diff-v1',version:'1'});
+ expect(e.controller).toEqual({id:'grid-diff-v1',version:'2'});
  // metrics: from the stored trace through the oracle, at the robot base; nothing over-claimed
  const m=navigationMetrics(scene,read);
  expect(r.metrics.collision).toEqual({available:true,contacts:0,minSeparationM:null});

@@ -78,7 +78,7 @@ test('adapter admission: exact duplicates keep the first receipt; conflicts, sta
  const {createIRSimNavigationAdapter}=await import('../../packages/lab-runtime/src/v2/navigation2d/adapter');
  const {navigationScene}=await import('../support/navigation2d');
  const scene=navigationScene('serve'),calls:string[]=[];
- const controller={setGoal:(g:{commandId:string})=>{calls.push(`goal:${g.commandId}`);},cancel:(_r:string,c:string)=>{calls.push(`cancel:${c}`);},advance:()=>({velocities:[],decisions:[]})};
+ const controller={setGoal:(g:{commandId:string})=>{calls.push(`goal:${g.commandId}`);},cancel:(_r:string,c:string)=>{calls.push(`cancel:${c}`);},advance:()=>({velocities:[],decisions:[]}),route:()=>null};
  let now=Date.parse('2026-11-01T00:00:10Z');
  const a=createIRSimNavigationAdapter({robotId:'amr-1',scene,controller,now:()=>now}),events:{type:string;commandId:string;reason?:unknown}[]=[];
  a.observe(e=>events.push({type:e.type,commandId:e.commandId,reason:e.payload.reason}));
@@ -116,7 +116,7 @@ test('adapter admission: exact duplicates keep the first receipt; conflicts, sta
 test('adapter cancel: requested, then cancelled only on a stopped observation; a lost plant while cancelling is unknown; stale snapshots are ignored',async()=>{
  const {createIRSimNavigationAdapter}=await import('../../packages/lab-runtime/src/v2/navigation2d/adapter');
  const {navigationScene}=await import('../support/navigation2d');
- const scene=navigationScene('serve'),controller={setGoal:()=>{},cancel:()=>{},advance:()=>({velocities:[],decisions:[]})};
+ const scene=navigationScene('serve'),controller={setGoal:()=>{},cancel:()=>{},advance:()=>({velocities:[],decisions:[]}),route:()=>null};
  const make=()=>{const a=createIRSimNavigationAdapter({robotId:'amr-1',scene,controller,now:()=>Date.parse('2026-11-01T00:00:10Z')}),ev:string[]=[];a.observe(e=>ev.push(e.type));return {a,ev};};
  const snap=(tick:number,v:number)=>({schemaVersion:1,runId:'r',bootId:'b',tick,simTimeNs:String(tick*20_000_000),seq:String(tick),sceneDigest:scene.sceneDigest,robots:[{robotId:'amr-1',poseDriveMap:[2,1.5,0],bodyVelocity:[v,0],scans:[],collisionIds:[]}]}) as never;
  const {a,ev}=make(),m=await a.describe();

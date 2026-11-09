@@ -13,6 +13,7 @@ import {lockDigestOf} from '../../engineering/linkforge';
 import {validateNavigationDocument,type NavigationSceneV1} from './contracts';
 import {spawnIRSimWorker,WorkerLostError} from './worker-client';
 import {IRSIM_AMR} from './adapter';
+import {resolveScenarioFixture} from './scenario-fixtures';
 import {createIRSimScenarioRun,irsimCapacity,IRSIM_BACKEND,type IRSimRuntimeOptions} from './runner';
 
 /** The server catalog with irsim_2d marked usable (`usable`) or left unconfigured. Production code sets it usable only after a real worker describe. */
@@ -99,6 +100,8 @@ function portableReadiness(runtime:IRSimRuntimeOptions,described:NonNullable<Por
      // ponytail: the runner refuses scheduled faults/obstacles until C02 compiles actors into the plant; readiness says so instead of a later failure
      if(project.value.faultSchedule?.length||scenario?.obstacles?.length)fixture.push('FAULT_SCHEDULE_UNSUPPORTED');
      try{if(scenario&&!resolveRoles(scenario,project.value).robots.every(r=>scene!.robots.some(x=>x.robotId===r.id)))fixture.push('SCENARIO_ROLE_UNBOUND');}catch(e){fixture.push((e as Error).message);}
+     // the scenario's actors and zones must fit this scene exactly as the runner will lay them (the seed only moves a start tick, never validity)
+     try{if(scenario)resolveScenarioFixture(scenario.id,scene,0);}catch(e){fixture.push((e as Error).message.split(':').slice(0,2).join(':'));}
     }
    }
   }catch{model.push('NAVIGATION_SCENE_UNREADABLE');}

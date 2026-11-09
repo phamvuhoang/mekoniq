@@ -26,8 +26,8 @@ export const defaultCatalog:CapabilityCatalog={
   /** Engineering profiles: one Gazebo world; MoveIt and the process plant replace LinuxCNC/coffee_io_sim, which these sets never use. */
   'engineering-rigid-v1':{mode:'simulation',access:'simulated',backends:['gazebo_nav2'],providers:{amr:'gazebo_nav2'},scenarioIds:['FD01']},
   'engineering-contact-v1':{mode:'simulation',access:'simulated',backends:['gazebo_nav2','moveit_gazebo_arm','engineering_coffee_process'],providers:{amr:'gazebo_nav2',arm:'moveit_gazebo_arm',coffee:'engineering_coffee_process'},scenarioIds:['FD01','BV01']},
-  /** Portable 2D navigation: IR-SIM plant stepped by the source runner; no arm or coffee; only the scenarios qualified on it (B04: IR-FD01). */
-  'engineering-irsim-2d-v1':{mode:'simulation',access:'simulated',backends:['irsim_2d'],providers:{amr:'irsim_2d'},scenarioIds:['IR-FD01'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
+  /** Portable 2D navigation: IR-SIM plant stepped by the source runner; no arm or coffee; only the scenarios qualified on it (B04: IR-FD01; C02: the actor, no-path, blocked and two-robot variants). */
+  'engineering-irsim-2d-v1':{mode:'simulation',access:'simulated',backends:['irsim_2d'],providers:{amr:'irsim_2d'},scenarioIds:['IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
   'hardware-shadow':{mode:'hardware',access:'shadow',backends:['valetudo_native']},
   'hardware-hil':{mode:'hardware',access:'hil',backends:['valetudo_native','cell_native']},
   'hardware-live':{mode:'hardware',access:'live',backends:['valetudo_native','cell_native']},

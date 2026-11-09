@@ -12,7 +12,10 @@ export interface TrajectoryAssessment{contacts:Contact[];minSeparationM:number|n
  * three distinct kinds of evidence (the engine's own contact, an overlap or a sweep between ticks found here, and a breach of the safety margin).
  * Coverage is `complete` only for a contiguous run of ticks in which every robot has a pose; otherwise no clearance or separation is claimed.
  */
-export function assessTrajectory(scene:NavigationSceneV1,snapshots:readonly IRSimSnapshotV1[]):TrajectoryAssessment{
+/** Scripted actors (C02) as discs at a tick: overlaps and margin breaches against them are contacts of the pair (robotId, actorId), like any solid. */
+export type ActorsAt=(tick:number)=>readonly {id:string;x:number;y:number;radiusM:number}[];
+const actorPoly=(x:number,y:number,r:number):P[]=>{const k=r/Math.cos(Math.PI/16);return Array.from({length:16},(_,i)=>[x+k*Math.cos(Math.PI*i/8),y+k*Math.sin(Math.PI*i/8)] as P);};
+export function assessTrajectory(scene:NavigationSceneV1,snapshots:readonly IRSimSnapshotV1[],actorsAt?:ActorsAt):TrajectoryAssessment{
  const robots=scene.robots.map(r=>({id:r.robotId,hull:r.model.footprint.verticesM as P[]}));
  const solids=[...scene.world.obstacles,...scene.world.boundaries].map(o=>({id:o.id,poly:o.verticesM as P[]}));
  const margin=scene.policy.parameters.safetyMarginM,contacts:Contact[]=[],seen=new Set<string>();
@@ -34,6 +37,14 @@ export function assessTrajectory(scene:NavigationSceneV1,snapshots:readonly IRSi
     minClearance=Math.min(minClearance,d);
     if(d===0)add(s.tick,b.id,o.id,'swept_oracle');else if(d<margin)add(s.tick,b.id,o.id,'safety_envelope');
    }
+  }
+  // actors: the conservative 16-gon of each disc at this tick (and the robot's sweep from the previous tick against it)
+  const actors=(actorsAt?.(s.tick)??[]).map(x=>({id:x.id,poly:actorPoly(x.x,x.y,x.radiusM)}));
+  for(const b of bodies)for(const x of actors){
+   const d=polygonDistance(b.poly,x.poly);
+   if(d===0)add(s.tick,b.id,x.id,'swept_oracle');else if(d<margin)add(s.tick,b.id,x.id,'safety_envelope');
+   const from=prev&&s.tick===prev.tick+1?poseOf(prev,b.id):null;
+   if(from&&sweptHulls(b.hull,from,b.pose).some(h=>polygonsOverlap(h,x.poly)))add(s.tick,b.id,x.id,'swept_oracle');
   }
   for(let a=0;a<bodies.length;a++)for(let b=a+1;b<bodies.length;b++){
    const d=polygonDistance(bodies[a]!.poly,bodies[b]!.poly);

@@ -11,9 +11,24 @@
       "bytes": 11028
     },
     {
+      "path": "serve-fleet-project.json",
+      "sha256": "8204f39a1a39db6ca13939b045418becf4dd54896fc77d2a85f202d9f49c2630",
+      "bytes": 15742
+    },
+    {
+      "path": "serve-enclosed-project.json",
+      "sha256": "90a73f17da8eea5739c95adc36f860c7cfca259c98526804d29b5ec67bf3d11f",
+      "bytes": 11457
+    },
+    {
+      "path": "serve-noisy-project.json",
+      "sha256": "e3f247fe423f9ec050554a04e3f84fbe33014394803ba874c44c922d3a208206",
+      "bytes": 11028
+    },
+    {
       "path": "serve-components.json",
-      "sha256": "a34809b35a1e688588e6559882cfd75ac7bef4d4dbc03bc8613bf76aaa50cbe6",
-      "bytes": 32647
+      "sha256": "07cae981082cc084abef78ef675d7d8e67353000f5905125dcdd4f5c702efb23",
+      "bytes": 63686
     },
     {
       "path": "serve-sensor-model.json",

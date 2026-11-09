@@ -7,7 +7,7 @@ import { NAVIGATION_SCHEMA_HASH, validateNavigationDocument } from '../../packag
 import { hashJson } from '../../packages/lab-runtime/src/v2/hash';
 import { exportedFixtureFiles, navigationFixture, type NavigationFixtureName } from '../support/navigation2d';
 
-const NAMES: NavigationFixtureName[] = ['serve', 'wide', 'overhang', 'two-robot', 'enclosed-goal'];
+const NAMES: NavigationFixtureName[] = ['serve', 'wide', 'overhang', 'two-robot', 'enclosed-goal', 'fleet', 'enclosed-table'];
 const model = (name: NavigationFixtureName, robot = 'amr-1') => projectPhysicalModel(navigationFixture(name).input, robot, NAVIGATION_SCHEMA_HASH);
 const shapes = (name: NavigationFixtureName) => navigationFixture(name).input.resolved.links.flatMap((l) => l.collision.map((c) => ({ link: l.id, ...c })));
 const sourcesIn = (v: unknown, out: { kind: string; documentId: string }[] = []) => {
@@ -110,12 +110,22 @@ test('two-robot: independent namespaces with different drive values and models',
   expect(model('two-robot', 'amr-1').modelDigest).not.toBe(model('two-robot', 'amr-2').modelDigest);
 });
 
-test('CMP04 input: the enclosed goal is free space (admissible) that no path from the bay can reach', () => {
-  const w = navigationFixture('enclosed-goal').input.project.runtimeProject.world;
-  const goal = w.handoffPoints!.find((h) => h.id === 'pocket.handoff')!, start = w.points.find((p) => p.id === 'bay-1')!;
+test('C02 fleet: robot01 and robot02 have their own drive values, LiDAR beam counts and ranges (two physical models, never a singleton)', () => {
+  const read = (e: string) => model('fleet', e);
+  expect(Object.keys(navigationFixture('fleet').input.resolved.models.drivesByEntity!)).toEqual(['robot01', 'robot02']);
+  expect([read('robot01').drive!.wheelRadiusM.value, read('robot02').drive!.wheelRadiusM.value]).toEqual([0.09, 0.1]);
+  expect([read('robot01').drive!.wheelSeparationM.value, read('robot02').drive!.wheelSeparationM.value]).toEqual([0.36, 0.42]);
+  expect(JSON.stringify(read('robot01').sensors)).toMatch(/"beamCount":360/);expect(JSON.stringify(read('robot02').sensors)).toMatch(/"beamCount":180/);
+  expect(read('robot01').modelDigest).not.toBe(read('robot02').modelDigest);
+});
+
+for (const [name, pointId] of [['enclosed-goal', 'pocket'], ['enclosed-table', 't-01']] as const) test(`CMP04 input (${name}): the ${pointId} handoff is free space (admissible) that no path from the bay can reach`, () => {
+  const w = navigationFixture(name).input.project.runtimeProject.world;
+  const goal = w.handoffPoints!.find((h) => h.id === `${pointId}.handoff`)!, start = w.points.find((p) => p.id === 'bay-1')!;
   expect(w.obstacles.some((o) => inside(goal.position[0]!, goal.position[1]!, o, 0.3))).toBe(false); // not in collision
   const res = 0.05, nx = Math.round(w.width / res), ny = Math.round(w.height / res);
-  const blocked = (i: number, j: number) => w.obstacles.some((o) => inside((i + 0.5) * res, (j + 0.5) * res, o));
+  // cells closer to an obstacle than the Serve chassis' half width (0.27 m) cannot hold its centre (the T01 pocket has 0.4 m slits beside the table)
+  const blocked = (i: number, j: number) => w.obstacles.some((o) => inside((i + 0.5) * res, (j + 0.5) * res, o, 0.27));
   const seen = new Set<number>(), stack = [[Math.floor(start.x / res), Math.floor(start.y / res)] as [number, number]];
   while (stack.length) {
     const [i, j] = stack.pop()!, k = j * nx + i;

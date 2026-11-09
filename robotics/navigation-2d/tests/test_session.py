@@ -160,3 +160,87 @@ def test_ir08_same_seed_and_inputs_repeat_exactly_and_a_noisy_sensor_depends_on_
         assert x["robots"][0]["scans"][0]["rangesM"] == y["robots"][0]["scans"][0]["rangesM"]
     assert a[-1]["robots"][0]["scans"][0]["rangesM"] != c[-1]["robots"][0]["scans"][0]["rangesM"]  # the seed reaches the sensor noise
     assert a[-1]["robots"][0]["poseDriveMap"] == c[-1]["robots"][0]["poseDriveMap"]  # and not the kinematics
+
+
+# ---- C02: scripted actors from the run's scenario-fixture file ----
+def actor_session(tmp_path, scene, actors, sha=None):
+    import hashlib
+    body = json.dumps({"schemaVersion": 1, "scenarioId": "IR-FD03", "fixtureHash": "0" * 64, "actors": actors}).encode()
+    (tmp_path / "scenario-fixture.json").write_bytes(body)
+    call = Call(new_session(tmp_path, scene))
+    r = call("create", {"sceneRef": "navigation-scene.json", "seed": 7, "fixtureRef": {"path": "scenario-fixture.json", "sha256": sha or hashlib.sha256(body).hexdigest()}})
+    return call, r
+
+
+def test_c02_actors_are_placed_each_step_seen_by_lidar_and_named_by_id_in_contacts(tmp_path, serve):
+    scene = with_files(serve, tmp_path)
+    call, r = actor_session(tmp_path, scene, [{"id": "person-1", "radiusM": 0.25, "initialPoseMap": [6.0, 1.5, 0.0]}])
+    assert r["ok"], r
+    assert call("start")["ok"]
+    beams = lambda snap: snap["robots"][0]["scans"][0]
+    near = lambda snap: min(v for v in beams(snap)["rangesM"] if v is not None)
+    vel = [{"robotId": "amr-1", "vMps": 0.0, "omegaRadps": 0.0}]
+    far = call("step", {"targetTick": 1, "velocities": vel, "actorUpdates": [{"actorId": "person-1", "poseMap": [6.0, 1.5, 0.0]}]})["result"]
+    close = call("step", {"targetTick": 2, "velocities": vel, "actorUpdates": [{"actorId": "person-1", "poseMap": [3.0, 1.5, 0.0]}]})["result"]
+    # the robot (drive frame at 2, 1.5; LiDAR 0.22 m ahead) sees the person 1 m ahead now, not where it stood a step ago: placed before the step, exactly
+    def ahead(snap):  # the beam pointing along the robot's heading (+x)
+        sc = beams(snap)
+        return sc["rangesM"][round(-sc["angleMinRad"] / sc["angleIncrementRad"]) % len(sc["rangesM"])]
+    assert ahead(close) == pytest.approx(3.0 - 0.25 - 2.22, abs=0.02) and near(close) == pytest.approx(ahead(close), abs=0.01)
+    assert ahead(far) == pytest.approx(6.0 - 0.25 - 2.22, abs=0.02)
+    assert call.s.actor_objects["person-1"].state[:2, 0].tolist() == [3.0, 1.5]
+    touch = call("step", {"targetTick": 3, "velocities": vel, "actorUpdates": [{"actorId": "person-1", "poseMap": [2.4, 1.5, 0.0]}]})["result"]
+    assert touch["robots"][0]["collisionIds"] == ["person-1"]  # the actor's id, never an engine index
+    assert call.s.actor_names == {"person-1": "a_" + __import__("hashlib").sha256(b"person-1").hexdigest()[:16]}
+
+
+def test_c02_every_actor_every_tick_unknown_or_duplicate_refused_without_effect(tmp_path, serve):
+    scene = with_files(serve, tmp_path)
+    call, r = actor_session(tmp_path, scene, [{"id": "person-1", "radiusM": 0.25, "initialPoseMap": [6.0, 1.5, 0.0]}])
+    assert r["ok"] and call("start")["ok"]
+    vel = [{"robotId": "amr-1", "vMps": 0.0, "omegaRadps": 0.0}]
+    assert call("step", {"targetTick": 1, "velocities": vel, "actorUpdates": []})["error"]["code"] == "ACTOR_INCOMPLETE"
+    assert call("step", {"targetTick": 1, "velocities": vel, "actorUpdates": [{"actorId": "ghost", "poseMap": [1, 1, 0]}]})["error"]["code"] == "ACTOR_UNKNOWN"
+    two = [{"actorId": "person-1", "poseMap": [6, 1.5, 0]}, {"actorId": "person-1", "poseMap": [5, 1.5, 0]}]
+    assert call("step", {"targetTick": 1, "velocities": vel, "actorUpdates": two})["error"]["code"] == "ACTOR_INCOMPLETE"
+    assert call.s.tick == 0 and call.s.state == "running"
+
+
+def test_c02_fixture_file_is_sha_bound_and_cannot_shadow_a_robot_or_solid(tmp_path, serve):
+    scene = with_files(serve, tmp_path)
+    _, r = actor_session(tmp_path, scene, [{"id": "person-1", "radiusM": 0.25, "initialPoseMap": [6.0, 1.5, 0.0]}], sha="f" * 64)
+    assert r["error"]["code"] == "FIXTURE_MISMATCH"
+    for bad in ([{"id": "amr-1", "radiusM": 0.25, "initialPoseMap": [6, 1.5, 0]}], [{"id": "table-01", "radiusM": 0.25, "initialPoseMap": [6, 1.5, 0]}],
+                [{"id": "p", "radiusM": 0, "initialPoseMap": [6, 1.5, 0]}], [{"id": "p", "radiusM": 0.2, "initialPoseMap": [6, 1.5]}], [{"id": "p", "radiusM": 0.2, "initialPoseMap": [6, 1.5, 0], "behavior": "dash"}]):
+        sub = tmp_path / bad[0]["id"] / str(len(bad[0]))
+        sub.mkdir(parents=True, exist_ok=True)
+        s2 = with_files(serve, sub)
+        _, r = actor_session(sub, s2, bad)
+        assert r["error"]["code"] == "FIXTURE_INVALID", bad
+
+
+def test_c02_robot_contacts_name_the_other_robot_and_solids_must_match_the_name_map(tmp_path, two):
+    scene = json.loads(json.dumps(two))
+    a, b = scene["robots"]
+    b["initialPoseMap"] = [a["initialPoseMap"][0] + 0.7, a["initialPoseMap"][1], math.pi]  # face to face, 0.7 m apart
+    scene = with_files(scene, tmp_path)
+    call = Call(new_session(tmp_path, scene))
+    assert call("create", {"sceneRef": "navigation-scene.json", "seed": 1})["ok"] and call("start")["ok"]
+    vel = lambda v: [{"robotId": a["robotId"], "vMps": v, "omegaRadps": 0.0}, {"robotId": b["robotId"], "vMps": v, "omegaRadps": 0.0}]
+    for k in range(1, 120):
+        snap = call("step", {"targetTick": k, "velocities": vel(0.3), "actorUpdates": []})["result"]
+        if any(r["collisionIds"] for r in snap["robots"]):
+            break
+    assert {r["robotId"]: r["collisionIds"] for r in snap["robots"]} == {a["robotId"]: [b["robotId"]], b["robotId"]: [a["robotId"]]}
+    # a name map listing more solids than the world has is a broken bundle: refused (fatal), never zipped short
+    names = json.loads((tmp_path / "irsim/name-map.json").read_text())
+    names["solids"].append("phantom")
+    (tmp_path / "irsim/name-map.json").write_text(json.dumps(names, sort_keys=True, separators=(",", ":")) + "\n")
+    import hashlib
+    import rfc8785
+    s3 = json.loads(json.dumps(scene))
+    s3["files"] = [{**f, "sha256": hashlib.sha256((tmp_path / f["path"]).read_bytes()).hexdigest(), "bytes": (tmp_path / f["path"]).stat().st_size} for f in s3["files"]]
+    s3["sceneDigest"] = hashlib.sha256(rfc8785.dumps({k: v for k, v in s3.items() if k != "sceneDigest"})).hexdigest()
+    (tmp_path / "navigation-scene.json").write_text(json.dumps(s3))
+    c3 = Call(new_session(tmp_path, s3))
+    assert c3("create", {"sceneRef": "navigation-scene.json", "seed": 1})["error"]["code"] == "SCENE_ENGINE_MISMATCH"

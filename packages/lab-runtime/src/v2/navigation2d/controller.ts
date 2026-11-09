@@ -3,7 +3,7 @@ import type {P,Pose2} from './geometry';
 import type {IRSimSnapshotV1,NavigationSceneV1} from './contracts';
 
 /** Controller identity recorded with every run's evidence; bump the version with any change that can move a trajectory. */
-export const NAVIGATION_CONTROLLER={id:'grid-diff-v1',version:'1'} as const;
+export const NAVIGATION_CONTROLLER={id:'grid-diff-v1',version:'2'} as const;
 export type DecisionStatus='executing'|'arrived'|'blocked'|'no_path'|'cancelled';
 export interface Decision{robotId:string;commandId:string;status:DecisionStatus;reason:string|null}
 export interface Velocity{robotId:string;vMps:number;omegaRadps:number}
@@ -12,13 +12,16 @@ export interface NavigationController{
  cancel(robotId:string,commandId:string):void;
  /** One tick: observations of tick t in, bounded body velocities for every robot out (idle is explicit zero). */
  advance(snapshot:IRSimSnapshotV1,reservations:Readonly<Record<string,string|null>>):{velocities:Velocity[];decisions:Decision[]};
+ /** The way still to drive for robotId's live goal, as map points from `pose`: the planned steps once a plan exists, else the route on the static map alone
+  * (planned once per goal and kept: the plan the goal will use whatever zones are granted). null without a goal or without a static route. Zone traffic asks it before entry. */
+ route(robotId:string,pose:Pose2):P[]|null;
 }
 const DT=0.02,TURN_TOL=0.01,LEG_TOL=0.02,EPS=1e-9;
 type Step={kind:'rotate';yaw:number}|{kind:'translate';to:[number,number]};
 type Plan={ok:true;steps:Step[]}|{ok:false;reason:'no_path'|'PLANNER_BUDGET_EXCEEDED'};
 /** More unusable beams than this and the scan says nothing reliable about the way ahead. */
 const MAX_INVALID_BEAM_FRACTION=0.1;
-interface Goal{commandId:string;target:Pose2;startTick:number|null;steps:Step[]|null;stepIndex:number;hold:number;best:number;stagnant:number;lastPlanTick:number;zonesKey:string;waiting:boolean;/** the goal is reachable on the static map alone: a later failure is a reservation to wait for, never no_path */staticOk?:boolean;/** the local route is hidden only by a zone that is not (or no longer) granted */zoneWait?:boolean}
+interface Goal{commandId:string;target:Pose2;startTick:number|null;steps:Step[]|null;stepIndex:number;hold:number;best:number;stagnant:number;lastPlanTick:number;zonesKey:string;waiting:boolean;/** the goal is reachable on the static map alone: a later failure is a reservation to wait for, never no_path */staticOk?:boolean;/** the static-map plan (statics only), once computed */staticSteps?:Step[]|null;staticReason?:'no_path'|'PLANNER_BUDGET_EXCEEDED';/** the local route is hidden only by a zone that is not (or no longer) granted */zoneWait?:boolean}
 
 /** Binary min-heap ordered by (f, g, x, y, heading): equal costs break the same way on every run. */
 class Heap{
@@ -184,7 +187,27 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
   return {v:v/over,w:w/over};
  }
 
+ /** The remaining planned way (pose, then every translate target from the current step) passes within the swept radius plus margin of `zone`. */
+ function routeNear(robotId:string,goal:Goal,pose:Pose2,zone:P[]){
+  const clear=robots.get(robotId)!.radius*1.1+margin,pts:P[]=[[pose[0],pose[1]]];
+  for(let i=goal.stepIndex;i<(goal.steps?.length??0);i++){const st=goal.steps![i]!;if(st.kind==='translate')pts.push(st.to);}
+  if(pts.length===1)return pointDistance(pts[0]!,zone)<=clear;
+  for(let i=0;i+1<pts.length;i++){const a=pts[i]!,b=pts[i+1]!,n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/0.05));for(let k=0;k<=n;k++)if(pointDistance([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n],zone)<=clear)return true;}
+  return false;
+ }
+ /** The static-map plan of a goal, computed once from the pose it is first asked at (the same call advance would make) and remembered with the goal. */
+ function staticPlan(robotId:string,goal:Goal,pose:Pose2):Plan{
+  if(goal.staticSteps===undefined){const base=plan(robotId,pose,goal.target,statics);goal.staticSteps=base.ok?base.steps:null;goal.staticReason=base.ok?undefined:base.reason;}
+  return goal.staticSteps?{ok:true,steps:goal.staticSteps}:{ok:false,reason:goal.staticReason??'no_path'};
+ }
  return {
+  route(robotId,pose){
+   const goal=goals.get(robotId);if(!goal)return null;
+   const steps=goal.steps??(staticPlan(robotId,goal,pose).ok?goal.staticSteps!:null);if(!steps)return null;
+   const pts:P[]=[[pose[0],pose[1]]];
+   for(let i=goal.steps?goal.stepIndex:0;i<steps.length;i++){const st=steps[i]!;if(st.kind==='translate')pts.push([st.to[0],st.to[1]]);}
+   return pts;
+  },
   setGoal({robotId,commandId,target}){
    if(!robots.has(robotId))throw new Error(`UNKNOWN_ROBOT ${robotId}`);
    goals.set(robotId,{commandId,target,startTick:null,steps:null,stepIndex:0,hold:0,best:Infinity,stagnant:0,lastPlanTick:-Infinity,zonesKey:'',waiting:false});
@@ -211,13 +234,16 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
     const others=[...fleet.values()].filter(r=>r.robotId!==robotId).map(r=>place(robots.get(r.robotId)!.hull,...(r.poseDriveMap as Pose2)));
     const dyn=dynamicPoints(robotId,obs,pose,statics);
     const zoneObstacles=denied.map(z=>z.polygonM as P[]);
+    // a change in the granted zones forces a replan only when it can matter: the robot is waiting (a grant may open its way) or a zone now denied lies on the way
+    // still to drive. A zone given back that the remaining route stays clear of keeps the plan (no detour back and forth at the boundary).
+    if(zonesKey!==goal.zonesKey&&goal.steps&&!goal.waiting&&!zoneObstacles.some(z=>routeNear(robotId,goal,pose,z)))goal.zonesKey=zonesKey;
     const needsPlan=(!goal.steps&&!goal.waiting)||zonesKey!==goal.zonesKey||(goal.waiting&&tick-goal.lastPlanTick>=pol.replanEveryTicks);
     if(needsPlan){
      const global=!goal.steps;
      const fixed=[...statics,...zoneObstacles];
      let result:ReturnType<typeof plan>|undefined;
      // reachability is judged on the static map alone; a zone that is merely not granted yet is a wait, not a missing path
-     if(global&&!goal.staticOk){const base=plan(robotId,pose,goal.target,statics);if(base.ok)goal.staticOk=true;if(!base.ok||!zoneObstacles.length)result=base;}
+     if(global&&!goal.staticOk){const base=staticPlan(robotId,goal,pose);if(base.ok)goal.staticOk=true;if(!base.ok||!zoneObstacles.length)result=base;}
      result??=plan(robotId,pose,goal.target,global?fixed:[...fixed,...others,...dyn.map(p=>[[p[0]-0.1,p[1]-0.1],[p[0]+0.1,p[1]-0.1],[p[0]+0.1,p[1]+0.1],[p[0]-0.1,p[1]+0.1]] as P[])]);
      goal.lastPlanTick=tick;goal.zonesKey=zonesKey;
      if(result.ok){goal.steps=result.steps;goal.stepIndex=0;goal.waiting=false;goal.zoneWait=false;goal.best=Infinity;}

@@ -28,7 +28,15 @@ test('IR-FD01 revision 1 is FD01 under its own id; legacy scenarios keep their e
  const row=scenarioMatrix.find(r=>r.id==='IR-FD01')!;
  expect(row).toMatchObject({runnerScenarios:['IR-FD01'],backendSupport:{mock:false,simulation:true,hardware:false},cell:false});
  expect(scenarioMatrix.find(r=>r.id==='FD01')!.runnerScenarios).toEqual(['FD01']);
- expect(defaultCatalog.sets[IR]).toEqual({mode:'simulation',access:'simulated',backends:['irsim_2d'],providers:{amr:'irsim_2d'},scenarioIds:['IR-FD01'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}});
+ // C02 variants: their own ids and revisions on the IR set only, based on the FD business template they name; the legacy definitions stay as they were (hash above)
+ for(const [id,base] of [['IR-FD03','FD03'],['IR-FD04','FD04'],['IR-FD04-blocked','FD04-blocked'],['IR-FD07','FD07']] as const){
+  const d=scenarioRegistry.get(id)!,b=scenarioRegistry.get(base)!;
+  expect(d,id).toMatchObject({revision:1,basedOn:{id:base,revision:1},robots:b.robots,orders:b.orders,confirm:b.confirm,park:b.park});
+  expect(d.obstacles,id).toBeUndefined(); // actors live in the IR scenario fixture, never in the legacy obstacle schedule
+  expect(scenarioMatrix.find(r=>r.id===id),id).toMatchObject({runnerScenarios:[id],backendSupport:{mock:false,simulation:true,hardware:false}});
+ }
+ expect([scenarioRegistry.get('IR-FD03')!.maxTicks,scenarioRegistry.get('IR-FD07')!.maxTicks]).toEqual([30000,12000]);
+ expect(defaultCatalog.sets[IR]).toEqual({mode:'simulation',access:'simulated',backends:['irsim_2d'],providers:{amr:'irsim_2d'},scenarioIds:['IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}});
  // the default runtime does not advertise the portable provider as available
  expect(irsimState(defaultCatalog)).toMatchObject({installed:false,reachable:false,compatible:false});
  expect(irsimState(defaultCatalog).reason).toMatch(/^IRSIM_DISABLED/);

@@ -7,7 +7,7 @@ import {gunzipSync,gzipSync} from 'node:zlib';
 import {link,lstat,mkdir,open,readdir,readFile,realpath,rename,unlink} from 'node:fs/promises';
 import {join,sep} from 'node:path';
 import {arch,platform,release} from 'node:os';
-import {assessTrajectory,type Contact,type ContactSource,type TrajectoryAssessment} from './oracle';
+import {assessTrajectory,type ActorsAt,type Contact,type ContactSource,type TrajectoryAssessment} from './oracle';
 import {baseInMap,yawOf} from '../../engineering/navigation-model';
 import {framePose} from '../../engineering/inertia';
 import {quaternionFromYaw} from '../frames';
@@ -280,7 +280,7 @@ const RECORD:Record<EvidenceStream,(r:unknown)=>boolean>={
  trajectory:r=>obj(r,['tick','simTimeNs','robots'])&&nat(r.tick)&&r.simTimeNs===String(BigInt(r.tick)*NS)&&Array.isArray(r.robots)&&r.robots.length>0&&r.robots.length<=32
   &&r.robots.every(x=>obj(x,['robotId','poseDriveMap','bodyVelocity','collisionIds'])&&text(x.robotId)&&vec(x.poseDriveMap,3)&&vec(x.bodyVelocity,2)&&ids(x.collisionIds)),
  control:r=>obj(r,['tick','targetTick','singleStep','velocities','actorUpdates'])&&nat(r.tick)&&r.targetTick===r.tick+1&&typeof r.singleStep==='boolean'&&Array.isArray(r.velocities)&&r.velocities.length<=32
-  &&r.velocities.every(v=>obj(v,['robotId','vMps','omegaRadps'])&&text(v.robotId)&&finite(v.vMps)&&finite(v.omegaRadps))&&Array.isArray(r.actorUpdates)&&r.actorUpdates.length<=1000,
+  &&r.velocities.every(v=>obj(v,['robotId','vMps','omegaRadps'])&&text(v.robotId)&&finite(v.vMps)&&finite(v.omegaRadps))&&Array.isArray(r.actorUpdates)&&r.actorUpdates.length<=16&&(r.actorUpdates as unknown[]).every(u=>obj(u,['actorId','poseMap'])&&text((u as {actorId:unknown}).actorId)&&vec((u as {poseMap:unknown}).poseMap,3)),
  sensors:r=>obj(r,['tick','robotId','scan'])&&nat(r.tick)&&text(r.robotId)&&scanOk(r.scan,r.tick),
  collisions:r=>obj(r,['tick','robotId','collisionIds'])&&nat(r.tick)&&text(r.robotId)&&ids(r.collisionIds)&&(r.collisionIds as unknown[]).length>0,
 };
@@ -428,20 +428,25 @@ const memo=new Map<string,{text:string;n:number;a:TrajectoryAssessment}>();
  * The oracle over the read trajectory. A live run is reported again and again while it grows: when the verified record text extends the text assessed last time
  * (exact prefix), only the new ticks (and the one before them, for the sweep and the tick continuity) are assessed and the results merged.
  */
-function assess(scene:NavigationSceneV1,snaps:IRSimSnapshotV1[],text:string):TrajectoryAssessment{
- const hit=memo.get(scene.sceneDigest);let a:TrajectoryAssessment;
+function assess(scene:NavigationSceneV1,snaps:IRSimSnapshotV1[],text:string,actors:readonly ActorBody[]=[],actorsAt?:ActorsAt):TrajectoryAssessment{
+ const id=actors.length?`${scene.sceneDigest}|${hashJson(actors)}`:scene.sceneDigest,hit=memo.get(id);let a:TrajectoryAssessment;
  if(hit&&hit.n>0&&snaps.length>=hit.n&&text.startsWith(hit.text)){
-  const tail=assessTrajectory(scene,snaps.slice(hit.n-1)),key=(c:Contact)=>`${c.tick}|${c.pair}|${c.source}`,seen=new Set(hit.a.contacts.map(key));
+  const tail=assessTrajectory(scene,snaps.slice(hit.n-1),actorsAt),key=(c:Contact)=>`${c.tick}|${c.pair}|${c.source}`,seen=new Set(hit.a.contacts.map(key));
   const both=hit.a.coverage==='complete'&&tail.coverage==='complete',min=(x:number|null,y:number|null)=>!both?null:x===null?y:y===null?x:Math.min(x,y);
   a={contacts:[...hit.a.contacts,...tail.contacts.filter(c=>!seen.has(key(c)))],minSeparationM:min(hit.a.minSeparationM,tail.minSeparationM),minClearanceM:min(hit.a.minClearanceM,tail.minClearanceM),coverage:both?'complete':'incomplete'};
- }else a=assessTrajectory(scene,snaps);
+ }else a=assessTrajectory(scene,snaps,actorsAt);
  // the memo is shared by every later read: frozen, so a returned contact (or an episode pair taken from one) can never change the next verdict
- freeze(a);memo.set(scene.sceneDigest,{text,n:snaps.length,a});if(memo.size>16)memo.delete(memo.keys().next().value!);
+ freeze(a);memo.set(id,{text,n:snaps.length,a});if(memo.size>16)memo.delete(memo.keys().next().value!);
  return a;
 }
-export function navigationMetrics(scene:NavigationSceneV1,read:EvidenceRead):NavigationMetrics{
+/** A scripted actor's body and start pose (scenario fixture); its pose at tick t>0 is the one the control record of step t-1 -> t sent (actorUpdates). */
+export interface ActorBody{id:string;radiusM:number;initialPoseMap:readonly number[]}
+export function navigationMetrics(scene:NavigationSceneV1,read:EvidenceRead,actors:readonly ActorBody[]=[]):NavigationMetrics{
  const snaps=read.trajectory.map(r=>({schemaVersion:1,runId:'',bootId:'',tick:r.tick,simTimeNs:r.simTimeNs,seq:'0',sceneDigest:scene.sceneDigest,robots:r.robots.map(x=>({...x,scans:[]}))}) as IRSimSnapshotV1);
- const a=assess(scene,snaps,read.text.trajectory),complete=read.complete&&a.coverage==='complete',episodes=collisionEpisodes(a.contacts);
+ const sent=new Map(read.control.map(c=>[c.targetTick,c.actorUpdates as {actorId:string;poseMap:number[]}[]]));
+ // an actor with no recorded pose at a tick is not assumed anywhere: that tick is assessed without it, and the scenario oracle reports the missing update
+ const actorsAt:ActorsAt|undefined=actors.length?tick=>actors.flatMap(x=>{const p=tick===0?x.initialPoseMap:sent.get(tick)?.find(u=>u.actorId===x.id)?.poseMap;return p?[{id:x.id,x:p[0]!,y:p[1]!,radiusM:x.radiusM}]:[];}):undefined;
+ const a=assess(scene,snaps,read.text.trajectory,actors,actorsAt),complete=read.complete&&a.coverage==='complete',episodes=collisionEpisodes(a.contacts);
  const reasons=[...read.issues.map(i=>i.code),...read.gaps.map(g=>`${g.reason}:${g.fromTick}-${g.toTick}`),...read.reasons,...read.horizon===null?['NO_TRAJECTORY_RECORDED']:a.coverage==='complete'?[]:['ORACLE_COVERAGE_INCOMPLETE']].filter((x,i,l)=>l.indexOf(x)===i);
  const distance:Record<string,number>={},drive:Record<string,number>={};
  for(const r of scene.robots){distance[r.robotId]=0;drive[r.robotId]=0;}
@@ -519,7 +524,7 @@ export function buildNavigationEvidence(scene:NavigationSceneV1,id:EvidenceIdent
   recordingGaps:read.gaps.slice(0,500),completeness:{status:complete?'complete':'incomplete',reasons:[...terminal?[terminal]:[],...m.coverageReasons].slice(0,50)},
   recording:{gaps:structuredClone(listed.gaps).slice(0,READ_LIMITS.gaps),terminal:listed.terminal,lastTick:listed.lastTick,runTick},
   limitations:['planar kinematic plant (IR-SIM diff drive): no dynamics, contact physics or hardware behaviour','LiDAR publications are recorded at the sensor cadence (publishEveryTicks); the engine scan between publications is not recorded',
-   'actor schedule: none (scripted actors arrive with C02); every control record carries its actorUpdates','cross-platform repeatability not qualified (not_run)',
+   'scripted actors (if any) follow an immutable seeded schedule; every control record carries the actorUpdates the plant received and actor contacts are judged on those poses (conservative 16-gon discs)','cross-platform repeatability not qualified (not_run)',
    'the evidence is not anchored or signed: a chunk edited together with a re-hashed manifest or listing is not detected (only stored-byte hashes against the listing are verified)']};
 }
 
