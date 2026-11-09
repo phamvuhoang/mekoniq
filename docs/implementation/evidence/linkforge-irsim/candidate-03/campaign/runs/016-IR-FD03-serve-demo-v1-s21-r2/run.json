@@ -1,0 +1,83 @@
+{
+ "id": "016-IR-FD03-serve-demo-v1-s21-r2",
+ "index": 10,
+ "scenarioId": "IR-FD03",
+ "fixtureId": "serve-demo-v1",
+ "seed": 21,
+ "repeat": 2,
+ "expectedAssertions": [
+  "EVIDENCE_COMPLETE",
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "NO_PHYSICAL_CONTACT",
+  "ACTOR_SCHEDULE_APPLIED",
+  "ACTOR_OBSERVED",
+  "NO_ACTOR_CONTACT",
+  "ACTOR_YIELD",
+  "REPEATABLE"
+ ],
+ "kind": "scenario",
+ "label": "IR02: a person crosses the bay -> kitchen lane while the robot drives up it; the robot must see it, yield and resume",
+ "stepTicks": 25,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "completed",
+  "served": "1",
+  "tick": 3119,
+  "simTimeNs": "62380000000"
+ },
+ "horizon": 3119,
+ "evidenceComplete": true,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "58ef04ef1d380acf403fc30f141d3db5d0606f57bb732d967c2fcb3f2bcb40a0",
+  "sensorDigest": "7d05c288f0f82579237432f5ad39f74a54c51f93b956cd88f6ed8f872624c9b8",
+  "assertionDigest": "3d7d260a4970d9402a0d843bbb7df4b36c7b09381b383312b6b0999eb9c1c6f4",
+  "outcomeDigest": "1c43a0e256ab3b0addbf4d889c663d69d65badadd7573b6262be7dac69befcf3"
+ },
+ "assertions": [
+  {
+   "id": "EVIDENCE_COMPLETE",
+   "result": "pass"
+  },
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "NO_PHYSICAL_CONTACT",
+   "result": "pass"
+  },
+  {
+   "id": "ACTOR_SCHEDULE_APPLIED",
+   "result": "pass"
+  },
+  {
+   "id": "ACTOR_OBSERVED",
+   "result": "pass"
+  },
+  {
+   "id": "NO_ACTOR_CONTACT",
+   "result": "pass"
+  },
+  {
+   "id": "ACTOR_YIELD",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 16044,
+ "provider": {
+  "id": "irsim_2d",
+  "kind": "irsim_worker"
+ }
+}
