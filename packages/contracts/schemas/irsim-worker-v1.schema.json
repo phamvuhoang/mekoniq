@@ -82,26 +82,6 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 4294967295
-            },
-            "fixtureRef": {
-              "description": "Scenario fixture (scripted actors) written by the source runner beside the scene; the worker verifies its sha256 before adding the actors.",
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "path": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                },
-                "sha256": {
-                  "type": "string",
-                  "pattern": "^[0-9a-f]{64}$"
-                }
-              },
-              "required": [
-                "path",
-                "sha256"
-              ]
             }
           },
           "required": [

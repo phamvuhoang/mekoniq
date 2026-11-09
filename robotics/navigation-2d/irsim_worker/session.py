@@ -15,6 +15,7 @@ from .protocol import OPS, PROTOCOL, Receipts, WorkerError
 from .snapshot import TICK_NS, SnapshotError, build_snapshot
 
 TICK_S = 0.02
+FIXTURE_FILE = "scenario-fixture.json"
 VELOCITY_TOLERANCE = 1e-9
 
 
@@ -44,8 +45,9 @@ def scene_digest_of(scene):
 
 
 class WorkerSession:
-    def __init__(self, *, run_id, bundle_root, lock_digest, expected_scene_digest=None):
+    def __init__(self, *, run_id, bundle_root, lock_digest, expected_scene_digest=None, expected_fixture_sha256=None):
         self.run_id, self.bundle_root, self.lock_digest, self.expected_scene_digest = run_id, Path(bundle_root), lock_digest, expected_scene_digest
+        self.expected_fixture_sha256 = expected_fixture_sha256
         self.boot_id = str(uuid.uuid4())
         self.state, self.tick, self.seq = "new", 0, 0
         self.env = self.scene = self.snapshot = None
@@ -124,7 +126,7 @@ class WorkerSession:
         if "irsim/world.yaml" not in paths or "irsim/name-map.json" not in paths:
             raise WorkerError("SCENE_FILE_MISMATCH", "the scene lists no irsim/world.yaml and irsim/name-map.json")
         names = json.loads(paths["irsim/name-map.json"].read_text())
-        actors = self._actors(p.get("fixtureRef"), scene)
+        actors = self._actors(scene)
         import irsim  # imported late: describe must work (and fail cleanly) without the engine initialised
         self.env = irsim.make(str(paths["irsim/world.yaml"]), display=False, seed=p["seed"])
         self.scene, self.names, self.sensor_ids = scene, names["robots"], names["sensors"]
@@ -145,13 +147,17 @@ class WorkerSession:
         self.state = "created"
         return self._observe()
 
-    def _actors(self, ref, scene):
-        """The run's scenario-fixture file (written by the source runner beside the scene): verified by sha256, ids distinct from robots and solids."""
-        if ref is None:
+    def _actors(self, scene):
+        """The run's scenario-fixture.json (written by the source runner beside the scene), loaded only when the process was bound to its sha256 (--fixture-sha256);
+        an unbound file is refused, never read. Ids must be distinct from robots and solids."""
+        present = (self.bundle_root / FIXTURE_FILE).exists()
+        if self.expected_fixture_sha256 is None:
+            if present:
+                raise WorkerError("FIXTURE_UNBOUND", f"{FIXTURE_FILE} is in the bundle but this process was not bound to it")
             return []
-        file = confined(self.bundle_root, ref["path"])
-        if hashlib.sha256(file.read_bytes()).hexdigest() != ref["sha256"]:
-            raise WorkerError("FIXTURE_MISMATCH", f"{ref['path']} does not match the digest the runner bound")
+        file = confined(self.bundle_root, FIXTURE_FILE)
+        if hashlib.sha256(file.read_bytes()).hexdigest() != self.expected_fixture_sha256:
+            raise WorkerError("FIXTURE_MISMATCH", f"{FIXTURE_FILE} does not match the digest the runner bound")
         doc = json.loads(file.read_text())
         actors = doc.get("actors") if isinstance(doc, dict) and doc.get("schemaVersion") == 1 else None
         if not isinstance(actors, list) or not 1 <= len(actors) <= 16:

@@ -26,6 +26,8 @@ export interface SpawnOptions{
  python:string;workerRoot:string;runId:string;bundleRoot:string;runDirectory:string;lockDigest:string;
  /** Directory with the contract schemas the worker validates against (the same irsim-worker-v1 file this process uses). */
  schemaDir:string;sceneDigest?:string;
+ /** sha256 of <bundleRoot>/scenario-fixture.json (scripted actors), bound at spawn like the scene digest: the worker loads actors only from a file with exactly this digest. */
+ fixtureSha256?:string;
  /** Per-op ACK deadlines in ms (tests shorten them). */
  deadlinesMs?:Partial<Record<string,number>>;
  /** Interpreter arguments; default `-m irsim_worker`. Operator/test option only: never derived from a request. */
@@ -37,7 +39,7 @@ interface Pending{request:IRSimRequestV1;resolve:(r:IRSimResponseV1)=>void;rejec
 export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient>{
  await mkdir(o.runDirectory,{recursive:true});
  const deadlines={...DEFAULT_DEADLINES_MS,...o.deadlinesMs},root=resolve(o.workerRoot);
- const args=[...(o.entry??['-m','irsim_worker']),'--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[]];
+ const args=[...(o.entry??['-m','irsim_worker']),'--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[],...o.fixtureSha256?['--fixture-sha256',o.fixtureSha256]:[]];
  // fixed argv, allowlisted environment (no credentials, no ROS discovery), a private working directory; the venv isolates dependencies but is not a sandbox
  const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,...bytecodeEnv(),PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg'} as unknown as NodeJS.ProcessEnv;
  const child=spawn(o.python,args,{cwd:resolve(o.runDirectory),env,stdio:['pipe','pipe','pipe'],detached:true});

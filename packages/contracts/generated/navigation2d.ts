@@ -70,13 +70,6 @@ export type IRSimRequestV1 =
       payload: {
         sceneRef: string;
         seed: number;
-        /**
-         * Scenario fixture (scripted actors) written by the source runner beside the scene; the worker verifies its sha256 before adding the actors.
-         */
-        fixtureRef?: {
-          path: string;
-          sha256: string;
-        };
       };
     }
   | {

@@ -9,7 +9,7 @@ import {createNavigationCompiler} from '../../packages/lab-runtime/src/engineeri
 import {lockDigestOf} from '../../packages/lab-runtime/src/engineering/linkforge';
 import {spawnIRSimWorker} from '../../packages/lab-runtime/src/v2/navigation2d/worker-client';
 import {navigationMetrics,openNavigationRecorder,readNavigationEvidence} from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
-import {actorPoseAt,resolveScenarioFixture,scenarioAssertions,type ScenarioAssertion} from '../../packages/lab-runtime/src/v2/navigation2d/scenario-fixtures';
+import {actorPoseAt,fixtureFile,resolveScenarioFixture,scenarioAssertions,type ScenarioAssertion} from '../../packages/lab-runtime/src/v2/navigation2d/scenario-fixtures';
 import type {IRSimSnapshotV1,NavigationSceneV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import type {RunReport} from '../../packages/lab-runtime/src/v2/report';
 import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
@@ -51,9 +51,11 @@ test.skipIf(!irsimAvailable)('IR02 IR-FD03: the scheduled person is applied ever
  expect(steps.length).toBe(report.outcome.tick);
  for(const s of steps){const p=s.payload as {targetTick:number;actorUpdates:{actorId:string;poseMap:number[]}[]};expect(p.actorUpdates).toEqual([{actorId:'person-1',poseMap:actorPoseAt(person,p.targetTick)}]);}
  expect(actorPoseAt(person,100)).toEqual([0.45,3.2,0]);expect(actorPoseAt(person,101)[0]).toBeCloseTo(0.46,12);
- // the worker was created with the fixture file the runner wrote (sha-bound), and the engine never reported a contact with the person
+ // the worker read the fixture file the runner wrote beside the scene (bound by its sha256 at spawn, --fixture-sha256; the wire create stays {sceneRef, seed}),
+ // and the engine never reported a contact with the person
  const create=workerLog(dir).find(l=>l.op==='create')!;
- expect(create.payload).toMatchObject({sceneRef:'navigation-scene.json',fixtureRef:{path:'scenario-fixture.json',sha256:expect.stringMatching(/^[0-9a-f]{64}$/)}});
+ expect(Object.keys(create.payload).sort()).toEqual(['sceneRef','seed']);
+ expect(JSON.parse(await readFile(join(dir,'bundle','scenario-fixture.json'),'utf8'))).toEqual(JSON.parse(JSON.stringify(fixtureFile(fixture))));
  expect(read.trajectory.some(t=>t.robots.some(r=>r.collisionIds.length))).toBe(false);
  // the oracle is not vacuous: the same run judged against a person standing on the robot's path at every tick fails
  const moved={...fixture,actors:[{...person,startTick:0,path:[[2,3.2]] as [number,number][]}]};

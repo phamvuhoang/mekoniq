@@ -163,12 +163,13 @@ def test_ir08_same_seed_and_inputs_repeat_exactly_and_a_noisy_sensor_depends_on_
 
 
 # ---- C02: scripted actors from the run's scenario-fixture file ----
-def actor_session(tmp_path, scene, actors, sha=None):
+def actor_session(tmp_path, scene, actors, sha=None, bind=True):
     import hashlib
     body = json.dumps({"schemaVersion": 1, "scenarioId": "IR-FD03", "fixtureHash": "0" * 64, "actors": actors}).encode()
     (tmp_path / "scenario-fixture.json").write_bytes(body)
-    call = Call(new_session(tmp_path, scene))
-    r = call("create", {"sceneRef": "navigation-scene.json", "seed": 7, "fixtureRef": {"path": "scenario-fixture.json", "sha256": sha or hashlib.sha256(body).hexdigest()}})
+    s = WorkerSession(run_id="run", bundle_root=tmp_path, lock_digest="1" * 64, expected_scene_digest=scene["sceneDigest"], expected_fixture_sha256=(sha or hashlib.sha256(body).hexdigest()) if bind else None)
+    call = Call(s)
+    r = call("create", {"sceneRef": "navigation-scene.json", "seed": 7})
     return call, r
 
 
@@ -210,6 +211,8 @@ def test_c02_fixture_file_is_sha_bound_and_cannot_shadow_a_robot_or_solid(tmp_pa
     scene = with_files(serve, tmp_path)
     _, r = actor_session(tmp_path, scene, [{"id": "person-1", "radiusM": 0.25, "initialPoseMap": [6.0, 1.5, 0.0]}], sha="f" * 64)
     assert r["error"]["code"] == "FIXTURE_MISMATCH"
+    _, r = actor_session(tmp_path, scene, [{"id": "person-1", "radiusM": 0.25, "initialPoseMap": [6.0, 1.5, 0.0]}], bind=False)
+    assert r["error"]["code"] == "FIXTURE_UNBOUND"  # a file nobody bound is never read
     for bad in ([{"id": "amr-1", "radiusM": 0.25, "initialPoseMap": [6, 1.5, 0]}], [{"id": "table-01", "radiusM": 0.25, "initialPoseMap": [6, 1.5, 0]}],
                 [{"id": "p", "radiusM": 0, "initialPoseMap": [6, 1.5, 0]}], [{"id": "p", "radiusM": 0.2, "initialPoseMap": [6, 1.5]}], [{"id": "p", "radiusM": 0.2, "initialPoseMap": [6, 1.5, 0], "behavior": "dash"}]):
         sub = tmp_path / bad[0]["id"] / str(len(bad[0]))

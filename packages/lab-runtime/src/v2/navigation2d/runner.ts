@@ -230,13 +230,13 @@ class IRSimRun implements ScenarioRun {
  }
  private async startPlant(){
   const c=this.cp,o=this.irsim;
-  this.worker=await spawnIRSimWorker({python:o.python,workerRoot:o.workerRoot,runId:c.runId,bundleRoot:join(this.dir,'bundle'),runDirectory:join(this.dir,'worker'),lockDigest:o.lockDigest,schemaDir:o.schemaDir,sceneDigest:this.scene.sceneDigest,...o.entry?{entry:o.entry}:{},...o.deadlinesMs?{deadlinesMs:o.deadlinesMs}:{}});
+  this.worker=await spawnIRSimWorker({python:o.python,workerRoot:o.workerRoot,runId:c.runId,bundleRoot:join(this.dir,'bundle'),runDirectory:join(this.dir,'worker'),lockDigest:o.lockDigest,schemaDir:o.schemaDir,sceneDigest:this.scene.sceneDigest,...this.fixture.actors.length?{fixtureSha256:sha256(Buffer.from(JSON.stringify(fixtureFile(this.fixture))))}:{},...o.entry?{entry:o.entry}:{},...o.deadlinesMs?{deadlinesMs:o.deadlinesMs}:{}});
   try{
    const d=(await this.ask('describe',{})).result as {lockDigest:string;packageVersion:string;pythonVersion:string};
    if(d.lockDigest!==o.lockDigest||d.packageVersion!==IRSIM_AMR.version)throw new Error('IRSIM_PROVIDER_MISMATCH');
    c.engine={packageVersion:d.packageVersion,pythonVersion:d.pythonVersion};
    // the engine's NumPy generator gets the derived irsim-env-seed-v1 seed; the actor stream keeps the run seed (separate streams)
-   const snap=(await this.ask('create',{sceneRef:SCENE,seed:this.engineSeed,...this.fixture.actors.length?{fixtureRef:{path:FIXTURE,sha256:sha256(Buffer.from(JSON.stringify(fixtureFile(this.fixture))))}}:{}})).result as IRSimSnapshotV1;
+   const snap=(await this.ask('create',{sceneRef:SCENE,seed:this.engineSeed})).result as IRSimSnapshotV1;
    await this.ask('start',{});
    await this.rec.append(snap,null);
    c.plant={status:'live',reason:null,bootId:this.worker.bootId,requests:c.plant.requests,snapshot:snap};
