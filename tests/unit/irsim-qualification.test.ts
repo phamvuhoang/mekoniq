@@ -95,3 +95,8 @@ test('bytecodeUnder lists __pycache__ directories and loose .pyc/.pyo under the 
   writeFileSync(join(root,'tool/pkg/a.py'),'');writeFileSync(join(root,'tool/loose.pyo'),'');mkdirSync(join(root,'other/__pycache__'),{recursive:true});
   expect(bytecodeUnder(root,['tool','missing'])).toEqual(['tool/loose.pyo','tool/pkg/__pycache__']);
 });
+
+test('every Playwright suite runs exactly one spec behind its own launcher (the pairing code is one-use)',()=>{
+ for(const s of SUITES.filter((x:{kind:string})=>x.kind==='playwright'))expect((s as {command:string[]}).command.filter(a=>a.endsWith('.spec.ts'))).toHaveLength(1);
+ expect(CASES.INT01.suites).toEqual(expect.arrayContaining(['lab-e2e-journey','lab-e2e-fleet']));
+});

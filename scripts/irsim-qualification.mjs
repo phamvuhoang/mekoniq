@@ -17,7 +17,9 @@ export const SUITES=[
  {id:'evi',...V(['tests/integration/irsim-evidence.test.ts','tests/integration/irsim-evidence-terminal.test.ts','tests/security/irsim-replay.test.ts','tests/unit/navigation2d-metrics.test.ts'])},
  {id:'int',...V(['tests/unit/irsim-cli.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/portable-simulation-bootstrap.test.ts','tests/unit/irsim-qualification.test.ts'])},
  {id:'lab-unit',repo:'lab',kind:'vitest',files:['tests/unit/model-validation.test.ts','tests/unit/irsim-controls.test.ts','tests/unit/lidar-overlay.test.ts','tests/unit/navigation2d-report.test.ts','tests/unit/readiness.test.ts','tests/integration/irsim-launcher.test.ts','tests/integration/runtime-artifact.test.ts','tests/integration/source-report-import.test.ts']},
- {id:'lab-e2e',repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs','irsim-journey.spec.ts','irsim-fleet.spec.ts']},
+ // one spec per launcher: the launcher's pairing code is one-use, so a second spec behind the same launcher can never pair
+ {id:'lab-e2e-journey',repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs','irsim-journey.spec.ts']},
+ {id:'lab-e2e-fleet',repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs','irsim-fleet.spec.ts']},
 ];
 const LF={suites:['lf','lf-py']},CMP={suites:['cmp','cmp-py','parity-py']},IR=(c,extra={})=>({campaign:c,suites:['ir'],...extra});
 export const CASES={
@@ -30,7 +32,7 @@ export const CASES={
  IR08:IR(['IR-FD01'],{suites:['ir','cmp-py']}),IR09:IR(['IR-FD01'],{suites:['ir','cmp-py']}),IR10:IR(['IR-FD01-workerkill']),
  SEN01:{suites:['cmp-py','ir']},SEN02:{suites:['cmp-py','ir']},
  EVI01:{suites:['evi']},EVI02:{suites:['evi']},EVI03:{suites:['evi']},
- INT01:{lab:true,suites:['lab-e2e']},INT02:{suites:['int','lab-unit']},INT03:{campaign:'*',suites:['int']},INT04:{lab:true,suites:['lab-e2e']},
+ INT01:{lab:true,suites:['lab-e2e-journey','lab-e2e-fleet']},INT02:{suites:['int','lab-unit']},INT03:{campaign:'*',suites:['int']},INT04:{lab:true,suites:['lab-e2e-journey','lab-e2e-fleet']},
 };
 export const GATES={'G-LF1':['LF01'],'G-LF2':['LF02','LF03','LF04','LF05','LF06'],'G-IR1':['IR01'],'G-IR2':['IR04'],'G-IR3':['IR02','IR03','IR05','IR06','IR07','IR08','IR09','IR10'],'G-INT1':['INT01','INT02','INT03','INT04']};
 export const GATE_IDS=Object.keys(GATES);

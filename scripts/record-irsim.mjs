@@ -77,7 +77,7 @@ if(!own.skipSuites&&!signalled)for(const s of SUITES){
  if(s.repo==='lab'&&!labDir){notRun.push({id:`suite:${s.id}`,reason:'no Lab checkout (--lab)'});continue;}
  const cwd=s.repo==='lab'?labDir:root,file=`suites/${s.id}.${s.kind==='pytest'?'xml':'json'}`,abs=join(o.out,file);
  let entry;
- if(s.kind==='vitest')entry=await record(s.id,process.execPath,[join(cwd,'node_modules/vitest/vitest.mjs'),'run',...s.files,'--reporter=json',`--outputFile=${abs}`],{cwd,env:{LAB_V2_CLEAN_EXPORT:'1'}});
+ if(s.kind==='vitest')entry=await record(s.id,process.execPath,[join(cwd,'node_modules/vitest/vitest.mjs'),'run',...s.files,'--reporter=json',`--outputFile=${abs}`,'--reporter=default'],{cwd,env:{LAB_V2_CLEAN_EXPORT:'1'}});
  else if(s.kind==='pytest')entry=await record(s.id,join(root,s.python),['-m','pytest',...s.files,'-q',`--junitxml=${abs}`],{cwd,env:{PYTHONPATH:(s.pythonPath??[]).map(p=>join(root,p)).join(':'),PYTHONDONTWRITEBYTECODE:'1',PYTHONPYCACHEPREFIX:pycache,PYTHONNOUSERSITE:'1'}});
  else entry=await record(s.id,process.execPath,s.command.map(a=>a.endsWith('.mjs')?join(cwd,a):a),{cwd,env:{LAB_PW_JSON:abs,LAB_IRSIM_SCREENSHOTS:join(o.out,'screens'),...o['irsim-python']?{}:{}}});
  const res=result(s.id,file,s.kind);
@@ -93,7 +93,7 @@ if(!signalled){
 // ---- 4. identity after, statuses, the record ----
 const after=identity(),labAfter=labInfo();
 const identityStable=before.sourceCommit===after.sourceCommit&&!after.dirty&&before.toolClosures.portable===after.toolClosures.portable&&before.toolClosures.native===after.toolClosures.native&&(!labBefore||labBefore.commit===labAfter.commit&&!labAfter.dirty);
-const q=qualify({campaign:summary&&summary.status==='completed'?summary:null,suites,lab:!!labDir&&suites.some(s=>s.id==='lab-e2e')});
+const q=qualify({campaign:summary&&summary.status==='completed'?summary:null,suites,lab:!!labDir&&suites.some(s=>s.id.startsWith('lab-e2e'))});
 const walk=(d,rel='')=>readdirSync(d,{withFileTypes:true}).sort((a,b)=>a.name<b.name?-1:1).flatMap(e=>e.isDirectory()?walk(join(d,e.name),`${rel}${e.name}/`):e.isFile()&&`${rel}${e.name}`!=='qualification.json'?[{file:`${rel}${e.name}`,sha256:sha(readFileSync(join(d,e.name))),bytes:statSync(join(d,e.name)).size}]:[]);
 const recordDoc={schemaVersion:1,documentType:'linkforge-irsim-qualification',candidateId,accepted:false,acceptedBy:null,acceptedAt:null,
  note:'evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; native/hardware gates are outside its scope',

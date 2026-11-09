@@ -18,7 +18,7 @@ import {createZoneBridge,createZoneTraffic} from '../../packages/lab-runtime/src
 import {SourceSession} from '../../packages/lab-runtime/src/v2/session';
 import type {RunReport} from '../../packages/lab-runtime/src/v2/report';
 import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
-import {act,irPython,irsimAvailable,irsimBundle,irsimProviders,removeBundles,schemaDir,temp,workerRoot,EPOCH_MS,tickOf} from '../support/irsim-mission';
+import {act,finish,irPython,irsimAvailable,irsimBundle,irsimProviders,removeBundles,schemaDir,temp,workerRoot,EPOCH_MS,tickOf} from '../support/irsim-mission';
 import {createIRSimScenarioRun} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
 
 let fleet:Awaited<ReturnType<typeof irsimBundle>>;
@@ -56,8 +56,7 @@ test.skipIf(!irsimAvailable)('G-IR2 inputs: two robots with different wheels, ax
 test.skipIf(!irsimAvailable)('IR04 IR-FD07: both robots deliver within 12,000 ticks; the aisle zone has one granted owner per tick, is entered only under a grant and released only after a whole-footprint exit',async()=>{
  const dir=await temp('irsim-fleet-');dirs.push(dir);
  const run=await createIRSimScenarioRun({project:fleet.locked.runtimeProjection.project,scenarioId:'IR-FD07',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-irsim-2d-v1',sourceCommit:'test-commit',engineering:fleet.locked},await irsimProviders(dir,fleet.service));runs.push(run);
- await run.start();let v=await run.snapshot();
- while(['running','awaiting_confirmation'].includes(v.run.status)&&v.tick<12000)v=await act(run,'step',{ticks:500});
+ await run.start();await finish(run,500,12000);
  const r=await run.report() as RunReport,scene=await sceneOf(fleet),fixture=resolveScenarioFixture('IR-FD07',scene,7);
  const read=await readNavigationEvidence(join(dir,'evidence'),{chunks:r.navigation2d!.artifacts,...r.navigation2d!.recording},{scene});
  expect(r.outcome).toMatchObject({status:'completed',served:'2'});expect(r.outcome.tick).toBeLessThanOrEqual(12000);

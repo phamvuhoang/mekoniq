@@ -14,7 +14,7 @@ import type {IRSimSnapshotV1,NavigationSceneV1} from '../../packages/lab-runtime
 import type {RunReport} from '../../packages/lab-runtime/src/v2/report';
 import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
 import {createIRSimScenarioRun} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
-import {act,double,irPython,irsimAvailable,irsimBundle,irsimProviders,removeBundles,schemaDir,stepUntil,temp,tickOf,workerLog,workerRoot} from '../support/irsim-mission';
+import {act,double,finish,irPython,irsimAvailable,irsimBundle,irsimProviders,removeBundles,schemaDir,stepUntil,temp,tickOf,workerLog,workerRoot} from '../support/irsim-mission';
 import {navigationFixture} from '../support/navigation2d';
 
 let serve:Awaited<ReturnType<typeof irsimBundle>>,enclosed:Awaited<ReturnType<typeof irsimBundle>>;
@@ -27,7 +27,6 @@ async function open(b:typeof serve,scenarioId:string,seed=5,over:Parameters<type
  const run=await createIRSimScenarioRun({project:b.locked.runtimeProjection.project,scenarioId,scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId:'engineering-irsim-2d-v1',sourceCommit:'test-commit',engineering:b.locked},await irsimProviders(dir,b.service,over));
  runs.push(run);return {run,dir};
 }
-async function finish(run:ScenarioRun,ticks=500,limit=30000){let v=await run.snapshot();while(['running','awaiting_confirmation'].includes(v.run.status)&&v.tick<limit)v=await act(run,'step',{ticks});return v;}
 async function judged(dir:string,run:ScenarioRun,scenarioId:string,seed=5,expectOutcome?:Parameters<typeof scenarioAssertions>[0]['expectOutcome']){
  const report=await run.report() as RunReport,scene=JSON.parse(await readFile(join(dir,'bundle','navigation-scene.json'),'utf8')) as NavigationSceneV1;
  const read=await readNavigationEvidence(join(dir,'evidence'),{chunks:report.navigation2d!.artifacts,...report.navigation2d!.recording},{scene});

@@ -40,6 +40,12 @@ export async function irsimProviders(directory:string,service:EngineeringService
 let n=0;
 export async function act(run:ScenarioRun,kind:string,payload:Record<string,unknown>={}){const v=await run.snapshot();return run.action({actionId:`irsim-${++n}`,expectedRevision:v.run.runRevision,kind,payload});}
 export async function openRun(directory:string,b:Awaited<ReturnType<typeof irsimBundle>>,over:Parameters<typeof irsimProviders>[2]={},seed=5){return createIRSimScenarioRun(irsimInput(b.locked,seed),await irsimProviders(directory,b.service,over));}
+/** Step until the run leaves running/awaiting_confirmation or reaches `limit` ticks. A step that advances neither tick nor status is a stall and fails at once (RUN_STALLED) instead of looping until the test timeout. */
+export async function finish(run:ScenarioRun,ticks=500,limit=30000){
+ let v=await run.snapshot();
+ while(['running','awaiting_confirmation'].includes(v.run.status)&&v.tick<limit){const next=await act(run,'step',{ticks});if(next.tick===v.tick&&next.run.status===v.run.status)throw new Error(`RUN_STALLED at tick ${v.tick}: ${v.run.status} ${JSON.stringify(next.attention??null)}`);v=next;}
+ return v;
+}
 export async function stepUntil(run:ScenarioRun,until:(v:RunView)=>boolean|Promise<boolean>,chunk=25,limit=30000){
  let v=await run.snapshot();
  while(!await until(v)){if(v.tick>=limit)throw new Error(`STEP_LIMIT at ${v.tick}: ${v.run.status}`);if(['completed','cancelled','needs_attention'].includes(v.run.status))throw new Error(`RUN_ENDED ${v.run.status} ${JSON.stringify(v.attention)}`);v=await act(run,'step',{ticks:chunk});}
