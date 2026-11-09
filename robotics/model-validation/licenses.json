@@ -1,0 +1,96 @@
+{
+ "schemaVersion": 1,
+ "documentType": "portable-license-inventory",
+ "tool": "linkforge_worker",
+ "lock": {
+  "path": "robotics/model-validation/requirements.lock",
+  "sha256": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c"
+ },
+ "readFrom": "importlib.metadata of the pinned venv (isolated mode)",
+ "packages": [
+  {
+   "name": "attrs",
+   "version": "26.1.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "iniconfig",
+   "version": "2.3.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "jsonschema",
+   "version": "4.26.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "jsonschema-specifications",
+   "version": "2025.9.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "linkforge-core",
+   "version": "1.6.0",
+   "license": "Apache-2.0",
+   "source": "License-Expression"
+  },
+  {
+   "name": "packaging",
+   "version": "26.3",
+   "license": "Apache-2.0 OR BSD-2-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pluggy",
+   "version": "1.7.0",
+   "license": "MIT",
+   "source": "License"
+  },
+  {
+   "name": "pygments",
+   "version": "2.21.0",
+   "license": "BSD-2-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pytest",
+   "version": "9.2.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pyyaml",
+   "version": "6.0.3",
+   "license": "MIT",
+   "source": "License"
+  },
+  {
+   "name": "referencing",
+   "version": "0.37.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "rfc8785",
+   "version": "0.1.4",
+   "license": "Apache Software License",
+   "source": "Classifier"
+  },
+  {
+   "name": "rpds-py",
+   "version": "2026.9.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "typing-extensions",
+   "version": "4.16.0",
+   "license": "PSF-2.0",
+   "source": "License-Expression"
+  }
+ ]
+}

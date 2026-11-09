@@ -154,7 +154,7 @@ test('record-irsim: a record goes into a new directory only (an existing one is 
  const d=await mkdtemp(join(tmpdir(),'irsim-cli-record-'));
  try{
   const r=spawnSync(process.execPath,['scripts/record-irsim.mjs','--out',d],{encoding:'utf8',timeout:60000});
-  expect(r.status).toBe(2);expect(r.stderr).toMatch(/OUT_EXISTS/);expect(existsSync(join(d,'irsim-record.json'))).toBe(false);
+  expect(r.status).toBe(2);expect(r.stderr).toMatch(/OUT_EXISTS/);expect(existsSync(join(d,'qualification.json'))).toBe(false);
   const m=spawnSync(process.execPath,['scripts/record-irsim.mjs'],{encoding:'utf8',timeout:60000});
   expect(m.status).toBe(2);expect(m.stderr).toMatch(/MISSING_OPTION:--out/);
  }finally{await rm(d,{recursive:true,force:true});}

@@ -131,6 +131,36 @@ export const judgeRun=(r:RunRecord,e:Pick<CampaignEntry,'expectedAssertions'>,or
 /** A native compiler port that refuses: the portable profile has its own compiler, and nothing in a campaign may reach the native one. */
 const refusingNative:CompilerPort={version:'refused',async compileResolved(){throw new Error('NATIVE_COMPILER_DISABLED');},runnable:()=>false};
 
+/** The server-owned fixture projects compiled by the portable compiler into `<out>/engineering` from a catalog copy in `<out>/catalog` (the campaign's and the measurement's shared setup). */
+export async function compileFixtures(o:{root:string;out:string;python:string;fixtureIds:Iterable<string>}){
+ const workerRoot=join(o.root,'robotics/navigation-2d'),fixtureRoot=join(workerRoot,FIXTURE_DIRECTORY),catalog=join(o.out,'catalog');
+ const components=JSON.parse(await readFile(join(fixtureRoot,FIXTURE_COMPONENTS),'utf8')) as {components:Record<string,unknown>;models:Record<string,unknown>};
+ for(const d of ['components','models','documents'])await mkdir(join(catalog,d),{recursive:true});
+ const entries=[];
+ for(const [digest,c] of Object.entries(components.components)){const file=`components/${digest}.json`;await writeFile(join(catalog,file),JSON.stringify(c));entries.push({file,digest});}
+ for(const [digest,m] of Object.entries(components.models))await writeFile(join(catalog,'models',`${digest}.json`),JSON.stringify(m));
+ await writeFile(join(catalog,'catalog.json'),JSON.stringify({schemaVersion:1,id:'serve-demo-v1',components:entries,quotes:[]}));
+ const service=createEngineeringService({directory:join(o.out,'engineering'),catalogRoot:catalog,compiler:refusingNative,compilers:{[SET]:createNavigationCompiler({python:o.python,workerRoot,descriptionHelperRoot:join(o.root,'robotics/simulation')})}});
+ const compiled=new Map<string,{locked:LockedEngineering;scene:NavigationSceneV1}|{error:string}>();
+ for(const fixtureId of new Set(o.fixtureIds)){
+  try{
+   const project=JSON.parse(await readFile(join(fixtureRoot,NAVIGATION_FIXTURES[fixtureId]!.project),'utf8')) as EngineeringProject;
+   const receipt=await service.compileEngineeringProject(project,'campaign');
+   if(receipt.state!=='compiled')throw new Error(`FIXTURE_NOT_COMPILED:${receipt.problems.map(p=>p.code).join(',').slice(0,200)}`);
+   const locked=await service.admitRun('campaign',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},SET,undefined);
+   const scene=JSON.parse(Buffer.from(await service.bundleFile(receipt.bundleDigest!,'navigation-scene.json')).toString('utf8')) as NavigationSceneV1;
+   if(JSON.stringify([...scene.robots.map(r=>r.robotId)].sort())!==JSON.stringify([...NAVIGATION_FIXTURES[fixtureId]!.robots].sort()))throw new Error('FIXTURE_ROBOTS_MISMATCH');
+   compiled.set(fixtureId,{locked,scene});
+  }catch(e){compiled.set(fixtureId,{error:(e as Error).message.slice(0,300)});}
+ }
+ return {service,compiled};
+}
+/** Scenario definitions a batch (or a measurement) may run: the gateway registry plus the campaign-only rig, and the IR set extended with the rig ids. */
+export const batchScenarios=(catalog:Awaited<ReturnType<typeof portableSimulationFromOptions>>['catalog'])=>{
+ const scenarios=new Map([...scenarioRegistry,...RIG_SCENARIOS]),set=catalog.sets[SET]!;
+ return {catalog:{...catalog,sets:{...catalog.sets,[SET]:{...set,scenarioIds:[...set.scenarioIds??[],...RIG_SCENARIOS.keys()]}}},scenarios};
+};
+
 export async function runIRSimBatch(o:BatchOptions):Promise<BatchSummary>{
  const root=resolve(o.sourceRoot??SOURCE_ROOT),out=resolve(o.outDir),summaryPath=join(out,'summary.json');
  if(o.concurrency!==1&&o.concurrency!==2)throw new BatchError('USAGE','concurrency is 1 or 2');
@@ -163,31 +193,11 @@ export async function runIRSimBatch(o:BatchOptions):Promise<BatchSummary>{
  const runtime:IRSimRuntimeOptions={python,workerRoot,schemaDir:join(root,'packages/contracts/schemas'),lockDigest:portable.describe.lockDigest,...o.entry?{entry:o.entry}:{},maxActiveRuns:2};
 
  // ---- fixtures: compiled once each by the portable compiler from the server-owned files ----
- const fixtureRoot=join(workerRoot,FIXTURE_DIRECTORY),catalog=join(out,'catalog');
- const components=JSON.parse(await readFile(join(fixtureRoot,FIXTURE_COMPONENTS),'utf8')) as {components:Record<string,unknown>;models:Record<string,unknown>};
- for(const d of ['components','models','documents'])await mkdir(join(catalog,d),{recursive:true});
- const entries=[];
- for(const [digest,c] of Object.entries(components.components)){const file=`components/${digest}.json`;await writeFile(join(catalog,file),JSON.stringify(c));entries.push({file,digest});}
- for(const [digest,m] of Object.entries(components.models))await writeFile(join(catalog,'models',`${digest}.json`),JSON.stringify(m));
- await writeFile(join(catalog,'catalog.json'),JSON.stringify({schemaVersion:1,id:'serve-demo-v1',components:entries,quotes:[]}));
- const service=createEngineeringService({directory:join(out,'engineering'),catalogRoot:catalog,compiler:refusingNative,compilers:{[SET]:createNavigationCompiler({python,workerRoot,descriptionHelperRoot:join(root,'robotics/simulation')})}});
- const compiled=new Map<string,{locked:LockedEngineering;scene:NavigationSceneV1}|{error:string}>();
- for(const fixtureId of new Set(records.map(r=>r.fixtureId))){
-  try{
-   const project=JSON.parse(await readFile(join(fixtureRoot,NAVIGATION_FIXTURES[fixtureId]!.project),'utf8')) as EngineeringProject;
-   const receipt=await service.compileEngineeringProject(project,'campaign');
-   if(receipt.state!=='compiled')throw new Error(`FIXTURE_NOT_COMPILED:${receipt.problems.map(p=>p.code).join(',').slice(0,200)}`);
-   const locked=await service.admitRun('campaign',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},SET,undefined);
-   const scene=JSON.parse(Buffer.from(await service.bundleFile(receipt.bundleDigest!,'navigation-scene.json')).toString('utf8')) as NavigationSceneV1;
-   if(JSON.stringify([...scene.robots.map(r=>r.robotId)].sort())!==JSON.stringify([...NAVIGATION_FIXTURES[fixtureId]!.robots].sort()))throw new Error('FIXTURE_ROBOTS_MISMATCH');
-   compiled.set(fixtureId,{locked,scene});
-  }catch(e){compiled.set(fixtureId,{error:(e as Error).message.slice(0,300)});}
- }
+ const {service,compiled}=await compileFixtures({root,out,python,fixtureIds:new Set(records.map(r=>r.fixtureId))});
 
  // ---- runs: a pool of at most `concurrency` worlds; a signal stops scheduling and closes what runs ----
  // campaign-only rig definitions run here and only here: the gateway's catalog and registry never contain them
- const scenarios=new Map([...scenarioRegistry,...RIG_SCENARIOS]),set=portable.catalog.sets[SET]!;
- const providerOf={catalog:{...portable.catalog,sets:{...portable.catalog.sets,[SET]:{...set,scenarioIds:[...set.scenarioIds??[],...RIG_SCENARIOS.keys()]}}},enabledBackends:portable.enabledBackends,scenarios};
+ const {catalog:batchCatalog,scenarios}=batchScenarios(portable.catalog),providerOf={catalog:batchCatalog,enabledBackends:portable.enabledBackends,scenarios};
  /** Worker processes of one run: their argv names the run's own bundle root (never matched by pattern on anything else). */
  const workersOf=(dir:string)=>{try{return execFileSync('ps',['-A','-o','pid=,command='],{encoding:'utf8'}).split('\n').filter(l=>l.includes(`--bundle-root ${join(dir,'run','bundle')} `)&&!l.includes('lab-irsim')).map(l=>Number(l.trim().split(/\s+/)[0]));}catch{return [];}};
  const judge=judgeRun;

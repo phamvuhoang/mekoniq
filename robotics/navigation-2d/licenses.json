@@ -1,0 +1,180 @@
+{
+ "schemaVersion": 1,
+ "documentType": "portable-license-inventory",
+ "tool": "irsim_worker",
+ "lock": {
+  "path": "robotics/navigation-2d/requirements.lock",
+  "sha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4"
+ },
+ "readFrom": "importlib.metadata of the pinned venv (isolated mode)",
+ "packages": [
+  {
+   "name": "attrs",
+   "version": "26.1.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "contourpy",
+   "version": "1.3.3",
+   "license": "BSD License",
+   "source": "Classifier"
+  },
+  {
+   "name": "cycler",
+   "version": "0.12.1",
+   "license": "BSD License",
+   "source": "Classifier"
+  },
+  {
+   "name": "fonttools",
+   "version": "4.68.0",
+   "license": "MIT",
+   "source": "License"
+  },
+  {
+   "name": "imageio",
+   "version": "2.38.1",
+   "license": "BSD-2-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "iniconfig",
+   "version": "2.3.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "ir-sim",
+   "version": "2.12.0",
+   "license": "MIT License",
+   "source": "Classifier"
+  },
+  {
+   "name": "jsonschema",
+   "version": "4.26.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "jsonschema-specifications",
+   "version": "2025.9.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "kiwisolver",
+   "version": "1.5.1",
+   "license": "BSD License",
+   "source": "Classifier"
+  },
+  {
+   "name": "loguru",
+   "version": "0.7.3",
+   "license": "MIT License",
+   "source": "Classifier"
+  },
+  {
+   "name": "matplotlib",
+   "version": "3.11.2",
+   "license": "Python Software Foundation License",
+   "source": "Classifier"
+  },
+  {
+   "name": "numpy",
+   "version": "2.4.6",
+   "license": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+   "source": "License-Expression"
+  },
+  {
+   "name": "packaging",
+   "version": "26.3",
+   "license": "Apache-2.0 OR BSD-2-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pillow",
+   "version": "13.0.0",
+   "license": "MIT-CMU",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pluggy",
+   "version": "1.7.0",
+   "license": "MIT",
+   "source": "License"
+  },
+  {
+   "name": "pygments",
+   "version": "2.21.0",
+   "license": "BSD-2-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pyparsing",
+   "version": "3.3.3",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pytest",
+   "version": "9.2.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "python-dateutil",
+   "version": "4.0.0",
+   "license": "BSD-3-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pyyaml",
+   "version": "6.0.3",
+   "license": "MIT",
+   "source": "License"
+  },
+  {
+   "name": "referencing",
+   "version": "0.37.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "rfc8785",
+   "version": "0.1.4",
+   "license": "Apache Software License",
+   "source": "Classifier"
+  },
+  {
+   "name": "rpds-py",
+   "version": "2026.9.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "scipy",
+   "version": "1.17.1",
+   "license": "BSD License",
+   "source": "Classifier"
+  },
+  {
+   "name": "shapely",
+   "version": "2.2.0",
+   "license": "BSD-3-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "typing-extensions",
+   "version": "4.16.0",
+   "license": "PSF-2.0",
+   "source": "License-Expression"
+  },
+  {
+   "name": "tzdata",
+   "version": "2026.6",
+   "license": "Apache-2.0",
+   "source": "License"
+  }
+ ]
+}

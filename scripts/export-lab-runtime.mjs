@@ -54,8 +54,8 @@ const simulationTools={distribution:'separate',path:'robotics/simulation',digest
 // lock), described apart from the Linux simulationTools so neither overwrites the other. The Lab importer verifies this closure; the launcher re-hashes the files it runs.
 const portable=portableToolClosure(root),lockOf=(path)=>{const f=portable.files.find(x=>x.path===path);if(!f)throw new Error(`PORTABLE_LOCK_MISSING:${path}`);return {path,sha256:f.sha256};};
 const portableSimulationTools={distribution:'separate',version:1,python:{implementation:'cpython',version:'3.11'},flags:['MEKONIQ_LAB_IRSIM','MEKONIQ_LAB_LINKFORGE'],
- tools:[{id:'irsim_worker',provider:'irsim_2d',protocol:'mekoniq-irsim/1',root:'robotics/navigation-2d',module:'irsim_worker',lock:lockOf('robotics/navigation-2d/requirements.lock')},
-  {id:'linkforge_worker',provider:'linkforge_shadow',root:'robotics/model-validation',module:'linkforge_worker',lock:lockOf('robotics/model-validation/requirements.lock')},
+ tools:[{id:'irsim_worker',provider:'irsim_2d',protocol:'mekoniq-irsim/1',root:'robotics/navigation-2d',module:'irsim_worker',lock:lockOf('robotics/navigation-2d/requirements.lock'),licenses:lockOf('robotics/navigation-2d/licenses.json')},
+  {id:'linkforge_worker',provider:'linkforge_shadow',root:'robotics/model-validation',module:'linkforge_worker',lock:lockOf('robotics/model-validation/requirements.lock'),licenses:lockOf('robotics/model-validation/licenses.json')},
   {id:'description_helper',root:'robotics/simulation/compiler'}],
  roots:PORTABLE_TOOL_PATHS,closure:portable,note:'not bundled; provision each venv from its lock (no download at run time), then lab:irsim verifies these files'};
 const manifest={sourceCommit,schemaHash,protocolMajor:2,protocolMajors:[1,2],artifactSha256,entrypoint:'runtime.mjs',nodeMajor:24,packageVersion:pkg.version,dirty:Boolean(dirty),schemas:names,toolchain:{node:process.version},simulationTools,nativeTools,portableSimulationTools};
