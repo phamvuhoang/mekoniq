@@ -45,8 +45,12 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
  const child=spawn(o.python,args,{cwd:resolve(o.runDirectory),env,stdio:['pipe','pipe','pipe'],detached:true});
  let state:'ready'|'failed'|'closed'='ready',bootId:string|null=null,buffer='',stderrTail='',lastTick=0,lastSeq=0n,sceneDigest=o.sceneDigest,timer:NodeJS.Timeout|undefined,closing:Promise<void>|undefined;
  const queue:Pending[]=[];let inFlight:Pending|undefined;
- // 'close' also fires when the process never started (spawn error), where 'exit' does not
- const exited=new Promise<void>(done=>child.once('close',()=>done()));
+ // Settled by the process ending ('exit'; 'close' covers a spawn error where 'exit' never fires). It must not wait for stdio to drain: a grandchild that
+ // inherited the pipes (recordings hung ~15 min on exactly that) would hold 'close' open, so after 'exit' the streams get 500 ms to flush and are then destroyed.
+ const exited=new Promise<void>(done=>{
+  let settled=false;const fin=()=>{if(settled)return;settled=true;for(const s of [child.stdin,child.stdout,child.stderr])s?.destroy();done();};
+  child.once('close',fin);child.once('exit',()=>{setTimeout(fin,500).unref();});
+ });
  child.stderr.on('data',(d:Buffer)=>{stderrTail=(stderrTail+d.toString()).slice(-4096);});
  child.stdin.on('error',()=>{});
  const killGroup=()=>{try{if(child.pid)process.kill(-child.pid,'SIGKILL');}catch{/* already gone */}};

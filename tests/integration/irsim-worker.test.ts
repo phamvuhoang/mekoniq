@@ -181,3 +181,11 @@ test('review3 #4: the protocol is held to the letter: result kind per op, tick x
   expect(await ask('getState', {}, { expectedTick: 0 }).catch((e) => e)).toBeInstanceOf(WorkerLostError); // seq 5 then 3
   expect(client.state).toBe('failed');
 });
+
+test('close() is bounded by the worker process exit, not by stdio: a survivor that inherited the pipes cannot hold the client open', async () => {
+  const client = await spawnIRSimWorker({ python: irPython, workerRoot, runId: 'run-orphan', bundleRoot: await temp('irsim-bundle-'), runDirectory: await temp('irsim-run-'), lockDigest: '1'.repeat(64), schemaDir, entry: [resolve('tests/support/irsim_doubles/orphan.py')] });
+  const started = Date.now();
+  await client.close('test over');
+  expect(Date.now() - started, 'close() waited for the orphan instead of the worker').toBeLessThan(8000);
+  expect(client.state).not.toBe('ready');
+}, 60_000);
