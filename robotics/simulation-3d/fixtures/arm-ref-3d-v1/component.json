@@ -1,0 +1,1072 @@
+{
+  "documents": [],
+  "id": "arm-ref-3d-v1",
+  "identity": {
+    "family": "arm",
+    "manufacturer": "fixture",
+    "sku": null,
+    "status": "candidate"
+  },
+  "joints": [
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link1",
+      "id": "J1",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "J1 effort",
+            "revision": "1"
+          },
+          "unit": "N*m",
+          "value": 200
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J1/min",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": -2.79252680319
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J1/max",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": 2.79252680319
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J1/maxVelocity",
+            "revision": "1"
+          },
+          "unit": "rad/s",
+          "value": 2.09439510239
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      },
+      "parent": "base"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link2",
+      "id": "J2",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "J2 effort",
+            "revision": "1"
+          },
+          "unit": "N*m",
+          "value": 200
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J2/min",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": -3.92699081699
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J2/max",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": 0.785398163397
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J2/maxVelocity",
+            "revision": "1"
+          },
+          "unit": "rad/s",
+          "value": 2.09439510239
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          -0.707106781187,
+          0,
+          0,
+          0.707106781187
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      },
+      "parent": "link1"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link3",
+      "id": "J3",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "J3 effort",
+            "revision": "1"
+          },
+          "unit": "N*m",
+          "value": 100
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J3/min",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": -0.785398163397
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J3/max",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": 3.92699081699
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J3/maxVelocity",
+            "revision": "1"
+          },
+          "unit": "rad/s",
+          "value": 2.09439510239
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0.4318,
+          0,
+          0.14986
+        ]
+      },
+      "parent": "link2"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link4",
+      "id": "J4",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "J4 effort",
+            "revision": "1"
+          },
+          "unit": "N*m",
+          "value": 30
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J4/min",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": -1.91986217719
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J4/max",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": 2.96705972839
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J4/maxVelocity",
+            "revision": "1"
+          },
+          "unit": "rad/s",
+          "value": 2.09439510239
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          -0.707106781187,
+          0,
+          0,
+          0.707106781187
+        ],
+        "xyzM": [
+          -0.02032,
+          0.4318,
+          2.64401243936e-17
+        ]
+      },
+      "parent": "link3"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link5",
+      "id": "J5",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "J5 effort",
+            "revision": "1"
+          },
+          "unit": "N*m",
+          "value": 20
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J5/min",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": -1.74532925199
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J5/max",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": 1.74532925199
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J5/maxVelocity",
+            "revision": "1"
+          },
+          "unit": "rad/s",
+          "value": 2.09439510239
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0.707106781187,
+          0,
+          0,
+          0.707106781187
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      },
+      "parent": "link4"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link6",
+      "id": "J6",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "J6 effort",
+            "revision": "1"
+          },
+          "unit": "N*m",
+          "value": 10
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J6/min",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": -4.6425758103
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J6/max",
+            "revision": "1"
+          },
+          "unit": "rad",
+          "value": 4.6425758103
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "bd57344faecee29df2d50b8e8535de6936b05da3778eadbf46ad0e5d626650f3",
+            "documentId": "lab-puma560-reference",
+            "kind": "assumed",
+            "locator": "J6/maxVelocity",
+            "revision": "1"
+          },
+          "unit": "rad/s",
+          "value": 2.09439510239
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          -0.707106781187,
+          0,
+          0,
+          0.707106781187
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      },
+      "parent": "link5"
+    }
+  ],
+  "links": [
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "base geometry",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "base",
+      "inertiaKgM2": [
+        0.0025,
+        0,
+        0,
+        0.0025,
+        0,
+        0.0025
+      ],
+      "inertialSource": {
+        "contentSha256": "5da56de5abe4cc64a674df0ddc33bebcc4641ef142315f3a52d709f5c4e1777d",
+        "documentId": "arm-ref-3d-inertia-formulas",
+        "kind": "derived",
+        "locator": "sphere: 2*m*r^2/5",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+          "documentId": "arm-ref-3d-assumptions",
+          "kind": "assumed",
+          "locator": "base mass",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 10
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "base geometry",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link1 geometry",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "link1",
+      "inertiaKgM2": [
+        0.002,
+        0,
+        0,
+        0.002,
+        0,
+        0.002
+      ],
+      "inertialSource": {
+        "contentSha256": "5da56de5abe4cc64a674df0ddc33bebcc4641ef142315f3a52d709f5c4e1777d",
+        "documentId": "arm-ref-3d-inertia-formulas",
+        "kind": "derived",
+        "locator": "sphere: 2*m*r^2/5",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+          "documentId": "arm-ref-3d-assumptions",
+          "kind": "assumed",
+          "locator": "link1 mass",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 8
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link1 geometry",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "cylinder",
+            "lengthM": 0.457065924785,
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0.579709441121,
+              0,
+              0.814823271559
+            ],
+            "xyzM": [
+              0.2159,
+              0,
+              0.07493
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link2 geometry",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0.2159,
+        0,
+        0.07493
+      ],
+      "id": "link2",
+      "inertiaKgM2": [
+        0.0130032273195,
+        0,
+        -0.032064383802,
+        0.1053921298,
+        0,
+        0.0942639024805
+      ],
+      "inertialSource": {
+        "contentSha256": "0a5dc1979439696633e69f4cb8c99f457cc23afadc400232717274c76b74dae1",
+        "documentId": "arm-ref-3d-inertia-formulas",
+        "kind": "derived",
+        "locator": "cylinder: m*(3r^2+L^2)/12, m*r^2/2",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+          "documentId": "arm-ref-3d-assumptions",
+          "kind": "assumed",
+          "locator": "link2 mass",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 6
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "cylinder",
+            "lengthM": 0.457065924785,
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0.579709441121,
+              0,
+              0.814823271559
+            ],
+            "xyzM": [
+              0.2159,
+              0,
+              0.07493
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link2 geometry",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "cylinder",
+            "lengthM": 0.432277853238,
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              -0.706325123597,
+              -0.0332388293457,
+              0,
+              0.707106781187
+            ],
+            "xyzM": [
+              -0.01016,
+              0.2159,
+              1.32200621968e-17
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link3 geometry",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        -0.01016,
+        0.2159,
+        1.32200621968e-17
+      ],
+      "id": "link3",
+      "inertiaKgM2": [
+        0.0627767943581,
+        0.00289537855803,
+        4.27157364583e-19,
+        0.00138625310861,
+        -3.46634775477e-18,
+        0.0629130474667
+      ],
+      "inertialSource": {
+        "contentSha256": "0a5dc1979439696633e69f4cb8c99f457cc23afadc400232717274c76b74dae1",
+        "documentId": "arm-ref-3d-inertia-formulas",
+        "kind": "derived",
+        "locator": "cylinder: m*(3r^2+L^2)/12, m*r^2/2",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+          "documentId": "arm-ref-3d-assumptions",
+          "kind": "assumed",
+          "locator": "link3 mass",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 4
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "cylinder",
+            "lengthM": 0.432277853238,
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              -0.706325123597,
+              -0.0332388293457,
+              0,
+              0.707106781187
+            ],
+            "xyzM": [
+              -0.01016,
+              0.2159,
+              1.32200621968e-17
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link3 geometry",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link4 geometry",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "link4",
+      "inertiaKgM2": [
+        0.000375,
+        0,
+        0,
+        0.000375,
+        0,
+        0.000375
+      ],
+      "inertialSource": {
+        "contentSha256": "5da56de5abe4cc64a674df0ddc33bebcc4641ef142315f3a52d709f5c4e1777d",
+        "documentId": "arm-ref-3d-inertia-formulas",
+        "kind": "derived",
+        "locator": "sphere: 2*m*r^2/5",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+          "documentId": "arm-ref-3d-assumptions",
+          "kind": "assumed",
+          "locator": "link4 mass",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 1.5
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link4 geometry",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link5 geometry",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "link5",
+      "inertiaKgM2": [
+        0.00025,
+        0,
+        0,
+        0.00025,
+        0,
+        0.00025
+      ],
+      "inertialSource": {
+        "contentSha256": "5da56de5abe4cc64a674df0ddc33bebcc4641ef142315f3a52d709f5c4e1777d",
+        "documentId": "arm-ref-3d-inertia-formulas",
+        "kind": "derived",
+        "locator": "sphere: 2*m*r^2/5",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+          "documentId": "arm-ref-3d-assumptions",
+          "kind": "assumed",
+          "locator": "link5 mass",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 1
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link5 geometry",
+            "revision": "1"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link6 geometry",
+            "revision": "1"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "id": "link6",
+      "inertiaKgM2": [
+        0.000125,
+        0,
+        0,
+        0.000125,
+        0,
+        0.000125
+      ],
+      "inertialSource": {
+        "contentSha256": "5da56de5abe4cc64a674df0ddc33bebcc4641ef142315f3a52d709f5c4e1777d",
+        "documentId": "arm-ref-3d-inertia-formulas",
+        "kind": "derived",
+        "locator": "sphere: 2*m*r^2/5",
+        "revision": "1"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+          "documentId": "arm-ref-3d-assumptions",
+          "kind": "assumed",
+          "locator": "link6 mass",
+          "revision": "1"
+        },
+        "unit": "kg",
+        "value": 0.5
+      },
+      "visual": [
+        {
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.025
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "be14afe9bcc20a18e231baa60a04250e1065e94d860bcce7f6d993846926706e",
+            "documentId": "arm-ref-3d-assumptions",
+            "kind": "assumed",
+            "locator": "link6 geometry",
+            "revision": "1"
+          }
+        }
+      ]
+    }
+  ],
+  "models": [],
+  "ports": [],
+  "revision": "1",
+  "schemaVersion": 1
+}
