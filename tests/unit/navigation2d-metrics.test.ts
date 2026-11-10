@@ -591,3 +591,22 @@ test('review4 #8: two processes opening one evidence directory at once: exactly 
  const other=writer(dir);await other.ready();other.send('go');expect(await other.answer()).toBe('won');await other.exit();
  await (await openNavigationRecorder({directory:dir,scene:serve,runId:'run-a'})).close();
 },120_000);
+
+test('W04: trajectory records carry pose3d only when the plant reports it, and IR-SIM records keep exactly their old keys',async()=>{
+ const dir=await temp(),scene=serve,rec=await openNavigationRecorder({directory:dir,scene,runId:'run-a',chunkTicks:40});
+ const with3d=(s:IRSimSnapshotV1,z:number):IRSimSnapshotV1=>({...s,robots:s.robots.map(r=>({...r,pose3d:{z,roll:0.01,pitch:-0.02}}))}) as IRSimSnapshotV1;
+ // tick 0 as IR-SIM reports it (no pose3d), ticks 1-2 as a 3D plant does
+ await rec.append(snap(scene,0,aisle(0)),null);
+ await rec.append(with3d(snap(scene,1,aisle(1)),0.09),step(1));
+ await rec.append(with3d(snap(scene,2,aisle(2)),0.091),step(2));
+ await rec.flush();
+ const r=await read(dir,rec);
+ expect(r.issues).toEqual([]);expect(r.complete).toBe(true);
+ expect(Object.keys(r.trajectory[0]!.robots[0]!).sort()).toEqual(['bodyVelocity','collisionIds','poseDriveMap','robotId']);
+ expect(r.trajectory[2]!.robots[0]!.pose3d).toEqual({z:0.091,roll:0.01,pitch:-0.02});
+ // a non-finite 3D pose is not a record the reader accepts
+ const bad=await temp(),brec=await openNavigationRecorder({directory:bad,scene,runId:'run-a',chunkTicks:40});
+ await brec.append(with3d(snap(scene,0,aisle(0)),Number.NaN),null);await brec.flush();
+ const br=await read(bad,brec);
+ expect(br.complete).toBe(false);expect(br.issues.length).toBeGreaterThan(0);
+});

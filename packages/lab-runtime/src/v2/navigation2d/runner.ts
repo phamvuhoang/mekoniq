@@ -1,4 +1,4 @@
-// IR-SIM scenario runner (provider irsim_2d). The source runner is the only scheduler; per fixed 20 ms tick:
+// Fixed-step scenario runner for a plant port (IR-SIM today). The source runner is the only scheduler; per fixed 20 ms tick:
 // scripted inputs -> source decisions/dispatch -> controller velocities -> one worker step -> verified ACK -> commit the logical clock -> observations -> journal.
 // Business truth lives only in the run's source journal (production registry via SourceSession); the Python worker owns plant state only.
 // A lost or unverifiable step leaves its legs unknown: nothing is resent, and no second process ever continues this run.
@@ -26,31 +26,29 @@ import type {JournalEvents} from '../event-stream';
 import {validateNavigationDocument,type IRSimResponseV1,type IRSimSnapshotV1,type NavigationSceneV1} from './contracts';
 import {createNavigationController,NAVIGATION_CONTROLLER,type NavigationController} from './controller';
 import {buildNavigationEvidence,engineSeedOf,EVIDENCE_LIMITS,navigationMetrics,openNavigationRecorder,readNavigationEvidence,type EvidenceIdentity,type Gap,type NavigationRecorder} from './evidence';
-import {spawnIRSimWorker,WorkerLostError,type IRSimWorkerClient} from './worker-client';
+import {WorkerLostError,IRSIM_BACKEND,irsimPlant,type IRSimRuntimeOptions,type PlantPort,type PlantWorker} from './plant';
 import {baseInMap,yawOf} from '../../engineering/navigation-model';
 import {framePose} from '../../engineering/inertia';
 import {quaternionFromYaw} from '../frames';
-import {createIRSimNavigationAdapter,initialAdapterState,IRSIM_AMR,type IRSimAdapterState,type IRSimNavigationAdapter} from './adapter';
+import {createIRSimNavigationAdapter,initialAdapterState,type IRSimAdapterState,type IRSimNavigationAdapter} from './adapter';
 import {actorUpdatesAt,fixtureFile,resolveScenarioFixture,type ResolvedFixture} from './scenario-fixtures';
 import {createZoneBridge,createZoneTraffic} from '../backends/zone-bridge';
 import type {P,Pose2} from './geometry';
 
-/** Operator-owned worker options (never from a request). `entry`/`deadlinesMs` exist for test doubles and fault tests; `maxActiveRuns` (default 2) caps live workers per host;
- * `evidence` lowers the durable evidence limits (default 100 MiB, 30,000 ticks) for limit tests. */
-export interface IRSimRuntimeOptions {python:string;workerRoot:string;schemaDir:string;lockDigest:string;entry?:string[];deadlinesMs?:Record<string,number>;maxActiveRuns?:number;evidence?:{maxBytes?:number;maxTicks?:number;chunkTicks?:number}}
+export type {IRSimRuntimeOptions,PlantPort};
+export {IRSIM_BACKEND};
 /** Process-wide worker slots (workers-runtime §6: two active runs per host). A run holds one from its start until its plant stops, is lost or the run closes. */
 const activeRuns=new Set<string>();
 /** Whether `runId` (or, without one, a new run) may hold a live worker now. */
 export const irsimCapacity=(limit=2,runId?:string)=>runId!==undefined&&activeRuns.has(runId)||activeRuns.size<limit;
 /** `bundleFile` (RunProviders) is needed only for a new run: the gateway authorised the bundle for the session before the run exists. */
 export interface IRSimRunProviders extends RunProviders {irsim:IRSimRuntimeOptions}
-export const IRSIM_BACKEND='irsim_2d';
 const EVIDENCE_FLUSH_TICKS=100,EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'],FINAL=['completed','cancelled','failed'],SCENE='navigation-scene.json',FIXTURE='scenario-fixture.json';
 const sha256=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 interface Confirmation {due:number|null;type:string;robotId:string}
 interface PlantCheckpoint {status:'none'|'live'|'lost'|'stopped';reason:string|null;bootId:string|null;requests:number;snapshot:IRSimSnapshotV1|null}
 interface Checkpoint {
- schemaVersion:1;provider:'irsim_2d';runId:string;manifestHash:string;manifest:RunReport['manifest'];roles:Roles;trays:Record<string,number>;
+ schemaVersion:1;provider:string;runId:string;manifestHash:string;manifest:RunReport['manifest'];roles:Roles;trays:Record<string,number>;
  tick:number;started:boolean;paused:boolean;cancelled:boolean;suspended:boolean;revision:number;ordinal:number;dispatchDue:boolean;telemetrySeq?:number;reclaimed?:boolean;
  workload:WorkloadItem[];confirmations:Record<string,Confirmation>;parking:Record<string,string>;attention:Attention[];
  receipts:Record<string,{hash:string;view:RunView}>;rejectedObservations:RunReport['rejectedObservations'];reconciliations:RunReport['reconciliations'];
@@ -85,12 +83,17 @@ async function lockScene(input:RunManifestInput,project:LabProjectV2,roles:Roles
  return {scene,files};
 }
 
-export async function createIRSimScenarioRun(input:RunManifestInput,providers:IRSimRunProviders):Promise<ScenarioRun>{
+/** The IR-SIM run: the shared fixed-step runner on the IR-SIM plant. */
+export const createIRSimScenarioRun=(input:RunManifestInput,providers:IRSimRunProviders):Promise<ScenarioRun>=>createFixedStepScenarioRun(input,{...providers,plant:irsimPlant(),runtime:providers.irsim});
+
+/** The one fixed-step runner. `plant` says which engine it drives and what the report may claim about it; `runtime` is the operator's worker options. */
+export async function createFixedStepScenarioRun(input:RunManifestInput,providers:RunProviders&{plant:PlantPort;runtime:IRSimRuntimeOptions}):Promise<ScenarioRun>{
+ const plant=providers.plant,amr=plant.identity.amr;
  const registered=(providers.scenarios??scenarioRegistry).get(input.scenarioId);if(!registered)throw new Error('SCENARIO_UNSUPPORTED');
  const catalog=providers.catalog??defaultCatalog,set=Object.hasOwn(catalog.sets,input.backendSetId)?catalog.sets[input.backendSetId]:undefined;
  if(!set)throw new Error('BACKEND_SET_UNKNOWN');
- // this runner executes only portable sets whose AMR provider is irsim_2d; nothing here falls back to the mock plant or a native provider
- if(set.execution?.host!=='portable_python'||set.providers?.amr!==IRSIM_BACKEND)throw new Error('BACKEND_EXECUTION_DISABLED');
+ // this runner executes only portable sets whose AMR provider is the plant it was given; nothing here falls back to another plant, the mock plant or a native provider
+ if(set.execution?.host!=='portable_python'||set.providers?.amr!==amr.id)throw new Error('BACKEND_EXECUTION_DISABLED');
  if(input.mode!=='simulation'||input.access!=='simulated'||set.mode!==input.mode||set.access!==input.access)throw new Error('MODE_BACKEND_MISMATCH');
  const required=requiredBackends(registered,'simulation',input.backendSetId,catalog),admission=admitBackend('simulation',required,catalog,'simulated');
  if(!admission.ok)throw new Error(`BACKEND_UNAVAILABLE:${admission.reasonCodes.join(',')}`);
@@ -110,21 +113,21 @@ export async function createIRSimScenarioRun(input:RunManifestInput,providers:IR
  let cp=await readCheckpoint<Checkpoint>(dir);
  const fresh=!cp;
  if(fresh&&(await readdir(dir)).length)throw new Error('RECOVERY_CHECKPOINT_MISSING');
- if(cp&&cp.provider!=='irsim_2d')throw new Error('RUN_IDENTITY_MISMATCH');
+ if(cp&&cp.provider!==amr.id)throw new Error('RUN_IDENTITY_MISMATCH');
  if(cp?.evidenceTerminal!=null&&(typeof cp.evidenceTerminal!=='string'||!cp.evidenceTerminal||cp.evidenceTerminal.length>500))throw new Error('RECOVERY_CHECKPOINT_INVALID');
  // a new run copies its locked scene out of the bundle; a reopened one reads (and re-verifies) only its own copy
  const read=fresh?(path:string)=>{if(!providers.bundleFile)throw new Error('ENGINEERING_CLOSURE_MISSING');return providers.bundleFile(input.engineering!.ref.bundleDigest,path);}:(path:string)=>readFile(join(bundleDir,path));
  const {scene,files}=await lockScene(input,project,roles,read);
  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
  const fixture=resolveScenarioFixture(scenario.id,scene,input.seed),fixtureBytes=fixture.actors.length?Buffer.from(JSON.stringify(fixtureFile(fixture))):null;
- const mapId=scene.world.id,mapRevision=scene.sceneDigest,lock=providers.irsim.lockDigest;
+ const mapId=scene.world.id,mapRevision=scene.sceneDigest,lock=providers.runtime.lockDigest;
  // an IR-FD01 run without actors or zones keeps its configuration identity exactly as before (no fixture key)
  const configuration={revision:1,hash:hashJson({roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
- const backends=[{...IRSIM_AMR}];
+ const backends=[{...amr}];
  const manifest:Omit<RunReport['manifest'],'runId'>={engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario),...scenario.basedOn?{basedOn:{...scenario.basedOn}}:{}},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends,workerLockDigest:lock,files:files.map(([p,b])=>[p,sha256(b)])}),configuration,recipes:[],
-  models:[{id:IRSIM_AMR.id,revision:IRSIM_AMR.version,hash:scene.sceneDigest,provenance:'simulated_plant'},...scene.robots.map(r=>({id:`navigation-model:${r.robotId}`,revision:String(r.model.schemaVersion),hash:r.model.modelDigest,provenance:'projected'}))],
+  models:[{id:amr.id,revision:amr.version,hash:scene.sceneDigest,provenance:'simulated_plant'},...scene.robots.map(r=>({id:`navigation-model:${r.robotId}`,revision:String(r.model.schemaVersion),hash:r.model.modelDigest,provenance:'projected'}))],
   profiles:[{id:scene.policy.id,revision:scene.policy.revision,hash:scene.policy.hash,provenance:scene.policy.source.kind}],calibration:{status:'not_calibrated',revision:null,hash:null,reason:'SIMULATED_PLANT'}};
  const manifestHash=hashJson(manifest);
  if(cp&&cp.manifestHash!==manifestHash)throw new Error('RUN_IDENTITY_MISMATCH');
@@ -136,21 +139,21 @@ export async function createIRSimScenarioRun(input:RunManifestInput,providers:IR
   const runId=randomUUID(),draws=new Map<string,ReturnType<typeof actorStream>>();
   const draw=(actor:string,range:readonly [number,number])=>{const s=draws.get(actor)??actorStream(input.seed,actor);draws.set(actor,s);return s.int(range[0],range[1]);};
   const workload=scenario.orders.map((o,i)=>({actor:o.actor,tableId:roles.tables[o.table]!,quantity:o.quantity,atTick:draw(o.actor,o.atTick),sessionId:`lab-session-${i+1}`,status:'planned' as const}));
-  cp={schemaVersion:1,provider:'irsim_2d',runId,manifestHash,manifest:{runId,...manifest},roles,trays,tick:0,started:false,paused:false,cancelled:false,suspended:false,revision:0,ordinal:0,dispatchDue:false,
+  cp={schemaVersion:1,provider:amr.id,runId,manifestHash,manifest:{runId,...manifest},roles,trays,tick:0,started:false,paused:false,cancelled:false,suspended:false,revision:0,ordinal:0,dispatchDue:false,
    workload,confirmations:{},parking:{},attention:[],receipts:{},rejectedObservations:[],reconciliations:[],recoveredOps:[],confirmationLog:[],faults:[],pendingOps:[],inFlight:false,
    plant:{status:'none',reason:null,bootId:null,requests:0,snapshot:null},adapters:Object.fromEntries(roles.robots.map(r=>[r.id,initialAdapterState()])),distanceM:Object.fromEntries(roles.robots.map(r=>[r.id,0])),maxConcurrentMovers:0};
  }
  const bindings=Object.fromEntries(scene.robots[0]!.targetBindings.map(t=>[t.pointId,{waypointId:t.pointId,mapId,mapRevision,frame:'map' as const,x:t.x,y:t.y,yaw:t.yaw}]));
- const sceneBytes=files[0]![1],lockFile=join(providers.irsim.workerRoot,'requirements.lock'),lockText=await readFile(lockFile,'utf8').catch(()=>'');
+ const sceneBytes=files[0]![1],lockFile=join(providers.runtime.workerRoot,'requirements.lock'),lockText=await readFile(lockFile,'utf8').catch(()=>'');
  // the NumPy pin is read from the lock only when that file is the lock the worker was admitted with
  const numpy=sha256(lockText)===lock?/^numpy==(\S+)/m.exec(lockText)?.[1]??'unpinned':'unverified';
  const identity:Omit<EvidenceIdentity,'engine'>={runId:cp.runId,sourceCommit:input.sourceCommit,sceneRef:{path:`bundle/${SCENE}`,sha256:sha256(sceneBytes),bytes:sceneBytes.length},lockDigest:lock,numpyVersion:numpy,runSeed:input.seed,
   actorRng:{algorithm:`${PRNG.algorithm} ${PRNG.seeding} v${PRNG.version}`,seed:input.seed},controller:{...NAVIGATION_CONTROLLER},businessEpochMs:EPOCH};
  // the recording limit is the run's tick budget too: the scenario's maxTicks, never above the 30,000-tick quota
  // every terminal the recorder produces (any flush, the tick limit, close) goes into the checkpoint before its manifest write is attempted
- const owner:{run?:IRSimRun}={},opened=cp;
- const recorder=await openNavigationRecorder({knownTerminal:cp.evidenceTerminal??null,onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.irsim.evidence,maxTicks:Math.min(providers.irsim.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
- const run=new IRSimRun(dir,cp,scenario,project,scene,providers.irsim,{mapId,mapRevision},recorder,identity,fixture);owner.run=run;
+ const owner:{run?:FixedStepRun}={},opened=cp;
+ const recorder=await openNavigationRecorder({knownTerminal:cp.evidenceTerminal??null,onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.runtime.evidence,maxTicks:Math.min(providers.runtime.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
+ const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture);owner.run=run;
  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
  run.traffic=fixture.zones.length?createZoneTraffic(createZoneBridge(run.source,{async enter(){}},()=>`op-${++run.checkpoint.ordinal}`),fixture.zones,{clearanceM:scene.policy.parameters.safetyMarginM+2*scene.policy.parameters.gridResolutionM}):undefined;
  try{
@@ -172,25 +175,26 @@ export async function createIRSimScenarioRun(input:RunManifestInput,providers:IR
  }catch(error){await run.close();throw error;}
 }
 
-class IRSimRun implements ScenarioRun {
+class FixedStepRun implements ScenarioRun {
  source!:SourceSession;
  /** reservation zones of the scenario fixture (Zone.Reserve/Release through the zone bridge), absent without zones */
  traffic?:ReturnType<typeof createZoneTraffic>;
  readonly clock:Clock;
- readonly telemetry=new TelemetryRecorder(20000,'irsim_2d simulated plant (modeled, in memory)');
+ readonly telemetry:TelemetryRecorder;
  private controller:NavigationController;
  private adapters=new Map<string,IRSimNavigationAdapter>();
  private observations:RobotEvent[]=[];
  private holds:Record<string,string|null>={};
- private worker?:IRSimWorkerClient;
+ private worker?:PlantWorker;
  private queue:Promise<unknown>=Promise.resolve();
  private closed=false;
  /** step actions queued or running: a pause/cancel arriving meanwhile is taken at that batch's next tick boundary (or after its refusal), never behind it */
  private steps=0;
  private controls:{raw:unknown;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
  private engineSeed:number;
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture){
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture){
   this.clock=createClock(EPOCH,cp.tick,cp.paused);
+  this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
   this.controller=createNavigationController(fixture.zones.length?{...scene,zones:structuredClone(fixture.zones) as NavigationSceneV1['zones']}:scene);
   this.engineSeed=engineSeedOf(cp.manifest.seed,scene).engineSeed;
@@ -221,21 +225,21 @@ class IRSimRun implements ScenarioRun {
   // lossy in-memory samples for the live view; the durable per-tick record (and every metric) is the evidence store
   this.telemetry.record(c.roles.robots.flatMap(({id}):TwinSampleV2[]=>{const r=this.robotObs(id),g=this.adapters.get(id)!.goal(),live=g&&(g.state==='executing'||g.state==='cancelling');if(!r)return [];
    const [xM,yM,yawRad]=this.basePose(id,r.poseDriveMap);
-   return [{schemaVersion:2,runId:c.runId,entityId:id,providerId:IRSIM_BACKEND,bootId:c.plant.bootId??c.adapters[id]!.bootId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:'controller_sim',
+   return [{schemaVersion:2,runId:c.runId,entityId:id,providerId:this.plant.identity.amr.id,bootId:c.plant.bootId??c.adapters[id]!.bootId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:'controller_sim',
     quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:live?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM,yM,yawRad,moving:this.moving(id),hold:this.holds[id]??null},estimated:null,causationId:live?g.commandId:null} as TwinSampleV2];}));
  }
  // ---- plant (one worker process per run, never a second one) ----
  private async ask(op:'describe'|'create'|'start'|'pause'|'resume',payload:Record<string,unknown>):Promise<Extract<IRSimResponseV1,{ok:true}>>{
-  const c=this.cp,r=await this.worker!.request({protocol:'mekoniq-irsim/1',requestId:`${op}-${++c.plant.requests}`,runId:c.runId,expectedTick:c.tick,op,payload} as never);
+  const c=this.cp,r=await this.worker!.request({protocol:this.plant.protocol,requestId:`${op}-${++c.plant.requests}`,runId:c.runId,expectedTick:c.tick,op,payload} as never);
   if(!r.ok)throw new WorkerLostError(r.error.code,'not_sent',`${op} refused`);
   return r;
  }
  private async startPlant(){
   const c=this.cp,o=this.irsim;
-  this.worker=await spawnIRSimWorker({python:o.python,workerRoot:o.workerRoot,runId:c.runId,bundleRoot:join(this.dir,'bundle'),runDirectory:join(this.dir,'worker'),lockDigest:o.lockDigest,schemaDir:o.schemaDir,sceneDigest:this.scene.sceneDigest,...this.fixture.actors.length?{fixtureSha256:sha256(Buffer.from(JSON.stringify(fixtureFile(this.fixture))))}:{},...o.entry?{entry:o.entry}:{},...o.deadlinesMs?{deadlinesMs:o.deadlinesMs}:{}});
+  this.worker=await this.plant.spawn({python:o.python,workerRoot:o.workerRoot,runId:c.runId,bundleRoot:join(this.dir,'bundle'),runDirectory:join(this.dir,'worker'),lockDigest:o.lockDigest,schemaDir:o.schemaDir,sceneDigest:this.scene.sceneDigest,...this.fixture.actors.length?{fixtureSha256:sha256(Buffer.from(JSON.stringify(fixtureFile(this.fixture))))}:{},...o.entry?{entry:o.entry}:{},...o.deadlinesMs?{deadlinesMs:o.deadlinesMs}:{}});
   try{
    const d=(await this.ask('describe',{})).result as {lockDigest:string;packageVersion:string;pythonVersion:string};
-   if(d.lockDigest!==o.lockDigest||d.packageVersion!==IRSIM_AMR.version)throw new Error('IRSIM_PROVIDER_MISMATCH');
+   if(d.lockDigest!==o.lockDigest||d.packageVersion!==this.plant.identity.amr.version)throw new Error('IRSIM_PROVIDER_MISMATCH');
    c.engine={packageVersion:d.packageVersion,pythonVersion:d.pythonVersion};
    // the engine's NumPy generator gets the derived irsim-env-seed-v1 seed; the actor stream keeps the run seed (separate streams)
    const snap=(await this.ask('create',{sceneRef:SCENE,seed:this.engineSeed})).result as IRSimSnapshotV1;
@@ -389,7 +393,7 @@ class IRSimRun implements ScenarioRun {
   try{
    // every actor at its scheduled pose for tick t+1 (the schedule is a pure function of the tick: nothing a batch or a pause did changes it)
    payload={targetTick:c.tick+1,velocities:out.velocities,actorUpdates:actorUpdatesAt(this.fixture,c.tick+1)};
-   const r=await this.worker.request({protocol:'mekoniq-irsim/1',requestId:`step-${c.tick+1}`,runId:c.runId,expectedTick:c.tick,op:'step',payload});
+   const r=await this.worker.request({protocol:this.plant.protocol,requestId:`step-${c.tick+1}`,runId:c.runId,expectedTick:c.tick,op:'step',payload});
    // a refused step is as unverifiable as a lost one: the legs become unknown, the step is not retried
    if(!r.ok){await this.stepLost(`STEP_REFUSED:${(r as {error:{code:string}}).error.code}`);return false;}
    next=r.result as IRSimSnapshotV1;
@@ -539,7 +543,7 @@ class IRSimRun implements ScenarioRun {
   let served=0n;for(const w of c.workload)if(w.lineId)served+=BigInt(String((await this.source.read('fulfillment',w.lineId)).state.served??'0'));
   const journal=await this.source.journal();
   return {run:{schemaVersion:2,id:c.runId,mode:'simulation',access:'simulated',backendSetId:m.backendSetId,backends:m.backends.map(b=>b.id),status,runRevision:c.revision,eventCursor:journal.length?journal[journal.length-1]!.sequence:null,telemetryCursor:this.telemetry.cursor(),fidelity:'modeled',ageMs:0,sourceCommit:m.sourceCommit,scenarioId:m.scenario.id,scenarioRevision:m.scenario.revision,seed:m.seed},
-   tick:c.tick,simTimeNs:this.clock.simTimeNs(),model:IRSIM_AMR.model,entities:this.entities(),workload:structuredClone(c.workload),awaiting,attention:structuredClone(c.attention),served:String(served),coffee:null,...c.reclaimed?{controlAccess:'view_reconcile' as const}:{}};
+   tick:c.tick,simTimeNs:this.clock.simTimeNs(),model:this.plant.identity.amr.model,entities:this.entities(),workload:structuredClone(c.workload),awaiting,attention:structuredClone(c.attention),served:String(served),coffee:null,...c.reclaimed?{controlAccess:'view_reconcile' as const}:{}};
  }
  private entities():EntityView[]{
   const c=this.cp;
@@ -555,7 +559,7 @@ class IRSimRun implements ScenarioRun {
   const c=this.cp,v=await this.view();
   // every plant metric comes from the evidence as read back from disk now: what is not durable yet is not measured
   const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed,{scene:this.scene,runTick:c.started?c.tick:null}),m=navigationMetrics(this.scene,read,this.fixture.actors);
-  const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??IRSIM_AMR.version,pythonVersion:c.engine?.pythonVersion??'not_started'}},listed,read,m,c.started?c.tick:null);
+  const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??this.plant.identity.amr.version,pythonVersion:c.engine?.pythonVersion??'not_started'}},listed,read,m,c.started?c.tick:null);
   const available=m.coverage==='complete',why=m.coverageReasons.join(', ').slice(0,500)||'EVIDENCE_INCOMPLETE';
   const businessEvents:BusinessEvent[]=(await this.source.journal()).flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({sequence:entry.sequence,at:entry.recordedAt,type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject})));
   return {schemaVersion:2,manifest:structuredClone(c.manifest),outcome:{status:v.run.status,served:v.served,tick:c.tick,simTimeNs:v.simTimeNs},attention:v.attention,workload:v.workload,entities:v.entities,businessEvents,
@@ -563,8 +567,8 @@ class IRSimRun implements ScenarioRun {
    metrics:{maxConcurrentMovers:c.maxConcurrentMovers,distanceM:m.distanceM??{},collision:available?{available:true,contacts:m.collisionEpisodes,minSeparationM:m.minSeparationM}:{available:false,reason:why,contacts:null,minSeparationM:null},
     navigation:{horizon:m.horizon,coverage:m.coverage,reasons:m.coverageReasons,distanceM:m.distanceM,driveDistanceM:m.driveDistanceM,collisionEpisodes:m.collisionEpisodes,safetyEnvelopeEpisodes:m.safetyEnvelopeEpisodes,episodes:m.episodes,minClearanceM:m.minClearanceM,minSeparationM:m.minSeparationM,sensorPublications:m.sensorPublications}},
    rejectedObservations:structuredClone(c.rejectedObservations),reconciliations:structuredClone(c.reconciliations),recoveredOps:structuredClone(c.recoveredOps),confirmations:structuredClone(c.confirmationLog),faults:structuredClone(c.faults),
-   coverage:{businessSimulation:true,kinematicModel:true,dynamics:false,nativeExecution:false,physicalStop:false,sensorEvidence:m.sensorPublications.complete,eventStream:true},
-   limitations:[...this.scenario.rig?[`CONTENTION RIG (${this.scenario.id}): ${this.scenario.rig.note}`]:[],'irsim_2d simulated plant (IR-SIM 2.12.0, planar kinematics, collision_mode stop): no dynamics, contact physics or hardware behaviour.',
+   coverage:{businessSimulation:true,kinematicModel:true,dynamics:this.plant.identity.coverage.dynamics,nativeExecution:false,physicalStop:false,sensorEvidence:m.sensorPublications.complete,eventStream:true},
+   limitations:[...this.scenario.rig?[`CONTENTION RIG (${this.scenario.id}): ${this.scenario.rig.note}`]:[],...this.plant.identity.limitations,
     'perception: known_map_plus_simulated_lidar; the controller plans on the compiled static map and uses simulated LiDAR for dynamic obstacles.',
     'Distance, collision and clearance metrics are computed from the durable per-tick evidence (navigation2d) by the independent oracle; they are unavailable whenever that evidence is incomplete.',
     'A lost or refused worker step leaves its legs unknown; it is never resent and the run is never continued by a new worker process.',

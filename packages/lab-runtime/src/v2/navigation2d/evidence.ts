@@ -36,7 +36,9 @@ export type Chunks=Record<EvidenceStream,ChunkRef[]>;
 export interface Gap{fromTick:number;toTick:number;reason:string}
 export interface StepPayload{targetTick:number;velocities:{robotId:string;vMps:number;omegaRadps:number}[];actorUpdates:unknown[];singleStep?:boolean}
 /** Observed plant state at `tick` (drive frame, as the engine reports it). */
-export interface TrajectoryRecord{tick:number;simTimeNs:string;robots:{robotId:string;poseDriveMap:[number,number,number];bodyVelocity:[number,number];collisionIds:string[]}[]}
+/** `pose3d` is present only when the plant reports a 3D pose (a 3D engine); an IR-SIM record has exactly the other four keys. */
+export interface Pose3d{z:number;roll:number;pitch:number}
+export interface TrajectoryRecord{tick:number;simTimeNs:string;robots:{robotId:string;poseDriveMap:[number,number,number];bodyVelocity:[number,number];collisionIds:string[];pose3d?:Pose3d}[]}
 /** The velocities the source sent: computed from the observation of `tick`, applied by the step to `targetTick`. Never reconstructed from the trajectory. */
 export interface ControlRecord{tick:number;targetTick:number;singleStep:boolean;velocities:StepPayload['velocities'];actorUpdates:unknown[]}
 export interface SensorRecord{tick:number;robotId:string;scan:LidarScanV1}
@@ -229,7 +231,7 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
    if(!Number.isSafeInteger(tick)||tick<0||s.sceneDigest!==m.sceneDigest||s.runId!==m.runId)throw new Error('EVIDENCE_SNAPSHOT_FOREIGN');
    // what is buffered is still stored; only the tick beyond the limit is not
    if(tick>maxTicks){await doFlush(0);return end('EVIDENCE_TICK_LIMIT',{fromTick:tick,toTick:tick,reason:'EVIDENCE_TICK_LIMIT'});}
-   const traj:TrajectoryRecord={tick,simTimeNs:s.simTimeNs,robots:s.robots.map(r=>({robotId:r.robotId,poseDriveMap:[...r.poseDriveMap] as [number,number,number],bodyVelocity:[...r.bodyVelocity] as [number,number],collisionIds:[...r.collisionIds]}))};
+   const traj:TrajectoryRecord={tick,simTimeNs:s.simTimeNs,robots:s.robots.map(r=>({robotId:r.robotId,poseDriveMap:[...r.poseDriveMap] as [number,number,number],bodyVelocity:[...r.bodyVelocity] as [number,number],collisionIds:[...r.collisionIds],...pose3dOf(r)}))};
    const ctl:ControlRecord|null=controls&&{tick:tick-1,targetTick:tick,singleStep:controls.singleStep===true,velocities:controls.velocities.map(v=>({robotId:v.robotId,vMps:v.vMps,omegaRadps:v.omegaRadps})),actorUpdates:structuredClone(controls.actorUpdates)};
    const scans=s.robots.flatMap(r=>r.scans.flatMap(scan=>{const k=every.get(`${r.robotId}/${scan.sensorId}`);if(k===undefined||scan.tick!==tick)throw new Error('EVIDENCE_SENSOR_FOREIGN');return tick%k===0?[{tick,robotId:r.robotId,scan}]:[];}));
    const lines={trajectory:JSON.stringify(traj),control:ctl&&JSON.stringify(ctl),sensors:scans.map(x=>JSON.stringify(x))};
@@ -275,10 +277,13 @@ const RANGE_TOL=1e-6;
 const scanOk=(x:unknown,tick:unknown)=>obj(x,SCAN_KEYS)&&text(x.sensorId)&&text(x.frameId)&&nat(tick)&&x.tick===tick&&x.simTimeNs===String(BigInt(tick)*NS)&&finite(x.angleMinRad)&&finite(x.angleIncrementRad)
  &&finite(x.rangeMinM)&&x.rangeMinM>=0&&finite(x.rangeMaxM)&&x.rangeMaxM>x.rangeMinM&&Array.isArray(x.rangesM)&&Array.isArray(x.states)&&x.rangesM.length<=1080&&x.rangesM.length===x.states.length&&x.states.every(v=>BEAMS.has(v))
  &&x.rangesM.every((v,i)=>(x.states as unknown[])[i]==='hit'?finite(v)&&v>=(x.rangeMinM as number)-RANGE_TOL&&v<=(x.rangeMaxM as number)+RANGE_TOL:v===null);
+const TRAJECTORY_ROBOT_KEYS=['robotId','poseDriveMap','bodyVelocity','collisionIds'] as const;
+/** The 3D pose a plant reported for a robot, copied key by key (nothing else of the snapshot reaches the record); `{}` for a plant that reports none. */
+const pose3dOf=(r:object):{pose3d?:Pose3d}=>{const p=(r as {pose3d?:Pose3d}).pose3d;return p?{pose3d:{z:p.z,roll:p.roll,pitch:p.pitch}}:{};};
 /** The record shape of each stream, as the recorder writes it: exact keys, finite numbers (a JSON 1e999 parses as Infinity and is refused), bounded arrays. */
 const RECORD:Record<EvidenceStream,(r:unknown)=>boolean>={
  trajectory:r=>obj(r,['tick','simTimeNs','robots'])&&nat(r.tick)&&r.simTimeNs===String(BigInt(r.tick)*NS)&&Array.isArray(r.robots)&&r.robots.length>0&&r.robots.length<=32
-  &&r.robots.every(x=>obj(x,['robotId','poseDriveMap','bodyVelocity','collisionIds'])&&text(x.robotId)&&vec(x.poseDriveMap,3)&&vec(x.bodyVelocity,2)&&ids(x.collisionIds)),
+  &&r.robots.every(x=>obj(x,'pose3d' in (x as object)?[...TRAJECTORY_ROBOT_KEYS,'pose3d']:TRAJECTORY_ROBOT_KEYS)&&text(x.robotId)&&vec(x.poseDriveMap,3)&&vec(x.bodyVelocity,2)&&ids(x.collisionIds)&&(!('pose3d' in x)||obj(x.pose3d,['z','roll','pitch'])&&finite(x.pose3d.z)&&finite(x.pose3d.roll)&&finite(x.pose3d.pitch))),
  control:r=>obj(r,['tick','targetTick','singleStep','velocities','actorUpdates'])&&nat(r.tick)&&r.targetTick===r.tick+1&&typeof r.singleStep==='boolean'&&Array.isArray(r.velocities)&&r.velocities.length<=32
   &&r.velocities.every(v=>obj(v,['robotId','vMps','omegaRadps'])&&text(v.robotId)&&finite(v.vMps)&&finite(v.omegaRadps))&&Array.isArray(r.actorUpdates)&&r.actorUpdates.length<=16&&(r.actorUpdates as unknown[]).every(u=>obj(u,['actorId','poseMap'])&&text((u as {actorId:unknown}).actorId)&&vec((u as {poseMap:unknown}).poseMap,3)),
  sensors:r=>obj(r,['tick','robotId','scan'])&&nat(r.tick)&&text(r.robotId)&&scanOk(r.scan,r.tick),

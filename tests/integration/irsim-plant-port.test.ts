@@ -6,7 +6,9 @@ import { createHash } from 'node:crypto';
 import { readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { createIRSimScenarioRun } from '../../packages/lab-runtime/src/v2/navigation2d/runner';
+import { createFixedStepScenarioRun, createIRSimScenarioRun } from '../../packages/lab-runtime/src/v2/navigation2d/runner';
+import { irsimPlant, type PlantPort } from '../../packages/lab-runtime/src/v2/navigation2d/plant';
+import { plantDispatcher, portableCatalog } from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
 import type { ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
 import { finish, irsimAvailable, irsimBundle, irsimProviders, openRun, removeBundles, temp } from '../support/irsim-mission';
 
@@ -48,3 +50,34 @@ test.skipIf(!irsimAvailable)('IR-FD01 and IR-FD07 write the same evidence chunks
   if (process.env.UPDATE_GOLDEN === '1') { await writeFile(GOLDEN, JSON.stringify(actual, null, 2) + '\n'); return; }
   expect(actual).toEqual(JSON.parse(await readFile(GOLDEN, 'utf8')));
 }, 600_000);
+
+test('the dispatcher refuses a portable set whose amr provider has no plant', async () => {
+  const catalog = portableCatalog(true);
+  const set = catalog.sets['engineering-irsim-2d-v1']!;
+  const odd = { ...catalog, sets: { ...catalog.sets, 'odd-set': { ...set, providers: { ...set.providers, amr: 'no_such_plant' } } } };
+  const run = plantDispatcher(odd, { irsim_2d: { port: irsimPlant(), runtime: { python: 'p', workerRoot: 'w', schemaDir: 's', lockDigest: 'l' } } });
+  await expect(run({ backendSetId: 'odd-set' } as never, {} as never)).rejects.toThrow('BACKEND_EXECUTION_DISABLED');
+  const none = plantDispatcher(catalog, undefined);
+  await expect(none({ backendSetId: 'engineering-irsim-2d-v1' } as never, {} as never)).rejects.toThrow('BACKEND_EXECUTION_DISABLED');
+});
+
+test.skipIf(!irsimAvailable)('the plant, not the runner, names the backend, limitations and coverage a run reports', async () => {
+  const dir = await temp('irsim-port-'); dirs.push(dir);
+  const base = irsimPlant();
+  const marked: PlantPort = { ...base, identity: { ...base.identity, limitations: ['PLANT-DOUBLE-LIMITATION'], coverage: { dynamics: true } } };
+  const providers = await irsimProviders(dir, serve.service);
+  const run = await createFixedStepScenarioRun({ project: serve.locked.runtimeProjection.project, scenarioId: 'IR-FD01', scenarioRevision: 1, seed: 5, mode: 'simulation', access: 'simulated', backendSetId: 'engineering-irsim-2d-v1', sourceCommit: 'test-commit', engineering: serve.locked }, { ...providers, plant: marked, runtime: providers.irsim });
+  runs.push(run);
+  const r = await run.report();
+  expect(r.limitations).toContain('PLANT-DOUBLE-LIMITATION');
+  expect(r.limitations.some((l) => l.startsWith('irsim_2d simulated plant'))).toBe(false);
+  expect(r.coverage.dynamics).toBe(true);
+  expect(r.manifest.backends).toEqual([{ ...base.identity.amr }]);
+});
+
+test.skipIf(!irsimAvailable)('a plant with another backend id is refused by the set that names a different provider', async () => {
+  const dir = await temp('irsim-port-'); dirs.push(dir);
+  const base = irsimPlant(), other: PlantPort = { ...base, identity: { ...base.identity, amr: { ...base.identity.amr, id: 'other_plant' } } };
+  const providers = await irsimProviders(dir, serve.service);
+  await expect(createFixedStepScenarioRun({ project: serve.locked.runtimeProjection.project, scenarioId: 'IR-FD01', scenarioRevision: 1, seed: 5, mode: 'simulation', access: 'simulated', backendSetId: 'engineering-irsim-2d-v1', sourceCommit: 'test-commit', engineering: serve.locked }, { ...providers, plant: other, runtime: providers.irsim })).rejects.toThrow('BACKEND_EXECUTION_DISABLED');
+});

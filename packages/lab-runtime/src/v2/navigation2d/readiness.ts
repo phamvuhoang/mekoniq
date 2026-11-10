@@ -14,7 +14,8 @@ import {validateNavigationDocument,type NavigationSceneV1} from './contracts';
 import {spawnIRSimWorker,WorkerLostError} from './worker-client';
 import {IRSIM_AMR} from './adapter';
 import {resolveScenarioFixture} from './scenario-fixtures';
-import {createIRSimScenarioRun,irsimCapacity,IRSIM_BACKEND,type IRSimRuntimeOptions} from './runner';
+import {createFixedStepScenarioRun,irsimCapacity,IRSIM_BACKEND,type IRSimRuntimeOptions} from './runner';
+import {irsimPlant,type PlantPort} from './plant';
 
 /** The server catalog with irsim_2d marked usable (`usable`) or left unconfigured. Production code sets it usable only after a real worker describe. */
 export const portableCatalog=(usable:boolean,base:CapabilityCatalog=defaultCatalog,reason?:string):CapabilityCatalog=>({...base,backends:base.backends.map(b=>{
@@ -35,19 +36,25 @@ const MIN_FREE_BYTES=2*100*1024*1024; // two active runs at the 100 MiB evidence
 const SMOKE_TTL_MS=60_000;
 const sha256=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
 
-/** Factory dispatch by backend set: portable sets to the IR-SIM runner (only when the provider is live), native simulation sets to the native factory, anything else refused. */
-function dispatcher(catalog:CapabilityCatalog,runtime:IRSimRuntimeOptions|undefined,nativeFactory?:SimulationFactory):SimulationFactory{
+/** The live plants of this host by provider id (`set.providers.amr`), each with the operator options of its worker. */
+export type PlantTable=Readonly<Record<string,{port:PlantPort;runtime:IRSimRuntimeOptions}>>;
+/** Factory dispatch by backend set: a portable set goes to the shared runner with the plant its AMR provider names (only when that plant is live), native simulation sets to the native factory, anything else refused. */
+export function plantDispatcher(catalog:CapabilityCatalog,plants:PlantTable|undefined,nativeFactory?:SimulationFactory):SimulationFactory{
  return async(input,providers)=>{
   const set=Object.hasOwn(catalog.sets,input.backendSetId)?catalog.sets[input.backendSetId]:undefined;
   if(!set)throw new Error('BACKEND_SET_UNKNOWN');
-  if(set.execution?.host==='portable_python'){if(!runtime)throw new Error('BACKEND_EXECUTION_DISABLED');return createIRSimScenarioRun(input,{...providers,irsim:runtime});}
+  if(set.execution?.host==='portable_python'){
+   const live=set.providers?.amr!==undefined&&plants&&Object.hasOwn(plants,set.providers.amr)?plants[set.providers.amr]:undefined;
+   if(!live)throw new Error('BACKEND_EXECUTION_DISABLED');
+   return createFixedStepScenarioRun(input,{...providers,plant:live.port,runtime:live.runtime});
+  }
   if(set.mode==='simulation'&&nativeFactory)return nativeFactory(input,providers);
   throw new Error('BACKEND_EXECUTION_DISABLED');
  };
 }
 
 export async function portableSimulationFromOptions(o:PortableSimulationOptions):Promise<PortableSimulation>{
- const base=o.baseCatalog??defaultCatalog,off=(reason:string):PortableSimulation=>{const catalog=portableCatalog(false,base,reason);return {catalog,enabledBackends:[],simulationFactory:dispatcher(catalog,undefined,o.nativeFactory),unavailable:reason.split(':')[0]!};};
+ const base=o.baseCatalog??defaultCatalog,off=(reason:string):PortableSimulation=>{const catalog=portableCatalog(false,base,reason);return {catalog,enabledBackends:[],simulationFactory:plantDispatcher(catalog,undefined,o.nativeFactory),unavailable:reason.split(':')[0]!};};
  if(!o.enabled)return off('IRSIM_DISABLED: the portable IR-SIM provider is not enabled (MEKONIQ_LAB_IRSIM=1)');
  if(!process.versions.node.startsWith('24.'))return off('NODE_24_REQUIRED');
  if(!['darwin','linux'].includes(process.platform))return off(`HOST_UNSUPPORTED: ${process.platform}`);
@@ -71,7 +78,7 @@ export async function portableSimulationFromOptions(o:PortableSimulationOptions)
  if(!describe.pythonVersion.startsWith('3.11.'))return off(`PYTHON_311_REQUIRED: ${describe.pythonVersion}`);
  if(describe.lockDigest!==lockDigest)return off('IRSIM_LOCK_MISMATCH');
  const runtime:IRSimRuntimeOptions={python:o.python,workerRoot,schemaDir,lockDigest,...o.entry?{entry:o.entry}:{},...o.maxActiveRuns!==undefined?{maxActiveRuns:o.maxActiveRuns}:{}},catalog=portableCatalog(true,base);
- return {catalog,enabledBackends:[IRSIM_BACKEND],simulationFactory:dispatcher(catalog,runtime,o.nativeFactory),describe,readinessChecks:portableReadiness(runtime,describe,o,probeDir)};
+ return {catalog,enabledBackends:[IRSIM_BACKEND],simulationFactory:plantDispatcher(catalog,{[IRSIM_BACKEND]:{port:irsimPlant(),runtime}},o.nativeFactory),describe,readinessChecks:portableReadiness(runtime,describe,o,probeDir)};
 }
 
 /** Per-request IR readiness: versions/lock, the admitted bundle's scene against the world and scenario, quota/free disk, and a real worker create smoke (cached per scene). */
