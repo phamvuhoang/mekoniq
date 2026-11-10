@@ -20,12 +20,12 @@ test('the generator reproduces the committed bytes', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'arm-fixture-'));
   try {
     const out = await generateArmFixture(dir);
-    for (const name of ['component.json', 'manifest.json']) {
+    for (const name of ['component.json', 'fk-golden.json', 'manifest.json']) {
       expect(await readFile(join(dir, name), 'utf8'), name).toBe(await committed(name));
     }
     const manifest = JSON.parse(await committed('manifest.json')) as { files: { path: string; sha256: string; bytes: number }[]; componentDigest: string };
-    const text = await committed('component.json');
-    expect(manifest.files).toEqual([{ path: 'component.json', sha256: createHash('sha256').update(text).digest('hex'), bytes: Buffer.byteLength(text) }]);
+    const entry = async (path: string) => { const t = await committed(path); return { path, sha256: createHash('sha256').update(t).digest('hex'), bytes: Buffer.byteLength(t) }; };
+    expect(manifest.files).toEqual([await entry('component.json'), await entry('fk-golden.json')]);
     expect(manifest.componentDigest).toBe(out.componentDigest);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });

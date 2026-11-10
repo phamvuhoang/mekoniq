@@ -25,4 +25,6 @@ Mọi tham số này sẽ đổi nếu có dữ liệu tay máy thật (DH hoặ
 pnpm exec tsx scripts/generate-arm-fixture.mjs        # ghi component.json và manifest.json tại đây
 ```
 
+Ngoài `component.json` còn `fk-golden.json` (5 pose và vị trí mặt bích từ `forwardKinematics` của Lab) để test compiler (`tests/test_compile_arm.py`) dựng lại chuỗi khớp từ văn bản `.wbt` và so ở 1e-9 m, và `manifest.json` (sha256, số byte, `componentDigest`).
+
 Đầu ra tất định: số làm tròn 12 chữ số, khóa JSON sắp xếp. `tests/unit/arm-fixture.test.ts` sinh lại vào thư mục tạm và so từng byte, kiểm schema, và so FK của chuỗi khớp (`chainFk`) với `forwardKinematics` của Lab tại mọi pose của `arm-fk-golden.json`: lệch lớn nhất 9e-13 m, ngưỡng 1e-9 m.

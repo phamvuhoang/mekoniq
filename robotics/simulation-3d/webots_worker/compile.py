@@ -3,6 +3,8 @@
 Pure: no Webots, no file access, no clock. The same inputs give the same bytes. Everything that reaches the text is a number formatted by repr() or an identifier
 that matched SAFE_ID, so a scene or a model cannot add nodes to the world. Nothing here goes through URDF: links, joints, inertia and sensors map one to one.
 
+`compile_arm_world` (R1.1) is the arm counterpart: one extern arm Robot of nested HingeJoints from an ArmScene3DV1 and the arm-ref-3d component; the AMR path above is untouched.
+
 Frames: the physical model's base link is the Robot node; every other link is a Solid nested in its parent (fixed joint) or the endPoint of a HingeJoint
 (continuous joint). The scene gives the drive-frame pose of each robot in the map; the base link is placed so the wheels stand on the floor plane z = 0.
 """
@@ -354,3 +356,164 @@ def compile_world(scene, models, seed):
     statics += "".join(_static(o, w3["wallHeightM"]) for o in sorted(world["boundaries"], key=lambda o: o["id"]))
     supervisor = "Robot {\n  name \"mekoniq_supervisor\"\n  supervisor TRUE\n  controller \"<extern>\"\n  synchronization TRUE\n}\n"
     return head + statics + supervisor + "".join(robots)
+
+
+# ---- arm world (R1.1) ----
+ARM_MAX_JOINTS = 8
+ARM_SEED_MAX = 0x7FFFFFFF  # WorldInfo.randomSeed is an SFInt32
+NAME_CHARS = re.compile(r"^[A-Za-z0-9_.:/-]{1,200}$")  # the EngineeringId alphabet
+
+
+def arm_name(value, what):
+    """The Webots name of an engineering id: ':' and '/' become '_', and the result must be a SAFE_ID. Robot names are controller URL segments, so the worker uses this too."""
+    if not isinstance(value, str) or not NAME_CHARS.match(value):
+        raise CompileError("ID_INVALID", f"{what}: {value!r}")
+    return _ident(value.replace(":", "_").replace("/", "_"), what)
+
+
+def _qmul(a, b):
+    ax, ay, az, aw = a
+    bx, by, bz, bw = b
+    return (aw * bx + ax * bw + ay * bz - az * by, aw * by - ax * bz + ay * bw + az * bx, aw * bz + ax * by - ay * bx + az * bw, aw * bw - ax * bx - ay * by - az * bz)
+
+
+def _qaxis(axis, angle):
+    n = math.sqrt(sum(v * v for v in axis))
+    s = math.sin(angle / 2) / n
+    return (axis[0] * s, axis[1] * s, axis[2] * s, math.cos(angle / 2))
+
+
+def _finite(v):
+    return not isinstance(v, bool) and isinstance(v, (int, float)) and math.isfinite(v)
+
+
+def _check_arm_scene(scene):
+    eng = scene.get("engine") or {}
+    if eng.get("id") != "webots_3d":
+        raise CompileError("ENGINE_MISMATCH", str(eng.get("id")))
+    step = eng.get("basicTimeStepMs")
+    if not isinstance(step, int) or isinstance(step, bool) or step <= 0 or TICK_MS % step:
+        raise CompileError("TIMESTEP_NOT_DIVISOR", f"basicTimeStepMs {step!r} does not divide {TICK_MS} ms")
+    seed = scene.get("engineSeed")
+    if isinstance(seed, bool) or not isinstance(seed, int) or not 0 <= seed <= ARM_SEED_MAX:
+        raise CompileError("SEED_INVALID", repr(seed))
+    friction = (scene.get("world3d") or {}).get("floorFriction")
+    if not _finite(friction) or friction < 0:
+        raise CompileError("WORLD3D_MISSING", f"world3d.floorFriction is {friction!r}")
+    base = scene["arm"]["baseInMap"]
+    if len(base["position"]) != 3 or not all(_finite(v) for v in base["position"]) or len(base["quaternionXyzw"]) != 4 or not all(_finite(v) for v in base["quaternionXyzw"]) or not any(base["quaternionXyzw"]):
+        raise CompileError("MODEL_NOT_FINITE", "arm.baseInMap")
+    return step, seed, friction, (tuple(base["position"]), tuple(base["quaternionXyzw"]))
+
+
+def _check_arm_model(model, arm):
+    """Serial chain of revolute joints from the one link that is nobody's child; returns (links, joint per parent link, root, joints in chain order)."""
+    if arm["modelId"] != model.get("id"):
+        raise CompileError("ARM_MODEL_MISMATCH", f"scene {arm['modelId']!r}, model {model.get('id')!r}")
+    for j in model["joints"]:
+        if j["kind"] != "revolute":
+            raise CompileError("JOINT_UNSUPPORTED", f"{j['id']}: {j['kind']} (an arm is a chain of revolute joints)")
+    if len(model["joints"]) > ARM_MAX_JOINTS:
+        raise CompileError("ARM_TOO_MANY_JOINTS", f"{len(model['joints'])} joints, at most {ARM_MAX_JOINTS}")
+    links = {}
+    for l in model["links"]:
+        for shape in l["visual"] + l["collision"]:
+            if shape["geometry"]["kind"] == "mesh":
+                raise CompileError("MESH_UNSUPPORTED", l["id"])
+    for l in model["links"]:
+        mass = l["massKg"]["value"]
+        if not _finite(mass) or mass <= 0:
+            raise CompileError("MASS_INVALID", f"{l['id']}: {mass!r}")
+        inertia = l.get("inertiaKgM2")
+        if not isinstance(inertia, list) or len(inertia) != 6 or not all(_finite(v) for v in inertia):
+            raise CompileError("INERTIA_MISSING", l["id"])
+        if not l["collision"]:
+            raise CompileError("MODEL_COLLISION_MISSING", l["id"])
+        links[l["id"]] = l
+    by_parent = {}
+    for j in model["joints"]:
+        if j["parent"] not in links or j["child"] not in links or j["parent"] in by_parent:
+            raise CompileError("JOINT_UNSUPPORTED", f"{j['id']}: unknown link or a link with two child joints")
+        by_parent[j["parent"]] = j
+        axis, lim = j["axis"], j.get("limits") or {}
+        if len(axis) != 3 or not all(_finite(v) for v in axis) or not any(axis):
+            raise CompileError("JOINT_UNSUPPORTED", f"{j['id']}: axis")
+        lo, hi, vel, eff = (((lim.get(k) or {}).get("value")) for k in ("lower", "upper", "velocity", "effort"))
+        if not all(_finite(v) for v in (lo, hi, vel, eff)) or not lo < hi or vel <= 0 or eff <= 0:
+            raise CompileError("JOINT_UNSUPPORTED", f"{j['id']}: limits")
+    roots = set(links) - {j["child"] for j in model["joints"]}
+    if len(roots) != 1:
+        raise CompileError("JOINT_UNSUPPORTED", "an arm needs exactly one base link")
+    root = roots.pop()
+    chain, cur = [], root
+    while cur in by_parent:
+        chain.append(by_parent[cur])
+        cur = by_parent[cur]["child"]
+        if len(chain) > len(model["joints"]):
+            raise CompileError("JOINT_UNSUPPORTED", "joint cycle")
+    if len(chain) != len(model["joints"]) or len(chain) + 1 != len(links):
+        raise CompileError("JOINT_UNSUPPORTED", "joints do not form one chain from the base link")
+    home = arm["homeRad"]
+    if len(home) != len(chain):
+        raise CompileError("ARM_HOME_OUT_OF_RANGE", f"homeRad has {len(home)} values for {len(chain)} joints")
+    for h, j in zip(home, chain):
+        if not _finite(h) or not j["limits"]["lower"]["value"] <= h <= j["limits"]["upper"]["value"]:
+            raise CompileError("ARM_HOME_OUT_OF_RANGE", f"{j['id']}: {h!r}")
+    return links, root, chain
+
+
+def _arm_joint(links, chain, home, i, ind):
+    j, h = chain[i], home[i]
+    pose = _pose_of(j["origin"])
+    axis_parent = _apply(_rot(pose[1]), j["axis"])
+    end_pose = (pose[0], _qmul(pose[1], _qaxis(j["axis"], h)))
+    lim, link = j["limits"], links[j["child"]]
+    nxt = _arm_joint(links, chain, home, i + 1, ind + "    ") if i + 1 < len(chain) else ""
+    return (f"{ind}HingeJoint {{\n{ind}  jointParameters HingeJointParameters {{\n{ind}    position {_num(h)}\n{ind}    axis {_vec(axis_parent)}\n{ind}    anchor {_vec(pose[0])}\n{ind}  }}\n"
+            f"{ind}  device [\n{ind}    RotationalMotor {{\n{ind}      name \"J{i + 1}_motor\"\n{ind}      maxVelocity {_num(lim['velocity']['value'])}\n{ind}      maxTorque {_num(lim['effort']['value'])}\n"
+            f"{ind}      minPosition {_num(lim['lower']['value'])}\n{ind}      maxPosition {_num(lim['upper']['value'])}\n{ind}    }}\n{ind}    PositionSensor {{\n{ind}      name \"J{i + 1}_sensor\"\n{ind}    }}\n{ind}  ]\n"
+            f"{ind}  endPoint Solid {{\n{_pose_fields(end_pose, ind + '    ')}{ind}    name \"{arm_name(j['child'], 'link id')}\"\n{ind}    children [\n{nxt}{ind}    ]\n"
+            f"{_bounding(link, ind + '    ')}{_physics(link, ind + '    ')}{ind}  }}\n{ind}}}\n")
+
+
+def _arm_static(n, o, base):
+    """A static obstacle given in the arm base frame, placed in the world through the arm's baseInMap pose."""
+    bp, bq = base
+    r = _rot(bq)
+    if o["kind"] == "sphere":
+        local, size = o["center"], None
+        shape = f"Sphere {{ radius {_num(o['radiusM'])} }}"
+    else:
+        local = [(a + b) / 2 for a, b in zip(o["min"], o["max"])]
+        shape = f"Box {{ size {_vec([b - a for a, b in zip(o['min'], o['max'])])} }}"
+    t = _apply(r, local)
+    pose = ((bp[0] + t[0], bp[1] + t[1], bp[2] + t[2]), bq)
+    return (f"DEF STATIC_{n} Solid {{\n{_pose_fields(pose, '  ')}  name \"{arm_name(o['id'], 'static id')}\"\n  children [\n    Shape {{\n"
+            f"      appearance PBRAppearance {{ baseColor 0.6 0.5 0.4 roughness 1 metalness 0 }}\n      geometry {shape}\n    }}\n  ]\n  boundingObject {shape}\n}}\n")
+
+
+def compile_arm_world(scene, model):
+    """The .wbt text of an ArmScene3DV1 and the arm-ref-3d component: a floor, the static obstacles (arm base frame, placed by baseInMap), one extern supervisor and one extern
+    Robot that is the arm. No AMR, cup or coffee machine. Device names are J<i>_motor / J<i>_sensor; the arm is DEF ARM_<name>, obstacles DEF STATIC_<n> (an id never becomes a DEF)."""
+    step, seed, friction, base = _check_arm_scene(scene)
+    arm = scene["arm"]
+    links, root, chain = _check_arm_model(model, arm)
+    name = arm_name(arm["armId"], "arm id")
+    statics, seen = [], set()
+    for n, o in enumerate(sorted(scene["statics"], key=lambda o: o["id"]), 1):
+        nm = arm_name(o["id"], "static id")
+        if nm in seen:
+            raise CompileError("ID_INVALID", f"two obstacles are named {nm!r}")
+        seen.add(nm)
+        statics.append(_arm_static(n, o, base))
+    bp, bq = base
+    head = ("#VRML_SIM R2025a utf8\n"
+            f"WorldInfo {{\n  basicTimeStep {step}\n  optimalThreadCount 1\n  randomSeed {seed}\n  coordinateSystem \"ENU\"\n  contactProperties [\n"
+            f"    ContactProperties {{\n      material1 \"default\"\n      material2 \"default\"\n      coulombFriction [ {_num(friction)} ]\n    }}\n  ]\n}}\n"
+            f"Viewpoint {{\n  orientation 0 0 1 3.1416\n  position {_vec((bp[0] + 2.5, bp[1], bp[2] + 1.0))}\n}}\n"
+            f"Solid {{\n  name \"floor\"\n  translation {_vec((bp[0], bp[1], 0.0))}\n  children [\n    Shape {{\n      appearance PBRAppearance {{ baseColor 0.8 0.8 0.8 roughness 1 metalness 0 }}\n      geometry Plane {{ size 10.0 10.0 }}\n    }}\n  ]\n"
+            f"  boundingObject Plane {{ size 10.0 10.0 }}\n}}\n")
+    supervisor = "Robot {\n  name \"mekoniq_supervisor\"\n  supervisor TRUE\n  controller \"<extern>\"\n  synchronization TRUE\n}\n"
+    robot = (f"DEF ARM_{re.sub(r'[^A-Za-z0-9_]', '_', name)} Robot {{\n{_pose_fields((bp, bq), '  ')}  name \"{name}\"\n  controller \"<extern>\"\n  synchronization TRUE\n"
+             f"  children [\n{_arm_joint(links, chain, arm['homeRad'], 0, '    ')}  ]\n{_bounding(links[root], '  ')}}}\n")
+    return head + "".join(statics) + supervisor + robot

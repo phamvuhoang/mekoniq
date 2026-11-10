@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {PUMA560_SI,PUMA560_REFERENCE_REVISION,jointNameForLinuxcnc} from '../packages/lab-runtime/src/v2/models/arm-kinematics';
+import {PUMA560_SI,PUMA560_REFERENCE_REVISION,forwardKinematics,jointNameForLinuxcnc} from '../packages/lab-runtime/src/v2/models/arm-kinematics';
 import {DEFAULT_ARM_GEOMETRY} from '../packages/lab-runtime/src/v2/models/arm-collision';
 import {qmul,qrotate} from '../packages/lab-runtime/src/v2/frames';
 import {hashJson} from '../packages/lab-runtime/src/v2/hash';
@@ -63,16 +63,19 @@ export function chainFk(component,q){
   component.joints.forEach((j,i)=>{const o=qrotate(rot,j.origin.xyzM);p=[p[0]+o[0],p[1]+o[1],p[2]+o[2]];rot=qmul(qmul(rot,j.origin.quaternionXyzw),qz(q[i]*j.axis[2]));});
   return {flange:p,quaternionXyzw:rot};
 }
+/** Poses whose flange the Lab forwardKinematics gives; the Python world compiler test recomputes the chain from the generated .wbt text and must land on the same points. */
+export const GOLDEN_POSES=[[0,0,0,0,0,0],[0,-0.6,1.2,0,0.6,0],[0.5,-0.3,0.9,0,0.9,0],[-0.5,-0.3,0.9,0,0.9,0],[0.3,-0.7,0.9,0.4,0.5,-0.2]];
+const fkGolden=()=>({schemaVersion:1,note:'flange position (m, arm base frame) from the Lab forwardKinematics(PUMA560_SI, q)',poses:GOLDEN_POSES.map((q)=>({q,flangeM:forwardKinematics(PUMA560_SI,q).flange.position}))});
 export async function generateArmFixture(dir){
-  const component=buildArmComponent(),body=text(component),componentDigest=hashJson(component);
+  const component=buildArmComponent(),body=text(component),golden=text(fkGolden()),componentDigest=hashJson(component),entry=(path,t)=>({path,sha256:createHash('sha256').update(t).digest('hex'),bytes:Buffer.byteLength(t)});
   const manifest={schemaVersion:1,documentType:'sim3d-fixture-manifest',id:'arm-ref-3d-v1',generator:'scripts/generate-arm-fixture.mjs',componentDigest,modelRevision:PUMA560_SI.revision,
     note:'The Lab PUMA560_REFERENCE table as one 6-revolute engineering component for the Webots arm plant. Geometry derives from the table; masses, inertia and joint effort are assumed inputs (spike X00). Not PUMA data and not a product arm.',
-    files:[{path:'component.json',sha256:createHash('sha256').update(body).digest('hex'),bytes:Buffer.byteLength(body)}]};
+    files:[entry('component.json',body),entry('fk-golden.json',golden)]};
   await mkdir(dir,{recursive:true});
-  await writeFile(join(dir,'component.json'),body);await writeFile(join(dir,'manifest.json'),text(manifest));
+  await writeFile(join(dir,'component.json'),body);await writeFile(join(dir,'fk-golden.json'),golden);await writeFile(join(dir,'manifest.json'),text(manifest));
   return {component,componentDigest,manifest};
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)){
   const i=process.argv.indexOf('--out'),dir=i>0?process.argv[i+1]:'robotics/simulation-3d/fixtures/arm-ref-3d-v1';
-  const out=await generateArmFixture(dir);console.log(`wrote ${dir}/component.json (digest ${out.componentDigest}) and manifest.json`);
+  const out=await generateArmFixture(dir);console.log(`wrote ${dir}/component.json (digest ${out.componentDigest}) fk-golden.json and manifest.json`);
 }
