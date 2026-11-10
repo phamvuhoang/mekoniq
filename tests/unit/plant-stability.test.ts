@@ -14,3 +14,6 @@ test('review R1 #2: sinking by more than 0.6 wheel radii, rising by more than 4,
   expect(poseUnstable({ z: NaN, roll: 0, pitch: 0 }, wheel, rest)).toBe(true);
   expect(poseUnstable({ z: rest - 0.5 * wheel, roll: 0.3, pitch: 0 }, wheel, rest)).toBe(false);
 });
+test('review R1 #2: a robot that sank below the floor before its first sample is still unstable (the rest height cannot excuse it)', () => {
+  expect(poseUnstable({ z: -0.7 * wheel, roll: 0, pitch: 0 }, wheel, -0.7 * wheel)).toBe(true);
+});

@@ -62,14 +62,16 @@ await mkdir(join(out,'suites'),{recursive:true,mode:0o700});await mkdir(join(out
 const scrub=(t)=>t.replaceAll(resolve(root,'..'),'<workspace>').replaceAll(homedir(),'<home>').replaceAll(tmpdir(),'<tmp>').replaceAll(hostname(),'<host>');
 const commands=[],suites=[],notRun=[];
 let signalled=0;const children=new Set();
-// each suite runs in its own process group: a signal or the timeout reaches Webots, the controllers and every worker below it, not only the direct child
-const killGroup=(c,sig)=>{try{process.kill(-c.pid,sig);}catch{try{c.kill(sig);}catch{/* already gone */}}};
-for(const [sig,code] of [['SIGINT',130],['SIGTERM',143]])process.on(sig,()=>{signalled||=code;for(const c of children)killGroup(c,sig);});
+// each suite runs in its own process group so a signal reaches the whole suite (lab-irsim, vitest), not only the direct child. Workers start their own groups (spawnWorker is detached), so the
+// first signal is a polite one: lab-irsim and the vitest teardown close their workers on SIGTERM. SIGKILL follows only if the suite is still running 8 s later.
+const sendGroup=(c,sig)=>{try{process.kill(-c.pid,sig);}catch{try{c.kill(sig);}catch{/* already gone */}}};
+const killGroup=(c,sig)=>{sendGroup(c,sig==='SIGKILL'?'SIGTERM':sig);setTimeout(()=>{if(children.has(c))sendGroup(c,'SIGKILL');},8000).unref();};
+for(const [sig,code] of [['SIGINT',130],['SIGTERM',143],['SIGHUP',129]])process.on(sig,()=>{signalled||=code;for(const c of children)killGroup(c,sig);});
 async function record(id,cmd,args,{cwd=root,env={},timeoutMs=3_600_000}={}){
  const startedAt=new Date().toISOString(),log=`suites/${id}.log`;
  const code=await new Promise((done)=>{const c=spawn(cmd,args,{cwd,env:{...process.env,...env},stdio:['ignore','pipe','pipe'],detached:true});children.add(c);let text='';
   c.stdout.on('data',d=>{text+=d;});c.stderr.on('data',d=>{text+=d;});const t=setTimeout(()=>killGroup(c,'SIGKILL'),timeoutMs);
-  c.once('close',(status,sig)=>{clearTimeout(t);children.delete(c);writeFile(join(out,log),scrub(text)).then(()=>done(status??(sig==='SIGINT'?130:sig==='SIGTERM'?143:1)));});});
+  c.once('close',(status,sig)=>{clearTimeout(t);children.delete(c);writeFile(join(out,log),scrub(text)).then(()=>done(status??(sig==='SIGINT'?130:sig==='SIGTERM'?143:sig==='SIGHUP'?129:1)));});});
  const entry={id,command:scrub(`${Object.entries(env).map(([k,v])=>`${k}=${v}`).join(' ')} ${cmd} ${args.join(' ')}`.trim()),cwd:cwd===root?'source':relative(root,cwd),startedAt,finishedAt:new Date().toISOString(),exitCode:code,log,logSha256:sha(readFileSync(join(out,log)))};
  console.log(`${id}: exit ${code}`);return entry;
 }

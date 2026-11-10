@@ -6,7 +6,7 @@ import {join,resolve} from 'node:path';
 import {WEBOTS_UNCONFIGURED,type BackendCapability} from '../capabilities';
 import {lockDigestOf} from '../../engineering/linkforge';
 import type {NativeReadinessChecks} from '../readiness';
-import {providerReadiness} from '../navigation2d/readiness';
+import {closeOnAbort,providerReadiness} from '../navigation2d/readiness';
 import {WorkerLostError,type PlantPort} from '../navigation2d/plant';
 import {activeRunCount} from '../navigation2d/runner';
 import {WEBOTS_AMR,webotsPlant,type WebotsRuntimeOptions} from './webots';
@@ -50,11 +50,11 @@ export async function webotsFromOptions(o:WebotsOptions):Promise<WebotsProvider>
  const port=webotsPlant(runtime);
  const readinessChecks=providerReadiness({prefix:'WEBOTS',engineId:'webots_3d',runtime,lockPath:o.lockPath,directory:o.directory,probeDir,bundleFile:o.bundleFile,
   evidence:`webots:${describe.engineVersion}/sha256:${describe.executableSha256.slice(0,16)}/python-${describe.pythonVersion}/lock:${lockDigest.slice(0,16)}`,
-  capacity:runId=>activeRunCount(WEBOTS_AMR.id,runId)<WEBOTS_MAX_ACTIVE_RUNS,
+  capacity:runId=>activeRunCount(WEBOTS_AMR.id,runId)<WEBOTS_MAX_ACTIVE_RUNS,exclusive:true,
   async smoke(scene,bundleRoot,runDirectory,signal){
    try{
     const w=await spawnSim3DWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:'webots-smoke',bundleRoot,runDirectory,lockDigest,schemaDir,sceneDigest:scene.sceneDigest,webotsHome:home,...o.entry?{entry:o.entry}:{}});
-    const onAbort=()=>void w.close('readiness timeout').catch(()=>{});signal.addEventListener('abort',onAbort,{once:true});
+    const detach=closeOnAbort(signal,()=>w.close('readiness timeout'));
     try{
      const c=await w.request({protocol:'mekoniq-sim3d/1',requestId:'smoke-1',runId:'webots-smoke',expectedTick:0,op:'create',payload:{sceneRef:'navigation-scene.json',seed:1}});
      if(c.ok)return [];
@@ -62,7 +62,7 @@ export async function webotsFromOptions(o:WebotsOptions):Promise<WebotsProvider>
      // Webots needs a window-server session on macOS; a failure that names the display is that, not a broken install
      return [code.code==='WEBOTS_START_FAILED'&&/display|window ?server|cocoa|platform plugin/i.test(code.detail)?'WEBOTS_NO_GUI_SESSION':code.code==='WEBOTS_PORT_IN_USE'?'WEBOTS_PORT_IN_USE':`WEBOTS_SMOKE_FAILED:${code.code}`];
     }catch(e){return [`WEBOTS_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'WORKER_FAILED'}`];}
-    finally{signal.removeEventListener('abort',onAbort);await w.close('smoke done');}
+    finally{detach();await w.close('smoke done');}
    }catch(e){return [`WEBOTS_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`];}
   }});
  // a worker entry override is a test double: it can exercise every row above, but it never makes the provider installed

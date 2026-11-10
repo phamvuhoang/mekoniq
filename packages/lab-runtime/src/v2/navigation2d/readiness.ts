@@ -103,16 +103,29 @@ async function irsimPortable(o:PortableSimulationOptions):Promise<PortableSimula
 }
 
 /** What differs between the plants' per-request readiness: the reason-code prefix, the engine the admitted scene must name, the worker slots and a real create smoke on the admitted scene. */
+/** Runs `close` when `signal` aborts (at once if it already has); the returned function detaches the listener. */
+export function closeOnAbort(signal:AbortSignal,close:()=>unknown):()=>void{
+ const run=()=>{try{void Promise.resolve(close()).catch(()=>{});}catch{/* closing is best effort */}};
+ if(signal.aborted){run();return()=>{};}
+ signal.addEventListener('abort',run,{once:true});return()=>signal.removeEventListener('abort',run);
+}
+/** One smoke at a time per gate: a second caller gets null (and starts nothing) until the first has ended, whether it returned or threw. */
+export async function exclusiveSmoke(gate:{busy:boolean},run:()=>Promise<string[]>):Promise<string[]|null>{
+ if(gate.busy)return null;gate.busy=true;
+ try{return await run();}finally{gate.busy=false;}
+}
 export interface ProviderReadinessSpec {
  prefix:string;engineId:string;runtime:IRSimRuntimeOptions;lockPath:string;directory:string;probeDir:string;evidence:string;
  bundleFile?:PortableSimulationOptions['bundleFile'];
  capacity:(runId?:string)=>boolean;
+ /** Only one smoke at a time (a Webots start is one world per host): a concurrent request is blocked with `<PREFIX>_SMOKE_BUSY`. */
+ exclusive?:boolean;
  /** A real worker, the real scene: create, then a clean stop. Resolves to reason codes, [] when it worked. */
  smoke:(scene:NavigationSceneV1,bundleRoot:string,runDirectory:string,signal:AbortSignal)=>Promise<string[]>;
 }
 /** Per-request readiness: versions/lock, the admitted bundle's scene against the world and scenario, quota/free disk, and a real worker create smoke (cached per scene). */
 export function providerReadiness(spec:ProviderReadinessSpec):NativeReadinessChecks{
- const smoked=new Map<string,number>(),P=spec.prefix,lower=P.toLowerCase();
+ const smoked=new Map<string,number>(),gate={busy:false},P=spec.prefix,lower=P.toLowerCase();
  return async(context,signal)=>{
   const row=(id:string,reasonCodes:string[],evidenceRef:string|null=null,status:ReadinessCheck['status']='blocked'):ReadinessCheck=>({id,status:reasonCodes.length?status:'ready',reasonCodes,evidenceRef});
   const profile:string[]=[];
@@ -153,8 +166,8 @@ export function providerReadiness(spec:ProviderReadinessSpec):NativeReadinessChe
    const scratch=await mkdtemp(join(spec.probeDir,'smoke-'));
    try{
     for(const [path,b] of files){await mkdir(dirname(join(scratch,'bundle',path)),{recursive:true});await writeFile(join(scratch,'bundle',path),b,{mode:0o600});}
-    const failed=await spec.smoke(scene,join(scratch,'bundle'),join(scratch,'run'),signal);
-    if(failed.length)runner.push(...failed);else smoked.set(scene.sceneDigest,Date.now()+SMOKE_TTL_MS);
+    const failed=spec.exclusive?await exclusiveSmoke(gate,()=>spec.smoke(scene,join(scratch,'bundle'),join(scratch,'run'),signal)):await spec.smoke(scene,join(scratch,'bundle'),join(scratch,'run'),signal);
+    if(failed===null)runner.push(`${P}_SMOKE_BUSY`);else if(failed.length)runner.push(...failed);else smoked.set(scene.sceneDigest,Date.now()+SMOKE_TTL_MS);
    }catch(e){runner.push(`${P}_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`);}
    finally{await rm(scratch,{recursive:true,force:true});}
   }else if(!scene)runner.push(`${P}_SMOKE_NOT_RUN`);
@@ -170,13 +183,13 @@ function portableReadiness(runtime:IRSimRuntimeOptions,described:NonNullable<Por
   async smoke(scene,bundleRoot,runDirectory,signal){
    try{
     const w=await spawnIRSimWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:'irsim-smoke',bundleRoot,runDirectory,lockDigest:runtime.lockDigest,schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...runtime.entry?{entry:runtime.entry}:{}});
-    const onAbort=()=>void w.close('readiness timeout').catch(()=>{});signal.addEventListener('abort',onAbort,{once:true});
+    const detach=closeOnAbort(signal,()=>w.close('readiness timeout'));
     try{
      const ask=(op:'describe'|'create',payload:Record<string,unknown>,n:number)=>w.request({protocol:'mekoniq-irsim/1',requestId:`smoke-${n}`,runId:'irsim-smoke',expectedTick:0,op,payload});
      const d=await ask('describe',{},1),c=await ask('create',{sceneRef:'navigation-scene.json',seed:1},2);
      return !d.ok||!c.ok?[`IRSIM_SMOKE_FAILED:${(!d.ok?d:c as {error:{code:string}}).error.code}`]:[];
     }catch(e){return [`IRSIM_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'WORKER_FAILED'}`];}
-    finally{signal.removeEventListener('abort',onAbort);await w.close('smoke done');}
+    finally{detach();await w.close('smoke done');}
    }catch(e){return [`IRSIM_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`];}
   }});
 }

@@ -22,4 +22,6 @@ test("review R1 #9: only the Webots engine whose world is in this run's director
   ].join('\n');
   expect(enginePids(ps, '/tmp/my dir/run-a/run')).toEqual([101]);
   expect(enginePids('', '/x')).toEqual([]);
+  // the install itself under a path with spaces
+  expect(enginePids('  505 /Users/me/My Apps/Webots.app/Contents/MacOS/webots --batch /tmp/r/run/w/world.wbt', '/tmp/r/run')).toEqual([505]);
 });

@@ -178,9 +178,9 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  }catch(error){await run.close();throw error;}
 }
 
-/** A 3D pose that is not finite, tilts more than 0.35 rad, or has its base more than 0.6 wheel radii below or 4 above the height the robot first stood at. */
+/** A 3D pose that is not finite, tilts more than 0.35 rad, or has its base more than 0.6 wheel radii below or 4 above the height the robot first stood at (the floor itself, z = 0, bounds the rest height from below, so a robot that sank before its first sample is caught). */
 export function poseUnstable(p:{z:number;roll:number;pitch:number},wheelRadiusM:number,restZ:number):boolean{
- return![p.z,p.roll,p.pitch].every(Number.isFinite)||Math.abs(p.roll)>TILT_LIMIT_RAD||Math.abs(p.pitch)>TILT_LIMIT_RAD||p.z<restZ-0.6*wheelRadiusM||p.z>restZ+4*wheelRadiusM;
+ return![p.z,p.roll,p.pitch].every(Number.isFinite)||Math.abs(p.roll)>TILT_LIMIT_RAD||Math.abs(p.pitch)>TILT_LIMIT_RAD||p.z<Math.max(restZ,0)-0.6*wheelRadiusM||p.z>restZ+4*wheelRadiusM;
 }
 class FixedStepRun implements ScenarioRun {
  source!:SourceSession;

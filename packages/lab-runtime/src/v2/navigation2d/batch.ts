@@ -27,12 +27,12 @@ import {spawnIRSimWorker} from './worker-client';
 import type {IRSimSnapshotV1} from './contracts';
 import {execFileSync} from 'node:child_process';
 
-/** The largest difference between two flattened pose traces (x, y, yaw per robot per tick); a yaw difference is taken modulo 2 pi, so +pi and -pi are the same heading. */
 /** The pids of Webots engines (command line starts with the executable) whose argument list names a file under `runDir`. */
 export function enginePids(psText:string,runDir:string):number[]{
- return psText.split('\n').filter(l=>/^\s*\d+\s+\S*\/Contents\/MacOS\/webots(\s|$)/.test(l)&&l.includes(`${runDir}/`)).map(l=>Number(l.trim().split(/\s+/)[0]));
+ return psText.split('\n').filter(l=>/^\s*\d+\s+\/(?:(?! -).)*?\/Contents\/MacOS\/webots(\s|$)/.test(l)&&l.includes(`${runDir}/`)).map(l=>Number(l.trim().split(/\s+/)[0]));
 }
 
+/** The largest difference between two flattened pose traces (x, y, yaw per robot per tick); a yaw difference is taken modulo 2 pi, so +pi and -pi are the same heading. */
 export function poseTraceDifference(a:readonly number[],b:readonly number[]):number{
  let worst=0;
  for(let k=0;k<a.length;k++){let d=Math.abs(a[k]!-b[k]!);if(k%3===2){d%=2*Math.PI;if(d>Math.PI)d=2*Math.PI-d;}worst=Math.max(worst,d);}
