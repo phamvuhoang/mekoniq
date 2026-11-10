@@ -166,6 +166,8 @@ World viết tay, một tay máy theo `PUMA560_REFERENCE` với khối lượng 
 5. **Sửa hai Minor R1 (D31)** trong R1.1.
 6. **R1.1 chạy trước R2.** R2 (MuJoCo) sau đó nhận cả AMR lẫn tay máy qua cùng protocol.
 
+Đã xác nhận cả sáu mặc định ngày 2026-11-10 (người dùng); X00 có thể bắt đầu.
+
 ## 9. Ước lượng
 
 | Gói | Ngày kỹ sư |
