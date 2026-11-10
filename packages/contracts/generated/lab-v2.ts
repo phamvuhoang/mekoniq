@@ -1074,6 +1074,12 @@ export interface TwinAmrState {
   goalCommandId?: string | null;
   goalState?: string | null;
   batteryRatio?: number | null;
+  /**
+   * Height of the base origin above the floor; only a 3D plant reports it.
+   */
+  zM?: number;
+  rollRad?: number;
+  pitchRad?: number;
 }
 /**
  * AMR commanded goal: command id and state, optional target in metres.

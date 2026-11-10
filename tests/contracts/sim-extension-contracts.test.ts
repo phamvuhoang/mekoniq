@@ -5,6 +5,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildNavigationEvidence, navigationMetrics, openNavigationRecorder, readNavigationEvidence } from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
+import { validateTwinSampleV2 } from '../../packages/lab-runtime/src/v2/contracts';
 import { sealDocument, validateAlgorithmResult, validateNavigationDocument, validateNavigationEvidence, validateSim3DRequest, validateSim3DResponse } from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import type { IRSimSnapshotV1, NavigationSceneV1 } from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import { navigationScene } from '../support/navigation2d';
@@ -135,4 +136,13 @@ test('evidence built with the Webots plant profile is the webots branch of the s
   // without a profile the evidence is the IR-SIM one, as before
   const plain = await irsimEvidence() as unknown as { engine: { id: string }; seed: Record<string, unknown> };
   expect(plain.engine.id).toBe('irsim_2d'); expect(plain.seed.engineSeedAlgorithm).toBe('irsim-env-seed-v1'); expect('engineRng' in plain.seed).toBe(true);
+});
+
+const twinSample = (observed: Record<string, unknown>) => ({ schemaVersion: 2, runId: '00000000-0000-4000-8000-000000000001', entityId: 'amr-1', providerId: 'webots_3d', bootId: 'b', seq: '1', simTimeNs: '0', observedAt: '2026-11-01T00:00:00.000Z', receivedMonotonicNs: '1', frameId: 'map', origin: 'controller_sim', quality: 'valid', reasonCodes: [], commanded: null, observed, estimated: null, causationId: null });
+test('an AMR twin sample may carry the 3D pose of a 3D plant (z, roll, pitch) and nothing else new', () => {
+  const planar = { xM: 1, yM: 2, yawRad: 0.1, moving: false, hold: null };
+  expect(validateTwinSampleV2(twinSample(planar)).ok).toBe(true);
+  expect(validateTwinSampleV2(twinSample({ ...planar, zM: 0.09, rollRad: 0.001, pitchRad: -0.002 })).ok).toBe(true);
+  expect(validateTwinSampleV2(twinSample({ ...planar, zM: Number.NaN })).ok).toBe(false);
+  expect(validateTwinSampleV2(twinSample({ ...planar, zM: 0.09, tiltDeg: 3 })).ok).toBe(false);
 });

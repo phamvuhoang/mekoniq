@@ -227,9 +227,9 @@ class FixedStepRun implements ScenarioRun {
   const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;const at=String(process.hrtime.bigint()),stale=!this.verified();
   // lossy in-memory samples for the live view; the durable per-tick record (and every metric) is the evidence store
   this.telemetry.record(c.roles.robots.flatMap(({id}):TwinSampleV2[]=>{const r=this.robotObs(id),g=this.adapters.get(id)!.goal(),live=g&&(g.state==='executing'||g.state==='cancelling');if(!r)return [];
-   const [xM,yM,yawRad]=this.basePose(id,r.poseDriveMap);
+   const [xM,yM,yawRad]=this.basePose(id,r.poseDriveMap),pose3d=(r as {pose3d?:{z:number;roll:number;pitch:number}}).pose3d;
    return [{schemaVersion:2,runId:c.runId,entityId:id,providerId:this.plant.identity.amr.id,bootId:c.plant.bootId??c.adapters[id]!.bootId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:'controller_sim',
-    quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:live?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM,yM,yawRad,moving:this.moving(id),hold:this.holds[id]??null},estimated:null,causationId:live?g.commandId:null} as TwinSampleV2];}));
+    quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:live?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM,yM,yawRad,...pose3d?{zM:pose3d.z,rollRad:pose3d.roll,pitchRad:pose3d.pitch}:{},moving:this.moving(id),hold:this.holds[id]??null},estimated:null,causationId:live?g.commandId:null} as TwinSampleV2];}));
  }
  // ---- plant (one worker process per run, never a second one) ----
  private async ask(op:'describe'|'create'|'start'|'pause'|'resume',payload:Record<string,unknown>):Promise<Extract<IRSimResponseV1,{ok:true}>>{

@@ -287,6 +287,16 @@
               "type": "null"
             }
           ]
+        },
+        "zM": {
+          "type": "number",
+          "description": "Height of the base origin above the floor; only a 3D plant reports it."
+        },
+        "rollRad": {
+          "type": "number"
+        },
+        "pitchRad": {
+          "type": "number"
         }
       },
       "required": [

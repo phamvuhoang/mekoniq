@@ -86,3 +86,11 @@ test.skipIf(!webotsAvailable)('WB05 killing Webots on the real plant mid-run: th
   await run.close(); runs.length = 0; await settle();
   expect(webotsProcesses()).toEqual([]);
 }, 300_000);
+
+test.skipIf(!webotsAvailable)('a 3D plant puts the base height and tilt into the twin samples; a planar sample has none', async () => {
+  const { run } = await open({ entry: fake('ok', 1000) });
+  await run.start();
+  await act(run, 'step', { ticks: 10 });
+  const sample = run.telemetry.latest().find((x) => x.entityId === 'amr-1')!;
+  expect(sample.observed).toMatchObject({ zM: 0.09, rollRad: 0, pitchRad: 0 });
+});
