@@ -52,6 +52,20 @@ Tạo `.venv` bằng `python3 -m venv .venv`, rồi cài `requirements-dev.txt` 
 
 Android: xem `docs/operations/tablet-provisioning.md`; build qua Gradle wrapper, SDK/JDK đã khóa. Runner lifecycle yêu cầu hai serial test được enroll; không chọn thiết bị/robot đang vận hành.
 
+## Mô phỏng: LinkForge + IR-SIM, Webots 3D (R1)
+
+Chỉ chạy local, không chạm robot thật; mọi gate ở mức `tested`, `accepted: false` (chỉ reviewer mới ghi accepted).
+
+```sh
+node scripts/lab-irsim.mjs doctor --provider webots                 # cần Webots R2025a ở /Applications/Webots.app và .venv-webots
+node scripts/lab-irsim.mjs run --provider webots --campaign r1-qualification --out <dir> --concurrency 1
+node scripts/record-sim-extension.mjs --release r1 --out docs/implementation/evidence/sim-extension/<candidate> \
+  --candidate-id <candidate> --irsim-record <linkforge-irsim candidate> --mock-regression <lab regression dir>
+LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/<candidate> pnpm test:acceptance -- sim-extension
+```
+
+Recorder cần cây source và Lab sạch, Lab pin đúng commit source, không có `__pycache__` dưới `robotics/`. Bản ghi mới nhất: `evidence/sim-extension/r1-candidate-01/` (kèm `README.md`: gate, giới hạn, đo hiệu năng) trên nền `evidence/linkforge-irsim/candidate-04/`. ALG04 là `not_run` (thuộc R3).
+
 ## Phạm vi và giới hạn
 
 Luồng hiện có: menu có version, phiên bàn/order, KDS theo phần, allocation/giao tay hoặc simulator, ca tiền mặt, bill snapshot; isolated capture/đối soát, signed settlement grants, maintenance/import và controlled handoff. Customer claim không settlement; historical import không tạo live effect. W05–W11 thêm POS đầy đủ, robot Valetudo/ROS 2/VDA 5050, kho, nhân sự, khuyến mãi, CRM, đặt bàn, chuỗi, kênh online sandbox, SDK/Node-RED và khung provider; provider, robot và hạ tầng hosted thật vẫn chưa có (xem evidence từng task).

@@ -1,0 +1,26 @@
+
+ RUN  v4.1.12 <workspace>/lab
+
+ ✓ tests/unit/lidar-overlay.test.ts (5 tests) 4ms
+ ✓ tests/unit/irsim-controls.test.ts (5 tests) 3ms
+ ✓ tests/integration/runtime-artifact.test.ts (5 tests) 150ms
+ ✓ tests/unit/navigation2d-report.test.ts (11 tests) 37ms
+ ✓ tests/unit/readiness.test.ts (9 tests) 391ms
+ ✓ tests/unit/model-validation.test.ts (4 tests) 484ms
+   ✓ assembly page: Serve -> compile -> validate is current; editing the world width marks it stale; validation never blocks saving  462ms
+ ✓ tests/integration/irsim-launcher.test.ts (12 tests) 10859ms
+   ✓ venv check: CPython 3.11 with every locked package at its version; anything else names the problem  489ms
+   ✓ every failed prerequisite exits 1 before any process starts: no runtime port, no UI, no mock fallback  1083ms
+   ✓ boot: verified tools reach the runtime as operator argv with both flags; an unavailable provider stops everything with its reason  907ms
+   ✓ review5 #7: Ctrl-C during the venv preflight stops the probe and its children, and the launcher exits non-zero  732ms
+   ✓ review5 #6: the venv probe runs with bytecode reading and writing off (-I would ignore PYTHON* variables)  408ms
+   ✓ review6 B: a probe that exited but left a child holding its stdout: Ctrl-C still stops that child (the group outlives its leader)  6622ms
+ ✓ tests/integration/source-report-import.test.ts (2 tests) 10903ms
+   ✓ review6 C: a real source IR-SIM report and its evidence import complete through the Lab importer  10892ms
+
+ Test Files  8 passed (8)
+      Tests  53 passed (53)
+   Start at  10:54:07
+   Duration  11.38s (transform 1.53s, setup 0ms, import 1.81s, tests 22.83s, environment 0ms)
+
+JSON report written to <workspace>/source/docs/implementation/evidence/linkforge-irsim/candidate-04/suites/lab-unit.json

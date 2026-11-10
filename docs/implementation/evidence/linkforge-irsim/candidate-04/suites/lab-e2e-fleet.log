@@ -1,0 +1,15 @@
+Mekoniq Robot Lab — IR-SIM 2D twin (portable simulation; no robot hardware, not a native/Gazebo run)
+Source d14d831f6903d0cd1f8dc3db8258cb4425ab9cfe · artifact ced5b08c23c6 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm, irsim_2d · journal <tmp>/mekoniq-irsim-e2e-cYq5Am/runs
+Owned processes: runtime pid 2665, UI pid 2670
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 1841 ms. Press Ctrl-C to stop.
+Running irsim-fleet.spec.ts through pnpm lab:irsim (real IR-SIM worker) with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/irsim-fleet.spec.ts:14:1 › Two Serve robots on IR-SIM 2D: compile the fleet, run IR-FD07 to completion, and read trace-derived metrics for both robots (46.7s)
+
+  1 passed (47.7s)
+
+Stopping the runtime and UI this launcher started…

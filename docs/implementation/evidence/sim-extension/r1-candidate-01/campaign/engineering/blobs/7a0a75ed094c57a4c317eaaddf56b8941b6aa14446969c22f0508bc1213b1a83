@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "irsim-2d-default-v1",
+  "revision": 1,
+  "source": {
+    "kind": "assumed",
+    "documentId": "irsim-2d-default-v1",
+    "revision": "1",
+    "locator": "specs/2026-11-08-linkforge-irsim/contracts.md#navigation-policy",
+    "contentSha256": "13460438bfa34b6c6413e161118819414cb0b9843855a358e5cfb76361089e45"
+  },
+  "parameters": {
+    "safetyMarginM": 0.02,
+    "controller": "grid-diff-v1",
+    "gridResolutionM": 0.05,
+    "headingCount": 8,
+    "distanceCostPerM": 1,
+    "rotationCostPerRad": 0.2,
+    "maxPlannerStates": 2000000,
+    "maxLinearMps": 0.5,
+    "maxAngularRadps": 1,
+    "maxAccelerationMps2": 0.5,
+    "maxAngularAccelerationRadps2": 1.5,
+    "goalPositionToleranceM": 0.05,
+    "goalYawToleranceRad": 0.05,
+    "stoppedLinearMps": 0.01,
+    "stoppedAngularRadps": 0.02,
+    "arrivalHoldTicks": 5,
+    "replanEveryTicks": 50,
+    "scanFreshnessTicks": 5,
+    "noProgressTicks": 250,
+    "goalDeadlineTicks": 6000
+  },
+  "hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+}

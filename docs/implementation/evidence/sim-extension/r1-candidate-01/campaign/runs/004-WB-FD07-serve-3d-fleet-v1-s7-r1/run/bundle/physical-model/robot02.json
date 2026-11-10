@@ -1,0 +1,1932 @@
+{
+  "schemaVersion": 1,
+  "documentType": "robot-physical-model",
+  "modelDigest": "5e6ba1c87602b8fdb4fc088433b569139f44a6428c1a3e08425b45ab3b311a02",
+  "inputs": {
+    "project": {
+      "id": "serve-fleet-3d",
+      "revision": 1,
+      "digest": "2d2ae5e47e741bbf63ac5883bc172f1920363df6794341139f0e9e007f6bfff1"
+    },
+    "assemblyDigest": "a9221475da5c320ffcc259e2e487b6452b2d4e1af449e6883e2226972b59316d",
+    "world": {
+      "id": "restaurant-10-tables",
+      "revision": 1,
+      "hash": "a5438dfb7edb9a1ba18501797d9bee70d3928e2e53df7a7e06caeead55708555"
+    }
+  },
+  "robotId": "robot02",
+  "baseFrameId": "r2-chassis/base",
+  "links": [
+    {
+      "id": "r2-caster-front/ball",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.035
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "ball geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.035
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "ball geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.15,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "ball mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.00007350000000000001,
+        0,
+        0,
+        0.00007350000000000001,
+        0,
+        0.00007350000000000001
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "cylinder: m*(3r²+h²)/12, m*r²/2",
+        "contentSha256": "6c9c0cdbd2fb8742a8466d8f20450af61dee85b2550a59fd06f2e0e9f709173e"
+      }
+    },
+    {
+      "id": "r2-caster-rear/ball",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.035
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "ball geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "sphere",
+            "radiusM": 0.035
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "ball geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.15,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "ball mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.00007350000000000001,
+        0,
+        0,
+        0.00007350000000000001,
+        0,
+        0.00007350000000000001
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "cylinder: m*(3r²+h²)/12, m*r²/2",
+        "contentSha256": "6c9c0cdbd2fb8742a8466d8f20450af61dee85b2550a59fd06f2e0e9f709173e"
+      }
+    },
+    {
+      "id": "r2-chassis/base",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0.05
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.6,
+              0.58,
+              0.14
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "base geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0.05
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.6,
+              0.58,
+              0.14
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "base geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 14,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "base mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0.05
+      ],
+      "inertiaKgM2": [
+        0.41533333333333333,
+        0,
+        0,
+        0.4428666666666667,
+        0,
+        0.8124666666666666
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "box: m*(b²+c²)/12",
+        "contentSha256": "f909aa5405d71635f5929efe8e89d8d5b637dfe4135169664d8cb5b72d40e395"
+      }
+    },
+    {
+      "id": "r2-lidar/head",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0.02
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "cylinder",
+            "radiusM": 0.04,
+            "lengthM": 0.04
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "head geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0.02
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "cylinder",
+            "radiusM": 0.04,
+            "lengthM": 0.04
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "head geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.19,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "head mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0.02
+      ],
+      "inertiaKgM2": [
+        0.00010133333333333332,
+        0,
+        0,
+        0.00010133333333333332,
+        0,
+        0.000152
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "cylinder: m*(3r²+h²)/12, m*r²/2",
+        "contentSha256": "bc4e398f06a059e534880c0db0fdabfbb1eed4c418401635c6cde621bc172170"
+      }
+    },
+    {
+      "id": "r2-support-left/rod",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0.45
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.03,
+              0.03,
+              0.9
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "rod geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0.45
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.03,
+              0.03,
+              0.9
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "rod geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.35,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "rod mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0.45
+      ],
+      "inertiaKgM2": [
+        0.02365125,
+        0,
+        0,
+        0.02365125,
+        0,
+        0.000052499999999999995
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "box: m*(b²+c²)/12",
+        "contentSha256": "0ce1e181810b754866e5481d9a2921885a1a8e954a77d22adb747fd54e017ab5"
+      }
+    },
+    {
+      "id": "r2-support-right/rod",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0.45
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.03,
+              0.03,
+              0.9
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "rod geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0.45
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.03,
+              0.03,
+              0.9
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "rod geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.35,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "rod mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0.45
+      ],
+      "inertiaKgM2": [
+        0.02365125,
+        0,
+        0,
+        0.02365125,
+        0,
+        0.000052499999999999995
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "box: m*(b²+c²)/12",
+        "contentSha256": "0ce1e181810b754866e5481d9a2921885a1a8e954a77d22adb747fd54e017ab5"
+      }
+    },
+    {
+      "id": "r2-tray-1/plate",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.4,
+              0.46,
+              0.02
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "plate geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.4,
+              0.46,
+              0.02
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "plate geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.8,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "plate mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.014133333333333336,
+        0,
+        0,
+        0.010693333333333338,
+        0,
+        0.024773333333333338
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "box: m*(b²+c²)/12",
+        "contentSha256": "bab62ed17a78d1484a3aba84c916dc135811aa8546d99270d2d52ac3ac9dbc27"
+      }
+    },
+    {
+      "id": "r2-tray-2/plate",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.4,
+              0.46,
+              0.02
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "plate geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.4,
+              0.46,
+              0.02
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "plate geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.8,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "plate mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.014133333333333336,
+        0,
+        0,
+        0.010693333333333338,
+        0,
+        0.024773333333333338
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "box: m*(b²+c²)/12",
+        "contentSha256": "bab62ed17a78d1484a3aba84c916dc135811aa8546d99270d2d52ac3ac9dbc27"
+      }
+    },
+    {
+      "id": "r2-tray-3/plate",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.4,
+              0.46,
+              0.02
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "plate geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.4,
+              0.46,
+              0.02
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "plate geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.8,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "plate mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.014133333333333336,
+        0,
+        0,
+        0.010693333333333338,
+        0,
+        0.024773333333333338
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "box: m*(b²+c²)/12",
+        "contentSha256": "bab62ed17a78d1484a3aba84c916dc135811aa8546d99270d2d52ac3ac9dbc27"
+      }
+    },
+    {
+      "id": "r2-wheel-left/hub",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.04,
+              0.04,
+              0.04
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "hub geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.04,
+              0.04,
+              0.04
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "hub geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.2,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "hub mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.00005333333333333334,
+        0,
+        0,
+        0.00005333333333333334,
+        0,
+        0.00005333333333333334
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "box: m*(b²+c²)/12",
+        "contentSha256": "71938a7f6c6a0e9803a01606899942704eb74988e3c31689319b40a23b5cf34e"
+      }
+    },
+    {
+      "id": "r2-wheel-left/rim",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0.7071067811865476,
+              0,
+              0,
+              0.7071067811865476
+            ]
+          },
+          "geometry": {
+            "kind": "cylinder",
+            "radiusM": 0.1,
+            "lengthM": 0.04
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "rim geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0.7071067811865476,
+              0,
+              0,
+              0.7071067811865476
+            ]
+          },
+          "geometry": {
+            "kind": "cylinder",
+            "radiusM": 0.1,
+            "lengthM": 0.04
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "rim geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 1.2,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "rim mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.00316,
+        0,
+        0,
+        0.006000000000000004,
+        0,
+        0.0031600000000000018
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "cylinder: m*(3r²+h²)/12, m*r²/2",
+        "contentSha256": "34cfdd93853dd35df319b4898cef94905edc28664805bce5c89ef33a108b25b6"
+      }
+    },
+    {
+      "id": "r2-wheel-right/hub",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.04,
+              0.04,
+              0.04
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "hub geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "geometry": {
+            "kind": "box",
+            "sizeM": [
+              0.04,
+              0.04,
+              0.04
+            ]
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "hub geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 0.2,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "hub mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.00005333333333333334,
+        0,
+        0,
+        0.00005333333333333334,
+        0,
+        0.00005333333333333334
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "box: m*(b²+c²)/12",
+        "contentSha256": "71938a7f6c6a0e9803a01606899942704eb74988e3c31689319b40a23b5cf34e"
+      }
+    },
+    {
+      "id": "r2-wheel-right/rim",
+      "visual": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0.7071067811865476,
+              0,
+              0,
+              0.7071067811865476
+            ]
+          },
+          "geometry": {
+            "kind": "cylinder",
+            "radiusM": 0.1,
+            "lengthM": 0.04
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "rim geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "collision": [
+        {
+          "pose": {
+            "xyzM": [
+              0,
+              0,
+              0
+            ],
+            "quaternionXyzw": [
+              0.7071067811865476,
+              0,
+              0,
+              0.7071067811865476
+            ]
+          },
+          "geometry": {
+            "kind": "cylinder",
+            "radiusM": 0.1,
+            "lengthM": 0.04
+          },
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "rim geometry",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      ],
+      "massKg": {
+        "value": 1.2,
+        "unit": "kg",
+        "source": {
+          "kind": "assumed",
+          "documentId": "serve-fixture-assumptions",
+          "revision": "1",
+          "locator": "rim mass",
+          "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+        }
+      },
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "inertiaKgM2": [
+        0.00316,
+        0,
+        0,
+        0.006000000000000004,
+        0,
+        0.0031600000000000018
+      ],
+      "inertialSource": {
+        "kind": "derived",
+        "documentId": "serve-fixture-inertia-formulas",
+        "revision": "1",
+        "locator": "cylinder: m*(3r²+h²)/12, m*r²/2",
+        "contentSha256": "34cfdd93853dd35df319b4898cef94905edc28664805bce5c89ef33a108b25b6"
+      }
+    }
+  ],
+  "joints": [
+    {
+      "id": "mount:r2-chassis/caster-front:r2-caster-front/mount",
+      "kind": "fixed",
+      "parent": "r2-chassis/base",
+      "child": "r2-caster-front/ball",
+      "origin": {
+        "xyzM": [
+          0.25,
+          0,
+          -0.065
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "mount:r2-chassis/caster-rear:r2-caster-rear/mount",
+      "kind": "fixed",
+      "parent": "r2-chassis/base",
+      "child": "r2-caster-rear/ball",
+      "origin": {
+        "xyzM": [
+          -0.25,
+          0,
+          -0.065
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "mount:r2-chassis/left-axle:r2-wheel-left/mount",
+      "kind": "fixed",
+      "parent": "r2-chassis/base",
+      "child": "r2-wheel-left/hub",
+      "origin": {
+        "xyzM": [
+          0,
+          0.21,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "mount:r2-chassis/lidar-mount:r2-lidar/foot",
+      "kind": "fixed",
+      "parent": "r2-chassis/base",
+      "child": "r2-lidar/head",
+      "origin": {
+        "xyzM": [
+          0.22,
+          0,
+          0.12
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "mount:r2-chassis/right-axle:r2-wheel-right/mount",
+      "kind": "fixed",
+      "parent": "r2-chassis/base",
+      "child": "r2-wheel-right/hub",
+      "origin": {
+        "xyzM": [
+          0,
+          -0.21,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "mount:r2-chassis/support-left:r2-support-left/foot",
+      "kind": "fixed",
+      "parent": "r2-chassis/base",
+      "child": "r2-support-left/rod",
+      "origin": {
+        "xyzM": [
+          -0.1,
+          0.25,
+          0.12
+        ],
+        "quaternionXyzw": [
+          0,
+          -0.059964006479444595,
+          0,
+          0.9982005399352042
+        ]
+      },
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "mount:r2-chassis/support-right:r2-support-right/foot",
+      "kind": "fixed",
+      "parent": "r2-chassis/base",
+      "child": "r2-support-right/rod",
+      "origin": {
+        "xyzM": [
+          -0.1,
+          -0.25,
+          0.12
+        ],
+        "quaternionXyzw": [
+          0,
+          -0.059964006479444595,
+          0,
+          0.9982005399352042
+        ]
+      },
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "mount:r2-support-left/slot-1:r2-tray-1/edge",
+      "kind": "fixed",
+      "parent": "r2-support-left/rod",
+      "child": "r2-tray-1/plate",
+      "origin": {
+        "xyzM": [
+          0,
+          -0.25,
+          0.3
+        ],
+        "quaternionXyzw": [
+          0,
+          0.059964006479444595,
+          0,
+          0.9982005399352042
+        ]
+      },
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "mount:r2-support-left/slot-2:r2-tray-2/edge",
+      "kind": "fixed",
+      "parent": "r2-support-left/rod",
+      "child": "r2-tray-2/plate",
+      "origin": {
+        "xyzM": [
+          0,
+          -0.25,
+          0.6
+        ],
+        "quaternionXyzw": [
+          0,
+          0.059964006479444595,
+          0,
+          0.9982005399352042
+        ]
+      },
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "mount:r2-support-left/slot-3:r2-tray-3/edge",
+      "kind": "fixed",
+      "parent": "r2-support-left/rod",
+      "child": "r2-tray-3/plate",
+      "origin": {
+        "xyzM": [
+          0,
+          -0.25,
+          0.88
+        ],
+        "quaternionXyzw": [
+          0,
+          0.059964006479444595,
+          0,
+          0.9982005399352042
+        ]
+      },
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "r2-wheel-left/axle",
+      "kind": "continuous",
+      "parent": "r2-wheel-left/hub",
+      "child": "r2-wheel-left/rim",
+      "origin": {
+        "xyzM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "limits": {
+        "velocity": {
+          "value": 20,
+          "unit": "rad/s",
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "fixture value",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        },
+        "effort": {
+          "value": 6,
+          "unit": "N*m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "fixture value",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      }
+    },
+    {
+      "id": "r2-wheel-right/axle",
+      "kind": "continuous",
+      "parent": "r2-wheel-right/hub",
+      "child": "r2-wheel-right/rim",
+      "origin": {
+        "xyzM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "limits": {
+        "velocity": {
+          "value": 20,
+          "unit": "rad/s",
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "fixture value",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        },
+        "effort": {
+          "value": 6,
+          "unit": "N*m",
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "fixture value",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      }
+    }
+  ],
+  "drive": {
+    "entityId": "robot02",
+    "leftJointId": "r2-wheel-left/axle",
+    "rightJointId": "r2-wheel-right/axle",
+    "wheelRadiusM": {
+      "value": 0.1,
+      "unit": "m",
+      "source": {
+        "kind": "assumed",
+        "documentId": "serve-fixture-assumptions",
+        "revision": "1",
+        "locator": "fixture value",
+        "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+      }
+    },
+    "wheelSeparationM": {
+      "value": 0.42,
+      "unit": "m",
+      "source": {
+        "kind": "assumed",
+        "documentId": "serve-fixture-assumptions",
+        "revision": "1",
+        "locator": "fixture value",
+        "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+      }
+    },
+    "actuatorMaxSpeedRadps": {
+      "value": 20,
+      "unit": "rad/s",
+      "source": {
+        "kind": "assumed",
+        "documentId": "serve-fixture-assumptions",
+        "revision": "1",
+        "locator": "fixture value",
+        "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+      }
+    },
+    "driveFrameInBase": {
+      "xyzM": [
+        0,
+        0,
+        0
+      ],
+      "quaternionXyzw": [
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  "sensors": [
+    {
+      "sensorId": "lidar-2d",
+      "sourceInstanceId": "r2-lidar",
+      "sensorModelDigest": "2d0445fad08e11677a364f4ecbcdd01f3b1cdae6734c187ac9a6fa816fccd570",
+      "parentLinkId": "r2-lidar/head",
+      "poseInBase": {
+        "xyzM": [
+          0.2200000000000002,
+          0,
+          0.12
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "model": {
+        "schemaVersion": 1,
+        "kind": "sensor",
+        "id": "lidar-2d",
+        "frame": "head",
+        "rateHz": {
+          "value": 10,
+          "unit": "Hz",
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "scan cadence",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        },
+        "range": {
+          "min": {
+            "value": 0.05,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-fixture-assumptions",
+              "revision": "1",
+              "locator": "range",
+              "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+            }
+          },
+          "max": {
+            "value": 8,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-fixture-assumptions",
+              "revision": "1",
+              "locator": "range",
+              "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+            }
+          }
+        },
+        "fieldOfView": {
+          "value": 6.283185307179586,
+          "unit": "rad",
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "field of view",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        },
+        "noise": {
+          "distribution": "none",
+          "stddev": {
+            "value": 0,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "serve-fixture-assumptions",
+              "revision": "1",
+              "locator": "noise",
+              "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+            }
+          },
+          "seed": 7
+        },
+        "latency": {
+          "value": 0,
+          "unit": "s",
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "latency",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        },
+        "dropoutProbability": {
+          "value": 0,
+          "unit": "1",
+          "source": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "dropout",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        },
+        "sensorType": "lidar_2d",
+        "lidar2d": {
+          "beamCount": 180,
+          "beamCountSource": {
+            "kind": "assumed",
+            "documentId": "serve-fixture-assumptions",
+            "revision": "1",
+            "locator": "180 beams: demo assumption, not a vendor value",
+            "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+          }
+        }
+      }
+    }
+  ],
+  "assumptions": [
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "180 beams: demo assumption, not a vendor value",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "ball geometry",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "ball mass",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "base geometry",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "base mass",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "dropout",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "field of view",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "fixture value",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "head geometry",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "head mass",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "hub geometry",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "hub mass",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "latency",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "noise",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "plate geometry",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "plate mass",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "range",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "rim geometry",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "rim mass",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "rod geometry",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "rod mass",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    },
+    {
+      "kind": "assumed",
+      "documentId": "serve-fixture-assumptions",
+      "revision": "1",
+      "locator": "scan cadence",
+      "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+    }
+  ],
+  "projection": {
+    "id": "physical-projection-v1",
+    "sourceSchemaHash": "fff187d6bcb83424cf32717975819f23dcafe5ff084af52d44e08baee7090039"
+  }
+}

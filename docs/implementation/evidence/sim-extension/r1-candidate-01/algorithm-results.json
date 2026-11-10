@@ -1,0 +1,179 @@
+{
+  "results": [
+    {
+      "schemaVersion": 1,
+      "checkerId": "rtb_kinematics",
+      "caseId": "ALG01",
+      "oracleProfileDigest": "8faf787fe99b5757b9f17864676c5163a17e518e5d6761f3a6024643acf35414",
+      "inputDigest": "6a4121660d2f5441b7ca5a4a943e79bc2dfb16eac154e2d898fd718c71865e53",
+      "verdict": "pass",
+      "metrics": {
+        "goldenPoses": 11,
+        "seededPoses": 100,
+        "tableA.maxTranslationErrorM": 4.165648664845488e-16,
+        "tableA.maxRotationErrorRad": 8.588825978845548e-16,
+        "tableB.maxTranslationErrorM": 4.871083751574258e-16,
+        "tableB.maxRotationErrorRad": 6.668562245034629e-16,
+        "maxTranslationErrorM": 4.871083751574258e-16,
+        "maxRotationErrorRad": 8.588825978845548e-16
+      },
+      "toolVersions": {
+        "roboticstoolbox-python": "1.5.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "spatialmath-python": "1.1.19"
+      },
+      "reasons": []
+    },
+    {
+      "schemaVersion": 1,
+      "checkerId": "rtb_kinematics",
+      "caseId": "ALG02",
+      "oracleProfileDigest": "8faf787fe99b5757b9f17864676c5163a17e518e5d6761f3a6024643acf35414",
+      "inputDigest": "f317a2b264665abd205db24aa8474dd0d7308a4453f3412cadbbe43f295a9af7",
+      "verdict": "pass",
+      "metrics": {
+        "poses": 20,
+        "tsSolved": 20,
+        "rtbSolved": 20,
+        "limitViolations": 0,
+        "tsToRtbMaxTranslationM": 9.823533024860648e-9,
+        "tsToRtbMaxRotationRad": 1.9961407668626127e-9,
+        "rtbToTsMaxTranslationM": 4.9258198133866065e-9,
+        "rtbToTsMaxRotationRad": 4.284838018595007e-9
+      },
+      "toolVersions": {
+        "roboticstoolbox-python": "1.5.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "spatialmath-python": "1.1.19"
+      },
+      "reasons": []
+    },
+    {
+      "schemaVersion": 1,
+      "checkerId": "rtb_kinematics",
+      "caseId": "ALG03",
+      "oracleProfileDigest": "8faf787fe99b5757b9f17864676c5163a17e518e5d6761f3a6024643acf35414",
+      "inputDigest": "23ae9dd531a54effccb513c3467f6e6a91fef756889876f17a1a4348e12cc312",
+      "verdict": "pass",
+      "metrics": {
+        "poses": 34,
+        "maxNormalizedJacobianError": 3.292579443957054e-10,
+        "maxConditionRelativeError": 2.7824920346334263e-12,
+        "maxConditionRelativeErrorAboveLimit": 0.000003872009480099336,
+        "singularFlagMismatch": 0,
+        "singularFlaggedBoth": 1
+      },
+      "toolVersions": {
+        "roboticstoolbox-python": "1.5.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "spatialmath-python": "1.1.19"
+      },
+      "reasons": []
+    },
+    {
+      "schemaVersion": 1,
+      "checkerId": "rtb_kinematics",
+      "caseId": "ALG05",
+      "oracleProfileDigest": "8faf787fe99b5757b9f17864676c5163a17e518e5d6761f3a6024643acf35414",
+      "inputDigest": "954bfc254750d9c6662a6ec1d3cbaa8724d9fe72b0f08e12a5cb7dc83164d949",
+      "verdict": "pass",
+      "metrics": {
+        "subCases": 8,
+        "rejectedByBoth": 8
+      },
+      "toolVersions": {
+        "roboticstoolbox-python": "1.5.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "spatialmath-python": "1.1.19"
+      },
+      "reasons": [
+        "beyond-reach:TS:UNREACHABLE(A)",
+        "beyond-reach:RTB:IK_NOT_CONVERGED(A)",
+        "over-limit:TS:SEED_OUT_OF_LIMITS(A)",
+        "over-limit:RTB:Q0_OUT_OF_LIMITS(A)",
+        "corrupt-dh:TS:MODEL_JOINT_COUNT(A)",
+        "corrupt-dh:RTB:INPUT_INVALID+INPUT_INVALID(A)",
+        "near-singular:TS:NEAR_SINGULARITY(A)",
+        "near-singular:RTB:SINGULAR_FLAGGED(A)",
+        "beyond-reach:TS:UNREACHABLE(B)",
+        "beyond-reach:RTB:IK_NOT_CONVERGED(B)",
+        "over-limit:TS:SEED_OUT_OF_LIMITS(B)",
+        "over-limit:RTB:Q0_OUT_OF_LIMITS(B)",
+        "corrupt-dh:TS:MODEL_JOINT_COUNT(B)",
+        "corrupt-dh:RTB:INPUT_INVALID+INPUT_INVALID(B)",
+        "near-singular:TS:NEAR_SINGULARITY(B)",
+        "near-singular:RTB:SINGULAR_FLAGGED(B)"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "checkerId": "pid_reference",
+      "caseId": "PID01",
+      "oracleProfileDigest": "8faf787fe99b5757b9f17864676c5163a17e518e5d6761f3a6024643acf35414",
+      "inputDigest": "b973e842275c6f6a6706e076399bca0627d1df3ef6d47a14a300d814f2dd1c1e",
+      "verdict": "pass",
+      "metrics": {
+        "maxSampleError": 0,
+        "maxLinearError": 4.440892098500626e-16,
+        "overshootDelta": 0,
+        "settlingTimeDeltaS": 0,
+        "overshootPi": 0.03350151065664342
+      },
+      "toolVersions": {
+        "roboticstoolbox-python": "1.5.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "spatialmath-python": "1.1.19"
+      },
+      "reasons": []
+    },
+    {
+      "schemaVersion": 1,
+      "checkerId": "pid_reference",
+      "caseId": "PID02",
+      "oracleProfileDigest": "8faf787fe99b5757b9f17864676c5163a17e518e5d6761f3a6024643acf35414",
+      "inputDigest": "ea57f328b2066b9b5039f07ecc72f37ff4141b8b6e9100db87303d3dbec39ba0",
+      "verdict": "pass",
+      "metrics": {
+        "maxAbsU": 2.5,
+        "maxSampleError": 0,
+        "integralClampedSteps": 29,
+        "recoveryTimeS": 0.92,
+        "recoveryTimeDeltaS": 0
+      },
+      "toolVersions": {
+        "roboticstoolbox-python": "1.5.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "spatialmath-python": "1.1.19"
+      },
+      "reasons": []
+    },
+    {
+      "schemaVersion": 1,
+      "checkerId": "pid_reference",
+      "caseId": "PID03",
+      "oracleProfileDigest": "8faf787fe99b5757b9f17864676c5163a17e518e5d6761f3a6024643acf35414",
+      "inputDigest": "a038d28bb405c6ffe400dd372cf27386b5d6f07e245e12aef0b3ee0715c49c5f",
+      "verdict": "pass",
+      "metrics": {
+        "maxSampleError": 0,
+        "noiseStddev": 0.01,
+        "delaySteps": 3
+      },
+      "toolVersions": {
+        "roboticstoolbox-python": "1.5.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "spatialmath-python": "1.1.19"
+      },
+      "reasons": []
+    }
+  ],
+  "oracleProfileDigest": "8faf787fe99b5757b9f17864676c5163a17e518e5d6761f3a6024643acf35414",
+  "lockDigest": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102"
+}

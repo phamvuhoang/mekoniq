@@ -1,0 +1,15 @@
+Mekoniq Robot Lab — Webots 3D twin (host Webots R2025a, assumed physical parameters, not_calibrated; no robot hardware, not a native/Gazebo run)
+Source d14d831f6903d0cd1f8dc3db8258cb4425ab9cfe · artifact ced5b08c23c6 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm, webots_3d · journal <tmp>/mekoniq-irsim-e2e-eiiNiE/runs
+Owned processes: runtime pid 47634, UI pid 47640
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 1833 ms. Press Ctrl-C to stop.
+Running webots-journey.spec.ts through pnpm lab:webots (real Webots R2025a) with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/webots-journey.spec.ts:20:1 › Serve on Webots 3D: compile, run WB-FD01 to completion, report and replay in the 3D twin, in three languages (37.7s)
+
+  1 passed (39.1s)
+
+Stopping the runtime and UI this launcher started…
