@@ -82,6 +82,27 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 4294967295
+            },
+            "arms": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "armId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "sceneRef": {
+                    "const": "arm-scene.json"
+                  }
+                },
+                "required": [
+                  "armId",
+                  "sceneRef"
+                ]
+              }
             }
           },
           "required": [
@@ -227,6 +248,32 @@
             },
             "singleStep": {
               "type": "boolean"
+            },
+            "jointTargets": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "armId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "positionsRad": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 8,
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "armId",
+                  "positionsRad"
+                ]
+              }
             }
           },
           "required": [
@@ -517,6 +564,48 @@
       "title": "Sim3DRobotStateV1",
       "description": "Every field of the IR-SIM robot state, plus the 3D pose and wheel speeds. Contact with the floor is never a collisionId."
     },
+    "Sim3DArmStateV1": {
+      "title": "Sim3DArmStateV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "armId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "positionsRad": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "number"
+          }
+        },
+        "velocitiesRadS": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "number"
+          }
+        },
+        "collisionIds": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 64,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "required": [
+        "armId",
+        "positionsRad",
+        "velocitiesRadS",
+        "collisionIds"
+      ]
+    },
     "Sim3DSnapshotV1": {
       "title": "Sim3DSnapshotV1",
       "type": "object",
@@ -561,6 +650,14 @@
         },
         "model": {
           "$ref": "#/definitions/Sim3DModelReadbackV1"
+        },
+        "arms": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/definitions/Sim3DArmStateV1"
+          }
         }
       },
       "required": [

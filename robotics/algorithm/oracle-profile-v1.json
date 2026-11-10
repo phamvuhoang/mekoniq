@@ -30,5 +30,13 @@
     "lidarMedianM": 0.01,
     "note": "Webots renders its LiDAR from a depth image: a beam may report its neighbour's range on a slanted surface (measured up to one beam). Agreement is within the ray-cast range over the beam and one neighbour each side, plus the tolerance; the median error must stay under lidarMedianM.",
     "repeatPoseM": 1e-06
+  },
+  "webotsArm": {
+    "reachTolRad": 0.01,
+    "settleTicks": 10,
+    "followTolRad": 0.05,
+    "followTicks": 10,
+    "repeatJointRad": 1e-06,
+    "note": "Initial test thresholds for the Webots arm plant, chosen from the X00 spike (docs/research/2026-11-webots-arm-spike.md): normal tracking error peaked at 0.0168 rad, settling took 2-3 ticks, a blocked arm exceeded 0.05 rad. They are not a measured capability of any arm."
   }
 }

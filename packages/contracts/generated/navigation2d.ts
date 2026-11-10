@@ -220,6 +220,14 @@ export type Sim3DRequestV1 =
       payload: {
         sceneRef: string;
         seed: number;
+        /**
+         * @minItems 0
+         * @maxItems 1
+         */
+        arms?: {
+          armId: EngineeringId;
+          sceneRef: 'arm-scene.json';
+        }[];
       };
     }
   | {
@@ -260,6 +268,18 @@ export type Sim3DRequestV1 =
           poseMap: number[];
         }[];
         singleStep?: boolean;
+        /**
+         * @minItems 0
+         * @maxItems 1
+         */
+        jointTargets?: {
+          armId: EngineeringId;
+          /**
+           * @minItems 1
+           * @maxItems 8
+           */
+          positionsRad: number[];
+        }[];
       };
     }
   | {
@@ -1040,6 +1060,28 @@ export interface Sim3DRobotStateV1 {
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "Sim3DArmStateV1".
+ */
+export interface Sim3DArmStateV1 {
+  armId: EngineeringId;
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  positionsRad: number[];
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  velocitiesRadS: number[];
+  /**
+   * @minItems 0
+   * @maxItems 64
+   */
+  collisionIds: string[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "Sim3DSnapshotV1".
  */
 export interface Sim3DSnapshotV1 {
@@ -1056,6 +1098,11 @@ export interface Sim3DSnapshotV1 {
    */
   robots: Sim3DRobotStateV1[];
   model?: Sim3DModelReadbackV1;
+  /**
+   * @minItems 0
+   * @maxItems 1
+   */
+  arms?: Sim3DArmStateV1[];
 }
 /**
  * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
@@ -1091,4 +1138,73 @@ export interface Sim3DModelReadbackV1 {
      */
     wheelAxes: number[][];
   }[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ArmScene3DV1".
+ */
+export interface ArmScene3DV1 {
+  schemaVersion: 1;
+  sceneDigest: Digest;
+  arm: {
+    armId: EngineeringId;
+    modelId: 'arm-ref-3d-v1';
+    modelRevision: Digest;
+    baseInMap: {
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      position: number[];
+      /**
+       * @minItems 4
+       * @maxItems 4
+       */
+      quaternionXyzw: number[];
+    };
+    /**
+     * @minItems 1
+     * @maxItems 8
+     */
+    homeRad: number[];
+  };
+  /**
+   * @minItems 0
+   * @maxItems 64
+   */
+  statics: (
+    | {
+        id: EngineeringId;
+        kind: 'sphere';
+        /**
+         * @minItems 3
+         * @maxItems 3
+         */
+        center: number[];
+        radiusM: number;
+      }
+    | {
+        id: EngineeringId;
+        kind: 'box';
+        /**
+         * @minItems 3
+         * @maxItems 3
+         */
+        min: number[];
+        /**
+         * @minItems 3
+         * @maxItems 3
+         */
+        max: number[];
+      }
+  )[];
+  world3d: {
+    floorFriction: number;
+    provenance: 'assumed';
+  };
+  engine: {
+    id: 'webots_3d';
+    basicTimeStepMs: 20;
+  };
+  engineSeed: number;
 }
