@@ -25,6 +25,11 @@ class CompileError(Exception):
         self.detail = detail
 
 
+def engine_seed(seed):
+    """A run seed (uint32) as a WorldInfo.randomSeed, which is an SFInt32: the low 31 bits. Seeds that already fit keep their value, so their worlds keep their bytes."""
+    return seed & 0x7FFFFFFF
+
+
 def _num(x):
     f = float(x)
     if not math.isfinite(f):
@@ -346,7 +351,7 @@ def compile_world(scene, models, seed):
         robots.append(_robot_node(entry, model))
     w, h = world["widthM"], world["heightM"]
     head = ("#VRML_SIM R2025a utf8\n"
-            f"WorldInfo {{\n  basicTimeStep {step}\n  optimalThreadCount 1\n  randomSeed {seed}\n  coordinateSystem \"ENU\"\n  contactProperties [\n"
+            f"WorldInfo {{\n  basicTimeStep {step}\n  optimalThreadCount 1\n  randomSeed {engine_seed(seed)}\n  coordinateSystem \"ENU\"\n  contactProperties [\n"
             f"    ContactProperties {{\n      material1 \"wheel\"\n      material2 \"default\"\n      coulombFriction [ {_num(w3['floorFriction'])} ]\n    }}\n"
             f"    ContactProperties {{\n      material1 \"caster\"\n      material2 \"default\"\n      coulombFriction [ {_num(w3['casterFriction'])} ]\n    }}\n  ]\n}}\n"
             f"Viewpoint {{\n  orientation 0 1 0 1.5708\n  position {_vec((w / 2, h / 2, max(w, h)))}\n}}\n"
@@ -460,6 +465,11 @@ def _check_arm_model(model, arm):
         if not _finite(h) or not j["limits"]["lower"]["value"] <= h <= j["limits"]["upper"]["value"]:
             raise CompileError("ARM_HOME_OUT_OF_RANGE", f"{j['id']}: {h!r}")
     return links, root, chain
+
+
+def arm_chain(scene, model):
+    """The arm's joints in chain order (base to tip); the same checks as compile_arm_world, so a caller that compiled first can rely on it."""
+    return _check_arm_model(model, scene["arm"])[2]
 
 
 def _arm_joint(links, chain, home, i, ind):

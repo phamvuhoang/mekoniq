@@ -14,12 +14,14 @@ from pathlib import Path
 
 import rfc8785
 
-from .compile import CompileError, compile_world
+from .compile import CompileError, arm_chain, arm_name, compile_arm_world, compile_world, engine_seed
 from .protocol import OPS, PROTOCOL, Receipts, WorkerError
-from .snapshot import TICK_NS, SnapshotError, base_state, collision_ids, drive_pose, lidar_scan, robot_state, wheel_speeds
+from .snapshot import TICK_NS, SnapshotError, arm_collision_ids, arm_state, base_state, collision_ids, drive_pose, lidar_scan, robot_state, wheel_speeds
 
 TICK_S = 0.02
 FIXTURE_FILE = "scenario-fixture.json"
+ARM_COMPONENT_FILE = "arm-component.json"  # next to arm-scene.json in an arm run's bundle; its digest is the scene's arm.modelRevision
+TARGET_TOLERANCE = 1e-9  # rad: a joint target may sit this far outside a limit (float noise), no further
 VELOCITY_TOLERANCE = 1e-9
 CLOCK_TOLERANCE_S = 1e-9
 
@@ -78,6 +80,7 @@ class WorkerSession:
         self.config = {}
         self.receipts = Receipts()
         self.limits, self.previous_wheels = {}, {}
+        self.arm = None
 
     # ---- plumbing ----
     def _reply(self, request, ok, **body):
@@ -164,9 +167,80 @@ class WorkerSession:
             raise WorkerError("SCENE_FILE_MISMATCH", f"the scene lists no physical model for {missing}")
         return scene, models
 
+    def _start_engine(self, world):
+        if self._factory is None:
+            from .engine import WebotsEngine
+
+            self._factory = lambda w, c: WebotsEngine(w, c)
+        self.engine = self._factory(world, self.config)
+        self.engine.start()
+
+    def _create_arm(self, p):
+        """An arm run: arm-scene.json and arm-component.json from the bundle, an arm-only world, no AMR and no navigation scene."""
+        token = p["arms"][0]
+        if p["sceneRef"] != token["sceneRef"]:
+            raise WorkerError("INVALID_REQUEST", "sceneRef must be the arm scene named by arms[0]")
+        scene = json.loads(confined(self.bundle_root, token["sceneRef"]).read_text())
+        if scene.get("schemaVersion") != 1 or scene.get("engine", {}).get("id") != "webots_3d" or not isinstance(scene.get("arm"), dict):
+            raise WorkerError("SCENE_UNSUPPORTED", "not a webots_3d arm scene")
+        digest = scene_digest_of(scene)
+        if digest != scene.get("sceneDigest") or (self.expected_scene_digest and digest != self.expected_scene_digest):
+            raise WorkerError("SCENE_DIGEST_MISMATCH", "the scene does not hash to the digest it declares or the process was bound to")
+        if scene["arm"]["armId"] != token["armId"]:
+            raise WorkerError("INVALID_REQUEST", f"arms[0] names {token['armId']!r} but the scene's arm is {scene['arm']['armId']!r}")
+        component = json.loads(confined(self.bundle_root, ARM_COMPONENT_FILE).read_text())
+        if hashlib.sha256(rfc8785.dumps(component)).hexdigest() != scene["arm"]["modelRevision"]:
+            raise WorkerError("SCENE_FILE_MISMATCH", f"{ARM_COMPONENT_FILE} does not hash to the scene's arm.modelRevision")
+        if engine_seed(p["seed"]) != scene["engineSeed"]:
+            raise WorkerError("SEED_MISMATCH", f"seed {p['seed']} reduces to {engine_seed(p['seed'])}, the scene was built for {scene['engineSeed']}")
+        try:
+            world = compile_arm_world(scene, component)
+            chain = arm_chain(scene, component)
+        except CompileError as e:
+            raise WorkerError(e.code, e.detail)
+        name = arm_name(scene["arm"]["armId"], "arm id")
+        self.config = {"robots": [], "arm": {"name": name, "joints": len(chain)}, "runDirectory": self.run_directory, "python": self.python, "webotsHome": self.webots_home}
+        self._start_engine(world)
+        self.scene = scene
+        self.arm = {"id": scene["arm"]["armId"], "lower": [j["limits"]["lower"]["value"] for j in chain], "upper": [j["limits"]["upper"]["value"] for j in chain],
+                    "statics": scene["statics"], "base": (tuple(scene["arm"]["baseInMap"]["position"]), tuple(scene["arm"]["baseInMap"]["quaternionXyzw"]))}
+        self.state = "created"
+        return self._advance_arm(list(scene["arm"]["homeRad"]), tick=0)  # the priming step holds home
+
+    def _advance_arm(self, targets, tick):
+        reading = self.engine.step_arm(targets)
+        if abs(reading["time"] - (tick + 1) * TICK_S) > CLOCK_TOLERANCE_S:
+            raise WorkerError("CLOCK_DRIFT", f"engine time {reading['time']} is not (tick {tick} + 1) x {TICK_S}", fatal=True)
+        self.seq += 1
+        a = self.arm
+        touched = arm_collision_ids(reading["armContacts"], a["statics"], a["base"])
+        entry = arm_state(arm_id=a["id"], positions=reading["arm"]["positions"], velocities=reading["arm"]["velocities"], collisions=touched, lower=a["lower"], upper=a["upper"])
+        self.snapshot = {"schemaVersion": 1, "runId": self.run_id, "bootId": self.boot_id, "tick": tick, "simTimeNs": str(tick * TICK_NS), "seq": str(self.seq), "sceneDigest": self.scene["sceneDigest"],
+                         "robots": [], "arms": [entry]}
+        return self.snapshot
+
+    def _step_arm(self, p):
+        if p["velocities"]:
+            raise WorkerError("INVALID_REQUEST", "an arm run takes jointTargets, not velocities")
+        targets = p.get("jointTargets") or []
+        a = self.arm
+        if len(targets) != 1 or targets[0]["armId"] != a["id"]:
+            raise WorkerError("JOINT_TARGET_SHAPE", f"every tick needs one explicit target for {a['id']!r}; got {[t['armId'] for t in targets]}")
+        q = targets[0]["positionsRad"]
+        if len(q) != len(a["lower"]):
+            raise WorkerError("JOINT_TARGET_SHAPE", f"{len(q)} positions for {len(a['lower'])} joints")
+        for i, (v, lo, hi) in enumerate(zip(q, a["lower"], a["upper"])):
+            if v < lo - TARGET_TOLERANCE or v > hi + TARGET_TOLERANCE:
+                raise WorkerError("JOINT_TARGET_OUT_OF_RANGE", f"joint {i + 1}: {v} is outside [{lo}, {hi}]")
+        snap = self._advance_arm(list(q), tick=self.tick + 1)
+        self.tick += 1
+        return snap
+
     def _op_create(self, p):
         if self.state != "new":
             raise WorkerError("INVALID_STATE", f"create on a {self.state} run")
+        if p.get("arms"):
+            return self._create_arm(p)
         scene, models = self._load(p["sceneRef"])
         try:
             world = compile_world(scene, models, p["seed"])
@@ -174,17 +248,12 @@ class WorkerSession:
             raise WorkerError(e.code, e.detail)
         robots = [robot_config(r, models[r["robotId"]]) for r in sorted(scene["robots"], key=lambda r: r["robotId"])]
         self.config = {"robots": robots, "runDirectory": self.run_directory, "python": self.python, "webotsHome": self.webots_home}
-        if self._factory is None:
-            from .engine import WebotsEngine
-
-            self._factory = lambda w, c: WebotsEngine(w, c)
-        self.engine = self._factory(world, self.config)
+        self._start_engine(world)  # starts the engine too; nothing below needs it started later
         self.scene = scene
         self.limits = {r["robotId"]: (r["model"]["kinematics"]["maxLinearMps"], r["model"]["kinematics"]["maxAngularRadps"]) for r in scene["robots"]}
         self.drive = {r["robotId"]: r["model"]["driveFrameInBase"] for r in scene["robots"]}
         self.footprints = {r["robotId"]: r["model"]["footprint"]["verticesM"] for r in scene["robots"]}
         self.obstacles = {o["id"]: o["verticesM"] for o in scene["world"]["obstacles"] + scene["world"]["boundaries"]}
-        self.engine.start()
         self.state = "created"
         # the priming step: every wheel at rest, so the sensors have their first measurement before tick 0 is reported
         return self._advance({r["id"]: (0.0, 0.0) for r in robots}, tick=0)
@@ -259,6 +328,10 @@ class WorkerSession:
             raise WorkerError("TICK_MISMATCH", f"targetTick {p['targetTick']} must be {self.tick + 1}")
         if p["actorUpdates"]:
             raise WorkerError("ACTOR_UNKNOWN", f"this plant has no scripted actors; got {[u['actorId'] for u in p['actorUpdates']]}")
+        if self.arm is not None:
+            return self._step_arm(p)
+        if p.get("jointTargets"):
+            raise WorkerError("INVALID_REQUEST", "this run has no arm: jointTargets belong to an arm run")
         commanded = {}
         for v in p["velocities"]:
             if v["robotId"] in commanded:

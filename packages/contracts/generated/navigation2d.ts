@@ -1138,6 +1138,33 @@ export interface Sim3DModelReadbackV1 {
      */
     wheelAxes: number[][];
   }[];
+  /**
+   * The arm as the engine loaded it (getState only): link masses and, per joint in chain order, the hinge axis in the parent frame and the motor's position limits.
+   */
+  arm?: {
+    /**
+     * @minItems 1
+     * @maxItems 9
+     */
+    links: {
+      name: string;
+      massKg: number;
+    }[];
+    /**
+     * @minItems 1
+     * @maxItems 8
+     */
+    joints: {
+      name: string;
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      axis: number[];
+      lower: number;
+      upper: number;
+    }[];
+  };
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema

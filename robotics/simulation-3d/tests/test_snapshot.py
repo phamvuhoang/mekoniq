@@ -93,3 +93,17 @@ def test_webots_ray_order_becomes_counter_clockwise_from_minus_pi():
     # ray 269 and 270 straddle south (-pi/2): after the reorder they are the two beams around index 89 / 90
     angle = lambda k: scan["angleMinRad"] + k * scan["angleIncrementRad"]
     assert angle(89) < -math.pi / 2 < angle(90) and angle(90) + angle(89) == pytest.approx(-math.pi)
+
+
+def test_arm_contacts_are_named_in_the_arm_base_frame_through_the_base_pose():
+    from webots_worker.snapshot import arm_collision_ids
+
+    yaw = math.pi / 2  # base turned 90 degrees at (2, 1, 0.75): arm +x is world +y
+    base = ((2.0, 1.0, 0.75), (0.0, 0.0, math.sin(yaw / 2), math.cos(yaw / 2)))
+    statics = [{"id": "table-1", "kind": "box", "min": [0.2, -0.3, -0.4], "max": [0.6, 0.3, -0.3]}, {"id": "pillar", "kind": "sphere", "center": [0.0, 0.8, 0.0], "radiusM": 0.1}]
+    on_table = [2.0, 1.4, 0.4]  # arm (0.4, 0, -0.35)
+    on_pillar = [1.2, 1.0, 0.75]  # arm (0, 0.8, 0) turned: world = base + R * (0, 0.8, 0) = (2 - 0.8, 1, 0.75)
+    assert arm_collision_ids([{"point": on_table}, {"point": on_pillar}], statics, base) == ["pillar", "table-1"]
+    assert arm_collision_ids([{"point": [2.0, 1.4, 1.2]}], statics, base) == ["engine:unattributed"]  # nothing near it
+    assert arm_collision_ids([{"point": [5.0, 5.0, 0.01]}], statics, base) == ["floor"]
+    assert arm_collision_ids([], statics, base) == []

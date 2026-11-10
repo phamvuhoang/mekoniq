@@ -106,3 +106,41 @@ def robot_state(*, robot_id, base, drive_xyz, drive_yaw, wheels, scans, collisio
     v, w = body_velocity(base)
     return {"robotId": robot_id, "poseDriveMap": [x, y, yaw], "bodyVelocity": [v, w], "scans": scans, "collisionIds": collisions,
             "pose3d": {"z": base["z"], "roll": base["roll"], "pitch": base["pitch"]}, "wheels": {"leftRadS": wheels[0], "rightRadS": wheels[1]}}
+
+
+def arm_state(*, arm_id, positions, velocities, collisions, lower, upper, margin=0.05):
+    """The arm entry of a Sim3DSnapshotV1. A joint angle or speed that is not finite, or a joint more than `margin` rad outside its limits, is PLANT_UNSTABLE: the engine has lost the arm."""
+    if len(positions) != len(lower) or len(velocities) != len(lower) or not all(isinstance(v, (int, float)) and math.isfinite(v) for v in [*positions, *velocities]):
+        raise SnapshotError("PLANT_UNSTABLE", "a joint position or velocity is not finite")
+    for i, (q, lo, hi) in enumerate(zip(positions, lower, upper)):
+        if q < lo - margin or q > hi + margin:
+            raise SnapshotError("PLANT_UNSTABLE", f"joint {i + 1} is at {q}, outside [{lo}, {hi}] by more than {margin} rad")
+    return {"armId": arm_id, "positionsRad": [float(q) for q in positions], "velocitiesRadS": [float(v) for v in velocities], "collisionIds": sorted(collisions)}
+
+
+def _matrix(q):
+    x, y, z, w = q
+    n = math.sqrt(x * x + y * y + z * z + w * w)
+    x, y, z, w = x / n, y / n, z / n, w / n
+    return ((1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)), (2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)), (2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)))
+
+
+def arm_collision_ids(contacts, statics, base, margin=CONTACT_MARGIN_M):
+    """What the arm touched, from the world-frame contact points of its links. A point is named by the nearest static obstacle (given in the arm base frame, `base` is the arm's
+    (position, quaternion) in the world) or by "floor" when it lies within `margin` of it; a point nothing explains (including an arm link against another link) is
+    `engine:unattributed`, still a contact. Webots reports the tracked solid of a contact, never the one it touched, so this is the only way to name the other side."""
+    (bx, by, bz), q = base
+    r = _matrix(q)
+    found = set()
+    for c in contacts:
+        d = [c["point"][0] - bx, c["point"][1] - by, c["point"][2] - bz]
+        p = [r[0][i] * d[0] + r[1][i] * d[1] + r[2][i] * d[2] for i in range(3)]  # R^T (p - t): the point in the arm base frame
+        best = (max(c["point"][2], 0.0), "floor")
+        for o in statics:
+            if o["kind"] == "sphere":
+                dist = math.dist(p, o["center"]) - o["radiusM"]
+            else:
+                dist = math.sqrt(sum(max(lo - v, 0.0, v - hi) ** 2 for v, lo, hi in zip(p, o["min"], o["max"])))
+            best = min(best, (max(dist, 0.0), o["id"]))
+        found.add(best[1] if best[0] <= margin else "engine:unattributed")
+    return sorted(found)

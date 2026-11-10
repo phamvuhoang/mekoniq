@@ -924,6 +924,76 @@
               "wheelAxes"
             ]
           }
+        },
+        "arm": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The arm as the engine loaded it (getState only): link masses and, per joint in chain order, the hinge axis in the parent frame and the motor's position limits.",
+          "properties": {
+            "links": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 9,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "massKg": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "name",
+                  "massKg"
+                ]
+              }
+            },
+            "joints": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "axis": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "lower": {
+                    "type": "number"
+                  },
+                  "upper": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "name",
+                  "axis",
+                  "lower",
+                  "upper"
+                ]
+              }
+            }
+          },
+          "required": [
+            "links",
+            "joints"
+          ]
         }
       },
       "required": [

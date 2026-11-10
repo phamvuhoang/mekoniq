@@ -1,6 +1,5 @@
 """The Webots process tree of one run: Webots itself (started by this module, never attached to), one supervisor process and one controller process per robot. All of them live
 in the worker's process group, so the parent's group kill ends every one of them. Time moves only when every controller has been told to step."""
-import getpass
 import hashlib
 import json
 import os
@@ -48,8 +47,15 @@ def host_engine(webots_home):
     return m.group(0), sha.hexdigest()
 
 
+def engine_env():
+    """The environment of Webots: minimal on purpose, and with no USER, so Webots keeps its per-run state in /tmp/webots/default/<port> whoever runs the worker."""
+    return {"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "HOME": os.environ.get("HOME", "/"), "TMPDIR": os.environ.get("TMPDIR", "/tmp")}
+
+
 def _tmp_dir(port):
-    return Path("/tmp/webots") / getpass.getuser() / str(port)
+    """The state directory Webots really creates for `port`: it names it after $USER or $USERNAME of ITS environment, else "default"."""
+    env = engine_env()
+    return Path("/tmp/webots") / (env.get("USER") or env.get("USERNAME") or "default") / str(port)
 
 
 def free_port():
@@ -139,9 +145,10 @@ class WebotsEngine:
         self.port = free_port()
         log = open(self.run_dir / "webots.log", "wb")
         self.logs.append(log)
-        env = {"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "HOME": os.environ.get("HOME", "/"), "TMPDIR": os.environ.get("TMPDIR", "/tmp")}
+        env = engine_env()
         self.webots = subprocess.Popen([str(exe), "--batch", "--minimize", "--mode=fast", "--stdout", "--stderr", f"--port={self.port}", str(world)], stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT, env=env)
-        wanted = len(self.config["robots"]) + 1
+        arm = self.config.get("arm")
+        wanted = len(self.config["robots"]) + (1 if arm else 0) + 1
         deadline = time.monotonic() + START_TIMEOUT_S
         while True:
             text = (self.run_dir / "webots.log").read_text(errors="replace")
@@ -159,7 +166,9 @@ class WebotsEngine:
         def spawn(name, script, cfg):
             self.children[name] = _Child(name, [self.python, "-I", "-B", "-X", "utf8", str(HERE / script), json.dumps(cfg)], {**cenv, "WEBOTS_CONTROLLER_URL": f"ipc://{self.port}/{name}"}, clog)
 
-        spawn("mekoniq_supervisor", "supervisor.py", {"robots": [{"id": r["id"], "bodySolids": r["bodySolids"], "wheelSolids": r["wheelSolids"]} for r in self.config["robots"]]})
+        spawn("mekoniq_supervisor", "supervisor.py", {"robots": [{"id": r["id"], "bodySolids": r["bodySolids"], "wheelSolids": r["wheelSolids"]} for r in self.config["robots"]], **({"arm": {"name": arm["name"]}} if arm else {})})
+        if arm:
+            spawn(arm["name"], "arm_controller.py", {"joints": arm["joints"]})
         for r in self.config["robots"]:
             spawn(r["id"], "robot_controller.py", {"lidars": [l["name"] for l in r["lidars"]]})
         deadline = time.monotonic() + CHILD_TIMEOUT_S
@@ -184,6 +193,20 @@ class WebotsEngine:
                 raise WorkerError("CLOCK_DRIFT", f"controller {r['id']} is at {got['time']}, the supervisor at {sup['time']}", fatal=True)
             robots[r["id"]] = {**sup["robots"][r["id"]], "wheelPositions": got["wheelPositions"], "lidar": got["lidar"]}
         return {"time": sup["time"], "robots": robots, "contacts": sup["contacts"]}
+
+    def step_arm(self, targets):
+        """One 20 ms tick of an arm run: every joint to its target position, then the supervisor's contacts. The arm controller and the supervisor must agree on the engine time."""
+        if self.webots is None or self.webots.poll() is not None:
+            raise WorkerError("ENGINE_LOST", f"webots exited ({None if self.webots is None else self.webots.returncode})", fatal=True)
+        arm = self.config["arm"]["name"]
+        self.children[arm].send({"cmd": "step", "targets": list(targets)})
+        self.children["mekoniq_supervisor"].send({"cmd": "step"})
+        deadline = time.monotonic() + STEP_TIMEOUT_S
+        sup = self.children["mekoniq_supervisor"].read(deadline)
+        got = self.children[arm].read(deadline)
+        if abs(got["time"] - sup["time"]) > 1e-9:
+            raise WorkerError("CLOCK_DRIFT", f"the arm controller is at {got['time']}, the supervisor at {sup['time']}", fatal=True)
+        return {"time": sup["time"], "arm": {"positions": got["positions"], "velocities": got["velocities"]}, "armContacts": sup["armContacts"]}
 
     def readback(self):
         sup = self.children["mekoniq_supervisor"]

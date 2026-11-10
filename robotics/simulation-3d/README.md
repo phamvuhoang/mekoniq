@@ -8,6 +8,20 @@ that talks to it and a hash-locked Python 3.11 venv (`.venv-webots`, `requiremen
 - Wheels are velocity motors named `left_wheel_motor`/`right_wheel_motor` (`..._sensor` for the position sensors) with the joint's velocity and effort limits; the drive's torque-speed curve is not in the physical model, so the torque limit is constant. Every physical value is `assumed`: results are `not_calibrated`.
 - The robot links carry collision shapes only (no visual `Shape`), so a Webots LiDAR does not see the robots' own bodies. Whether the other robot must be visible to it is decided in W06/W07 against the engine.
 
+## The arm (R1.1)
+
+A `create` with `arms: [{armId, sceneRef: "arm-scene.json"}]` builds an arm-only world instead (no AMR, no navigation scene): the bundle holds `arm-scene.json` (`ArmScene3DV1`, sealed) and
+`arm-component.json` (the `arm-ref-3d-v1` component, whose digest the scene names as `arm.modelRevision`); `seed` must reduce to the scene's `engineSeed` (`engine_seed`: the low 31 bits, a
+`WorldInfo.randomSeed` is an SFInt32). `compile_arm_world` writes nested `HingeJoint`s with `J<i>_motor` / `J<i>_sensor` devices; `arm_controller.py` is the extern controller that sets each
+joint's target position and reports positions and velocities.
+
+- Every `step` carries one explicit `jointTargets` entry for the arm (like an AMR's velocities, idle is the current pose). A target outside a joint's limits is `JOINT_TARGET_OUT_OF_RANGE`, a wrong
+  count or arm id is `JOINT_TARGET_SHAPE` (neither is fatal; the tick does not move and the engine is not called). `velocities` on an arm run, or `jointTargets` on an AMR run, is `INVALID_REQUEST`.
+- A joint angle or speed that is not finite, or an angle more than 0.05 rad outside its limits, is `PLANT_UNSTABLE` (fatal).
+- `collisionIds` of the snapshot's arm are named from the world-frame contact points of the links: a static obstacle's id, `floor`, or `engine:unattributed` (Webots reports the tracked solid of a
+  contact, never what it touched, so an arm link against another link is unattributed too).
+- Webots and its controllers run without `USER`, so their per-run state is in `/tmp/webots/default/<port>`; `engine._tmp_dir` is that directory and `close()` removes it.
+
 ```sh
 node scripts/bootstrap-portable-simulation.mjs webots
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=robotics/simulation-3d .venv-webots/bin/python -m pytest robotics/simulation-3d/tests -q

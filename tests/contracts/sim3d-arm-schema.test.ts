@@ -47,6 +47,14 @@ test('a snapshot may report one arm with positions, velocities and collision ids
   expect(validateSim3DResponse(response({ arms: [noVel] })).ok).toBe(false);
 });
 
+test('the getState model readback may carry the arm as loaded, and only in that shape', () => {
+  const armModel = { links: [{ name: 'base', massKg: 10 }, { name: 'link1', massKg: 8 }], joints: [{ name: 'J1', axis: [0, 0, 1], lower: -2.79, upper: 2.79 }] };
+  expect(validateSim3DResponse(response({ model: { robots: [], arm: armModel } })).ok).toBe(true);
+  expect(validateSim3DResponse(response({ model: { robots: [], arm: { ...armModel, extra: 1 } } })).ok).toBe(false);
+  expect(validateSim3DResponse(response({ model: { robots: [], arm: { links: armModel.links } } })).ok).toBe(false);
+  expect(validateSim3DResponse(response({ model: { robots: [], arm: { ...armModel, joints: [{ ...armModel.joints[0], upper: Number.NaN }] } } })).ok).toBe(false);
+});
+
 const scene = (over: Record<string, unknown> = {}): ArmScene3DV1 => sealDocument({ schemaVersion: 1, sceneDigest: '', arm: { armId: 'arm-1', modelId: 'arm-ref-3d-v1', modelRevision: H('a'),
   baseInMap: { position: [2, 1, 0.75], quaternionXyzw: [0, 0, 0, 1] }, homeRad: [0, -0.6, 1.2, 0, 0.6, 0] },
   statics: [{ id: 'table-1', kind: 'box', min: [1.6, 0.6, 0], max: [2.4, 1.4, 0.74] }, { id: 'pillar', kind: 'sphere', center: [3, 3, 0.5], radiusM: 0.2 }],
