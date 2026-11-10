@@ -1,0 +1,7 @@
+{
+  "obstacleHeightM": 0.75,
+  "wallHeightM": 1.2,
+  "floorFriction": 0.8,
+  "casterFriction": 0.02,
+  "provenance": "assumed"
+}

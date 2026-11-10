@@ -7,7 +7,7 @@ import {composePose} from '../v2/frames';
 import {grow,place,polygonsOverlap as overlaps,rect} from '../v2/navigation2d/geometry';
 import type {P} from '../v2/navigation2d/geometry';
 import {NAVIGATION_SCHEMA_HASH,defaultNavigationPolicy,sealDocument,validateNavigationDocument} from '../v2/navigation2d/contracts';
-import type {ArtifactRef,NavigationModel2DV1,NavigationPolicyV1,NavigationSceneV1} from '../v2/navigation2d/contracts';
+import type {ArtifactRef,NavigationModel2DV1,NavigationPolicyV1,NavigationSceneV1,World3DV1} from '../v2/navigation2d/contracts';
 import {hashJson} from '../v2/hash';
 import {EngineeringInputError,linkWorldPoses} from './assembly';
 import type {EngineeringCompileInput,Problem} from './contracts';
@@ -23,7 +23,9 @@ export const NAVIGATION_COMPILER_VERSION='navigation-compiler/1';
 const WALL_M=0.1; // boundary walls are 0.1 m thick inside the world rectangle, like the native compiler's
 
 /** Immutable NavigationSceneV1 (without worker files yet) for every robot in `models`. Fails closed: targets and starts that collide or leave the world are refused, never moved. */
-export function compileNavigationScene(input:EngineeringCompileInput,models:readonly NavigationModel2DV1[],policy:NavigationPolicyV1,schemaHash:string=NAVIGATION_SCHEMA_HASH):NavigationSceneV1{
+/** Engine of a scene other than the default IR-SIM one. `world3d` (heights and materials a 3D plant needs) is required with, and only with, the webots engine. */
+export interface SceneEngineOptions {engine:{id:'webots_3d';version:'R2025a';basicTimeStepMs:1|2|4|5|10|20};world3d:World3DV1}
+export function compileNavigationScene(input:EngineeringCompileInput,models:readonly NavigationModel2DV1[],policy:NavigationPolicyV1,schemaHash:string=NAVIGATION_SCHEMA_HASH,options?:SceneEngineOptions):NavigationSceneV1{
  const problems:Problem[]=[],add=(code:string,path:string,detail:string)=>{problems.push({code,path,blocking:true,detail});};
  const w=input.project.runtimeProject.world,sorted=[...models].sort((a,b)=>a.robotId<b.robotId?-1:1);
  const inputs={project:{id:input.project.id,revision:input.project.revision,digest:input.projectDigest},assemblyDigest:input.resolved.assemblyDigest,world:{id:w.id,revision:w.revision,hash:hashJson(w)}};
@@ -69,8 +71,8 @@ export function compileNavigationScene(input:EngineeringCompileInput,models:read
   schemaVersion:1,documentType:'navigation-scene',sceneDigest:'',inputs,compilerVersion:NAVIGATION_COMPILER_VERSION,schemaHash,
   robots:robots as NavigationSceneV1['robots'],
   world:{id:w.id,revision:w.revision,hash:inputs.world.hash,widthM:w.width,heightM:w.height,obstacles,boundaries:walls.map(([id,verticesM])=>({id,verticesM})).sort((a,b)=>a.id<b.id?-1:1)},
-  actors:[],zones:[],clock:{tickMs:20},engine:{id:'irsim_2d',version:'2.12.0',collisionMode:'stop'},policy,files:[],
-  limitations:['known static map plus simulated LiDAR: not SLAM or localisation','obstacles extend over all heights: PLANAR_OCCLUSION_NO_HEIGHT_FILTER','collision_mode stop: a contact stops the plant, it is not a contact-dynamics result','table and kitchen points are semantic targets; robots stand at their handoff'],
+  actors:[],zones:[],clock:{tickMs:20},engine:options?options.engine:{id:'irsim_2d',version:'2.12.0',collisionMode:'stop'},...options?{world3d:options.world3d}:{},policy,files:[],
+  limitations:options?['known static map plus simulated LiDAR: not SLAM or localisation','obstacles are extruded to world3d.obstacleHeightM and walls to world3d.wallHeightM (assumed heights)','not_calibrated: every physical parameter of the 3D plant is assumed','table and kitchen points are semantic targets; robots stand at their handoff']:['known static map plus simulated LiDAR: not SLAM or localisation','obstacles extend over all heights: PLANAR_OCCLUSION_NO_HEIGHT_FILTER','collision_mode stop: a contact stops the plant, it is not a contact-dynamics result','table and kitchen points are semantic targets; robots stand at their handoff'],
  },'sceneDigest');
  const checked=validateNavigationDocument(scene);
  if(!checked.ok)throw new EngineeringInputError(checked.issues.slice(0,20).map(i=>({code:i.code,path:i.path,blocking:true,detail:i.message})));

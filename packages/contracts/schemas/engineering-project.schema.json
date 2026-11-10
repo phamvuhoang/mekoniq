@@ -153,7 +153,8 @@
       "enum": [
         "engineering-rigid-v1",
         "engineering-contact-v1",
-        "engineering-irsim-2d-v1"
+        "engineering-irsim-2d-v1",
+        "engineering-webots-3d-v1"
       ]
     }
   }

@@ -16,7 +16,7 @@ afterEach(async () => { for (const d of roots.splice(0)) await rm(d, { recursive
 const closure = () => portableToolClosure(resolve('.')) as { files: { path: string }[] };
 
 test('portable closure lists every module the IR-SIM compile path imports from robotics/simulation', () => {
-  expect(PORTABLE_TOOL_PATHS).toEqual(['robotics/navigation-2d', 'robotics/model-validation', 'robotics/algorithm', 'robotics/simulation/compiler', 'robotics/simulation/actors', 'robotics/simulation/worlds', 'packages/contracts/schemas']);
+  expect(PORTABLE_TOOL_PATHS).toEqual(['robotics/navigation-2d', 'robotics/model-validation', 'robotics/algorithm', 'robotics/simulation-3d', 'robotics/simulation/compiler', 'robotics/simulation/actors', 'robotics/simulation/worlds', 'packages/contracts/schemas']);
   const paths = closure().files.map((f) => f.path);
   expect(paths).toEqual(expect.arrayContaining(['robotics/simulation/compiler/__init__.py', 'robotics/simulation/compiler/compile_world.py', 'robotics/simulation/worlds/__init__.py', 'robotics/simulation/worlds/generate_restaurant.py',
     'robotics/simulation/actors/__init__.py', 'robotics/simulation/actors/blocker.py', 'robotics/simulation/actors/scenario.py', 'robotics/simulation/actors/pedestrian.py']));

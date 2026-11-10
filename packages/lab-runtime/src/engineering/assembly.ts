@@ -13,7 +13,7 @@ export interface ResolveOptions{
  models?:Record<string,Record<string,unknown>>;
  /** Valid quotations by component digest (from loadCatalog().quotes). */
  quotes?:Record<string,Quote>;
- /** 1 collects a drive binding per AMR (models.drivesByEntity) and refuses ambiguous sensor models. Implied by requestedProfile 'engineering-irsim-2d-v1'; legacy resolutions are unchanged. */
+ /** 1 collects a drive binding per AMR (models.drivesByEntity) and refuses ambiguous sensor models. Implied by requestedProfile 'engineering-irsim-2d-v1' or 'engineering-webots-3d-v1'; legacy resolutions are unchanged. */
  driveBindingsVersion?:1;
 }
 const EPS=1e-9;
@@ -191,7 +191,7 @@ export function resolveAssembly(project:EngineeringProject,components:Record<str
   const {schemaVersion:_v,kind:_k,id:_i,...parameters}=m as Record<string,unknown>;void _v;void _k;void _i;
   return {schemaVersion:1,kind:ref.kind as ModelDocument['kind'],id:ref.id,digest:ref.digest,parameters};
  };
- const perEntity=options.driveBindingsVersion===1||project.requestedProfile==='engineering-irsim-2d-v1';
+ const perEntity=options.driveBindingsVersion===1||(project.requestedProfile==='engineering-irsim-2d-v1'||project.requestedProfile==='engineering-webots-3d-v1');
  const models:ResolvedAssembly['models']={drive:null,arm:{},sensor:{},process:{}};
  const drives:Record<string,NonNullable<ResolvedAssembly['models']['drive']>>={};
  const wheelJoints=new Set<string>();

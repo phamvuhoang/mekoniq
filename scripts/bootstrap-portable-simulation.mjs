@@ -6,7 +6,7 @@ import {promisify} from 'node:util';
 import {fileURLToPath} from 'node:url';
 import {join, resolve} from 'node:path';
 const run=promisify(execFile), root=resolve(fileURLToPath(import.meta.url),'../..');
-export const WORKERS={linkforge:{dir:'robotics/model-validation',venv:'.venv-linkforge'},irsim:{dir:'robotics/navigation-2d',venv:'.venv-irsim'},algorithm:{dir:'robotics/algorithm',venv:'.venv-algorithm'}};
+export const WORKERS={linkforge:{dir:'robotics/model-validation',venv:'.venv-linkforge'},irsim:{dir:'robotics/navigation-2d',venv:'.venv-irsim'},algorithm:{dir:'robotics/algorithm',venv:'.venv-algorithm'},webots:{dir:'robotics/simulation-3d',venv:'.venv-webots'}};
 export const sha256=(text)=>createHash('sha256').update(text).digest('hex');
 /** portable-worker-lock/1 metadata; packages come from `pip freeze`, sorted by name so the output is deterministic. */
 export function lockMetadata({pythonVersion,platform,freeze,requirementsText}){

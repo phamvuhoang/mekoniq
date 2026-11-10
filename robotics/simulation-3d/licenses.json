@@ -1,0 +1,78 @@
+{
+ "schemaVersion": 1,
+ "documentType": "portable-license-inventory",
+ "tool": "webots_worker",
+ "lock": {
+  "path": "robotics/simulation-3d/requirements.lock",
+  "sha256": "20c3f85d3fd8e53145309f6e16c07e78df929af9f78d81573e4d531fccb1c8a7"
+ },
+ "readFrom": "importlib.metadata of the pinned venv (isolated mode)",
+ "packages": [
+  {
+   "name": "attrs",
+   "version": "26.1.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "iniconfig",
+   "version": "2.3.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "jsonschema",
+   "version": "4.26.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "jsonschema-specifications",
+   "version": "2025.9.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "packaging",
+   "version": "26.3",
+   "license": "Apache-2.0 OR BSD-2-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pluggy",
+   "version": "1.7.0",
+   "license": "MIT",
+   "source": "License"
+  },
+  {
+   "name": "pygments",
+   "version": "2.21.0",
+   "license": "BSD-2-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pytest",
+   "version": "9.2.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "referencing",
+   "version": "0.37.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "rpds-py",
+   "version": "2026.9.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "typing-extensions",
+   "version": "4.16.0",
+   "license": "PSF-2.0",
+   "source": "License-Expression"
+  }
+ ]
+}

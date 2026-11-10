@@ -1,0 +1,9 @@
+[project]
+name = "mekoniq-webots-worker"
+version = "0.1.0"
+description = "Webots 3D plant compiler and worker, isolated venv. The engine itself is a host install (Webots R2025a), never part of this closure."
+requires-python = ">=3.11,<3.12"
+dependencies = ["jsonschema==4.26.0"]
+
+[project.optional-dependencies]
+test = ["pytest==9.2.0"]
