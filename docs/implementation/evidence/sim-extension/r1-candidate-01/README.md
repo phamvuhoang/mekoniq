@@ -65,6 +65,9 @@ Bằng chứng do `source/scripts/record-sim-extension.mjs --release r1` ghi, ki
 - WB-FD07 không có khách (actor) và **không có rig tranh chấp zone** (xem ghi chú WB04); tranh chấp chỉ được chứng minh trên IR-SIM bằng `IR-RIG-ZONE`.
 - TS `jacobianCondition` mất độ chính xác khi số điều kiện > 1000.
 - Giấy phép: `xacro` không có metadata license (`UNKNOWN`); xem `suites/licenses.log`.
+- **Seed của engine:** `engineSeed` (uint32) được ghi nguyên vào `WorldInfo.randomSeed`, vốn là `SFInt32` trong Webots R2025a; 12/20 run ghi giá trị > 2147483647. Webots không cảnh báo, nhưng giá trị engine thực dùng **chưa được kiểm**. Hệ quả trong R1 nhỏ vì nhiễu cảm biến bị từ chối; sửa cần đổi `compile.py` (đổi closure → ghi lại bản ghi), nên để lại (xem ledger, Final minor).
+- **Thư mục tạm Webots:** worker dò/dọn `/tmp/webots/<getpass user>/<port>` nhưng Webots chạy với env không có `USER` nên dùng `/tmp/webots/default/`; thư mục thừa có thể còn lại sau khi kill engine (chỉ rác `/tmp`, không ảnh hưởng kết quả).
+- Sau khi bản ghi này được ghi, guard được siết (commit `fix: the qualification guard re-reads suite results …`): mỗi suite phải có file kết quả và số đếm được tính lại từ file; bản ghi này vẫn qua guard mới (8/8).
 - Webots là phần mềm cục bộ ngoài repo (`/Applications/Webots.app`, R2025a), không nằm trong closure; recorder khóa theo sha256 của executable.
 
 ## Cách dựng bằng chứng
