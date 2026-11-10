@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "documentType": "review-acceptance",
+  "candidateId": "candidate-05",
+  "record": "qualification.json",
+  "recordSha256": "fb140c9abfe6123292ffb5da1f02134be92447aba594e95e8e4c55e9d9c8c43c",
+  "sourceCommit": "285bf53d18f7fc53ff6c46dfadb6a952395d86c1",
+  "acceptedBy": "Henry",
+  "acceptedAt": "2026-11-10T22:09:23Z",
+  "gates": [
+    "G-INT1",
+    "G-IR1",
+    "G-IR2",
+    "G-IR3",
+    "G-LF1",
+    "G-LF2"
+  ],
+  "basis": "the reviewer states they reviewed the evidence in this directory; the qualification record itself is unchanged and still says accepted:false",
+  "conditions": [
+    "IR07 stays the swept oracle only (note kept verbatim in qualification.json)",
+    "native, hardware and MuJoCo gates are outside this acceptance (not_run / blocked_external)"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "documentType": "review-acceptance",
+  "candidateId": "r1-candidate-02",
+  "record": "qualification.json",
+  "recordSha256": "880f76a63d4563245f9d87a9ba7b0d491219b42fd7ae4fed5ec7797d8f1203ac",
+  "sourceCommit": "285bf53d18f7fc53ff6c46dfadb6a952395d86c1",
+  "acceptedBy": "Henry",
+  "acceptedAt": "2026-11-10T22:09:23Z",
+  "gates": [
+    "G-ALG1",
+    "G-ALG2",
+    "G-INT2",
+    "G-REG1",
+    "G-WB1",
+    "G-WB2"
+  ],
+  "basis": "the reviewer states they reviewed the evidence in this directory; the qualification record itself is unchanged and still says accepted:false",
+  "conditions": [
+    "ALG04 stays not_run (belongs to R3); WB04 keeps its note that R1 has no Webots zone-contention rig",
+    "native, hardware and MuJoCo gates are outside this acceptance (not_run / blocked_external)"
+  ]
+}
