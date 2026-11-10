@@ -18,7 +18,7 @@ export class WorkerLostError extends Error{
 export interface WireRequest {protocol:string;requestId:string;runId:string;expectedTick:number;op:string;payload:unknown}
 type Check<T>={ok:true;value:T}|{ok:false;issues:{path:string;code:string}[]};
 /** What differs between the plants' workers: the wire, the module that is started, its extra argv/environment and the error codes that end a run. Everything else (ACK deadlines, one request in flight, bootId and tick monotonicity, the group kill) is shared. */
-export interface WireSpec {protocol:string;module:string;extraArgs:(o:SpawnOptions)=>string[];env?:Record<string,string>;validateRequest:(x:unknown)=>Check<unknown>;validateResponse:(x:unknown)=>Check<IRSimResponseV1>;fatalCodes:readonly string[]}
+export interface WireSpec {protocol:string;module:string;/** This plant's ACK deadlines where they differ from the defaults. */deadlinesMs?:Partial<Record<string,number>>;extraArgs:(o:SpawnOptions)=>string[];env?:Record<string,string>;validateRequest:(x:unknown)=>Check<unknown>;validateResponse:(x:unknown)=>Check<IRSimResponseV1>;fatalCodes:readonly string[]}
 export interface IRSimWorkerClient{
  request(request:WireRequest):Promise<IRSimResponseV1>;
  close(reason:string):Promise<void>;
@@ -48,7 +48,7 @@ export const spawnIRSimWorker=(o:SpawnOptions):Promise<IRSimWorkerClient>=>spawn
 
 export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWorkerClient>{
  await mkdir(o.runDirectory,{recursive:true});
- const deadlines={...DEFAULT_DEADLINES_MS,...o.deadlinesMs},root=resolve(o.workerRoot);
+ const deadlines={...DEFAULT_DEADLINES_MS,...wire.deadlinesMs,...o.deadlinesMs},root=resolve(o.workerRoot);
  const args=isolatedPythonArgs([root],o.entry??['-m',wire.module],['--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[],...wire.extraArgs(o)]);
  // fixed argv, allowlisted environment (no credentials, no ROS discovery), a private working directory; the venv isolates dependencies but is not a sandbox
  const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,...bytecodeEnv(),PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg',...wire.env} as unknown as NodeJS.ProcessEnv;

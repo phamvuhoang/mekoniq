@@ -75,7 +75,8 @@ test('qualify: an algorithm verdict that is not pass, an IR-SIM record of anothe
  expect(qualify(base({algorithm:null})).gates['G-ALG1'].status).toBe('not_run');
  const other=qualify(base({irsim:irsimRecord({identity:{before:{sourceCommit:'e'.repeat(40)}}})}));expect(other.cases.REG01.status).toBe('not_run');expect(other.cases.REG01.reason).toMatch(/another commit/);
  const half=irsimRecord();half.gates['G-IR2'].status='not_run';expect(qualify(base({irsim:half})).cases.REG01.status).toBe('not_run');
- expect(qualify(base({mock:mockManifest({commands:[{id:'x',exitCode:1}]})})).cases.REG01.status).toBe('not_run');
+ expect(qualify(base({mock:mockManifest({commands:[{id:'x',exitCode:1}]})})).cases.REG01.status).toBe('failed'); // a regression command that ran and exited non-zero is a failure, not a missing precondition
+ expect(qualify(base({mock:mockManifest({commands:[]})})).cases.REG01.status).toBe('not_run');
  expect(qualify(base({mock:null})).cases.REG01.status).toBe('not_run');
 });
 

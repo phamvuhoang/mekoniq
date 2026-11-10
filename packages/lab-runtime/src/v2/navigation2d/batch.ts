@@ -27,6 +27,18 @@ import {spawnIRSimWorker} from './worker-client';
 import type {IRSimSnapshotV1} from './contracts';
 import {execFileSync} from 'node:child_process';
 
+/** The largest difference between two flattened pose traces (x, y, yaw per robot per tick); a yaw difference is taken modulo 2 pi, so +pi and -pi are the same heading. */
+/** The pids of Webots engines (command line starts with the executable) whose argument list names a file under `runDir`. */
+export function enginePids(psText:string,runDir:string):number[]{
+ return psText.split('\n').filter(l=>/^\s*\d+\s+\S*\/Contents\/MacOS\/webots(\s|$)/.test(l)&&l.includes(`${runDir}/`)).map(l=>Number(l.trim().split(/\s+/)[0]));
+}
+
+export function poseTraceDifference(a:readonly number[],b:readonly number[]):number{
+ let worst=0;
+ for(let k=0;k<a.length;k++){let d=Math.abs(a[k]!-b[k]!);if(k%3===2){d%=2*Math.PI;if(d>Math.PI)d=2*Math.PI-d;}worst=Math.max(worst,d);}
+ return worst;
+}
+
 export type BatchResult='pass'|'fail'|'not_run';
 export interface BatchSummary{runs:{id:string;result:BatchResult}[];complete:boolean;
  /** completed: every run ran and passed; failed: a run failed or is incomplete; not_run: a prerequisite is missing (nothing ran); interrupted: stopped by a signal */
@@ -222,8 +234,8 @@ export async function runIRSimBatch(o:BatchOptions):Promise<BatchSummary>{
  const {catalog:batchCatalog,scenarios}=batchScenarios(catalogOf,plant),providerOf={catalog:batchCatalog,enabledBackends,scenarios};
  /** Worker processes of one run: their argv names the run's own bundle root (never matched by pattern on anything else). */
  const workersOf=(dir:string)=>{try{return execFileSync('ps',['-A','-o','pid=,command='],{encoding:'utf8'}).split('\n').filter(l=>l.includes(`--bundle-root ${join(dir,'run','bundle')} `)&&!l.includes('lab-irsim')).map(l=>Number(l.trim().split(/\s+/)[0]));}catch{return [];}};
- /** Webots engine processes (anchored at the start of the command line: a shell that merely mentions the path never matches). One world per host, so those of this campaign are all of them. */
- const enginesOf=()=>{try{return execFileSync('ps',['-A','-o','pid=,command='],{encoding:'utf8'}).split('\n').filter(l=>/^\s*\d+\s+\S*\/Contents\/MacOS\/webots(\s|$)/.test(l)).map(l=>Number(l.trim().split(/\s+/)[0]));}catch{return [];}};
+ /** Webots engines of one run: its world file is in the run's directory (another Webots on the host, a GUI someone opened, never counts). */
+ const enginesOf=(dir:string)=>{try{return enginePids(execFileSync('ps',['-A','-o','pid=,command='],{encoding:'utf8'}),join(dir,'run'));}catch{return [];}};
  const judge=judgeRun,poseTraces=new Map<string,number[]>();
  /** Drive-frame poses of every tick of the completed Webots runs (a repeat is compared against these, not against a digest). */
  /** IR06 raw drive (test-only, never admitted by the gateway): the compiled scene, the real worker, raw velocities, the evidence recorder; no controller, no source session. */
@@ -288,14 +300,14 @@ export async function runIRSimBatch(o:BatchOptions):Promise<BatchSummary>{
     }
     if(spec.operator?.killEngineOnTableLeg&&operator.killTick===undefined&&v.entities.some(x=>x.moving)&&(await run.journal()).some(j=>j.events.some(x=>x.type==='CargoLoaded'))){
      // the engine dies between steps: no resend, no second engine. Its controllers exit by themselves within a few ticks of the pipe closing, so the count is taken after they had time to.
-     operator.killTick=v.tick;const pids=enginesOf();if(pids.length!==1)throw new Error(`ENGINE_NOT_FOUND:${pids.length}`);process.kill(pids[0]!,'SIGKILL');
+     operator.killTick=v.tick;const pids=enginesOf(dir);if(pids.length!==1)throw new Error(`ENGINE_NOT_FOUND:${pids.length}`);process.kill(pids[0]!,'SIGKILL');
      await step(25);
-     for(let k=0;k<30&&(enginesOf().length||workersOf(dir).length);k++)await new Promise(res=>setTimeout(res,100));
-     operator.workersAfterKill=enginesOf().length+workersOf(dir).length;continue;
+     for(let k=0;k<30&&(enginesOf(dir).length||workersOf(dir).length);k++)await new Promise(res=>setTimeout(res,100));
+     operator.workersAfterKill=enginesOf(dir).length+workersOf(dir).length;continue;
     }
     await step(spec.operator?25:r.stepTicks!);
    }
-   if(operator.killTick!==undefined)operator.workersAfterKill=Math.max(operator.workersAfterKill??0,plant==='webots_3d'?enginesOf().length+workersOf(dir).length:workersOf(dir).length);
+   if(operator.killTick!==undefined)operator.workersAfterKill=Math.max(operator.workersAfterKill??0,plant==='webots_3d'?enginesOf(dir).length+workersOf(dir).length:workersOf(dir).length);
    const report=await run.report();
    await writeFile(join(dir,'report.json'),JSON.stringify(report)+'\n',{mode:0o600,flag:'wx'});
    const ev=report.navigation2d,read=ev?await readNavigationEvidence(join(dir,'run','evidence'),{chunks:ev.artifacts,...ev.recording},{scene}):null;
@@ -326,7 +338,7 @@ export async function runIRSimBatch(o:BatchOptions):Promise<BatchSummary>{
     // the engine is not bit-reproducible (1e-12 m was measured): same seed means the same business outcome tick for tick and every pose within the oracle profile's tolerance
     const tol=loadOracleProfile().profile.webots!.repeatPoseM,first=poseTraces.get(group[0]!.id),sameOutcome=group.every(x=>x.outcome&&x.outcome.status===group[0]!.outcome?.status&&x.outcome.tick===group[0]!.outcome?.tick&&x.outcome.served===group[0]!.outcome?.served);
     let worst=0,comparable=!!first;
-    for(const x of group.slice(1)){const t=poseTraces.get(x.id);if(!first||!t||t.length!==first.length){comparable=false;break;}for(let k=0;k<t.length;k++)worst=Math.max(worst,Math.abs(t[k]!-first[k]!));}
+    for(const x of group.slice(1)){const t=poseTraces.get(x.id);if(!first||!t||t.length!==first.length){comparable=false;break;}worst=Math.max(worst,poseTraceDifference(first,t));}
     const ok=group.every(x=>x.result==='pass')&&comparable&&sameOutcome&&worst<=tol;
     r.assertions?.push({id:'REPEATABLE',result:ok?'pass':'fail'});r.repeatWorstPoseM=comparable?worst:undefined;
     if(!ok)why.push(`FAIL:REPEATABLE: ${group.length} runs of seed ${r.seed}: ${comparable?`worst pose difference ${worst} m (tolerance ${tol} m)`:'traces not comparable'}${sameOutcome?'':', outcomes differ'}`);

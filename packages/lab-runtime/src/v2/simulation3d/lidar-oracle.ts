@@ -13,9 +13,9 @@ export function castScan(scene:Pick<NavigationSceneV1,'world'>,pose:{x:number;y:
    const p=poly[i]!,q=poly[(i+1)%poly.length]!,ex=q[0]-p[0],ey=q[1]-p[1],denom=cross(dx,dy,ex,ey);
    if(Math.abs(denom)<1e-12)continue; // parallel
    const ox=p[0]-pose.x,oy=p[1]-pose.y,t=cross(ox,oy,ex,ey)/denom,s=cross(ox,oy,dx,dy)/denom;
-   if(s>=0&&s<=1&&t>=sensor.minM&&t<=sensor.maxM&&t<best)best=t;
+   if(s>=0&&s<=1&&t>0&&t<best)best=t; // the nearest surface hides what is behind it, whether or not it is in range
   }
-  return best;
+  return best>=sensor.minM&&best<=sensor.maxM?best:Infinity;
  });
 }
 

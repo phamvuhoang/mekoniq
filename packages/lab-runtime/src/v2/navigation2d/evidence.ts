@@ -283,7 +283,7 @@ const pose3dOf=(r:object):{pose3d?:Pose3d}=>{const p=(r as {pose3d?:Pose3d}).pos
 /** The record shape of each stream, as the recorder writes it: exact keys, finite numbers (a JSON 1e999 parses as Infinity and is refused), bounded arrays. */
 const RECORD:Record<EvidenceStream,(r:unknown)=>boolean>={
  trajectory:r=>obj(r,['tick','simTimeNs','robots'])&&nat(r.tick)&&r.simTimeNs===String(BigInt(r.tick)*NS)&&Array.isArray(r.robots)&&r.robots.length>0&&r.robots.length<=32
-  &&r.robots.every(x=>obj(x,'pose3d' in (x as object)?[...TRAJECTORY_ROBOT_KEYS,'pose3d']:TRAJECTORY_ROBOT_KEYS)&&text(x.robotId)&&vec(x.poseDriveMap,3)&&vec(x.bodyVelocity,2)&&ids(x.collisionIds)&&(!('pose3d' in x)||obj(x.pose3d,['z','roll','pitch'])&&finite(x.pose3d.z)&&finite(x.pose3d.roll)&&finite(x.pose3d.pitch))),
+  &&r.robots.every(x=>obj(x,typeof x==='object'&&x!==null&&'pose3d' in x?[...TRAJECTORY_ROBOT_KEYS,'pose3d']:TRAJECTORY_ROBOT_KEYS)&&text(x.robotId)&&vec(x.poseDriveMap,3)&&vec(x.bodyVelocity,2)&&ids(x.collisionIds)&&(!('pose3d' in x)||obj(x.pose3d,['z','roll','pitch'])&&finite(x.pose3d.z)&&finite(x.pose3d.roll)&&finite(x.pose3d.pitch))),
  control:r=>obj(r,['tick','targetTick','singleStep','velocities','actorUpdates'])&&nat(r.tick)&&r.targetTick===r.tick+1&&typeof r.singleStep==='boolean'&&Array.isArray(r.velocities)&&r.velocities.length<=32
   &&r.velocities.every(v=>obj(v,['robotId','vMps','omegaRadps'])&&text(v.robotId)&&finite(v.vMps)&&finite(v.omegaRadps))&&Array.isArray(r.actorUpdates)&&r.actorUpdates.length<=16&&(r.actorUpdates as unknown[]).every(u=>obj(u,['actorId','poseMap'])&&text((u as {actorId:unknown}).actorId)&&vec((u as {poseMap:unknown}).poseMap,3)),
  sensors:r=>obj(r,['tick','robotId','scan'])&&nat(r.tick)&&text(r.robotId)&&scanOk(r.scan,r.tick),

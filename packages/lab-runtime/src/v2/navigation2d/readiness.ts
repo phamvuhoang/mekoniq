@@ -108,7 +108,7 @@ export interface ProviderReadinessSpec {
  bundleFile?:PortableSimulationOptions['bundleFile'];
  capacity:(runId?:string)=>boolean;
  /** A real worker, the real scene: create, then a clean stop. Resolves to reason codes, [] when it worked. */
- smoke:(scene:NavigationSceneV1,bundleRoot:string,runDirectory:string)=>Promise<string[]>;
+ smoke:(scene:NavigationSceneV1,bundleRoot:string,runDirectory:string,signal:AbortSignal)=>Promise<string[]>;
 }
 /** Per-request readiness: versions/lock, the admitted bundle's scene against the world and scenario, quota/free disk, and a real worker create smoke (cached per scene). */
 export function providerReadiness(spec:ProviderReadinessSpec):NativeReadinessChecks{
@@ -153,7 +153,7 @@ export function providerReadiness(spec:ProviderReadinessSpec):NativeReadinessChe
    const scratch=await mkdtemp(join(spec.probeDir,'smoke-'));
    try{
     for(const [path,b] of files){await mkdir(dirname(join(scratch,'bundle',path)),{recursive:true});await writeFile(join(scratch,'bundle',path),b,{mode:0o600});}
-    const failed=await spec.smoke(scene,join(scratch,'bundle'),join(scratch,'run'));
+    const failed=await spec.smoke(scene,join(scratch,'bundle'),join(scratch,'run'),signal);
     if(failed.length)runner.push(...failed);else smoked.set(scene.sceneDigest,Date.now()+SMOKE_TTL_MS);
    }catch(e){runner.push(`${P}_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`);}
    finally{await rm(scratch,{recursive:true,force:true});}
@@ -167,15 +167,16 @@ export function providerReadiness(spec:ProviderReadinessSpec):NativeReadinessChe
 function portableReadiness(runtime:IRSimRuntimeOptions,described:NonNullable<PortableSimulation['describe']>,o:PortableSimulationOptions,probeDir:string):NativeReadinessChecks{
  return providerReadiness({prefix:'IRSIM',engineId:'irsim_2d',runtime,lockPath:o.lockPath,directory:o.directory,probeDir,bundleFile:o.bundleFile,
   evidence:`irsim:${described.packageVersion}/python-${described.pythonVersion}/lock:${runtime.lockDigest.slice(0,16)}`,capacity:runId=>irsimCapacity(runtime.maxActiveRuns,runId),
-  async smoke(scene,bundleRoot,runDirectory){
+  async smoke(scene,bundleRoot,runDirectory,signal){
    try{
     const w=await spawnIRSimWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:'irsim-smoke',bundleRoot,runDirectory,lockDigest:runtime.lockDigest,schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...runtime.entry?{entry:runtime.entry}:{}});
+    const onAbort=()=>void w.close('readiness timeout').catch(()=>{});signal.addEventListener('abort',onAbort,{once:true});
     try{
      const ask=(op:'describe'|'create',payload:Record<string,unknown>,n:number)=>w.request({protocol:'mekoniq-irsim/1',requestId:`smoke-${n}`,runId:'irsim-smoke',expectedTick:0,op,payload});
      const d=await ask('describe',{},1),c=await ask('create',{sceneRef:'navigation-scene.json',seed:1},2);
      return !d.ok||!c.ok?[`IRSIM_SMOKE_FAILED:${(!d.ok?d:c as {error:{code:string}}).error.code}`]:[];
     }catch(e){return [`IRSIM_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'WORKER_FAILED'}`];}
-    finally{await w.close('smoke done');}
+    finally{signal.removeEventListener('abort',onAbort);await w.close('smoke done');}
    }catch(e){return [`IRSIM_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`];}
   }});
 }

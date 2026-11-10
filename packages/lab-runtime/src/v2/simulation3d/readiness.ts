@@ -51,9 +51,10 @@ export async function webotsFromOptions(o:WebotsOptions):Promise<WebotsProvider>
  const readinessChecks=providerReadiness({prefix:'WEBOTS',engineId:'webots_3d',runtime,lockPath:o.lockPath,directory:o.directory,probeDir,bundleFile:o.bundleFile,
   evidence:`webots:${describe.engineVersion}/sha256:${describe.executableSha256.slice(0,16)}/python-${describe.pythonVersion}/lock:${lockDigest.slice(0,16)}`,
   capacity:runId=>activeRunCount(WEBOTS_AMR.id,runId)<WEBOTS_MAX_ACTIVE_RUNS,
-  async smoke(scene,bundleRoot,runDirectory){
+  async smoke(scene,bundleRoot,runDirectory,signal){
    try{
     const w=await spawnSim3DWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:'webots-smoke',bundleRoot,runDirectory,lockDigest,schemaDir,sceneDigest:scene.sceneDigest,webotsHome:home,...o.entry?{entry:o.entry}:{}});
+    const onAbort=()=>void w.close('readiness timeout').catch(()=>{});signal.addEventListener('abort',onAbort,{once:true});
     try{
      const c=await w.request({protocol:'mekoniq-sim3d/1',requestId:'smoke-1',runId:'webots-smoke',expectedTick:0,op:'create',payload:{sceneRef:'navigation-scene.json',seed:1}});
      if(c.ok)return [];
@@ -61,7 +62,7 @@ export async function webotsFromOptions(o:WebotsOptions):Promise<WebotsProvider>
      // Webots needs a window-server session on macOS; a failure that names the display is that, not a broken install
      return [code.code==='WEBOTS_START_FAILED'&&/display|window ?server|cocoa|platform plugin/i.test(code.detail)?'WEBOTS_NO_GUI_SESSION':code.code==='WEBOTS_PORT_IN_USE'?'WEBOTS_PORT_IN_USE':`WEBOTS_SMOKE_FAILED:${code.code}`];
     }catch(e){return [`WEBOTS_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'WORKER_FAILED'}`];}
-    finally{await w.close('smoke done');}
+    finally{signal.removeEventListener('abort',onAbort);await w.close('smoke done');}
    }catch(e){return [`WEBOTS_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`];}
   }});
  // a worker entry override is a test double: it can exercise every row above, but it never makes the provider installed

@@ -29,6 +29,7 @@ async function probe(id:string,fn:ReadinessProbe,context:ReadinessContext):Promi
  }finally{clearTimeout(timer);}
 }
 /** Server-owned provider checks replace the placeholder model/clock/fixture/profile/runner/gripper rows; anything malformed or late is unknown, never ready. */
+const WEBOTS_BUDGET_MS=45000;
 async function providerChecks(checks:ReadinessCheck[],context:ReadinessContext,fn:NativeReadinessChecks,prefix:string,id:string,ms:number){
  const controller=new AbortController();let timer:ReturnType<typeof setTimeout>|undefined;
  try{
@@ -82,12 +83,13 @@ export async function collectReadiness(context:ReadinessContext,o:ReadinessOptio
  }
  const portableSet=set?.execution?.host==='portable_python';
  if(scenario&&set?.mode==='simulation'&&!portableSet&&o.nativeChecks)await providerChecks(checks,context,o.nativeChecks,'NATIVE','native-provider',5000);
- // the IR-SIM create smoke may need its full 15 s startup budget on a cold host
- if(scenario&&set?.mode==='simulation'&&portableSet&&o.portableChecks)await providerChecks(checks,context,o.portableChecks,'IRSIM','irsim-provider',15000);
+ // the IR-SIM create smoke may need its full 15 s startup budget on a cold host; a Webots start is slower (a GUI process), so its smoke gets 45 s under its own name, and the abort closes it
+ const webots=set?.providers?.amr==='webots_3d';
+ if(scenario&&set?.mode==='simulation'&&portableSet&&o.portableChecks)await providerChecks(checks,context,o.portableChecks,webots?'WEBOTS':'IRSIM',webots?'webots-provider':'irsim-provider',webots?WEBOTS_BUDGET_MS:15000);
  const entries=Object.entries(o.probes??{});
  if(entries.length>20)checks.push(check('probes',['PROBE_LIMIT']));
  else if(scenario&&set)checks.push(...await Promise.all(entries.map(([id,fn])=>probe(`probe:${id}`,fn,context))));
- const finished=now(),expired=finished-started>15000||finished<started;
+ const finished=now(),expired=finished-started>(webots?WEBOTS_BUDGET_MS+5000:15000)||finished<started;
  if(expired)checks.push(check('deadline',['READINESS_DEADLINE_EXCEEDED'],'unknown'));
  return {checkedAt:new Date(finished).toISOString(),expiresAt:new Date(finished+30000).toISOString(),scenarioId:context.scenarioId,backendSetId:context.backendSetId,checks,canStart:canStartFromChecks(checks,expired)};
 }

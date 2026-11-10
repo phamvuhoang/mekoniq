@@ -178,6 +178,10 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  }catch(error){await run.close();throw error;}
 }
 
+/** A 3D pose that is not finite, tilts more than 0.35 rad, or has its base more than 0.6 wheel radii below or 4 above the height the robot first stood at. */
+export function poseUnstable(p:{z:number;roll:number;pitch:number},wheelRadiusM:number,restZ:number):boolean{
+ return![p.z,p.roll,p.pitch].every(Number.isFinite)||Math.abs(p.roll)>TILT_LIMIT_RAD||Math.abs(p.pitch)>TILT_LIMIT_RAD||p.z<restZ-0.6*wheelRadiusM||p.z>restZ+4*wheelRadiusM;
+}
 class FixedStepRun implements ScenarioRun {
  source!:SourceSession;
  /** reservation zones of the scenario fixture (Zone.Reserve/Release through the zone bridge), absent without zones */
@@ -419,12 +423,14 @@ class FixedStepRun implements ScenarioRun {
   if(unstable!==null){c.attention.push({reason:'PLANT_UNSTABLE',robotId:unstable,tick:c.tick});await this.plantLost('PLANT_UNSTABLE','PLANT_UNSTABLE');return false;}
   return true;
  }
- /** The robot whose 3D pose (pose3d, only 3D plants report it) is not finite, tilts more than 0.35 rad, or has its base outside [0.4, 5] wheel radii above the floor. */
+ /** The robot whose 3D pose (pose3d, only 3D plants report it) is unstable (see poseUnstable). `restZ` is the height each robot first reported: the model's base frame may be on the floor or on the axle. */
+ private restZ=new Map<string,number>();
  private unstableRobot(snap:IRSimSnapshotV1):string|null{
   for(const r of snap.robots){
    const p=(r as {pose3d?:{z:number;roll:number;pitch:number}}).pose3d;if(!p)continue;
+   if(!this.restZ.has(r.robotId)&&Number.isFinite(p.z))this.restZ.set(r.robotId,p.z);
    const wheel=this.scene.robots.find(x=>x.robotId===r.robotId)?.model.kinematics.wheelRadiusM??0;
-   if(![p.z,p.roll,p.pitch].every(Number.isFinite)||Math.abs(p.roll)>TILT_LIMIT_RAD||Math.abs(p.pitch)>TILT_LIMIT_RAD||p.z<0.4*wheel||p.z>5*wheel)return r.robotId;
+   if(poseUnstable(p,wheel,this.restZ.get(r.robotId)??p.z))return r.robotId;
   }
   return null;
  }

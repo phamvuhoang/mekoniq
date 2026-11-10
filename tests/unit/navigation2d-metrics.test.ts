@@ -342,6 +342,15 @@ test('review B05 #4: untrusted chunks are read within size, inflate, line and re
  await writeFile(file,original);
 });
 
+test('review R1 #8: a robots[] entry that is not an object rejects the chunk as EVIDENCE_RECORD_INVALID, it never throws',async()=>{
+ const dir=await temp(),rec=await record(dir,100),good=rec.committed();
+ for(const bad of [null,7,'x',[]]){
+  const l=structuredClone(good);await rewrite(dir,l,'trajectory',0,x=>x.map(y=>({...y,robots:[bad]})));
+  const r=await readNavigationEvidence(dir,l,{scene:serve});
+  expect(r.issues.map(i=>i.code),String(bad)).toContain('EVIDENCE_RECORD_INVALID');expect(r.complete).toBe(false);
+ }
+});
+
 test('review B05 #4: a reopened manifest is size-capped and validated; a write that fails leaves nothing claimed; orphans count in the quota; a live second writer is refused',async()=>{
  const dir=await temp();await record(dir,30);
  const manifest=join(dir,'manifest.json'),text=await readFile(manifest,'utf8');

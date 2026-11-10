@@ -30,6 +30,12 @@ test('hits outside [minM, maxM] and an empty world are no return', () => {
   expect(castScan(scene([], [far]), { x: 0, y: 0, yaw: 0 }, sensor)[180]).toBe(Infinity);
 });
 
+test('a surface nearer than minM hides what is behind it: the beam is no return, as the engine reports below_min', () => {
+  const near: [number, number][] = [[0.02, -1], [0.03, -1], [0.03, 1], [0.02, 1]];
+  const behind: [number, number][] = [[3, -5], [3.1, -5], [3.1, 5], [3, 5]];
+  expect(castScan(scene([near, behind]), { x: 0, y: 0, yaw: 0 }, sensor)[180]).toBe(Infinity);
+});
+
 // A rendered depth sensor gives each beam the depth of a pixel, so on a slanted surface a beam may report what its neighbour should see: agreement is within the true
 // range over the beam and its neighbours, plus a small tolerance, and the median error stays small.
 const flat = (n: number, v: number) => Array<number>(n).fill(v);

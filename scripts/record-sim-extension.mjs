@@ -11,7 +11,7 @@
 // the record is inconsistent, 2 prerequisite/usage (not_run), 130/143 on a signal.
 import {spawn,spawnSync,execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {copyFileSync,existsSync,readFileSync,readdirSync,statSync,writeFileSync} from 'node:fs';
+import {copyFileSync,existsSync,mkdtempSync,readFileSync,readdirSync,rmSync,statSync,writeFileSync} from 'node:fs';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {arch,homedir,hostname,platform,release,tmpdir} from 'node:os';
 import {dirname,join,relative,resolve} from 'node:path';
@@ -62,11 +62,13 @@ await mkdir(join(out,'suites'),{recursive:true,mode:0o700});await mkdir(join(out
 const scrub=(t)=>t.replaceAll(resolve(root,'..'),'<workspace>').replaceAll(homedir(),'<home>').replaceAll(tmpdir(),'<tmp>').replaceAll(hostname(),'<host>');
 const commands=[],suites=[],notRun=[];
 let signalled=0;const children=new Set();
-for(const [sig,code] of [['SIGINT',130],['SIGTERM',143]])process.on(sig,()=>{signalled||=code;for(const c of children)c.kill(sig);});
+// each suite runs in its own process group: a signal or the timeout reaches Webots, the controllers and every worker below it, not only the direct child
+const killGroup=(c,sig)=>{try{process.kill(-c.pid,sig);}catch{try{c.kill(sig);}catch{/* already gone */}}};
+for(const [sig,code] of [['SIGINT',130],['SIGTERM',143]])process.on(sig,()=>{signalled||=code;for(const c of children)killGroup(c,sig);});
 async function record(id,cmd,args,{cwd=root,env={},timeoutMs=3_600_000}={}){
  const startedAt=new Date().toISOString(),log=`suites/${id}.log`;
- const code=await new Promise((done)=>{const c=spawn(cmd,args,{cwd,env:{...process.env,...env},stdio:['ignore','pipe','pipe']});children.add(c);let text='';
-  c.stdout.on('data',d=>{text+=d;});c.stderr.on('data',d=>{text+=d;});const t=setTimeout(()=>c.kill('SIGKILL'),timeoutMs);
+ const code=await new Promise((done)=>{const c=spawn(cmd,args,{cwd,env:{...process.env,...env},stdio:['ignore','pipe','pipe'],detached:true});children.add(c);let text='';
+  c.stdout.on('data',d=>{text+=d;});c.stderr.on('data',d=>{text+=d;});const t=setTimeout(()=>killGroup(c,'SIGKILL'),timeoutMs);
   c.once('close',(status,sig)=>{clearTimeout(t);children.delete(c);writeFile(join(out,log),scrub(text)).then(()=>done(status??(sig==='SIGINT'?130:sig==='SIGTERM'?143:1)));});});
  const entry={id,command:scrub(`${Object.entries(env).map(([k,v])=>`${k}=${v}`).join(' ')} ${cmd} ${args.join(' ')}`.trim()),cwd:cwd===root?'source':relative(root,cwd),startedAt,finishedAt:new Date().toISOString(),exitCode:code,log,logSha256:sha(readFileSync(join(out,log)))};
  console.log(`${id}: exit ${code}`);return entry;
@@ -78,9 +80,10 @@ const webotsEnv={MEKONIQ_WEBOTS_HOME:webotsHome};
 // ---- 1. the algorithm oracles (RTB kinematics, the PID reference) ----
 let algorithm=null;
 {
- const scratch=join(tmpdir(),`mekoniq-alg-${process.pid}`),cmd=await record('algorithm',process.execPath,['scripts/lab-algorithm.mjs','run','--out',scratch]);commands.push(cmd);
+ const scratchBase=mkdtempSync(join(tmpdir(),'mekoniq-alg-')),scratch=join(scratchBase,'out'),cmd=await record('algorithm',process.execPath,['scripts/lab-algorithm.mjs','run','--out',scratch]);commands.push(cmd);
  const f=join(scratch,'algorithm-results.json');
  if(existsSync(f)){const text=scrub(readFileSync(f,'utf8'));writeFileSync(join(out,'algorithm-results.json'),text);algorithm={file:'algorithm-results.json',sha256:sha(text)};}else notRun.push({id:'algorithm',reason:`no results written (exit ${cmd.exitCode})`});
+ rmSync(scratchBase,{recursive:true,force:true});
 }
 // ---- 2. the Webots campaign (its own process, signal handling and worker groups), pinned to the closure stamped above ----
 const campaignCmd=await record('campaign',process.execPath,['scripts/lab-irsim.mjs','run','--provider','webots','--campaign','r1-qualification','--out',join(out,'campaign'),'--concurrency','1','--webots-home',webotsHome,'--webots-python',webotsPython,'--expect-portable-digest',before.toolClosures.portable],{timeoutMs:7_200_000});
