@@ -1,0 +1,1280 @@
+{
+ "schemaVersion": 1,
+ "documentType": "irsim-campaign-summary",
+ "status": "completed",
+ "campaignId": "r1-qualification",
+ "campaignSha256": "00da63f7a094fce5337cf5618a2a5b677578015e3dca00368499fa03fd7a6775",
+ "sourceCommit": "285bf53d18f7fc53ff6c46dfadb6a952395d86c1",
+ "identity": {
+  "toolClosures": {
+   "portable": "5e8cb28f5c4643716682dc667829295daf20baa8bc788011dde0b0320eb85818",
+   "native": "bbb3eca163adbf8c7c6014d097e2cefad53382305cf2556864060e635d3be21f"
+  }
+ },
+ "provider": {
+  "id": "webots_3d",
+  "kind": "webots_engine"
+ },
+ "concurrency": 1,
+ "startedAt": "2026-11-10T11:24:08.404Z",
+ "finishedAt": "2026-11-10T11:38:11.774Z",
+ "reasons": [],
+ "complete": true,
+ "evidenceComplete": false,
+ "runs": [
+  {
+   "id": "001-WB-FD01-serve-3d-v1-s5-r1",
+   "scenarioId": "WB-FD01",
+   "fixtureId": "serve-3d-v1",
+   "seed": 5,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant",
+   "stepTicks": 500,
+   "repeatWorstPoseM": 3.9879211044535623e-13,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "e586f2c711a5519edda24b61029b5636a82a646971d1a1949c4bb6920404aab6",
+    "sensorDigest": "9c40bdd20b0abd0e39c8d02381632e394d5218d157581dba40231b7569e76f88",
+    "assertionDigest": "547700ce62f817a376dc3a4b5f1e7a16c02ea566b0c590644f4e1e9f4635fca7",
+    "outcomeDigest": "093d0f65f84a87cd3bec1bf1ae06edb41613f9ff45b2470665f76481b149d1d6"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 5152,
+    "simTimeNs": "103040000000"
+   },
+   "wallMs": 25150
+  },
+  {
+   "id": "002-WB-FD01-serve-3d-v1-s5-r2",
+   "scenarioId": "WB-FD01",
+   "fixtureId": "serve-3d-v1",
+   "seed": 5,
+   "repeat": 2,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant",
+   "stepTicks": 25,
+   "repeatWorstPoseM": 3.9879211044535623e-13,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "a2b8beb8e9aa93ee40f38e091e20558193b3a27b5e1ab2021a1376e36f1d4bb0",
+    "sensorDigest": "9c40bdd20b0abd0e39c8d02381632e394d5218d157581dba40231b7569e76f88",
+    "assertionDigest": "547700ce62f817a376dc3a4b5f1e7a16c02ea566b0c590644f4e1e9f4635fca7",
+    "outcomeDigest": "aef11a68e043d4e4196066cb84436b981893eade0d601c9bc0e340c8c2bf1796"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 5152,
+    "simTimeNs": "103040000000"
+   },
+   "wallMs": 26722
+  },
+  {
+   "id": "003-WB-FD01-serve-3d-v1-s5-r3",
+   "scenarioId": "WB-FD01",
+   "fixtureId": "serve-3d-v1",
+   "seed": 5,
+   "repeat": 3,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant",
+   "stepTicks": 100,
+   "repeatWorstPoseM": 3.9879211044535623e-13,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "e586f2c711a5519edda24b61029b5636a82a646971d1a1949c4bb6920404aab6",
+    "sensorDigest": "9c40bdd20b0abd0e39c8d02381632e394d5218d157581dba40231b7569e76f88",
+    "assertionDigest": "547700ce62f817a376dc3a4b5f1e7a16c02ea566b0c590644f4e1e9f4635fca7",
+    "outcomeDigest": "093d0f65f84a87cd3bec1bf1ae06edb41613f9ff45b2470665f76481b149d1d6"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 5152,
+    "simTimeNs": "103040000000"
+   },
+   "wallMs": 26297
+  },
+  {
+   "id": "004-WB-FD07-serve-3d-fleet-v1-s7-r1",
+   "scenarioId": "WB-FD07",
+   "fixtureId": "serve-3d-fleet-v1",
+   "seed": 7,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release",
+   "stepTicks": 500,
+   "repeatWorstPoseM": 7.887024366937112e-13,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "538745158ca2f5ce4b4955a5c1f367cf83a34ff1faba1168604065feab4e482c",
+    "sensorDigest": "36d5a3ef81169ca65658f95929db0bbadedd74c10889598c2b650eaffc54ea03",
+    "assertionDigest": "180eb6ba89a1a6a4a1def80178bc058567347df538b318537748c4d009dfbb55",
+    "outcomeDigest": "0bfecf9fa4b6b7354c1fe865a633c3579a21f6bb0c54244ac9888c761e29f516"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 9747,
+    "simTimeNs": "194940000000"
+   },
+   "wallMs": 66569
+  },
+  {
+   "id": "005-WB-FD07-serve-3d-fleet-v1-s7-r2",
+   "scenarioId": "WB-FD07",
+   "fixtureId": "serve-3d-fleet-v1",
+   "seed": 7,
+   "repeat": 2,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release",
+   "stepTicks": 25,
+   "repeatWorstPoseM": 7.887024366937112e-13,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "864ae5f5e176799b3761ace4353fe1f5ce17b5078327d49926b00bab953095ef",
+    "sensorDigest": "36d5a3ef81169ca65658f95929db0bbadedd74c10889598c2b650eaffc54ea03",
+    "assertionDigest": "180eb6ba89a1a6a4a1def80178bc058567347df538b318537748c4d009dfbb55",
+    "outcomeDigest": "9d22ca29a2a87d0cebf4c4dee9231f9e1f19d39c8db414f40e79dadbf9b16fe1"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 9747,
+    "simTimeNs": "194940000000"
+   },
+   "wallMs": 70501
+  },
+  {
+   "id": "006-WB-FD07-serve-3d-fleet-v1-s7-r3",
+   "scenarioId": "WB-FD07",
+   "fixtureId": "serve-3d-fleet-v1",
+   "seed": 7,
+   "repeat": 3,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release",
+   "stepTicks": 100,
+   "repeatWorstPoseM": 7.887024366937112e-13,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    },
+    {
+     "id": "REPEATABLE",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "864ae5f5e176799b3761ace4353fe1f5ce17b5078327d49926b00bab953095ef",
+    "sensorDigest": "36d5a3ef81169ca65658f95929db0bbadedd74c10889598c2b650eaffc54ea03",
+    "assertionDigest": "180eb6ba89a1a6a4a1def80178bc058567347df538b318537748c4d009dfbb55",
+    "outcomeDigest": "9d22ca29a2a87d0cebf4c4dee9231f9e1f19d39c8db414f40e79dadbf9b16fe1"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 9747,
+    "simTimeNs": "194940000000"
+   },
+   "wallMs": 65198
+  },
+  {
+   "id": "007-WB-FD01-serve-3d-v1-s100-r1",
+   "scenarioId": "WB-FD01",
+   "fixtureId": "serve-3d-v1",
+   "seed": 100,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "de08c73d3bac8e67f9e0c4806996fa9847863aa90a6133363201a1191e2894f6",
+    "sensorDigest": "d72adef3703aa14a1c6ec0eb4a2df8d041557a7bcae07bcbe2ae5a31a9c7a67b",
+    "assertionDigest": "985bd5409d90061d0dc8cf8655bca1398232a9c1b99dde387272d8dbf1a028f5",
+    "outcomeDigest": "8171466a0ab7a28832e611811b70d3877a724514c1095ab14c4f9b4eaa4b703c"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 4787,
+    "simTimeNs": "95740000000"
+   },
+   "wallMs": 25137
+  },
+  {
+   "id": "008-WB-FD01-serve-3d-v1-s101-r1",
+   "scenarioId": "WB-FD01",
+   "fixtureId": "serve-3d-v1",
+   "seed": 101,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "130060bc3e4eaf22b3e4dc8eca317d4dfedbdb014fb900cdb643f52ee0c7157a",
+    "sensorDigest": "5e2cfdb99a064adc582539bea19c0c1799eca393be85ddfd5da52247e53f24ab",
+    "assertionDigest": "0a6efb02e29bed1f0a9280fa8d76a292825e6923bd12d9dca55f0da4e9d7d239",
+    "outcomeDigest": "2159dfdc79e4e5e9eb5d9b05ed3e476fe94e8dc8a671e4b80a5f0f6173c44e8a"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 5070,
+    "simTimeNs": "101400000000"
+   },
+   "wallMs": 25368
+  },
+  {
+   "id": "009-WB-FD01-serve-3d-v1-s102-r1",
+   "scenarioId": "WB-FD01",
+   "fixtureId": "serve-3d-v1",
+   "seed": 102,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "66797f2a3783a9c4f8e0fce6935e2f32e10d8033265d8110029ea53d37fed9bf",
+    "sensorDigest": "44fce145bb09a37045d4d64d87336ea8c0cdf253e4654ba2157bfd509a802fc1",
+    "assertionDigest": "203e4730705e0f9ca5b10c7843ad8e8cbc9b8d6455be77b211680b6681cece25",
+    "outcomeDigest": "176a4b96a495811177e89aacde6ba1284408369b3427946b944f21887b203716"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 5123,
+    "simTimeNs": "102460000000"
+   },
+   "wallMs": 25047
+  },
+  {
+   "id": "010-WB-FD01-serve-3d-v1-s103-r1",
+   "scenarioId": "WB-FD01",
+   "fixtureId": "serve-3d-v1",
+   "seed": 103,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "cdb2bc58372c5f40c5394ade037b7df77596adc5af4baaa5104e37093704b672",
+    "sensorDigest": "1a50a7b204ccdf44a5c68985517f3f4e2bb265b51623bce609fbd0b60f228ab0",
+    "assertionDigest": "ad2356f76be80d44d7dbec3b5fecba74e68e31ed4f6fd80e2144864aeb12cafb",
+    "outcomeDigest": "89f8a58c0f56e6cc1d3c38506dfda815d5b4b47f66cb0acffbc97d4f2b17a8b1"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 5209,
+    "simTimeNs": "104180000000"
+   },
+   "wallMs": 25462
+  },
+  {
+   "id": "011-WB-FD01-serve-3d-v1-s104-r1",
+   "scenarioId": "WB-FD01",
+   "fixtureId": "serve-3d-v1",
+   "seed": 104,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "dba4aaf6c8b5cf2fe9edbf62c956558c354c61ce3769a95a58ebd0595c5fefbb",
+    "sensorDigest": "6370e02d20d2abec3e4c7fac438ac0814833b11d981a4421cf293e87305a5ed0",
+    "assertionDigest": "d8ef1580ed985d15c9576ebef4ee1b3366d61e1020f16b69dcc62e14eb6f6194",
+    "outcomeDigest": "f9024e60c16cf482f459357c298ee356ae36b4db8e35bda5504fb003d545f25f"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 4759,
+    "simTimeNs": "95180000000"
+   },
+   "wallMs": 24717
+  },
+  {
+   "id": "012-WB-FD01-serve-3d-v1-s105-r1",
+   "scenarioId": "WB-FD01",
+   "fixtureId": "serve-3d-v1",
+   "seed": 105,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "1e6b5afbe3be55ee773eb5cde48d7160a87583a2b77397910a437bd806ae8380",
+    "sensorDigest": "c7190c07690ee03cfc06dda71c3e1f1e61c1c951ea5cddadf122571ad5021931",
+    "assertionDigest": "0422da7809f4eb36c63966b5eea393402456060a4c64ce7946ac33b86599c978",
+    "outcomeDigest": "fc10171483151049d24925888be410357c848dfba71612b919e89b1e14d040a9"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "1",
+    "tick": 4798,
+    "simTimeNs": "95960000000"
+   },
+   "wallMs": 24806
+  },
+  {
+   "id": "013-WB-FD07-serve-3d-fleet-v1-s200-r1",
+   "scenarioId": "WB-FD07",
+   "fixtureId": "serve-3d-fleet-v1",
+   "seed": 200,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "853dc2c616c3cceafa8ff95e3ce839a2c0bc28e7515f7f45419b631ddb2a4297",
+    "sensorDigest": "cb541eb566b90b25b837879bc3893ae920a581d9e3e8043b2778ff9307f4b274",
+    "assertionDigest": "24660daff9fa7129e6503d360872683732a9936259ce323c7be62becc2a783cc",
+    "outcomeDigest": "c02e675381fdef8837db7d6b655ddb1bbe8efb427e41a89a71e03ba3b101c210"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 9747,
+    "simTimeNs": "194940000000"
+   },
+   "wallMs": 62444
+  },
+  {
+   "id": "014-WB-FD07-serve-3d-fleet-v1-s201-r1",
+   "scenarioId": "WB-FD07",
+   "fixtureId": "serve-3d-fleet-v1",
+   "seed": 201,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "713b807a5d57c97a4d0c9d5f3244c5e9148cf307edd4dc9b72b0d215c288e9ee",
+    "sensorDigest": "725081c4924c26de693a9c1229b56be174a6379864b2caaa36f3252ddbe9b364",
+    "assertionDigest": "12eca152b2ce855aef8d9527dbf730ff2c1e4dcfc80dbf2b8595fa47bf09f63d",
+    "outcomeDigest": "72fcffa75dfbd1a8f83e49b369bcd788192650332db3a5f6f47e64a639ed6f93"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 9747,
+    "simTimeNs": "194940000000"
+   },
+   "wallMs": 62756
+  },
+  {
+   "id": "015-WB-FD07-serve-3d-fleet-v1-s202-r1",
+   "scenarioId": "WB-FD07",
+   "fixtureId": "serve-3d-fleet-v1",
+   "seed": 202,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "f1b0caf63eb3b2f4de38f33e972a783676b4cce749a4dd5ce33e6dc0a99d5575",
+    "sensorDigest": "c64bd060b88f4da9cf103006a299952939516185013539561ef3b13018ca07b8",
+    "assertionDigest": "1c76dd7f2aa23e9d3c35432c17fbbe4266b78576cb66781e6182bbdf86d3b722",
+    "outcomeDigest": "1a9ba054d56ea07cb0b3f32791d5b761a9cff28d2faad3046281e77d02540043"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 9747,
+    "simTimeNs": "194940000000"
+   },
+   "wallMs": 66909
+  },
+  {
+   "id": "016-WB-FD07-serve-3d-fleet-v1-s203-r1",
+   "scenarioId": "WB-FD07",
+   "fixtureId": "serve-3d-fleet-v1",
+   "seed": 203,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "5efefa2353eb7b32771fd3da1d1c7743942e3a70c6a13dac38b1187c633326e1",
+    "sensorDigest": "65ade2f3123e4fe5f27c2723a1cf3b5d011f9c401f7e6c5d8bfbf14378246df8",
+    "assertionDigest": "8f7c725fe284750cf41152c3e01e235e3934952bc2bbe3444d42e60758b087ca",
+    "outcomeDigest": "108e5765afca84e2cc999938ecdf660332c391514ff303907a083b49b421f4fc"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 9747,
+    "simTimeNs": "194940000000"
+   },
+   "wallMs": 66771
+  },
+  {
+   "id": "017-WB-FD07-serve-3d-fleet-v1-s204-r1",
+   "scenarioId": "WB-FD07",
+   "fixtureId": "serve-3d-fleet-v1",
+   "seed": 204,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "0703bceec5b020cdb071c51e854d8e9e1d38088683d29e68f79973da1607c6c2",
+    "sensorDigest": "34ec064caaa29b719a09b780c4d87cb4ba5cd7663f0c542b5c3f630c480a0239",
+    "assertionDigest": "2b54f8e37fc7672ce9c4e19850b767132604cb9bf551dfa4faeb70fab8c9aecf",
+    "outcomeDigest": "b0eab22693da8597bd879a841e9ee386d81fd09f17fde7b8f519124787858ae9"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 9747,
+    "simTimeNs": "194940000000"
+   },
+   "wallMs": 66969
+  },
+  {
+   "id": "018-WB-FD07-serve-3d-fleet-v1-s205-r1",
+   "scenarioId": "WB-FD07",
+   "fixtureId": "serve-3d-fleet-v1",
+   "seed": 205,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "scenario",
+   "label": "WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "BOTH_ROBOTS_MOVED",
+     "result": "pass"
+    },
+    {
+     "id": "ROBOT_MAPPING",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_SINGLE_OWNER",
+     "result": "pass"
+    },
+    {
+     "id": "ZONE_RELEASE_AFTER_EXIT",
+     "result": "pass"
+    },
+    {
+     "id": "MIN_SEPARATION_AVAILABLE",
+     "result": "pass"
+    },
+    {
+     "id": "WITHIN_TICKS",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "ddf132ee122768d57013ebe8c019e557056a63a3f7ee02155353e081e7317ff1",
+    "sensorDigest": "5c76e42aef0adebd5baee6aa9d9eaf8dce3bac119952938376cec1bdd5e730be",
+    "assertionDigest": "f0d86b2c5805269d663d78d99a039c2df6158792cf2c4e3b8f63cbd7ebc5a7b5",
+    "outcomeDigest": "d7c9f85bdd8d1add154c52db9d8f086845d99e4f3b577273fc095c1d881acc4d"
+   },
+   "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 9747,
+    "simTimeNs": "194940000000"
+   },
+   "wallMs": 66972
+  },
+  {
+   "id": "019-WB-FD01-cancel-serve-3d-v1-s5-r1",
+   "scenarioId": "WB-FD01-cancel",
+   "fixtureId": "serve-3d-v1",
+   "seed": 5,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "operator_fault",
+   "label": "WB05: operator cancel mid-route on the kitchen leg; cancelled, nothing served, bounded simulated stop",
+   "stepTicks": 500,
+   "evidenceComplete": true,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "EVIDENCE_COMPLETE",
+     "result": "pass"
+    },
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "NO_PHYSICAL_CONTACT",
+     "result": "pass"
+    },
+    {
+     "id": "CANCEL_BOUNDED_STOP",
+     "result": "pass"
+    },
+    {
+     "id": "ONE_TERMINAL_PER_MISSION",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "a8c6d7ad7f92b4b10777bd03837c44887d1b7f1d42d3d1cfa27eace07358decf",
+    "sensorDigest": "bf5efdf4b928330db5b01a8fd43c9a84acc09775b11b96db4c532e56e98e2dc1",
+    "assertionDigest": "98843a1b7ad67684627f62b67ddced14ef150684c43ff0c5616eadb8a771a4aa",
+    "outcomeDigest": "3511b776d61b9a204e08982f13a2a94a514b58e6ffd93ccff3b425c5e3865671"
+   },
+   "outcome": {
+    "status": "cancelled",
+    "served": "0",
+    "tick": 877,
+    "simTimeNs": "17540000000"
+   },
+   "wallMs": 7522
+  },
+  {
+   "id": "020-WB-FD01-enginekill-serve-3d-v1-s5-r1",
+   "scenarioId": "WB-FD01-enginekill",
+   "fixtureId": "serve-3d-v1",
+   "seed": 5,
+   "repeat": 1,
+   "result": "pass",
+   "kind": "operator_fault",
+   "label": "WB05: the Webots process is killed between steps on the table leg; leg unknown, no resend, no second engine, cargo kept, the unknown tick a recorded gap",
+   "stepTicks": 500,
+   "evidenceComplete": false,
+   "evidenceAsExpected": true,
+   "reasons": [],
+   "reasonsTruncated": false,
+   "assertions": [
+    {
+     "id": "IDENTITY_BOUND",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SERVED_BEFORE_HANDOFF",
+     "result": "pass"
+    },
+    {
+     "id": "BUSINESS_OUTCOME",
+     "result": "pass"
+    },
+    {
+     "id": "EVIDENCE_GAP_AS_DECLARED",
+     "result": "pass"
+    },
+    {
+     "id": "CARGO_KEPT",
+     "result": "pass"
+    },
+    {
+     "id": "NO_SECOND_WORKER",
+     "result": "pass"
+    }
+   ],
+   "digests": {
+    "trajectoryDigest": "e95e6d9f11ea8a2e87f9e41fbc7a5571185b53e9ab7dc51d4fda5ac8d0d7aeb8",
+    "sensorDigest": "1905d3df966df19a09dd17f9d3c85fbb7daed0ce42d2921e58e9fea2bd19167e",
+    "assertionDigest": "e51e9f1ad5e03433ee5002550d0e5af0b731916f7d18ddf70efa12d1aa302a09",
+    "outcomeDigest": "bbe440cb3c15b69532c72814d34296520c964d40ed19a6b14c957f1d0b3dd4d5"
+   },
+   "outcome": {
+    "status": "needs_attention",
+    "served": "0",
+    "tick": 1600,
+    "simTimeNs": "32000000000"
+   },
+   "wallMs": 11244
+  }
+ ]
+}

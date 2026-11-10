@@ -1,0 +1,77 @@
+{
+ "id": "018-IR-FD04-blocked-serve-demo-v1-s23-r1",
+ "index": 12,
+ "scenarioId": "IR-FD04-blocked",
+ "fixtureId": "serve-demo-v1",
+ "seed": 23,
+ "repeat": 1,
+ "expectedAssertions": [
+  "EVIDENCE_COMPLETE",
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "BLOCKED_NOT_NO_PATH",
+  "ACTOR_SCHEDULE_APPLIED",
+  "ACTOR_OBSERVED",
+  "NO_ACTOR_CONTACT"
+ ],
+ "kind": "scenario",
+ "label": "IR03: a person stands on the T01 handoff: blocked after the no-progress window",
+ "stepTicks": 500,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "needs_attention",
+  "served": "0",
+  "tick": 1736,
+  "simTimeNs": "34720000000"
+ },
+ "horizon": 1736,
+ "evidenceComplete": true,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "d21324ab1d20be8947c74c2185517794b393de6a7edaf38565a0aee1a4a87bc0",
+  "sensorDigest": "b32ccfee1dc66def27e096175aa923c4a14ac1f7204e1677368dc064381b9431",
+  "assertionDigest": "e75e9039635a6cadeb300689facf2abc2aa49da62051ec05ca3b7a22f4043ffe",
+  "outcomeDigest": "cb87308b44666d35b953abf65785773d6bd023b01cb113831146043ffe850a0d"
+ },
+ "assertions": [
+  {
+   "id": "EVIDENCE_COMPLETE",
+   "result": "pass"
+  },
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "BLOCKED_NOT_NO_PATH",
+   "result": "pass"
+  },
+  {
+   "id": "ACTOR_SCHEDULE_APPLIED",
+   "result": "pass"
+  },
+  {
+   "id": "ACTOR_OBSERVED",
+   "result": "pass"
+  },
+  {
+   "id": "NO_ACTOR_CONTACT",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 8269,
+ "provider": {
+  "id": "irsim_2d",
+  "kind": "irsim_worker"
+ }
+}

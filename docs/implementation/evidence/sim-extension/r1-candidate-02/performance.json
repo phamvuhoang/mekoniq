@@ -1,0 +1,47 @@
+{
+ "schemaVersion": 1,
+ "documentType": "webots-performance-measurement",
+ "note": "a measurement on this host, not a gate; per-tick values are means over 50-tick step batches, p50/p95 across batches; the first batch includes the first-world load",
+ "host": {
+  "platform": "darwin",
+  "release": "25.5.0",
+  "arch": "arm64",
+  "cpu": "Apple M2 Pro",
+  "cpus": 10,
+  "memGiB": 16,
+  "node": "v24.22.2",
+  "webots": "0ba7fdf2603a0b5c",
+  "basicTimeStepMs": 20
+ },
+ "workload": {
+  "scenarioId": "WB-FD07",
+  "fixtureId": "serve-3d-fleet-v1",
+  "ticks": 1500,
+  "simSeconds": 30,
+  "finalStatus": "running",
+  "outcome": {
+   "status": "running",
+   "served": "0",
+   "tick": 1500,
+   "simTimeNs": "30000000000"
+  },
+  "outputBytes": 3198800
+ },
+ "steadyState": {
+  "batches": 30,
+  "perTickMs": {
+   "p50": 6.065763319999999,
+   "p95": 11.56473166,
+   "max": 12.0830075
+  },
+  "realtimeFactor": 2.527896026134538,
+  "wallSeconds": 11.867576708,
+  "webotsRssMiB": {
+   "max": 267.359375,
+   "samples": 30
+  },
+  "controllersRssMiB": {
+   "max": 54.328125
+  }
+ }
+}

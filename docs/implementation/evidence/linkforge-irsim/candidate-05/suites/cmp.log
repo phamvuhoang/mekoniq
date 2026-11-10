@@ -1,0 +1,17 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/navigation2d-bundle.test.ts (5 tests) 2109ms
+   ✓ CMP01-05 bundle: two robots with different drives compile to URDFs, a CompiledScene, projections and an IR-SIM world that the real engine loads  939ms
+   ✓ no fallback: the IR-SIM profile is blocked without its own compiler, and native profiles still use the native one  339ms
+   ✓ every named fixture compiles through the portable profile  793ms
+ ✓ tests/unit/navigation2d-fixtures.test.ts (11 tests) 627ms
+ ✓ tests/unit/navigation2d-compiler.test.ts (11 tests) 300ms
+ ✓ tests/unit/navigation2d-geometry.test.ts (2 tests) 18ms
+
+ Test Files  4 passed (4)
+      Tests  29 passed (29)
+   Start at  18:10:39
+   Duration  5.15s (transform 223ms, setup 0ms, import 1.79s, tests 3.06s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/874c8e67-5eed-4059-927c-7942c04487f6/scratchpad/r1-rerecord/candidate-05/suites/cmp.json

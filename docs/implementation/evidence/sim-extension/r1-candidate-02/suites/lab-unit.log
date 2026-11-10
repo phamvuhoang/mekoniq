@@ -1,0 +1,18 @@
+
+ RUN  v4.1.12 <workspace>/lab
+
+ ✓ tests/unit/backend-options.test.ts (3 tests) 3ms
+ ✓ tests/unit/pose3d.test.ts (5 tests) 3ms
+ ✓ tests/integration/runtime-artifact.test.ts (5 tests) 132ms
+ ✓ tests/unit/twin-workspace.test.ts (10 tests) 8ms
+ ✓ tests/unit/navigation2d-report.test.ts (11 tests) 34ms
+ ✓ tests/integration/webots-launcher.test.ts (4 tests) 1241ms
+   ✓ without Webots at the configured home the launcher exits WEBOTS_NOT_INSTALLED before any port is opened  422ms
+   ✓ a Webots that is not R2025a exits WEBOTS_VERSION_MISMATCH before any port is opened  815ms
+
+ Test Files  6 passed (6)
+      Tests  38 passed (38)
+   Start at  18:45:03
+   Duration  1.42s (transform 542ms, setup 0ms, import 974ms, tests 1.42s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/874c8e67-5eed-4059-927c-7942c04487f6/scratchpad/r1-rerecord/r1-candidate-02/suites/lab-unit.json
