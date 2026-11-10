@@ -38,7 +38,7 @@ export class EngineeringError extends Error{constructor(readonly code:string,rea
 export interface LockedEngineering{ref:EngineeringRef;project:EngineeringProject;runtimeProjection:{project:LabProjectV2;assets:AssetRevision[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
 export const ENGINEERING_CAPABILITY='engineering_bundle_v1';
 /** Profiles whose bundles are produced by the portable compiler only. */
-export const PORTABLE_PROFILES:readonly string[]=['engineering-irsim-2d-v1'];
+export const PORTABLE_PROFILES:readonly string[]=['engineering-irsim-2d-v1','engineering-webots-3d-v1'];
 
 const sha256=(bytes:Uint8Array|string)=>createHash('sha256').update(bytes).digest('hex');
 const SEGMENT=/^(?!\.+$)[A-Za-z0-9._-]+$/;

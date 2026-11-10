@@ -39,7 +39,7 @@ if(args.includes('--help')){
  const linkforge=process.env.MEKONIQ_LAB_LINKFORGE==='1'?{python:linkforgeFlags.python??'python3',workerRoot:linkforgeFlags.workerRoot??resolve('robotics/model-validation')}:undefined;
  // The portable IR-SIM provider is a third opt-in (MEKONIQ_LAB_IRSIM=1): it needs engineering bundles, never falls back to mock/native, and stays unavailable (with a code) when its worker does not start.
  const irsimOn=process.env.MEKONIQ_LAB_IRSIM==='1',irsim={python:irsimFlags.python??'python3',workerRoot:irsimFlags.workerRoot??resolve('robotics/navigation-2d')};
- const engineering=await engineeringFromOptions({directory,...engineeringFlags,linkforge,...irsimOn?{portable:irsim}:{}});
+ const engineering=await engineeringFromOptions({directory,...engineeringFlags,linkforge,...irsimOn?{portable:irsim}:{},...process.env.MEKONIQ_LAB_WEBOTS==='1'?{webots:true}:{}});
  const legacy=native??{enabledBackends:['mock_amr','mock_coffee','mock_arm']};
  // The Webots 3D provider is a fourth opt-in (MEKONIQ_LAB_WEBOTS=1): a host Webots R2025a (MEKONIQ_WEBOTS_HOME or --webots-home, default /Applications/Webots.app), engineering bundles, no fallback.
  const webotsOn=process.env.MEKONIQ_LAB_WEBOTS==='1',webotsRoot=webotsFlags.workerRoot??resolve('robotics/simulation-3d');

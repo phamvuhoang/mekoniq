@@ -46,7 +46,7 @@ export const activeRunCount=(provider:string,exceptRunId?:string)=>[...slotsOf(p
 export const irsimCapacity=(limit=2,runId?:string,provider:string=IRSIM_BACKEND)=>runId!==undefined&&slotsOf(provider).has(runId)||slotsOf(provider).size<limit;
 /** `bundleFile` (RunProviders) is needed only for a new run: the gateway authorised the bundle for the session before the run exists. */
 export interface IRSimRunProviders extends RunProviders {irsim:IRSimRuntimeOptions}
-const EVIDENCE_FLUSH_TICKS=100,EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'],FINAL=['completed','cancelled','failed'],SCENE='navigation-scene.json',FIXTURE='scenario-fixture.json';
+const TILT_LIMIT_RAD=0.35,EVIDENCE_FLUSH_TICKS=100,EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'],FINAL=['completed','cancelled','failed'],SCENE='navigation-scene.json',FIXTURE='scenario-fixture.json';
 const sha256=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 interface Confirmation {due:number|null;type:string;robotId:string}
 interface PlantCheckpoint {status:'none'|'live'|'lost'|'stopped';reason:string|null;bootId:string|null;requests:number;snapshot:IRSimSnapshotV1|null}
@@ -69,14 +69,14 @@ interface Checkpoint {
 }
 
 /** The locked navigation scene and the worker files it lists, verified against the bundle's project and this run's world. */
-async function lockScene(input:RunManifestInput,project:LabProjectV2,roles:Roles,read:(path:string)=>Promise<Uint8Array>){
+async function lockScene(input:RunManifestInput,project:LabProjectV2,roles:Roles,read:(path:string)=>Promise<Uint8Array>,engineId:string){
  const lock=input.engineering!,bytes=await read(SCENE).catch(()=>{throw new Error(`ENGINEERING_CLOSURE_MISSING:${SCENE}`);});
  const scene=JSON.parse(Buffer.from(bytes).toString('utf8')) as NavigationSceneV1,checked=validateNavigationDocument(scene);
  if(!checked.ok||scene.documentType!=='navigation-scene')throw new Error('NAVIGATION_SCENE_INVALID');
  if(lock.navigation&&(lock.navigation.sha256!==sha256(bytes)||lock.navigation.sceneDigest!==scene.sceneDigest))throw new Error('ENGINEERING_IDENTITY_MISMATCH');
  if(scene.inputs.project.digest!==lock.ref.projectDigest)throw new Error('ENGINEERING_IDENTITY_MISMATCH');
  if(scene.world.hash!==hashJson(project.world)||scene.world.id!==project.world.id||scene.world.revision!==project.world.revision)throw new Error('SCENE_WORLD_MISMATCH');
- if(scene.engine.id!==IRSIM_BACKEND||scene.clock.tickMs!==TICK_MS)throw new Error('NAVIGATION_SCENE_INVALID');
+ if(scene.engine.id!==engineId||scene.clock.tickMs!==TICK_MS)throw new Error('NAVIGATION_SCENE_INVALID');
  if(!roles.robots.every(r=>scene.robots.some(x=>x.robotId===r.id)))throw new Error('SCENARIO_ROLE_UNBOUND');
  const bindings=scene.robots[0]!.targetBindings;
  // the source holds one binding table for the venue: every robot must stand at the same handoff for a point
@@ -120,7 +120,7 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  if(cp?.evidenceTerminal!=null&&(typeof cp.evidenceTerminal!=='string'||!cp.evidenceTerminal||cp.evidenceTerminal.length>500))throw new Error('RECOVERY_CHECKPOINT_INVALID');
  // a new run copies its locked scene out of the bundle; a reopened one reads (and re-verifies) only its own copy
  const read=fresh?(path:string)=>{if(!providers.bundleFile)throw new Error('ENGINEERING_CLOSURE_MISSING');return providers.bundleFile(input.engineering!.ref.bundleDigest,path);}:(path:string)=>readFile(join(bundleDir,path));
- const {scene,files}=await lockScene(input,project,roles,read);
+ const {scene,files}=await lockScene(input,project,roles,read,amr.id);
  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
  const fixture=resolveScenarioFixture(scenario.id,scene,input.seed),fixtureBytes=fixture.actors.length?Buffer.from(JSON.stringify(fixtureFile(fixture))):null;
  const mapId=scene.world.id,mapRevision=scene.sceneDigest,lock=providers.runtime.lockDigest;
@@ -414,7 +414,19 @@ class FixedStepRun implements ScenarioRun {
   await this.drain();
   if(c.tick%TELEMETRY_RATE_TICKS===0)this.record();
   if(this.rec.terminal){await this.evidenceEnded();return false;}
+  // a 3D plant's robot that tipped over, sank into the floor or left the physics ends the run now, with that reason: not at the mission timeout with a wrong one
+  const unstable=this.unstableRobot(next);
+  if(unstable!==null){c.attention.push({reason:'PLANT_UNSTABLE',robotId:unstable,tick:c.tick});await this.plantLost('PLANT_UNSTABLE','PLANT_UNSTABLE');return false;}
   return true;
+ }
+ /** The robot whose 3D pose (pose3d, only 3D plants report it) is not finite, tilts more than 0.35 rad, or has its base outside [0.4, 5] wheel radii above the floor. */
+ private unstableRobot(snap:IRSimSnapshotV1):string|null{
+  for(const r of snap.robots){
+   const p=(r as {pose3d?:{z:number;roll:number;pitch:number}}).pose3d;if(!p)continue;
+   const wheel=this.scene.robots.find(x=>x.robotId===r.robotId)?.model.kinematics.wheelRadiusM??0;
+   if(![p.z,p.roll,p.pitch].every(Number.isFinite)||Math.abs(p.roll)>TILT_LIMIT_RAD||Math.abs(p.pitch)>TILT_LIMIT_RAD||p.z<0.4*wheel||p.z>5*wheel)return r.robotId;
+  }
+  return null;
  }
  private suspend(){const c=this.cp;c.suspended=true;for(const x of Object.values(c.confirmations))if(x.type!=='standby')x.due=null;}
  snapshot(){return this.queue.then(()=>{if(this.closed)throw new Error('RUN_CLOSED');return this.view();});}
@@ -562,7 +574,7 @@ class FixedStepRun implements ScenarioRun {
   const c=this.cp,v=await this.view();
   // every plant metric comes from the evidence as read back from disk now: what is not durable yet is not measured
   const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed,{scene:this.scene,runTick:c.started?c.tick:null}),m=navigationMetrics(this.scene,read,this.fixture.actors);
-  const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??this.plant.identity.amr.version,pythonVersion:c.engine?.pythonVersion??'not_started'}},listed,read,m,c.started?c.tick:null);
+  const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??this.plant.identity.amr.version,pythonVersion:c.engine?.pythonVersion??'not_started'}},listed,read,m,c.started?c.tick:null,undefined,this.plant.identity.evidence);
   const available=m.coverage==='complete',why=m.coverageReasons.join(', ').slice(0,500)||'EVIDENCE_INCOMPLETE';
   const businessEvents:BusinessEvent[]=(await this.source.journal()).flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({sequence:entry.sequence,at:entry.recordedAt,type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject})));
   return {schemaVersion:2,manifest:structuredClone(c.manifest),outcome:{status:v.run.status,served:v.served,tick:c.tick,simTimeNs:v.simTimeNs},attention:v.attention,workload:v.workload,entities:v.entities,businessEvents,

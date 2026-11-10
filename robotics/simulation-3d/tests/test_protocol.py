@@ -41,14 +41,14 @@ def test_step_converts_body_velocity_to_wheel_speeds_and_advances_exactly_one_ti
     assert len(engine.steps) == 2  # priming + one
 
 
-def test_scans_are_published_only_on_the_sensor_cadence(made):
+def test_every_snapshot_carries_the_latest_scan_like_the_ir_sim_plant(made):
+    # the source's controller needs a fresh scan at every tick; which ticks are recorded (publishEveryTicks) is the evidence recorder's business
     session, engine, _ = created(made)
     session.handle(req("start"))
-    ticks = []
     for t in range(0, 11):
         out = session.handle(step(t))
-        ticks.append((out["tick"], len(out["result"]["robots"][0]["scans"])))
-    assert [n for t, n in ticks if t % 5 == 0] == [1, 1] and all(n == 0 for t, n in ticks if t % 5)  # publishEveryTicks 5 -> ticks 5 and 10
+        scans = out["result"]["robots"][0]["scans"]
+        assert out["ok"] and len(scans) == 1 and scans[0]["tick"] == t + 1 and scans[0]["simTimeNs"] == str((t + 1) * 20_000_000)
 
 
 def test_step_with_the_wrong_expected_tick_is_refused_and_changes_nothing(made):

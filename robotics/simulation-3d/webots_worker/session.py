@@ -190,7 +190,7 @@ class WorkerSession:
         return self._advance({r["id"]: (0.0, 0.0) for r in robots}, tick=0)
 
     def _advance(self, wheel_commands, tick):
-        reading = self.engine.step(wheel_commands, any(tick % l["every"] == 0 for r in self.config["robots"] for l in r["lidars"]))
+        reading = self.engine.step(wheel_commands, True)  # the controller wants the latest scan at every tick, as the IR-SIM plant gives it; the recorder keeps the ticks of publishEveryTicks
         if abs(reading["time"] - (tick + 1) * TICK_S) > CLOCK_TOLERANCE_S:
             raise WorkerError("CLOCK_DRIFT", f"engine time {reading['time']} is not (tick {tick} + 1) x {TICK_S}", fatal=True)
         return self._observe(reading, tick)
@@ -207,8 +207,7 @@ class WorkerSession:
             scans = []
             if got["lidar"] is not None:
                 for l in r["lidars"]:
-                    if tick % l["every"] == 0:
-                        scans.append(lidar_scan(got["lidar"][l["name"]], sensor_id=l["name"], frame_id="lidar", tick=tick, range_min=l["rangeMin"], range_max=l["rangeMax"], fov=l["fov"]))
+                    scans.append(lidar_scan(got["lidar"][l["name"]], sensor_id=l["name"], frame_id="lidar", tick=tick, range_min=l["rangeMin"], range_max=l["rangeMax"], fov=l["fov"]))
             prev = self.previous_wheels.get(rid)
             wheels = [0.0, 0.0] if prev is None else [(a - b) / TICK_S for a, b in zip(got["wheelPositions"], prev)]
             self.previous_wheels[rid] = list(got["wheelPositions"])

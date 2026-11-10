@@ -511,24 +511,26 @@ export function evidenceDigests(scene:NavigationSceneV1,id:DigestIdentity,read:E
   sensorDigest:digestOf({...header,stream:'sensors'},read.text.sensors),
   assertionDigest:hashJson({header,assertions,episodes:m.episodes,coverage:m.coverage,horizon:m.horizon}),algorithm:DIGEST_ALGORITHM as typeof DIGEST_ALGORITHM,normalizedOmits:[...NORMALIZED_OMITS]};
 }
+/** What a plant adds to the evidence's identity: its engine block, the name of its engine-seed derivation and its first limitation. No profile means the IR-SIM plant. */
+export interface EvidenceProfile {engine(d:{version:string;pythonVersion:string;platform:string;lockDigest:string}):Record<string,unknown>;seedAlgorithm:string;limitation:string}
 /** The report extension (navigation-run-evidence-v1) for the evidence as read from disk now. Artifact paths are relative to the recording root; `recording` is the
  * recorder's own end-of-recording record plus the run's logical tick at export (runTick), which an import passes back to readNavigationEvidence with the artifacts. */
-export function buildNavigationEvidence(scene:NavigationSceneV1,id:EvidenceIdentity,listed:Omit<Committed,'bytes'>,read:EvidenceRead,m:NavigationMetrics,runTick:number|null,host:HostIdentity=hostIdentity()):NavigationRunEvidenceV1{
+export function buildNavigationEvidence(scene:NavigationSceneV1,id:EvidenceIdentity,listed:Omit<Committed,'bytes'>,read:EvidenceRead,m:NavigationMetrics,runTick:number|null,host:HostIdentity=hostIdentity(),profile?:EvidenceProfile):NavigationRunEvidenceV1{
  const terminal=listed.terminal??read.terminal,assertions=evidenceAssertions(read,m,runTick,terminal),{engineSeed,sensorSeeds}=engineSeedOf(id.runSeed,scene);
  const metric=(name:string,ok:boolean,why:string|null)=>({metric:name,status:ok?'available' as const:'unavailable' as const,reason:ok?null:(why??'EVIDENCE_INCOMPLETE').slice(0,500)});
  const why=m.coverageReasons.join(', ')||null,complete=m.coverage==='complete';
  return {schemaVersion:1,documentType:'navigation-run-evidence',runId:id.runId,sceneDigest:scene.sceneDigest,sceneRef:id.sceneRef,modelDigests:scene.robots.map(r=>r.model.modelDigest),
   policyRef:{id:scene.policy.id,revision:scene.policy.revision,hash:scene.policy.hash},controller:id.controller,
-  engine:{id:'irsim_2d',version:id.engine.version,pythonVersion:id.engine.pythonVersion,platform:host.platform,lockDigest:id.lockDigest},
+  engine:(profile?profile.engine({version:id.engine.version,pythonVersion:id.engine.pythonVersion,platform:host.platform,lockDigest:id.lockDigest}):{id:'irsim_2d',version:id.engine.version,pythonVersion:id.engine.pythonVersion,platform:host.platform,lockDigest:id.lockDigest}) as NavigationRunEvidenceV1['engine'],
   identity:{sourceCommit:id.sourceCommit,compilerVersion:scene.compilerVersion,sceneSchemaHash:scene.schemaHash,evidenceFormat:EVIDENCE_FORMAT,os:host.os,arch:host.arch,node:host.node},
   clock:{tickMs:20,tickHorizon:Math.min(read.horizon??0,EVIDENCE_LIMITS.maxTicks),businessEpochMs:id.businessEpochMs},
-  seed:{runSeed:id.runSeed,engineSeed,engineSeedAlgorithm:'irsim-env-seed-v1',sensorSeeds,actorRng:id.actorRng,engineRng:{library:'numpy',version:id.numpyVersion,algorithm:'numpy.random.default_rng(engineSeed) PCG64, one generator per environment',seed:engineSeed}},
+  seed:{runSeed:id.runSeed,engineSeed,engineSeedAlgorithm:profile?profile.seedAlgorithm as 'webots-worldinfo-seed-v1':'irsim-env-seed-v1',sensorSeeds,actorRng:id.actorRng,...profile?{}:{engineRng:{library:'numpy' as const,version:id.numpyVersion,algorithm:'numpy.random.default_rng(engineSeed) PCG64, one generator per environment',seed:engineSeed}}},
   validationReportRef:null,artifacts:structuredClone(listed.chunks),digests:evidenceDigests(scene,id,read,m,assertions,host),assertions,
   metricCoverage:[metric('travelledDistanceM',complete,why),metric('collisionEpisodes',complete,why),metric('minObstacleClearanceM',m.minClearanceM!==null,why),
    metric('minRobotSeparationM',m.minSeparationM!==null,complete?'ONE_ROBOT':why),metric('sensorPublications',m.sensorPublications.complete,why??'SENSOR_PUBLICATIONS_INCOMPLETE')],
   recordingGaps:read.gaps.slice(0,500),completeness:{status:complete?'complete':'incomplete',reasons:[...terminal?[terminal]:[],...m.coverageReasons].slice(0,50)},
   recording:{gaps:structuredClone(listed.gaps).slice(0,READ_LIMITS.gaps),terminal:listed.terminal,lastTick:listed.lastTick,runTick},
-  limitations:['planar kinematic plant (IR-SIM diff drive): no dynamics, contact physics or hardware behaviour','LiDAR publications are recorded at the sensor cadence (publishEveryTicks); the engine scan between publications is not recorded',
+  limitations:[profile?profile.limitation:'planar kinematic plant (IR-SIM diff drive): no dynamics, contact physics or hardware behaviour','LiDAR publications are recorded at the sensor cadence (publishEveryTicks); the engine scan between publications is not recorded',
    'scripted actors (if any) follow an immutable seeded schedule; every control record carries the actorUpdates the plant received and actor contacts are judged on those poses (conservative 16-gon discs)','cross-platform repeatability not qualified (not_run)',
    'the evidence is not anchored or signed: a chunk edited together with a re-hashed manifest or listing is not detected (only stored-byte hashes against the listing are verified)']};
 }

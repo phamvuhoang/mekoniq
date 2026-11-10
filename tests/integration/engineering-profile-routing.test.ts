@@ -41,8 +41,8 @@ test('unknown set, wrong mode and unsupported scenario are rejected, never defau
 
 test('legacy sets, scenarios and campaign rows keep their requirements', async () => {
   for (const [id, def] of scenarioRegistry) {
-    // IR-* variants run only on a set that lists them: the mode formula and every legacy set refuse them
-    if (id.startsWith('IR-')) { for (const [mode, set] of [['mock', undefined], ['mock', 'mock-default'], ['simulation', undefined], ['simulation', 'simulation-default']] as const) expect(resolveBackends(def, mode, set, catalog), id).toMatchObject({ ok: false, reasonCodes: ['SCENARIO_UNSUPPORTED_BY_SET'] }); continue; }
+    // IR-* and WB-* variants run only on a set that lists them: the mode formula and every legacy set refuse them
+    if (/^(IR|WB)-/.test(id)) { for (const [mode, set] of [['mock', undefined], ['mock', 'mock-default'], ['simulation', undefined], ['simulation', 'simulation-default']] as const) expect(resolveBackends(def, mode, set, catalog), id).toMatchObject({ ok: false, reasonCodes: ['SCENARIO_UNSUPPORTED_BY_SET'] }); continue; }
     expect(requiredBackends(def, 'mock'), id).toEqual(requiredBackends(def, 'mock', 'mock-default', catalog));
     if (id !== 'FD01') expect(requiredBackends(def, 'simulation'), id).toEqual(requiredBackends(def, 'simulation', 'simulation-default', catalog));
   }

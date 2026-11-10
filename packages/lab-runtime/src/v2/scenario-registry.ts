@@ -65,6 +65,9 @@ export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<str
  ['IR-FD04-blocked',{id:'IR-FD04-blocked',revision:1,title:'A person stands on the destination handoff on the IR-SIM 2D plant: blocked after the no-progress window, never no_path',...irOrder,park:false,basedOn:{id:'FD04-blocked',revision:1}}],
  // the FD07 template exactly (two robots, T01/T02, scripted confirmations, park) under the 12,000-tick campaign bound (verification.md IR04 override, in this hash)
  ['IR-FD07',{id:'IR-FD07',revision:1,title:'Two robots with their own drives and LiDARs take turns through a reserved aisle on the IR-SIM 2D plant (movers serialized by the source; a customer walks elsewhere)',robots:2,...FD07,maxTicks:12000,basedOn:{id:'FD07',revision:1}}],
+ // Webots 3D variants: the same FD01 / FD07 business templates and tick bounds on the rigid-body plant. Its worker takes no scripted actors, so WB-FD07 has no customer walking elsewhere.
+ ['WB-FD01',{id:'WB-FD01',revision:1,title:'One order, one robot on the Webots 3D plant: kitchen -> table -> parking',robots:1,...FD01,maxTicks:30000,basedOn:{id:'FD01',revision:1}}],
+ ['WB-FD07',{id:'WB-FD07',revision:1,title:'Two robots with their own drives and LiDARs take turns through a reserved aisle on the Webots 3D plant (movers serialized by the source)',robots:2,...FD07,maxTicks:12000,basedOn:{id:'FD07',revision:1}}],
 ]);
 export const scenarioHash=(d:ScenarioDefinition)=>hashJson(d);
 const ID=/^[A-Za-z0-9_.:-]{1,200}$/,int=(n:unknown,min:number,max:number)=>Number.isSafeInteger(n)&&(n as number)>=min&&(n as number)<=max;

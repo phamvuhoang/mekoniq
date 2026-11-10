@@ -30,7 +30,7 @@ export interface ZoneSpec{id:string;polygonM:readonly (readonly [number,number])
  * (controller bypassed, test-only velocities straight to the worker: never admitted by the gateway). `label` is the honest one-liner shown with every result.
  */
 export interface ScenarioFixtureSpec{scenarioId:string;runs?:string;kind?:'scenario'|'contention_rig'|'operator_fault'|'raw_drive';label:string;
- operator?:{cancelWhenMoving?:true;killWorkerOnTableLeg?:true};expectOutcome?:{status:string;served:string;reasons?:readonly string[]};evidence?:'complete'|'step_ack_lost';
+ operator?:{cancelWhenMoving?:true;killWorkerOnTableLeg?:true;killEngineOnTableLeg?:true};expectOutcome?:{status:string;served:string;reasons?:readonly string[]};evidence?:'complete'|'step_ack_lost';
  raw?:{ticks:number;velocities:readonly {robotId:string;vMps:number;omegaRadps:number}[]};
  fixtures:readonly string[];worldId:string;actors:readonly ActorSpec[];zones:readonly ZoneSpec[];oracles:readonly string[]}
 const COMMON=['EVIDENCE_COMPLETE','IDENTITY_BOUND','NO_SERVED_BEFORE_HANDOFF'];
@@ -51,6 +51,15 @@ const SPECS:ScenarioFixtureSpec[]=[
  {scenarioId:'IR-FD07',label:'IR-FD07 (source-driven): two robots serialized by the venue-movement reservation; aisle zone reserved/released per leg, never contended; customer away from the routes',fixtures:['serve-fleet-v1'],worldId:'restaurant-10-tables',actors:[{id:'customer-1',radiusM:0.25,startTick:[600,600],speedMps:0.5,path:[[5.5,1.0],[5.5,11.0]]}],
   zones:[{id:'aisle-west',polygonM:[[2.6,3.45],[3.4,3.45],[3.4,8.55],[2.6,8.55]],entryPoints:[[2.3,6]],exitPoints:[[3.7,6]]}],
   oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT','ACTOR_SCHEDULE_APPLIED','NO_ACTOR_CONTACT','BOTH_ROBOTS_MOVED','ROBOT_MAPPING','ZONE_SINGLE_OWNER','ZONE_RELEASE_AFTER_EXIT','MIN_SEPARATION_AVAILABLE','WITHIN_TICKS']},
+ // Webots 3D variants: the IR-FD01 / IR-FD07 oracles on the rigid-body plant. Its worker takes no scripted actors, so WB-FD07 has the aisle zone but no walking customer.
+ {scenarioId:'WB-FD01',label:'WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant',fixtures:['serve-3d-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT']},
+ {scenarioId:'WB-FD07',label:'WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release',fixtures:['serve-3d-fleet-v1'],worldId:'restaurant-10-tables',actors:[],
+  zones:[{id:'aisle-west',polygonM:[[2.6,3.45],[3.4,3.45],[3.4,8.55],[2.6,8.55]],entryPoints:[[2.3,6]],exitPoints:[[3.7,6]]}],
+  oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT','BOTH_ROBOTS_MOVED','ROBOT_MAPPING','ZONE_SINGLE_OWNER','ZONE_RELEASE_AFTER_EXIT','MIN_SEPARATION_AVAILABLE','WITHIN_TICKS']},
+ {scenarioId:'WB-FD01-cancel',runs:'WB-FD01',kind:'operator_fault',label:'WB05: operator cancel mid-route on the kitchen leg; cancelled, nothing served, bounded simulated stop',operator:{cancelWhenMoving:true},expectOutcome:{status:'cancelled',served:'0'},
+  fixtures:['serve-3d-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:[...COMMON,'BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT','CANCEL_BOUNDED_STOP','ONE_TERMINAL_PER_MISSION']},
+ {scenarioId:'WB-FD01-enginekill',runs:'WB-FD01',kind:'operator_fault',label:'WB05: the Webots process is killed between steps on the table leg; leg unknown, no resend, no second engine, cargo kept, the unknown tick a recorded gap',operator:{killEngineOnTableLeg:true},
+  expectOutcome:{status:'needs_attention',served:'0',reasons:['WORKER_LOST','EXECUTION_UNKNOWN']},evidence:'step_ack_lost',fixtures:['serve-3d-v1'],worldId:'restaurant-10-tables',actors:[],zones:[],oracles:['IDENTITY_BOUND','NO_SERVED_BEFORE_HANDOFF','BUSINESS_OUTCOME','EVIDENCE_GAP_AS_DECLARED','CARGO_KEPT','NO_SECOND_WORKER']},
  // IR04 contention rig: robot01 (west) -> T01 and robot02 (east) -> kitchen pass at tick 0 through one band zone from wall to wall; both move at once
  {scenarioId:'IR-RIG-ZONE',kind:'contention_rig',label:'CONTENTION RIG (not a production scenario): goals given to the controller directly, no missions, so the venue-movement serialization is bypassed; proves zone contention on the real plant',
   fixtures:['serve-fleet-v1'],worldId:'restaurant-10-tables',actors:[],zones:[{id:'band',polygonM:[[2.75,0.15],[3,0.15],[3,11.85],[2.75,11.85]],entryPoints:[],exitPoints:[]}],
@@ -140,7 +149,7 @@ const tickOf=(r:RunReport,at:string)=>Math.round((Date.parse(at)-(r.manifest.clo
 const say=(id:string,ok:boolean|null,expected:string,actual:string,oracle:string):ScenarioAssertion=>({id,result:ok===null?'inconclusive':ok?'pass':'fail',expected,actual,oracle});
 /** Expected business outcome per scenario: status, served count and, for a failed leg, the attention reasons that are acceptable. */
 const OUTCOME:Record<string,{status:string;served:string;reasons?:readonly string[]}>={'IR-RIG-ZONE':{status:'completed',served:'0'},
- 'IR-FD01':{status:'completed',served:'1'},'IR-FD03':{status:'completed',served:'1'},'IR-FD07':{status:'completed',served:'2'},
+ 'IR-FD01':{status:'completed',served:'1'},'WB-FD01':{status:'completed',served:'1'},'WB-FD07':{status:'completed',served:'2'},'IR-FD03':{status:'completed',served:'1'},'IR-FD07':{status:'completed',served:'2'},
  'IR-FD04':{status:'needs_attention',served:'0',reasons:['NO_PATH']},'IR-FD04-blocked':{status:'needs_attention',served:'0',reasons:['DYNAMIC_OBSTACLE','NO_PROGRESS']},
 };
 /** Footprint of a robot (drive-frame pose, as recorded) overlapping a convex zone polygon. */

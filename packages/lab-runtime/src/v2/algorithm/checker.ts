@@ -13,7 +13,7 @@ export const ALGORITHM_PROTOCOL='mekoniq-algorithm/1';
 export const MAX_REQUEST_BYTES=1<<20;
 export interface OracleProfileV1 {version:1;note?:string;fk:{translationM:number;rotationRad:number};ikTsToRtb:{translationM:number;rotationRad:number};ikRtbToTs:{translationM:number;rotationRad:number};ikPoses:number;ikSolvedFractionMin:number;
  jacobian:{normalized:number;conditionRelative:number};singularConditionMax:number;seededPoses:number;pid:{sample:number};
- webots?:{lidarRangeToleranceM:number;lidarWindowBeams:number;lidarMedianM:number}}
+ webots?:{lidarRangeToleranceM:number;lidarWindowBeams:number;lidarMedianM:number;repeatPoseM:number}}
 export const REPO_ROOT=fileURLToPath(new URL('../../../../../',import.meta.url));
 /** The versioned thresholds. The digest is over the canonical JSON, so whitespace edits do not change a recorded identity. */
 export function loadOracleProfile(path=join(REPO_ROOT,'robotics/algorithm/oracle-profile-v1.json')):{profile:OracleProfileV1;digest:string}{

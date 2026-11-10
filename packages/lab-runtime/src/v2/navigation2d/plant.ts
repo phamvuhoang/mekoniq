@@ -2,6 +2,7 @@
 // The runner owns the clock, the missions, the journal and the evidence; a plant only steps, senses and says who it is. One run, one plant, no fallback between them.
 import type {IRSimResponseV1} from './contracts';
 import {IRSIM_AMR} from './adapter';
+import type {EvidenceProfile} from './evidence';
 import {spawnIRSimWorker,WorkerLostError,type SpawnOptions,type WireRequest} from './worker-client';
 export {WorkerLostError};
 export type {SpawnOptions};
@@ -15,6 +16,7 @@ export interface PlantIdentity {
  /** first lines of the report's limitations (the scenario's and the scene's follow) */limitations:readonly string[];
  /** what the report may claim: `dynamics` is true only for a plant that simulates it */coverage:{dynamics:boolean};
  /** the capability the server must advertise before a set of this plant is selectable */capability:string;
+ /** the evidence's engine identity and seed derivation; absent means IR-SIM */evidence?:EvidenceProfile;
 }
 export type PlantRequest=WireRequest;
 export type PlantResponse=IRSimResponseV1;

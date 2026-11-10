@@ -30,8 +30,8 @@ export const defaultCatalog:CapabilityCatalog={
   'engineering-contact-v1':{mode:'simulation',access:'simulated',backends:['gazebo_nav2','moveit_gazebo_arm','engineering_coffee_process'],providers:{amr:'gazebo_nav2',arm:'moveit_gazebo_arm',coffee:'engineering_coffee_process'},scenarioIds:['FD01','BV01']},
   /** Portable 2D navigation: IR-SIM plant stepped by the source runner; no arm or coffee; only the scenarios qualified on it (B04: IR-FD01; C02: the actor, no-path, blocked and two-robot variants). */
   'engineering-irsim-2d-v1':{mode:'simulation',access:'simulated',backends:['irsim_2d'],providers:{amr:'irsim_2d'},scenarioIds:['IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
-  /** Webots 3D: the same fixed-step runner on a rigid-body plant (Serve with casters); the scenarios qualified on it are added with their runner (WB-FD01, WB-FD07). */
-  'engineering-webots-3d-v1':{mode:'simulation',access:'simulated',backends:['webots_3d'],providers:{amr:'webots_3d'},scenarioIds:[],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
+  /** Webots 3D: the same fixed-step runner on a rigid-body plant (Serve with casters); WB-FD01 and WB-FD07 are its qualified scenarios. */
+  'engineering-webots-3d-v1':{mode:'simulation',access:'simulated',backends:['webots_3d'],providers:{amr:'webots_3d'},scenarioIds:['WB-FD01','WB-FD07'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
   'hardware-shadow':{mode:'hardware',access:'shadow',backends:['valetudo_native']},
   'hardware-hil':{mode:'hardware',access:'hil',backends:['valetudo_native','cell_native']},
   'hardware-live':{mode:'hardware',access:'live',backends:['valetudo_native','cell_native']},

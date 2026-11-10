@@ -45,7 +45,7 @@ test('webots branch requires world3d and basicTimeStepMs', () => {
 // An IR-SIM evidence document built by the real recorder from three ticks; the webots variants are derived from it.
 const dirs: string[] = [];
 afterEach(async () => { for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
-async function irsimEvidence() {
+async function irsimEvidence(profile?: Parameters<typeof buildNavigationEvidence>[7]) {
   const dir = await mkdtemp(join(tmpdir(), 'sim-ext-evidence-')); dirs.push(dir);
   const scan = (tick: number, sensorId: string) => ({ sensorId, frameId: 'lidar', tick, simTimeNs: String(tick * 20_000_000), angleMinRad: 0, angleIncrementRad: 2 * Math.PI / 360, rangeMinM: 0.05, rangeMaxM: 10, rangesM: Array.from({ length: 360 }, () => 3), states: Array.from({ length: 360 }, () => 'hit' as const) });
   const snap = (tick: number): IRSimSnapshotV1 => ({ schemaVersion: 1, runId: 'run-a', bootId: 'boot-a', tick, simTimeNs: String(tick * 20_000_000), seq: String(tick), sceneDigest: serve.sceneDigest,
@@ -54,7 +54,7 @@ async function irsimEvidence() {
   for (let t = 0; t < 3; t++) await rec.append(snap(t), t ? { targetTick: t, velocities: [{ robotId: 'amr-1', vMps: 0.5, omegaRadps: 0 }], actorUpdates: [] } : null);
   await rec.flush();
   const c = rec.committed(), r = await readNavigationEvidence(dir, c, { scene: serve });
-  return buildNavigationEvidence(serve, { runId: 'run-a', sourceCommit: 'c0ffee', sceneRef: { path: 'bundle/navigation-scene.json', sha256: H('b'), bytes: 100 }, lockDigest: H('a'), engine: { version: '2.12.0', pythonVersion: '3.11.9' }, numpyVersion: '2.4.6', runSeed: 5, actorRng: { algorithm: 'xoshiro128** v1', seed: 5 }, controller: { id: 'grid-diff-v1', version: '1' }, businessEpochMs: 1 }, c, r, navigationMetrics(serve, r), null);
+  return buildNavigationEvidence(serve, { runId: 'run-a', sourceCommit: 'c0ffee', sceneRef: { path: 'bundle/navigation-scene.json', sha256: H('b'), bytes: 100 }, lockDigest: H('a'), engine: { version: '2.12.0', pythonVersion: '3.11.9' }, numpyVersion: '2.4.6', runSeed: 5, actorRng: { algorithm: 'xoshiro128** v1', seed: 5 }, controller: { id: 'grid-diff-v1', version: '1' }, businessEpochMs: 1 }, c, r, navigationMetrics(serve, r), null, undefined, profile);
 }
 type Doc = Record<string, unknown> & { engine: Record<string, unknown>; seed: Record<string, unknown> };
 const webotsEvidence = async () => {
@@ -122,4 +122,17 @@ test('a sim3d snapshot may carry the model read back from the engine (getState),
   expect(validateSim3DResponse(withModel).ok).toBe(true);
   (withModel.result as Record<string, unknown>).model = { robots: [{ ...model.robots[0], extra: 1 }] };
   expect(validateSim3DResponse(withModel).ok).toBe(false);
+});
+
+test('evidence built with the Webots plant profile is the webots branch of the schema: its engine identity, its seed derivation, no NumPy stream', async () => {
+  const profile = { engine: (d: { version: string; pythonVersion: string; platform: string; lockDigest: string }) => ({ id: 'webots_3d', engineVersion: 'R2025a', executableSha256: H('c'), basicTimeStepMs: 20, pythonVersion: d.pythonVersion, platform: d.platform, lockDigest: d.lockDigest }), seedAlgorithm: 'webots-worldinfo-seed-v1', limitation: 'webots_3d simulated plant (test)' };
+  const e = await irsimEvidence(profile) as unknown as { engine: Record<string, unknown>; seed: Record<string, unknown>; limitations: string[] };
+  const checked = validateNavigationEvidence(e);
+  expect(checked.ok ? [] : checked.issues).toEqual([]);
+  expect(e.engine).toMatchObject({ id: 'webots_3d', engineVersion: 'R2025a', executableSha256: H('c'), basicTimeStepMs: 20 });
+  expect(e.seed.engineSeedAlgorithm).toBe('webots-worldinfo-seed-v1'); expect('engineRng' in e.seed).toBe(false);
+  expect(e.limitations[0]).toBe('webots_3d simulated plant (test)');
+  // without a profile the evidence is the IR-SIM one, as before
+  const plain = await irsimEvidence() as unknown as { engine: { id: string }; seed: Record<string, unknown> };
+  expect(plain.engine.id).toBe('irsim_2d'); expect(plain.seed.engineSeedAlgorithm).toBe('irsim-env-seed-v1'); expect('engineRng' in plain.seed).toBe(true);
 });

@@ -50,12 +50,16 @@ await walk(simDir);
 const simHash=createHash('sha256');for(const f of simFiles)simHash.update(f+'\n').update(await readFile(join(simDir,f)));
 const imageLock=JSON.parse(await readFile(join(simDir,'image.lock.json'),'utf8'));
 const simulationTools={distribution:'separate',path:'robotics/simulation',digest:simHash.digest('hex'),files:simFiles.length,image:imageLock.image,imageDigest:imageLock.digest,requires:['linux','ros2-jazzy','gazebo-harmonic','python3+rfc8785+jsonschema'],note:'not bundled; verify with scripts/lab-sil.mjs doctor on the Linux host'};
-// Portable developer tools (IR-SIM 2D plant, LinkForge shadow validation): also distributed separately (the operator provisions each worker's Python 3.11 venv from its
+// Portable developer tools (IR-SIM 2D plant, LinkForge shadow validation, algorithm checks, Webots 3D worker): also distributed separately (the operator provisions each worker's Python 3.11 venv from its
 // lock), described apart from the Linux simulationTools so neither overwrites the other. The Lab importer verifies this closure; the launcher re-hashes the files it runs.
 const portable=portableToolClosure(root),lockOf=(path)=>{const f=portable.files.find(x=>x.path===path);if(!f)throw new Error(`PORTABLE_LOCK_MISSING:${path}`);return {path,sha256:f.sha256};};
-const portableSimulationTools={distribution:'separate',version:1,python:{implementation:'cpython',version:'3.11'},flags:['MEKONIQ_LAB_IRSIM','MEKONIQ_LAB_LINKFORGE'],
+const portableSimulationTools={distribution:'separate',version:1,python:{implementation:'cpython',version:'3.11'},flags:['MEKONIQ_LAB_IRSIM','MEKONIQ_LAB_LINKFORGE','MEKONIQ_LAB_WEBOTS'],
+ // host engines are installed by the operator and never bundled: the manifest only names the version the Lab pins
+ hostEngines:[{id:'webots_3d',version:'R2025a',bundled:false}],
  tools:[{id:'irsim_worker',provider:'irsim_2d',protocol:'mekoniq-irsim/1',root:'robotics/navigation-2d',module:'irsim_worker',lock:lockOf('robotics/navigation-2d/requirements.lock'),licenses:lockOf('robotics/navigation-2d/licenses.json')},
   {id:'linkforge_worker',provider:'linkforge_shadow',root:'robotics/model-validation',module:'linkforge_worker',lock:lockOf('robotics/model-validation/requirements.lock'),licenses:lockOf('robotics/model-validation/licenses.json')},
+  {id:'algorithm_checks',root:'robotics/algorithm',module:'algorithm_checks',lock:lockOf('robotics/algorithm/requirements.lock'),licenses:lockOf('robotics/algorithm/licenses.json')},
+  {id:'webots_worker',provider:'webots_3d',protocol:'mekoniq-sim3d/1',root:'robotics/simulation-3d',module:'webots_worker',lock:lockOf('robotics/simulation-3d/requirements.lock'),licenses:lockOf('robotics/simulation-3d/licenses.json')},
   {id:'description_helper',root:'robotics/simulation/compiler'}],
  roots:PORTABLE_TOOL_PATHS,closure:portable,note:'not bundled; provision each venv from its lock (no download at run time), then lab:irsim verifies these files'};
 const manifest={sourceCommit,schemaHash,protocolMajor:2,protocolMajors:[1,2],artifactSha256,entrypoint:'runtime.mjs',nodeMajor:24,packageVersion:pkg.version,dirty:Boolean(dirty),schemas:names,toolchain:{node:process.version},simulationTools,nativeTools,portableSimulationTools};

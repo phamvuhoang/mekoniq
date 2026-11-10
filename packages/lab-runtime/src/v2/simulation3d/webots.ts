@@ -9,7 +9,10 @@ export const webotsPlant=(runtime:WebotsRuntimeOptions):PlantPort=>({
  identity:{amr:WEBOTS_AMR,telemetryLabel:'webots_3d simulated plant (rigid-body physics, in memory)',capability:'sim3d_navigation_v1',coverage:{dynamics:true},
   limitations:['webots_3d simulated plant (Webots R2025a rigid-body physics, differential drive with passive casters).',
    'not_calibrated: every physical parameter (mass, inertia, friction, caster size, wheel torque limit, heights) is an assumed fixture value; the dynamics say nothing about the real robot.',
-   'The engine runs one 20 ms step ahead of the source clock: a settling step with every wheel at rest precedes tick 0.']},
+   'The engine runs one 20 ms step ahead of the source clock: a settling step with every wheel at rest precedes tick 0.'],
+  // the engine seed is derived exactly as for IR-SIM (engineSeedOf) and written to WorldInfo.randomSeed
+  evidence:{seedAlgorithm:'webots-worldinfo-seed-v1',limitation:'webots_3d plant (Webots R2025a rigid-body physics): not_calibrated, every physical parameter is assumed',
+  engine:d=>({id:'webots_3d',engineVersion:d.version,executableSha256:runtime.executableSha256,basicTimeStepMs:runtime.basicTimeStepMs,pythonVersion:d.pythonVersion,platform:d.platform,lockDigest:d.lockDigest})}},
  protocol:'mekoniq-sim3d/1',
  spawn:o=>spawnSim3DWorker({...o,webotsHome:runtime.webotsHome}),
 });

@@ -28,6 +28,7 @@
     "lidarRangeToleranceM": 0.02,
     "lidarWindowBeams": 1,
     "lidarMedianM": 0.01,
-    "note": "Webots renders its LiDAR from a depth image: a beam may report its neighbour's range on a slanted surface (measured up to one beam). Agreement is within the ray-cast range over the beam and one neighbour each side, plus the tolerance; the median error must stay under lidarMedianM."
+    "note": "Webots renders its LiDAR from a depth image: a beam may report its neighbour's range on a slanted surface (measured up to one beam). Agreement is within the ray-cast range over the beam and one neighbour each side, plus the tolerance; the median error must stay under lidarMedianM.",
+    "repeatPoseM": 1e-06
   }
 }

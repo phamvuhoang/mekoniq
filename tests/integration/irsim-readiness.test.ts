@@ -23,7 +23,7 @@ const irsimState=(c:CapabilityCatalog)=>c.backends.find(b=>b.id==='irsim_2d')!;
 test('IR-FD01 revision 1 is FD01 under its own id; legacy scenarios keep their exact definitions and requirements',async()=>{
  expect(ir).toMatchObject({id:'IR-FD01',revision:1,basedOn:{id:'FD01',revision:1},robots:1,orders:fd01.orders,confirm:fd01.confirm,park:fd01.park,maxTicks:30000});
  // digest of every legacy scenario hash, frozen before IR-FD01 existed
- const legacy=[...scenarioRegistry].filter(([id])=>!id.startsWith('IR-'));
+ const legacy=[...scenarioRegistry].filter(([id])=>!/^(IR|WB)-/.test(id));
  expect(hashJson(Object.fromEntries(legacy.map(([id,d])=>[id,scenarioHash(d)])))).toBe('78d97a193bbaf054ac56c71600a90d251268e91460aff21c660b954d5da242b5');
  const row=scenarioMatrix.find(r=>r.id==='IR-FD01')!;
  expect(row).toMatchObject({runnerScenarios:['IR-FD01'],backendSupport:{mock:false,simulation:true,hardware:false},cell:false});

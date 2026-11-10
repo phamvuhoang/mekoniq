@@ -5,6 +5,7 @@ import {prepareEngineeringCompileInput,resolveAssembly} from '../../packages/lab
 import type {ComponentRevision,EngineeringCompileInput,EngineeringProject,Instance,Link,Pose,Scalar,SourceRef} from '../../packages/lab-runtime/src/engineering/contracts';
 import {defaultNavigationPolicy,NAVIGATION_SCHEMA_HASH} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import {projectNavigationModel} from '../../packages/lab-runtime/src/engineering/navigation-model';
+import {WORLD3D_DEFAULT} from '../../packages/lab-runtime/src/engineering/webots-compiler';
 import {compileNavigationScene} from '../../packages/lab-runtime/src/engineering/navigation-compiler';
 import {projectPhysicalModel} from '../../packages/lab-runtime/src/engineering/physical-model';
 import type {NavigationPolicyV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
@@ -154,7 +155,7 @@ export function exportedFixtureFiles():Record<string,unknown>{
 }
 
 /** Heights and materials a 3D plant needs and the 2D scene does not carry (all assumed; the lidar plane at 0.21 m stays below the 0.75 m table top). */
-export const WORLD3D={obstacleHeightM:0.75,wallHeightM:1.2,floorFriction:0.8,casterFriction:0.02,provenance:'assumed'} as const;
+export const WORLD3D=WORLD3D_DEFAULT; // the server's default, so the fixture file and what the Webots compiler writes cannot drift apart
 /** NavigationSceneV1 for the Webots plant: the same compiler with the webots engine and world3d. */
 export function navigationScene3d(name:'serve-3d'|'fleet-3d'){
  const {input,policy}=navigationFixture(name);
