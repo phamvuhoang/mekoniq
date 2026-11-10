@@ -1,0 +1,4 @@
+{"schemaVersion":1,"id":"r1-smoke","title":"R1 smoke on the Webots plant: WB-FD01 twice with one seed (repeatable) and a mid-route cancel","runs":[
+{"scenarioId":"WB-FD01","scenarioRevision":1,"fixtureId":"serve-3d-v1","seed":5,"repeat":2,"policyRef":{"id":"irsim-2d-default-v1","revision":1,"hash":"e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"},"expectedAssertions":["EVIDENCE_COMPLETE","IDENTITY_BOUND","NO_SERVED_BEFORE_HANDOFF","BUSINESS_OUTCOME","NO_PHYSICAL_CONTACT","REPEATABLE"]},
+{"scenarioId":"WB-FD01-cancel","scenarioRevision":1,"fixtureId":"serve-3d-v1","seed":5,"repeat":1,"policyRef":{"id":"irsim-2d-default-v1","revision":1,"hash":"e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"},"expectedAssertions":["EVIDENCE_COMPLETE","IDENTITY_BOUND","BUSINESS_OUTCOME","NO_PHYSICAL_CONTACT","CANCEL_BOUNDED_STOP","ONE_TERMINAL_PER_MISSION"]}
+]}

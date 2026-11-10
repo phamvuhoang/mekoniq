@@ -11,13 +11,18 @@ import type {EvidenceRead} from './evidence';
 import {place,pointDistance,polygonDistance,polygonsOverlap,isConvex,type P,type Pose2} from './geometry';
 
 /** Fixture projects under robotics/navigation-2d/fixtures/serve-demo-v1 (one shared component catalog). `robots` is what the scene must contain. */
-export const NAVIGATION_FIXTURES:Readonly<Record<string,{project:string;robots:readonly string[]}>>=Object.freeze({
+export interface NavigationFixture{project:string;robots:readonly string[];/** absent = the IR-SIM plant; the Webots 3D fixtures live under robotics/simulation-3d/fixtures/serve-3d-v1 */provider?:'webots_3d'}
+export const NAVIGATION_FIXTURES:Readonly<Record<string,NavigationFixture>>=Object.freeze({
  'serve-demo-v1':Object.freeze({project:'serve-project.json',robots:Object.freeze(['amr-1'])}),
  'serve-fleet-v1':Object.freeze({project:'serve-fleet-project.json',robots:Object.freeze(['robot01','robot02'])}),
  'serve-enclosed-v1':Object.freeze({project:'serve-enclosed-project.json',robots:Object.freeze(['amr-1'])}),
  'serve-noisy-v1':Object.freeze({project:'serve-noisy-project.json',robots:Object.freeze(['amr-1'])}),
+ 'serve-3d-v1':Object.freeze({project:'serve-3d-project.json',robots:Object.freeze(['amr-1']),provider:'webots_3d' as const}),
+ 'serve-3d-fleet-v1':Object.freeze({project:'serve-3d-fleet-project.json',robots:Object.freeze(['robot01','robot02']),provider:'webots_3d' as const}),
 });
 export const FIXTURE_DIRECTORY='fixtures/serve-demo-v1',FIXTURE_COMPONENTS='serve-components.json';
+/** The Webots 3D fixture directory (relative to the source root) and its component catalog. */
+export const FIXTURE_3D_DIRECTORY='robotics/simulation-3d/fixtures/serve-3d-v1',FIXTURE_3D_COMPONENTS='serve-3d-components.json';
 
 /** A scripted person: stands at path[0] until its start tick (drawn once from its own PRNG stream in [a, b]), then walks the polyline at speedMps and stays at the end. */
 export interface ActorSpec{id:string;radiusM:number;startTick:readonly [number,number];speedMps:number;path:readonly (readonly [number,number])[]}

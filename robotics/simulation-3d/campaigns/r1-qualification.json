@@ -1,0 +1,357 @@
+{
+"schemaVersion": 1,
+"id": "r1-qualification",
+"title": "R1 Webots 3D qualification: WB03-WB07 (repeats paced 500/25/100 ticks per request, same seed within the profile tolerance, other seeds, cancel, engine kill)",
+"runs": [
+{
+"scenarioId": "WB-FD01",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-v1",
+"seed": 5,
+"repeat": 3,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT",
+"REPEATABLE"
+]
+},
+{
+"scenarioId": "WB-FD07",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-fleet-v1",
+"seed": 7,
+"repeat": 3,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT",
+"BOTH_ROBOTS_MOVED",
+"ROBOT_MAPPING",
+"ZONE_SINGLE_OWNER",
+"ZONE_RELEASE_AFTER_EXIT",
+"MIN_SEPARATION_AVAILABLE",
+"WITHIN_TICKS",
+"REPEATABLE"
+]
+},
+{
+"scenarioId": "WB-FD01",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-v1",
+"seed": 100,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT"
+]
+},
+{
+"scenarioId": "WB-FD01",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-v1",
+"seed": 101,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT"
+]
+},
+{
+"scenarioId": "WB-FD01",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-v1",
+"seed": 102,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT"
+]
+},
+{
+"scenarioId": "WB-FD01",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-v1",
+"seed": 103,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT"
+]
+},
+{
+"scenarioId": "WB-FD01",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-v1",
+"seed": 104,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT"
+]
+},
+{
+"scenarioId": "WB-FD01",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-v1",
+"seed": 105,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT"
+]
+},
+{
+"scenarioId": "WB-FD07",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-fleet-v1",
+"seed": 200,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT",
+"BOTH_ROBOTS_MOVED",
+"ROBOT_MAPPING",
+"ZONE_SINGLE_OWNER",
+"ZONE_RELEASE_AFTER_EXIT",
+"MIN_SEPARATION_AVAILABLE",
+"WITHIN_TICKS"
+]
+},
+{
+"scenarioId": "WB-FD07",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-fleet-v1",
+"seed": 201,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT",
+"BOTH_ROBOTS_MOVED",
+"ROBOT_MAPPING",
+"ZONE_SINGLE_OWNER",
+"ZONE_RELEASE_AFTER_EXIT",
+"MIN_SEPARATION_AVAILABLE",
+"WITHIN_TICKS"
+]
+},
+{
+"scenarioId": "WB-FD07",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-fleet-v1",
+"seed": 202,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT",
+"BOTH_ROBOTS_MOVED",
+"ROBOT_MAPPING",
+"ZONE_SINGLE_OWNER",
+"ZONE_RELEASE_AFTER_EXIT",
+"MIN_SEPARATION_AVAILABLE",
+"WITHIN_TICKS"
+]
+},
+{
+"scenarioId": "WB-FD07",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-fleet-v1",
+"seed": 203,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT",
+"BOTH_ROBOTS_MOVED",
+"ROBOT_MAPPING",
+"ZONE_SINGLE_OWNER",
+"ZONE_RELEASE_AFTER_EXIT",
+"MIN_SEPARATION_AVAILABLE",
+"WITHIN_TICKS"
+]
+},
+{
+"scenarioId": "WB-FD07",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-fleet-v1",
+"seed": 204,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT",
+"BOTH_ROBOTS_MOVED",
+"ROBOT_MAPPING",
+"ZONE_SINGLE_OWNER",
+"ZONE_RELEASE_AFTER_EXIT",
+"MIN_SEPARATION_AVAILABLE",
+"WITHIN_TICKS"
+]
+},
+{
+"scenarioId": "WB-FD07",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-fleet-v1",
+"seed": 205,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT",
+"BOTH_ROBOTS_MOVED",
+"ROBOT_MAPPING",
+"ZONE_SINGLE_OWNER",
+"ZONE_RELEASE_AFTER_EXIT",
+"MIN_SEPARATION_AVAILABLE",
+"WITHIN_TICKS"
+]
+},
+{
+"scenarioId": "WB-FD01-cancel",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-v1",
+"seed": 5,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"EVIDENCE_COMPLETE",
+"IDENTITY_BOUND",
+"BUSINESS_OUTCOME",
+"NO_PHYSICAL_CONTACT",
+"CANCEL_BOUNDED_STOP",
+"ONE_TERMINAL_PER_MISSION"
+]
+},
+{
+"scenarioId": "WB-FD01-enginekill",
+"scenarioRevision": 1,
+"fixtureId": "serve-3d-v1",
+"seed": 5,
+"repeat": 1,
+"policyRef": {
+"id": "irsim-2d-default-v1",
+"revision": 1,
+"hash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8"
+},
+"expectedAssertions": [
+"IDENTITY_BOUND",
+"NO_SERVED_BEFORE_HANDOFF",
+"BUSINESS_OUTCOME",
+"EVIDENCE_GAP_AS_DECLARED",
+"CARGO_KEPT",
+"NO_SECOND_WORKER"
+]
+}
+]
+}

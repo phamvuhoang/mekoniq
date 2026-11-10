@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Headless IR-SIM 2D campaigns on the pinned portable worker (C02). Independent of the Lab UI.
-//   node scripts/lab-irsim.mjs doctor [--json] [--irsim-python PATH]
-//   node scripts/lab-irsim.mjs run --campaign ID|robotics/navigation-2d/campaigns/FILE.json --out DIR [--concurrency 1|2] [--irsim-python PATH] [--run-timeout-s N] [--expect-portable-digest HEX]
+//   node scripts/lab-irsim.mjs doctor [--json] [--provider irsim|webots] [--irsim-python PATH] [--webots-python PATH] [--webots-home DIR]
+//   node scripts/lab-irsim.mjs run --campaign ID|robotics/navigation-2d/campaigns/FILE.json --out DIR [--concurrency 1|2] [--provider irsim|webots] [--irsim-python PATH] [--webots-python PATH] [--webots-home DIR] [--run-timeout-s N] [--expect-portable-digest HEX]
+//   (--provider webots: campaigns live in robotics/simulation-3d/campaigns and run on the real Webots R2025a, concurrency 1; a campaign of the other plant is refused)
 //   node scripts/lab-irsim.mjs verify --input DIR
 // Exit codes: 0 every run ran and passed with complete evidence, 1 a run failed or is incomplete, 2 a prerequisite or the usage is missing (not_run), 130/143 on SIGINT/SIGTERM.
-// The campaign is a server-owned file: an id or a path inside robotics/navigation-2d/campaigns only (no traversal, no symbolic link, no module/shell/YAML path).
+// The campaign is a server-owned file: an id or a path inside robotics/navigation-2d/campaigns (or robotics/simulation-3d/campaigns) only (no traversal, no symbolic link, no module/shell/YAML path).
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
@@ -14,7 +15,7 @@ import {fileURLToPath} from 'node:url';
 import {nativeToolClosure,portableToolClosure,PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const usage=(m)=>{console.error(`${m}\nusage: lab-irsim.mjs doctor [--json] [--irsim-python PATH] | run --campaign ID|PATH --out DIR [--concurrency 1|2] [--irsim-python PATH] [--run-timeout-s N] [--expect-portable-digest HEX] | verify --input DIR`);process.exit(2);};
-const SCHEMA={doctor:{json:'flag','irsim-python':'path'},run:{campaign:'campaign',out:'path',concurrency:'int','irsim-python':'path','run-timeout-s':'int','expect-portable-digest':'hex'},verify:{input:'path'}};
+const SCHEMA={doctor:{json:'flag',provider:'provider','irsim-python':'path','webots-python':'path','webots-home':'path'},run:{campaign:'campaign',out:'path',concurrency:'int',provider:'provider','irsim-python':'path','webots-python':'path','webots-home':'path','run-timeout-s':'int','expect-portable-digest':'hex'},verify:{input:'path'}};
 export function parse(command,argv){
  const schema=SCHEMA[command];if(!schema)usage(`UNKNOWN_COMMAND:${command??''}`);
  const o={};
@@ -25,11 +26,13 @@ export function parse(command,argv){
   if(kind==='flag'){o[key]=true;continue;}
   const v=argv[++i];if(v===undefined||v.startsWith('--'))usage(`MISSING_VALUE:${a}`);
   if(kind==='int'&&!/^[0-9]{1,6}$/.test(v))usage(`INVALID_INT:${a}`);
+  if(kind==='provider'&&!['irsim','webots'].includes(v))usage(`INVALID_PROVIDER:${v} (irsim or webots)`);
   if(kind==='hex'&&!/^[0-9a-f]{64}$/.test(v))usage(`INVALID_DIGEST:${a}`);
   if(/[\0\n\r]/.test(v)||v.length>1024)usage(`INVALID_VALUE:${a}`);
-  // an id names robotics/navigation-2d/campaigns/<id>.json; anything else is a repository path checked by the batch loader (allowlisted directory, no link, .json)
-  o[key]=kind==='int'?Number(v):kind==='path'?resolve(v):kind==='campaign'?(/^[A-Za-z0-9_.-]{1,64}$/.test(v)&&!v.endsWith('.json')?join(root,'robotics/navigation-2d/campaigns',`${v}.json`):resolve(v)):v;
+  o[key]=kind==='int'?Number(v):kind==='path'?resolve(v):kind==='campaign'?v:v;
  }
+ // an id names <campaigns dir of the provider>/<id>.json; anything else is a repository path checked by the batch loader
+ if(o.campaign!==undefined)o.campaign=/^[A-Za-z0-9_.-]{1,64}$/.test(o.campaign)&&!o.campaign.endsWith('.json')?join(root,o.provider==='webots'?'robotics/simulation-3d/campaigns':'robotics/navigation-2d/campaigns',`${o.campaign}.json`):resolve(o.campaign);
  return o;
 }
 const load=async()=>{const {tsImport}=await import('tsx/esm/api');return tsImport('../packages/lab-runtime/src/v2/navigation2d/batch.ts',import.meta.url);};
@@ -55,6 +58,7 @@ export const ownOutput=(out,dir=root)=>{const rel=relative(realpathSync(dir),res
 export const closureIdentity=(dir=root)=>({portable:portableToolClosure(dir).digest,native:nativeToolClosure(dir).digest});
 
 async function doctor(o){
+ if(o.provider==='webots')return doctorWebots(o);
  const {tsImport}=await import('tsx/esm/api');
  const {portableSimulationFromOptions}=await tsImport('../packages/lab-runtime/src/v2/navigation2d/readiness.ts',import.meta.url);
  const {mkdtemp,rm}=await import('node:fs/promises'),{tmpdir}=await import('node:os');
@@ -68,9 +72,22 @@ async function doctor(o){
  }finally{await rm(dir,{recursive:true,force:true});}
 }
 
+/** Webots prerequisites: the host Webots.app, the pinned .venv-webots and a real worker describe (the same probe the runtime does at boot). */
+async function doctorWebots(o){
+ const {tsImport}=await import('tsx/esm/api'),{mkdtemp,rm}=await import('node:fs/promises'),{tmpdir}=await import('node:os');
+ const {webotsFromOptions}=await tsImport('../packages/lab-runtime/src/v2/simulation3d/readiness.ts',import.meta.url),dir=await mkdtemp(join(tmpdir(),'lab-webots-doctor-')),workerRoot=join(root,'robotics/simulation-3d');
+ try{
+  const p=await webotsFromOptions({enabled:true,python:o['webots-python']??join(root,'.venv-webots/bin/python'),workerRoot,lockPath:join(workerRoot,'requirements.lock'),webotsHome:o['webots-home']??process.env.MEKONIQ_WEBOTS_HOME??'/Applications/Webots.app',directory:dir});
+  const checks=[{id:'node24',ok:process.versions.node.startsWith('24.'),detail:`node ${process.versions.node}`},{id:'webots-worker',ok:!!p.plant,detail:p.plant?`Webots ${p.plant.runtime.basicTimeStepMs} ms step, executable ${String(p.plant.runtime.executableSha256).slice(0,16)}`:String(p.capability.reason)}];
+  const report={provider:'webots_3d',checks,prerequisitesMet:checks.every(c=>c.ok)};
+  console.log(o.json?JSON.stringify(report,null,2):checks.map(c=>`${c.ok?'OK':'MISSING'} ${c.id}: ${c.detail}`).join('\n'));
+  process.exit(report.prerequisitesMet?0:2);
+ }finally{await rm(dir,{recursive:true,force:true});}
+}
+
 async function run(o){
  for(const k of ['campaign','out'])if(!o[k])usage(`MISSING_OPTION:--${k}`);
- const concurrency=o.concurrency??1;if(concurrency!==1&&concurrency!==2)usage('INVALID_CONCURRENCY: 1 or 2 (two IR-SIM worlds per host at most)');
+ const concurrency=o.concurrency??1;if(concurrency!==1&&concurrency!==2)usage('INVALID_CONCURRENCY: 1 or 2 (two IR-SIM worlds per host at most; one Webots world)');
  const {runIRSimBatch,BatchError}=await load();
  // the exit code is latched at the signal; the batch stops scheduling, closes its runs (their worker groups) and records the rest not_run
  const abort=new globalThis.AbortController();let signalled=0;
@@ -79,7 +96,7 @@ async function run(o){
  const before=closureIdentity();
  if(o['expect-portable-digest']&&before.portable!==o['expect-portable-digest']){console.error(`NOT_RUN: TOOL_CLOSURE_MISMATCH: portable tools ${before.portable}, expected ${o['expect-portable-digest']}`);process.exit(2);}
  const own=ownOutput(o.out);let s;
- try{s=await runIRSimBatch({campaignPath:o.campaign,outDir:o.out,concurrency,sourceCommit:sourceCommit(root,own),identity:{toolClosures:before},...o['irsim-python']?{python:o['irsim-python']}:{},...o['run-timeout-s']?{runTimeoutMs:o['run-timeout-s']*1000}:{},signal:abort.signal});}
+ try{s=await runIRSimBatch({campaignPath:o.campaign,outDir:o.out,concurrency,sourceCommit:sourceCommit(root,own),identity:{toolClosures:before},...o.provider?{plant:o.provider==='webots'?'webots_3d':'irsim_2d'}:{},...o['irsim-python']?{python:o['irsim-python']}:{},...o['webots-python']?{webotsPython:o['webots-python']}:{},...o['webots-home']?{webotsHome:o['webots-home']}:{},...o['run-timeout-s']?{runTimeoutMs:o['run-timeout-s']*1000}:{},signal:abort.signal});}
  catch(e){if(e instanceof BatchError){console.error(`NOT_RUN: ${e.message}`);process.exit(signalled||2);}throw e;}
  // and after: a tree that changed under the campaign makes every result untrustworthy
  const after=closureIdentity(),stable=after.portable===before.portable&&after.native===before.native;
@@ -108,7 +125,7 @@ async function verify(o){
  }
  let identity=null;try{identity=JSON.parse(await readFile(join(o.input,'identity.json'),'utf8'));}catch{identity=null;}
  if(identity&&identity.stable!==true)problems.push('the tool closure changed during the campaign');
- if(summary.provider?.kind!=='irsim_worker')problems.push(`provider ${summary.provider?.kind}: not irsim_2d evidence`);
+ if(!['irsim_worker','webots_engine'].includes(summary.provider?.kind))problems.push(`provider ${summary.provider?.kind}: not irsim_2d or webots_3d evidence`);
  if(problems.length){console.error(`FAILED:\n${problems.join('\n')}`);process.exit(1);}
  console.log(`verified campaign=${summary.campaignId} runs=${summary.runs.length} source=${summary.sourceCommit}`);process.exit(0);
 }

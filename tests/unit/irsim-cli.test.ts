@@ -232,3 +232,17 @@ test('F3 tool closures: a campaign is refused before it starts when the portable
   expect(cli('verify','--input',join(out,'y')).code).toBe(2);
  }finally{await rm(out,{recursive:true,force:true});}
 },180_000);
+
+test('lab-irsim --provider: webots needs a known value, a campaign id names the plant\'s own campaigns directory, verify accepts a webots_engine summary (and still refuses a double), and a campaign of the other plant is refused',async()=>{
+ expect(cli('run','--provider','mujoco','--campaign','x','--out','/tmp/never').code).toBe(2);
+ expect(cli('run','--provider','webots','--provider','irsim','--campaign','x','--out','/tmp/never').code).toBe(2); // duplicate option
+ // an id with --provider webots is looked up in robotics/simulation-3d/campaigns: the IR-SIM campaign id is not there (exit 2, never a silent fall back to the other directory)
+ const r=cli('run','--provider','webots','--campaign','c02-concurrent','--out',join(tmpdir(),`never-${process.pid}`));
+ expect(r.code).toBe(2);expect(r.err).toMatch(/CAMPAIGN_PATH_REJECTED|does not exist/);
+ const d=await mkdtemp(join(tmpdir(),'webots-cli-verify-')),sum=(kind:string)=>JSON.stringify({status:'completed',complete:true,campaignSha256:createHash('sha256').update('{"x":1}').digest('hex'),provider:{id:'webots_3d',kind},runs:[{id:'001',result:'pass'}]});
+ try{
+  await mkdir(join(d,'runs','001'),{recursive:true});await writeFile(join(d,'campaign.json'),'{"x":1}');await writeFile(join(d,'runs','001','run.json'),JSON.stringify({result:'pass',evidenceAsExpected:true}));
+  await writeFile(join(d,'summary.json'),sum('webots_engine'));expect(cli('verify','--input',d).code).toBe(0);
+  await writeFile(join(d,'summary.json'),sum('protocol_double'));expect(cli('verify','--input',d).code).toBe(1);
+ }finally{await rm(d,{recursive:true,force:true});}
+});
