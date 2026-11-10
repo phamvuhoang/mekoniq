@@ -7,10 +7,12 @@ import sceneSchema from '../../../../contracts/schemas/navigation-scene-v1.schem
 import reportSchema from '../../../../contracts/schemas/model-validation-report-v1.schema.json';
 import workerSchema from '../../../../contracts/schemas/irsim-worker-v1.schema.json';
 import evidenceSchema from '../../../../contracts/schemas/navigation-run-evidence-v1.schema.json';
-import type {IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1} from '../../../../contracts/generated/navigation2d';
+import algorithmSchema from '../../../../contracts/schemas/algorithm-result-v1.schema.json';
+import sim3dSchema from '../../../../contracts/schemas/sim3d-worker-v1.schema.json';
+import type {AlgorithmResultV1,Sim3DRequestV1,Sim3DResponseV1,Sim3DSnapshotV1,World3DV1,IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1} from '../../../../contracts/generated/navigation2d';
 import {inertiaProblems} from '../../engineering/inertia';
 import {hashJson} from '../hash';
-export type {IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1};
+export type {AlgorithmResultV1,Sim3DRequestV1,Sim3DResponseV1,Sim3DSnapshotV1,World3DV1,IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1};
 export type {InputIdentity,ArtifactRef,Vec2,SensorMount,Lidar2DProjection} from '../../../../contracts/generated/navigation2d';
 
 /** Content hash of the schemas a physical model is projected against; recorded as projection.sourceSchemaHash. */
@@ -20,7 +22,7 @@ export interface NavigationIssue{path:string;code:string;message:string;}
 export type NavigationDocument=RobotPhysicalModelV1|NavigationModel2DV1|NavigationSceneV1|ModelValidationReportV1;
 export type NavigationCheck={ok:true;value:NavigationDocument}|{ok:false;issues:NavigationIssue[]};
 
-const FILES:Record<string,object>={'engineering-component.schema.json':componentSchema,'robot-physical-model-v1.schema.json':physicalSchema,'navigation-model-2d-v1.schema.json':modelSchema,'navigation-scene-v1.schema.json':sceneSchema,'model-validation-report-v1.schema.json':reportSchema,'irsim-worker-v1.schema.json':workerSchema,'navigation-run-evidence-v1.schema.json':evidenceSchema};
+const FILES:Record<string,object>={'engineering-component.schema.json':componentSchema,'robot-physical-model-v1.schema.json':physicalSchema,'navigation-model-2d-v1.schema.json':modelSchema,'navigation-scene-v1.schema.json':sceneSchema,'model-validation-report-v1.schema.json':reportSchema,'irsim-worker-v1.schema.json':workerSchema,'navigation-run-evidence-v1.schema.json':evidenceSchema,'algorithm-result-v1.schema.json':algorithmSchema,'sim3d-worker-v1.schema.json':sim3dSchema};
 const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});addFormats(ajv);
 for(const [key,schema] of Object.entries(FILES))ajv.addSchema(schema,key);
 const KEYS:Record<string,{schema:string;digest:string}>={
@@ -109,6 +111,12 @@ const requestValidator=ajv.getSchema('irsim-worker-v1.schema.json')!,responseVal
 /** The worker wire is validated with the same schema at both ends (the Python worker loads the same file). */
 export const validateIRSimRequest=(input:unknown):{ok:true;value:IRSimRequestV1}|{ok:false;issues:NavigationIssue[]}=>requestValidator(input)?{ok:true,value:input as IRSimRequestV1}:{ok:false,issues:schemaIssues(requestValidator.errors)};
 export const validateIRSimResponse=(input:unknown):{ok:true;value:IRSimResponseV1}|{ok:false;issues:NavigationIssue[]}=>responseValidator(input)?{ok:true,value:input as IRSimResponseV1}:{ok:false,issues:schemaIssues(responseValidator.errors)};
+
+const sim3dRequestValidator=ajv.getSchema('sim3d-worker-v1.schema.json')!,sim3dResponseValidator=ajv.getSchema('sim3d-worker-v1.schema.json#/definitions/Sim3DResponseV1')!,algorithmValidator=ajv.getSchema('algorithm-result-v1.schema.json')!;
+/** mekoniq-sim3d/1: the IR-SIM envelope and ops, with the 3D pose and wheel speeds required on every robot state. */
+export const validateSim3DRequest=(input:unknown):{ok:true;value:Sim3DRequestV1}|{ok:false;issues:NavigationIssue[]}=>sim3dRequestValidator(input)?{ok:true,value:input as Sim3DRequestV1}:{ok:false,issues:schemaIssues(sim3dRequestValidator.errors)};
+export const validateSim3DResponse=(input:unknown):{ok:true;value:Sim3DResponseV1}|{ok:false;issues:NavigationIssue[]}=>sim3dResponseValidator(input)?{ok:true,value:input as Sim3DResponseV1}:{ok:false,issues:schemaIssues(sim3dResponseValidator.errors)};
+export const validateAlgorithmResult=(input:unknown):{ok:true;value:AlgorithmResultV1}|{ok:false;issues:NavigationIssue[]}=>algorithmValidator(input)?{ok:true,value:input as AlgorithmResultV1}:{ok:false,issues:schemaIssues(algorithmValidator.errors)};
 
 const evidenceValidator=ajv.getSchema('navigation-run-evidence-v1.schema.json')!;
 /** navigation-run-evidence-v1 (report extension). It has no self digest: its artifacts carry the stored-byte hashes and its digests the normalized record identity. */

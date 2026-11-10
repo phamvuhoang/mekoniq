@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.algorithm-result.v1",
+  "title": "AlgorithmResultV1",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "One verdict of an independent algorithm check. The verdict is decided in TypeScript from the checker output; the Python checker never grades itself.",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "checkerId": {
+      "enum": [
+        "rtb_kinematics",
+        "pid_reference"
+      ]
+    },
+    "caseId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "fail",
+        "not_run"
+      ]
+    },
+    "metrics": {
+      "type": "object",
+      "maxProperties": 64,
+      "additionalProperties": {
+        "type": [
+          "number",
+          "null"
+        ]
+      }
+    },
+    "oracleProfileDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "inputDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "toolVersions": {
+      "type": "object",
+      "maxProperties": 32,
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "reasons": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "checkerId",
+    "caseId",
+    "verdict",
+    "metrics",
+    "oracleProfileDigest",
+    "inputDigest",
+    "toolVersions",
+    "reasons"
+  ]
+}

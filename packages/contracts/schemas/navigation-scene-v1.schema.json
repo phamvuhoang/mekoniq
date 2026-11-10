@@ -286,23 +286,54 @@
       ]
     },
     "engine": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "const": "irsim_2d"
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "const": "irsim_2d"
+            },
+            "version": {
+              "const": "2.12.0"
+            },
+            "collisionMode": {
+              "const": "stop"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "collisionMode"
+          ]
         },
-        "version": {
-          "const": "2.12.0"
-        },
-        "collisionMode": {
-          "const": "stop"
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "const": "webots_3d"
+            },
+            "version": {
+              "const": "R2025a"
+            },
+            "basicTimeStepMs": {
+              "enum": [
+                1,
+                2,
+                4,
+                5,
+                10,
+                20
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "basicTimeStepMs"
+          ]
         }
-      },
-      "required": [
-        "id",
-        "version",
-        "collisionMode"
       ]
     },
     "policy": {
@@ -325,6 +356,9 @@
         "minLength": 1,
         "maxLength": 500
       }
+    },
+    "world3d": {
+      "$ref": "#/definitions/World3DV1"
     }
   },
   "required": [
@@ -492,6 +526,87 @@
         "source",
         "parameters"
       ]
+    },
+    "World3DV1": {
+      "title": "World3DV1",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Heights and materials a 3D plant needs and the 2D scene does not carry. Versioned input of the compiler, so it has a digest through the scene.",
+      "properties": {
+        "obstacleHeightM": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10
+        },
+        "wallHeightM": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10
+        },
+        "floorFriction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "casterFriction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "provenance": {
+          "enum": [
+            "assumed",
+            "measured"
+          ]
+        }
+      },
+      "required": [
+        "obstacleHeightM",
+        "wallHeightM",
+        "floorFriction",
+        "casterFriction",
+        "provenance"
+      ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "engine": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "const": "webots_3d"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        "required": [
+          "engine"
+        ]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "world3d": {
+            "$ref": "#/definitions/World3DV1"
+          }
+        },
+        "required": [
+          "world3d"
+        ]
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "world3d": false
+        }
+      }
+    }
+  ]
 }

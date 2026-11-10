@@ -73,37 +73,88 @@
       ]
     },
     "engine": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "const": "irsim_2d"
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "const": "irsim_2d"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "pythonVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "platform": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "lockDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "pythonVersion",
+            "platform",
+            "lockDigest"
+          ]
         },
-        "version": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
-        },
-        "pythonVersion": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
-        },
-        "platform": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
-        },
-        "lockDigest": {
-          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "const": "webots_3d"
+            },
+            "engineVersion": {
+              "const": "R2025a"
+            },
+            "executableSha256": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "basicTimeStepMs": {
+              "enum": [
+                1,
+                2,
+                4,
+                5,
+                10,
+                20
+              ]
+            },
+            "pythonVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "platform": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "lockDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            }
+          },
+          "required": [
+            "id",
+            "engineVersion",
+            "executableSha256",
+            "basicTimeStepMs",
+            "pythonVersion",
+            "platform",
+            "lockDigest"
+          ]
         }
-      },
-      "required": [
-        "id",
-        "version",
-        "pythonVersion",
-        "platform",
-        "lockDigest"
       ]
     },
     "identity": {
@@ -192,7 +243,10 @@
           "maximum": 4294967295
         },
         "engineSeedAlgorithm": {
-          "const": "irsim-env-seed-v1"
+          "enum": [
+            "irsim-env-seed-v1",
+            "webots-worldinfo-seed-v1"
+          ]
         },
         "sensorSeeds": {
           "type": "array",
@@ -741,5 +795,52 @@
     "metricCoverage",
     "recordingGaps",
     "limitations"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "engine": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "const": "webots_3d"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        "required": [
+          "engine"
+        ]
+      },
+      "then": {
+        "properties": {
+          "seed": {
+            "type": "object",
+            "properties": {
+              "engineSeedAlgorithm": {
+                "const": "webots-worldinfo-seed-v1"
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "seed": {
+            "type": "object",
+            "properties": {
+              "engineSeedAlgorithm": {
+                "const": "irsim-env-seed-v1"
+              }
+            }
+          }
+        }
+      }
+    }
   ]
 }
