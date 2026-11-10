@@ -114,3 +114,12 @@ test('sim3d response needs pose3d and wheels; the base fields are the IR-SIM one
   expect(validateSim3DResponse(response(noWheels)).ok).toBe(false);
   expect(validateSim3DResponse(response(robot3d({ pose3d: { z: Number.NaN, roll: 0, pitch: 0 } }))).ok).toBe(false);
 });
+
+test('a sim3d snapshot may carry the model read back from the engine (getState), and only in that shape', () => {
+  const model = { robots: [{ robotId: 'amr-1', links: [{ name: 'chassis_base', massKg: 14, positionMap: [2, 1.5, 0.09] }], wheelRadiusM: 0.09, wheelSeparationM: 0.36, wheelAxes: [[0, 1, 0], [0, 1, 0]] }] };
+  const withModel = response(robot3d());
+  (withModel.result as Record<string, unknown>).model = model;
+  expect(validateSim3DResponse(withModel).ok).toBe(true);
+  (withModel.result as Record<string, unknown>).model = { robots: [{ ...model.robots[0], extra: 1 }] };
+  expect(validateSim3DResponse(withModel).ok).toBe(false);
+});

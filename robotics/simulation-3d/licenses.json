@@ -4,7 +4,7 @@
  "tool": "webots_worker",
  "lock": {
   "path": "robotics/simulation-3d/requirements.lock",
-  "sha256": "20c3f85d3fd8e53145309f6e16c07e78df929af9f78d81573e4d531fccb1c8a7"
+  "sha256": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2"
  },
  "readFrom": "importlib.metadata of the pinned venv (isolated mode)",
  "packages": [
@@ -61,6 +61,12 @@
    "version": "0.37.0",
    "license": "MIT",
    "source": "License-Expression"
+  },
+  {
+   "name": "rfc8785",
+   "version": "0.1.4",
+   "license": "Apache Software License",
+   "source": "Classifier"
   },
   {
    "name": "rpds-py",

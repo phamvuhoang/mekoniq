@@ -2,7 +2,7 @@ import {spawn} from 'node:child_process';
 import {mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {validateIRSimRequest,validateIRSimResponse} from './contracts';
-import type {IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1} from './contracts';
+import type {IRSimResponseV1,IRSimSnapshotV1} from './contracts';
 import {bytecodeEnv,isolatedPythonArgs} from '../../engineering/python-env';
 
 const TICK_NS=20_000_000n;
@@ -14,8 +14,13 @@ export const DEFAULT_DEADLINES_MS:Record<string,number>={describe:5000,create:15
 export class WorkerLostError extends Error{
  constructor(readonly code:string,readonly outcome:'unknown'|'not_sent',detail:string){super(`${code}: ${detail}`);this.name='WorkerLostError';}
 }
+/** The envelope every plant worker speaks; `protocol` names the wire, the worker validates the rest against its own schema. */
+export interface WireRequest {protocol:string;requestId:string;runId:string;expectedTick:number;op:string;payload:unknown}
+type Check<T>={ok:true;value:T}|{ok:false;issues:{path:string;code:string}[]};
+/** What differs between the plants' workers: the wire, the module that is started, its extra argv/environment and the error codes that end a run. Everything else (ACK deadlines, one request in flight, bootId and tick monotonicity, the group kill) is shared. */
+export interface WireSpec {protocol:string;module:string;extraArgs:(o:SpawnOptions)=>string[];env?:Record<string,string>;validateRequest:(x:unknown)=>Check<unknown>;validateResponse:(x:unknown)=>Check<IRSimResponseV1>;fatalCodes:readonly string[]}
 export interface IRSimWorkerClient{
- request(request:IRSimRequestV1):Promise<IRSimResponseV1>;
+ request(request:WireRequest):Promise<IRSimResponseV1>;
  close(reason:string):Promise<void>;
  readonly state:'ready'|'failed'|'closed';
  readonly pid:number|undefined;
@@ -32,16 +37,21 @@ export interface SpawnOptions{
  deadlinesMs?:Partial<Record<string,number>>;
  /** Interpreter arguments; default `-m irsim_worker`. Operator/test option only: never derived from a request. */
  entry?:string[];
+ /** Webots plant only: the host installation the worker starts (never from a request). */
+ webotsHome?:string;
 }
-interface Pending{request:IRSimRequestV1;resolve:(r:IRSimResponseV1)=>void;reject:(e:Error)=>void}
+interface Pending{request:WireRequest;resolve:(r:IRSimResponseV1)=>void;reject:(e:Error)=>void}
 
 /** Starts one worker process for one run. There is never a second process for the same run: after a failure the client is terminal and recovery is a new run with locked inputs. */
-export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient>{
+export const IRSIM_WIRE:WireSpec={protocol:'mekoniq-irsim/1',module:'irsim_worker',extraArgs:o=>o.fixtureSha256?['--fixture-sha256',o.fixtureSha256]:[],validateRequest:validateIRSimRequest,validateResponse:validateIRSimResponse,fatalCodes:['INVALID_JSON','INVALID_REQUEST','REQUEST_TOO_LARGE','WORKER_FAILED','CLOCK_DRIFT','SENSOR_INCONSISTENT']};
+export const spawnIRSimWorker=(o:SpawnOptions):Promise<IRSimWorkerClient>=>spawnWorker(o,IRSIM_WIRE);
+
+export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWorkerClient>{
  await mkdir(o.runDirectory,{recursive:true});
  const deadlines={...DEFAULT_DEADLINES_MS,...o.deadlinesMs},root=resolve(o.workerRoot);
- const args=isolatedPythonArgs([root],o.entry??['-m','irsim_worker'],['--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[],...o.fixtureSha256?['--fixture-sha256',o.fixtureSha256]:[]]);
+ const args=isolatedPythonArgs([root],o.entry??['-m',wire.module],['--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[],...wire.extraArgs(o)]);
  // fixed argv, allowlisted environment (no credentials, no ROS discovery), a private working directory; the venv isolates dependencies but is not a sandbox
- const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,...bytecodeEnv(),PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg'} as unknown as NodeJS.ProcessEnv;
+ const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,...bytecodeEnv(),PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg',...wire.env} as unknown as NodeJS.ProcessEnv;
  const child=spawn(o.python,args,{cwd:resolve(o.runDirectory),env,stdio:['pipe','pipe','pipe'],detached:true});
  let state:'ready'|'failed'|'closed'='ready',bootId:string|null=null,buffer='',stderrTail='',lastTick=0,lastSeq=0n,sceneDigest=o.sceneDigest,timer:NodeJS.Timeout|undefined,closing:Promise<void>|undefined;
  const queue:Pending[]=[];let inFlight:Pending|undefined;
@@ -74,9 +84,9 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
  const onLine=(line:string)=>{
   let parsed:unknown;
   try{parsed=JSON.parse(line);}catch{return fail('WORKER_PROTOCOL','a worker line is not JSON');}
-  const checked=validateIRSimResponse(parsed);
-  if(!checked.ok)return fail('WORKER_PROTOCOL',`response violates irsim-worker-v1: ${checked.issues[0]?.path} ${checked.issues[0]?.code}`);
-  const r=checked.value,current=inFlight;
+  const checked=wire.validateResponse(parsed);
+  if(!checked.ok)return fail('WORKER_PROTOCOL',`response violates ${wire.protocol}: ${checked.issues[0]?.path} ${checked.issues[0]?.code}`);
+  const r=checked.value as IRSimResponseV1,current=inFlight;
   if(!current||r.requestId!==current.request.requestId||r.runId!==o.runId)return fail('WORKER_PROTOCOL','late, duplicate or foreign response');
   if(bootId===null)bootId=r.bootId;else if(r.bootId!==bootId)return fail('WORKER_PROTOCOL','bootId changed within one run');
   if(r.tick<lastTick)return fail('WORKER_PROTOCOL','tick went backwards');
@@ -89,7 +99,7 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
    if(op==='describe'?result.packageVersion===undefined:op!=='create'&&op!=='step'&&op!=='getState'&&result.state===undefined)return fail('WORKER_PROTOCOL',`${op} was answered with the wrong kind of result`);
    // time moves only on a step: any other op answers at the tick it was asked for
    if(op!=='step'&&op!=='describe'&&r.tick!==current.request.expectedTick)return fail('WORKER_PROTOCOL',`${op} answered at tick ${r.tick}, not the expected ${current.request.expectedTick}`);
-   if(op==='step'&&r.tick!==current.request.payload.targetTick)return fail('WORKER_PROTOCOL','a step was acknowledged at a tick other than its target');
+   if(op==='step'&&r.tick!==(current.request.payload as {targetTick:number}).targetTick)return fail('WORKER_PROTOCOL','a step was acknowledged at a tick other than its target');
    // a snapshot describes the run it was cut from: same process, run, tick (x 20 ms) and scene as the envelope and as every earlier one, in order
    if(snap){
     if(snap.runId!==o.runId||snap.bootId!==r.bootId||snap.tick!==r.tick)return fail('WORKER_PROTOCOL','the snapshot contradicts its own envelope (run, boot or tick)');
@@ -102,7 +112,7 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
   }
   lastTick=r.tick;clearTimeout(timer);inFlight=undefined;
   current.resolve(r);
-  if(!r.ok&&['INVALID_JSON','INVALID_REQUEST','REQUEST_TOO_LARGE','WORKER_FAILED','CLOCK_DRIFT','SENSOR_INCONSISTENT'].includes((r as {error:{code:string}}).error.code))fail('WORKER_FATAL',(r as {error:{code:string}}).error.code);
+  if(!r.ok&&wire.fatalCodes.includes((r as {error:{code:string}}).error.code))fail('WORKER_FATAL',(r as {error:{code:string}}).error.code);
   else pump();
  };
  child.stdout.on('data',(d:Buffer)=>{
@@ -117,7 +127,7 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
  const self:IRSimWorkerClient={
   get state(){return state;},get pid(){return child.pid;},get bootId(){return bootId;},get stderrTail(){return stderrTail;},
   request(request){
-   const checked=validateIRSimRequest(request);
+   const checked=wire.validateRequest(request);
    if(!checked.ok)return Promise.reject(new WorkerLostError('INVALID_REQUEST','not_sent',`${checked.issues[0]?.path} ${checked.issues[0]?.code}`));
    if(Buffer.byteLength(JSON.stringify(request))>MAX_LINE_BYTES)return Promise.reject(new WorkerLostError('REQUEST_TOO_LARGE','not_sent','request exceeds 2 MiB'));
    if(state!=='ready')return Promise.reject(new WorkerLostError('WORKER_LOST','not_sent',`the worker is ${state}; a lost run is never continued by a new process`));
@@ -128,7 +138,7 @@ export async function spawnIRSimWorker(o:SpawnOptions):Promise<IRSimWorkerClient
    closing??=(async()=>{
     if(state==='ready'&&!inFlight&&!queue.length){
      // idle: a graceful stop lets the engine end cleanly; the 2 s deadline then the group kill give the same end state either way
-     await self.request({protocol:'mekoniq-irsim/1',requestId:`close-${Date.now()}`,runId:o.runId,expectedTick:lastTick,op:'stop',payload:{reason:reason.slice(0,200)}}).catch(()=>undefined);
+     await self.request({protocol:wire.protocol,requestId:`close-${Date.now()}`,runId:o.runId,expectedTick:lastTick,op:'stop',payload:{reason:reason.slice(0,200)}}).catch(()=>undefined);
     }else if(state==='ready')fail('WORKER_CLOSED',`closed while a request was outstanding: ${reason}`); // busy: do not wait behind it
     state=state==='failed'?'failed':'closed';
     child.stdin.end();

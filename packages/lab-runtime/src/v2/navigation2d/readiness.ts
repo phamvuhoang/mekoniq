@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {dirname,join,resolve} from 'node:path';
 import {defaultCatalog,type CapabilityCatalog} from '../capabilities';
 import type {NativeReadinessChecks,ReadinessCheck} from '../readiness';
+import type {BackendCapability} from '../capabilities';
 import type {RunManifestInput,RunProviders,ScenarioRun} from '../scenario-runner';
 import {scenarioRegistry,resolveRoles} from '../scenario-registry';
 import {validateProjectV2} from '../contracts';
@@ -25,13 +26,16 @@ export const portableCatalog=(usable:boolean,base:CapabilityCatalog=defaultCatal
 })});
 export type SimulationFactory=(input:RunManifestInput,providers:RunProviders)=>Promise<ScenarioRun>;
 /** Operator options only (CLI flags/env), never request fields. `nativeFactory` keeps native simulation exactly as configured. */
+/** The Webots 3D provider next to IR-SIM (simulation3d/readiness.ts); it has its own opt-in and never makes IR-SIM usable or the other way round. */
+export interface WebotsProviderLike {plant?:{port:PlantPort;runtime:IRSimRuntimeOptions};capability:BackendCapability;readinessChecks?:NativeReadinessChecks}
 export interface PortableSimulationOptions {enabled:boolean;python:string;workerRoot:string;lockPath:string;directory:string;nativeFactory?:SimulationFactory;
  /** Catalog to extend (the native one when native is configured). */baseCatalog?:CapabilityCatalog;
  /** Admitted-bundle reader (the engineering service), for readiness. */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;
  schemaDir?:string;
  /** Test/fault option: the worker entry (a double). Never exposed through a request. */entry?:string[];
- /** Live IR-SIM workers allowed on this host at once (default 2, workers-runtime §6). */maxActiveRuns?:number;}
-export interface PortableSimulation {catalog:CapabilityCatalog;enabledBackends:string[];simulationFactory:SimulationFactory;readinessChecks?:NativeReadinessChecks;unavailable?:string;describe?:{packageVersion:string;pythonVersion:string;lockDigest:string}}
+ /** Live IR-SIM workers allowed on this host at once (default 2, workers-runtime §6). */maxActiveRuns?:number;
+ webots?:WebotsProviderLike;}
+export interface PortableSimulation {plants?:PlantTable;catalog:CapabilityCatalog;enabledBackends:string[];simulationFactory:SimulationFactory;readinessChecks?:NativeReadinessChecks;unavailable?:string;describe?:{packageVersion:string;pythonVersion:string;lockDigest:string}}
 const MIN_FREE_BYTES=2*100*1024*1024; // two active runs at the 100 MiB evidence quota
 const SMOKE_TTL_MS=60_000;
 const sha256=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
@@ -53,8 +57,24 @@ export function plantDispatcher(catalog:CapabilityCatalog,plants:PlantTable|unde
  };
 }
 
+const WEBOTS_ID='webots_3d';
+/** IR-SIM (when enabled) plus Webots (when its provider is live): one catalog, one dispatcher over the live plants, readiness chosen by the set's AMR provider. */
 export async function portableSimulationFromOptions(o:PortableSimulationOptions):Promise<PortableSimulation>{
- const base=o.baseCatalog??defaultCatalog,off=(reason:string):PortableSimulation=>{const catalog=portableCatalog(false,base,reason);return {catalog,enabledBackends:[],simulationFactory:plantDispatcher(catalog,undefined,o.nativeFactory),unavailable:reason.split(':')[0]!};};
+ const base=await irsimPortable(o),w=o.webots;
+ if(!w)return base;
+ const catalog:CapabilityCatalog={...base.catalog,backends:base.catalog.backends.map(b=>b.id===WEBOTS_ID?w.capability:b)};
+ const plants:PlantTable={...base.plants,...w.plant?{[WEBOTS_ID]:w.plant}:{}},live=!!w.plant&&w.capability.installed;
+ const ir=base.readinessChecks,wb=w.readinessChecks;
+ const readinessChecks:NativeReadinessChecks|undefined=ir||wb?async(context,signal)=>{
+  const amr=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]!.providers?.amr:undefined,pick=amr===WEBOTS_ID?wb:ir;
+  if(!pick)throw new Error('PORTABLE_PROVIDER_UNAVAILABLE');
+  return pick(context,signal);
+ }:undefined;
+ return {...base,catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[]],plants,simulationFactory:plantDispatcher(catalog,plants,o.nativeFactory),...readinessChecks?{readinessChecks}:{}};
+}
+
+async function irsimPortable(o:PortableSimulationOptions):Promise<PortableSimulation>{
+ const base=o.baseCatalog??defaultCatalog,off=(reason:string):PortableSimulation=>{const catalog=portableCatalog(false,base,reason);return {catalog,enabledBackends:[],simulationFactory:plantDispatcher(catalog,undefined,o.nativeFactory),plants:{},unavailable:reason.split(':')[0]!};};
  if(!o.enabled)return off('IRSIM_DISABLED: the portable IR-SIM provider is not enabled (MEKONIQ_LAB_IRSIM=1)');
  if(!process.versions.node.startsWith('24.'))return off('NODE_24_REQUIRED');
  if(!['darwin','linux'].includes(process.platform))return off(`HOST_UNSUPPORTED: ${process.platform}`);
@@ -78,28 +98,38 @@ export async function portableSimulationFromOptions(o:PortableSimulationOptions)
  if(!describe.pythonVersion.startsWith('3.11.'))return off(`PYTHON_311_REQUIRED: ${describe.pythonVersion}`);
  if(describe.lockDigest!==lockDigest)return off('IRSIM_LOCK_MISMATCH');
  const runtime:IRSimRuntimeOptions={python:o.python,workerRoot,schemaDir,lockDigest,...o.entry?{entry:o.entry}:{},...o.maxActiveRuns!==undefined?{maxActiveRuns:o.maxActiveRuns}:{}},catalog=portableCatalog(true,base);
- return {catalog,enabledBackends:[IRSIM_BACKEND],simulationFactory:plantDispatcher(catalog,{[IRSIM_BACKEND]:{port:irsimPlant(),runtime}},o.nativeFactory),describe,readinessChecks:portableReadiness(runtime,describe,o,probeDir)};
+ const plants:PlantTable={[IRSIM_BACKEND]:{port:irsimPlant(),runtime}};
+ return {catalog,enabledBackends:[IRSIM_BACKEND],plants,simulationFactory:plantDispatcher(catalog,plants,o.nativeFactory),describe,readinessChecks:portableReadiness(runtime,describe,o,probeDir)};
 }
 
-/** Per-request IR readiness: versions/lock, the admitted bundle's scene against the world and scenario, quota/free disk, and a real worker create smoke (cached per scene). */
-function portableReadiness(runtime:IRSimRuntimeOptions,described:NonNullable<PortableSimulation['describe']>,o:PortableSimulationOptions,probeDir:string):NativeReadinessChecks{
- const smoked=new Map<string,number>();
+/** What differs between the plants' per-request readiness: the reason-code prefix, the engine the admitted scene must name, the worker slots and a real create smoke on the admitted scene. */
+export interface ProviderReadinessSpec {
+ prefix:string;engineId:string;runtime:IRSimRuntimeOptions;lockPath:string;directory:string;probeDir:string;evidence:string;
+ bundleFile?:PortableSimulationOptions['bundleFile'];
+ capacity:(runId?:string)=>boolean;
+ /** A real worker, the real scene: create, then a clean stop. Resolves to reason codes, [] when it worked. */
+ smoke:(scene:NavigationSceneV1,bundleRoot:string,runDirectory:string)=>Promise<string[]>;
+}
+/** Per-request readiness: versions/lock, the admitted bundle's scene against the world and scenario, quota/free disk, and a real worker create smoke (cached per scene). */
+export function providerReadiness(spec:ProviderReadinessSpec):NativeReadinessChecks{
+ const smoked=new Map<string,number>(),P=spec.prefix,lower=P.toLowerCase();
  return async(context,signal)=>{
   const row=(id:string,reasonCodes:string[],evidenceRef:string|null=null,status:ReadinessCheck['status']='blocked'):ReadinessCheck=>({id,status:reasonCodes.length?status:'ready',reasonCodes,evidenceRef});
   const profile:string[]=[];
-  if(await lockDigestOf(o.lockPath).catch(()=>null)!==runtime.lockDigest)profile.push('IRSIM_LOCK_CHANGED');
+  if(await lockDigestOf(spec.lockPath).catch(()=>null)!==spec.runtime.lockDigest)profile.push(`${P}_LOCK_CHANGED`);
   const scenario=scenarioRegistry.get(context.scenarioId);
   let scene:NavigationSceneV1|undefined,files:[string,Uint8Array][]=[];const model:string[]=[],fixture:string[]=[];
-  if(!context.engineering||!o.bundleFile)model.push('ENGINEERING_REF_REQUIRED');
+  if(!context.engineering||!spec.bundleFile)model.push('ENGINEERING_REF_REQUIRED');
   else try{
-   const bytes=await o.bundleFile(context.engineering.bundleDigest,'navigation-scene.json'),doc=JSON.parse(Buffer.from(bytes).toString('utf8'));
+   const bytes=await spec.bundleFile(context.engineering.bundleDigest,'navigation-scene.json'),doc=JSON.parse(Buffer.from(bytes).toString('utf8'));
    const checked=validateNavigationDocument(doc);
    if(!checked.ok||checked.value.documentType!=='navigation-scene')model.push(...new Set(checked.ok?['NAVIGATION_SCENE_INVALID']:checked.issues.map(i=>i.code)));
    else{
     scene=checked.value as NavigationSceneV1;files=[['navigation-scene.json',bytes]];
+    if(scene.engine.id!==spec.engineId)model.push('NAVIGATION_SCENE_ENGINE_MISMATCH');
     if(scene.inputs.project.digest!==context.engineering.projectDigest)model.push('ENGINEERING_IDENTITY_MISMATCH');
     if(scene.robots.some(r=>r.model.sensors.length===0))model.push('SENSOR_MISSING');
-    for(const f of scene.files){const b=await o.bundleFile(context.engineering.bundleDigest,f.path).catch(()=>null);if(!b||sha256(b)!==f.sha256)fixture.push(`ENGINEERING_CLOSURE_MISSING:${f.path}`);else files.push([f.path,b]);}
+    for(const f of scene.files){const b=await spec.bundleFile(context.engineering.bundleDigest,f.path).catch(()=>null);if(!b||sha256(b)!==f.sha256)fixture.push(`ENGINEERING_CLOSURE_MISSING:${f.path}`);else files.push([f.path,b]);}
     const project=validateProjectV2(context.project);
     if(!project.ok)fixture.push('PROJECT_INVALID');
     else{
@@ -114,29 +144,38 @@ function portableReadiness(runtime:IRSimRuntimeOptions,described:NonNullable<Por
   }catch{model.push('NAVIGATION_SCENE_UNREADABLE');}
   signal.throwIfAborted();
   const runner:string[]=[];
-  const free=await statfs(o.directory).then(s=>s.bavail*s.bsize,()=>0);
+  const free=await statfs(spec.directory).then(s=>s.bavail*s.bsize,()=>0);
   if(free<MIN_FREE_BYTES)runner.push('DISK_SPACE_LOW');
   // a full host is a blocked start, not a failure: the run that already holds a slot (context.runId, server-set) is never counted against itself
-  if(!irsimCapacity(runtime.maxActiveRuns,context.runId))runner.push('IRSIM_CAPACITY');
-  // a real process, the real scene: describe + create, then a clean stop. Success is cached briefly per scene and lock; a failure is never cached.
+  if(!spec.capacity(context.runId))runner.push(`${P}_CAPACITY`);
+  // a real process, the real scene. Success is cached briefly per scene and lock; a failure is never cached.
   if(scene&&!model.length&&!fixture.length&&!profile.length&&!runner.length&&!((smoked.get(scene.sceneDigest)??0)>Date.now())){
-   const scratch=await mkdtemp(join(probeDir,'smoke-'));
+   const scratch=await mkdtemp(join(spec.probeDir,'smoke-'));
    try{
     for(const [path,b] of files){await mkdir(dirname(join(scratch,'bundle',path)),{recursive:true});await writeFile(join(scratch,'bundle',path),b,{mode:0o600});}
-    const w=await spawnIRSimWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:'irsim-smoke',bundleRoot:join(scratch,'bundle'),runDirectory:join(scratch,'run'),lockDigest:runtime.lockDigest,schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...runtime.entry?{entry:runtime.entry}:{}});
-    try{
-     const ask=(op:'describe'|'create',payload:Record<string,unknown>,n:number)=>w.request({protocol:'mekoniq-irsim/1',requestId:`smoke-${n}`,runId:'irsim-smoke',expectedTick:0,op,payload} as never);
-     const d=await ask('describe',{},1),c=await ask('create',{sceneRef:'navigation-scene.json',seed:1},2);
-     if(!d.ok||!c.ok)runner.push(`IRSIM_SMOKE_FAILED:${(!d.ok?d:c as {error:{code:string}}).error.code}`);
-     else smoked.set(scene.sceneDigest,Date.now()+SMOKE_TTL_MS);
-    }catch(e){runner.push(`IRSIM_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'WORKER_FAILED'}`);}
-    finally{await w.close('smoke done');}
-   }catch(e){runner.push(`IRSIM_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`);}
+    const failed=await spec.smoke(scene,join(scratch,'bundle'),join(scratch,'run'));
+    if(failed.length)runner.push(...failed);else smoked.set(scene.sceneDigest,Date.now()+SMOKE_TTL_MS);
+   }catch(e){runner.push(`${P}_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`);}
    finally{await rm(scratch,{recursive:true,force:true});}
-  }else if(!scene)runner.push('IRSIM_SMOKE_NOT_RUN');
-  else if(!(smoked.get(scene.sceneDigest)??0))runner.push('IRSIM_SMOKE_NOT_RUN');
-  const evidence=`irsim:${described.packageVersion}/python-${described.pythonVersion}/lock:${runtime.lockDigest.slice(0,16)}`;
-  return [row('profile',profile,evidence),row('model',model,scene?`navigation-scene:${scene.sceneDigest}`:null),row('fixture',fixture,scene?`world:${scene.world.id}:r${scene.world.revision}:${scene.world.hash}`:null),
-   row('clock',[],'source_fixed_step:tick-ms-20'),row('runner',runner,scene?`irsim-smoke:${scene.sceneDigest}`:null)];
+  }else if(!scene)runner.push(`${P}_SMOKE_NOT_RUN`);
+  else if(!(smoked.get(scene.sceneDigest)??0))runner.push(`${P}_SMOKE_NOT_RUN`);
+  return [row('profile',profile,spec.evidence),row('model',model,scene?`navigation-scene:${scene.sceneDigest}`:null),row('fixture',fixture,scene?`world:${scene.world.id}:r${scene.world.revision}:${scene.world.hash}`:null),
+   row('clock',[],'source_fixed_step:tick-ms-20'),row('runner',runner,scene?`${lower}-smoke:${scene.sceneDigest}`:null)];
  };
+}
+
+function portableReadiness(runtime:IRSimRuntimeOptions,described:NonNullable<PortableSimulation['describe']>,o:PortableSimulationOptions,probeDir:string):NativeReadinessChecks{
+ return providerReadiness({prefix:'IRSIM',engineId:'irsim_2d',runtime,lockPath:o.lockPath,directory:o.directory,probeDir,bundleFile:o.bundleFile,
+  evidence:`irsim:${described.packageVersion}/python-${described.pythonVersion}/lock:${runtime.lockDigest.slice(0,16)}`,capacity:runId=>irsimCapacity(runtime.maxActiveRuns,runId),
+  async smoke(scene,bundleRoot,runDirectory){
+   try{
+    const w=await spawnIRSimWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:'irsim-smoke',bundleRoot,runDirectory,lockDigest:runtime.lockDigest,schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...runtime.entry?{entry:runtime.entry}:{}});
+    try{
+     const ask=(op:'describe'|'create',payload:Record<string,unknown>,n:number)=>w.request({protocol:'mekoniq-irsim/1',requestId:`smoke-${n}`,runId:'irsim-smoke',expectedTick:0,op,payload});
+     const d=await ask('describe',{},1),c=await ask('create',{sceneRef:'navigation-scene.json',seed:1},2);
+     return !d.ok||!c.ok?[`IRSIM_SMOKE_FAILED:${(!d.ok?d:c as {error:{code:string}}).error.code}`]:[];
+    }catch(e){return [`IRSIM_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'WORKER_FAILED'}`];}
+    finally{await w.close('smoke done');}
+   }catch(e){return [`IRSIM_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`];}
+  }});
 }

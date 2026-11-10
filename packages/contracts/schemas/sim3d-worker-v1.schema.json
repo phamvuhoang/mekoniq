@@ -558,6 +558,9 @@
           "items": {
             "$ref": "#/definitions/Sim3DRobotStateV1"
           }
+        },
+        "model": {
+          "$ref": "#/definitions/Sim3DModelReadbackV1"
         }
       },
       "required": [
@@ -745,6 +748,89 @@
             "error"
           ]
         }
+      ]
+    },
+    "Sim3DModelReadbackV1": {
+      "title": "Sim3DModelReadbackV1",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.",
+      "properties": {
+        "robots": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "robotId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "links": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 64,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "massKg": {
+                      "type": "number"
+                    },
+                    "positionMap": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "massKg",
+                    "positionMap"
+                  ]
+                }
+              },
+              "wheelRadiusM": {
+                "type": "number"
+              },
+              "wheelSeparationM": {
+                "type": "number"
+              },
+              "wheelAxes": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            "required": [
+              "robotId",
+              "links",
+              "wheelRadiusM",
+              "wheelSeparationM",
+              "wheelAxes"
+            ]
+          }
+        }
+      },
+      "required": [
+        "robots"
       ]
     }
   }

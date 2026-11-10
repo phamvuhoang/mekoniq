@@ -14,9 +14,11 @@ const sim=(id:string):BackendCapability=>({id,modes:['simulation'],accesses:['si
 const unbuilt=(id:string):BackendCapability=>({id,modes:['simulation'],accesses:['simulated'],installed:false,compatible:false,reachable:false,commissioned:true,reason:'Provider not implemented yet (engineering plan C01/C03)'});
 /** The portable 2D provider exists only when the operator configured it (MEKONIQ_LAB_IRSIM=1) and a real worker describe/create smoke passed (navigation2d/readiness.ts). */
 export const IRSIM_UNCONFIGURED:BackendCapability={id:'irsim_2d',modes:['simulation'],accesses:['simulated'],installed:false,compatible:false,reachable:false,commissioned:true,reason:'IRSIM_DISABLED: the portable IR-SIM provider is not configured on this runtime (MEKONIQ_LAB_IRSIM=1)'};
+/** The Webots 3D provider exists only when the operator configured it (MEKONIQ_LAB_WEBOTS=1), Webots R2025a is installed on the host and a real worker describe passed (simulation3d/readiness.ts). */
+export const WEBOTS_UNCONFIGURED:BackendCapability={id:'webots_3d',modes:['simulation'],accesses:['simulated'],installed:false,compatible:false,reachable:false,commissioned:true,reason:'WEBOTS_DISABLED: the Webots 3D provider is not configured on this runtime (MEKONIQ_LAB_WEBOTS=1)'};
 const hw=(id:string,accesses:readonly Access[]):BackendCapability=>({id,modes:['hardware'],accesses,installed:false,compatible:false,reachable:false,commissioned:false,reason:'Native provisioning is outside the local Lab runtime'});
 export const defaultCatalog:CapabilityCatalog={
- backends:[mock('mock_amr'),mock('mock_coffee'),mock('mock_arm'),sim('gazebo_nav2'),sim('linuxcnc_sim'),sim('coffee_io_sim'),unbuilt('moveit_gazebo_arm'),unbuilt('engineering_coffee_process'),hw('valetudo_native',['shadow','hil','live']),hw('cell_native',['hil','live']),IRSIM_UNCONFIGURED],
+ backends:[mock('mock_amr'),mock('mock_coffee'),mock('mock_arm'),sim('gazebo_nav2'),sim('linuxcnc_sim'),sim('coffee_io_sim'),unbuilt('moveit_gazebo_arm'),unbuilt('engineering_coffee_process'),hw('valetudo_native',['shadow','hil','live']),hw('cell_native',['hil','live']),IRSIM_UNCONFIGURED,WEBOTS_UNCONFIGURED],
  sets:{
   'mock-default':{mode:'mock',access:'simulated',backends:['mock_amr','mock_coffee','mock_arm'],providers:{amr:'mock_amr',arm:'mock_arm',coffee:'mock_coffee'}},
   'mock-amr':{mode:'mock',access:'simulated',backends:['mock_amr'],providers:{amr:'mock_amr'}},
@@ -28,6 +30,8 @@ export const defaultCatalog:CapabilityCatalog={
   'engineering-contact-v1':{mode:'simulation',access:'simulated',backends:['gazebo_nav2','moveit_gazebo_arm','engineering_coffee_process'],providers:{amr:'gazebo_nav2',arm:'moveit_gazebo_arm',coffee:'engineering_coffee_process'},scenarioIds:['FD01','BV01']},
   /** Portable 2D navigation: IR-SIM plant stepped by the source runner; no arm or coffee; only the scenarios qualified on it (B04: IR-FD01; C02: the actor, no-path, blocked and two-robot variants). */
   'engineering-irsim-2d-v1':{mode:'simulation',access:'simulated',backends:['irsim_2d'],providers:{amr:'irsim_2d'},scenarioIds:['IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
+  /** Webots 3D: the same fixed-step runner on a rigid-body plant (Serve with casters); the scenarios qualified on it are added with their runner (WB-FD01, WB-FD07). */
+  'engineering-webots-3d-v1':{mode:'simulation',access:'simulated',backends:['webots_3d'],providers:{amr:'webots_3d'},scenarioIds:[],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
   'hardware-shadow':{mode:'hardware',access:'shadow',backends:['valetudo_native']},
   'hardware-hil':{mode:'hardware',access:'hil',backends:['valetudo_native','cell_native']},
   'hardware-live':{mode:'hardware',access:'live',backends:['valetudo_native','cell_native']},

@@ -1,13 +1,33 @@
 {
   "version": 1,
   "note": "Initial test thresholds for the algorithm oracles. They bound agreement between two implementations; they are not a measured capability of any robot.",
-  "fk": { "translationM": 1e-6, "rotationRad": 1e-6 },
-  "ikTsToRtb": { "translationM": 1e-3, "rotationRad": 0.0087 },
-  "ikRtbToTs": { "translationM": 1e-6, "rotationRad": 1e-6 },
+  "fk": {
+    "translationM": 1e-06,
+    "rotationRad": 1e-06
+  },
+  "ikTsToRtb": {
+    "translationM": 0.001,
+    "rotationRad": 0.0087
+  },
+  "ikRtbToTs": {
+    "translationM": 1e-06,
+    "rotationRad": 1e-06
+  },
   "ikPoses": 10,
   "ikSolvedFractionMin": 0.8,
-  "jacobian": { "normalized": 1e-6, "conditionRelative": 1e-6 },
+  "jacobian": {
+    "normalized": 1e-06,
+    "conditionRelative": 1e-06
+  },
   "singularConditionMax": 1000,
   "seededPoses": 50,
-  "pid": { "sample": 1e-9 }
+  "pid": {
+    "sample": 1e-09
+  },
+  "webots": {
+    "lidarRangeToleranceM": 0.02,
+    "lidarWindowBeams": 1,
+    "lidarMedianM": 0.01,
+    "note": "Webots renders its LiDAR from a depth image: a beam may report its neighbour's range on a slanted surface (measured up to one beam). Agreement is within the ray-cast range over the beam and one neighbour each side, plus the tolerance; the median error must stay under lidarMedianM."
+  }
 }

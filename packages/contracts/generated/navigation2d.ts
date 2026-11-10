@@ -1055,4 +1055,40 @@ export interface Sim3DSnapshotV1 {
    * @maxItems 2
    */
   robots: Sim3DRobotStateV1[];
+  model?: Sim3DModelReadbackV1;
+}
+/**
+ * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "Sim3DModelReadbackV1".
+ */
+export interface Sim3DModelReadbackV1 {
+  /**
+   * @minItems 0
+   * @maxItems 2
+   */
+  robots: {
+    robotId: EngineeringId;
+    /**
+     * @minItems 1
+     * @maxItems 64
+     */
+    links: {
+      name: string;
+      massKg: number;
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      positionMap: number[];
+    }[];
+    wheelRadiusM: number;
+    wheelSeparationM: number;
+    /**
+     * @minItems 2
+     * @maxItems 2
+     */
+    wheelAxes: number[][];
+  }[];
 }

@@ -38,9 +38,12 @@ import type {P,Pose2} from './geometry';
 export type {IRSimRuntimeOptions,PlantPort};
 export {IRSIM_BACKEND};
 /** Process-wide worker slots (workers-runtime §6: two active runs per host). A run holds one from its start until its plant stops, is lost or the run closes. */
-const activeRuns=new Set<string>();
+const slots=new Map<string,Set<string>>();
+const slotsOf=(provider:string)=>{let s=slots.get(provider);if(!s)slots.set(provider,s=new Set());return s;};
+/** Live workers of one provider on this host (each plant has its own slots: a running IR-SIM never blocks Webots and the other way round). */
+export const activeRunCount=(provider:string,exceptRunId?:string)=>[...slotsOf(provider)].filter(id=>id!==exceptRunId).length;
 /** Whether `runId` (or, without one, a new run) may hold a live worker now. */
-export const irsimCapacity=(limit=2,runId?:string)=>runId!==undefined&&activeRuns.has(runId)||activeRuns.size<limit;
+export const irsimCapacity=(limit=2,runId?:string,provider:string=IRSIM_BACKEND)=>runId!==undefined&&slotsOf(provider).has(runId)||slotsOf(provider).size<limit;
 /** `bundleFile` (RunProviders) is needed only for a new run: the gateway authorised the bundle for the session before the run exists. */
 export interface IRSimRunProviders extends RunProviders {irsim:IRSimRuntimeOptions}
 const EVIDENCE_FLUSH_TICKS=100,EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'],FINAL=['completed','cancelled','failed'],SCENE='navigation-scene.json',FIXTURE='scenario-fixture.json';
@@ -217,7 +220,7 @@ class FixedStepRun implements ScenarioRun {
   const b=baseInMap({position:[d[0]!,d[1]!,0],quaternionXyzw:quaternionFromYaw(d[2]!)},framePose(this.scene.robots.find(x=>x.robotId===id)!.model.driveFrameInBase));
   return [b.position[0]!,b.position[1]!,yawOf(b.quaternionXyzw)];
  }
- private releaseSlot(){activeRuns.delete(this.cp.runId);}
+ private releaseSlot(){slotsOf(this.plant.identity.amr.id).delete(this.cp.runId);}
  /** A finished run needs no plant: the worker stops and its slot is free; the persisted last snapshot stays the run's state. */
  private async stopPlant(){const c=this.cp,w=this.worker;this.worker=undefined;c.plant.status='stopped';c.plant.reason='RUN_FINISHED';this.releaseSlot();await w?.close('RUN_FINISHED').catch(()=>{});await this.rec.flush();}
  record(){
@@ -466,7 +469,7 @@ class FixedStepRun implements ScenarioRun {
   if(pending&&pending[1].type!==p.confirmationType)throw new Error('CONFIRMATION_TYPE_MISMATCH');
   if(pending&&c.plant.status==='lost')throw new Error('INVALID_STATE:LOCALIZATION_LOST');
   // a worker slot is taken at admission (no state change when the host is full) and given back if the plant never goes live
-  if(a.kind==='start'){if(!irsimCapacity(this.irsim.maxActiveRuns,c.runId))throw new Error('IRSIM_CAPACITY');activeRuns.add(c.runId);}
+  if(a.kind==='start'){if(!irsimCapacity(this.irsim.maxActiveRuns,c.runId,this.plant.identity.amr.id))throw new Error('IRSIM_CAPACITY');slotsOf(this.plant.identity.amr.id).add(c.runId);}
   try{await beforeExecute?.();c.inFlight=true;await this.persist();}catch(e){if(!this.worker)this.releaseSlot();throw e;}
   try{
    if(a.kind==='start'){await this.startPlant();c.started=true;}

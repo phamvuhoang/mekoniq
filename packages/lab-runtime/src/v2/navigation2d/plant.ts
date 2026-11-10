@@ -2,7 +2,7 @@
 // The runner owns the clock, the missions, the journal and the evidence; a plant only steps, senses and says who it is. One run, one plant, no fallback between them.
 import type {IRSimResponseV1} from './contracts';
 import {IRSIM_AMR} from './adapter';
-import {spawnIRSimWorker,WorkerLostError,type SpawnOptions} from './worker-client';
+import {spawnIRSimWorker,WorkerLostError,type SpawnOptions,type WireRequest} from './worker-client';
 export {WorkerLostError};
 export type {SpawnOptions};
 
@@ -16,8 +16,7 @@ export interface PlantIdentity {
  /** what the report may claim: `dynamics` is true only for a plant that simulates it */coverage:{dynamics:boolean};
  /** the capability the server must advertise before a set of this plant is selectable */capability:string;
 }
-/** The envelope every plant worker speaks; `protocol` names the wire, the worker validates the rest against its own schema. */
-export interface PlantRequest {protocol:string;requestId:string;runId:string;expectedTick:number;op:string;payload:unknown}
+export type PlantRequest=WireRequest;
 export type PlantResponse=IRSimResponseV1;
 export interface PlantWorker {
  request(r:PlantRequest):Promise<PlantResponse>;
