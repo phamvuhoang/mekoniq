@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "note": "Initial test thresholds for the algorithm oracles. They bound agreement between two implementations; they are not a measured capability of any robot.",
+  "fk": { "translationM": 1e-6, "rotationRad": 1e-6 },
+  "ikTsToRtb": { "translationM": 1e-3, "rotationRad": 0.0087 },
+  "ikRtbToTs": { "translationM": 1e-6, "rotationRad": 1e-6 },
+  "ikPoses": 10,
+  "ikSolvedFractionMin": 0.8,
+  "jacobian": { "normalized": 1e-6, "conditionRelative": 1e-6 },
+  "singularConditionMax": 1000,
+  "seededPoses": 50,
+  "pid": { "sample": 1e-9 }
+}

@@ -1,0 +1,4 @@
+roboticstoolbox-python==1.5.0
+numpy
+scipy
+pytest==9.2.0

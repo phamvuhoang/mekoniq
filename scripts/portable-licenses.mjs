@@ -11,6 +11,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const PORTABLE_TOOLS=[
  {id:'irsim_worker',root:'robotics/navigation-2d',lock:'robotics/navigation-2d/requirements.lock',python:'.venv-irsim/bin/python'},
  {id:'linkforge_worker',root:'robotics/model-validation',lock:'robotics/model-validation/requirements.lock',python:'.venv-linkforge/bin/python'},
+ {id:'algorithm_checks',root:'robotics/algorithm',lock:'robotics/algorithm/requirements.lock',python:'.venv-algorithm/bin/python'},
 ];
 const norm=(n)=>n.toLowerCase().replace(/[_.]/g,'-');
 /** `[name, version]` of every `name==version` pin of a requirements.lock (hash lines ignored). */

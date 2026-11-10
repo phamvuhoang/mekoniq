@@ -26,7 +26,7 @@ test('self-contained exported artifact opens its embedded SQLite migration away 
   expect(portable.tools.map((t:{id:string})=>t.id)).toEqual(['irsim_worker','linkforge_worker','description_helper']);
   // C03 LFIR-17: each worker ships its license inventory inside the closure, next to its lock
   for(const t of portable.tools.filter((t:{lock?:unknown})=>t.lock)){expect(t.licenses.path,t.id).toBe(`${t.root}/licenses.json`);expect(portable.closure.files.find((f:{path:string})=>f.path===t.licenses.path).sha256).toBe(t.licenses.sha256);}
-  expect(portable.roots).toEqual(['robotics/navigation-2d','robotics/model-validation','robotics/simulation/compiler','robotics/simulation/actors','robotics/simulation/worlds','packages/contracts/schemas']);expect(paths.every((p:string)=>portable.roots.some((r:string)=>p.startsWith(r+'/')))).toBe(true);
+  expect(portable.roots).toEqual(['robotics/navigation-2d','robotics/model-validation','robotics/algorithm','robotics/simulation/compiler','robotics/simulation/actors','robotics/simulation/worlds','packages/contracts/schemas']);expect(paths.every((p:string)=>portable.roots.some((r:string)=>p.startsWith(r+'/')))).toBe(true);
   expect((await readFile(join(directory,'artifact/manifest.json'))).length).toBeLessThan(65536);// the Lab importer's manifest limit
   const probe=createServer();await new Promise<void>(r=>probe.listen(0,'127.0.0.1',r));const port=(probe.address() as {port:number}).port;await new Promise<void>(r=>probe.close(()=>r()));
   child=spawn(process.execPath,[join(directory,'artifact/runtime.mjs'),'--port',String(port),'--data-dir',join(directory,'runs')],{cwd:directory,stdio:['ignore','pipe','pipe']});
