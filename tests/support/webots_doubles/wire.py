@@ -1,5 +1,6 @@
 """Test double for the Webots worker wire (mekoniq-sim3d/1): answers describe and create the way the mode says, never starts Webots.
-argv: wire.py MODE [worker args...]. Modes: ok, r2025b (wrong engine version), lock (wrong lock digest), portbusy (create refused: no free port), nogui (create: no window server)."""
+argv: wire.py MODE [worker args...]. Modes: ok, r2025b (wrong engine version), lock (wrong lock digest), portbusy (create refused: no free port), nogui (create: no window server),
+arm (create with `arms` answers a valid arm snapshot, so a readiness smoke on the arm scene can pass; create without it stays unsupported)."""
 import json
 import sys
 
@@ -16,6 +17,13 @@ for line in sys.stdin:
     elif r["op"] == "create" and mode in ("portbusy", "nogui"):
         err = {"code": "WEBOTS_PORT_IN_USE", "detail": "no free port"} if mode == "portbusy" else {"code": "WEBOTS_START_FAILED", "detail": "webots exited (1): could not connect to the display"}
         out = {**base, "ok": False, "error": err}
+    elif r["op"] == "create" and mode == "arm" and r["payload"].get("arms"):
+        arm = r["payload"]["arms"][0]["armId"]
+        with open(args[args.index("--bundle-root") + 1] + "/arm-scene.json") as f:  # the client binds the run to this scene's digest and refuses another
+            digest = json.load(f)["sceneDigest"]
+        snap = {"schemaVersion": 1, "runId": r["runId"], "bootId": boot, "tick": 0, "simTimeNs": "0", "seq": "1", "sceneDigest": digest, "robots": [],
+                "arms": [{"armId": arm, "positionsRad": [0.0] * 6, "velocitiesRadS": [0.0] * 6, "collisionIds": []}]}
+        out = {**base, "ok": True, "result": snap}
     elif r["op"] == "stop":
         out = {**base, "ok": True, "result": {"state": "stopped"}}
     else:

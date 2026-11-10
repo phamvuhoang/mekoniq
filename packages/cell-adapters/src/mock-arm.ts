@@ -17,6 +17,10 @@ export const ARM_CHOREOGRAPHY:Record<string,{waypoint:string;action?:'grip'|'rel
 };
 export interface ArmCupWorld {take(cupId?:string):string|null;put(cupId:string,receiver:{robotId:string;slot:number}):void}
 export type ArmFault='arm-reboot'|'arm-drop'|'arm-following-error'|'arm-stop'|'arm-estop'|'arm-reset'|'arm-collision';
+/** Tracking mode (R1.1): the arm is a plant that follows the commanded joints (Webots). Thresholds come from the oracle profile `webotsArm` and are test thresholds, not a capability. */
+export interface ArmTracking {reachTolRad:number;settleTicks:number;followTolRad:number;followTicks:number}
+/** What the tracking mode keeps beside the plant state (JSON, so it survives a checkpoint): the generator's own commanded position, the settle and following-error counters, and per-joint stats of actual - commanded while a program runs. */
+export interface ArmTrackingState {gen:number[];settled:number;followCount:number;samples:number;peakRad:number[];sumSq:number[];trace:{tick:number;actualRad:number[];commandedRad:number[]}[]}
 export interface ArmStopState {latched:boolean;reconcileRequired:boolean;reason:string;events:{tick:number;stage:'requested'|'acknowledged'|'observed'|'reset';reason:string;provenance:'modelled'}[]}
 export const ARM_COLLISION_TRACE_LIMIT=4096;
 export interface ArmCollisionInterval {firstTick:number;lastTick:number;fromQ:number[];toQ:number[];heldCupId:string|null;worldRevision:string;sceneRevision:string|null;result:SweepResult}
@@ -25,11 +29,12 @@ export interface ArmCollisionEvidence {intervals:ArmCollisionInterval[];worlds:R
  firstFailure?:{tick:number;fromQ:number[];toQ:number[];heldCupId:string|null;worldRevision:string;world:ArmObstacle[];scene:ArmSceneSnapshot|null;result:SweepResult}}
 interface Program {commandId:string;payloadHash:string;controlEpoch:number;program:string;index:number;state:'running'|'completed'|'failed'|'unknown';waiting:number;evidence:TransferEvidence;accepted:CellAcceptance}
 export interface ArmPlantState {deviceId:string;q:number[];gripper:'open'|'closed';holding:string|null;bootId:string;seq:number;tick:number;programs:Program[];modifiers:ArmFault[];
- trace:{tick:number;q:number[];tcp:[number,number,number]}[];limitsOk:boolean;commandedQ?:number[];stop?:ArmStopState;
+ trace:{tick:number;q:number[];tcp:[number,number,number]}[];limitsOk:boolean;commandedQ?:number[];stop?:ArmStopState;tracking?:ArmTrackingState;
  collision?:{/** Manually injected obstacles in arm-base coordinates; scene refresh does not replace these. */world:ArmObstacle[];checks:number;last:SweepResult|null;scene?:ArmSceneSnapshot;evidence?:ArmCollisionEvidence}}
 export class MockArmPlant {
  private listeners=new Set<(r:CellReport)=>void>();
- constructor(readonly state:ArmPlantState,private nowMs:()=>number,private newBootId:()=>string,private cups:ArmCupWorld,private receiver:()=>{robotId:string;slot:number}|null,private model:ArmModelSI=PUMA560_SI){state.collision??={world:[],checks:0,last:null};state.collision.evidence??={intervals:[],worlds:{},droppedIntervals:state.collision.checks};}
+ constructor(readonly state:ArmPlantState,private nowMs:()=>number,private newBootId:()=>string,private cups:ArmCupWorld,private receiver:()=>{robotId:string;slot:number}|null,private model:ArmModelSI=PUMA560_SI,private tracking?:ArmTracking){state.collision??={world:[],checks:0,last:null};state.collision.evidence??={intervals:[],worlds:{},droppedIntervals:state.collision.checks};
+  if(tracking)state.tracking??={gen:[...state.q],settled:0,followCount:0,samples:0,peakRad:state.q.map(()=>0),sumSq:state.q.map(()=>0),trace:[]};}
  static initial(deviceId:string,bootId='boot-0:arm'):ArmPlantState {return {deviceId,q:[...W.home!],gripper:'open',holding:null,bootId,seq:0,tick:0,programs:[],modifiers:[],trace:[],limitsOk:true};}
  on(l:(r:CellReport)=>void){this.listeners.add(l);return ()=>{this.listeners.delete(l);};}
  private emit(p:Program,result:'accepted'|'completed'|'failed'|'outcome_unknown',reasonCodes:string[]=[],evidence?:TransferEvidence){
@@ -65,6 +70,8 @@ export class MockArmPlant {
    e.firstFailure={tick:s.tick,fromQ:[...s.q],toQ:[...toQ],heldCupId,worldRevision,world:structuredClone(world),scene:structuredClone(c.scene??null),result:structuredClone(result)};
   }
  }
+ /** The plant behind a tracked arm is gone (worker lost): latch the arm and leave every running program unknown. Nothing is resent, nothing is released. */
+ halt(reason:string){this.stop(reason);}
  private stop(reason:string){
   const s=this.state,events=s.stop?.events??[];
   for(const stage of ['requested','acknowledged','observed'] as const)events.push({tick:s.tick,stage,reason,provenance:'modelled'});
@@ -87,14 +94,16 @@ export class MockArmPlant {
    const report:CellReport={deviceId:s.deviceId,bootId:s.bootId,seq:String(s.seq),observedAt:new Date(this.nowMs()).toISOString(),status:{status:unknown?'fault':'ready',reasonCodes:unknown?['OUTCOME_UNKNOWN']:[]}};
    for(const listener of this.listeners)listener(report);
   }
+  if(this.tracking)s.commandedQ??=[...s.tracking!.gen]; // an idle tracked arm is still told where to stay
   const p=s.programs.find(x=>x.state==='running');if(s.stop?.latched||s.stop?.reconcileRequired)return;
   const scene=s.collision!.scene;
   if(scene?.scope==='self_scene_robot'&&!scene.available){if(p)this.stop('ARM_SCENE_GEOMETRY_UNAVAILABLE');return;}
   if(!p&&!scene?.available)return;
-  const steps=p?ARM_CHOREOGRAPHY[p.program]!:[],stage=p?steps[p.index]!:undefined,goal=stage?W[stage.waypoint]!:s.q;
+  const t=this.tracking?s.tracking!:undefined,steps=p?ARM_CHOREOGRAPHY[p.program]!:[],stage=p?steps[p.index]!:undefined,goal=stage?W[stage.waypoint]!:t?t.gen:s.q;
   const maxStep=this.model.limits.map(l=>l.maxVelocity*MOCK_ARM_PARAMS.speedFraction*MOCK_ARM_PARAMS.dtS);
-  const next=s.q.map((q,i)=>{const d=goal[i]!-q;return Math.abs(d)<=maxStep[i]!?goal[i]!:q+Math.sign(d)*maxStep[i]!;});
+  const from=t?t.gen:s.q,next=from.map((q,i)=>{const d=goal[i]!-q;return Math.abs(d)<=maxStep[i]!?goal[i]!:q+Math.sign(d)*maxStep[i]!;});
   s.commandedQ=next;
+  if(t){t.gen=[...next];return;} // tracking: only the commanded joints are generated here; observe() applies what the plant did
   const world=[...s.collision!.world,...scene?.world??[]],collision=checkArmSweep(this.model,s.q,next,{world,heldCup:s.holding!==null});
   this.recordCollision(next,world,collision);
   s.collision!.checks++;s.collision!.last=collision;
@@ -104,6 +113,11 @@ export class MockArmPlant {
   if(!s.q.every((q,i)=>q>=this.model.limits[i]!.min&&q<=this.model.limits[i]!.max))s.limitsOk=false;
   if(s.tick%MOCK_ARM_PARAMS.traceEvery===0&&s.trace.length<MOCK_ARM_PARAMS.traceCap)s.trace.push({tick:s.tick,q:[...s.q],tcp:this.tcp(s.q)});
   if(!s.q.every((q,i)=>q===goal[i]))return;
+  this.complete(p,stage,steps);
+ }
+ /** The waypoint is reached: grip, release, the lift check and the next stage. One body for both modes, so the evidence is the same. */
+ private complete(p:Program,stage:{waypoint:string;action?:'grip'|'release'},steps:{waypoint:string;action?:'grip'|'release'}[]){
+  const s=this.state;
   if(stage.action==='grip'&&s.gripper==='open'){
    s.gripper='closed';const cup=s.modifiers.includes('arm-drop')?null:this.cups.take();s.holding=cup;
    Object.assign(p.evidence,{gripperClosed:true,objectPresent:cup!==null,cupId:cup});
@@ -117,6 +131,35 @@ export class MockArmPlant {
   }
   if(stage.waypoint==='lift')p.evidence.liftPoseReached=this.tcp(W.lift!)[2]>this.tcp(W.pick!)[2]&&s.holding!==null;
   if(++p.index>=steps.length){p.state='completed';this.emit(p,'completed',[],{...p.evidence});}
+ }
+ /** Tracking mode, once per tick after the plant stepped: what the plant did becomes the arm state. Order: non-finite, then ARM03 geometry on the actual joints (D28), the plant's own collisions,
+  * limits, the following error, and finally whether the waypoint is reached. Any stop leaves the cup where it is. */
+ observe(actualQ:readonly number[],collisionIds:readonly string[]){
+  const s=this.state,t=s.tracking;
+  if(!this.tracking||!t)throw new Error('ARM_TRACKING_DISABLED: observe needs the tracking mode');
+  if(s.stop?.latched||s.stop?.reconcileRequired)return;
+  if(actualQ.length!==s.q.length||!actualQ.every(Number.isFinite)){this.stop('PLANT_UNSTABLE');return;}
+  const p=s.programs.find(x=>x.state==='running'),scene=s.collision!.scene;
+  if(p||scene?.available){
+   const world=[...s.collision!.world,...scene?.world??[]],result=checkArmSweep(this.model,s.q,actualQ,{world,heldCup:s.holding!==null});
+   this.recordCollision([...actualQ],world,result);
+   s.collision!.checks++;s.collision!.last=result;
+   if(!result.ok){this.stop(result.reason==='COLLISION'?'ARM_COLLISION':'ARM_SWEEP_UNCERTAIN');return;}
+  }
+  if(collisionIds.length>0){this.stop('ARM_COLLISION');return;}
+  s.q=[...actualQ];
+  if(!s.q.every((q,i)=>q>=this.model.limits[i]!.min&&q<=this.model.limits[i]!.max))s.limitsOk=false;
+  const commanded=s.commandedQ??t.gen,error=s.q.map((q,i)=>Math.abs(q-commanded[i]!));
+  if(p){
+   t.samples++;error.forEach((e,i)=>{t.peakRad[i]=Math.max(t.peakRad[i]!,e);t.sumSq[i]=t.sumSq[i]!+e*e;});
+   if(t.trace.length<MOCK_ARM_PARAMS.traceCap)t.trace.push({tick:s.tick,actualRad:[...s.q],commandedRad:[...commanded]});
+   if(s.tick%MOCK_ARM_PARAMS.traceEvery===0&&s.trace.length<MOCK_ARM_PARAMS.traceCap)s.trace.push({tick:s.tick,q:[...s.q],tcp:this.tcp(s.q)});
+  }
+  if(Math.max(...error)>this.tracking.followTolRad){if(++t.followCount>=this.tracking.followTicks){this.stop('ARM_FOLLOWING_ERROR');return;}}else t.followCount=0;
+  if(!p)return;
+  const steps=ARM_CHOREOGRAPHY[p.program]!,stage=steps[p.index]!,goal=W[stage.waypoint]!;
+  if(t.gen.every((v,i)=>v===goal[i])&&s.q.every((q,i)=>Math.abs(q-goal[i]!)<=this.tracking!.reachTolRad))t.settled++;else t.settled=0;
+  if(t.settled>=this.tracking.settleTicks){const index=p.index;this.complete(p,stage,steps);if(p.index!==index)t.settled=0;}
  }
 }
 export class MockArmAdapter implements CellAdapter {

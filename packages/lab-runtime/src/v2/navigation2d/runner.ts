@@ -42,6 +42,9 @@ const slots=new Map<string,Set<string>>();
 const slotsOf=(provider:string)=>{let s=slots.get(provider);if(!s)slots.set(provider,s=new Set());return s;};
 /** Live workers of one provider on this host (each plant has its own slots: a running IR-SIM never blocks Webots and the other way round). */
 export const activeRunCount=(provider:string,exceptRunId?:string)=>[...slotsOf(provider)].filter(id=>id!==exceptRunId).length;
+/** A plant that is not the fixed-step runner (the Webots arm) takes and gives back a slot of the provider it shares the engine with. */
+export const holdSlot=(provider:string,runId:string)=>{slotsOf(provider).add(runId);};
+export const releaseSlot=(provider:string,runId:string)=>{slotsOf(provider).delete(runId);};
 /** Whether `runId` (or, without one, a new run) may hold a live worker now. */
 export const irsimCapacity=(limit=2,runId?:string,provider:string=IRSIM_BACKEND)=>runId!==undefined&&slotsOf(provider).has(runId)||slotsOf(provider).size<limit;
 /** `bundleFile` (RunProviders) is needed only for a new run: the gateway authorised the bundle for the session before the run exists. */

@@ -35,7 +35,7 @@ export function declareArmScene(project:LabProjectV2,radius:Record<string,number
  return {...declaration,hash:hashJson(declaration)};
 }
 /** All eight transformed corners are enclosed: arbitrary normalized base rotation is conservative, not yaw-only. */
-function boxInArm(id:string,min:Vec3,max:Vec3,mapInArm:Pose):ArmObstacle {
+export function boxInArm(id:string,min:Vec3,max:Vec3,mapInArm:Pose):ArmObstacle {
  const points:Vec3[]=[];
  for(const x of [min[0]!,max[0]!])for(const y of [min[1]!,max[1]!])for(const z of [min[2]!,max[2]!]){
   const p=qrotate(mapInArm.quaternionXyzw,[x,y,z]);points.push(p.map((v,k)=>v+mapInArm.position[k]!));

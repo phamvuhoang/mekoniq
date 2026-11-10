@@ -1,11 +1,13 @@
 // The workflow consumes plant facts; it never creates controller telemetry or grip from completion ACKs.
 import type {CellAdapter,CellReport} from '../../../../cell-adapters/src/contract';
 import {MockCoffeeAdapter,MockCoffeePlant,type CoffeePlantState} from '../../../../cell-adapters/src/mock-coffee';
-import {MockArmAdapter,MockArmPlant,type ArmPlantState} from '../../../../cell-adapters/src/mock-arm';
+import {MockArmAdapter,MockArmPlant,type ArmPlantState,type ArmTracking} from '../../../../cell-adapters/src/mock-arm';
 import type {ArmCollisionEvidenceRecord} from '../arm/session';
 import type {ArmSceneSnapshot} from '../models/arm-scene';
 import type {CoffeeContext,CoffeeState} from '../scenarios/coffee';
 import type {CorrelatedTransferEvidence,CupLedger,CupPhysicalState} from './cup-ledger';
+/** D24: every report of a plant-backed arm says what the arm plant is, so no one reads it as real dynamics. `tracking` is the per-joint |actual - commanded| over the programs that ran. */
+export interface ArmPlantReport {engine:'webots_3d';control:'position_servo';grip:'event';dynamics:'assumed';calibration:'not_calibrated';tracking:{samples:number;peakRad:number[];rmsRad:number[]}}
 export interface CoffeePlantPorts {
  adapters:readonly CellAdapter[];
  advance():Promise<void>;
@@ -13,7 +15,7 @@ export interface CoffeePlantPorts {
  snapshot():{coffee:CoffeePlantState;arm:ArmPlantState|null};
  drain():readonly CellReport[];
  transferEvidence(transferId:string):CorrelatedTransferEvidence|null;
- report():{cupLedger:readonly CupPhysicalState[];arm:ArmCollisionEvidenceRecord|null};
+ report():{cupLedger:readonly CupPhysicalState[];arm:ArmCollisionEvidenceRecord|null;/** Set by a plant-backed arm (R1.1): what plant it is and how closely it followed the commands. */armPlant?:ArmPlantReport};
  close():Promise<void>;
  /** Scripted cup input and fault controls. These never assert domain custody. */
  coffeePlant?:MockCoffeePlant;
@@ -24,11 +26,11 @@ export interface CoffeePlantPorts {
  acknowledgeCompletion?(commandId:string,observationId:string):void|Promise<void>;
 }
 /** Default uses precisely the old mock choreography and mutable checkpoint objects. */
-export function createMockCoffeePorts(st:CoffeeState,ctx:CoffeeContext,newBootId:()=>string):CoffeePlantPorts {
+export function createMockCoffeePorts(st:CoffeeState,ctx:CoffeeContext,newBootId:()=>string,options:{tracking?:ArmTracking}={}):CoffeePlantPorts {
  st.trays??={};
  const parents=new Map<string,string>();
  const coffee=new MockCoffeePlant(st.plant,ctx.nowMs,newBootId),arm=new MockArmPlant(st.arm,ctx.nowMs,newBootId,
-  {take:()=>{const c=st.plant.cups.find(x=>x.at==='nozzle');if(!c||!coffee.takeCup(c.cupId))return null;parents.set(c.cupId,`arm:${st.armId}/tcp`);return c.cupId;},put:(cupId,rx)=>{st.trays[rx.robotId]=cupId;parents.set(cupId,`robot:${rx.robotId}/tray:${rx.slot}`);}},ctx.receiver);
+  {take:()=>{const c=st.plant.cups.find(x=>x.at==='nozzle');if(!c||!coffee.takeCup(c.cupId))return null;parents.set(c.cupId,`arm:${st.armId}/tcp`);return c.cupId;},put:(cupId,rx)=>{st.trays[rx.robotId]=cupId;parents.set(cupId,`robot:${rx.robotId}/tray:${rx.slot}`);}},ctx.receiver,undefined,options.tracking);
  const adapters=[new MockCoffeeAdapter(coffee,ctx.runId),new MockArmAdapter(arm,ctx.runId,st.cellId)],reports:CellReport[]=[];
  const off=adapters.map(a=>a.observe(r=>reports.push(r)));
  return {adapters,coffeePlant:coffee,mockArm:arm,setArmScene:s=>arm.setCollisionScene(s),

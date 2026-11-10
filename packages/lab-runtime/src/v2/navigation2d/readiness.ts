@@ -6,9 +6,9 @@ import {dirname,join,resolve} from 'node:path';
 import {defaultCatalog,type CapabilityCatalog} from '../capabilities';
 import type {NativeReadinessChecks,ReadinessCheck} from '../readiness';
 import type {BackendCapability} from '../capabilities';
-import type {RunManifestInput,RunProviders,ScenarioRun} from '../scenario-runner';
+import {createScenarioRun,type RunManifestInput,type RunProviders,type ScenarioRun} from '../scenario-runner';
 import {scenarioRegistry,resolveRoles} from '../scenario-registry';
-import {validateProjectV2} from '../contracts';
+import {validateProjectV2,type LabProjectV2} from '../contracts';
 import {hashJson} from '../hash';
 import {lockDigestOf} from '../../engineering/linkforge';
 import {validateNavigationDocument,type NavigationSceneV1} from './contracts';
@@ -17,6 +17,8 @@ import {IRSIM_AMR} from './adapter';
 import {resolveScenarioFixture} from './scenario-fixtures';
 import {createFixedStepScenarioRun,irsimCapacity,IRSIM_BACKEND,type IRSimRuntimeOptions} from './runner';
 import {irsimPlant,type PlantPort} from './plant';
+import {webotsArmPorts} from '../simulation3d/arm-ports';
+import type {WebotsRuntimeOptions} from '../simulation3d/webots';
 
 /** The server catalog with irsim_2d marked usable (`usable`) or left unconfigured. Production code sets it usable only after a real worker describe. */
 export const portableCatalog=(usable:boolean,base:CapabilityCatalog=defaultCatalog,reason?:string):CapabilityCatalog=>({...base,backends:base.backends.map(b=>{
@@ -27,7 +29,9 @@ export const portableCatalog=(usable:boolean,base:CapabilityCatalog=defaultCatal
 export type SimulationFactory=(input:RunManifestInput,providers:RunProviders)=>Promise<ScenarioRun>;
 /** Operator options only (CLI flags/env), never request fields. `nativeFactory` keeps native simulation exactly as configured. */
 /** The Webots 3D provider next to IR-SIM (simulation3d/readiness.ts); it has its own opt-in and never makes IR-SIM usable or the other way round. */
-export interface WebotsProviderLike {plant?:{port:PlantPort;runtime:IRSimRuntimeOptions};capability:BackendCapability;readinessChecks?:NativeReadinessChecks}
+export interface WebotsProviderLike {plant?:{port:PlantPort;runtime:IRSimRuntimeOptions};capability:BackendCapability;readinessChecks?:NativeReadinessChecks;
+ /** The Webots arm (R1.1): the same engine and flag, its own backend id, capability and readiness. */
+ arm?:{runtime?:WebotsRuntimeOptions;capability:BackendCapability;readinessChecks?:NativeReadinessChecks}}
 export interface PortableSimulationOptions {enabled:boolean;python:string;workerRoot:string;lockPath:string;directory:string;nativeFactory?:SimulationFactory;
  /** Catalog to extend (the native one when native is configured). */baseCatalog?:CapabilityCatalog;
  /** Admitted-bundle reader (the engineering service), for readiness. */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;
@@ -43,10 +47,18 @@ const sha256=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
 /** The live plants of this host by provider id (`set.providers.amr`), each with the operator options of its worker. */
 export type PlantTable=Readonly<Record<string,{port:PlantPort;runtime:IRSimRuntimeOptions}>>;
 /** Factory dispatch by backend set: a portable set goes to the shared runner with the plant its AMR provider names (only when that plant is live), native simulation sets to the native factory, anything else refused. */
-export function plantDispatcher(catalog:CapabilityCatalog,plants:PlantTable|undefined,nativeFactory?:SimulationFactory):SimulationFactory{
+/** The live Webots arm of this host (`set.providers.arm`): its runtime options; the run builds its own ports from the manifest's project and seed. */
+export type ArmPlantTable=Readonly<Record<string,{runtime:WebotsRuntimeOptions}>>;
+export function plantDispatcher(catalog:CapabilityCatalog,plants:PlantTable|undefined,nativeFactory?:SimulationFactory,arms?:ArmPlantTable):SimulationFactory{
  return async(input,providers)=>{
   const set=Object.hasOwn(catalog.sets,input.backendSetId)?catalog.sets[input.backendSetId]:undefined;
   if(!set)throw new Error('BACKEND_SET_UNKNOWN');
+  if(set.execution?.host==='portable_python'&&set.providers?.arm===WEBOTS_ARM_ID){
+   const live=arms&&Object.hasOwn(arms,WEBOTS_ARM_ID)?arms[WEBOTS_ARM_ID]:undefined;
+   if(!live)throw new Error('BACKEND_EXECUTION_DISABLED');
+   // the AMR and the coffee machine stay mocks; only the arm is the plant, and its ports need the run's own project and seed
+   return createScenarioRun(input,{...providers,coffeePorts:webotsArmPorts(live.runtime,{project:input.project as LabProjectV2,seed:input.seed})});
+  }
   if(set.execution?.host==='portable_python'){
    const live=set.providers?.amr!==undefined&&plants&&Object.hasOwn(plants,set.providers.amr)?plants[set.providers.amr]:undefined;
    if(!live)throw new Error('BACKEND_EXECUTION_DISABLED');
@@ -57,20 +69,21 @@ export function plantDispatcher(catalog:CapabilityCatalog,plants:PlantTable|unde
  };
 }
 
-const WEBOTS_ID='webots_3d';
+const WEBOTS_ID='webots_3d',WEBOTS_ARM_ID='webots_arm';
 /** IR-SIM (when enabled) plus Webots (when its provider is live): one catalog, one dispatcher over the live plants, readiness chosen by the set's AMR provider. */
 export async function portableSimulationFromOptions(o:PortableSimulationOptions):Promise<PortableSimulation>{
  const base=await irsimPortable(o),w=o.webots;
  if(!w)return base;
- const catalog:CapabilityCatalog={...base.catalog,backends:base.catalog.backends.map(b=>b.id===WEBOTS_ID?w.capability:b)};
+ const catalog:CapabilityCatalog={...base.catalog,backends:base.catalog.backends.map(b=>b.id===WEBOTS_ID?w.capability:b.id===WEBOTS_ARM_ID&&w.arm?w.arm.capability:b)};
  const plants:PlantTable={...base.plants,...w.plant?{[WEBOTS_ID]:w.plant}:{}},live=!!w.plant&&w.capability.installed;
- const ir=base.readinessChecks,wb=w.readinessChecks;
- const readinessChecks:NativeReadinessChecks|undefined=ir||wb?async(context,signal)=>{
-  const amr=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]!.providers?.amr:undefined,pick=amr===WEBOTS_ID?wb:ir;
+ const armLive=!!w.arm?.runtime&&w.arm.capability.installed,arms:ArmPlantTable=armLive?{[WEBOTS_ARM_ID]:{runtime:w.arm!.runtime!}}:{};
+ const ir=base.readinessChecks,wb=w.readinessChecks,wa=w.arm?.readinessChecks;
+ const readinessChecks:NativeReadinessChecks|undefined=ir||wb||wa?async(context,signal)=>{
+  const providers=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]!.providers:undefined,pick=providers?.arm===WEBOTS_ARM_ID?wa:providers?.amr===WEBOTS_ID?wb:ir;
   if(!pick)throw new Error('PORTABLE_PROVIDER_UNAVAILABLE');
   return pick(context,signal);
  }:undefined;
- return {...base,catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[]],plants,simulationFactory:plantDispatcher(catalog,plants,o.nativeFactory),...readinessChecks?{readinessChecks}:{}};
+ return {...base,catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[],...armLive?[WEBOTS_ARM_ID]:[]],plants,simulationFactory:plantDispatcher(catalog,plants,o.nativeFactory,arms),...readinessChecks?{readinessChecks}:{}};
 }
 
 async function irsimPortable(o:PortableSimulationOptions):Promise<PortableSimulation>{
@@ -120,12 +133,14 @@ export interface ProviderReadinessSpec {
  capacity:(runId?:string)=>boolean;
  /** Only one smoke at a time (a Webots start is one world per host): a concurrent request is blocked with `<PREFIX>_SMOKE_BUSY`. */
  exclusive?:boolean;
+ /** The gate that `exclusive` uses; plants that share one engine pass the same object. */
+ gate?:{busy:boolean};
  /** A real worker, the real scene: create, then a clean stop. Resolves to reason codes, [] when it worked. */
  smoke:(scene:NavigationSceneV1,bundleRoot:string,runDirectory:string,signal:AbortSignal)=>Promise<string[]>;
 }
 /** Per-request readiness: versions/lock, the admitted bundle's scene against the world and scenario, quota/free disk, and a real worker create smoke (cached per scene). */
 export function providerReadiness(spec:ProviderReadinessSpec):NativeReadinessChecks{
- const smoked=new Map<string,number>(),gate={busy:false},P=spec.prefix,lower=P.toLowerCase();
+ const smoked=new Map<string,number>(),gate=spec.gate??{busy:false},P=spec.prefix,lower=P.toLowerCase();
  return async(context,signal)=>{
   const row=(id:string,reasonCodes:string[],evidenceRef:string|null=null,status:ReadinessCheck['status']='blocked'):ReadinessCheck=>({id,status:reasonCodes.length?status:'ready',reasonCodes,evidenceRef});
   const profile:string[]=[];
