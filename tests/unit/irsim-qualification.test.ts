@@ -39,6 +39,7 @@ test('qualify: a case is tested only when every campaign case it names passed an
  expect(qualify({campaign:null,suites:[],lab:false}).cases.IR01).toMatchObject({status:'not_run'});
 });
 
+const resultText=(kind:string,s:{passed:number;failed:number;skipped:number;total:number})=>kind==='pytest'?`<testsuite tests="${s.total}" failures="${s.failed}" errors="0" skipped="${s.skipped}"/>`:kind==='vitest'?JSON.stringify({numPassedTests:s.passed,numFailedTests:s.failed,numPendingTests:s.skipped,numTotalTests:s.total}):JSON.stringify({stats:{expected:s.passed,unexpected:s.failed,skipped:s.skipped}});
 /** A complete, consistent candidate directory in memory: `files` maps relative paths to text. */
 function candidate(over:(m:Manifest,files:Map<string,string>)=>void=()=>{}){
  const files=new Map<string,string>(),put=(p:string,t:string)=>{files.set(p,t);return {file:p,sha256:sha(t),bytes:Buffer.byteLength(t)};};
@@ -47,7 +48,7 @@ function candidate(over:(m:Manifest,files:Map<string,string>)=>void=()=>{}){
  for(const r of summary.runs){put(`campaign/runs/${r.id}/run.json`,JSON.stringify({id:r.id,result:'pass',evidenceAsExpected:true,evidenceComplete:r.scenarioId!=='IR-FD01-workerkill'}));
   if(r.scenarioId!=='IR-RAW-PAIR-CONTACT')put(`campaign/runs/${r.id}/report.json`,JSON.stringify({metrics:{navigation:{sensorPublications:{complete:r.scenarioId!=='IR-FD01-workerkill'}}}}));}
  put('campaign/identity.json',JSON.stringify({stable:true}));
- const suites=SUITES.map((s:{id:string;kind:string})=>{const result=put(`suites/${s.id}.json`,JSON.stringify({x:s.id}));const log=put(`suites/${s.id}.log`,'ok');return {id:s.id,exitCode:0,command:'x',startedAt:'t',finishedAt:'t',log:log.file,logSha256:log.sha256,result:{...result,summary:pass}};});
+ const suites=SUITES.map((s:{id:string;kind:string})=>{const result=put(`suites/${s.id}.json`,resultText(s.kind,pass));const log=put(`suites/${s.id}.log`,'ok');return {id:s.id,exitCode:0,command:'x',startedAt:'t',finishedAt:'t',log:log.file,logSha256:log.sha256,result:{...result,summary:pass}};});
  const before={sourceCommit:COMMIT,dirty:false,toolClosures:{portable:HEX,native:HEX2},node:'v24.22.2',os:'darwin',arch:'arm64',lockSha256:HEX,at:'t'};
  const q=qualify({campaign:summary,suites,lab:true});
  const m:Manifest={schemaVersion:1,documentType:'linkforge-irsim-qualification',candidateId:'candidate-01',accepted:false,acceptedBy:null,acceptedAt:null,note:'evidence input',

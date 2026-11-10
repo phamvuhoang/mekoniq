@@ -19,6 +19,7 @@ const irsimRecord=(over:M={})=>({schemaVersion:1,documentType:'linkforge-irsim-q
 const mockManifest=(over:M={})=>({schema:'lab-v2-regression/1',identity:{start:{source:{commit:COMMIT}}},commands:[{id:'x',exitCode:0}],notRun:[],...over});
 const results=(over:Record<string,string>={})=>({results:ALG.map(caseId=>({caseId,verdict:over[caseId]??'pass',reasons:[]})),oracleProfileDigest:HEX,lockDigest:HEX2});
 
+const resultText=(kind:string,s:{passed:number;failed:number;skipped:number;total:number})=>kind==='pytest'?`<testsuite tests="${s.total}" failures="${s.failed}" errors="0" skipped="${s.skipped}"/>`:kind==='vitest'?JSON.stringify({numPassedTests:s.passed,numFailedTests:s.failed,numPendingTests:s.skipped,numTotalTests:s.total}):JSON.stringify({stats:{expected:s.passed,unexpected:s.failed,skipped:s.skipped}});
 /** A complete, consistent R1 candidate directory in memory. */
 function candidate(over:(m:M,files:Map<string,string>)=>void=()=>{}){
  const files=new Map<string,string>(),put=(p:string,t:string)=>{files.set(p,t);return {file:p,sha256:sha(t),bytes:Buffer.byteLength(t)};};
@@ -26,7 +27,7 @@ function candidate(over:(m:M,files:Map<string,string>)=>void=()=>{}){
  for(const r of summary.runs){put(`campaign/runs/${r.id}/run.json`,JSON.stringify({id:r.id,result:'pass',evidenceAsExpected:true,evidenceComplete:!r.scenarioId.endsWith('enginekill')}));put(`campaign/runs/${r.id}/report.json`,JSON.stringify({metrics:{navigation:{sensorPublications:{complete:!r.scenarioId.endsWith('enginekill')}}}}));}
  put('campaign/identity.json',JSON.stringify({stable:true}));
  const alg=put('algorithm-results.json',JSON.stringify(results())),irs=put('irsim-record.json',JSON.stringify(irsimRecord())),mock=put('mock-regression.json',JSON.stringify(mockManifest()));
- const suites=SUITES.map((s:{id:string})=>{const result=put(`suites/${s.id}.json`,JSON.stringify({x:s.id}));const log=put(`suites/${s.id}.log`,'ok');return {id:s.id,exitCode:0,command:'x',startedAt:'t',finishedAt:'t',log:log.file,logSha256:log.sha256,result:{...result,summary:pass}};});
+ const suites=SUITES.map((s:{id:string;kind:string})=>{const result=put(`suites/${s.id}.json`,resultText(s.kind,pass));const log=put(`suites/${s.id}.log`,'ok');return {id:s.id,exitCode:0,command:'x',startedAt:'t',finishedAt:'t',log:log.file,logSha256:log.sha256,result:{...result,summary:pass}};});
  const before={sourceCommit:COMMIT,dirty:false,toolClosures:{portable:HEX,native:HEX2},node:'v24.22.2',os:'darwin',arch:'arm64',lockSha256:HEX,oracleProfileDigest:HEX,at:'t'};
  const q=qualify({campaign:summary,suites,lab:true,sourceCommit:COMMIT,algorithm:results(),irsim:irsimRecord(),mock:mockManifest()});
  const m:M={schemaVersion:1,documentType:'sim-extension-qualification',release:'r1',candidateId:'r1-candidate-01',accepted:false,acceptedBy:null,acceptedAt:null,note:'evidence input',
@@ -121,4 +122,17 @@ test('the default table of irsim-qualification.mjs is unchanged: the newest reco
  const q=ir.qualify({campaign:summary,suites:m.suites,lab:!!m.lab});
  expect(Object.fromEntries(Object.entries(q.gates).map(([k,v])=>[k,(v as M).status]))).toEqual(Object.fromEntries(Object.entries(m.gates).map(([k,v])=>[k,(v as M).status])));
  expect(Object.keys(ir.GATES)).toEqual(['G-LF1','G-LF2','G-IR1','G-IR2','G-IR3','G-INT1']);
+});
+
+test('REG01: a Lab regression that lists notRun is not a green regression (the Lab recorder itself exits 1 on it)',()=>{
+ const q=qualify(base({mock:mockManifest({notRun:[{id:'BV01',reason:'skipped'}]})}));
+ expect(q.cases.REG01.status).toBe('not_run');expect(q.gates['G-REG1'].status).not.toBe('tested');
+});
+
+test('suites: the manifest alone cannot make a suite green — the result file must exist and its own counts must equal the recorded summary',()=>{
+ const missing=candidate(m=>{delete m.suites.find((s:{id:string})=>s.id==='wb-fleet').result;});
+ expect(reasons(missing)).toContain('SUITE_RESULT_MISSING:wb-fleet');
+ const forged=candidate((m,files)=>{const s=m.suites.find((x:{id:string})=>x.id==='wb-fleet'),t=resultText('vitest',{passed:2,failed:1,skipped:0,total:3});
+  files.set(s.result.file,t);s.result.sha256=sha(t);m.artifacts.find((a:{file:string})=>a.file===s.result.file).sha256=sha(t);m.artifacts.find((a:{file:string})=>a.file===s.result.file).bytes=Buffer.byteLength(t);});
+ expect(reasons(forged)).toContain('SUITE_SUMMARY_MISMATCH:wb-fleet'); // the manifest says failed:0, the file says failed:1
 });

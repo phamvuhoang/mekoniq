@@ -14,7 +14,7 @@ import {arch,homedir,hostname,platform,release,tmpdir} from 'node:os';
 import {dirname,join,relative,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {closureIdentity,ownOutput,parse,treeState} from './lab-irsim.mjs';
-import {SUITES,bytecodeUnder,checkQualification,qualify} from './irsim-qualification.mjs';
+import {SUITES,bytecodeUnder,checkQualification,qualify,summarizeResult as summarize} from './irsim-qualification.mjs';
 import {PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const fail=(code,m)=>{console.error(`${code}: ${m}`);process.exit(code==='NOT_RUN'?2:1);};
@@ -58,9 +58,6 @@ async function record(id,cmd,args,{cwd=root,env={},timeoutMs=3_600_000}={}){
  const entry={id,command:scrub(`${Object.entries(env).map(([k,v])=>`${k}=${v}`).join(' ')} ${cmd} ${args.join(' ')}`.trim()),cwd:cwd===root?'source':relative(root,cwd),startedAt,finishedAt:new Date().toISOString(),exitCode:code,log,logSha256:sha(readFileSync(join(o.out,log)))};
  console.log(`${id}: exit ${code}`);return entry;
 }
-const junit=(t)=>{const n=(k)=>Number(new RegExp(`\\b${k}="(\\d+)"`).exec(t)?.[1]??0);return {passed:n('tests')-n('failures')-n('errors')-n('skipped'),failed:n('failures')+n('errors'),skipped:n('skipped'),total:n('tests')};};
-const summarize=(kind,text)=>{if(kind==='pytest')return junit(text);const j=JSON.parse(text);
- return kind==='vitest'?{passed:j.numPassedTests,failed:j.numFailedTests,skipped:j.numPendingTests+(j.numTodoTests??0),total:j.numTotalTests}:{passed:j.stats.expected,failed:j.stats.unexpected,skipped:j.stats.skipped,total:j.stats.expected+j.stats.unexpected+j.stats.skipped};};
 const result=(id,file,kind)=>{const p=join(o.out,file);if(!existsSync(p))return undefined;const text=scrub(readFileSync(p,'utf8'));writeFileSync(p,text);return {file,sha256:sha(text),summary:summarize(kind,text)};};
 const pycache=join(tmpdir(),`mekoniq-pycache-${process.pid}`);await mkdir(pycache,{recursive:true,mode:0o700});
 

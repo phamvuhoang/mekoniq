@@ -87,6 +87,22 @@ test.skipIf(!webotsAvailable)('WB05 killing Webots on the real plant mid-run: th
   expect(webotsProcesses()).toEqual([]);
 }, 300_000);
 
+test.skipIf(!webotsAvailable)('WB05 killing the WORKER on the real plant mid-run: the leg is unknown, nothing is resent, and Webots plus its controllers go with it', async () => {
+  const { run } = await open();
+  await run.start();
+  await stepUntil(run, async (x) => x.tick >= 200, 50, 3000);
+  const workers = execFileSync('pgrep', ['-f', ' -m webots_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+  expect(workers.length).toBeGreaterThanOrEqual(1); // the venv launcher and the interpreter it re-execs into may both match
+  for (const pid of workers) process.kill(Number(pid), 'SIGKILL'); // the worker only: the parent must reap the engine and the controllers it left behind
+  let v = await run.snapshot();
+  for (let i = 0; i < 10 && v.run.status === 'running'; i++) v = await act(run, 'step', { ticks: 5 }).catch(() => run.snapshot());
+  expect(v.run.status).toBe('needs_attention');
+  expect(reasons(v)).toContain('WORKER_LOST');
+  expect((await run.report()).outcome.served).toBe('0');
+  await run.close(); runs.length = 0; await settle();
+  expect(webotsProcesses()).toEqual([]);
+}, 300_000);
+
 test.skipIf(!webotsAvailable)('a 3D plant puts the base height and tilt into the twin samples; a planar sample has none', async () => {
   const { run } = await open({ entry: fake('ok', 1000) });
   await run.start();

@@ -44,6 +44,11 @@ export const GATES={'G-LF1':['LF01'],'G-LF2':['LF02','LF03','LF04','LF05','LF06'
 export const GATE_IDS=Object.keys(GATES);
 /** The default table: what record-irsim writes and tests/acceptance/linkforge-irsim reads. Another record type passes its own to qualify/checkQualification. */
 export const TABLE={documentType:'linkforge-irsim-qualification',cases:CASES,gates:GATES,suites:SUITES,providerKind:'irsim_worker',providerReason:'PROVIDER_NOT_IRSIM'};
+/** Counts from a suite's own result file (vitest/playwright JSON, pytest JUnit XML): the guard re-derives them instead of trusting the manifest. */
+export const summarizeResult=(kind,text)=>{
+ if(kind==='pytest'){const n=(k)=>Number(new RegExp(`\\b${k}="(\\d+)"`).exec(text)?.[1]??0);return {passed:n('tests')-n('failures')-n('errors')-n('skipped'),failed:n('failures')+n('errors'),skipped:n('skipped'),total:n('tests')};}
+ const j=JSON.parse(text);
+ return kind==='vitest'?{passed:j.numPassedTests,failed:j.numFailedTests,skipped:j.numPendingTests+(j.numTodoTests??0),total:j.numTotalTests}:{passed:j.stats.expected,failed:j.stats.unexpected,skipped:j.stats.skipped,total:j.stats.expected+j.stats.unexpected+j.stats.skipped};};
 /** Green = exit 0, no failure, no skipped test (a skipIf that fired is not_run, never pass), at least one test ran. */
 const summaryOf=(s)=>s.result?.summary??s.summary??{};
 const skippedOf=(s)=>Number(summaryOf(s).skipped??0);
@@ -62,7 +67,7 @@ export function qualify(input,table=TABLE){
   if(c.irsimRecord){const x=input.irsim,bad=x?Object.entries(x.gates??{}).filter(([,g])=>g.status!=='tested').map(([k])=>k):[];
    if(!x)worse('not_run','no linkforge-irsim record');else if(x.identity?.before?.sourceCommit!==input.sourceCommit)worse('not_run','the linkforge-irsim record is of another commit');else if(bad.length||!Object.keys(x.gates??{}).length)worse('not_run',`linkforge-irsim gates not tested: ${bad.join(',')||'none recorded'}`);else evidence.push('record:linkforge-irsim');}
   if(c.mockRegression){const x=input.mock;
-   if(!x)worse('not_run','no mock regression recorded');else if(x.identity?.start?.source?.commit!==input.sourceCommit)worse('not_run','the mock regression is of another commit');else if((x.commands??[]).some(k=>k.exitCode!==0)||!(x.commands??[]).length)worse('not_run','a mock regression command failed or none ran');else evidence.push('record:mock-regression');}
+   if(!x)worse('not_run','no mock regression recorded');else if(x.identity?.start?.source?.commit!==input.sourceCommit)worse('not_run','the mock regression is of another commit');else if((x.commands??[]).some(k=>k.exitCode!==0)||!(x.commands??[]).length)worse('not_run','a mock regression command failed or none ran');else if((x.notRun??[]).length)worse('not_run',`the mock regression has not_run items: ${x.notRun.map(n=>n.id).join(',')}`);else evidence.push('record:mock-regression');}
   if(c.campaign){
    if(!campaign)worse('not_run','campaign not recorded');
    else if(c.campaign==='*'){if(campaign.complete&&campaign.runs.every(r=>r.result==='pass'))evidence.push('campaign:*');else worse(campaign.runs.some(r=>r.result==='fail')?'failed':'not_run','campaign not complete');}
@@ -119,7 +124,10 @@ export function checkQualification(m,read,table=TABLE){
  if(!(m.commands??[]).some(c=>c.id==='licenses'))r.push('COMMAND_MISSING:licenses');
  for(const su of m.suites??[]){
   const st=suiteState(su);if(st==='failed')r.push(`SUITE_FAILED:${su.id}`);else if(skippedOf(su)>0)r.push(`SUITE_SKIPPED:${su.id}`);else if(st==='not_run')r.push(`SUITE_EMPTY:${su.id}`);
-  if(su.result&&(!read(su.result.file)||sha(read(su.result.file))!==su.result.sha256))r.push(`SUITE_RESULT_CORRUPT:${su.id}`);
+  if(!su.result){r.push(`SUITE_RESULT_MISSING:${su.id}`);continue;}
+  const bytes=read(su.result.file);if(!bytes||sha(bytes)!==su.result.sha256){r.push(`SUITE_RESULT_CORRUPT:${su.id}`);continue;}
+  // the counts come from the file, not from the manifest (kind from the table, not from a claim)
+  try{if(JSON.stringify(summarizeResult(table.suites.find(t=>t.id===su.id)?.kind,bytes.toString('utf8')))!==JSON.stringify(su.result.summary))r.push(`SUITE_SUMMARY_MISMATCH:${su.id}`);}catch{r.push(`SUITE_SUMMARY_MISMATCH:${su.id}`);}
  }
  for(const c of m.commands??[])if(c.exitCode!==0)r.push(`COMMAND_FAILED:${c.id}`);
  for(const art of m.artifacts??[]){const bytes=read(art.file);if(!bytes)r.push(`ARTIFACT_MISSING:${art.file}`);else if(sha(bytes)!==art.sha256||bytes.length!==art.bytes)r.push(`ARTIFACT_CORRUPT:${art.file}`);}
