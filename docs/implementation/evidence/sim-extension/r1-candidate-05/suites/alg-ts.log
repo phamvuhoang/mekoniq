@@ -1,0 +1,20 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/security/algorithm-checker.test.ts (4 tests) 821ms
+   ✓ a hung checker is killed at the deadline (CHECKER_TIMEOUT) and its process is gone  412ms
+ ✓ tests/integration/algorithm-kinematics.test.ts (6 tests) 82250ms
+     ✓ a perturbed DH row on the Python side only makes ALG01 fail  40970ms
+ ✓ tests/integration/algorithm-pid.test.ts (6 tests) 27428ms
+     ✓ PID03 delay 3 steps + seeded noise + load step, repeatable by seed  13642ms
+     ✓ anti-windup removed on the Python side only makes PID02 fail  6774ms
+ ✓ tests/unit/lab-algorithm-cli.test.ts (4 tests) 899ms
+   ✓ without the pinned interpreter every check is not_run, the file says so and the exit code is 2  668ms
+ ✓ tests/unit/pid.test.ts (6 tests) 14ms
+
+ Test Files  5 passed (5)
+      Tests  26 passed (26)
+   Start at  19:22:30
+   Duration  112.48s (transform 195ms, setup 0ms, import 668ms, tests 111.41s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/874c8e67-5eed-4059-927c-7942c04487f6/scratchpad/rerecord-2/r1-candidate-05/suites/alg-ts.json

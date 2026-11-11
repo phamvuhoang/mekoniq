@@ -1,0 +1,18 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/webots-arm-programs.test.ts (2 tests) 7632ms
+     ✓ cup-pick and cup-place complete on the real engine, follow within followTolRad, collide with nothing, and leave the evidence the mock leaves  3680ms
+     ✓ close leaves no Webots, no controller and no held slot  3951ms
+ ✓ tests/unit/webots-arm-ports.test.ts (11 tests) 2337ms
+     ✓ each advance sends exactly one step whose jointTargets are the commanded joints, and cup-pick then cup-place complete  530ms
+     ✓ a plant that lags a tick and sits 5 mrad off still completes, and the tracking stats say how far off it was  333ms
+     ✓ close ends the worker process and gives the Webots slot back; the host has one slot, shared with webots_3d  491ms
+ ✓ tests/unit/mock-arm-tracking.test.ts (12 tests) 230ms
+
+ Test Files  3 passed (3)
+      Tests  25 passed (25)
+   Start at  19:32:58
+   Duration  11.80s (transform 523ms, setup 0ms, import 1.37s, tests 10.20s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/874c8e67-5eed-4059-927c-7942c04487f6/scratchpad/rerecord-2/r11-candidate-02/suites/arm-programs.json

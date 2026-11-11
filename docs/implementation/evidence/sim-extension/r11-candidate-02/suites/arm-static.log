@@ -1,0 +1,13 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/contracts/sim-extension-contracts.test.ts (12 tests) 514ms
+ ✓ tests/unit/arm-fixture.test.ts (5 tests) 25ms
+ ✓ tests/unit/capabilities-webots-arm.test.ts (3 tests) 2ms
+
+ Test Files  3 passed (3)
+      Tests  20 passed (20)
+   Start at  19:32:34
+   Duration  1.52s (transform 187ms, setup 0ms, import 722ms, tests 542ms, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/874c8e67-5eed-4059-927c-7942c04487f6/scratchpad/rerecord-2/r11-candidate-02/suites/arm-static.json

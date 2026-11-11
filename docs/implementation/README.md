@@ -64,7 +64,7 @@ node scripts/record-sim-extension.mjs --release r1 --out docs/implementation/evi
 LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/<candidate> pnpm test:acceptance -- sim-extension
 ```
 
-Recorder cần cây source và Lab sạch, Lab pin đúng commit source, không có `__pycache__` dưới `robotics/`. Bản ghi mới nhất: `evidence/sim-extension/r1-candidate-02/` (kèm `README.md`: gate, giới hạn, đo hiệu năng) trên nền `evidence/linkforge-irsim/candidate-05/`. ALG04 là `not_run` (thuộc R3).
+Recorder cần cây source và Lab sạch, Lab pin đúng commit source, không có `__pycache__` dưới `robotics/`, và phải chạy dưới `caffeinate -dims` (máy ghi tự ngủ khi không có người dùng; một run Webots đang chạy lúc đó thành `RUN_TIMEOUT`). Bản ghi mới nhất: `evidence/sim-extension/r1-candidate-05/` (R1) và `evidence/sim-extension/r11-candidate-02/` (R1.1, tay máy Webots), mỗi bản kèm `README.md` (gate, giới hạn), trên nền `evidence/linkforge-irsim/candidate-07/`. ALG04 là `not_run` (thuộc R3).
 
 ## Phạm vi và giới hạn
 

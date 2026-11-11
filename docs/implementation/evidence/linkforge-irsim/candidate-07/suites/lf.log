@@ -1,0 +1,23 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/linkforge-validation.test.ts (7 tests) 8465ms
+   ✓ LF01/G-LF1 path: the compiled Serve-style AMR validates with full parity and the bundle URDF is untouched  597ms
+   ✓ the report is cached by full identity, not re-run, and a changed model is a cache miss  982ms
+   ✓ flag off or a missing worker is not_run and never blocks compile; a crash is failed and not cached  806ms
+   ✓ LF06: a worker that outlives its timeout is killed and reported failed  2168ms
+   ✓ authorization and identity: other sessions, bad refs, unknown robots and non-IR-SIM bundles are refused with codes  898ms
+   ✓ the HTTP routes: validate needs a session and CSRF, takes exactly {engineeringRef, robotId}, and reports are readable only by an owner of the bundle  869ms
+   ✓ runtime options: an unusable LinkForge interpreter leaves engineering up and validation reports why  2143ms
+ ✓ tests/security/linkforge-artifacts.test.ts (3 tests) 799ms
+   ✓ the worker only reads inside the bundle root: traversal, absolute paths and symlinks are rejected and the report says so  779ms
+ ✓ tests/contracts/navigation2d-contracts.test.ts (10 tests) 154ms
+ ✓ tests/unit/physical-model.test.ts (8 tests) 130ms
+ ✓ tests/unit/engineering-multi-drive.test.ts (6 tests) 80ms
+
+ Test Files  5 passed (5)
+      Tests  34 passed (34)
+   Start at  18:04:54
+   Duration  12.00s (transform 530ms, setup 0ms, import 1.99s, tests 9.63s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/874c8e67-5eed-4059-927c-7942c04487f6/scratchpad/rerecord-2/candidate-07/suites/lf.json
