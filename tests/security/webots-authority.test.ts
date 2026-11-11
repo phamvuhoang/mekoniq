@@ -9,6 +9,7 @@ import { createWebotsCompiler } from '../../packages/lab-runtime/src/engineering
 import { portableSimulationFromOptions } from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
 import { webotsFromOptions } from '../../packages/lab-runtime/src/v2/simulation3d/readiness';
 import { navigationFixture } from '../support/navigation2d';
+import { coffeeProject } from '../support/lab-v2';
 import { testCompiler, writeFixtureCatalog } from '../support/engineering';
 import { WEBOTS_HOME, temp, webotsAvailable, webotsProcesses, webotsPython, webotsRoot } from '../support/webots-mission';
 
@@ -31,7 +32,7 @@ async function gateway(on: boolean) {
   const bundleFile = (d: string, x: string) => engineering.bundleFile(d, x);
   const webots = await webotsFromOptions({ enabled: on, python: webotsPython, workerRoot: webotsRoot, lockPath: join(webotsRoot, 'requirements.lock'), webotsHome: WEBOTS_HOME, directory: join(root, 'runs'), bundleFile });
   const p = await portableSimulationFromOptions({ enabled: false, python: 'python3', workerRoot: resolve('robotics/navigation-2d'), lockPath: resolve('robotics/navigation-2d/requirements.lock'), directory: join(root, 'runs'), bundleFile, webots });
-  const g = await startLabGateway({ port: 0, directory: join(root, 'runs'), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), v2: { catalog: p.catalog, enabledBackends: ['mock_amr', ...p.enabledBackends], simulationFactory: p.simulationFactory, ...p.readinessChecks ? { portableChecks: p.readinessChecks } : {}, engineering } });
+  const g = await startLabGateway({ port: 0, directory: join(root, 'runs'), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), v2: { catalog: p.catalog, enabledBackends: ['mock_amr', 'mock_coffee', 'mock_arm', ...p.enabledBackends], simulationFactory: p.simulationFactory, ...p.readinessChecks ? { portableChecks: p.readinessChecks } : {}, engineering } });
   gateways.push(g);
   return { g, f, root };
 }
@@ -95,3 +96,16 @@ test.skipIf(!webotsAvailable)('without the provider configured nothing is advert
   const refused = await post(g, a, '/runs', runBody({ engineeringRef: { bundleDigest: receipt.bundleDigest, projectDigest: receipt.projectDigest } }));
   expect(refused.status).toBe(422); expect((await refused.json()).reasonCodes).toEqual(expect.arrayContaining(['BACKEND_NOT_INSTALLED']));
 }, 120_000);
+
+// R1.1: the arm set runs from the request's own project (its scene is built from it): no bundle, so no engineering ref, while the bundle sets keep requiring one
+test.skipIf(!webotsAvailable)('the arm set answers readiness for a project without an engineering ref (grip is an event, not a provider); a bundle set still refuses without one', async () => {
+  const { g } = await gateway(true), a = await pair(g);
+  const ready = await post(g, a, '/readiness', { scenarioId: 'WB-BV01', backendSetId: 'engineering-webots-arm-v1', project: coffeeProject() });
+  expect(ready.status).toBe(200);
+  const answer = await ready.json() as { canStart: boolean; checks: { id: string; reasonCodes: string[] }[] };
+  expect(answer.checks.filter((c) => c.reasonCodes.length)).toEqual([]); expect(answer.canStart).toBe(true);
+  const bundleSet = await post(g, a, '/readiness', { scenarioId: 'WB-FD01', backendSetId: WB, project: coffeeProject() });
+  expect(bundleSet.status).toBe(422); expect((await bundleSet.json()).error).toBe('ENGINEERING_REF_REQUIRED');
+  const run = await post(g, a, '/runs', { scenarioId: 'WB-FD01', scenarioRevision: 1, seed: 5, mode: 'simulation', access: 'simulated', backendSetId: WB, runtimeIdentity, project: coffeeProject() });
+  expect(run.status).toBe(422); expect((await run.json()).error).toBe('ENGINEERING_REF_REQUIRED');
+}, 180_000);

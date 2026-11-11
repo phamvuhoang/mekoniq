@@ -6,7 +6,7 @@ export interface BackendCapability {id:string;modes:readonly Mode[];accesses:rea
 export interface BackendProviders {amr:string;arm?:string;coffee?:string}
 /** Optional execution metadata (workers-runtime §6). Legacy sets omit it and keep their behaviour; it never grants anything by itself. */
 export interface BackendExecution {host:'portable_python'|'linux_native';clock:'source_fixed_step'|'native';manualStep:boolean;speedMultipliers:readonly number[]}
-export interface BackendSet {mode:Mode;access:Access;backends:readonly string[];providers?:BackendProviders;/** Scenarios this set supports; absent means every scenario the mode supports. */scenarioIds?:readonly string[];execution?:BackendExecution;}
+export interface BackendSet {mode:Mode;access:Access;backends:readonly string[];providers?:BackendProviders;/** Scenarios this set supports; absent means every scenario the mode supports. *//** false: the set runs from the request's own project (a plant arm builds its scene from it), so no compiled engineering bundle is required. */bundle?:false;scenarioIds?:readonly string[];execution?:BackendExecution;}
 export interface CapabilityCatalog {backends:readonly BackendCapability[];sets:Readonly<Record<string,BackendSet>>;}
 export interface AdmissionResult {ok:boolean;reasonCodes:string[];}
 const mock=(id:string,modes:readonly Mode[]=['mock']):BackendCapability=>({id,modes,accesses:['simulated'],installed:true,compatible:true,reachable:true,commissioned:true});
@@ -38,7 +38,7 @@ export const defaultCatalog:CapabilityCatalog={
   /** Webots 3D: the same fixed-step runner on a rigid-body plant (Serve with casters); WB-FD01 and WB-FD07 are its qualified scenarios. */
   'engineering-webots-3d-v1':{mode:'simulation',access:'simulated',backends:['webots_3d'],providers:{amr:'webots_3d'},scenarioIds:['WB-FD01','WB-FD07'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
   /** Webots 3D arm (R1.1): a position-servoed 6-joint arm on the rigid-body plant; AMR and coffee machine stay mocks; only WB-BV01 runs here. */
-  'engineering-webots-arm-v1':{mode:'simulation',access:'simulated',backends:['mock_amr','webots_arm','mock_coffee'],providers:{amr:'mock_amr',arm:'webots_arm',coffee:'mock_coffee'},scenarioIds:['WB-BV01'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
+  'engineering-webots-arm-v1':{mode:'simulation',access:'simulated',backends:['mock_amr','webots_arm','mock_coffee'],providers:{amr:'mock_amr',arm:'webots_arm',coffee:'mock_coffee'},scenarioIds:['WB-BV01'],bundle:false,execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
   'hardware-shadow':{mode:'hardware',access:'shadow',backends:['valetudo_native']},
   'hardware-hil':{mode:'hardware',access:'hil',backends:['valetudo_native','cell_native']},
   'hardware-live':{mode:'hardware',access:'live',backends:['valetudo_native','cell_native']},

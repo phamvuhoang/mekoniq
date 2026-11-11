@@ -123,7 +123,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     }
    }else return deny(response,405,'METHOD_NOT_ALLOWED',[]);
    const readinessSet=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]:undefined;
-   if(readinessSet?.scenarioIds&&!(method==='POST'&&context.project!==undefined&&engineeringChecked))return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
+   if(readinessSet?.scenarioIds&&readinessSet.bundle!==false&&!(method==='POST'&&context.project!==undefined&&engineeringChecked))return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
    return send(response,200,await collectReadiness(context,readinessOptions()));
   }
   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
@@ -156,7 +156,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    // The set's access is server-owned; the claimed (and already granted) access must equal it, so a shadow grant can never carry a hil/live set.
    if(set.access!==r.access)return deny(response,422,'BACKEND_UNAVAILABLE',['ACCESS_MODE_MISMATCH']);
    // engineering sets run a compiled bundle only: no ref means no run, never the caller's raw project
-   if(set.scenarioIds&&!r.engineeringRef)return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
+   if(set.scenarioIds&&set.bundle!==false&&!r.engineeringRef)return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
    const scenario=scenarioRegistry.get(r.scenarioId);
    if(!scenario)return deny(response,422,'SCENARIO_UNSUPPORTED',[]);
    const resolution=r.mode==='hardware'?undefined:resolveBackends(scenario,r.mode,r.backendSetId,catalog);

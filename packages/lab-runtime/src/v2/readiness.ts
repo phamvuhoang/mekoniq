@@ -78,13 +78,13 @@ export async function collectReadiness(context:ReadinessContext,o:ReadinessOptio
    }
    // The current gateway owns only mock RunHandles; provider availability alone cannot manufacture a native runner.
    checks.push(check('runner',set.mode==='mock'?[]:portable?['IRSIM_RUNNER_UNAVAILABLE']:['NATIVE_RUNNER_UNAVAILABLE']));
-   if(set.mode==='simulation'&&scenario.coffee)checks.push(check('gripper',['GRIP_PROVIDER_UNAVAILABLE']));
+   if(set.mode==='simulation'&&scenario.coffee&&set.providers?.arm!=='webots_arm')checks.push(check('gripper',['GRIP_PROVIDER_UNAVAILABLE'])); // the Webots arm's grip is an event of its program state machine, never a provider
   }
  }
  const portableSet=set?.execution?.host==='portable_python';
  if(scenario&&set?.mode==='simulation'&&!portableSet&&o.nativeChecks)await providerChecks(checks,context,o.nativeChecks,'NATIVE','native-provider',5000);
  // the IR-SIM create smoke may need its full 15 s startup budget on a cold host; a Webots start is slower (a GUI process), so its smoke gets 45 s under its own name, and the abort closes it
- const webots=set?.providers?.amr==='webots_3d';
+ const webots=set?.providers?.amr==='webots_3d'||set?.providers?.arm==='webots_arm';
  if(scenario&&set?.mode==='simulation'&&portableSet&&o.portableChecks)await providerChecks(checks,context,o.portableChecks,webots?'WEBOTS':'IRSIM',webots?'webots-provider':'irsim-provider',webots?WEBOTS_BUDGET_MS:15000);
  const entries=Object.entries(o.probes??{});
  if(entries.length>20)checks.push(check('probes',['PROBE_LIMIT']));
