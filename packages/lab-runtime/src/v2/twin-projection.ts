@@ -12,7 +12,10 @@ export function projectSamples(i:ProjectionInput,receivedMonotonicNs:string):Twi
    commanded:g?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM:r.pose.x,yM:r.pose.y,yawRad:r.pose.yawRad,moving:r.moving,hold:r.hold},causationId:g?.commandId??null};});
  const c=i.coffee;if(!c)return out;
  const arm=c.arm,running=arm.programs.find(p=>p.state==='running');
- out.push({...base,entityId:c.armId,providerId:'mock_arm',bootId:arm.bootId,frameId:'arm_base',quality:'unknown',reasonCodes:['NO_ENCODER_MOCK'],
+ // tracking = the arm is a plant (webots_arm): q is what the engine reported, commandedQ what the state machine asked for; the grip stays a commanded event
+ if(arm.tracking)out.push({...base,origin:'physics_sim' as const,entityId:c.armId,providerId:'webots_arm',bootId:arm.bootId,frameId:'arm_base',quality:'valid',reasonCodes:[],
+  commanded:{jointsRad:[...(arm.commandedQ??arm.q)],gripper:arm.gripper,limitsOk:arm.limitsOk},observed:{jointsRad:[...arm.q],limitsOk:arm.limitsOk},causationId:running?.commandId??null});
+ else out.push({...base,entityId:c.armId,providerId:'mock_arm',bootId:arm.bootId,frameId:'arm_base',quality:'unknown',reasonCodes:['NO_ENCODER_MOCK'],
   commanded:{jointsRad:[...arm.q],gripper:arm.gripper,limitsOk:arm.limitsOk},observed:null,causationId:running?.commandId??null});
  const machine=c.plant.devices.find(d=>d.role==='machine')!,cmd=c.plant.commands.find(x=>x.state==='running'||x.state==='settling');
  out.push({...base,entityId:c.cellId,providerId:'mock_coffee',bootId:machine.bootId,frameId:'cell_base',quality:'valid',reasonCodes:[],commanded:null,

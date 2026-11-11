@@ -45,6 +45,11 @@ describe.skipIf(!existsSync(python))('WB-BV01 over a fake arm engine', () => {
     const trace = await readArmTrace(directory, report.arm!);
     expect(trace.samples).toHaveLength(report.arm!.trace.samples); expect(report.arm!.trace.samples).toBeGreaterThan(300);
     expect(report.limitations.some((l) => l.startsWith('webots_arm:'))).toBe(true);
+    // X07: the arm's telemetry is the plant's, with the actual and the commanded joints apart (a mock arm has no encoder: observed null)
+    const armSamples = report.telemetry!.samples.filter((s) => s.entityId === 'arm-1');
+    expect(armSamples.length).toBeGreaterThan(5);
+    expect(armSamples.every((s) => s.origin === 'physics_sim' && s.providerId === 'webots_arm' && s.quality === 'valid' && s.reasonCodes.length === 0)).toBe(true);
+    expect(armSamples.every((s) => (s.observed as { jointsRad: number[] }).jointsRad.length === 6 && (s.commanded as { jointsRad: number[] }).jointsRad.length === 6)).toBe(true);
   }, 120_000);
 
   test('a plant that lags a tick and sits 5 mrad off still completes, and the report says how far off it was', async () => {

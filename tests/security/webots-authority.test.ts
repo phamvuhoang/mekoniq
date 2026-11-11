@@ -39,7 +39,7 @@ async function gateway(on: boolean) {
 test.skipIf(!webotsAvailable)('Webots runs: server-locked projections, no caller home/port/world/code, bundle and run ownership, no cross-set scenarios', async () => {
   const { g, f, root } = await gateway(true), a = await pair(g), b = await pair(g);
   const health = await (await get(g, a, '/health')).json() as { capabilities: string[]; backends: { id: string; installed: boolean; enabled: boolean }[]; backendSets: { id: string; execution?: { host: string } }[] };
-  expect(health.capabilities).toEqual(expect.arrayContaining(['engineering_bundle_v1', 'sim3d_navigation_v1']));
+  expect(health.capabilities).toEqual(expect.arrayContaining(['engineering_bundle_v1', 'sim3d_navigation_v1', 'sim3d_arm_v1']));
   expect(health.backends.find((x) => x.id === 'webots_3d')).toMatchObject({ installed: true, enabled: true });
   expect(health.backendSets.find((s) => s.id === WB)!.execution).toMatchObject({ host: 'portable_python', clock: 'source_fixed_step' });
   const receipt = await (await post(g, a, '/engineering/compile', { project: f.project })).json() as { state: string; bundleDigest: string; projectDigest: string };
@@ -89,6 +89,7 @@ test.skipIf(!webotsAvailable)('without the provider configured nothing is advert
   const { g, f } = await gateway(false), a = await pair(g);
   const health = await (await get(g, a, '/health')).json() as { capabilities: string[]; backends: { id: string; installed: boolean; enabled: boolean }[] };
   expect(health.capabilities).not.toContain('sim3d_navigation_v1');
+  expect(health.capabilities).not.toContain('sim3d_arm_v1');
   expect(health.backends.find((x) => x.id === 'webots_3d')).toMatchObject({ installed: false, enabled: false });
   const receipt = await (await post(g, a, '/engineering/compile', { project: f.project })).json() as { bundleDigest: string; projectDigest: string };
   const refused = await post(g, a, '/runs', runBody({ engineeringRef: { bundleDigest: receipt.bundleDigest, projectDigest: receipt.projectDigest } }));
