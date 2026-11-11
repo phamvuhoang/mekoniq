@@ -43,6 +43,8 @@ const slotsOf=(provider:string)=>{let s=slots.get(provider);if(!s)slots.set(prov
 /** Live workers of one provider on this host (each plant has its own slots: a running IR-SIM never blocks Webots and the other way round). */
 export const activeRunCount=(provider:string,exceptRunId?:string)=>[...slotsOf(provider)].filter(id=>id!==exceptRunId).length;
 /** A plant that is not the fixed-step runner (the Webots arm) takes and gives back a slot of the provider it shares the engine with. */
+/** Whether `runId` holds a live worker of `provider` now. */
+export const holdsSlot=(provider:string,runId?:string)=>runId!==undefined&&slotsOf(provider).has(runId);
 export const holdSlot=(provider:string,runId:string)=>{slotsOf(provider).add(runId);};
 export const releaseSlot=(provider:string,runId:string)=>{slotsOf(provider).delete(runId);};
 /** Whether `runId` (or, without one, a new run) may hold a live worker now. */
@@ -207,7 +209,7 @@ class FixedStepRun implements ScenarioRun {
   this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
   this.controller=createNavigationController(fixture.zones.length?{...scene,zones:structuredClone(fixture.zones) as NavigationSceneV1['zones']}:scene);
-  this.engineSeed=engineSeedOf(cp.manifest.seed,scene).engineSeed;
+  const derived=engineSeedOf(cp.manifest.seed,scene).engineSeed;this.engineSeed=plant.identity.evidence?.engineSeed?plant.identity.evidence.engineSeed(derived):derived;
   for(const r of cp.roles.robots){
    const a=createIRSimNavigationAdapter({robotId:r.id,scene,controller:this.controller,now:()=>this.clock.nowMs(),state:cp.adapters[r.id]!,...map,trays:cp.trays[r.id]!});
    a.observe(e=>this.observations.push(e));this.adapters.set(r.id,a);

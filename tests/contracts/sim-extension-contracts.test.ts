@@ -1,5 +1,6 @@
 // W01: additive contracts for the algorithm result and the sim3d plant. The IR-SIM branch of every schema stays byte-for-byte what it was.
 import { afterEach, expect, test } from 'vitest';
+import { webotsPlant } from '../../packages/lab-runtime/src/v2/simulation3d/webots';
 import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -136,6 +137,11 @@ test('evidence built with the Webots plant profile is the webots branch of the s
   // without a profile the evidence is the IR-SIM one, as before
   const plain = await irsimEvidence() as unknown as { engine: { id: string }; seed: Record<string, unknown> };
   expect(plain.engine.id).toBe('irsim_2d'); expect(plain.seed.engineSeedAlgorithm).toBe('irsim-env-seed-v1'); expect('engineRng' in plain.seed).toBe(true);
+  // review R1.1 #2: the recorded engine seed is the one the engine is given (Webots takes the low 31 bits), not the derived uint32
+  expect(e.seed.engineSeed).toBe(plain.seed.engineSeed);
+  const top = await irsimEvidence({ ...profile, engineSeed: () => 93036964 }) as unknown as { seed: { engineSeed: number } };
+  expect(top.seed.engineSeed).toBe(93036964);
+  expect(webotsPlant({} as never).identity.evidence!.engineSeed!(2240520612)).toBe(93036964); expect(webotsPlant({} as never).identity.evidence!.engineSeed!(7)).toBe(7);
 });
 
 const twinSample = (observed: Record<string, unknown>) => ({ schemaVersion: 2, runId: '00000000-0000-4000-8000-000000000001', entityId: 'amr-1', providerId: 'webots_3d', bootId: 'b', seq: '1', simTimeNs: '0', observedAt: '2026-11-01T00:00:00.000Z', receivedMonotonicNs: '1', frameId: 'map', origin: 'controller_sim', quality: 'valid', reasonCodes: [], commanded: null, observed, estimated: null, causationId: null });

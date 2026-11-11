@@ -50,9 +50,15 @@ test('readiness names what is missing: no arm collision profile, a foreign model
   expect(rows(await sim.readinessChecks!(ctx(noProfile) as never, signal)).fixture).toEqual(['ARM_SCENE_UNAVAILABLE']);
   const foreign = coffeeProject(); (foreign.armCollisionProfile as { modelId: string }).modelId = 'other-arm';
   expect(rows(await sim.readinessChecks!(ctx(foreign) as never, signal)).model).toEqual(['ARM_MODEL_MISMATCH']);
+  const simNo0 = await portableSimulationFromOptions({ ...(await base()), webots: await webotsFromOptions(await opts({ entry: double('nogui') })) });
   holdSlot('webots_3d', 'other-run'); // webots_3d and webots_arm are one engine: a running AMR run blocks an arm run
   expect(rows(await sim.readinessChecks!(ctx() as never, signal)).runner).toContain('WEBOTS_CAPACITY');
   expect(rows(await sim.readinessChecks!(ctx(coffeeProject(), 'other-run') as never, signal)).runner).not.toContain('WEBOTS_CAPACITY'); // the holder is never counted against itself
+  releaseSlot('webots_3d', 'other-run');
+  // review R1.1 #1: a run that already holds the host's Webots is never smoked (a smoke would start a second engine beside its own); anyone else still is
+  expect(rows(await simNo0.readinessChecks!(ctx() as never, signal)).runner).toEqual(['WEBOTS_NO_GUI_SESSION']);
+  holdSlot('webots_3d', 'other-run');
+  expect(rows(await simNo0.readinessChecks!(ctx(coffeeProject(), 'other-run') as never, signal)).runner).toEqual([]);
   releaseSlot('webots_3d', 'other-run');
   const nogui = await webotsFromOptions(await opts({ entry: double('nogui') })), simNo = await portableSimulationFromOptions({ ...(await base()), webots: nogui });
   expect(rows(await simNo.readinessChecks!(ctx() as never, signal)).runner).toEqual(['WEBOTS_NO_GUI_SESSION']); // a missing window server is named, not a broken install

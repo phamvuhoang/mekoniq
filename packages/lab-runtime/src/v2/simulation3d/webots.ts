@@ -13,8 +13,8 @@ export const webotsPlant=(runtime:WebotsRuntimeOptions):PlantPort=>({
   limitations:['webots_3d simulated plant (Webots R2025a rigid-body physics, differential drive with passive casters).',
    'not_calibrated: every physical parameter (mass, inertia, friction, caster size, wheel torque limit, heights) is an assumed fixture value; the dynamics say nothing about the real robot.',
    'The engine runs one 20 ms step ahead of the source clock: a settling step with every wheel at rest precedes tick 0.'],
-  // the engine seed is derived exactly as for IR-SIM (engineSeedOf) and written to WorldInfo.randomSeed
-  evidence:{seedAlgorithm:'webots-worldinfo-seed-v1',limitation:'webots_3d plant (Webots R2025a rigid-body physics): not_calibrated, every physical parameter is assumed',
+  // the engine seed is derived as for IR-SIM (engineSeedOf); WorldInfo.randomSeed is an SFInt32, so the engine gets (and the evidence records) its low 31 bits
+  evidence:{seedAlgorithm:'webots-worldinfo-seed-v1',engineSeed:derived=>derived&0x7fffffff,limitation:'webots_3d plant (Webots R2025a rigid-body physics): not_calibrated, every physical parameter is assumed',
   engine:d=>({id:'webots_3d',engineVersion:d.version,executableSha256:runtime.executableSha256,basicTimeStepMs:runtime.basicTimeStepMs,pythonVersion:d.pythonVersion,platform:d.platform,lockDigest:d.lockDigest})}},
  protocol:'mekoniq-sim3d/1',
  spawn:o=>spawnSim3DWorker({...o,webotsHome:runtime.webotsHome}),

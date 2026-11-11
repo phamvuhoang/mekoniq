@@ -512,11 +512,12 @@ export function evidenceDigests(scene:NavigationSceneV1,id:DigestIdentity,read:E
   assertionDigest:hashJson({header,assertions,episodes:m.episodes,coverage:m.coverage,horizon:m.horizon}),algorithm:DIGEST_ALGORITHM as typeof DIGEST_ALGORITHM,normalizedOmits:[...NORMALIZED_OMITS]};
 }
 /** What a plant adds to the evidence's identity: its engine block, the name of its engine-seed derivation and its first limitation. No profile means the IR-SIM plant. */
-export interface EvidenceProfile {engine(d:{version:string;pythonVersion:string;platform:string;lockDigest:string}):Record<string,unknown>;seedAlgorithm:string;limitation:string}
+export interface EvidenceProfile {engine(d:{version:string;pythonVersion:string;platform:string;lockDigest:string}):Record<string,unknown>;seedAlgorithm:string;limitation:string;
+ /** What the engine really takes of the derived seed (Webots: the low 31 bits, WorldInfo.randomSeed is an SFInt32). The run sends and the evidence records this value. */engineSeed?(derived:number):number}
 /** The report extension (navigation-run-evidence-v1) for the evidence as read from disk now. Artifact paths are relative to the recording root; `recording` is the
  * recorder's own end-of-recording record plus the run's logical tick at export (runTick), which an import passes back to readNavigationEvidence with the artifacts. */
 export function buildNavigationEvidence(scene:NavigationSceneV1,id:EvidenceIdentity,listed:Omit<Committed,'bytes'>,read:EvidenceRead,m:NavigationMetrics,runTick:number|null,host:HostIdentity=hostIdentity(),profile?:EvidenceProfile):NavigationRunEvidenceV1{
- const terminal=listed.terminal??read.terminal,assertions=evidenceAssertions(read,m,runTick,terminal),{engineSeed,sensorSeeds}=engineSeedOf(id.runSeed,scene);
+ const terminal=listed.terminal??read.terminal,assertions=evidenceAssertions(read,m,runTick,terminal),derived=engineSeedOf(id.runSeed,scene),sensorSeeds=derived.sensorSeeds,engineSeed=profile?.engineSeed?profile.engineSeed(derived.engineSeed):derived.engineSeed;
  const metric=(name:string,ok:boolean,why:string|null)=>({metric:name,status:ok?'available' as const:'unavailable' as const,reason:ok?null:(why??'EVIDENCE_INCOMPLETE').slice(0,500)});
  const why=m.coverageReasons.join(', ')||null,complete=m.coverage==='complete';
  return {schemaVersion:1,documentType:'navigation-run-evidence',runId:id.runId,sceneDigest:scene.sceneDigest,sceneRef:id.sceneRef,modelDigests:scene.robots.map(r=>r.model.modelDigest),

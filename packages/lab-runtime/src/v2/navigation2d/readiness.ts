@@ -133,6 +133,8 @@ export interface ProviderReadinessSpec {
  capacity:(runId?:string)=>boolean;
  /** Only one smoke at a time (a Webots start is one world per host): a concurrent request is blocked with `<PREFIX>_SMOKE_BUSY`. */
  exclusive?:boolean;
+ /** The run asking already holds this provider's engine (start/resume of a live run): its own engine is the proof, and a smoke would start a second one beside it. */
+ holds?:(runId?:string)=>boolean;
  /** The gate that `exclusive` uses; plants that share one engine pass the same object. */
  gate?:{busy:boolean};
  /** A real worker, the real scene: create, then a clean stop. Resolves to reason codes, [] when it worked. */
@@ -177,7 +179,8 @@ export function providerReadiness(spec:ProviderReadinessSpec):NativeReadinessChe
   // a full host is a blocked start, not a failure: the run that already holds a slot (context.runId, server-set) is never counted against itself
   if(!spec.capacity(context.runId))runner.push(`${P}_CAPACITY`);
   // a real process, the real scene. Success is cached briefly per scene and lock; a failure is never cached.
-  if(scene&&!model.length&&!fixture.length&&!profile.length&&!runner.length&&!((smoked.get(scene.sceneDigest)??0)>Date.now())){
+  if(spec.holds?.(context.runId)){/* no smoke: the run's own engine is live */}
+  else if(scene&&!model.length&&!fixture.length&&!profile.length&&!runner.length&&!((smoked.get(scene.sceneDigest)??0)>Date.now())){
    const scratch=await mkdtemp(join(spec.probeDir,'smoke-'));
    try{
     for(const [path,b] of files){await mkdir(dirname(join(scratch,'bundle',path)),{recursive:true});await writeFile(join(scratch,'bundle',path),b,{mode:0o600});}

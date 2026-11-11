@@ -145,3 +145,23 @@ test('the default mode keeps merging only exactly repeated checks', () => {
   for (let i = 0; i < 50; i++) plant.advance();
   expect(s.collision!.evidence!.intervals).toHaveLength(1);
 });
+
+test('review R1.1 #3: a stopped arm is told to hold where the plant is, and its joints stay the plant\'s after the stop', () => {
+  // blocked: the plant never leaves home, the commanded joints run away, the arm stops on the following error
+  const a = make(TRACKING, (st) => { st.holding = 'cup-1'; st.gripper = 'closed'; }), home = [...a.state.q];
+  drive(a.plant, 'cup-place', 'p1', () => ({ actual: [...home] }));
+  expect(a.state.stop).toMatchObject({ latched: true, reason: 'ARM_FOLLOWING_ERROR' });
+  expect(a.reports.at(-1)!.evidence).toMatchObject({ actualJointsRad: home }); // the evidence keeps what was commanded when it stopped
+  expect((a.reports.at(-1)!.evidence as unknown as { commandedJointsRad: number[] }).commandedJointsRad).not.toEqual(home);
+  expect(a.state.commandedQ).toEqual(home); // the target is now the actual pose: nothing pushes on
+  a.plant.advance(); expect(a.state.commandedQ).toEqual(home); // and stays there
+  const drifted = home.map((v, i) => v + (i === 1 ? 0.003 : 0));
+  a.plant.observe(drifted, []); expect(a.state.q).toEqual(drifted); // a stopped arm is still where the plant says it is
+  a.plant.observe([Number.NaN, 0, 0, 0, 0, 0], []); expect(a.state.q).toEqual(drifted);
+  // a hold target is always inside the joint limits, so the plant never refuses it
+  const b = make(TRACKING), over = b.state.q.map((v, i) => i === 0 ? PUMA560_SI.limits[0]!.max + 0.02 : v);
+  b.plant.advance(); b.plant.observe(over, ['floor']);
+  expect(b.state.stop).toMatchObject({ latched: true, reason: 'ARM_COLLISION' });
+  expect(b.state.q).toEqual(over); // the pose it collided in, not the tick before
+  expect(b.state.commandedQ![0]).toBe(PUMA560_SI.limits[0]!.max); expect(b.state.limitsOk).toBe(false);
+});

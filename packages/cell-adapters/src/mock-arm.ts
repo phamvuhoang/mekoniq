@@ -81,7 +81,10 @@ export class MockArmPlant {
   for(const stage of ['requested','acknowledged','observed'] as const)events.push({tick:s.tick,stage,reason,provenance:'modelled'});
   s.stop={latched:true,reconcileRequired:true,reason,events};
   for(const p of s.programs.filter(x=>x.state==='running')){p.state='unknown';Object.assign(p.evidence,{stopReason:reason,stopProvenance:'modelled',actualJointsRad:[...s.q],commandedJointsRad:s.commandedQ??[...s.q]});this.emit(p,'outcome_unknown',[reason],{...p.evidence});}
+  this.hold();
  }
+ /** Tracking mode: a stopped arm is told to stay where the plant is (inside the joint limits, so the target is always one the plant accepts), not to keep driving at its last target. */
+ private hold(){const s=this.state;if(!this.tracking||!s.tracking)return;s.tracking.gen=s.q.map((q,i)=>Math.min(Math.max(q,this.model.limits[i]!.min),this.model.limits[i]!.max));s.commandedQ=[...s.tracking.gen];s.tracking.settled=0;s.tracking.followCount=0;}
  fault(f:ArmFault){
   if(f==='arm-following-error'){this.state.commandedQ=this.state.q.map((v,i)=>v+(i===0?0.1:0));this.stop('ARM_FOLLOWING_ERROR');}
   else if(f==='arm-stop'||f==='arm-estop')this.stop(f==='arm-estop'?'MODEL_ESTOP':'MODEL_STOP');
@@ -141,18 +144,21 @@ export class MockArmPlant {
  observe(actualQ:readonly number[],collisionIds:readonly string[]){
   const s=this.state,t=s.tracking;
   if(!this.tracking||!t)throw new Error('ARM_TRACKING_DISABLED: observe needs the tracking mode');
-  if(s.stop?.latched||s.stop?.reconcileRequired)return;
-  if(actualQ.length!==s.q.length||!actualQ.every(Number.isFinite)){this.stop('PLANT_UNSTABLE');return;}
+  const finite=actualQ.length===s.q.length&&actualQ.every(Number.isFinite);
+  // a stopped arm runs no program and no check, but its joints stay what the plant reports (it is held where it stopped, see hold())
+  if(s.stop?.latched||s.stop?.reconcileRequired){if(finite)s.q=[...actualQ];return;}
+  if(!finite){this.stop('PLANT_UNSTABLE');return;}
   const p=s.programs.find(x=>x.state==='running'),scene=s.collision!.scene;
+  let swept:SweepResult|undefined;
   if(p||scene?.available){
-   const world=[...s.collision!.world,...scene?.world??[]],result=checkArmSweep(this.model,s.q,actualQ,{world,heldCup:s.holding!==null});
-   this.recordCollision([...actualQ],world,result);
-   s.collision!.checks++;s.collision!.last=result;
-   if(!result.ok){this.stop(result.reason==='COLLISION'?'ARM_COLLISION':'ARM_SWEEP_UNCERTAIN');return;}
+   const world=[...s.collision!.world,...scene?.world??[]];swept=checkArmSweep(this.model,s.q,actualQ,{world,heldCup:s.holding!==null});
+   this.recordCollision([...actualQ],world,swept);
+   s.collision!.checks++;s.collision!.last=swept;
   }
-  if(collisionIds.length>0){this.stop('ARM_COLLISION');return;}
-  s.q=[...actualQ];
+  s.q=[...actualQ]; // the plant is where it says it is, also in the tick that stops it
   if(!s.q.every((q,i)=>q>=this.model.limits[i]!.min&&q<=this.model.limits[i]!.max))s.limitsOk=false;
+  if(swept&&!swept.ok){this.stop(swept.reason==='COLLISION'?'ARM_COLLISION':'ARM_SWEEP_UNCERTAIN');return;}
+  if(collisionIds.length>0){this.stop('ARM_COLLISION');return;}
   const commanded=s.commandedQ??t.gen,error=s.q.map((q,i)=>Math.abs(q-commanded[i]!));
   if(p){
    t.samples++;error.forEach((e,i)=>{t.peakRad[i]=Math.max(t.peakRad[i]!,e);t.sumSq[i]=t.sumSq[i]!+e*e;});

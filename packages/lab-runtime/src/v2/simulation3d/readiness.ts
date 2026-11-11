@@ -11,7 +11,7 @@ import {loadOracleProfile} from '../algorithm/checker';
 import {closeOnAbort,exclusiveSmoke,providerReadiness} from '../navigation2d/readiness';
 import {buildArmScene3D,readArmFixture} from './arm-scene';
 import {WorkerLostError,type PlantPort} from '../navigation2d/plant';
-import {activeRunCount} from '../navigation2d/runner';
+import {activeRunCount,holdsSlot} from '../navigation2d/runner';
 import {WEBOTS_AMR,webotsPlant,type WebotsRuntimeOptions} from './webots';
 import {spawnSim3DWorker} from './worker-client';
 
@@ -55,7 +55,7 @@ export async function webotsFromOptions(o:WebotsOptions):Promise<WebotsProvider>
  const port=webotsPlant(runtime),gate={busy:false}; // one smoke at a time across the AMR and the arm: they are one engine
  const readinessChecks=providerReadiness({prefix:'WEBOTS',engineId:'webots_3d',runtime,lockPath:o.lockPath,directory:o.directory,probeDir,bundleFile:o.bundleFile,
   evidence:`webots:${describe.engineVersion}/sha256:${describe.executableSha256.slice(0,16)}/python-${describe.pythonVersion}/lock:${lockDigest.slice(0,16)}`,
-  capacity:runId=>activeRunCount(WEBOTS_AMR.id,runId)<WEBOTS_MAX_ACTIVE_RUNS,exclusive:true,gate,
+  capacity:runId=>activeRunCount(WEBOTS_AMR.id,runId)<WEBOTS_MAX_ACTIVE_RUNS,exclusive:true,gate,holds:runId=>holdsSlot(WEBOTS_AMR.id,runId),
   async smoke(scene,bundleRoot,runDirectory,signal){
    try{
     const w=await spawnSim3DWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:'webots-smoke',bundleRoot,runDirectory,lockDigest,schemaDir,sceneDigest:scene.sceneDigest,webotsHome:home,...o.entry?{entry:o.entry}:{}});
@@ -96,7 +96,9 @@ function armReadiness(spec:{runtime:WebotsRuntimeOptions;lockPath:string;directo
   signal.throwIfAborted();
   // a full host is a blocked start, not a failure: the run that already holds the slot is never counted against itself
   if(activeRunCount(WEBOTS_AMR.id,context.runId)>=WEBOTS_MAX_ACTIVE_RUNS)runner.push('WEBOTS_CAPACITY');
-  if(scene&&!model.length&&!fixture.length&&!profile.length&&!runner.length&&!((smoked.get(scene.sceneDigest)??0)>Date.now())){
+  // a run that already holds the host's Webots (an arm run does from its creation) is its own proof: a smoke would start a second engine beside it
+  if(holdsSlot(WEBOTS_AMR.id,context.runId)){/* no smoke */}
+  else if(scene&&!model.length&&!fixture.length&&!profile.length&&!runner.length&&!((smoked.get(scene.sceneDigest)??0)>Date.now())){
    const scratch=await mkdtemp(join(spec.probeDir,'arm-smoke-'));
    try{
     const bundle=join(scratch,'bundle');await mkdir(bundle,{recursive:true});
