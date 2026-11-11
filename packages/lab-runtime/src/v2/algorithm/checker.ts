@@ -9,6 +9,7 @@ import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {isolatedPythonArgs} from '../../engineering/python-env';
 import {hashJson} from '../hash';
+import oracleProfileJson from '../../../../../robotics/algorithm/oracle-profile-v1.json';
 export const ALGORITHM_PROTOCOL='mekoniq-algorithm/1';
 export const MAX_REQUEST_BYTES=1<<20;
 export interface OracleProfileV1 {version:1;note?:string;fk:{translationM:number;rotationRad:number};ikTsToRtb:{translationM:number;rotationRad:number};ikRtbToTs:{translationM:number;rotationRad:number};ikPoses:number;ikSolvedFractionMin:number;
@@ -16,9 +17,9 @@ export interface OracleProfileV1 {version:1;note?:string;fk:{translationM:number
  webots?:{lidarRangeToleranceM:number;lidarWindowBeams:number;lidarMedianM:number;repeatPoseM:number};
  webotsArm?:{reachTolRad:number;settleTicks:number;followTolRad:number;followTicks:number;repeatJointRad:number;note?:string}}
 export const REPO_ROOT=fileURLToPath(new URL('../../../../../',import.meta.url));
-/** The versioned thresholds. The digest is over the canonical JSON, so whitespace edits do not change a recorded identity. */
-export function loadOracleProfile(path=join(REPO_ROOT,'robotics/algorithm/oracle-profile-v1.json')):{profile:OracleProfileV1;digest:string}{
- const profile=JSON.parse(readFileSync(path,'utf8')) as OracleProfileV1;
+/** The versioned thresholds. The digest is over the canonical JSON, so whitespace edits do not change a recorded identity. Without a path: the profile compiled into the runtime (the exported Lab artifact carries no robotics/ tree, so a file read would find nothing there). */
+export function loadOracleProfile(path?:string):{profile:OracleProfileV1;digest:string}{
+ const profile=(path?JSON.parse(readFileSync(path,'utf8')):structuredClone(oracleProfileJson)) as OracleProfileV1;
  return {profile,digest:hashJson(profile)};
 }
 export interface AlgorithmCheckerOptions {python:string;root:string;timeoutMs?:number;/** Test seam, like the IR-SIM `entry` doubles: replaces `-m algorithm_checks`. */entry?:string[]}
