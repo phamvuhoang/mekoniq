@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 import {existsSync,readdirSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
 // @ts-expect-error plain ESM script without types
-import {CASES,GATES,SUITES,checkIrsimRecord,checkQualification,qualify} from '../../scripts/sim-extension-qualification.mjs';
+import {CASES,GATES,SUITES,CASES_R11,GATES_R11,SUITES_R11,checkIrsimRecord,checkR1Record,checkQualification,qualify,qualifyR11} from '../../scripts/sim-extension-qualification.mjs';
 // @ts-expect-error plain ESM script without types
 import * as ir from '../../scripts/irsim-qualification.mjs';
 type M=Record<string,any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -136,4 +136,77 @@ test('suites: the manifest alone cannot make a suite green — the result file m
  const forged=candidate((m,files)=>{const s=m.suites.find((x:{id:string})=>x.id==='wb-fleet'),t=resultText('vitest',{passed:2,failed:1,skipped:0,total:3});
   files.set(s.result.file,t);s.result.sha256=sha(t);m.artifacts.find((a:{file:string})=>a.file===s.result.file).sha256=sha(t);m.artifacts.find((a:{file:string})=>a.file===s.result.file).bytes=Buffer.byteLength(t);});
  expect(reasons(forged)).toContain('SUITE_SUMMARY_MISMATCH:wb-fleet'); // the manifest says failed:0, the file says failed:1
+});
+
+// ---- Release 1.1 (X08): the r1.1 table, REG02 and the guard on a record without a campaign ----
+const r1Record=(over:M={})=>({schemaVersion:1,documentType:'sim-extension-qualification',release:'r1',accepted:false,identity:{before:{sourceCommit:COMMIT}},
+ irsimRecord:{file:'irsim-record.json',sha256:sha(JSON.stringify(irsimRecord()))},mockRegression:{file:'mock-regression.json',sha256:sha(JSON.stringify(mockManifest()))},
+ gates:Object.fromEntries(Object.keys(GATES).map(g=>[g,{status:'tested',accepted:false,cases:[]}])),...over});
+const allSuites11=(skip:(id:string)=>boolean=()=>false)=>SUITES_R11.map((s:{id:string})=>({id:s.id,exitCode:0,result:{summary:skip(s.id)?{passed:0,failed:0,skipped:2,total:2}:pass}}));
+const base11=(over:M={})=>({suites:allSuites11(),lab:true,sourceCommit:COMMIT,r1:r1Record(),irsim:irsimRecord(),mock:mockManifest(),...over});
+
+function candidate11(over:(m:M,files:Map<string,string>)=>void=()=>{}){
+ const files=new Map<string,string>(),put=(p:string,t:string)=>{files.set(p,t);return {file:p,sha256:sha(t),bytes:Buffer.byteLength(t)};};
+ const irs=put('irsim-record.json',JSON.stringify(irsimRecord())),mock=put('mock-regression.json',JSON.stringify(mockManifest())),r1=put('r1-record.json',JSON.stringify(r1Record({irsimRecord:{file:'irsim-record.json',sha256:irs.sha256},mockRegression:{file:'mock-regression.json',sha256:mock.sha256}})));
+ const suites=SUITES_R11.map((s:{id:string;kind:string})=>{const result=put(`suites/${s.id}.json`,resultText(s.kind,pass));const log=put(`suites/${s.id}.log`,'ok');return {id:s.id,exitCode:0,command:'x',startedAt:'t',finishedAt:'t',log:log.file,logSha256:log.sha256,repo:'source',kind:s.kind,result:{file:result.file,sha256:result.sha256,summary:pass}};});
+ const before={sourceCommit:COMMIT,dirty:false,toolClosures:{portable:HEX,native:HEX2},node:'v24.22.2',os:'darwin',arch:'arm64',lockSha256:HEX,oracleProfileDigest:HEX,at:'t'};
+ const q=qualifyR11({suites,lab:true,sourceCommit:COMMIT,r1:JSON.parse(files.get('r1-record.json')!),irsim:irsimRecord(),mock:mockManifest()});
+ const m:M={schemaVersion:1,documentType:'sim-extension-qualification',release:'r1.1',candidateId:'r11-candidate-01',accepted:false,acceptedBy:null,acceptedAt:null,note:'evidence input',
+  identity:{before,after:structuredClone(before),identityStable:true},lab:{commit:'d'.repeat(40),dirty:false,pin:{sourceCommit:COMMIT,artifactSha256:HEX,portableToolsDigest:HEX,schemaHash:HEX}},campaign:null,
+  r1Record:{file:r1.file,sha256:r1.sha256,candidate:'r1-candidate-03'},irsimRecord:{file:irs.file,sha256:irs.sha256,candidate:'candidate-06'},mockRegression:{file:mock.file,sha256:mock.sha256},
+  suites,commands:[{id:'licenses',exitCode:0}],cases:q.cases,gates:q.gates,notRun:q.notRun,artifacts:[...files.keys()].sort().map(p=>({file:p,sha256:sha(files.get(p)!),bytes:Buffer.byteLength(files.get(p)!)}))};
+ over(m,files);
+ return {m,read:(p:string)=>files.has(p)?Buffer.from(files.get(p)!):null};
+}
+
+test('r1.1 mapping: every case of spec §6.3 and exactly its four gates; every case is on a gate and every gate case exists; one spec per launcher',()=>{
+ expect(GATES_R11).toEqual({'G-WA1':['WA01','WA02','WA03'],'G-WA2':['WA04','WA05','WA06','WA07','WA08'],'G-INT3':['INT13','INT14'],'G-REG2':['REG02']});
+ expect(Object.keys(CASES_R11).sort()).toEqual(Object.values(GATES_R11).flat().sort());
+ for(const [id,c] of Object.entries(CASES_R11) as [string,{suites?:string[]}][])for(const s of c.suites??[])expect(SUITES_R11.some((x:{id:string})=>x.id===s),`${id}:${s}`).toBe(true);
+ expect(CASES_R11.REG02).toMatchObject({r1Record:true,irsimRecord:true,mockRegression:true});
+ for(const s of SUITES_R11.filter((x:{kind:string})=>x.kind==='playwright'))expect(s.command.filter((a:string)=>a.endsWith('.spec.ts'))).toHaveLength(1);
+ expect(Object.keys(GATES).length).toBe(6); // the R1 table is untouched
+});
+
+test('r1.1 qualify: all green is tested and never accepted; a skipped suite is not_run; without the Lab INT13 is not_run',()=>{
+ const q=qualifyR11(base11());
+ for(const g of Object.keys(GATES_R11))expect(q.gates[g]).toMatchObject({status:'tested',accepted:false});
+ expect(q.notRun).toEqual([]);
+ const skipped=qualifyR11(base11({suites:allSuites11(id=>id==='arm-faults')}));
+ expect(skipped.cases.WA06.status).toBe('not_run');expect(skipped.cases.WA06.reason).toMatch(/suite arm-faults not_run \(2 skipped\)/);expect(skipped.gates['G-WA2'].status).toBe('not_run');
+ expect(skipped.cases.INT14.status).toBe('not_run'); // the flag-off and admission tests are in that suite too
+ expect(qualifyR11(base11({lab:false})).cases.INT13.status).toBe('not_run');
+ expect(qualifyR11(base11({suites:allSuites11().filter((s:{id:string})=>s.id!=='arm-worker')})).gates['G-WA1'].status).toBe('not_run');
+});
+
+test('r1.1 REG02: not_run when the R1 record is of another commit or missing, failed when an R1 gate is not tested, and the IR-SIM and mock records are held to the same commit',()=>{
+ expect(qualifyR11(base11()).cases.REG02.status).toBe('tested');
+ const other=qualifyR11(base11({r1:r1Record({identity:{before:{sourceCommit:'e'.repeat(40)}}})}));expect(other.cases.REG02.status).toBe('not_run');expect(other.cases.REG02.reason).toMatch(/R1 record is of another commit/);
+ expect(qualifyR11(base11({r1:null})).cases.REG02.status).toBe('not_run');
+ const half=r1Record();half.gates['G-WB2'].status='not_run';const failed=qualifyR11(base11({r1:half}));expect(failed.cases.REG02.status).toBe('failed');expect(failed.cases.REG02.reason).toMatch(/G-WB2/);
+ expect(qualifyR11(base11({irsim:irsimRecord({identity:{before:{sourceCommit:'e'.repeat(40)}}})})).cases.REG02.status).toBe('not_run');
+ expect(qualifyR11(base11({mock:mockManifest({commands:[{id:'x',exitCode:1}]})})).cases.REG02.status).toBe('failed');
+ expect(qualifyR11(base11({mock:null})).cases.REG02.status).toBe('not_run');
+ expect(qualifyR11(base11({r1:r1Record({release:'r1.1'})})).cases.REG02.status).toBe('not_run'); // an R1.1 record is not the R1 record
+ expect(checkR1Record(r1Record(),COMMIT)).toEqual([]);
+ expect(checkR1Record(r1Record({accepted:true}),COMMIT).join()).toMatch(/R1_RECORD_ACCEPTED/);
+ expect(checkR1Record(half,COMMIT).join()).toMatch(/R1_GATE_NOT_TESTED:G-WB2/);
+});
+
+test('r1.1 guard: a complete record has no reasons; accepted:true, a missing result file, a campaign, another commit and a foreign R1 gate are each named; the R1 table still checks as R1',()=>{
+ expect(checkQualification(candidate11().m,candidate11().read)).toEqual([]);
+ const one=(over:(m:M,files:Map<string,string>)=>void,re:RegExp)=>{const c=candidate11(over);expect(checkQualification(c.m,c.read).join(' | ')).toMatch(re);};
+ one(m=>{m.accepted=true;},/ACCEPTED_WITHOUT_REVIEWER/);
+ one(m=>{m.gates['G-WA1'].accepted=true;},/GATE_ACCEPTED:G-WA1/);
+ one(m=>{m.gates['G-WB1']={status:'tested',accepted:false,cases:[]};},/FOREIGN_GATE:G-WB1/);
+ one(m=>{delete m.suites.find((s:{id:string})=>s.id==='arm-bv01').result;},/SUITE_RESULT_MISSING:arm-bv01/);
+ one(m=>{m.suites=m.suites.filter((s:{id:string})=>s.id!=='arm-worker');},/SUITE_MISSING:arm-worker/);
+ one(m=>{m.suites.find((s:{id:string})=>s.id==='arm-faults').result.summary={passed:1,failed:0,skipped:1,total:2};},/SUITE_SKIPPED:arm-faults/);
+ one(m=>{m.campaign={summary:null};},/CAMPAIGN_NOT_EXPECTED/);
+ one(m=>{m.r1Record=undefined;},/R1_RECORD_MISSING/);
+ one((m,f)=>{const t=JSON.stringify(r1Record({identity:{before:{sourceCommit:'e'.repeat(40)}}}));f.set('r1-record.json',t);m.r1Record.sha256=sha(t);const a=m.artifacts.find((x:M)=>x.file==='r1-record.json');a.sha256=sha(t);a.bytes=Buffer.byteLength(t);},/R1_RECORD_COMMIT/);
+ one((m,f)=>{const t=JSON.stringify(irsimRecord({note:'another record of the same commit'})),a=m.artifacts.find((x:M)=>x.file==='irsim-record.json');f.set('irsim-record.json',t);m.irsimRecord.sha256=sha(t);a.sha256=sha(t);a.bytes=Buffer.byteLength(t);},/IRSIM_RECORD_NOT_THE_R1_ONE/);
+ one(m=>{m.lab.pin.sourceCommit='e'.repeat(40);},/LAB_PIN_MISMATCH/);
+ one(m=>{m.cases.REG02.status='not_run';m.cases.REG02.reason='x';},/CASE_STATUS_MISMATCH:REG02/);
+ const r1=candidate(),r1Reasons=checkQualification(r1.m,r1.read) as string[];expect(r1Reasons).toEqual([]);
 });

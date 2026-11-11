@@ -68,6 +68,9 @@ export function qualify(input,table=TABLE){
    if(!x)worse('not_run','no linkforge-irsim record');else if(x.identity?.before?.sourceCommit!==input.sourceCommit)worse('not_run','the linkforge-irsim record is of another commit');else if(bad.length||!Object.keys(x.gates??{}).length)worse('not_run',`linkforge-irsim gates not tested: ${bad.join(',')||'none recorded'}`);else evidence.push('record:linkforge-irsim');}
   if(c.mockRegression){const x=input.mock;
    if(!x)worse('not_run','no mock regression recorded');else if(x.identity?.start?.source?.commit!==input.sourceCommit)worse('not_run','the mock regression is of another commit');else if(!(x.commands??[]).length)worse('not_run','no mock regression command ran');else if((x.commands??[]).some(k=>k.exitCode!==0))worse('failed',`a mock regression command exited non-zero: ${x.commands.filter(k=>k.exitCode!==0).map(k=>k.id).join(',')}`);else if((x.notRun??[]).length)worse('not_run',`the mock regression has not_run items: ${x.notRun.map(n=>n.id).join(',')}`);else evidence.push('record:mock-regression');}
+  // R1.1 (REG02): the R1 record of the same commit, every gate of it tested (a gate that is not tested there is a failure of the regression, not a missing input)
+  if(c.r1Record){const x=input.r1,bad=x?Object.entries(x.gates??{}).filter(([,g])=>g.status!=='tested').map(([k])=>k):[];
+   if(!x||x.documentType!=='sim-extension-qualification'||x.release!=='r1')worse('not_run','no R1 record');else if(x.identity?.before?.sourceCommit!==input.sourceCommit)worse('not_run','the R1 record is of another commit');else if(bad.length||!Object.keys(x.gates??{}).length)worse('failed',`R1 gates not tested: ${bad.join(',')||'none recorded'}`);else evidence.push('record:r1');}
   if(c.campaign){
    if(!campaign)worse('not_run','campaign not recorded');
    else if(c.campaign==='*'){if(campaign.complete&&campaign.runs.every(r=>r.result==='pass'))evidence.push('campaign:*');else worse(campaign.runs.some(r=>r.result==='fail')?'failed':'not_run','campaign not complete');}
@@ -102,9 +105,12 @@ export function checkQualification(m,read,table=TABLE){
  const gateIds=Object.keys(table.gates);
  for(const g of Object.keys(m.gates??{}))if(!gateIds.includes(g))r.push(`FOREIGN_GATE:${g}`);
  // the campaign: its summary as written, its campaign.json, identity.json and every run's own record
- const s=m.campaign?.summary,summaryBytes=s?.path?read(s.path):null,summary=summaryBytes?json(s.path):null;
+ const noCampaign=table.campaign===false; // R1.1 records no campaign: its Webots evidence is the suites that drive the real engine
+ const s=noCampaign?null:m.campaign?.summary,summaryBytes=s?.path?read(s.path):null,summary=summaryBytes?json(s.path):null;
+ if(noCampaign){if(m.campaign)r.push('CAMPAIGN_NOT_EXPECTED');}
+ else{
  if(!summary||sha(summaryBytes)!==s.sha256||summary.status!==s.status||summary.complete!==s.complete||summary.runs?.length!==s.runs||summary.provider?.kind!==s.provider?.kind)r.push('SUMMARY_CORRUPT');
- if(s?.provider?.kind!==table.providerKind||summary&&summary.provider?.kind!==table.providerKind)r.push(table.providerReason);
+ if(s?.provider?.kind!==table.providerKind||summary&&summary.provider?.kind!==table.providerKind)r.push(table.providerReason);}
  if(summary){
   if(summary.status!=='completed'||summary.complete!==true)r.push('CAMPAIGN_INCOMPLETE');
   const dir=s.path.replace(/[^/]*$/,''),campaignBytes=read(`${dir}campaign.json`);

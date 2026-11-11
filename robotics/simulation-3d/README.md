@@ -22,6 +22,22 @@ joint's target position and reports positions and velocities.
   contact, never what it touched, so an arm link against another link is unattributed too).
 - Webots and its controllers run without `USER`, so their per-run state is in `/tmp/webots/default/<port>`; `engine._tmp_dir` is that directory and `close()` removes it.
 
+## Qualification (R1 and R1.1)
+
+`scripts/sim-extension-qualification.mjs` holds both tables (`r1`: WB/ALG/PID/INT11/INT12/REG01; `r1.1`: WA01–WA08, INT13, INT14, REG02) and `scripts/record-sim-extension.mjs --release r1|r1.1` writes
+the record (`accepted:false`, a gate is `tested` at most). R1.1 has no campaign: its engine evidence is the suites that drive the real Webots. REG02 holds only when the R1 record, the IR-SIM record and the
+mock regression are of the same commit as the R1.1 record, the R1 record's gates are all `tested`, and the IR-SIM record and mock regression are the bytes the R1 record names. Record in this order, each exit 0
+before the next, outside both repositories (about 3 hours; Webots takes the screen):
+
+```sh
+(cd ../lab && node scripts/record-regression.mjs --suite physical-robot-lab --out $S/regression)
+node scripts/record-irsim.mjs --out $S/candidate-N --candidate-id candidate-N
+node scripts/record-sim-extension.mjs --release r1 --out $S/r1-candidate-N --candidate-id r1-candidate-N --irsim-record $S/candidate-N --mock-regression $S/regression
+node scripts/record-sim-extension.mjs --release r1.1 --out $S/r11-candidate-01 --candidate-id r11-candidate-01 --r1-record $S/r1-candidate-N --mock-regression $S/regression
+```
+
+Not to be inferred from these gates: grip force, a cup slipping or tipping, a real arm's load, human safety, LinuxCNC/MoveIt behaviour, a product arm.
+
 ```sh
 node scripts/bootstrap-portable-simulation.mjs webots
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=robotics/simulation-3d .venv-webots/bin/python -m pytest robotics/simulation-3d/tests -q

@@ -1,4 +1,4 @@
-// sim-extension-qualification/1 (W09, Release 1): the one mapping from the verification cases of spec 2026-11-10-simulation-extension-design.md §6.3 to the evidence that
+// sim-extension-qualification/1 (W09 Release 1; X08 Release 1.1 adds the `r1.1` table below): the one mapping from the verification cases of spec 2026-11-10-simulation-extension-design.md §6.3 to the evidence that
 // tests them, shared by scripts/record-sim-extension.mjs (which writes qualification.json) and tests/acceptance/sim-extension.acceptance.test.ts (which refuses it).
 // It uses the same core as the LinkForge + IR-SIM record (scripts/irsim-qualification.mjs) with its own table. `tested` means the named campaign cases passed, the named suites
 // ran green and the named recorded inputs agree on the recorded candidate; it is never `accepted` (a human reviewer sets that), and a skipped test is never a pass.
@@ -71,5 +71,68 @@ function inputs(m,read){
  return {input,reasons};
 }
 export const TABLE={documentType:'sim-extension-qualification',cases:CASES,gates:GATES,suites:SUITES,providerKind:'webots_engine',providerReason:'PROVIDER_NOT_WEBOTS',inputs};
+
+// ---- Release 1.1 (spec 2026-11-10-webots-arm-design.md §6.3, D32): the Webots arm. There is no campaign: the engine evidence is the suites that drive the real Webots, and REG02 re-checks the R1, IR-SIM and
+// R-MOCK records of the same commit. The same fail-closed core; `campaign:false` is the one difference.
+const LAB=(files)=>({repo:'lab',kind:'vitest',files});
+export const SUITES_R11=[
+ {id:'arm-static',...V(['tests/unit/arm-fixture.test.ts','tests/unit/capabilities-webots-arm.test.ts','tests/contracts/sim-extension-contracts.test.ts'])},
+ {id:'arm-py',repo:'source',kind:'pytest',python:'.venv-webots/bin/python',pythonPath:['robotics/simulation-3d'],files:['robotics/simulation-3d/tests']},
+ {id:'arm-worker',...V(['tests/integration/webots-arm-worker.test.ts'])},
+ {id:'arm-programs',...V(['tests/integration/webots-arm-programs.test.ts','tests/unit/webots-arm-ports.test.ts','tests/unit/mock-arm-tracking.test.ts'])},
+ {id:'arm-bv01',...V(['tests/integration/webots-arm-bv01.test.ts','tests/integration/webots-arm-double.test.ts'])},
+ {id:'arm-faults',...V(['tests/integration/webots-arm-faults.test.ts','tests/integration/webots-arm-readiness.test.ts'])},
+ {id:'arm-regress',...V(['tests/unit/bv01-mock-golden.test.ts','tests/integration/lab-v2-arm.test.ts','tests/security/webots-authority.test.ts'])},
+ {id:'lab-arm-unit',...LAB(['tests/unit/arm-chain.test.ts','tests/unit/webots-coffee.test.ts','tests/unit/twin-workspace.test.ts','tests/integration/webots-launcher.test.ts','tests/integration/runtime-artifact.test.ts'])},
+ // one spec per launcher (the pairing code is one-use)
+ {id:'lab-e2e-webots-coffee',repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs','--provider','webots','webots-coffee.spec.ts']},
+];
+export const CASES_R11={
+ WA01:{suites:['arm-static','arm-py']},
+ WA02:{suites:['arm-worker']},
+ WA03:{suites:['arm-worker','arm-py']},
+ WA04:{suites:['arm-programs']},
+ WA05:{suites:['arm-bv01']},
+ WA06:{suites:['arm-faults']},
+ WA07:{suites:['arm-bv01']},
+ WA08:{suites:['arm-bv01','lab-arm-unit']},
+ INT13:{lab:true,suites:['lab-e2e-webots-coffee','lab-arm-unit']},
+ INT14:{suites:['arm-static','arm-regress','arm-faults']},
+ REG02:{r1Record:true,irsimRecord:true,mockRegression:true},
+};
+export const GATES_R11={'G-WA1':['WA01','WA02','WA03'],'G-WA2':['WA04','WA05','WA06','WA07','WA08'],'G-INT3':['INT13','INT14'],'G-REG2':['REG02']};
+export const GATE_IDS_R11=Object.keys(GATES_R11);
+
+/** The R1 record this R1.1 record builds on (REG02): a Release 1 record of the SAME source commit, not accepted by the recorder, with its six gates tested. */
+export function checkR1Record(doc,sourceCommit){
+ const r=[];
+ if(!doc||doc.documentType!=='sim-extension-qualification'||doc.release!=='r1')return ['R1_RECORD_NOT_R1'];
+ if(doc.accepted!==false)r.push('R1_RECORD_ACCEPTED');
+ if(doc.identity?.before?.sourceCommit!==sourceCommit)r.push(`R1_RECORD_COMMIT: ${doc.identity?.before?.sourceCommit??'none'}, this source ${sourceCommit}`);
+ const gates=Object.entries(doc.gates??{});if(gates.length!==GATE_IDS.length)r.push('R1_RECORD_GATES');
+ for(const [g,x] of gates)if(x.status!=='tested')r.push(`R1_GATE_NOT_TESTED:${g}`);
+ return r;
+}
+/** The recorded inputs of the R1.1 table: the R1 record, its IR-SIM record and the Lab's mock regression, read back from beside qualification.json. The R1 record names the IR-SIM record and the
+ * mock regression it was built on: the copies here must be those same bytes, so REG02 cannot be satisfied by a different record of the same commit. */
+function inputsR11(m,read){
+ const reasons=[],input={},parsed=(ref,missing,corrupt)=>{
+  if(!ref?.file||!HEX.test(ref.sha256??'')){reasons.push(missing);return null;}
+  const b=read(ref.file);if(!b){reasons.push(missing);return null;}
+  if(sha(b)!==ref.sha256){reasons.push(corrupt);return null;}
+  try{return JSON.parse(b.toString('utf8'));}catch{reasons.push(corrupt);return null;}};
+ const commit=m.identity?.before?.sourceCommit;
+ const r1=parsed(m.r1Record,'R1_RECORD_MISSING','R1_RECORD_CORRUPT');
+ if(r1){input.r1=r1;reasons.push(...checkR1Record(r1,commit));}
+ const irs=parsed(m.irsimRecord,'IRSIM_RECORD_MISSING','IRSIM_RECORD_CORRUPT');
+ if(irs){input.irsim=irs;reasons.push(...checkIrsimRecord(irs,commit));if(r1&&r1.irsimRecord?.sha256!==m.irsimRecord.sha256)reasons.push('IRSIM_RECORD_NOT_THE_R1_ONE');}
+ const mock=parsed(m.mockRegression,'MOCK_REGRESSION_MISSING','MOCK_REGRESSION_CORRUPT');
+ if(mock){input.mock=mock;if(mock.schema!=='lab-v2-regression/1')reasons.push('MOCK_REGRESSION_NOT_LAB_MANIFEST');if(r1&&r1.mockRegression?.sha256!==m.mockRegression.sha256)reasons.push('MOCK_REGRESSION_NOT_THE_R1_ONE');}
+ return {input,reasons};
+}
+export const TABLE_R11={documentType:'sim-extension-qualification',cases:CASES_R11,gates:GATES_R11,suites:SUITES_R11,campaign:false,inputs:inputsR11};
+export const qualifyR11=(input)=>qualifyWith(input,TABLE_R11);
+
 export const qualify=(input)=>qualifyWith(input,TABLE);
-export const checkQualification=(m,read)=>check(m,read,TABLE);
+/** The table follows the record's own release; a record that names neither is checked as R1 and fails on its content. */
+export const checkQualification=(m,read)=>m?.release==='r1.1'?check(m,read,TABLE_R11):check(m,read,TABLE);

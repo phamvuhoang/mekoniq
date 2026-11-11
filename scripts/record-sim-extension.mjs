@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-// Records one simulation-extension qualification candidate (plan 01 W09, Release 1) into a fresh directory: the algorithm oracles (ALG01-03/05, PID01-03), the Webots campaign
+// Records one simulation-extension qualification candidate (plan 01 W09 Release 1; plan 2026-11-10-webots-arm X08 Release 1.1) into a fresh directory: the algorithm oracles (ALG01-03/05, PID01-03), the Webots campaign
 // through scripts/lab-irsim.mjs --provider webots, every verification suite of scripts/sim-extension-qualification.mjs (source vitest/pytest, Lab vitest, the Lab Webots browser
 // journeys with screenshots), the license inventory check and a Webots step-time measurement, with the source/Lab identity stamped before and after. It builds on a recorded
 // LinkForge + IR-SIM record of the SAME source commit and the Lab's mock regression manifest. Writes <out>/qualification.json (sim-extension-qualification/1): an evidence INPUT
 // for review: `accepted` is always false, a gate is `tested` at most, and tests/acceptance/sim-extension.acceptance.test.ts refuses anything inconsistent.
 //   node scripts/record-sim-extension.mjs --release r1 --out DIR --candidate-id ID --irsim-record DIR --mock-regression DIR [--lab DIR|none] [--skip-suites]
 //        [--webots-home DIR] [--webots-python PATH]
+//   node scripts/record-sim-extension.mjs --release r1.1 --out DIR --candidate-id ID --r1-record DIR --mock-regression DIR [--lab DIR|none] [--skip-suites] [--webots-home DIR] [--webots-python PATH]
+// R1.1 (D32) records the Webots arm suites and REG02: the R1 record (and the IR-SIM record and mock regression it was built on, taken from its own directory) must be of the SAME commit.
 // Refuses an existing --out, a dirty source tree, a Lab whose pin is not this source commit/closure, bytecode under a tool root, and an --irsim-record of another commit.
 // A record that exits 1 or 2 is never edited by hand: fix the cause and record the next candidate. Exit 0 complete (not_run only where declared), 1 a suite or the campaign failed or
 // the record is inconsistent, 2 prerequisite/usage (not_run), 130/143 on a signal.
@@ -18,16 +20,19 @@ import {dirname,join,relative,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {closureIdentity,ownOutput,treeState} from './lab-irsim.mjs';
 import {bytecodeUnder,summarizeResult as summarize} from './irsim-qualification.mjs';
-import {SUITES,checkIrsimRecord,checkQualification,qualify} from './sim-extension-qualification.mjs';
+import {SUITES,SUITES_R11,checkIrsimRecord,checkR1Record,checkQualification,qualify,qualifyR11} from './sim-extension-qualification.mjs';
 import {PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const fail=(code,m)=>{console.error(`${code}: ${m}`);process.exit(code==='NOT_RUN'?2:1);};
-const raw=process.argv.slice(2),own={release:undefined,out:undefined,candidateId:undefined,irsimRecord:undefined,mock:undefined,lab:undefined,skipSuites:false,webotsHome:undefined,webotsPython:undefined};
-const VALUE={'--release':'release','--out':'out','--candidate-id':'candidateId','--irsim-record':'irsimRecord','--mock-regression':'mock','--lab':'lab','--webots-home':'webotsHome','--webots-python':'webotsPython'};
+const raw=process.argv.slice(2),own={release:undefined,out:undefined,candidateId:undefined,irsimRecord:undefined,r1Record:undefined,mock:undefined,lab:undefined,skipSuites:false,webotsHome:undefined,webotsPython:undefined};
+const VALUE={'--release':'release','--out':'out','--candidate-id':'candidateId','--irsim-record':'irsimRecord','--r1-record':'r1Record','--mock-regression':'mock','--lab':'lab','--webots-home':'webotsHome','--webots-python':'webotsPython'};
 for(let i=0;i<raw.length;i++){const a=raw[i];if(a==='--skip-suites')own.skipSuites=true;else if(VALUE[a]){const v=raw[++i];if(v===undefined||v.startsWith('--'))fail('NOT_RUN',`MISSING_VALUE:${a}`);own[VALUE[a]]=v;}else fail('NOT_RUN',`UNKNOWN_OPTION:${a}`);}
-if(own.release!=='r1')fail('NOT_RUN',`MISSING_OPTION:--release r1 (only Release 1 is implemented${own.release?`, got ${own.release}`:''})`);
-for(const [k,f] of [['out','--out'],['irsimRecord','--irsim-record'],['mock','--mock-regression']])if(!own[k])fail('NOT_RUN',`MISSING_OPTION:${f}`);
-const out=resolve(own.out),irsimDir=resolve(own.irsimRecord),mockDir=resolve(own.mock);
+if(own.release!=='r1'&&own.release!=='r1.1')fail('NOT_RUN',`MISSING_OPTION:--release r1|r1.1${own.release?` (got ${own.release})`:''}`);
+const R11=own.release==='r1.1';
+if(R11&&own.irsimRecord)fail('NOT_RUN','UNKNOWN_OPTION:--irsim-record (R1.1 takes the IR-SIM record from the R1 record\'s own directory)');
+if(!R11&&own.r1Record)fail('NOT_RUN','UNKNOWN_OPTION:--r1-record (only Release 1.1)');
+for(const [k,f] of [['out','--out'],[R11?'r1Record':'irsimRecord',R11?'--r1-record':'--irsim-record'],['mock','--mock-regression']])if(!own[k])fail('NOT_RUN',`MISSING_OPTION:${f}`);
+const out=resolve(own.out),r1Dir=R11?resolve(own.r1Record):null,irsimDir=R11?r1Dir:resolve(own.irsimRecord),mockDir=resolve(own.mock);
 if(existsSync(out))fail('NOT_RUN',`OUT_EXISTS: ${out} (a record is written once, into a new directory)`);
 const candidateId=own.candidateId??out.replace(/\/+$/,'').split('/').pop();
 const ownPaths=ownOutput(out),sha=(b)=>createHash('sha256').update(b).digest('hex');
@@ -44,7 +49,12 @@ if(before.dirty)fail('NOT_RUN',`SOURCE_DIRTY: commit the source before recording
 if(!before.webots)fail('NOT_RUN',`WEBOTS_NOT_INSTALLED: no Webots R2025a at ${webotsHome}`);
 // the recorded inputs this record builds on: the LinkForge + IR-SIM record and the Lab's mock regression, both of THIS source commit
 const readJson=(p,what)=>{try{return JSON.parse(readFileSync(p,'utf8'));}catch{return fail('NOT_RUN',`${what}: cannot read ${p}`);}};
-const irsimDoc=readJson(join(irsimDir,'qualification.json'),'IRSIM_RECORD_MISSING'),mockDoc=readJson(join(mockDir,'manifest.json'),'MOCK_REGRESSION_MISSING');
+const mockDoc=readJson(join(mockDir,'manifest.json'),'MOCK_REGRESSION_MISSING');
+// R1: the IR-SIM record is the input. R1.1: the R1 record is, and the IR-SIM record is the one it carries (irsim-record.json, byte for byte what R1 checked)
+const r1Doc=R11?readJson(join(r1Dir,'qualification.json'),'R1_RECORD_MISSING'):null;
+if(R11){const p=checkR1Record(r1Doc,before.sourceCommit);if(p.length)fail('NOT_RUN',`${p.join('; ')} (record release r1 for this commit first)`);
+ const f=join(r1Dir,r1Doc.irsimRecord?.file??'irsim-record.json');if(!existsSync(f)||sha(readFileSync(f))!==r1Doc.irsimRecord?.sha256)fail('NOT_RUN','IRSIM_RECORD_MISSING: the R1 record directory has no irsim-record.json matching what it names');}
+const irsimDoc=R11?readJson(join(r1Dir,r1Doc.irsimRecord.file),'IRSIM_RECORD_MISSING'):readJson(join(irsimDir,'qualification.json'),'IRSIM_RECORD_MISSING');
 const irsimProblems=checkIrsimRecord(irsimDoc,before.sourceCommit);if(irsimProblems.length)fail('NOT_RUN',`${irsimProblems.join('; ')} (record linkforge-irsim for this commit first)`);
 if(mockDoc.schema!=='lab-v2-regression/1'||mockDoc.identity?.start?.source?.commit!==before.sourceCommit)fail('NOT_RUN',`MOCK_REGRESSION_COMMIT: the Lab regression is of ${mockDoc.identity?.start?.source?.commit??'no commit'}, this source is ${before.sourceCommit}`);
 const labDir=own.lab==='none'?null:own.lab?resolve(own.lab):existsSync(join(root,'../lab/config/source-runtime.lock.json'))?resolve(root,'../lab'):null;
@@ -81,20 +91,20 @@ const webotsEnv={MEKONIQ_WEBOTS_HOME:webotsHome};
 
 // ---- 1. the algorithm oracles (RTB kinematics, the PID reference) ----
 let algorithm=null;
-{
+if(!R11){
  const scratchBase=mkdtempSync(join(tmpdir(),'mekoniq-alg-')),scratch=join(scratchBase,'out'),cmd=await record('algorithm',process.execPath,['scripts/lab-algorithm.mjs','run','--out',scratch]);commands.push(cmd);
  const f=join(scratch,'algorithm-results.json');
  if(existsSync(f)){const text=scrub(readFileSync(f,'utf8'));writeFileSync(join(out,'algorithm-results.json'),text);algorithm={file:'algorithm-results.json',sha256:sha(text)};}else notRun.push({id:'algorithm',reason:`no results written (exit ${cmd.exitCode})`});
  rmSync(scratchBase,{recursive:true,force:true});
 }
 // ---- 2. the Webots campaign (its own process, signal handling and worker groups), pinned to the closure stamped above ----
-const campaignCmd=await record('campaign',process.execPath,['scripts/lab-irsim.mjs','run','--provider','webots','--campaign','r1-qualification','--out',join(out,'campaign'),'--concurrency','1','--webots-home',webotsHome,'--webots-python',webotsPython,'--expect-portable-digest',before.toolClosures.portable],{timeoutMs:7_200_000});
-let summary=null;try{summary=JSON.parse(await readFile(join(out,'campaign','summary.json'),'utf8'));}catch{summary=null;}
-const campaign={command:campaignCmd.command,exitCode:campaignCmd.exitCode,log:campaignCmd.log,summary:summary?{path:'campaign/summary.json',sha256:sha(readFileSync(join(out,'campaign','summary.json'))),status:summary.status,complete:summary.complete,runs:summary.runs.length,provider:summary.provider}:null};
-if(!summary)notRun.push({id:'campaign',reason:`no summary written (exit ${campaignCmd.exitCode})`});
+const campaignCmd=R11?null:await record('campaign',process.execPath,['scripts/lab-irsim.mjs','run','--provider','webots','--campaign','r1-qualification','--out',join(out,'campaign'),'--concurrency','1','--webots-home',webotsHome,'--webots-python',webotsPython,'--expect-portable-digest',before.toolClosures.portable],{timeoutMs:7_200_000});
+let summary=null;if(!R11)try{summary=JSON.parse(await readFile(join(out,'campaign','summary.json'),'utf8'));}catch{summary=null;}
+const campaign=R11?null:{command:campaignCmd.command,exitCode:campaignCmd.exitCode,log:campaignCmd.log,summary:summary?{path:'campaign/summary.json',sha256:sha(readFileSync(join(out,'campaign','summary.json'))),status:summary.status,complete:summary.complete,runs:summary.runs.length,provider:summary.provider}:null};
+if(!R11&&!summary)notRun.push({id:'campaign',reason:`no summary written (exit ${campaignCmd.exitCode})`});
 
 // ---- 3. the verification suites (each named by the cases it tests in sim-extension-qualification.mjs) ----
-if(!own.skipSuites&&!signalled)for(const s of SUITES){
+if(!own.skipSuites&&!signalled)for(const s of R11?SUITES_R11:SUITES){
  if(signalled)break;
  if(s.repo==='lab'&&!labDir){notRun.push({id:`suite:${s.id}`,reason:'no Lab checkout (--lab)'});continue;}
  const cwd=s.repo==='lab'?labDir:root,file=`suites/${s.id}.${s.kind==='pytest'?'xml':'json'}`,abs=join(out,file);
@@ -109,28 +119,32 @@ if(!own.skipSuites&&!signalled)for(const s of SUITES){
 // ---- 4. license inventory check and the Webots step-time measurement (a measurement, never a gate) ----
 if(!signalled){
  commands.push(await record('licenses',process.execPath,['scripts/portable-licenses.mjs','--check']));
- const perf=await record('performance',process.execPath,['scripts/measure-webots.mjs','--out',join(out,'performance.json'),'--webots-home',webotsHome,'--webots-python',webotsPython],{timeoutMs:900_000});
- commands.push(perf);if(!existsSync(join(out,'performance.json')))notRun.push({id:'performance',reason:`measurement not written (exit ${perf.exitCode})`});
+ if(!R11){const perf=await record('performance',process.execPath,['scripts/measure-webots.mjs','--out',join(out,'performance.json'),'--webots-home',webotsHome,'--webots-python',webotsPython],{timeoutMs:900_000});
+  commands.push(perf);if(!existsSync(join(out,'performance.json')))notRun.push({id:'performance',reason:`measurement not written (exit ${perf.exitCode})`});}
 }
 // ---- 5. the inputs this record builds on, copied byte for byte (the check reads them back from here, never from a claim) ----
-copyFileSync(join(irsimDir,'qualification.json'),join(out,'irsim-record.json'));copyFileSync(join(mockDir,'manifest.json'),join(out,'mock-regression.json'));
-const irsimRecord={file:'irsim-record.json',sha256:sha(readFileSync(join(out,'irsim-record.json'))),candidate:irsimDir.replace(/\/+$/,'').split('/').pop(),sourceCommit:irsimDoc.identity.before.sourceCommit};
+if(R11){copyFileSync(join(r1Dir,'qualification.json'),join(out,'r1-record.json'));copyFileSync(join(r1Dir,r1Doc.irsimRecord.file),join(out,'irsim-record.json'));}
+else copyFileSync(join(irsimDir,'qualification.json'),join(out,'irsim-record.json'));
+copyFileSync(join(mockDir,'manifest.json'),join(out,'mock-regression.json'));
+const irsimRecord={file:'irsim-record.json',sha256:sha(readFileSync(join(out,'irsim-record.json'))),candidate:R11?r1Doc.irsimRecord.candidate:irsimDir.replace(/\/+$/,'').split('/').pop(),sourceCommit:irsimDoc.identity.before.sourceCommit};
+const r1Record=R11?{file:'r1-record.json',sha256:sha(readFileSync(join(out,'r1-record.json'))),candidate:r1Dir.replace(/\/+$/,'').split('/').pop(),sourceCommit:r1Doc.identity.before.sourceCommit}:null;
 const mockRegression={file:'mock-regression.json',sha256:sha(readFileSync(join(out,'mock-regression.json'))),labCommit:mockDoc.identity?.start?.lab?.commit??null,source:mockDir.includes('/docs/')?mockDir.slice(mockDir.indexOf('/docs/')+1):'(outside the repositories)'};
 
 // ---- 6. identity after, statuses, the record ----
 const after=identity(),labAfter=labInfo();
 const identityStable=before.sourceCommit===after.sourceCommit&&!after.dirty&&before.toolClosures.portable===after.toolClosures.portable&&before.toolClosures.native===after.toolClosures.native&&JSON.stringify(before.locks)===JSON.stringify(after.locks)&&before.webots.executableSha256===after.webots?.executableSha256&&before.oracleProfileDigest===after.oracleProfileDigest&&(!labBefore||labBefore.commit===labAfter.commit&&!labAfter.dirty);
 const algorithmDoc=algorithm?JSON.parse(readFileSync(join(out,algorithm.file),'utf8')):null;
-const q=qualify({campaign:summary&&summary.status==='completed'?summary:null,suites,lab:!!labDir&&suites.some(s=>s.id.startsWith('lab-e2e')),sourceCommit:before.sourceCommit,algorithm:algorithmDoc,irsim:irsimDoc,mock:mockDoc});
+const labRecorded=!!labDir&&suites.some(s=>s.id.startsWith('lab-e2e'));
+const q=R11?qualifyR11({suites,lab:labRecorded,sourceCommit:before.sourceCommit,r1:r1Doc,irsim:irsimDoc,mock:mockDoc}):qualify({campaign:summary&&summary.status==='completed'?summary:null,suites,lab:labRecorded,sourceCommit:before.sourceCommit,algorithm:algorithmDoc,irsim:irsimDoc,mock:mockDoc});
 const walk=(d,rel='')=>readdirSync(d,{withFileTypes:true}).sort((a,b)=>a.name<b.name?-1:1).flatMap(e=>e.isDirectory()?walk(join(d,e.name),`${rel}${e.name}/`):e.isFile()&&`${rel}${e.name}`!=='qualification.json'?[{file:`${rel}${e.name}`,sha256:sha(readFileSync(join(d,e.name))),bytes:statSync(join(d,e.name)).size}]:[]);
-const recordDoc={schemaVersion:1,documentType:'sim-extension-qualification',release:'r1',candidateId,accepted:false,acceptedBy:null,acceptedAt:null,
- note:'evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; MuJoCo, Linux and hardware gates are outside its scope',
- identity:{before,after,identityStable},lab:labBefore?{commit:labBefore.commit,dirty:labAfter.dirty,pin:labBefore.pin}:null,campaign,algorithm,irsimRecord,mockRegression,suites,commands,performance:existsSync(join(out,'performance.json'))?'performance.json':null,
+const recordDoc={schemaVersion:1,documentType:'sim-extension-qualification',release:own.release,candidateId,accepted:false,acceptedBy:null,acceptedAt:null,
+ note:R11?'evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; the arm is a Webots plant with assumed parameters (not_calibrated), gripping is an event, and no real arm, MuJoCo, Linux or hardware gate is in its scope':'evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; MuJoCo, Linux and hardware gates are outside its scope',
+ identity:{before,after,identityStable},lab:labBefore?{commit:labBefore.commit,dirty:labAfter.dirty,pin:labBefore.pin}:null,campaign,algorithm,...R11?{r1Record}:{},irsimRecord,mockRegression,suites,commands,performance:existsSync(join(out,'performance.json'))?'performance.json':null,
  cases:q.cases,gates:q.gates,notRun:[...q.notRun,...notRun],interrupted:signalled||undefined,artifacts:walk(out)};
 await writeFile(join(out,'qualification.json'),JSON.stringify(recordDoc,null,1)+'\n',{flag:'wx'});
 const problems=checkQualification(recordDoc,(p)=>{const f=join(out,p);return existsSync(f)?readFileSync(f):null;});
 console.log(JSON.stringify({candidateId,cases:Object.fromEntries(Object.entries(q.cases).map(([k,v])=>[k,v.status])),gates:Object.fromEntries(Object.entries(q.gates).map(([k,v])=>[k,v.status])),notRun:recordDoc.notRun,problems}));
 if(signalled)process.exit(signalled);
 if(!identityStable){console.error('NOT_RUN: the source commit, the Lab, a tool closure, a lock or the Webots executable changed, or a tree became dirty, while recording');process.exit(2);}
-if(!summary||campaignCmd.exitCode===2)process.exit(2);
+if(!R11&&(!summary||campaignCmd.exitCode===2))process.exit(2);
 process.exit(problems.filter(p=>!/^CASE_STATUS_MISMATCH|^GATE_STATUS_MISMATCH/.test(p)).length||Object.values(q.cases).some(c=>c.status==='failed')||suites.some(s=>s.exitCode!==0)||commands.some(c=>c.exitCode!==0)?1:0);
