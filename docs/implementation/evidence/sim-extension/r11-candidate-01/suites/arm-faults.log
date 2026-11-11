@@ -1,0 +1,19 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/webots-arm-faults.test.ts (7 tests) 106144ms
+     ✓ a real obstacle on the cup-place path: the engine reports the contact, the arm stops as ARM_COLLISION and the cup is still held  6710ms
+     ✓ an obstacle injected into the arm scene while the cup is held stops the arm the same way  28814ms
+     ✓ a joint whose motor is 10 % of the fixture's cannot follow: ARM_FOLLOWING_ERROR within followTicks of the start, long before maxTicks  26553ms
+     ✓ SIGKILL of the worker in the middle of cup-pick: the outcome is unknown, nothing is resent, no process is left  7420ms
+     ✓ SIGKILL of Webots in the middle of cup-place: unknown, the cup is still the arm's, no process is left  27709ms
+     ✓ a cancel while the arm holds the cup does not release it: the job needs a reconcile  8502ms
+     ✓ BV01 is refused by the Webots arm set, and WB-BV01 by the mock set, before any provider effect  437ms
+ ✓ tests/integration/webots-arm-readiness.test.ts (4 tests) 440ms
+
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+   Start at  12:54:30
+   Duration  108.35s (transform 560ms, setup 0ms, import 1.59s, tests 106.58s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/5fd047c2-1ecf-4544-b45d-cd34e0b498a4/scratchpad/rec/r11-candidate-01/suites/arm-faults.json

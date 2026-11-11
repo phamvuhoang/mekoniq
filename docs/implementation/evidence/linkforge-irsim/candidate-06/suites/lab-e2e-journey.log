@@ -1,0 +1,15 @@
+Mekoniq Robot Lab — IR-SIM 2D twin (portable simulation; no robot hardware, not a native/Gazebo run)
+Source fa857d9bb1899e08c5e4f872ee9f3f3ef95fda08 · artifact 9c4ce1831d66 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm, irsim_2d · journal <tmp>/mekoniq-irsim-e2e-CZVapT/runs
+Owned processes: runtime pid 41146, UI pid 41151
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 1726 ms. Press Ctrl-C to stop.
+Running irsim-journey.spec.ts through pnpm lab:irsim (real IR-SIM worker) with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/irsim-journey.spec.ts:29:1 › Serve on IR-SIM 2D: validate, run IR-FD01 to completion, report and replay, then a width edit makes everything stale until it is rerun (28.1s)
+
+  1 passed (34.0s)
+
+Stopping the runtime and UI this launcher started…

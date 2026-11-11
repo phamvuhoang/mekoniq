@@ -1,0 +1,12 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/webots-fleet.test.ts (1 test) 63619ms
+   ✓ WB04 WB-FD07: both robots deliver within 12,000 ticks, the aisle zone has one granted owner at a time, and the report carries the serialisation note  63474ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  12:45:43
+   Duration  64.77s (transform 566ms, setup 0ms, import 1.07s, tests 63.62s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/5fd047c2-1ecf-4544-b45d-cd34e0b498a4/scratchpad/rec/r1-candidate-03/suites/wb-fleet.json

@@ -1,0 +1,24 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/unit/irsim-cli.test.ts (13 tests) 7653ms
+   ✓ lab-irsim argv: strict schema, usage errors are exit 2 with a reason code  318ms
+   ✓ lab-irsim run: a campaign outside the allowlist is refused (exit 2); a missing worker is not_run for every run (exit 2), nothing runs in its place; a used output directory is refused  3377ms
+   ✓ F3 tree state: an untracked file anywhere, or an ignored file in a tool root that could run, makes the tree dirty; bytecode in __pycache__, pytest caches and tests/ do not  356ms
+   ✓ F3 tool closures: a campaign is refused before it starts when the portable tools differ from the expected pin, and stopped as not_run when they change while it runs  2503ms
+   ✓ lab-irsim --provider: webots needs a known value, a campaign id names the plant's own campaigns directory, verify accepts a webots_engine summary (and still refuses a double), and a campaign of the other plant is refused  652ms
+ ✓ tests/integration/lab-runtime-artifact.test.ts (4 tests) 1988ms
+   ✓ self-contained exported artifact opens its embedded SQLite migration away from the source checkout  1171ms
+   ✓ --clean-checkout exports committed HEAD: dirty false and sourceCommit equal to HEAD  583ms
+ ✓ tests/integration/portable-tool-closure.test.ts (5 tests) 1109ms
+   ✓ a tree holding only the closure files imports and runs the real IR-SIM compile  468ms
+   ✓ F3: an untracked sitecustomize.py/usercustomize.py in the worker and helper roots is not imported by the worker or the portable compiler (isolated start, roots added after site)  512ms
+ ✓ tests/unit/irsim-qualification.test.ts (6 tests) 23ms
+ ✓ tests/unit/portable-simulation-bootstrap.test.ts (1 test) 2ms
+
+ Test Files  5 passed (5)
+      Tests  29 passed (29)
+   Start at  11:25:08
+   Duration  12.91s (transform 606ms, setup 0ms, import 1.76s, tests 10.77s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/5fd047c2-1ecf-4544-b45d-cd34e0b498a4/scratchpad/rec/candidate-06/suites/int.json

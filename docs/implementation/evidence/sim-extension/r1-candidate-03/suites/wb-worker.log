@@ -1,0 +1,19 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/webots-worker.test.ts (6 tests) 15340ms
+     ✓ WB08 clock: ticks are monotonic, simTimeNs is tick x 20 ms, the bootId never changes, and a step queued behind another waits for its ACK  3269ms
+     ✓ WB01 model parity: what the engine loaded matches the physical model  2320ms
+     ✓ WB01 stands: 250 ticks at rest do not tip or drift it  2659ms
+     ✓ WB02 lidar: the scan at the spawn agrees with the independent ray-cast of the scene  2213ms
+     ✓ it drives straight: [0.3, 0] for 100 ticks moves it 0.6 m along its heading  2320ms
+     ✓ killing Webots mid-run loses the worker within 5 s as unknown and leaves no process behind  2558ms
+ ✓ tests/integration/webots-readiness.test.ts (8 tests) 731ms
+   ✓ the smoke create names a missing window-server session and a busy port  356ms
+
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  12:45:00
+   Duration  17.57s (transform 579ms, setup 0ms, import 1.31s, tests 16.07s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/5fd047c2-1ecf-4544-b45d-cd34e0b498a4/scratchpad/rec/r1-candidate-03/suites/wb-worker.json

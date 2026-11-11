@@ -1,0 +1,92 @@
+{
+ "id": "016-WB-FD07-serve-3d-fleet-v1-s203-r1",
+ "index": 11,
+ "scenarioId": "WB-FD07",
+ "fixtureId": "serve-3d-fleet-v1",
+ "seed": 203,
+ "repeat": 1,
+ "expectedAssertions": [
+  "EVIDENCE_COMPLETE",
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "NO_PHYSICAL_CONTACT",
+  "BOTH_ROBOTS_MOVED",
+  "ROBOT_MAPPING",
+  "ZONE_SINGLE_OWNER",
+  "ZONE_RELEASE_AFTER_EXIT",
+  "MIN_SEPARATION_AVAILABLE",
+  "WITHIN_TICKS"
+ ],
+ "kind": "scenario",
+ "label": "WB04 (source-driven): missions the source orchestrates are serialised by the __venue_movement__ reservation on the Webots 3D plant; the aisle zone is reserved/released per leg and never contended; there is no contention rig for Webots in this release",
+ "stepTicks": 500,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "completed",
+  "served": "2",
+  "tick": 9747,
+  "simTimeNs": "194940000000"
+ },
+ "horizon": 9747,
+ "evidenceComplete": true,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "70927b68b55b50dbeb5b18d2a62e5ea1684087e734f34210f0204885597437ea",
+  "sensorDigest": "617732ef917a7d38b6688f0355b01f166f3be4f4153dc192c018e4e82d526dda",
+  "assertionDigest": "718f2d8cc23fbf16f2b898ff1a7e232e705582b0e131688ab689afe9789ae5e3",
+  "outcomeDigest": "91f18805316fd4fcda1f4aba59a5c22873b4a58d9445d8a4d5c795a0461c2ca8"
+ },
+ "assertions": [
+  {
+   "id": "EVIDENCE_COMPLETE",
+   "result": "pass"
+  },
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "NO_PHYSICAL_CONTACT",
+   "result": "pass"
+  },
+  {
+   "id": "BOTH_ROBOTS_MOVED",
+   "result": "pass"
+  },
+  {
+   "id": "ROBOT_MAPPING",
+   "result": "pass"
+  },
+  {
+   "id": "ZONE_SINGLE_OWNER",
+   "result": "pass"
+  },
+  {
+   "id": "ZONE_RELEASE_AFTER_EXIT",
+   "result": "pass"
+  },
+  {
+   "id": "MIN_SEPARATION_AVAILABLE",
+   "result": "pass"
+  },
+  {
+   "id": "WITHIN_TICKS",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 67092,
+ "provider": {
+  "id": "webots_3d",
+  "kind": "webots_engine"
+ }
+}
