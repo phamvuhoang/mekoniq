@@ -43,7 +43,8 @@ export function modeledCupCenter(model:ArmModelSI,actualRad:number[],tcpM:Vec3,w
  return tcpM.map((v,i)=>v+worldFromArmBaseM[i]!+offset[i]!) as Vec3;
 }
 // ---- checker ports (plan 02 owns the algorithm; these only carry the trace to it) ----
-const METHOD={kind:'adaptive-subdivision',bound:'reach * sum(|dq|) per interval, conservative',maxDepth:24};
+/** How checkArmSweep bounds an interval; also the method of an ARM03 record built from a plant's own per-tick checks. */
+export const METHOD={kind:'adaptive-subdivision',bound:'reach * sum(|dq|) per interval, conservative',maxDepth:24};
 const held=(att:CheckerInput['attachments'],a:number,b:number)=>att.some(x=>x.fromTick<=a&&a<=x.toTick||x.fromTick<=b&&b<=x.toTick);
 const allowedFor=(ac:AllowedContact[],a:number,b:number)=>ac.filter(x=>x.fromTick<=a&&b<=x.toTick);
 export function tsChecker():ArmCheckerPort{

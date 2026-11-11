@@ -9,6 +9,8 @@ import type {CommandResult} from '../../../../contracts/src/index';
 import {MockCoffeePlant,type CoffeePlantState,type CoffeeFault} from '../../../../cell-adapters/src/mock-coffee';
 import {MockArmPlant,type ArmPlantState,type ArmFault} from '../../../../cell-adapters/src/mock-arm';
 import {createMockCoffeePorts,type CoffeePlantPorts} from '../beverage/coffee-ports';
+import {buildArmReport,type ArmReportBlock} from '../beverage/arm-plant-report';
+import type {ArmCollisionEvidenceRecord} from '../arm/session';
 import {dispatchCellEffects,cellReportPayload} from '../../../../cell-adapters/src/dispatch';
 import type {CellReport} from '../../../../cell-adapters/src/contract';
 import {PUMA560_SI,MOCK_KINEMATIC} from '../models/arm-kinematics';
@@ -283,6 +285,11 @@ export class CoffeeDriver {
    cups.push({cupId:w.cupId,ownerKind:String(c.ownerKind),ownerId:String(c.ownerId)});
   }
   return {jobs,cups};
+ }
+ /** The `arm` block of the run report when the arm is a plant (R1.1); null for the mock arm. Writes the trace file into `directory`. */
+ async armEvidence(directory:string,world:ArmCollisionEvidenceRecord['worldRevision'],assetRef:JsonObject):Promise<ArmReportBlock|null>{
+  const r=this.ports.report();
+  return r.armPlant?buildArmReport(this.st.arm,r.armPlant,directory,world,assetRef):null;
  }
  async close(){try{await this.ports.close();}finally{this.ledger?.close();this.ledger=undefined;}}
  async report():Promise<CoffeeReport>{

@@ -28,7 +28,7 @@ export function webotsArmPorts(runtime:WebotsRuntimeOptions,run:ArmRunInput):Non
   async function open():Promise<CoffeePlantPorts>{
   const profile=loadOracleProfile().profile.webotsArm;
   if(!profile)throw new Error('ARM_ORACLE_PROFILE_MISSING: the oracle profile has no webotsArm thresholds');
-  const fixture=readArmFixture(runtime.workerRoot),scene=buildArmScene3D(run.project,fixture,run.seed,{armId:st.armId,homeRad:st.arm.q});
+  const fixture=readArmFixture(runtime.workerRoot,runtime.armFixtureDir),scene=buildArmScene3D(run.project,fixture,run.seed,{armId:st.armId,homeRad:st.arm.q,...runtime.armExtraStatics?{extraStatics:runtime.armExtraStatics}:{}});
   const bundle=join(directory,'webots-arm','bundle');
   await mkdir(bundle,{recursive:true,mode:0o700});
   await writeFile(join(bundle,'arm-scene.json'),JSON.stringify(scene),{mode:0o600});

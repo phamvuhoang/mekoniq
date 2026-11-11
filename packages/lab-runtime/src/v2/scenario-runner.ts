@@ -9,6 +9,7 @@ import type {RobotEvent} from '../../../robot-adapters/src/contract';
 import {validateProjectV2,validateActionV2,type LabProjectV2,type LabRunSnapshotV2,type AssetRevision} from './contracts';
 import {defaultCatalog,type CapabilityCatalog,type Access,type Mode} from './capabilities';
 import {requiredBackends} from './scenario-matrix';
+import {isArmPlantSet} from './backend-registry';
 import {instantiateBackends,serverAssets} from './backend-registry';
 import {compileAsset,verifyAssetHash,worldHash} from './assets';
 import {hashJson} from './hash';
@@ -72,14 +73,16 @@ export function checkWorld(p:LabProjectV2){
 }
 export async function createScenarioRun(input:RunManifestInput,providers:RunProviders):Promise<ScenarioRun>{
  const registered=(providers.scenarios??scenarioRegistry).get(input.scenarioId);if(!registered)throw new Error('SCENARIO_UNSUPPORTED');
- const backends=instantiateBackends(input.backendSetId,providers.catalog??defaultCatalog,providers.enabledBackends??[],requiredBackends(registered,'mock',input.backendSetId,providers.catalog??defaultCatalog));
+ const capabilities=providers.catalog??defaultCatalog,plantSet=isArmPlantSet(Object.hasOwn(capabilities.sets,input.backendSetId)?capabilities.sets[input.backendSetId]:undefined);
+ if(plantSet&&!providers.coffeePorts)throw new Error('BACKEND_EXECUTION_DISABLED'); // a plant-backed arm is only ever the caller's ports; never a silent mock
+ const backends=instantiateBackends(input.backendSetId,capabilities,providers.enabledBackends??[],requiredBackends(registered,plantSet?'simulation':'mock',input.backendSetId,capabilities));
  if(input.mode!==backends.mode||input.access!==backends.access)throw new Error('MODE_BACKEND_MISMATCH');
  const valid=validateProjectV2(input.project);if(!valid.ok)throw new Error('INVALID_PROJECT');
  const project=structuredClone(valid.value);checkWorld(project);
  const scenario=structuredClone(registered);
  checkScenario(scenario);if(scenario.revision!==input.scenarioRevision)throw new Error('SCENARIO_REVISION_MISMATCH');
  // A coffee scenario needs the coffee and arm backends of the locked set; there is no fallback to an AMR-only run.
- if(scenario.coffee&&!['mock_coffee','mock_arm'].every(b=>backends.backends.includes(b)))throw new Error('SCENARIO_BACKEND_MISSING');
+ if(scenario.coffee&&!(backends.backends.includes('mock_coffee')&&(backends.backends.includes('mock_arm')||backends.backends.includes('webots_arm'))))throw new Error('SCENARIO_BACKEND_MISSING');
  if(!Number.isSafeInteger(input.seed)||input.seed<0||input.seed>0xffffffff)throw new Error('INVALID_SEED');
  const roles=resolveRoles(scenario,project),catalog=[...(providers.assets??[]),...serverAssets],radius:Record<string,number|null>={},trays:Record<string,number>={};
  const faultSchedule=validateFaultSchedule(project.faultSchedule??[],activeFaultEntities(project,roles),'mock');
@@ -93,7 +96,7 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  });
  const armCollisionScene=scenario.coffee?declareArmScene(project,radius,roles.robots.map(r=>r.id)):undefined;
  const armProfile={kinematics:PUMA560_SI,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={amr:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
- const manifest:Omit<RunReport['manifest'],'runId'>={...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:'mock',access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
+ const manifest:Omit<RunReport['manifest'],'runId'>={...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:backends.mode,access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends:backends.descriptors}),configuration,
   recipes:COFFEE_RECIPES.filter(r=>scenario.coffee?.orders.some(o=>o.recipe===r.id)).map(r=>({id:r.id,revision:r.revision,hash:r.hash})),
@@ -448,7 +451,7 @@ class Run implements ScenarioRun {
   else if(awaiting.length)status='awaiting_confirmation';
   let served=0n;for(const lineId of [...c.workload.map(w=>w.lineId),...c.coffee?.workload.map(w=>w.lineId)??[]])if(lineId)served+=BigInt(String((await this.source.read('fulfillment',lineId)).state.served??'0'));
   const journal=await this.source.journal();
-  return {run:{...m.faultSchedule?{faultScheduleHash:m.faultSchedule.hash}:{},schemaVersion:2,id:c.runId,mode:'mock',access:'simulated',backendSetId:m.backendSetId,backends:m.backends.map(b=>b.id),status,runRevision:c.revision,eventCursor:journal.length?journal[journal.length-1]!.sequence:null,telemetryCursor:this.telemetry.cursor(),fidelity:'modeled',ageMs:0,sourceCommit:m.sourceCommit,scenarioId:m.scenario.id,scenarioRevision:m.scenario.revision,seed:m.seed},
+  return {run:{...m.faultSchedule?{faultScheduleHash:m.faultSchedule.hash}:{},schemaVersion:2,id:c.runId,mode:m.mode,access:'simulated',backendSetId:m.backendSetId,backends:m.backends.map(b=>b.id),status,runRevision:c.revision,eventCursor:journal.length?journal[journal.length-1]!.sequence:null,telemetryCursor:this.telemetry.cursor(),fidelity:'modeled',ageMs:0,sourceCommit:m.sourceCommit,scenarioId:m.scenario.id,scenarioRevision:m.scenario.revision,seed:m.seed},
    tick:c.tick,simTimeNs:this.clock.simTimeNs(),model:MOCK_AMR.model,entities:this.entities(),workload:structuredClone(c.workload),awaiting,attention:structuredClone(c.attention),served:String(served),coffee:this.coffee?await this.coffee.view():null,...c.reclaimed?{controlAccess:'view_reconcile' as const}:{}};
  }
  private entities():EntityView[]{
@@ -460,6 +463,7 @@ class Run implements ScenarioRun {
   const c=this.cp,v=await this.view(),known=c.plant.robots.every(r=>r.radiusM!==null);
   const businessEvents:BusinessEvent[]=(await this.source.journal()).flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({sequence:entry.sequence,at:entry.recordedAt,type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject})));
   const telemetry=this.telemetry.report();
+  const armAsset=this.project.entities.find(e=>e.kind==='arm')?.assetRef,arm=this.coffee&&armAsset?await this.coffee.armEvidence(this.dir,c.manifest.world,armAsset as unknown as JsonObject):null;
   return {schemaVersion:2,manifest:structuredClone(c.manifest),outcome:{status:v.run.status,served:v.served,tick:c.tick,simTimeNs:v.simTimeNs},attention:v.attention,workload:v.workload,entities:v.entities,businessEvents,
    effects:(await this.source.effects()).filter(e=>ROBOT_TYPES.includes(String(e.type))).map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
    metrics:{maxConcurrentMovers:c.plant.maxConcurrentMovers,holds:structuredClone(c.plant.holdLog??[]),distanceM:Object.fromEntries(c.plant.robots.map(r=>[r.id,r.distanceM])),collision:known?{available:true,contacts:c.plant.contacts,minSeparationM:c.plant.minSeparationM}:{available:false,reason:'GEOMETRY_UNKNOWN',contacts:null,minSeparationM:null}},
@@ -471,8 +475,9 @@ class Run implements ScenarioRun {
      'mock_kinematic arm: illustrative joint waypoints and linear joint interpolation; capsule sweep checks model geometry, with no torque, grip force or physical stopping proof.',
      'Arm sweep evidence records motion and scene changes with attachment identity and referenced geometry; identical stationary checks share a tick interval. Evidence is bounded to 4096 intervals; droppedIntervals and armCollisionTraceComplete expose truncation. The first blocked sweep retains its geometry independently.',
      c.manifest.armCollisionScene?.profile?'Arm scene scope: project obstacle rectangles extruded from map z=0, declared illustrative heights, compiled AMR radii, conservative swept AABBs in the declared arm base frame. No calibrated fixture or robot mesh, force, or physical safety validation.':'Arm scene scope unavailable: no declared armCollisionProfile; checker covers self and injected arm-frame obstacles only.',
-     'Coffee reconciliation is human-provenance audit only; consumption of an unknown step stays an open stock exception.']:[]],
-   ...this.coffee?{coffee:await this.coffee.report()}:{},telemetry};
+     'Coffee reconciliation is human-provenance audit only; consumption of an unknown step stays an open stock exception.']:[],
+    ...arm?['webots_arm: the arm is a Webots R2025a rigid-body plant under position servo. not_calibrated: link masses, inertia, joint torque limits and floor friction are assumed fixture values. Gripping is an event of the program state machine, never physics; the AMR and the coffee machine are mocks. ARM03 is the swept capsule check on the actual joints every tick, not a physical safety proof.']:[]],
+   ...this.coffee?{coffee:await this.coffee.report()}:{},...arm?{arm}:{},telemetry};
  }
  async close(){await this.queue;if(!this.closed){this.closed=true;try{await this.coffee?.close();}finally{await this.source.close();}}}
 }

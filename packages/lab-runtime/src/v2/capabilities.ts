@@ -9,7 +9,9 @@ export interface BackendExecution {host:'portable_python'|'linux_native';clock:'
 export interface BackendSet {mode:Mode;access:Access;backends:readonly string[];providers?:BackendProviders;/** Scenarios this set supports; absent means every scenario the mode supports. */scenarioIds?:readonly string[];execution?:BackendExecution;}
 export interface CapabilityCatalog {backends:readonly BackendCapability[];sets:Readonly<Record<string,BackendSet>>;}
 export interface AdmissionResult {ok:boolean;reasonCodes:string[];}
-const mock=(id:string):BackendCapability=>({id,modes:['mock'],accesses:['simulated'],installed:true,compatible:true,reachable:true,commissioned:true});
+const mock=(id:string,modes:readonly Mode[]=['mock']):BackendCapability=>({id,modes,accesses:['simulated'],installed:true,compatible:true,reachable:true,commissioned:true});
+/** The AMR and the coffee machine are mocks in every mock set and, beside a Webots arm, in `engineering-webots-arm-v1` (a simulation-mode set); the arm and the other backends keep their one mode. */
+const mockBeside=(id:string)=>mock(id,['mock','simulation']);
 const sim=(id:string):BackendCapability=>({id,modes:['simulation'],accesses:['simulated'],installed:false,compatible:false,reachable:false,commissioned:true,reason:'Simulation provider package is not installed on this host'});
 const unbuilt=(id:string):BackendCapability=>({id,modes:['simulation'],accesses:['simulated'],installed:false,compatible:false,reachable:false,commissioned:true,reason:'Provider not implemented yet (engineering plan C01/C03)'});
 /** The portable 2D provider exists only when the operator configured it (MEKONIQ_LAB_IRSIM=1) and a real worker describe/create smoke passed (navigation2d/readiness.ts). */
@@ -21,7 +23,7 @@ export const WEBOTS_ARM={id:'webots_arm',version:'R2025a'} as const;
 export const WEBOTS_ARM_UNCONFIGURED:BackendCapability={...WEBOTS_UNCONFIGURED,id:'webots_arm',reason:'WEBOTS_DISABLED: the Webots arm provider is not configured on this runtime (MEKONIQ_LAB_WEBOTS=1)'};
 const hw=(id:string,accesses:readonly Access[]):BackendCapability=>({id,modes:['hardware'],accesses,installed:false,compatible:false,reachable:false,commissioned:false,reason:'Native provisioning is outside the local Lab runtime'});
 export const defaultCatalog:CapabilityCatalog={
- backends:[mock('mock_amr'),mock('mock_coffee'),mock('mock_arm'),sim('gazebo_nav2'),sim('linuxcnc_sim'),sim('coffee_io_sim'),unbuilt('moveit_gazebo_arm'),unbuilt('engineering_coffee_process'),hw('valetudo_native',['shadow','hil','live']),hw('cell_native',['hil','live']),IRSIM_UNCONFIGURED,WEBOTS_UNCONFIGURED,WEBOTS_ARM_UNCONFIGURED],
+ backends:[mockBeside('mock_amr'),mockBeside('mock_coffee'),mock('mock_arm'),sim('gazebo_nav2'),sim('linuxcnc_sim'),sim('coffee_io_sim'),unbuilt('moveit_gazebo_arm'),unbuilt('engineering_coffee_process'),hw('valetudo_native',['shadow','hil','live']),hw('cell_native',['hil','live']),IRSIM_UNCONFIGURED,WEBOTS_UNCONFIGURED,WEBOTS_ARM_UNCONFIGURED],
  sets:{
   'mock-default':{mode:'mock',access:'simulated',backends:['mock_amr','mock_coffee','mock_arm'],providers:{amr:'mock_amr',arm:'mock_arm',coffee:'mock_coffee'}},
   'mock-amr':{mode:'mock',access:'simulated',backends:['mock_amr'],providers:{amr:'mock_amr'}},

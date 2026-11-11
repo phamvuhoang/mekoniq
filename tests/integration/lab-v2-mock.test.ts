@@ -132,7 +132,7 @@ test('no robot network transport is instantiated by a mock run; only enabled moc
  expect(()=>instantiateBackends('mock-amr',defaultCatalog,[])).toThrow('BACKEND_EXECUTION_DISABLED');
  expect(instantiateBackends('mock-amr',defaultCatalog,['mock_amr'])).toMatchObject({mode:'mock',access:'simulated',backends:['mock_amr']});
  expect(instantiateBackends('mock-default',defaultCatalog,['mock_amr','mock_coffee','mock_arm'])).toMatchObject({backends:['mock_amr','mock_coffee','mock_arm']});
- expect([...scenarioRegistry.keys()]).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','WB-FD01','WB-FD07']);
+ expect([...scenarioRegistry.keys()]).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','WB-FD01','WB-FD07','WB-BV01']);
 });
 
 // ---- gateway: run ownership and action idempotency (carried from F01) ----
@@ -145,7 +145,7 @@ test('v2 gateway runs the mock AMR set only, binds runs to the pairing session a
  const directory=await mkdtemp(join(tmpdir(),'lab-v2-gw-'));gwDirs.push(directory);
  const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:hash,v2:{enabledBackends:['mock_amr']}});gateways.push(g);
  const health=await (await fetch(g.url+'/lab/v2/health')).json() as {backends:{id:string;enabled:boolean}[];scenarioIds:string[]};
- expect(health.backends.filter(b=>b.enabled).map(b=>b.id)).toEqual(['mock_amr']);expect(health.scenarioIds).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','WB-FD01','WB-FD07']);
+ expect(health.backends.filter(b=>b.enabled).map(b=>b.id)).toEqual(['mock_amr']);expect(health.scenarioIds).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','WB-FD01','WB-FD07','WB-BV01']);
  const owner=await pair(g),other=await pair(g);
  const body={project:restaurant(),scenarioId:'FD01',scenarioRevision:1,seed:42,mode:'mock',backendSetId:'mock-amr',access:'simulated',runtimeIdentity:{sourceCommit:'test-commit',schemaHash:hash}};
  expect((await post(g.url+'/lab/v2/runs',owner,{...body,scenarioId:'BV01',backendSetId:'mock-default'})).status).toBe(501);

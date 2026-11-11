@@ -124,3 +124,24 @@ test('observe is refused in the default mode, and the default mode keeps assigni
   expect(s.q).toEqual(s.commandedQ);
   expect(s.tracking).toBeUndefined();
 });
+
+test('a tracked arm that sits still but jitters stays inside the evidence budget; motion and collisions are never absorbed', () => {
+  const { plant, state: s } = make(TRACKING);
+  const home = [...s.q];
+  plant.setCollisionScene({ available: true, scope: 'self_injected_only', revision: 'scene-1', profileRevision: 1, tick: 0, world: [], robotPoses: [] });
+  for (let i = 0; i < 6000; i++) { plant.advance(); plant.observe(home.map((v, k) => v + (k === 0 ? 3e-5 * Math.sin(i) : 0)), []); }
+  const ev = s.collision!.evidence!;
+  expect(ev.droppedIntervals).toBe(0); expect(ev.intervals.length).toBeLessThan(5); expect(s.stop).toBeUndefined();
+  // a real move of 1 mrad starts a new interval; a stop on the engine's collision report is not hidden by an earlier rest
+  plant.advance(); plant.observe(home.map((v, k) => v + (k === 0 ? 1e-3 : 0)), []);
+  expect(ev.intervals.length).toBeGreaterThanOrEqual(2);
+  plant.advance(); plant.observe(home, ['STATIC_1']);
+  expect(s.stop).toMatchObject({ reason: 'ARM_COLLISION' });
+});
+
+test('the default mode keeps merging only exactly repeated checks', () => {
+  const { plant, state: s } = make();
+  plant.setCollisionScene({ available: true, scope: 'self_injected_only', revision: 'scene-1', profileRevision: 1, tick: 0, world: [], robotPoses: [] });
+  for (let i = 0; i < 50; i++) plant.advance();
+  expect(s.collision!.evidence!.intervals).toHaveLength(1);
+});

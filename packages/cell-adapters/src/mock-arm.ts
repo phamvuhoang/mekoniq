@@ -23,6 +23,7 @@ export interface ArmTracking {reachTolRad:number;settleTicks:number;followTolRad
 export interface ArmTrackingState {gen:number[];settled:number;followCount:number;samples:number;peakRad:number[];sumSq:number[];trace:{tick:number;actualRad:number[];commandedRad:number[]}[]}
 export interface ArmStopState {latched:boolean;reconcileRequired:boolean;reason:string;events:{tick:number;stage:'requested'|'acknowledged'|'observed'|'reset';reason:string;provenance:'modelled'}[]}
 export const ARM_COLLISION_TRACE_LIMIT=4096;
+const TRACKED_REST_RAD=2e-4;
 export interface ArmCollisionInterval {firstTick:number;lastTick:number;fromQ:number[];toQ:number[];heldCupId:string|null;worldRevision:string;sceneRevision:string|null;result:SweepResult}
 export interface ArmCollisionEvidence {intervals:ArmCollisionInterval[];worlds:Record<string,ArmObstacle[]>;droppedIntervals:number;
  /** A collision latches the arm, so this is the immutable triggering failure even if later scene snapshots change. */
@@ -60,7 +61,10 @@ export class MockArmPlant {
   const s=this.state,c=s.collision!,e=c.evidence!,worldRevision=hashJson(world),heldCupId=s.holding,sceneRevision=c.scene?.revision??null;
   const last=e.intervals.at(-1),same=(a:number[],b:number[])=>a.every((n,i)=>n===b[i]);
   // Identical stationary checks retain a closed tick interval; motion, attachment or scene geometry changes get a new record.
-  if(last&&last.lastTick===s.tick-1&&last.worldRevision===worldRevision&&last.sceneRevision===sceneRevision&&last.heldCupId===heldCupId&&same(last.fromQ,s.q)&&same(last.toQ,toQ))last.lastTick=s.tick;
+  // A tracked plant never rests exactly: an interval also absorbs ticks of a clear, nearly still arm (within TRACKED_REST_RAD of where the interval began, about 0.2 mm at 1 m reach, below the 0.5 mm sweep tolerance). Motion and every collision get their own record.
+  const still=(a:number[],b:readonly number[])=>a.every((v,i)=>Math.abs(v-b[i]!)<=TRACKED_REST_RAD);
+  const resting=this.tracking!==undefined&&result.ok&&last!==undefined&&last.result.ok&&still(last.fromQ,s.q)&&still(last.fromQ,toQ);
+  if(last&&last.lastTick===s.tick-1&&last.worldRevision===worldRevision&&last.sceneRevision===sceneRevision&&last.heldCupId===heldCupId&&(resting||same(last.fromQ,s.q)&&same(last.toQ,toQ))){last.lastTick=s.tick;if(resting)last.toQ=[...toQ];}
   else if(e.intervals.length<ARM_COLLISION_TRACE_LIMIT){
    e.worlds[worldRevision]??=structuredClone(world);
    e.intervals.push({firstTick:s.tick,lastTick:s.tick,fromQ:[...s.q],toQ:[...toQ],heldCupId,worldRevision,sceneRevision,result:structuredClone(result)});

@@ -38,6 +38,8 @@ export interface ScenarioDefinition {
 const FD01={orders:[{actor:'guest-1',table:0,quantity:1,atTick:[25,500] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true};
 const FD07={orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,10] as const},{actor:'guest-2',table:1,quantity:1,atTick:[12,12] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true};
 const fixedOrder={robots:1,orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,10] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true,maxTicks:90000};
+/** BV01's script, roles and bound; WB-BV01 is exactly this on the Webots arm. */
+const bv01={robots:1,orders:[],coffee:{orders:[{actor:'guest-1',table:0,recipe:'espresso',atTick:[10,10] as const},{actor:'guest-2',table:0,recipe:'iced-milk-coffee',atTick:[20,20] as const}]},confirm:{mode:'scripted' as const,delayTicks:50},park:true,maxTicks:180000};
 const corridorGap={x:4.5,y:2.5,width:1,height:1};
 const irOrder={...fixedOrder,maxTicks:30000};
 export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<string,ScenarioDefinition>([
@@ -53,7 +55,7 @@ export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<str
  ['FD05-battery',{id:'FD05-battery',revision:1,title:'Battery below admission is refused before native start',...fixedOrder,requestRobot:true,fleet:{battery:10}}],
  ['FD05-capability',{id:'FD05-capability',revision:1,title:'Missing delivery capability is refused before native start',...fixedOrder,requestRobot:true,fleet:{capabilities:[]}}],
  ['FD05-binding',{id:'FD05-binding',revision:1,title:'Missing target binding is refused before native start',...fixedOrder,requestRobot:true,fleet:{unbindTables:true}}],
- ['BV01',{id:'BV01',revision:1,title:'Espresso and iced milk coffee: recipe -> verify -> arm -> robot -> table',robots:1,orders:[],coffee:{orders:[{actor:'guest-1',table:0,recipe:'espresso',atTick:[10,10]},{actor:'guest-2',table:0,recipe:'iced-milk-coffee',atTick:[20,20]}]},confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:180000}],
+ ['BV01',{id:'BV01',revision:1,title:'Espresso and iced milk coffee: recipe -> verify -> arm -> robot -> table',...bv01}],
  ['FD02-cups',{id:'FD02-cups',revision:1,title:'One mission loads food and an identified coffee cup, then hands off both allocations',robots:1,batch:true,mixFoodCoffee:true,orders:[{actor:'food-guest',table:0,quantity:1,atTick:[10,10]}],coffee:{orders:[{actor:'coffee-guest',table:0,recipe:'espresso',atTick:[12,12]}]},confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:180000}],
  ['CAMPAIGN-FD02-FD07-BV01-BV03',{id:'CAMPAIGN-FD02-FD07-BV01-BV03',revision:1,title:'Concurrent food, corridor and coffee deliveries (ends after customer handoffs)',robots:2,orders:[{actor:'food-a',table:0,quantity:1,atTick:[10,10]},{actor:'food-b',table:1,quantity:1,atTick:[12,12]}],coffee:{orders:[{actor:'coffee-a',table:0,recipe:'espresso',atTick:[10,10]},{actor:'coffee-b',table:0,recipe:'iced-milk-coffee',atTick:[12,12]}]},confirm:{mode:'scripted',delayTicks:50},park:false,maxTicks:180000}],
  // IR-SIM 2D variant of FD01 (same business template); capped at the provider's 30,000-tick (10 min sim) run quota
@@ -68,6 +70,8 @@ export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<str
  // Webots 3D variants: the same FD01 / FD07 business templates and tick bounds on the rigid-body plant. Its worker takes no scripted actors, so WB-FD07 has no customer walking elsewhere.
  ['WB-FD01',{id:'WB-FD01',revision:1,title:'One order, one robot on the Webots 3D plant: kitchen -> table -> parking',robots:1,...FD01,maxTicks:30000,basedOn:{id:'FD01',revision:1}}],
  ['WB-FD07',{id:'WB-FD07',revision:1,title:'Two robots with their own drives and LiDARs take turns through a reserved aisle on the Webots 3D plant (movers serialized by the source)',robots:2,...FD07,maxTicks:12000,basedOn:{id:'FD07',revision:1}}],
+ // Webots arm (R1.1): the BV01 business template with the arm as a Webots plant under position servo; the AMR and the coffee machine stay mocks, gripping is an event. Only engineering-webots-arm-v1 runs it.
+ ['WB-BV01',{id:'WB-BV01',revision:1,title:'Espresso and iced milk coffee on the Webots arm: recipe -> verify -> arm (position servo) -> robot -> table',...bv01,basedOn:{id:'BV01',revision:1}}],
 ]);
 export const scenarioHash=(d:ScenarioDefinition)=>hashJson(d);
 const ID=/^[A-Za-z0-9_.:-]{1,200}$/,int=(n:unknown,min:number,max:number)=>Number.isSafeInteger(n)&&(n as number)>=min&&(n as number)<=max;

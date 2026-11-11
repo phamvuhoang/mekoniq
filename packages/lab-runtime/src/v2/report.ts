@@ -7,6 +7,7 @@ import {hashJson} from './hash';
 import type {TelemetryReport} from './telemetry';
 import type {ArmPlantState} from '../../../cell-adapters/src/mock-arm';
 import type {ArmSceneDeclaration} from './models/arm-scene';
+import type {ArmReportBlock} from './beverage/arm-plant-report';
 export interface BusinessEvent {sequence:string;at:string;type:string;kind:string;id:string;state:JsonObject}
 export interface Attention {reason:string;tick:number;robotId?:string;subjectId?:string;commandId?:string}
 export interface WorkloadItem {actor:string;tableId:string;quantity:number;atTick:number;sessionId:string;status:'planned'|'placed';lineId?:string;missionId?:string;allocationId?:string}
@@ -44,6 +45,8 @@ export interface RunReport {
  telemetry:TelemetryReport;
  /** IR-SIM only (navigation-run-evidence-v1): durable evidence manifest, identities, seeds, digests and assertions. Not part of canonicalOutcome. */
  navigation2d?:NavigationRunEvidenceV1;
+ /** Only a run whose arm is a plant (R1.1): the joint trace file, per-joint tracking error, what the plant is, and ARM03 on the actual joints. Not part of canonicalOutcome. */
+ arm?:ArmReportBlock;
 }
 const UUID=/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
 /**
