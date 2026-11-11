@@ -1,6 +1,6 @@
 # Simulation extension R1.1 — r11-candidate-02 (tay máy 6 khớp trong Webots)
 
-Bằng chứng do `source/scripts/record-sim-extension.mjs --release r1.1` ghi, kiểm bằng guard `pnpm test:acceptance -- sim-extension` (`LAB_SIMEXT_EVIDENCE_DIR=<thư mục này>`; guard dùng chung `checkQualification` với recorder, chọn bảng `r1.1` theo `release`). Cả bốn gate ở trạng thái `tested`, **`accepted: false`**; chỉ reviewer mới ghi accepted (sidecar `acceptance.json`, chưa có). Không có case `not_run`.
+Bằng chứng do `source/scripts/record-sim-extension.mjs --release r1.1` ghi, kiểm bằng guard `pnpm test:acceptance -- sim-extension` (`LAB_SIMEXT_EVIDENCE_DIR=<thư mục này>`; guard dùng chung `checkQualification` với recorder, chọn bảng `r1.1` theo `release`). Cả bốn gate ở trạng thái `tested`, **`accepted: false`**; chỉ reviewer mới ghi accepted: reviewer Henry đã chấp nhận bốn gate ngày 2026-11-11 trong sidecar `acceptance.json`. Không có case `not_run`.
 
 R1.1 không ghi campaign: bằng chứng engine là các suite chạy trên Webots R2025a thật (không suite nào bị skip). REG02 đòi bản ghi R1, IR-SIM và R-MOCK **cùng commit** và mọi gate của chúng `tested` (D32): các bản sao `r1-record.json`, `irsim-record.json`, `mock-regression.json` nằm cạnh bản ghi này (kiểm sha), và guard đòi chúng đúng bằng bản trong cây (`sim-extension/r1-candidate-05`, `linkforge-irsim/candidate-07`) và IR-SIM/R-MOCK là đúng bản mà bản ghi R1 đã dùng.
 

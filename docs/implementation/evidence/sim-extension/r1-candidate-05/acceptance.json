@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "documentType": "review-acceptance",
+  "candidateId": "r1-candidate-05",
+  "record": "qualification.json",
+  "recordSha256": "af9bcc547feda42df0381ad0d45e556cef217268ecc03ed2a3fb36c084c0f89c",
+  "sourceCommit": "9b8f92f1c76cd7283030e46adf93f2d6527cb4bd",
+  "acceptedBy": "Henry",
+  "acceptedAt": "2026-11-11T13:40:14Z",
+  "gates": [
+    "G-ALG1",
+    "G-ALG2",
+    "G-INT2",
+    "G-REG1",
+    "G-WB1",
+    "G-WB2"
+  ],
+  "basis": "the reviewer stated acceptance in the review session after the R1.1 whole-branch review, its three fixes (9b8f92f) and this re-record; the qualification record itself is unchanged and still says accepted:false",
+  "conditions": [
+    "ALG04 stays not_run (belongs to R3); WB04 keeps its note that R1 has no Webots zone-contention rig",
+    "native, hardware and MuJoCo gates are outside this acceptance (not_run / blocked_external)"
+  ]
+}

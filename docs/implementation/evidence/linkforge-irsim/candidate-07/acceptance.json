@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "documentType": "review-acceptance",
+  "candidateId": "candidate-07",
+  "record": "qualification.json",
+  "recordSha256": "a887c7da94a6d825410810e89ceb53df72553062428da1a973076df27426cd9c",
+  "sourceCommit": "9b8f92f1c76cd7283030e46adf93f2d6527cb4bd",
+  "acceptedBy": "Henry",
+  "acceptedAt": "2026-11-11T13:40:14Z",
+  "gates": [
+    "G-INT1",
+    "G-IR1",
+    "G-IR2",
+    "G-IR3",
+    "G-LF1",
+    "G-LF2"
+  ],
+  "basis": "the reviewer stated acceptance in the review session after the R1.1 whole-branch review, its three fixes (9b8f92f) and this re-record; the qualification record itself is unchanged and still says accepted:false",
+  "conditions": [
+    "IR07 stays the swept oracle only (note kept verbatim in qualification.json)",
+    "native, hardware and MuJoCo gates are outside this acceptance (not_run / blocked_external)"
+  ]
+}
