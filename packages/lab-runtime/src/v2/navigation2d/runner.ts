@@ -34,6 +34,7 @@ import {createIRSimNavigationAdapter,initialAdapterState,type IRSimAdapterState,
 import {actorUpdatesAt,fixtureFile,resolveScenarioFixture,type ResolvedFixture} from './scenario-fixtures';
 import {createZoneBridge,createZoneTraffic} from '../backends/zone-bridge';
 import type {P,Pose2} from './geometry';
+import {awaitTick,realWall,type PaceAnchor,type WallClock} from '../pace';
 
 export type {IRSimRuntimeOptions,PlantPort};
 export {IRSIM_BACKEND};
@@ -161,7 +162,7 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // every terminal the recorder produces (any flush, the tick limit, close) goes into the checkpoint before its manifest write is attempted
  const owner:{run?:FixedStepRun}={},opened=cp;
  const recorder=await openNavigationRecorder({knownTerminal:cp.evidenceTerminal??null,onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.runtime.evidence,maxTicks:Math.min(providers.runtime.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
- const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture);owner.run=run;
+ const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall);owner.run=run;
  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
  run.traffic=fixture.zones.length?createZoneTraffic(createZoneBridge(run.source,{async enter(){}},()=>`op-${++run.checkpoint.ordinal}`),fixture.zones,{clearanceM:scene.policy.parameters.safetyMarginM+2*scene.policy.parameters.gridResolutionM}):undefined;
  try{
@@ -204,7 +205,9 @@ class FixedStepRun implements ScenarioRun {
  private steps=0;
  private controls:{raw:unknown;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
  private engineSeed:number;
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture){
+ /** Paced-step anchor (D57): memory only, never checkpointed nor in evidence; cleared by pause, resume, cancel, an unpaced step and a reopen. */
+ private anchor:PaceAnchor|null=null;
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock){
   this.clock=createClock(EPOCH,cp.tick,cp.paused);
   this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
@@ -496,17 +499,18 @@ class FixedStepRun implements ScenarioRun {
   try{await beforeExecute?.();c.inFlight=true;await this.persist();}catch(e){if(!this.worker)this.releaseSlot();throw e;}
   try{
    if(a.kind==='start'){await this.startPlant();c.started=true;}
-   else if(a.kind==='pause'){c.paused=true;this.clock.pause();if(this.worker)await this.ask('pause',{}).catch(e=>this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED'));}
-   else if(a.kind==='resume'){if(this.worker)await this.ask('resume',{}).catch(e=>this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED'));c.paused=false;this.clock.resume();}
+   else if(a.kind==='pause'){c.paused=true;this.clock.pause();this.anchor=null;if(this.worker)await this.ask('pause',{}).catch(e=>this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED'));}
+   else if(a.kind==='resume'){this.anchor=null;if(this.worker)await this.ask('resume',{}).catch(e=>this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED'));c.paused=false;this.clock.resume();}
    else if(a.kind==='step'){
     // pause/cancel sent during the batch are taken at the next tick boundary (workers-runtime §2), and the batch ends there
     // a batch ends at the tick the run finishes or first needs attention (IR09): the horizon is the same whatever the pacing (1 tick or 500 per request)
-    const seen=c.attention.length;
-    try{for(let i=0;i<Number(p.ticks)&&!this.controls.length;i++){if(!await this.tick()||c.attention.length>seen||await this.finished())break;}}finally{await this.takeControls();}
+    // a paced step (D57) waits for each tick's wall-clock slot first; a control that arrived during the wait is taken before the tick
+    const seen=c.attention.length,pace=(a.payload as {pace?:{factor:number}}).pace;if(!pace)this.anchor=null;
+    try{for(let i=0;i<Number(p.ticks)&&!this.controls.length;i++){if(pace){this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);if(this.controls.length)break;}if(!await this.tick()||c.attention.length>seen||await this.finished())break;}}finally{await this.takeControls();}
    }
    else if(a.kind==='confirm')await this.confirmStop(pending![0],String(p.actorProvenance??'human'));
    else if(a.kind==='cancel'){
-    c.cancelled=true;this.suspend();
+    c.cancelled=true;this.suspend();this.anchor=null;
     // every open mission of the run's robots, the return-to-parking standby included
     for(const id of await this.runMissions()){const m=await this.source.read('mission',id);if(!FINAL.includes(String(m.state.status))&&m.state.status!=='cancelling'){const r=await this.submit('Mission.Cancel',{missionId:m.ref.id,expectedVersion:m.version});if(r.status!=='accepted')c.attention.push({reason:'CANCEL_REJECTED',subjectId:m.ref.id,tick:c.tick});}}
     c.confirmations={};await this.scanArrivals();

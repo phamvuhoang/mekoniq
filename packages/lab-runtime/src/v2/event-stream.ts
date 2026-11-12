@@ -7,7 +7,7 @@ import type {ScenarioRun} from './scenario-runner';
 export interface SseSink {write(chunk:string):boolean}
 export interface JournalEvents {sequence:string;at:string;events:{type:string;kind:string;id:string;state:JsonObject}[]}
 export interface StreamOptions {pollMs:number;telemetryMs:number;heartbeatMs:number;eventWindow:number}
-export const STREAM_DEFAULTS:StreamOptions={pollMs:250,telemetryMs:100,heartbeatMs:1000,eventWindow:5000};
+export const STREAM_DEFAULTS:StreamOptions={pollMs:250,telemetryMs:40,heartbeatMs:1000,eventWindow:5000};
 /** One SSE record. Records without an id (heartbeat, gap) leave the browser's Last-Event-ID unchanged. */
 export const sseFrame=(event:string,data:unknown,id?:string|null)=>`${id!=null?`id: ${id}\n`:''}event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 const SEQ=/^\d{1,20}$/;

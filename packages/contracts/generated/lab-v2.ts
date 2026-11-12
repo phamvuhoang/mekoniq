@@ -602,6 +602,9 @@ export type LabActionV2 =
       kind: 'step';
       payload: {
         ticks: number;
+        pace?: {
+          factor: 1 | 4 | 16 | 64;
+        };
       };
     }
   | {

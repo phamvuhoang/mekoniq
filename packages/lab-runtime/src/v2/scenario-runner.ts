@@ -31,11 +31,13 @@ import {declareArmScene,materializeArmScene,validateArmCollisionProfile} from '.
 import {TelemetryRecorder,TELEMETRY_RATE_TICKS} from './telemetry';
 import {projectSamples} from './twin-projection';
 import type {JournalEvents} from './event-stream';
+import {awaitTick,realWall,type PaceAnchor,type WallClock} from './pace';
 /** Locked engineering extension: the bundle ref plus the exact project and projection it was compiled from (absent for every legacy run). */
 export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
 export interface RunManifestInput {project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
 export interface RunProviders {directory:string;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
- /** A plant arm whose program comes from its fixture (MuJoCo): what its ports run, for the manifest. Ignored unless the set's arm is a plant. */armProgram?:ArmProgramRecord}
+ /** A plant arm whose program comes from its fixture (MuJoCo): what its ports run, for the manifest. Ignored unless the set's arm is a plant. */armProgram?:ArmProgramRecord;
+ /** Wall clock of paced steps (tests inject a fake); consulted only by a step that carries `pace`. */wall?:WallClock}
 export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'}
 export interface ScenarioRun {readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
  /** Cheap, synchronous liveness for stream heartbeats: never reads the journal. `paused` is the acknowledged pause of the virtual clock. */
@@ -125,7 +127,7 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
    plant:{width:project.world.width,height:project.world.height,obstacles:structuredClone(project.world.obstacles),injected:[],contacts:0,minSeparationM:null,maxConcurrentMovers:0,
     robots:roles.robots.map(r=>({id:r.id,radiusM:radius[r.id]!,speedLimitMps:project.entities.find(e=>e.id===r.id)?.speedLimitMps??MOCK_AMR_PARAMS.speedMps,pose:{x:point(r.parkingId).x,y:point(r.parkingId).y,yawRad:0},bootId:randomUUID(),seq:0,goals:[],lastCompleted:null,moving:false,hold:null,stale:false,distanceM:0}))}};
  }
- const run=new Run(dir,cp,scenario,project);
+ const run=new Run(dir,cp,scenario,project,providers.wall??realWall);
  const coffee=roles.coffee&&scenario.coffee?{...roles.coffee,recipes:CoffeeDriver.recipes(scenario.coffee.orders)}:undefined;
  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[...new Set([roles.stationId,...coffee?[coffee.stationId]:[]])],...coffee?{coffee}:{},...scenario.fleet?{fleet:scenario.fleet}:{}},fresh);
  try{await run.attach(providers.coffeePorts);
@@ -148,8 +150,10 @@ class Run implements ScenarioRun {
  private coffee?:CoffeeDriver;
  private queue:Promise<unknown>=Promise.resolve();
  private closed=false;
+ /** Paced-step anchor (D57): memory only, never checkpointed or digested; cleared by pause, resume, cancel, an unpaced step and a reopen. */
+ private anchor:PaceAnchor|null=null;
  readonly telemetry=new TelemetryRecorder();
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2){this.clock=createClock(EPOCH,cp.tick,cp.paused);}
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private wall:WallClock){this.clock=createClock(EPOCH,cp.tick,cp.paused);}
  get id(){return this.cp.runId;}
  async attach(coffeePorts?:RunProviders['coffeePorts']){
   this.plant=new MockPlant(this.cp.plant,()=>this.clock.nowMs(),randomUUID);
@@ -406,15 +410,15 @@ class Run implements ScenarioRun {
   c.inFlight=true;await this.persist();
   try{
    if(a.kind==='start')c.started=true;
-   else if(a.kind==='pause'){c.paused=true;this.clock.pause();}
-   else if(a.kind==='resume'){c.paused=false;this.clock.resume();}
-   else if(a.kind==='step')for(let i=0;i<Number(p.ticks);i++)await this.tick();
+   else if(a.kind==='pause'){c.paused=true;this.clock.pause();this.anchor=null;}
+   else if(a.kind==='resume'){c.paused=false;this.clock.resume();this.anchor=null;}
+   else if(a.kind==='step'){const pace=(a.payload as {pace?:{factor:number}}).pace;if(!pace)this.anchor=null;for(let i=0;i<Number(p.ticks);i++){if(pace)this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);await this.tick();}}
    else if(a.kind==='confirm')await this.confirmStop(pending![0],String(p.actorProvenance??'human'));
    else if(a.kind==='restoreCup'){
     if(!this.coffee)throw new Error('INVALID_STATE:CUP_RESTORE_UNSAFE');await this.coffee.restoreCup(String(p.subjectId));
    }
    else if(a.kind==='cancel'){
-    c.cancelled=true;this.suspend();
+    c.cancelled=true;this.suspend();this.anchor=null;
     for(const w of c.workload.filter((x,i,a)=>a.findIndex(y=>y.missionId===x.missionId)===i))if(w.missionId){const m=await this.source.read('mission',w.missionId);if(!FINAL.includes(String(m.state.status))&&m.state.status!=='cancelling'){const r=await this.submit('Mission.Cancel',{missionId:m.ref.id,expectedVersion:m.version});if(r.status!=='accepted')c.attention.push({reason:'CANCEL_REJECTED',subjectId:m.ref.id,tick:c.tick});}}
     await this.coffee?.cancel();
     // cancelled missions moved on (skipped stops, return legs): drop old confirmations and re-read the stops robots are waiting at now

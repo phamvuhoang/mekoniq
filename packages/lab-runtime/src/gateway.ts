@@ -16,7 +16,7 @@ export interface GatewayOptions {port?:number;directory:string;sourceCommit:stri
  allowOrigins?:readonly string[];
  /** >= 32 characters; /lab/v2/sessions accepts it like the pairing code but never spends it. */
  accessKey?:string;
-v2?:{catalog?:CapabilityCatalog;enabledBackends?:readonly string[];stream?:V2Deps['stream'];readinessProbes?:V2Deps['readinessProbes'];nativeChecks?:V2Deps['nativeChecks'];portableChecks?:V2Deps['portableChecks'];simulationFactory?:V2Deps['simulationFactory'];engineering?:V2Deps['engineering']};}
+v2?:{catalog?:CapabilityCatalog;enabledBackends?:readonly string[];stream?:V2Deps['stream'];readinessProbes?:V2Deps['readinessProbes'];nativeChecks?:V2Deps['nativeChecks'];portableChecks?:V2Deps['portableChecks'];simulationFactory?:V2Deps['simulationFactory'];engineering?:V2Deps['engineering'];wall?:V2Deps['wall']};}
 class GatewayError extends Error {constructor(readonly status:number,message:string){super(message);}}
 const origins=new Set(['http://127.0.0.1:4175','http://127.0.0.1:4176']);
 const loopbackBind=(bind:string)=>bind==='::1'||isIPv4(bind)&&bind.startsWith('127.');
@@ -56,7 +56,7 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
  const pairingToken=issuePairingToken();
  const pairingValid=(t:unknown)=>typeof t==='string'&&!!currentToken&&now()<tokenExpiresAt&&same(t,currentToken);
  const accessKeyValid=(t:unknown)=>typeof t==='string'&&!!accessKey&&same(t,accessKey);
- const v2=createV2Gateway({directory:options.directory,sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,now,catalog:options.v2?.catalog,enabledBackends:options.v2?.enabledBackends,stream:options.v2?.stream,readinessProbes:options.v2?.readinessProbes,nativeChecks:options.v2?.nativeChecks,portableChecks:options.v2?.portableChecks,simulationFactory:options.v2?.simulationFactory,engineering:options.v2?.engineering,pairingValid,...accessKey?{accessKeyValid}:{},spendPairing(){currentToken='';},same,deployment:{bind:loopbackBind(bind)?'loopback':'public'},readBody:body,send:(r,s,d)=>send(r,s,d)});
+ const v2=createV2Gateway({directory:options.directory,sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,now,catalog:options.v2?.catalog,enabledBackends:options.v2?.enabledBackends,stream:options.v2?.stream,readinessProbes:options.v2?.readinessProbes,nativeChecks:options.v2?.nativeChecks,portableChecks:options.v2?.portableChecks,simulationFactory:options.v2?.simulationFactory,engineering:options.v2?.engineering,...options.v2?.wall?{wall:options.v2.wall}:{},pairingValid,...accessKey?{accessKeyValid}:{},spendPairing(){currentToken='';},same,deployment:{bind:loopbackBind(bind)?'loopback':'public'},readBody:body,send:(r,s,d)=>send(r,s,d)});
  let port=options.port??4176;
  const server=createServer((request,response)=>{void handle(request,response).catch(error=>{
   const message=error instanceof Error?error.message:'INTERNAL_ERROR';

@@ -9,6 +9,7 @@ import {offeredScenarios,requirementsByBackendSet,resolveBackends,scenarioOffere
 import {scenarioRegistry} from './scenario-registry';
 import {createScenarioRun,type ScenarioRun,type RunManifestInput,type RunProviders} from './scenario-runner';
 import {serveRunStream,STREAM_DEFAULTS,type StreamOptions} from './event-stream';
+import type {WallClock} from './pace';
 import {findReclaim,proofHash,saveReclaim} from './reclaim-store';
 import {ENGINEERING_CAPABILITY,EngineeringError,type EngineeringService,type LockedEngineering} from '../engineering/gateway';
 /** Hooks into the v1 gateway so v2 shares its pairing token, body parser and response helper without importing it. */
@@ -34,6 +35,8 @@ export interface V2Deps {
  simulationFactory?:(input:RunManifestInput,providers:RunProviders)=>Promise<ScenarioRun>;
  /** Present only when this runtime can admit engineering bundles; its absence is what makes ENGINEERING_CAPABILITY_REQUIRED a hard refusal. */
  engineering?:EngineeringService;
+ /** Wall clock of paced steps, handed to every run this gateway opens (tests count its calls); runs default to the real one. */
+ wall?:WallClock;
 }
 const COOKIE='mekoniq_lab_session_v2';
 // Local demo pairing may only drive simulations and read-only shadow; hil/live belong to native provisioning.
@@ -62,7 +65,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(method==='GET'&&sub==='/health')return send(response,200,{
    protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
-   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true},deployment:{bind:deps.deployment?.bind??'loopback'},
+   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true,pacedStep:true},deployment:{bind:deps.deployment?.bind??'loopback'},
    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
    capabilities:[...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
     // the arm plant needs no engineering bundle: its scene is built from the run's project
@@ -194,7 +197,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
    try{
     const input:RunManifestInput={project,scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...engineering?{engineering}:{}};
-    run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...engineering?{assets:engineering.runtimeProjection.assets as never,bundleFile}:{}});
+    run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...engineering?{assets:engineering.runtimeProjection.assets as never,bundleFile}:{}});
     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
     // the run → bundle association is durable before the client hears about the run
     if(engineering)await deps.engineering!.bindRun(run.id,engineering.ref);
@@ -215,7 +218,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    try{
     const factory=stored.record.input.mode==='simulation'?deps.simulationFactory:createScenarioRun;if(!factory)throw new Error('BACKEND_EXECUTION_DISABLED');
     const locked=stored.record.input.engineering;
-    const run=entry?.run??(reopened=await factory(stored.record.input,{directory:stored.directory,catalog,enabledBackends:[...enabled],...locked?{assets:locked.runtimeProjection.assets as never}:{}}));
+    const run=entry?.run??(reopened=await factory(stored.record.input,{directory:stored.directory,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...locked?{assets:locked.runtimeProjection.assets as never}:{}}));
     // a verified proof restores read access to this run's bundle for the new session; it never confers control
     if(locked&&deps.engineering)await deps.engineering.grantRun(sessionId,locked.ref);
     const closure=locked&&deps.engineering?await deps.engineering.verifyClosure(locked.ref.bundleDigest):null;

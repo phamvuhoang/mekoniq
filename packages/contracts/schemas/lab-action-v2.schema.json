@@ -158,11 +158,46 @@
               "type": "integer",
               "minimum": 1,
               "maximum": 3000
+            },
+            "pace": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "factor": {
+                  "enum": [
+                    1,
+                    4,
+                    16,
+                    64
+                  ]
+                }
+              },
+              "required": [
+                "factor"
+              ]
             }
           },
           "required": [
             "ticks"
-          ]
+          ],
+          "if": {
+            "properties": {
+              "pace": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "pace"
+            ]
+          },
+          "then": {
+            "properties": {
+              "ticks": {
+                "type": "integer",
+                "maximum": 50
+              }
+            }
+          }
         }
       },
       "required": [
