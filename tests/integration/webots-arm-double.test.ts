@@ -40,6 +40,9 @@ describe.skipIf(!existsSync(python))('WB-BV01 over a fake arm engine', () => {
     expect(view.run).toMatchObject({ mode: 'simulation' });
     expect(report.manifest.backends.map((b) => b.id).sort()).toEqual(['mock_amr', 'mock_coffee', 'webots_arm']);
     expect(report.arm!.collision).toMatchObject({ result: 'pass', reasonCodes: [], engine: 'capsule-sweep-v1' });
+    // the Webots record and manifest carry none of the MuJoCo arm's additions (M07): no static-pairs note, no program record, the mock arm's interpolation, no cup trace
+    expect(report.arm!.collision.allowedContacts).toEqual([]); expect(report.arm!.collision).not.toHaveProperty('allowedContactsNote'); expect(report.manifest).not.toHaveProperty('armProgram');
+    expect(report.coffee!.armTrace).toMatchObject({ tag: 'mock_kinematic', interpolation: 'linear_joint_illustrative' }); expect(report.arm).not.toHaveProperty('props');
     expect(report.arm!.armPlant).toMatchObject({ engine: 'webots_3d', control: 'position_servo', grip: 'event', dynamics: 'assumed', calibration: 'not_calibrated' });
     expect(Math.max(...report.arm!.tracking.peakRad)).toBe(0); // this engine reaches every target at once
     const trace = await readArmTrace(directory, report.arm!);

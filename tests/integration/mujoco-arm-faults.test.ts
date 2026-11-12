@@ -4,6 +4,7 @@
 import { afterEach, describe, expect, test } from 'vitest';
 import { join, resolve } from 'node:path';
 import { createScenarioRun, type RunView, type ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
+import { defaultCatalog } from '../../packages/lab-runtime/src/v2/capabilities';
 import { readCheckpoint } from '../../packages/lab-runtime/src/v2/checkpoint';
 import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/checker';
 import { readArmProps, readArmTrace } from '../../packages/lab-runtime/src/v2/beverage/arm-plant-report';
@@ -89,6 +90,8 @@ describe.skipIf(!mujocoReady)('MuJoCo arm faults (MA06)', () => {
     expect(r.reasons).toContain('TRANSFER_REJECTED'); expect(r.view.run.status).toBe('needs_attention'); expect(r.cups[0]).toBe('cell:coffee-1');
     // the drop watch saw the lost cup once the clock ran on: CUP_DROPPED, dropTicks after the last tick the pads held it
     expect(r.stop).toMatchObject({ latched: true, reason: 'CUP_DROPPED' }); expect(firstStop(r) - held.at(-1)!).toBe(profile.dropTicks);
+    // the cup trace holds the cups where they were on the tick the arm latched: the last sample is the stop tick
+    expect(last.tick).toBe(firstStop(r));
     const cup = last.props.find((p) => p.propId === 'cup-1')!;
     expect(cup.positionM.every(Number.isFinite)).toBe(true); expect(cup.held).toBe(false);
     neverOpened(r);
@@ -108,27 +111,45 @@ describe.skipIf(!mujocoReady)('MuJoCo arm faults (MA06)', () => {
     expect(r.view.run.status).toBe('needs_attention'); expect(r.reasons).toContain('TRANSFER_UNKNOWN'); expect(r.cups[0]).toBe('cell:coffee-1');
   }, 300_000);
 
-  test('a cancel while the arm holds the cup: the gripper command is unchanged and the job needs a reconcile', async () => {
+  // Where a cancel lands decides how the run ends, on this plant as on the Webots arm (the shared runner): the coffee mission is created when the drink is ready and its robot reaches
+  // the load stop at tick 1666 on both plants. Before that, Mission.Cancel leaves the mission `cancelling` (the robot still drives), the run keeps ticking and the job's
+  // CANCEL_DURING_TRANSFER becomes the run's attention: needs_attention. The Webots arm's pick completes at 1665, so its test (cancel when the cup is the arm's) lands there.
+  // The MuJoCo pick completes only after the lift (1673), after the robot docked, so the equivalent moment here is the pads holding the cup (from 1613) while the robot drives.
+  test('a cancel while the pads hold the cup and the robot still drives: the run needs attention for CANCEL_DURING_TRANSFER, the cup stays in the gripper, nothing opens it', async () => {
     const gw = await mujocoGateway(), { run, directory } = await openMujocoRun(gw);
-    let before: number | undefined;
+    let before: { tick: number; gripperCommandM?: number; holding: string | null; job?: string } | undefined;
     const r = await outcome(run, directory, async (run) => {
       await run.start();
-      await stepUntil(run, heldByArm, 5, 60_000);
-      before = (await readCheckpoint<{ coffee: CoffeeState }>(directory))!.coffee.arm.gripperCommandM;
+      let v = await stepUntil(run, (v) => v.coffee?.jobs.some((j) => j.status === 'transferring') ?? false, 5, 60_000);
+      while (!(await readCheckpoint<{ coffee: CoffeeState }>(directory))!.coffee.arm.holding) v = await act(run, 'step', { ticks: 1 });
+      const arm = (await readCheckpoint<{ coffee: CoffeeState }>(directory))!.coffee.arm;
+      before = { tick: v.tick, gripperCommandM: arm.gripperCommandM, holding: arm.holding, job: v.coffee!.jobs[0]!.status };
       await act(run, 'cancel', {});
       return toEnd(run);
     });
+    const arrived = r.report.businessEvents.find((e) => e.kind === 'mission' && e.type === 'MissionArrived');
+    console.log('MA06 cancel', JSON.stringify({ before, status: r.view.run.status, tick: r.view.tick, after: r.arm.gripperCommandM, holding: r.arm.holding, reasons: r.reasons, cups: r.cups, robotArrived: arrived?.at ?? null }));
+    expect(before).toMatchObject({ gripperCommandM: 0, holding: 'cup-1', job: 'transferring' }); expect(arrived).toBeUndefined(); // the robot had not docked
+    expect(r.view.run.status).toBe('needs_attention'); expect(r.reasons).toContain('CANCEL_DURING_TRANSFER');
+    expect(r.arm.gripperCommandM).toBe(0); expect(r.arm.holding).toBe('cup-1'); neverOpened(r);
+    expect(r.cups[0]).toBe('cell:coffee-1'); // custody moves to the arm only when the pick completes; it never did
+  }, 300_000);
+
+  test('pinned shared-runner behaviour: a cancel after the robot docked, with the cup the arm\'s, ends the run cancelled with the attention on the job only', async () => {
+    // Not a property of this plant: the Webots arm ends the same way when cancelled after tick 1666 (probed at 1695). Mission.Cancel then cancels the docked mission at once, the run is
+    // final before another tick, and the shared runner raises a job's attention to the run only on a later tick. The cup stays in the gripper and nothing opens it.
+    const gw = await mujocoGateway(), { run, directory } = await openMujocoRun(gw);
+    const r = await outcome(run, directory, async (run) => { await run.start(); await stepUntil(run, heldByArm, 1, 60_000); await act(run, 'cancel', {}); return run.snapshot(); });
     const job = r.view.coffee!.jobs.find((j) => j.cupId === 'cup-1')!;
-    console.log('MA06 cancel', JSON.stringify({ status: r.view.run.status, tick: r.view.tick, before, after: r.arm.gripperCommandM, holding: r.arm.holding, job, programs: r.arm.programs.map((p) => [p.program, p.state]), cups: r.cups }));
-    expect(before).toBe(0); expect(r.arm.gripperCommandM).toBe(before); expect(r.arm.holding).toBe('cup-1');
-    neverOpened(r);
-    expect(r.cups[0]).toBe('arm:arm-1'); expect(job).toMatchObject({ status: 'needs_attention', attentionReason: 'CANCEL_DURING_TRANSFER' });
-    expect(r.view.run.status).not.toBe('completed');
+    console.log('MA06 cancel-docked', JSON.stringify({ status: r.view.run.status, tick: r.view.tick, attention: r.report.attention, job, holding: r.arm.holding, cups: r.cups }));
+    expect(r.view.run.status).toBe('cancelled'); expect(r.report.attention).toEqual([]);
+    expect(job).toMatchObject({ status: 'needs_attention', attentionReason: 'CANCEL_DURING_TRANSFER' });
+    expect(r.cups[0]).toBe('arm:arm-1'); expect(r.arm.holding).toBe('cup-1'); expect(r.arm.gripperCommandM).toBe(0); neverOpened(r);
   }, 300_000);
 
   test('a pick that finds no cup (a gripper too weak to close on it) is an explicit failure, never completed; the cup is never lifted and stays at the stand', async () => {
     // a gripper drive at 0.1 % of the fixture's force range: the pads cannot close on the cup, the first cup-pick ends with no object between them. The design's next failure (the second
-    // cup arriving at an occupied stand, PROP_PLACEMENT_OCCUPIED) is not reached on the real engine: lifting the open gripper past the cup that stayed on the stand touches it, and an
+    // cup arriving at an occupied stand, PROP_PLACEMENT_OCCUPIED) is not reached on the real engine: lifting the gripper (commanded closed, too weak to close on the cup) past the cup that stayed on the stand touches it, and an
     // arm touching a cup it does not hold is a collision.
     const gw = await mujocoGateway({ physicsOverride: { gripper: { ...physics.gripper, forceRangeNm: physics.gripper.forceRangeNm * 0.001 } } }), { run, directory } = await openMujocoRun(gw);
     const r = await outcome(run, directory, async (run) => { await run.start(); return toEnd(run); });
@@ -146,6 +167,13 @@ describe.skipIf(!mujocoReady)('MuJoCo arm faults (MA06)', () => {
 
 describe('admission and the flag (no engine)', () => {
   const noPorts = () => { throw new Error('PORTS_OPENED'); };
+  // a catalog in which the arm provider is installed (as a flag-on runtime's is), so the run reaches the project checks; no engine runs and no port opens
+  const installed = (id: string) => ({ ...defaultCatalog, backends: defaultCatalog.backends.map((b) => b.id === id ? { ...b, installed: true, compatible: true, reachable: true, reason: undefined } : b) });
+  test('the arm model belongs to the set: a PUMA project on the MuJoCo set, an xArm project on the mock or the Webots set are ARM_COLLISION_MODEL_MISMATCH when the run is created', async () => {
+    await expect(createScenarioRun(mujocoInput(coffeeProject(), 1), { directory: await mujocoTemp('adm-'), assets: [amrAsset], catalog: installed('mujoco_arm'), enabledBackends: ['mock_amr', 'mock_coffee', 'mujoco_arm'], coffeePorts: noPorts })).rejects.toThrow('ARM_COLLISION_MODEL_MISMATCH');
+    await expect(createScenarioRun({ ...mujocoInput(xarmProject(), 1, 'BV01', 'mock-default'), mode: 'mock' }, { directory: await mujocoTemp('adm-'), assets: [xarmAmrAsset], enabledBackends: ['mock_amr', 'mock_coffee', 'mock_arm'] })).rejects.toThrow('ARM_COLLISION_MODEL_MISMATCH');
+    await expect(createScenarioRun(mujocoInput(xarmProject(), 1, 'WB-BV01', 'engineering-webots-arm-v1'), { directory: await mujocoTemp('adm-'), assets: [xarmAmrAsset], catalog: installed('webots_arm'), enabledBackends: ['mock_amr', 'mock_coffee', 'webots_arm'], coffeePorts: noPorts })).rejects.toThrow('ARM_COLLISION_MODEL_MISMATCH');
+  });
   test('BV01 and WB-BV01 are refused by the MuJoCo arm set; MJ-BV01 by mock-default and by the Webots arm set; before any provider effect', async () => {
     for (const id of ['BV01', 'WB-BV01'])
       await expect(createScenarioRun(mujocoInput(xarmProject(), 1, id), { directory: await mujocoTemp('adm-'), assets: [xarmAmrAsset], enabledBackends: ['mock_amr', 'mock_coffee', 'mock_arm', 'mujoco_arm'], coffeePorts: noPorts })).rejects.toThrow('SCENARIO_UNSUPPORTED_BY_SET');

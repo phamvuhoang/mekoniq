@@ -40,8 +40,11 @@ export function armCollisionRecord(arm:ArmPlantState,worldRevision:WorldRevision
   method:{...METHOD,toleranceM:ev.intervals[0]!.result.toleranceM},
   coverage:{intervals:ev.intervals.length,evaluations:ev.intervals.reduce((n,i)=>n+i.result.evaluations,0),uncertain:ev.intervals.filter(i=>i.result.reason==='SWEEP_UNCERTAIN').length,
    allowedContactsApplied:ev.intervals.reduce((n,i)=>n+(i.result.allowed?.inContact.length??0),0)},colliding,
-  modelRevision:ev.intervals[0]!.result.modelRevision,allowedContacts:allowedOf(ev.intervals.map(i=>i.result),trace[0]!.tick,trace.at(-1)!.tick,worldRevision.revision)};
+  modelRevision:ev.intervals[0]!.result.modelRevision,...withAllowed(allowedOf(ev.intervals.map(i=>i.result),trace[0]!.tick,trace.at(-1)!.tick,worldRevision.revision))};
 }
+/** The statement an ARM03 record with allowed pairs carries (absent without pairs, so a Webots record is unchanged). */
+export const ALLOWED_CONTACTS_STATIC_NOTE='The allowed pairs are static: each applies over the whole trace (fromTick..toTick), not within a phase. Its phase only names the support it touches (nozzle stand: grasp, tray: release); its revision is the world revision of the run.';
+const withAllowed=(allowedContacts:AllowedContact[])=>allowedContacts.length?{allowedContacts,allowedContactsNote:ALLOWED_CONTACTS_STATIC_NOTE}:{allowedContacts};
 const allowedOf=(results:readonly {allowed?:{pairs:[string,string][]}}[],fromTick:number,toTick:number,revision:number):AllowedContact[]=>{
  const seen=new Map<string,[string,string]>();for(const r of results)for(const p of r.allowed?.pairs??[])if(!seen.has(p.join('\u0000')))seen.set(p.join('\u0000'),[p[0],p[1]]);
  return [...seen.values()].map(pair=>({pair,phase:pair.includes('tray')?'release' as const:'grasp' as const,fromTick,toTick,revision}));
@@ -55,7 +58,7 @@ export async function buildArmReport(arm:ArmPlantState,plant:ArmPlantReport,dire
   :'Per tick of a running arm program: the joints the Webots plant reported (actual) and the joints the program commanded. Radians.',samples:arm.tracking?.trace??[]} satisfies ArmTraceFile);
  const block:ArmReportBlock={trace,tracking:plant.tracking,armPlant:plant,collision:armCollisionRecord(arm,worldRevision,assetRef)};
  if(!cell)return block;
- const props=await writeEvidence(directory,ARM_PROPS_FILE,{schemaVersion:1,note:'The cups in the arm cell at each tick of the joint trace: position (m) and orientation in the map frame, the support they rest on, and whether the pads hold them; read at the end of the tick.',
+ const props=await writeEvidence(directory,ARM_PROPS_FILE,{schemaVersion:1,note:'The cups in the arm cell at each tick of the joint trace and at the tick the arm latched (if it did): position (m) and orientation in the map frame, the support they rest on, and whether the pads hold them; read at the end of the tick.',
   frame:'map',samples:arm.tracking?.props??[]} satisfies ArmPropsFile);
  return {...block,waypoints:structuredClone(cell.waypoints),props,allowedContacts:structuredClone(cell.allowedContacts),releaseTimeoutTicks:cell.releaseTimeoutTicks,notes:[...cell.notes]};
 }

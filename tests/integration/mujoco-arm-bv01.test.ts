@@ -4,10 +4,12 @@ import { afterEach, describe, expect, test } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/checker';
-import { readArmProps, readArmTrace } from '../../packages/lab-runtime/src/v2/beverage/arm-plant-report';
+import { ALLOWED_CONTACTS_STATIC_NOTE, readArmProps, readArmTrace } from '../../packages/lab-runtime/src/v2/beverage/arm-plant-report';
+import { MOCK_ARM_PARAMS } from '../../packages/cell-adapters/src/mock-arm';
+import { hashJson } from '../../packages/lab-runtime/src/v2/hash';
 import { XARM6_SI } from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
 import { readXArmFixture } from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
-import { MUJOCO_ARM_RELEASE_TIMEOUT_TICKS } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports';
+import { MUJOCO_ARM_RELEASE_TIMEOUT_TICKS, mujocoArmProgram } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports';
 import { stepUntil } from '../support/lab-v2';
 import { mujocoGateway, mujocoReady, mujocoRoot, mujocoWorkers, openMujocoRun, removeMujocoDirs } from '../support/mujoco-arm';
 
@@ -60,6 +62,16 @@ describe.skipIf(!mujocoReady)('MJ-BV01 on the MuJoCo arm', () => {
       expect(report.manifest.models.some((m) => m.id === XARM6_SI.id && m.revision === XARM6_SI.revision)).toBe(true);
       expect(report.limitations.some((l) => l.startsWith('mujoco_arm:') && l.includes('not_calibrated'))).toBe(true);
       expect(report.limitations.some((l) => l.startsWith('webots_arm:'))).toBe(false);
+      // the manifest names the program the arm ran: the fixture's program set (quintic-sync-v1, its choreography and contact block, the xArm capsule geometry) and its digests,
+      // never the mock arm's motion constants or linear interpolation
+      const prog = report.manifest.armProgram!, ref = mujocoArmProgram({ workerRoot: mujocoRoot });
+      expect(prog).toEqual(ref); expect(prog.fixture).toEqual({ id: fixture.id, revision: fixture.revision }); expect(prog.waypointsDigest).toBe(fixture.waypoints.digest);
+      expect(prog.programsDigest).toBe(hashJson(prog.programs as never)); expect(prog.programs.waypoints).toEqual(fixture.programs.waypoints); expect(prog.programs.choreography).toEqual(fixture.programs.choreography);
+      expect(prog.programs.motion).toEqual({ profile: 'quintic-sync-v1', maxAccelerationRadS2: fixture.physics.maxAccelerationRadS2, speedFraction: fixture.physics.speedFraction });
+      expect(prog.programs.collision!.geometry).toMatchObject({ provenance: 'assumed', linkRadiiM: fixture.physics.capsuleRadiusM, cupRadiusM: fixture.layout.cup.radiusM, cupHeightM: fixture.layout.cup.heightM });
+      expect(JSON.stringify(report.manifest)).not.toContain(JSON.stringify(MOCK_ARM_PARAMS).slice(1, -1));
+      expect(report.limitations.join('\n')).not.toContain('linear joint interpolation'); expect(report.limitations.some((l) => l.startsWith('mujoco_arm program:') && l.includes('quintic-sync-v1'))).toBe(true);
+      expect(report.coffee!.armTrace).toMatchObject({ tag: 'mujoco_position_actuator_tracked', interpolation: 'quintic-sync-v1' });
       // MA08 (SX-41): the arm block. ARM03 on the actual joints with the xArm model, the plant labels (D49), per-joint tracking, the joint and cup trace files, the waypoint table, the allowed contacts
       const arm = report.arm!;
       expect(arm.armPlant).toMatchObject({ engine: 'mujoco_3d', engineVersion: '3.17.0', control: 'position_actuator', grip: 'contact', dynamics: 'manufacturer_nominal+assumed', calibration: 'not_calibrated' });
@@ -70,6 +82,7 @@ describe.skipIf(!mujocoReady)('MJ-BV01 on the MuJoCo arm', () => {
       // the allowed pairs apply over the whole trace and carry the run's world revision
       expect(arm.collision.allowedContacts.map((c) => c.pair)).toEqual([['gripper', 'nozzle-stand'], ['gripper', 'tray'], ['held-cup', 'nozzle-stand'], ['held-cup', 'tray']]);
       for (const c of arm.collision.allowedContacts) expect(c).toMatchObject({ fromTick: arm.collision.trace!.fromTick, toTick: arm.collision.trace!.toTick, revision: report.manifest.world.revision });
+      expect(arm.collision.allowedContactsNote).toBe(ALLOWED_CONTACTS_STATIC_NOTE); expect(arm.collision.allowedContactsNote).toContain('whole trace');
       expect(arm.allowedContacts).toEqual([{ a: 'gripper', b: 'nozzle-stand' }, { a: 'gripper', b: 'tray' }, { a: 'held_prop', b: 'nozzle-stand' }, { a: 'held_prop', b: 'tray' }]);
       expect(arm.waypoints).toEqual(fixture.waypoints); expect(arm.waypoints!.table.map((w) => w.waypoint)).toEqual(['home', 'pickApproach', 'pick', 'lift', 'placeApproach', 'place']);
       expect(arm.releaseTimeoutTicks).toBe(MUJOCO_ARM_RELEASE_TIMEOUT_TICKS);

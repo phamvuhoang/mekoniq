@@ -32,6 +32,8 @@ export interface WaypointRow {waypoint:string;q:number[];positionErrorM:number;o
 export interface XArmFixture {id:string;revision:string;componentText:string;physics:XArmPhysics;layout:CellLayout;programs:ArmProgramSet;waypoints:{table:WaypointRow[];digest:string};blobDir:string}
 /** Assumed: the cup–stand/tray friction the spike's supports had in effect (MuJoCo's default sliding friction 1.0, docs/research/2026-11-mujoco-arm-spike.md "Ma sát cốc"); physics.json carries none. */
 export const XARM_SUPPORT_FRICTION=1;
+/** The contacts every cell allows: the gripper and a held cup on the nozzle stand and on the tray (static for the whole run). */
+export const ARM_CELL_ALLOWED_CONTACTS:readonly {a:'gripper'|'held_prop';b:'nozzle-stand'|'tray'}[]=(['gripper','held_prop'] as const).flatMap(a=>(['nozzle-stand','tray'] as const).map(b=>({a,b})));
 /** How far (xy, m) the tray in the map frame may sit from the project's coffee pickup point. */
 export const ARM_CELL_LAYOUT_TOL_M=0.05;
 export type ArmCellErrorCode='ARM_SCENE_UNAVAILABLE'|'ARM_MODEL_MISMATCH'|'ARM_CELL_LAYOUT_MISMATCH';
@@ -85,7 +87,7 @@ export function buildArmCellScene(project:LabProjectV2,fixture:Pick<XArmFixture,
   statics,supports:[{id:'nozzle-stand',centerM:at(layout.nozzleStand.centerM),sizeM:[...layout.nozzleStand.sizeM]},{id:'tray',centerM:tray,sizeM:[...layout.tray.sizeM]}],
   props:options.propIds.map(propId=>({propId,kind:'cup',radiusM:cup.radiusM,heightM:cup.heightM,massKg:cup.emptyMassKg+cup.drinkMassKg,provenance:'assumed'})),
   graspFrames:{pick:pose(layout.grasp.pick),place:pose(layout.grasp.place)},
-  allowedContacts:(['gripper','held_prop'] as const).flatMap(a=>(['nozzle-stand','tray'] as const).map(b=>({a,b}))),
+  allowedContacts:ARM_CELL_ALLOWED_CONTACTS.map(c=>({...c})),
   world3d:{padFriction:options.padFriction??physics.contact.padFriction[0]!,propFriction:physics.contact.propFriction[0]!,supportFriction:XARM_SUPPORT_FRICTION,provenance:'assumed'},
   engine:{id:'mujoco_3d',timestepMs:2,substeps:10},engineSeed:engineSeedOf(seed)} as unknown as ArmCellSceneV1,'sceneDigest');
  const checked=validateArmCellScene(scene);

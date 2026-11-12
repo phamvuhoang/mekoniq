@@ -14,7 +14,9 @@ import type {ArmCellSceneV1,Sim3DSnapshotV1} from '../navigation2d/contracts';
 import {composePose,invertPose,qconj,qrotate} from '../frames';
 import {DEFAULT_ARM_GEOMETRY,type ArmObstacle} from '../models/arm-collision';
 import {XARM6_SI} from '../models/arm-kinematics';
-import {buildArmCellScene,readXArmFixture,writeArmCellBundle,type CellLayout,type XArmFixture} from './arm-cell-scene';
+import {ARM_CELL_ALLOWED_CONTACTS,buildArmCellScene,readXArmFixture,writeArmCellBundle,type CellLayout,type XArmFixture} from './arm-cell-scene';
+import {hashJson} from '../hash';
+import type {ArmProgramRecord} from '../report';
 import {trackingStats} from './arm-ports';
 import {MUJOCO_MAX_ACTIVE_RUNS,MUJOCO_SLOT,type MujocoRuntimeOptions} from './mujoco';
 import {SIM3D_FATAL_CODES,spawnMujocoWorker} from './worker-client';
@@ -29,7 +31,7 @@ type Pose={position:number[];quaternionXyzw:number[]};
 /** The fixture's programs verbatim, plus grip by contact (open = the gripper's full opening, closed = 0, counts and lift from the oracle profile) and the ARM03 capsule geometry of the xArm:
  * its capsule radii, the cup of the layout lying across the tool (the cup stands upright while the tool approaches it sideways: its axis in the tool frame is the map vertical seen from the
  * pick grasp frame) and the scene's allowed contacts as sweep pairs. No IK at run time. */
-export function mujocoProgramSet(fixture:Pick<XArmFixture,'programs'|'physics'|'layout'>,oracle:{gripSettleTicks:number;dropTicks:number;liftMinM:number},allowed:ArmCellSceneV1['allowedContacts']):ArmProgramSet{
+export function mujocoProgramSet(fixture:Pick<XArmFixture,'programs'|'physics'|'layout'>,oracle:{gripSettleTicks:number;dropTicks:number;liftMinM:number},allowed:Readonly<ArmCellSceneV1['allowedContacts']>):ArmProgramSet{
  const {physics,layout}=fixture,axis=qrotate(qconj(layout.grasp.pick.quaternionXyzw),[0,0,1]);
  return {...structuredClone(fixture.programs),
   contact:{openM:physics.gripper.openingMaxM,closedM:0,gripSettleTicks:oracle.gripSettleTicks,dropTicks:oracle.dropTicks,liftMinM:oracle.liftMinM,releaseTimeoutTicks:MUJOCO_ARM_RELEASE_TIMEOUT_TICKS},
@@ -50,6 +52,19 @@ export const mujocoArmCellEvidence=(engineVersion:string,fixture:Pick<XArmFixtur
 export const mujocoArmPlantReport=(engineVersion:string,st:{samples:number;peakRad:number[];sumSq:number[]}):ArmPlantReport=>({engine:'mujoco_3d',engineVersion,control:'position_actuator',grip:'contact',
  dynamics:'manufacturer_nominal+assumed',calibration:'not_calibrated',tracking:trackingStats(st)});
 
+/** What a MuJoCo arm run commands, from one place for the ports and the run's manifest: the fixture (and its physics with the runtime's override), the oracle thresholds and the program set. */
+export function mujocoRunPrograms(runtime:Pick<MujocoRuntimeOptions,'workerRoot'|'physicsOverride'>){
+ const oracle=loadOracleProfile().profile.mujocoArm;
+ if(!oracle)throw new Error('ARM_ORACLE_PROFILE_MISSING: the oracle profile has no mujocoArm thresholds');
+ const fixture=readXArmFixture(runtime.workerRoot),physics={...fixture.physics,...runtime.physicsOverride};
+ return {oracle,fixture,physics,programs:mujocoProgramSet({...fixture,physics},oracle,ARM_CELL_ALLOWED_CONTACTS)};
+}
+/** The manifest's record of a MuJoCo arm run's program (what the ports run): the fixture and its revision, the program set (waypoints, choreography, quintic-sync-v1 motion, contact
+ * block, the xArm capsule geometry with its provenance, the allowed pairs) and its digest, and the solved waypoint table's digest. */
+export function mujocoArmProgram(runtime:Pick<MujocoRuntimeOptions,'workerRoot'|'physicsOverride'>):ArmProgramRecord{
+ const {fixture,physics,programs}=mujocoRunPrograms(runtime);
+ return {fixture:{id:fixture.id,revision:fixture.revision},physicsDigest:hashJson(physics as never),programs:structuredClone(programs),programsDigest:hashJson(programs as never),waypointsDigest:fixture.waypoints.digest};
+}
 export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProjectV2;seed:number}):NonNullable<RunProviders['coffeePorts']>{
  return async(st,ctx,newBootId,directory)=>{
   if(!irsimCapacity(runtime.maxActiveRuns??MUJOCO_MAX_ACTIVE_RUNS,ctx.runId,MUJOCO_SLOT))throw new Error('MUJOCO_CAPACITY');
@@ -57,9 +72,7 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
   const arm0=st.arm; // a failed open leaves the run's arm state as it was
   try{return await open();}catch(e){st.arm=arm0;releaseSlot(MUJOCO_SLOT,ctx.runId);throw e;}
   async function open():Promise<CoffeePlantPorts>{
-  const oracle=loadOracleProfile().profile.mujocoArm;
-  if(!oracle)throw new Error('ARM_ORACLE_PROFILE_MISSING: the oracle profile has no mujocoArm thresholds');
-  const fixture=readXArmFixture(runtime.workerRoot),physics={...fixture.physics,...runtime.physicsOverride};
+  const {oracle,fixture,physics,programs}=mujocoRunPrograms(runtime);
   // a run's coffee state starts with the mock arm at its home; the first open makes it the xArm at the fixture's home (assigned below, once nothing before the ports can throw).
   // A reopened run keeps its arm, which the ports then own.
   if(st.arm.plantId!=='mujoco_arm'&&st.arm.programs.length)throw new Error('ARM_STATE_MISMATCH: the arm already ran programs on another plant');
@@ -68,7 +81,7 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
   const known=[...new Set([...st.plant.cups.map(c=>c.cupId),...st.workload.map(w=>w.cupId)])].sort();
   const scene=buildArmCellScene(run.project,{...fixture,physics},run.seed,{armId:st.armId,propIds:known,homeRad:armState.q,
    ...runtime.armExtraStatics?{extraStatics:runtime.armExtraStatics}:{},...runtime.padFrictionOverride!==undefined?{padFriction:runtime.padFrictionOverride}:{}});
-  const programs=mujocoProgramSet({...fixture,physics},oracle,scene.allowedContacts),bundle=join(directory,'mujoco-arm','bundle');
+  const bundle=join(directory,'mujoco-arm','bundle');
   await writeArmCellBundle(bundle,scene,fixture,physics);
   st.arm=armState;
   const base=createMockCoffeePorts(st,ctx,newBootId,{tracking:{reachTolRad:oracle.reachTolRad,settleTicks:oracle.settleTicks,followTolRad:oracle.followTolRad,followTicks:oracle.followTicks},programs,model:XARM6_SI});
@@ -125,10 +138,11 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
      const s=r.result as Sim3DSnapshotV1,a=s.arms?.[0];
      if(!a){lose('ARM_SNAPSHOT_MISSING');return;}
      held=a.gripper?.heldPropIds??[];
-     const ex=extras(s,a),t=st.arm.tracking!,n0=t.trace.length;
+     const ex=extras(s,a),t=st.arm.tracking!,n0=t.trace.length,latched0=!!st.arm.stop?.latched;
      arm.observe(a.positionsRad,a.collisionIds,ex);
-     // the cup trace, at the cadence of the joint trace (a sample whenever the arm recorded one), in the map frame
-     if(t.trace.length>n0)(t.props??=[]).push({tick:t.trace.at(-1)!.tick,props:(ex.props??[]).map(p=>({propId:p.propId,positionM:p.inMap!.positionM,quaternionXyzw:p.inMap!.quaternionXyzw,restingOn:p.restingOn,held:held.includes(p.propId)}))});
+     // the cup trace, in the map frame, at the cadence of the joint trace (a sample whenever the arm recorded one), plus the tick the arm latched (where the cups were at the stop)
+     const grew=t.trace.length>n0;
+     if(grew||!latched0&&st.arm.stop?.latched)(t.props??=[]).push({tick:grew?t.trace.at(-1)!.tick:st.arm.tick,props:(ex.props??[]).map(p=>({propId:p.propId,positionM:p.inMap!.positionM,quaternionXyzw:p.inMap!.quaternionXyzw,restingOn:p.restingOn,held:held.includes(p.propId)}))});
     }catch(e){lose(e instanceof WorkerLostError?'WORKER_LOST':'WORKER_FAILED',e instanceof WorkerLostError?undefined:String((e as Error)?.message??e).slice(0,500));}
    },
    report:()=>({...base.report(),...st.arm.tracking?{armPlant:mujocoArmPlantReport(runtime.engineVersion,st.arm.tracking),armCell:mujocoArmCellEvidence(runtime.engineVersion,fixture,scene.allowedContacts)}:{}}),

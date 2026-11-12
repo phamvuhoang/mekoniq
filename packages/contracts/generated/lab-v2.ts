@@ -685,6 +685,10 @@ export interface ArmCollisionEvidenceRecord {
     toTick: number;
     revision: number;
   }[];
+  /**
+   * Present only when the pairs are static for the whole trace (a contact plant): says so, and what phase and revision mean then.
+   */
+  allowedContactsNote?: string;
   method: {
     kind: string;
     bound: string;
