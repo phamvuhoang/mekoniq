@@ -127,10 +127,10 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
      const r=await ask('step',{targetTick:tick+1,velocities:[],actorUpdates:[],jointTargets:[{armId:st.armId,positionsRad:st.arm.commandedQ??st.arm.q}],
       gripperTargets:[{armId:st.armId,openingM:st.arm.gripperCommandM??openM}],...placements.length?{propPlacements:placements}:{}});
      if(!r.ok){
-      const code=(r as {error:{code:string}}).error.code;
+      const {code,detail}=(r as {error:{code:string;detail?:string}}).error;
       // fatal: the worker has ended. A refused step that placed nothing means the plant cannot be commanded even to hold: lost too. Otherwise (a placement was refused) the tick did
       // not advance: the arm latches with the worker's code and the next ticks send the hold command without placements
-      if((SIM3D_FATAL_CODES as readonly string[]).includes(code)||!placements.length)lose(code);else{refused=true;arm.halt(code);}
+      if((SIM3D_FATAL_CODES as readonly string[]).includes(code)||!placements.length)lose(code,detail?.slice(0,500));else{refused=true;arm.halt(code,detail?.slice(0,500));}
       return;
      }
      tick++;
@@ -143,7 +143,7 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
      // the cup trace, in the map frame, at the cadence of the joint trace (a sample whenever the arm recorded one), plus the tick the arm latched (where the cups were at the stop)
      const grew=t.trace.length>n0;
      if(grew||!latched0&&st.arm.stop?.latched)(t.props??=[]).push({tick:grew?t.trace.at(-1)!.tick:st.arm.tick,props:(ex.props??[]).map(p=>({propId:p.propId,positionM:p.inMap!.positionM,quaternionXyzw:p.inMap!.quaternionXyzw,restingOn:p.restingOn,held:held.includes(p.propId)}))});
-    }catch(e){lose(e instanceof WorkerLostError?'WORKER_LOST':'WORKER_FAILED',e instanceof WorkerLostError?undefined:String((e as Error)?.message??e).slice(0,500));}
+    }catch(e){lose(e instanceof WorkerLostError?'WORKER_LOST':'WORKER_FAILED',String((e as Error)?.message??e).slice(0,500));} // a lost worker's detail names its client code (WORKER_EXITED, WORKER_TIMEOUT, WORKER_PROTOCOL, ...)
    },
    report:()=>({...base.report(),...st.arm.tracking?{armPlant:mujocoArmPlantReport(runtime.engineVersion,st.arm.tracking),armCell:mujocoArmCellEvidence(runtime.engineVersion,fixture,scene.allowedContacts)}:{}}),
    async close(){try{await base.close();}finally{await release();}}} satisfies CoffeePlantPorts;

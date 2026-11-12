@@ -1,6 +1,6 @@
 """The real MuJoCo worker (protocol, session, receipts, refusals) over a fake cell engine, so no MuJoCo is imported. argv: fake_cell_plant.py MODE N [worker args...]
 MODE ok: the arm reaches every target at once, the gripper its commanded opening, a placed cup stays where it was put, nothing touches anything. quit: the whole process exits
-cleanly at engine step N. badcreate: the engine refuses to compile (MESH_BLOB_MISSING). narrow: the engine's gripper range is 0.05 m, so every step carrying
+cleanly at engine step N. unstable: engine step N reports a bad state (the worker answers PLANT_UNSTABLE, fatal). badcreate: the engine refuses to compile (MESH_BLOB_MISSING). narrow: the engine's gripper range is 0.05 m, so every step carrying
 the full opening is refused (GRIPPER_TARGET_OUT_OF_RANGE, non-fatal). Every engine step (the create's priming step is the first) appends
 {n, targets, opening, placements} to steps.jsonl in the run directory."""
 import json
@@ -39,7 +39,7 @@ class Fake:
                 self.cups[pid] = pose
         return {"time": self.time, "arm": {"positions": list(targets), "velocities": [0.0] * len(targets)}, "gripper": {"positions": [0.0], "velocities": [0.0], "openingM": self.opening},
                 "props": {pid: {"position": list(p["position"]), "quaternionXyzw": list(p["quaternionXyzw"]), "speed": 0.0} for pid, p in self.cups.items()},
-                "contacts": [], "tickContacts": [], "unstable": None}
+                "contacts": [], "tickContacts": [], "unstable": "fake" if mode == "unstable" and self.count == at else None}
 
     def readback(self):
         return None

@@ -6,6 +6,8 @@ import {PUMA560_SI} from './models/arm-kinematics';
 import {hashJson} from './hash';
 import {TICK_MS} from './clock';
 import {resolveBackends} from './scenario-matrix';
+import {isArmPlantSet} from './backend-registry';
+import {MUJOCO_ARM} from './capabilities';
 export interface ReadinessCheck {id:string;status:'ready'|'blocked'|'unknown';reasonCodes:string[];evidenceRef:string|null}
 export interface ReadinessSnapshot {checkedAt:string;expiresAt:string;scenarioId:string;backendSetId:string;checks:ReadinessCheck[];canStart:boolean}
 /** `engineering`: the bundle the gateway admitted for this session (engineering sets only); never a caller-chosen path. `runId`: the existing run asking (start/resume), server-set. */
@@ -30,6 +32,8 @@ async function probe(id:string,fn:ReadinessProbe,context:ReadinessContext):Promi
 }
 /** Server-owned provider checks replace the placeholder model/clock/fixture/profile/runner/gripper rows; anything malformed or late is unknown, never ready. */
 const WEBOTS_BUDGET_MS=45000;
+/** The MuJoCo arm's readiness runs a real create smoke whose ACK deadline is 20 s (simulation3d/worker-client.ts MUJOCO_WIRE): its budget is that plus 5 s for the spawn, so a slow create answers with its own code. */
+const MUJOCO_BUDGET_MS=25000;
 async function providerChecks(checks:ReadinessCheck[],context:ReadinessContext,fn:NativeReadinessChecks,prefix:string,id:string,ms:number){
  const controller=new AbortController();let timer:ReturnType<typeof setTimeout>|undefined;
  try{
@@ -78,18 +82,20 @@ export async function collectReadiness(context:ReadinessContext,o:ReadinessOptio
    }
    // The current gateway owns only mock RunHandles; provider availability alone cannot manufacture a native runner.
    checks.push(check('runner',set.mode==='mock'?[]:portable?['IRSIM_RUNNER_UNAVAILABLE']:['NATIVE_RUNNER_UNAVAILABLE']));
-   if(set.mode==='simulation'&&scenario.coffee&&set.providers?.arm!=='webots_arm')checks.push(check('gripper',['GRIP_PROVIDER_UNAVAILABLE'])); // the Webots arm's grip is an event of its program state machine, never a provider
+   // an arm plant set has no separate gripper provider: the Webots arm's grip is an event of its program state machine, the MuJoCo arm's is physical contact inside the plant
+   if(set.mode==='simulation'&&scenario.coffee&&!isArmPlantSet(set))checks.push(check('gripper',['GRIP_PROVIDER_UNAVAILABLE']));
   }
  }
  const portableSet=set?.execution?.host==='portable_python';
  if(scenario&&set?.mode==='simulation'&&!portableSet&&o.nativeChecks)await providerChecks(checks,context,o.nativeChecks,'NATIVE','native-provider',5000);
  // the IR-SIM create smoke may need its full 15 s startup budget on a cold host; a Webots start is slower (a GUI process), so its smoke gets 45 s under its own name, and the abort closes it
- const webots=set?.providers?.amr==='webots_3d'||set?.providers?.arm==='webots_arm';
- if(scenario&&set?.mode==='simulation'&&portableSet&&o.portableChecks)await providerChecks(checks,context,o.portableChecks,webots?'WEBOTS':'IRSIM',webots?'webots-provider':'irsim-provider',webots?WEBOTS_BUDGET_MS:15000);
+ const webots=set?.providers?.amr==='webots_3d'||set?.providers?.arm==='webots_arm',mujoco=set?.providers?.arm===MUJOCO_ARM.id;
+ const [prefix,providerId,budget]=webots?['WEBOTS','webots-provider',WEBOTS_BUDGET_MS]:mujoco?['MUJOCO','mujoco-provider',MUJOCO_BUDGET_MS]:['IRSIM','irsim-provider',15000];
+ if(scenario&&set?.mode==='simulation'&&portableSet&&o.portableChecks)await providerChecks(checks,context,o.portableChecks,prefix,providerId,budget);
  const entries=Object.entries(o.probes??{});
  if(entries.length>20)checks.push(check('probes',['PROBE_LIMIT']));
  else if(scenario&&set)checks.push(...await Promise.all(entries.map(([id,fn])=>probe(`probe:${id}`,fn,context))));
- const finished=now(),expired=finished-started>(webots?WEBOTS_BUDGET_MS+5000:15000)||finished<started;
+ const finished=now(),expired=finished-started>(webots||mujoco?budget+5000:15000)||finished<started;
  if(expired)checks.push(check('deadline',['READINESS_DEADLINE_EXCEEDED'],'unknown'));
  return {checkedAt:new Date(finished).toISOString(),expiresAt:new Date(finished+30000).toISOString(),scenarioId:context.scenarioId,backendSetId:context.backendSetId,checks,canStart:canStartFromChecks(checks,expired)};
 }

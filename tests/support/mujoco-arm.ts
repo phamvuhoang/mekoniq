@@ -14,6 +14,7 @@ import type {RunManifestInput,ScenarioRun} from '../../packages/lab-runtime/src/
 import type {AssetRevision} from '../../packages/lab-runtime/src/v2/contracts';
 import type {LabProjectV2} from '../../packages/lab-runtime/src/v2/contracts';
 import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
+import {amrAsset} from './lab-v2';
 
 export const mujocoPython=resolve('.venv-mujoco/bin/python'),mujocoRoot=resolve('robotics/simulation-mujoco');
 export const mujocoReady=existsSync(mujocoPython)&&(()=>{try{return execFileSync(mujocoPython,['-I','-B','-c','import mujoco;print(mujoco.__version__)'],{encoding:'utf8',timeout:30_000}).trim()==='3.17.0';}catch{return false;}})();
@@ -21,9 +22,9 @@ export const mujocoReady=existsSync(mujocoPython)&&(()=>{try{return execFileSync
 export const mujocoWorkers=()=>{try{return execFileSync('pgrep',['-f','mujoco_worker'],{encoding:'utf8'}).trim().split('\n').filter(Boolean);}catch{return [];}};
 /** The fixture's xArm coffee cell project, verbatim. */
 export const xarmProject=()=>JSON.parse(readFileSync(join(mujocoRoot,'fixtures',XARM_FIXTURE_ID,'coffee-cell-project.json'),'utf8')) as LabProjectV2;
-/** The project's AMR asset (service-robot-asset@1, bf15015a…), verbatim from lab/fixtures/twins/coffee-cell-v2.json, which this repo does not hold: the runner verifies its hash, and its compiled
- * collision radius (0.40697 m) is the docked robot of the arm scene. Without it the robot's geometry is unknown and the arm scene has no robot. */
-export const xarmAmrAsset=JSON.parse('{"schemaVersion":2,"id":"service-robot-asset","revision":1,"contentHash":"bf15015afcc0e719c79ff76eff955ba9c83f72c82968156fa25743f7d8e15c79","hashAlgorithm":"sha256-canonical-json-v1","kind":"amr","visual":null,"collision":null,"frames":[{"id":"base_link","parentId":null,"translationM":[0,0,0],"quaternionXyzw":[0,0,0,1]},{"id":"chassis","parentId":"base_link","translationM":[0,0,0.2],"quaternionXyzw":[0,0,0,1]},{"id":"drive","parentId":"base_link","translationM":[0,0,0.14],"quaternionXyzw":[0,0,0,1]},{"id":"battery","parentId":"base_link","translationM":[-0.04,0,0.37],"quaternionXyzw":[0,0,0,1]},{"id":"sensor","parentId":"base_link","translationM":[0.25,0,0.38],"quaternionXyzw":[0,0,0,1]},{"id":"tablet","parentId":"base_link","translationM":[-0.11,0,1.4700000000000002],"quaternionXyzw":[0,0,0,1]},{"id":"tray_1","parentId":"base_link","translationM":[0,0,0.5],"quaternionXyzw":[0,0,0,1]},{"id":"tray_2","parentId":"base_link","translationM":[0,0,0.81],"quaternionXyzw":[0,0,0,1]},{"id":"tray_3","parentId":"base_link","translationM":[0,0,1.12],"quaternionXyzw":[0,0,0,1]}],"geometry":[{"kind":"box","frameId":"chassis","sizeM":[0.6,0.55,0.15]},{"kind":"box","frameId":"drive","sizeM":[0.2,0.5,0.15]},{"kind":"box","frameId":"battery","sizeM":[0.25,0.2,0.12]},{"kind":"cylinder","frameId":"sensor","radiusM":0.04,"heightM":0.06},{"kind":"box","frameId":"tablet","sizeM":[0.12,0.2,0.01]},{"kind":"box","frameId":"tray_1","sizeM":[0.4,0.45,0.02]},{"kind":"box","frameId":"tray_2","sizeM":[0.4,0.45,0.02]},{"kind":"box","frameId":"tray_3","sizeM":[0.4,0.45,0.02]}],"provenance":[{"parameter":"geometry","source":"illustrative","reference":"fixtures/catalog/service-illustrative.json"},{"parameter":"frames","source":"illustrative"}]}') as AssetRevision;
+/** The project's AMR asset (service-robot-asset@1, bf15015a…) is the server catalog's 3-tray lidar service robot (backend-registry.ts serverAssets, the same as lab-v2.ts amrAsset):
+ * every run resolves it by content hash, a gateway run too. Passing it as a run asset changes nothing. */
+export const xarmAmrAsset:AssetRevision=amrAsset;
 
 const dirs:string[]=[];
 export const removeMujocoDirs=()=>Promise.all(dirs.splice(0).map(d=>rm(d,{recursive:true,force:true})));
