@@ -44,3 +44,20 @@ LAB_CONTAINER_IMAGE=mekoniq-lab-runtime:dev perl -e 'alarm 900; exec @ARGV' pnpm
 Skipped (never failed or passed) when `docker info` fails or `LAB_CONTAINER_IMAGE` is unset. It fails with `IMAGE_STALE` when the image's `sourceCommit` is not the repository HEAD. It publishes the port on `127.0.0.1` only, generates a random access key, runs with a read-only root and a tmpfs `/tmp`, pairs with the key, runs `MJ-BV01` through the public API, checks `served 2`, `not_calibrated`, an empty `docker diff`, a non-root user and a prompt clean stop, and leaves no container.
 
 The robot asset `service-robot-asset@1` cannot be supplied through the public API (the gateway resolves assets only for engineering bundles), so ARM03 in a container run has no docked robot, as noted in M07.
+
+## Status and measurements (2026-11-13)
+
+Base image: `node:24.22.2-bookworm-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9` (index; linux/arm64 and linux/amd64). Image size about 457 MB (the 178 MB venv holds the whole lock, including pytest). Builds take about 40-60 s with a warm layer cache.
+
+**Open defect in the runtime (not fixed here, `packages/lab-runtime/src/v2/readiness.ts:81`).** The `gripper` readiness check exempts only `set.providers.arm==='webots_arm'`, so for the MuJoCo set `POST /lab/v2/runs` answers `422 BACKEND_UNAVAILABLE ["GRIP_PROVIDER_UNAVAILABLE"]`. The M07 tests never went through the gateway's create, so nothing caught it. With the one-line change `set.providers?.arm!=='webots_arm'` -> `!isArmPlantSet(set)` (from `backend-registry`) the test below passed on linux/arm64 (measured in a scratch copy, not committed). Until that fix is committed the image cannot complete `MJ-BV01` through the public API and RT05 is not met.
+
+Wall time of the whole stepping loop of `MJ-BV01` (4800 ticks, `step{ticks:50}`, through HTTP, in the container, seed 42):
+
+| Architecture | Result | Wall time per tick |
+|---|---|---|
+| linux/arm64 (native, with the one-line readiness change) | completed, served 2 | 1.82-1.97 ms (8.8-9.4 s) |
+| linux/amd64 under emulation (same change) | not completed: `needs_attention` at tick 1600, `TRANSFER_UNKNOWN` of `coffee-job-1` (the pick, outcome unknown, first attention at tick 1585), served 0 | 3.3-3.4 ms over the 1600 ticks it ran |
+
+## Real amd64 hardware has not been tested
+
+Cloud Run runs linux/amd64; this Mac is arm64, so the amd64 image only ever ran under emulation here. The emulated run above fails in the first cup pick (the same place as the engine spike's NaN in the contact grasp on MuJoCo 3.17.0). It failed identically three times. It is a measurement, not a verdict: the cause is unknown, it may be the emulation or the engine on x86-64, and it must be checked on real amd64 hardware before anyone relies on the Cloud Run image. In the amd64 image the tool root's 39 Python tests (`tests/` of `robotics/simulation-mujoco`, mounted read-only) all passed (2.2 s), as they do on arm64 (0.75 s), so the engine itself starts, compiles the cell and passes its unit tests under emulation; only the full cell grasp fails.

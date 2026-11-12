@@ -57,11 +57,12 @@ describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
    const wallMs=Date.now()-t0;
    console.log('MJ-BV01 container',JSON.stringify({image,platform:docker(['image','inspect','--format','{{.Os}}/{{.Architecture}}',image]).out,finalTick:view.tick,wallMs,msPerTick:+(wallMs/view.tick).toFixed(3),status:view.run.status}));
    const report=(await api(`${url}/report`,{token})).body as Record<string,any>;
+   if(view.run.status!=='completed')console.log('MJ-BV01 container NOT COMPLETED',JSON.stringify({tick:view.tick,outcome:report.outcome,attention:report.attention,arm:{...report.arm,trace:undefined,props:undefined,collision:undefined},coffee:report.coffee?.cups,logs:docker(['logs','--tail','15',name]).err.replaceAll(key,'<key>')}).slice(0,6000));
    expect(report.outcome).toMatchObject({status:'completed',served:'2'});
    expect(report.manifest).toMatchObject({scenario:{id:'MJ-BV01'},backendSetId:'engineering-mujoco-arm-v1',calibration:{status:'not_calibrated'}});
    expect(report.arm.armPlant).toMatchObject({engine:'mujoco_3d',calibration:'not_calibrated'});
-   // nothing written outside /tmp (read-only root + empty diff), not root
-   expect(docker(['diff',name]).out).toBe('');
+   // nothing written outside /tmp (read-only root + empty diff; OrbStack alone adds its CA certificate under /usr/local/share/ca-certificates at container start), not root
+   expect(docker(['diff',name]).out.split('\n').filter(l=>l&&!/^[CA] \/usr(\/local(\/share(\/ca-certificates(\/orbstack-root\.crt)?)?)?)?$/.test(l))).toEqual([]);
    expect(Number(docker(['exec',name,'id','-u']).out)).toBeGreaterThan(0);
    // SIGTERM ends it promptly and cleanly
    const t1=Date.now(),stopped=docker(['stop','-t','20',name]);expect(stopped.ok).toBe(true);
