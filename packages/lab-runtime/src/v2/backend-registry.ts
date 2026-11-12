@@ -1,5 +1,5 @@
 // Server-owned backend factories. A caller names a catalog set; it never supplies endpoints, actors or backend code.
-import {admitBackend,WEBOTS_ARM,type CapabilityCatalog} from './capabilities';
+import {admitBackend,MUJOCO_ARM,WEBOTS_ARM,type CapabilityCatalog} from './capabilities';
 import {MOCK_AMR} from './backends/mock-amr';
 import {MOCK_COFFEE} from '../../../cell-adapters/src/mock-coffee';
 import {MOCK_ARM} from '../../../cell-adapters/src/mock-arm';
@@ -7,11 +7,13 @@ type Descriptor={readonly id:string;readonly version:string;readonly model:strin
 import {serviceAmrAsset,type AssetRevision} from './assets';
 /** The Webots arm (R1.1): the mock arm's program state machine tracking a rigid-body plant under position servo. Its masses and torque limits are assumed. */
 const WEBOTS_ARM_DESCRIPTOR:Descriptor={id:WEBOTS_ARM.id,version:WEBOTS_ARM.version,model:'webots_position_servo_arm',dynamics:true};
-/** Backends with an execution implementation in this runtime: the mock ones, and the Webots arm (whose plant the caller supplies as coffeePorts). Other simulation/hardware stay denied with a reason. */
-const IMPLEMENTED:Record<string,Descriptor>={mock_amr:MOCK_AMR,mock_coffee:MOCK_COFFEE,mock_arm:MOCK_ARM,[WEBOTS_ARM.id]:WEBOTS_ARM_DESCRIPTOR};
+/** The MuJoCo arm (R2a): the same state machine tracking a MuJoCo xArm 6 under position actuators that grips by contact. Version: the engine the lock pins (readiness refuses any other). */
+const MUJOCO_ARM_DESCRIPTOR:Descriptor={id:MUJOCO_ARM.id,version:'3.17.0',model:'mujoco_position_actuator_arm',dynamics:true};
+/** Backends with an execution implementation in this runtime: the mock ones, and the Webots and MuJoCo arms (whose plant the caller supplies as coffeePorts). Other simulation/hardware stay denied with a reason. */
+const IMPLEMENTED:Record<string,Descriptor>={mock_amr:MOCK_AMR,mock_coffee:MOCK_COFFEE,mock_arm:MOCK_ARM,[WEBOTS_ARM.id]:WEBOTS_ARM_DESCRIPTOR,[MUJOCO_ARM.id]:MUJOCO_ARM_DESCRIPTOR};
 export interface InstantiatedBackends {setId:string;mode:'mock'|'simulation';access:'simulated';backends:string[];descriptors:Descriptor[]}
-/** The one simulation set this runner executes: the arm is a Webots plant, the AMR and the coffee machine are mocks. */
-export const isArmPlantSet=(set:{mode:string;providers?:{arm?:string}}|undefined)=>set?.mode==='simulation'&&set.providers?.arm===WEBOTS_ARM.id;
+/** The simulation sets this runner executes: the arm is a Webots or a MuJoCo plant, the AMR and the coffee machine are mocks. */
+export const isArmPlantSet=(set:{mode:string;providers?:{arm?:string}}|undefined)=>set?.mode==='simulation'&&(set.providers?.arm===WEBOTS_ARM.id||set.providers?.arm===MUJOCO_ARM.id);
 /** Admission (capabilities.ts) first, then the execution switch: every scenario-required backend must be enabled and implemented, and the mode must be mock. */
 export function instantiateBackends(setId:string,catalog:CapabilityCatalog,enabled:readonly string[],required?:readonly string[]):InstantiatedBackends {
  const set=Object.hasOwn(catalog.sets,setId)?catalog.sets[setId]:undefined;

@@ -7,7 +7,7 @@ import {hashPayload,type CommandResult,type DomainEvent,type JsonObject,type Rob
 import {dispatchRobotEffects,robotEventCommand} from '../../../robot-adapters/src/dispatch';
 import type {RobotEvent} from '../../../robot-adapters/src/contract';
 import {validateProjectV2,validateActionV2,type LabProjectV2,type LabRunSnapshotV2,type AssetRevision} from './contracts';
-import {defaultCatalog,type CapabilityCatalog,type Access,type Mode} from './capabilities';
+import {defaultCatalog,MUJOCO_ARM,type CapabilityCatalog,type Access,type Mode} from './capabilities';
 import {requiredBackends} from './scenario-matrix';
 import {isArmPlantSet} from './backend-registry';
 import {instantiateBackends,serverAssets} from './backend-registry';
@@ -25,7 +25,7 @@ import type {CoffeeContext} from './scenarios/coffee';
 import {CoffeeDriver,initialCoffee,COFFEE_RECIPES,COFFEE_POLICY,COFFEE_FAULTS,ARM_FAULTS,DOCK_TOLERANCE_M,type CoffeeState} from './scenarios/coffee';
 import {MOCK_COFFEE_PARAMS} from '../../../cell-adapters/src/mock-coffee';
 import {MOCK_ARM_PARAMS,ARM_CHOREOGRAPHY} from '../../../cell-adapters/src/mock-arm';
-import {PUMA560_SI} from './models/arm-kinematics';
+import {PUMA560_SI,XARM6_SI,type ArmModelSI} from './models/arm-kinematics';
 import {DEFAULT_ARM_GEOMETRY} from './models/arm-collision';
 import {declareArmScene,materializeArmScene,validateArmCollisionProfile} from './models/arm-scene';
 import {TelemetryRecorder,TELEMETRY_RATE_TICKS} from './telemetry';
@@ -63,8 +63,9 @@ class SimulatedCrash extends Error {constructor(){super('SIMULATED_CRASH');}}
 const ID=/^[A-Za-z0-9_.:-]{1,200}$/;
 function activeFaultEntities(project:LabProjectV2,roles:Roles){const ids=new Set([...roles.robots.map(r=>r.id),...roles.coffee?[roles.coffee.cellId,roles.coffee.armId]:[]]);return project.entities.filter(e=>ids.has(e.id));}
 /** Runtime checks the JSON schema cannot express: unique ids, everything inside the world. */
-export function checkWorld(p:LabProjectV2){
- if(p.armCollisionProfile)validateArmCollisionProfile(p.armCollisionProfile);
+/** `armModel`: the arm model of the run's arm provider (the set's, never the project's); a profile for another model is ARM_COLLISION_MODEL_MISMATCH. */
+export function checkWorld(p:LabProjectV2,armModel:ArmModelSI=PUMA560_SI){
+ if(p.armCollisionProfile)validateArmCollisionProfile(p.armCollisionProfile,armModel);
  const w=p.world,ids=new Set<string>();
  for(const o of [...w.points,...w.obstacles,...p.entities]){if(ids.has(o.id)||!ID.test(o.id))throw new Error('INVALID_PROJECT');ids.add(o.id);}
  if(![w.width,w.height].every(n=>Number.isFinite(n)&&n>0&&n<=1000))throw new Error('INVALID_PROJECT');
@@ -73,16 +74,18 @@ export function checkWorld(p:LabProjectV2){
 }
 export async function createScenarioRun(input:RunManifestInput,providers:RunProviders):Promise<ScenarioRun>{
  const registered=(providers.scenarios??scenarioRegistry).get(input.scenarioId);if(!registered)throw new Error('SCENARIO_UNSUPPORTED');
- const capabilities=providers.catalog??defaultCatalog,plantSet=isArmPlantSet(Object.hasOwn(capabilities.sets,input.backendSetId)?capabilities.sets[input.backendSetId]:undefined);
+ const capabilities=providers.catalog??defaultCatalog,runSet=Object.hasOwn(capabilities.sets,input.backendSetId)?capabilities.sets[input.backendSetId]:undefined,plantSet=isArmPlantSet(runSet);
+ // the arm model is the run's arm provider's: the MuJoCo arm is the xArm 6, every other arm the PUMA 560 reference. Chosen by the set, so a project for the other model is refused.
+ const armModel=runSet?.providers?.arm===MUJOCO_ARM.id?XARM6_SI:PUMA560_SI;
  if(plantSet&&!providers.coffeePorts)throw new Error('BACKEND_EXECUTION_DISABLED'); // a plant-backed arm is only ever the caller's ports; never a silent mock
  const backends=instantiateBackends(input.backendSetId,capabilities,providers.enabledBackends??[],requiredBackends(registered,plantSet?'simulation':'mock',input.backendSetId,capabilities));
  if(input.mode!==backends.mode||input.access!==backends.access)throw new Error('MODE_BACKEND_MISMATCH');
  const valid=validateProjectV2(input.project);if(!valid.ok)throw new Error('INVALID_PROJECT');
- const project=structuredClone(valid.value);checkWorld(project);
+ const project=structuredClone(valid.value);checkWorld(project,armModel);
  const scenario=structuredClone(registered);
  checkScenario(scenario);if(scenario.revision!==input.scenarioRevision)throw new Error('SCENARIO_REVISION_MISMATCH');
  // A coffee scenario needs the coffee and arm backends of the locked set; there is no fallback to an AMR-only run.
- if(scenario.coffee&&!(backends.backends.includes('mock_coffee')&&(backends.backends.includes('mock_arm')||backends.backends.includes('webots_arm'))))throw new Error('SCENARIO_BACKEND_MISSING');
+ if(scenario.coffee&&!(backends.backends.includes('mock_coffee')&&(backends.backends.includes('mock_arm')||backends.backends.includes('webots_arm')||backends.backends.includes(MUJOCO_ARM.id))))throw new Error('SCENARIO_BACKEND_MISSING');
  if(!Number.isSafeInteger(input.seed)||input.seed<0||input.seed>0xffffffff)throw new Error('INVALID_SEED');
  const roles=resolveRoles(scenario,project),catalog=[...(providers.assets??[]),...serverAssets],radius:Record<string,number|null>={},trays:Record<string,number>={};
  const faultSchedule=validateFaultSchedule(project.faultSchedule??[],activeFaultEntities(project,roles),'mock');
@@ -94,13 +97,13 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
   trays[e.id]=supplied?Math.max(1,supplied.frames.filter(f=>/^tray_\d+$/.test(f.id)).length):1;
   return {...e.assetRef,resolved:!!compiled};
  });
- const armCollisionScene=scenario.coffee?declareArmScene(project,radius,roles.robots.map(r=>r.id)):undefined;
- const armProfile={kinematics:PUMA560_SI,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={amr:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
+ const armCollisionScene=scenario.coffee?declareArmScene(project,radius,roles.robots.map(r=>r.id),armModel):undefined;
+ const armProfile={kinematics:armModel,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={amr:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
  const manifest:Omit<RunReport['manifest'],'runId'>={...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:backends.mode,access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends:backends.descriptors}),configuration,
   recipes:COFFEE_RECIPES.filter(r=>scenario.coffee?.orders.some(o=>o.recipe===r.id)).map(r=>({id:r.id,revision:r.revision,hash:r.hash})),
-  models:[{id:MOCK_AMR.id,revision:MOCK_AMR.version,hash:hashJson(MOCK_AMR_PARAMS),provenance:'illustrative'},...scenario.coffee?[{id:'mock_coffee',revision:'1',hash:hashJson(MOCK_COFFEE_PARAMS),provenance:'illustrative'},{id:PUMA560_SI.id,revision:PUMA560_SI.revision,hash:hashJson(armProfile),provenance:'illustrative_reference'}]:[]],
+  models:[{id:MOCK_AMR.id,revision:MOCK_AMR.version,hash:hashJson(MOCK_AMR_PARAMS),provenance:'illustrative'},...scenario.coffee?[{id:'mock_coffee',revision:'1',hash:hashJson(MOCK_COFFEE_PARAMS),provenance:'illustrative'},{id:armModel.id,revision:armModel.revision,hash:hashJson(armProfile),provenance:armModel===XARM6_SI?'manufacturer_nominal':'illustrative_reference'}]:[]],
   profiles:[{id:'mock-runtime',revision:1,hash:configuration.hash,provenance:'illustrative'},...armCollisionScene?.profile?[{id:armCollisionScene.profile.id,revision:armCollisionScene.profile.revision,hash:armCollisionScene.profileHash!,provenance:armCollisionScene.profile.provenance}]:[]],calibration:{status:'not_calibrated',revision:null,hash:null,reason:'MOCK_ILLUSTRATIVE'},...armCollisionScene?{armCollisionScene}:{}};
  const manifestHash=hashJson(manifest),dir=providers.directory;
  await mkdir(dir,{recursive:true,mode:0o700});await chmod(dir,0o700);
@@ -476,7 +479,8 @@ class Run implements ScenarioRun {
      'Arm sweep evidence records motion and scene changes with attachment identity and referenced geometry; identical stationary checks share a tick interval. Evidence is bounded to 4096 intervals; droppedIntervals and armCollisionTraceComplete expose truncation. The first blocked sweep retains its geometry independently.',
      c.manifest.armCollisionScene?.profile?'Arm scene scope: project obstacle rectangles extruded from map z=0, declared illustrative heights, compiled AMR radii, conservative swept AABBs in the declared arm base frame. No calibrated fixture or robot mesh, force, or physical safety validation.':'Arm scene scope unavailable: no declared armCollisionProfile; checker covers self and injected arm-frame obstacles only.',
      'Coffee reconciliation is human-provenance audit only; consumption of an unknown step stays an open stock exception.']:[],
-    ...arm?['webots_arm: the arm is a Webots R2025a rigid-body plant under position servo. not_calibrated: link masses, inertia, joint torque limits and floor friction are assumed fixture values. Gripping is an event of the program state machine, never physics; the AMR and the coffee machine are mocks. ARM03 is the swept capsule check on the actual joints every tick, not a physical safety proof.']:[]],
+    ...arm?.armPlant.engine==='mujoco_3d'?[`mujoco_arm: the arm is a MuJoCo ${arm.armPlant.engineVersion} xArm 6 under position actuators with the fixture's Gripper G2. not_calibrated: masses, inertia, joint limits and forces are the manufacturer's nominal values; gains, friction, contact, pads and the cell layout are assumed. The cup is gripped, lifted and released by contact (the plant reports what the pads hold and where the cup rests); the AMR and the coffee machine are mocks. ARM03 is the swept capsule check on the actual joints every tick, not a physical safety proof.`]
+     :arm?['webots_arm: the arm is a Webots R2025a rigid-body plant under position servo. not_calibrated: link masses, inertia, joint torque limits and floor friction are assumed fixture values. Gripping is an event of the program state machine, never physics; the AMR and the coffee machine are mocks. ARM03 is the swept capsule check on the actual joints every tick, not a physical safety proof.']:[]],
    ...this.coffee?{coffee:await this.coffee.report()}:{},...arm?{arm}:{},telemetry};
  }
  async close(){await this.queue;if(!this.closed){this.closed=true;try{await this.coffee?.close();}finally{await this.source.close();}}}
