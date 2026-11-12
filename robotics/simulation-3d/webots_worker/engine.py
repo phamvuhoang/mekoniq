@@ -30,6 +30,13 @@ def webots_executable(webots_home):
     return exe
 
 
+WATCH_LIGHTS = "Background {\n  skyColor [ 0.55 0.7 0.9 ]\n}\nDirectionalLight {\n  direction -0.4 0.3 -1\n  intensity 1.6\n  ambientIntensity 0.7\n}\n"
+
+
+def watching():
+    return os.environ.get("MEKONIQ_WEBOTS_WATCH") == "1"
+
+
 def webots_argv(exe, port, world, watch=False):
     """Headless and unrendered by default (fast, minimized). Watch mode (dev only, set by the runtime for real runs, never for a smoke) keeps the window up and rendering at real time; the sim clock is unchanged."""
     return [str(exe), "--batch", *(["--mode=realtime"] if watch else ["--minimize", "--mode=fast"]), "--stdout", "--stderr", f"--port={port}", str(world)]
@@ -145,13 +152,13 @@ class WebotsEngine:
             raise WorkerError("WEBOTS_VERSION_MISMATCH", f"found {self.version}, this worker is pinned to {EXPECTED_VERSION}", fatal=True)
         self.run_dir.mkdir(parents=True, exist_ok=True)
         world = self.run_dir / "world.wbt"
-        world.write_text(self.world)
+        world.write_text(self.world + (WATCH_LIGHTS if watching() else ""))  # the compiled world has no light: unlit, a rendered view is black
         os.chmod(world, 0o600)
         self.port = free_port()
         log = open(self.run_dir / "webots.log", "wb")
         self.logs.append(log)
         env = engine_env()
-        self.webots = subprocess.Popen(webots_argv(exe, self.port, world, watch=os.environ.get("MEKONIQ_WEBOTS_WATCH") == "1"), stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT, env=env)
+        self.webots = subprocess.Popen(webots_argv(exe, self.port, world, watch=watching()), stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT, env=env)
         arm = self.config.get("arm")
         wanted = len(self.config["robots"]) + (1 if arm else 0) + 1
         deadline = time.monotonic() + START_TIMEOUT_S

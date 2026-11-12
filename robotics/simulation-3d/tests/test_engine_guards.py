@@ -57,3 +57,7 @@ def test_watch_mode_renders_at_real_time_and_the_default_stays_headless_and_fast
     assert "--mode=fast" in default and "--minimize" in default and "--mode=realtime" not in default
     watch = engine.webots_argv("/w", 1, "/x.wbt", watch=True)
     assert "--mode=realtime" in watch and "--minimize" not in watch and "--mode=fast" not in watch and "--batch" in watch
+
+
+def test_watch_mode_adds_the_light_the_compiled_world_lacks():
+    assert "DirectionalLight" in engine.WATCH_LIGHTS and "Background" in engine.WATCH_LIGHTS
