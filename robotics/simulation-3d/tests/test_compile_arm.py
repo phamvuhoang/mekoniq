@@ -194,3 +194,12 @@ def test_amr_world_unchanged():
     fleet = compile_world(load("navigation-scene-two-robot.json"), {r: load(f"physical-model-{r}.json") for r in ("robot01", "robot02")}, 7)
     assert hashlib.sha256(single.encode()).hexdigest() == "7a841131a01e14a6a07e6505396b6b6b6169d9fe26823a79387068e091b8bf9f"
     assert hashlib.sha256(fleet.encode()).hexdigest() == "2d7321fa1b70de613b3151b8b04070041d288d2eb713fe92b951c5052e70d654"
+
+
+def test_visual_mode_only_adds_shapes_to_the_links_and_never_changes_the_default_world():
+    plain, seen = compile_arm_world(scene(), model()), compile_arm_world(scene(), model(), visual=True)
+    assert plain == compile_arm_world(scene(), model(), visual=False)
+    assert "Shape {" not in plain.split("DEF ARM_")[1]  # the recorded world has no visible arm
+    arm = seen.split("DEF ARM_")[1]
+    assert arm.count("Pose {") >= 4 and arm.count("Shape {") >= 9  # a rod per link with a length, a ball per joint
+    assert seen.count("boundingObject") == plain.count("boundingObject") and seen.count("physics Physics") == plain.count("physics Physics")  # nothing collidable or heavy was added

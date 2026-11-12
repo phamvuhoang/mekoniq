@@ -194,7 +194,9 @@ class WorkerSession:
         if engine_seed(p["seed"]) != scene["engineSeed"]:
             raise WorkerError("SEED_MISMATCH", f"seed {p['seed']} reduces to {engine_seed(p['seed'])}, the scene was built for {scene['engineSeed']}")
         try:
-            world = compile_arm_world(scene, component)
+            from .engine import watching
+
+            world = compile_arm_world(scene, component, visual=watching())
             chain = arm_chain(scene, component)
         except CompileError as e:
             raise WorkerError(e.code, e.detail)

@@ -472,13 +472,32 @@ def arm_chain(scene, model):
     return _check_arm_model(model, scene["arm"])[2]
 
 
-def _arm_joint(links, chain, home, i, ind):
+def _viz(a, b, color, ind):
+    """Watch mode only: a rod from a to b (a sphere at a), no bounding object and no physics, so it never changes the simulation. Cylinder axis is local z."""
+    d = [y - x for x, y in zip(a, b)]
+    n = math.sqrt(sum(v * v for v in d))
+    ball = f"{ind}Shape {{\n{ind}  appearance PBRAppearance {{ baseColor 0.15 0.15 0.18 roughness 0.6 metalness 0 }}\n{ind}  geometry Sphere {{ radius 0.045 }}\n{ind}}}\n"
+    if n < 1e-6:
+        return ball
+    ux, uy, uz = d[0] / n, d[1] / n, d[2] / n
+    ax = (-uy, ux, 0.0) if math.hypot(ux, uy) > 1e-9 else (1.0, 0.0, 0.0)
+    m = math.hypot(ax[0], ax[1])
+    rot = f"{_num(ax[0] / m)} {_num(ax[1] / m)} 0.0 {_num(math.acos(max(-1.0, min(1.0, uz))))}"
+    mid = _vec([(x + y) / 2 for x, y in zip(a, b)])
+    return (ball + f"{ind}Pose {{\n{ind}  translation {mid}\n{ind}  rotation {rot}\n{ind}  children [\n{ind}    Shape {{\n{ind}      appearance PBRAppearance {{ baseColor {color} roughness 0.5 metalness 0 }}\n"
+            f"{ind}      geometry Cylinder {{ height {_num(n)} radius 0.03 }}\n{ind}    }}\n{ind}  ]\n{ind}}}\n")
+
+
+def _arm_joint(links, chain, home, i, ind, visual=False):
     j, h = chain[i], home[i]
     pose = _pose_of(j["origin"])
     axis_parent = _apply(_rot(pose[1]), j["axis"])
     end_pose = (pose[0], _qmul(pose[1], _qaxis(j["axis"], h)))
     lim, link = j["limits"], links[j["child"]]
-    nxt = _arm_joint(links, chain, home, i + 1, ind + "    ") if i + 1 < len(chain) else ""
+    nxt = _arm_joint(links, chain, home, i + 1, ind + "    ", visual) if i + 1 < len(chain) else ""
+    if visual:  # this link's rod runs from its own origin to the next joint's anchor (the last link ends in a joint ball)
+        end = _pose_of(chain[i + 1]["origin"])[0] if i + 1 < len(chain) else (0.0, 0.0, 0.0)
+        nxt = _viz((0.0, 0.0, 0.0), end, "0.9 0.45 0.1" if i % 2 == 0 else "0.85 0.75 0.2", ind + "      ") + nxt
     return (f"{ind}HingeJoint {{\n{ind}  jointParameters HingeJointParameters {{\n{ind}    position {_num(h)}\n{ind}    axis {_vec(axis_parent)}\n{ind}    anchor {_vec(pose[0])}\n{ind}  }}\n"
             f"{ind}  device [\n{ind}    RotationalMotor {{\n{ind}      name \"J{i + 1}_motor\"\n{ind}      maxVelocity {_num(lim['velocity']['value'])}\n{ind}      maxTorque {_num(lim['effort']['value'])}\n"
             f"{ind}      minPosition {_num(lim['lower']['value'])}\n{ind}      maxPosition {_num(lim['upper']['value'])}\n{ind}    }}\n{ind}    PositionSensor {{\n{ind}      name \"J{i + 1}_sensor\"\n{ind}    }}\n{ind}  ]\n"
@@ -502,9 +521,10 @@ def _arm_static(n, o, base):
             f"      appearance PBRAppearance {{ baseColor 0.6 0.5 0.4 roughness 1 metalness 0 }}\n      geometry {shape}\n    }}\n  ]\n  boundingObject {shape}\n}}\n")
 
 
-def compile_arm_world(scene, model):
+def compile_arm_world(scene, model, visual=False):
     """The .wbt text of an ArmScene3DV1 and the arm-ref-3d component: a floor, the static obstacles (arm base frame, placed by baseInMap), one extern supervisor and one extern
-    Robot that is the arm. No AMR, cup or coffee machine. Device names are J<i>_motor / J<i>_sensor; the arm is DEF ARM_<name>, obstacles DEF STATIC_<n> (an id never becomes a DEF)."""
+    Robot that is the arm. No AMR, cup or coffee machine. Device names are J<i>_motor / J<i>_sensor; the arm is DEF ARM_<name>, obstacles DEF STATIC_<n> (an id never becomes a DEF).
+    `visual` (watch mode only) adds rods and balls for the links; the default world has no visible arm and is byte-identical to the one recorded."""
     step, seed, friction, base = _check_arm_scene(scene)
     arm = scene["arm"]
     links, root, chain = _check_arm_model(model, arm)
@@ -525,5 +545,5 @@ def compile_arm_world(scene, model):
             f"  boundingObject Plane {{ size 10.0 10.0 }}\n}}\n")
     supervisor = "Robot {\n  name \"mekoniq_supervisor\"\n  supervisor TRUE\n  controller \"<extern>\"\n  synchronization TRUE\n}\n"
     robot = (f"DEF ARM_{re.sub(r'[^A-Za-z0-9_]', '_', name)} Robot {{\n{_pose_fields((bp, bq), '  ')}  name \"{name}\"\n  controller \"<extern>\"\n  synchronization TRUE\n"
-             f"  children [\n{_arm_joint(links, chain, arm['homeRad'], 0, '    ')}  ]\n{_bounding(links[root], '  ')}}}\n")
+             f"  children [\n{_viz((0.0, 0.0, 0.0), _pose_of(chain[0]['origin'])[0], '0.5 0.5 0.55', '    ') if visual else ''}{_arm_joint(links, chain, arm['homeRad'], 0, '    ', visual)}  ]\n{_bounding(links[root], '  ')}}}\n")
     return head + "".join(statics) + supervisor + robot

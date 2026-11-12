@@ -2,6 +2,7 @@
 in the worker's process group, so the parent's group kill ends every one of them. Time moves only when every controller has been told to step."""
 import hashlib
 import json
+import math
 import os
 import random
 import re
@@ -31,6 +32,17 @@ def webots_executable(webots_home):
 
 
 WATCH_LIGHTS = "Background {\n  skyColor [ 0.55 0.7 0.9 ]\n}\nDirectionalLight {\n  direction -0.4 0.3 -1\n  intensity 1.6\n  ambientIntensity 0.7\n}\n"
+
+
+def watch_world(world):
+    """Watch mode only: the compiled arm world's camera looks level from 1 m above the base, so the arm is below the frame; look down at it from further back. Lights and sky are added too."""
+    m = re.search(r"DEF ARM_\w+ Robot \{\s*translation (\S+) (\S+) (\S+)", world)
+    if m:
+        bx, by, bz = (float(v) for v in m.groups())
+        h = math.atan2(1.1, 3.2) / 2  # half the pitch; Rz(pi) * Ry(pitch) is a half turn about the axis (-sin h, 0, cos h)
+        view = f"Viewpoint {{\n  orientation {-math.sin(h)} 0 {math.cos(h)} {math.pi}\n  position {bx + 3.2} {by} {bz + 1.3}\n  fieldOfView 1.0\n}}"
+        world = re.sub(r"Viewpoint \{[^}]*\}", lambda _: view, world, count=1)
+    return world + WATCH_LIGHTS
 
 
 def watching():
@@ -152,7 +164,7 @@ class WebotsEngine:
             raise WorkerError("WEBOTS_VERSION_MISMATCH", f"found {self.version}, this worker is pinned to {EXPECTED_VERSION}", fatal=True)
         self.run_dir.mkdir(parents=True, exist_ok=True)
         world = self.run_dir / "world.wbt"
-        world.write_text(self.world + (WATCH_LIGHTS if watching() else ""))  # the compiled world has no light: unlit, a rendered view is black
+        world.write_text(watch_world(self.world) if watching() else self.world)  # the compiled world has no light: unlit, a rendered view is black
         os.chmod(world, 0o600)
         self.port = free_port()
         log = open(self.run_dir / "webots.log", "wb")

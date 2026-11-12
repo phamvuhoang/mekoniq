@@ -61,3 +61,17 @@ def test_watch_mode_renders_at_real_time_and_the_default_stays_headless_and_fast
 
 def test_watch_mode_adds_the_light_the_compiled_world_lacks():
     assert "DirectionalLight" in engine.WATCH_LIGHTS and "Background" in engine.WATCH_LIGHTS
+
+
+def test_watch_view_looks_down_at_the_arm_from_its_front_and_other_worlds_only_get_light():
+    import math
+    world = "WorldInfo {\n}\nViewpoint {\n  orientation 0 0 1 3.1416\n  position 5 1 2\n}\nDEF ARM_a Robot {\n  translation 2.0 1.0 1.2\n}\n"
+    out = engine.watch_world(world)
+    assert "fieldOfView" in out and out.endswith(engine.WATCH_LIGHTS) and out.count("Viewpoint") == 1
+    v = out.split("Viewpoint {")[1].split("}")[0].split()
+    ax, ay, az, ang = (float(v[v.index("orientation") + i]) for i in (1, 2, 3, 4))
+    pos = [float(v[v.index("position") + i]) for i in (1, 2, 3)]
+    d = (2 * (ax * 1) * ax - 1, 2 * (ax * 1) * ay, 2 * (ax * 1) * az)  # the camera's +x through a half turn: Rodrigues with angle pi
+    assert abs(ang - math.pi) < 1e-9 and d[0] < 0 and d[2] < 0  # forward is -x and tilted down
+    assert pos[0] > 2.0 and pos[2] > 1.2  # in front of and above the base
+    assert engine.watch_world("WorldInfo {\n}\nViewpoint {\n  position 1 1 1\n}\n").startswith("WorldInfo")
