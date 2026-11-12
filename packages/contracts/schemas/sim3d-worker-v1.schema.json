@@ -274,6 +274,56 @@
                   "positionsRad"
                 ]
               }
+            },
+            "gripperTargets": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "armId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "openingM": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "armId",
+                  "openingM"
+                ]
+              }
+            },
+            "propPlacements": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "propId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "pose": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/definitions/Sim3DPoseV1"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "propId",
+                  "pose"
+                ]
+              }
             }
           },
           "required": [
@@ -597,6 +647,28 @@
             "minLength": 1,
             "maxLength": 200
           }
+        },
+        "gripper": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "openingM": {
+              "type": "number",
+              "minimum": 0
+            },
+            "heldPropIds": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 8,
+              "items": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              }
+            }
+          },
+          "required": [
+            "openingM",
+            "heldPropIds"
+          ]
         }
       },
       "required": [
@@ -657,6 +729,54 @@
           "maxItems": 1,
           "items": {
             "$ref": "#/definitions/Sim3DArmStateV1"
+          }
+        },
+        "props": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "propId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "position": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "quaternionXyzw": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "restingOn": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "propId",
+              "position",
+              "quaternionXyzw",
+              "restingOn"
+            ]
           }
         }
       },
@@ -998,6 +1118,33 @@
       },
       "required": [
         "robots"
+      ]
+    },
+    "Sim3DPoseV1": {
+      "title": "Sim3DPoseV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "quaternionXyzw": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "position",
+        "quaternionXyzw"
       ]
     }
   }

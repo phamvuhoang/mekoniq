@@ -15,7 +15,8 @@ export const MAX_REQUEST_BYTES=1<<20;
 export interface OracleProfileV1 {version:1;note?:string;fk:{translationM:number;rotationRad:number};ikTsToRtb:{translationM:number;rotationRad:number};ikRtbToTs:{translationM:number;rotationRad:number};ikPoses:number;ikSolvedFractionMin:number;
  jacobian:{normalized:number;conditionRelative:number};singularConditionMax:number;seededPoses:number;pid:{sample:number};
  webots?:{lidarRangeToleranceM:number;lidarWindowBeams:number;lidarMedianM:number;repeatPoseM:number};
- webotsArm?:{reachTolRad:number;settleTicks:number;followTolRad:number;followTicks:number;repeatJointRad:number;note?:string}}
+ webotsArm?:{reachTolRad:number;settleTicks:number;followTolRad:number;followTicks:number;repeatJointRad:number;note?:string};
+ mujocoArm?:{reachTolRad:number;settleTicks:number;followTolRad:number;followTicks:number;repeatJointRad:number;gripSettleTicks:number;dropTicks:number;liftMinM:number;slipTolM:number;fkTolM:number;note?:string}}
 export const REPO_ROOT=fileURLToPath(new URL('../../../../../',import.meta.url));
 /** The versioned thresholds. The digest is over the canonical JSON, so whitespace edits do not change a recorded identity. Without a path: the profile compiled into the runtime (the exported Lab artifact carries no robotics/ tree, so a file read would find nothing there). */
 export function loadOracleProfile(path?:string):{profile:OracleProfileV1;digest:string}{

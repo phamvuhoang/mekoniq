@@ -280,6 +280,22 @@ export type Sim3DRequestV1 =
            */
           positionsRad: number[];
         }[];
+        /**
+         * @minItems 0
+         * @maxItems 1
+         */
+        gripperTargets?: {
+          armId: EngineeringId;
+          openingM: number;
+        }[];
+        /**
+         * @minItems 0
+         * @maxItems 8
+         */
+        propPlacements?: {
+          propId: EngineeringId;
+          pose: Sim3DPoseV1 | null;
+        }[];
       };
     }
   | {
@@ -315,6 +331,35 @@ export type Sim3DRequestV1 =
       payload: {
         reason: string;
       };
+    };
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ArmObstacle".
+ */
+export type ArmObstacle =
+  | {
+      id: EngineeringId;
+      kind: 'sphere';
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      center: number[];
+      radiusM: number;
+    }
+  | {
+      id: EngineeringId;
+      kind: 'box';
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      min: number[];
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      max: number[];
     };
 
 export interface Navigation2DContracts {}
@@ -1079,6 +1124,14 @@ export interface Sim3DArmStateV1 {
    * @maxItems 64
    */
   collisionIds: string[];
+  gripper?: {
+    openingM: number;
+    /**
+     * @minItems 0
+     * @maxItems 8
+     */
+    heldPropIds: EngineeringId[];
+  };
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1103,6 +1156,24 @@ export interface Sim3DSnapshotV1 {
    * @maxItems 1
    */
   arms?: Sim3DArmStateV1[];
+  /**
+   * @minItems 0
+   * @maxItems 8
+   */
+  props?: {
+    propId: EngineeringId;
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    position: number[];
+    /**
+     * @minItems 4
+     * @maxItems 4
+     */
+    quaternionXyzw: number[];
+    restingOn: string | null;
+  }[];
 }
 /**
  * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
@@ -1168,6 +1239,22 @@ export interface Sim3DModelReadbackV1 {
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "Sim3DPoseV1".
+ */
+export interface Sim3DPoseV1 {
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: number[];
+  /**
+   * @minItems 4
+   * @maxItems 4
+   */
+  quaternionXyzw: number[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "ArmScene3DV1".
  */
 export interface ArmScene3DV1 {
@@ -1199,32 +1286,7 @@ export interface ArmScene3DV1 {
    * @minItems 0
    * @maxItems 64
    */
-  statics: (
-    | {
-        id: EngineeringId;
-        kind: 'sphere';
-        /**
-         * @minItems 3
-         * @maxItems 3
-         */
-        center: number[];
-        radiusM: number;
-      }
-    | {
-        id: EngineeringId;
-        kind: 'box';
-        /**
-         * @minItems 3
-         * @maxItems 3
-         */
-        min: number[];
-        /**
-         * @minItems 3
-         * @maxItems 3
-         */
-        max: number[];
-      }
-  )[];
+  statics: ArmObstacle[];
   world3d: {
     floorFriction: number;
     provenance: 'assumed';
@@ -1232,6 +1294,99 @@ export interface ArmScene3DV1 {
   engine: {
     id: 'webots_3d';
     basicTimeStepMs: 20;
+  };
+  engineSeed: number;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ArmCellPoseV1".
+ */
+export interface ArmCellPoseV1 {
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: number[];
+  /**
+   * @minItems 4
+   * @maxItems 4
+   */
+  quaternionXyzw: number[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ArmCellSceneV1".
+ */
+export interface ArmCellSceneV1 {
+  schemaVersion: 1;
+  sceneDigest: Digest;
+  arm: {
+    armId: EngineeringId;
+    modelId: 'xarm6-g2-v1';
+    modelRevision: Digest;
+    baseInMap: ArmCellPoseV1;
+    /**
+     * @minItems 1
+     * @maxItems 8
+     */
+    homeRad: number[];
+  };
+  /**
+   * @minItems 0
+   * @maxItems 64
+   */
+  statics: ArmObstacle[];
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  supports: {
+    id: 'nozzle-stand' | 'tray';
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    centerM: number[];
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    sizeM: number[];
+  }[];
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  props: {
+    propId: EngineeringId;
+    kind: 'cup';
+    radiusM: number;
+    heightM: number;
+    massKg: number;
+    provenance: 'assumed';
+  }[];
+  graspFrames: {
+    pick: ArmCellPoseV1;
+    place: ArmCellPoseV1;
+  };
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  allowedContacts: {
+    a: 'gripper' | 'held_prop';
+    b: 'nozzle-stand' | 'tray';
+  }[];
+  world3d: {
+    padFriction: number;
+    propFriction: number;
+    supportFriction: number;
+    provenance: 'assumed';
+  };
+  engine: {
+    id: 'mujoco_3d';
+    timestepMs: 2;
+    substeps: 10;
   };
   engineSeed: number;
 }

@@ -10,10 +10,11 @@ import evidenceSchema from '../../../../contracts/schemas/navigation-run-evidenc
 import algorithmSchema from '../../../../contracts/schemas/algorithm-result-v1.schema.json';
 import sim3dSchema from '../../../../contracts/schemas/sim3d-worker-v1.schema.json';
 import armScene3dSchema from '../../../../contracts/schemas/arm-scene-3d-v1.schema.json';
-import type {AlgorithmResultV1,ArmScene3DV1,Sim3DRequestV1,Sim3DResponseV1,Sim3DSnapshotV1,World3DV1,IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1} from '../../../../contracts/generated/navigation2d';
+import armCellSceneSchema from '../../../../contracts/schemas/arm-cell-scene-v1.schema.json';
+import type {AlgorithmResultV1,ArmCellSceneV1,ArmScene3DV1,Sim3DRequestV1,Sim3DResponseV1,Sim3DSnapshotV1,World3DV1,IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1} from '../../../../contracts/generated/navigation2d';
 import {inertiaProblems} from '../../engineering/inertia';
 import {hashJson} from '../hash';
-export type {AlgorithmResultV1,ArmScene3DV1,Sim3DRequestV1,Sim3DResponseV1,Sim3DSnapshotV1,World3DV1,IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1};
+export type {AlgorithmResultV1,ArmCellSceneV1,ArmScene3DV1,Sim3DRequestV1,Sim3DResponseV1,Sim3DSnapshotV1,World3DV1,IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1};
 export type {InputIdentity,ArtifactRef,Vec2,SensorMount,Lidar2DProjection} from '../../../../contracts/generated/navigation2d';
 
 /** Content hash of the schemas a physical model is projected against; recorded as projection.sourceSchemaHash. */
@@ -23,7 +24,7 @@ export interface NavigationIssue{path:string;code:string;message:string;}
 export type NavigationDocument=RobotPhysicalModelV1|NavigationModel2DV1|NavigationSceneV1|ModelValidationReportV1;
 export type NavigationCheck={ok:true;value:NavigationDocument}|{ok:false;issues:NavigationIssue[]};
 
-const FILES:Record<string,object>={'engineering-component.schema.json':componentSchema,'robot-physical-model-v1.schema.json':physicalSchema,'navigation-model-2d-v1.schema.json':modelSchema,'navigation-scene-v1.schema.json':sceneSchema,'model-validation-report-v1.schema.json':reportSchema,'irsim-worker-v1.schema.json':workerSchema,'navigation-run-evidence-v1.schema.json':evidenceSchema,'algorithm-result-v1.schema.json':algorithmSchema,'sim3d-worker-v1.schema.json':sim3dSchema,'arm-scene-3d-v1.schema.json':armScene3dSchema};
+const FILES:Record<string,object>={'engineering-component.schema.json':componentSchema,'robot-physical-model-v1.schema.json':physicalSchema,'navigation-model-2d-v1.schema.json':modelSchema,'navigation-scene-v1.schema.json':sceneSchema,'model-validation-report-v1.schema.json':reportSchema,'irsim-worker-v1.schema.json':workerSchema,'navigation-run-evidence-v1.schema.json':evidenceSchema,'algorithm-result-v1.schema.json':algorithmSchema,'sim3d-worker-v1.schema.json':sim3dSchema,'arm-scene-3d-v1.schema.json':armScene3dSchema,'arm-cell-scene-v1.schema.json':armCellSceneSchema};
 const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});addFormats(ajv);
 for(const [key,schema] of Object.entries(FILES))ajv.addSchema(schema,key);
 const KEYS:Record<string,{schema:string;digest:string}>={
@@ -124,6 +125,16 @@ const armSceneValidator=ajv.getSchema('arm-scene-3d-v1.schema.json')!;
 export function validateArmScene3D(input:unknown):{ok:true;value:ArmScene3DV1}|{ok:false;issues:NavigationIssue[]}{
  if(!armSceneValidator(input))return {ok:false,issues:schemaIssues(armSceneValidator.errors)};
  const doc=input as ArmScene3DV1,issues=[...quaternionIssues(doc),...dupes(doc.statics.map(o=>o.id),'/statics')];
+ if(documentDigest(doc,'sceneDigest')!==doc.sceneDigest)issues.push(issue('/sceneDigest','DIGEST_MISMATCH','digest does not match the document content'));
+ doc.statics.forEach((o,i)=>{if(o.kind==='box'&&o.min.some((n,k)=>n>=o.max[k]!))issues.push(issue(`/statics/${i}`,'BOX_DEGENERATE','min must be below max on every axis'));});
+ return issues.length?{ok:false,issues}:{ok:true,value:doc};
+}
+
+const armCellValidator=ajv.getSchema('arm-cell-scene-v1.schema.json')!;
+/** arm-cell-scene-v1 (MuJoCo arm): the cell one MuJoCo run is built from (xArm 6 + gripper, nozzle stand, tray, cups). Sealed by `sceneDigest`; statics are the arm-base-frame obstacles of the arm collision check. */
+export function validateArmCellScene(input:unknown):{ok:true;value:ArmCellSceneV1}|{ok:false;issues:NavigationIssue[]}{
+ if(!armCellValidator(input))return {ok:false,issues:schemaIssues(armCellValidator.errors)};
+ const doc=input as ArmCellSceneV1,issues=[...quaternionIssues(doc),...dupes(doc.statics.map(o=>o.id),'/statics'),...dupes(doc.props.map(p=>p.propId),'/props'),...dupes(doc.supports.map(s=>s.id),'/supports')];
  if(documentDigest(doc,'sceneDigest')!==doc.sceneDigest)issues.push(issue('/sceneDigest','DIGEST_MISMATCH','digest does not match the document content'));
  doc.statics.forEach((o,i)=>{if(o.kind==='box'&&o.min.some((n,k)=>n>=o.max[k]!))issues.push(issue(`/statics/${i}`,'BOX_DEGENERATE','min must be below max on every axis'));});
  return issues.length?{ok:false,issues}:{ok:true,value:doc};

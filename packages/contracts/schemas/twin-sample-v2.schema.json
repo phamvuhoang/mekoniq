@@ -427,6 +427,10 @@
             "fidelity",
             "reasonCodes"
           ]
+        },
+        "gripperOpeningM": {
+          "type": "number",
+          "minimum": 0
         }
       },
       "required": [
@@ -536,6 +540,34 @@
               "minLength": 1,
               "maxLength": 200,
               "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "positionM": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "quaternionXyzw": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "number"
+          }
+        },
+        "restingOn": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
             },
             {
               "type": "null"

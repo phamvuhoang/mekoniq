@@ -72,72 +72,7 @@
       "minItems": 0,
       "maxItems": 64,
       "items": {
-        "oneOf": [
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "id": {
-                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
-              },
-              "kind": {
-                "const": "sphere"
-              },
-              "center": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 3,
-                "items": {
-                  "type": "number"
-                }
-              },
-              "radiusM": {
-                "type": "number",
-                "exclusiveMinimum": 0
-              }
-            },
-            "required": [
-              "id",
-              "kind",
-              "center",
-              "radiusM"
-            ]
-          },
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "id": {
-                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
-              },
-              "kind": {
-                "const": "box"
-              },
-              "min": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 3,
-                "items": {
-                  "type": "number"
-                }
-              },
-              "max": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 3,
-                "items": {
-                  "type": "number"
-                }
-              }
-            },
-            "required": [
-              "id",
-              "kind",
-              "min",
-              "max"
-            ]
-          }
-        ]
+        "$ref": "#/definitions/ArmObstacle"
       }
     },
     "world3d": {
@@ -187,5 +122,75 @@
     "world3d",
     "engine",
     "engineSeed"
-  ]
+  ],
+  "definitions": {
+    "ArmObstacle": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            },
+            "kind": {
+              "const": "sphere"
+            },
+            "center": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "radiusM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "center",
+            "radiusM"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            },
+            "kind": {
+              "const": "box"
+            },
+            "min": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "max": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "min",
+            "max"
+          ]
+        }
+      ]
+    }
+  }
 }

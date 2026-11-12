@@ -1133,6 +1133,7 @@ export interface TwinArmState {
      */
     reasonCodes: string[];
   };
+  gripperOpeningM?: number;
 }
 /**
  * Coffee cell process state; quantities stay in the domain (exact decimals), temperature in kelvin.
@@ -1158,4 +1159,15 @@ export interface TwinCoffeeCellState {
 export interface TwinCupState {
   ownerKind: 'cell' | 'arm' | 'robot' | 'customer' | 'quarantine' | 'unknown';
   ownerId: string | null;
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  positionM?: number[];
+  /**
+   * @minItems 4
+   * @maxItems 4
+   */
+  quaternionXyzw?: number[];
+  restingOn?: string | null;
 }

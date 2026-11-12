@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.arm-cell-scene.v1",
+  "title": "ArmCellSceneV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "sceneDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "arm": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "armId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "modelId": {
+          "const": "xarm6-g2-v1"
+        },
+        "modelRevision": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "baseInMap": {
+          "$ref": "#/definitions/ArmCellPoseV1"
+        },
+        "homeRad": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "armId",
+        "modelId",
+        "modelRevision",
+        "baseInMap",
+        "homeRad"
+      ]
+    },
+    "statics": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "$ref": "arm-scene-3d-v1.schema.json#/definitions/ArmObstacle"
+      }
+    },
+    "supports": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "enum": [
+              "nozzle-stand",
+              "tray"
+            ]
+          },
+          "centerM": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "sizeM": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "required": [
+          "id",
+          "centerM",
+          "sizeM"
+        ]
+      }
+    },
+    "props": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "propId": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "kind": {
+            "const": "cup"
+          },
+          "radiusM": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "heightM": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "massKg": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "provenance": {
+            "const": "assumed"
+          }
+        },
+        "required": [
+          "propId",
+          "kind",
+          "radiusM",
+          "heightM",
+          "massKg",
+          "provenance"
+        ]
+      }
+    },
+    "graspFrames": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pick": {
+          "$ref": "#/definitions/ArmCellPoseV1"
+        },
+        "place": {
+          "$ref": "#/definitions/ArmCellPoseV1"
+        }
+      },
+      "required": [
+        "pick",
+        "place"
+      ]
+    },
+    "allowedContacts": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "a": {
+            "enum": [
+              "gripper",
+              "held_prop"
+            ]
+          },
+          "b": {
+            "enum": [
+              "nozzle-stand",
+              "tray"
+            ]
+          }
+        },
+        "required": [
+          "a",
+          "b"
+        ]
+      }
+    },
+    "world3d": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "padFriction": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "propFriction": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "supportFriction": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "provenance": {
+          "const": "assumed"
+        }
+      },
+      "required": [
+        "padFriction",
+        "propFriction",
+        "supportFriction",
+        "provenance"
+      ]
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "const": "mujoco_3d"
+        },
+        "timestepMs": {
+          "const": 2
+        },
+        "substeps": {
+          "const": 10
+        }
+      },
+      "required": [
+        "id",
+        "timestepMs",
+        "substeps"
+      ]
+    },
+    "engineSeed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "sceneDigest",
+    "arm",
+    "statics",
+    "supports",
+    "props",
+    "graspFrames",
+    "allowedContacts",
+    "world3d",
+    "engine",
+    "engineSeed"
+  ],
+  "definitions": {
+    "ArmCellPoseV1": {
+      "title": "ArmCellPoseV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "quaternionXyzw": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "position",
+        "quaternionXyzw"
+      ]
+    }
+  }
+}
