@@ -1,0 +1,66 @@
+{
+  "cup": {
+    "componentId": "cup-ref",
+    "drinkMassKg": 0.3,
+    "emptyMassKg": 0.02,
+    "heightM": 0.1,
+    "radiusM": 0.04
+  },
+  "frame": "arm_base",
+  "grasp": {
+    "approachM": 0.12,
+    "liftM": 0.15,
+    "pick": {
+      "position": [
+        0.512,
+        0,
+        0.15
+      ],
+      "quaternionXyzw": [
+        0,
+        0.707106781187,
+        0,
+        0.707106781187
+      ]
+    },
+    "place": {
+      "position": [
+        0.365556349186,
+        0.365556349186,
+        0.112
+      ],
+      "quaternionXyzw": [
+        -0.270598050073,
+        0.653281482438,
+        0.270598050073,
+        0.653281482438
+      ]
+    }
+  },
+  "nozzleStand": {
+    "centerM": [
+      0.49,
+      0,
+      0.05
+    ],
+    "sizeM": [
+      0.1,
+      0.1,
+      0.1
+    ]
+  },
+  "provenance": "assumed",
+  "schemaVersion": 1,
+  "tray": {
+    "centerM": [
+      0.35,
+      0.35,
+      0.03
+    ],
+    "sizeM": [
+      0.2,
+      0.2,
+      0.06
+    ]
+  }
+}

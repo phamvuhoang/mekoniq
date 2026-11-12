@@ -7,7 +7,7 @@ type LengthUnit='m'|'mm'|'inch';
 type AngleUnit='rad'|'deg';
 export interface ArmSourceJoint {name:string;alpha:number;a:number;d:number;thetaOffset:number;min:number;max:number;maxVelocity:number;}
 export interface ArmSourceModel {
- id:string;convention:'modified_dh';provenance:'illustrative_reference';mekoniqRobotCode:null;
+ id:string;convention:'modified_dh';provenance:'illustrative_reference'|'manufacturer_nominal';mekoniqRobotCode:null;
  /** alpha is the DH twist, joint is every theta/limit/velocity; LinuxCNC samples mix inch, rad (ALPHA) and deg (joints). */
  units:{length:LengthUnit;alpha:AngleUnit;joint:AngleUnit};
  joints:ArmSourceJoint[];toolTranslation:[number,number,number];
@@ -43,6 +43,16 @@ export function toSI(m:ArmSourceModel):ArmModelSI {
   toolM:m.toolTranslation.map(len) as unknown as Vec3,tolerances:m.tolerances};
 }
 export const PUMA560_SI:ArmModelSI=toSI(PUMA560_REFERENCE);
+const XA2=Math.sqrt(284.5**2+53.5**2),XT2=-Math.atan(284.5/53.5),PI=Math.PI;
+const xj=(name:string,alpha:number,a:number,d:number,thetaOffset:number,min:number,max:number):ArmSourceJoint=>({name,alpha,a,d,thetaOffset,min,max,maxVelocity:3.14});
+/** UFACTORY xArm 6 modified D-H (mm, rad) from the manufacturer's kinematic page; limits and velocity from xarm_ros2@ac736c9 xarm6.urdf.xacro; tool = Gripper G2 joint_tcp z 172 mm (spike M00). Nominal, not calibrated. */
+export const XARM6_REFERENCE:ArmSourceModel={
+ id:'xarm6-reference',convention:'modified_dh',provenance:'manufacturer_nominal',mekoniqRobotCode:null,
+ units:{length:'mm',alpha:'rad',joint:'rad'},
+ joints:[xj('J1',0,0,267,0,-2*PI,2*PI),xj('J2',-PI/2,0,0,XT2,-2.059,2.0944),xj('J3',0,XA2,0,-XT2,-3.927,0.19198),xj('J4',-PI/2,77.5,342.5,0,-2*PI,2*PI),xj('J5',PI/2,0,0,0,-1.69297,PI),xj('J6',-PI/2,76,97,0,-2*PI,2*PI)],
+ toolTranslation:[0,0,172],tolerances:{fkPositionM:1e-6,fkAngleRad:1e-6,ikPositionM:0.001,ikAngleRad:0.0087266463},
+};
+export const XARM6_SI:ArmModelSI=toSI(XARM6_REFERENCE);
 /** LinuxCNC counts joints from 0 (JOINT_0 is J1). JOINT_4 is the wrist pitch J5, which the sample homes at 0.1 deg to dodge the inverse failure. */
 export function jointNameForLinuxcnc(index:number):string {
  if(!Number.isInteger(index)||index<0||index>5)throw new ModelError('JOINT_INDEX_INVALID',String(index));

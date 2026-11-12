@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "note": "UFACTORY xArm 6 (1305) and Gripper G2 description files, read as data only (spike M00, docs/research/2026-11-mujoco-arm-spike.md). Imported with scripts/import-engineering-vendor.mjs into robotics/catalog/documents/<sha256>.",
+  "repositories": [
+    {
+      "id": "xarm_ros2",
+      "url": "https://github.com/xArm-Developer/xarm_ros2",
+      "branch": "humble",
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "license": "BSD-3-Clause",
+      "copyright": "Copyright (c) 2018, UFACTORY Inc.",
+      "licenseFile": "LICENSE"
+    }
+  ],
+  "sources": [
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:LICENSE",
+      "license": "BSD-3-Clause",
+      "path": "LICENSE",
+      "repository": "xarm_ros2",
+      "sha256": "685e81e0cd30124e24e834ea2bf39bfead4efc9907d021bc9d1ae0f2dcea1431",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/LICENSE"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+      "repository": "xarm_ros2",
+      "sha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/urdf/xarm6/xarm6.urdf.xacro"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/config/kinematics/default/xarm6_default_kinematics.yaml",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/config/kinematics/default/xarm6_default_kinematics.yaml",
+      "repository": "xarm_ros2",
+      "sha256": "9e02c7ec66a06574d27cddebacfb294b8259b4e8b43cfc05d3bf38e8f358eac1",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/config/kinematics/default/xarm6_default_kinematics.yaml"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+      "repository": "xarm_ros2",
+      "sha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/config/xarm6/joint_limits_1305.yaml",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/config/xarm6/joint_limits_1305.yaml",
+      "repository": "xarm_ros2",
+      "sha256": "db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/config/xarm6/joint_limits_1305.yaml"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+      "repository": "xarm_ros2",
+      "sha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/urdf/gripper/xarm_gripper.urdf.xacro"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/urdf/xarm_device_macro.xacro",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/urdf/xarm_device_macro.xacro",
+      "repository": "xarm_ros2",
+      "sha256": "571dd90dd5ae4d8aa549686a253050e0576d0ef29755121cd2d7a95b24649eda",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/urdf/xarm_device_macro.xacro"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+      "repository": "xarm_ros2",
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link_base.stl"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link1.stl",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/xarm6_1305/visual/link1.stl",
+      "repository": "xarm_ros2",
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link1.stl"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link2.stl",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/xarm6_1305/visual/link2.stl",
+      "repository": "xarm_ros2",
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link2.stl"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link3.stl",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/xarm6_1305/visual/link3.stl",
+      "repository": "xarm_ros2",
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link3.stl"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link4.stl",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/xarm6_1305/visual/link4.stl",
+      "repository": "xarm_ros2",
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link4.stl"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link5.stl",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/xarm6_1305/visual/link5.stl",
+      "repository": "xarm_ros2",
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link5.stl"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link6.stl",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/xarm6_1305/visual/link6.stl",
+      "repository": "xarm_ros2",
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link6.stl"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/base_link_g2.dae",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/gripper/xarm/base_link_g2.dae",
+      "repository": "xarm_ros2",
+      "sha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/base_link_g2.dae"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_finger_g2.dae",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/gripper/xarm/left_finger_g2.dae",
+      "repository": "xarm_ros2",
+      "sha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/left_finger_g2.dae"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
+      "repository": "xarm_ros2",
+      "sha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
+      "repository": "xarm_ros2",
+      "sha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_finger_g2.dae",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/gripper/xarm/right_finger_g2.dae",
+      "repository": "xarm_ros2",
+      "sha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/right_finger_g2.dae"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
+      "repository": "xarm_ros2",
+      "sha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae"
+    },
+    {
+      "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+      "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
+      "license": "BSD-3-Clause",
+      "path": "xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
+      "repository": "xarm_ros2",
+      "sha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae"
+    }
+  ]
+}

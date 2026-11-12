@@ -68,4 +68,7 @@ def test_vendor_lock_is_an_honest_not_run_record():
     import json
     from pathlib import Path
     lock = json.loads((Path(__file__).resolve().parents[2] / "manipulation" / "vendor.lock.json").read_text())
-    assert lock["qualification"] == "not_run" and lock["vendors"][0]["commit"] is None and lock["blockers"]
+    # M02 pinned the commit and licence; the native ROS checks still have not run anywhere
+    v = lock["vendors"][0]
+    assert lock["qualification"] == "not_run" and len(v["commit"]) == 40 and v["license"] == "BSD-3-Clause"
+    assert [b.split(":")[0] for b in lock["blockers"]] == ["NO_LINUX_ROS_ENVIRONMENT"]
