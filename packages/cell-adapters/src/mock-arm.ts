@@ -27,8 +27,31 @@ export const PUMA_PROGRAMS:ArmProgramSet={modelId:PUMA560_SI.id,waypoints:W,chor
 /** What a contact plant reports each tick beside the joints: the measured gripper opening (m, between the pads), the cups both pads touch, and each cup's position (m, arm base frame) and support. */
 export interface PlantExtras {gripper?:{openingM:number;heldPropIds:readonly string[]};props?:readonly {propId:string;position:readonly number[];restingOn:string|null}[]}
 /** Contact grip counters (JSON). `ticks`: closing = ticks the opening changed < 1e-4 m, opening = ticks the cup rested on the tray; `lost`: ticks the held cup was not between the pads.
- * `openingM` the last measured opening, `slipFromM` the cup–TCP distance at the grip, `elapsed` ticks since the release command, `receiver` the receiver the release started for. */
-export interface ArmGripState {phase:'closing'|'opening';ticks:number;lost:number;liftFromM:number|null;maxSlipM:number;openingM:number|null;slipFromM:number|null;elapsed:number;receiver?:{robotId:string;slot:number}}
+ * `maxSlipM` is null until a baseline was measured. `openingM` the last measured opening, `slipFromM` the cup–TCP distance on the first tick, at or after the take, the held cup's position was seen, `elapsed` ticks since the release command, `receiver` the receiver the release started for. */
+export interface ArmGripState {phase:'closing'|'opening';ticks:number;lost:number;liftFromM:number|null;maxSlipM:number|null;openingM:number|null;slipFromM:number|null;elapsed:number;receiver?:{robotId:string;slot:number}}
+/** Refuses a program set the machine cannot run (ARM_PROGRAM_INVALID: what), before any state is touched. The joint-limit check applies to every set: PUMA_PROGRAMS lies inside the limits of every model the tests use. */
+function validatePrograms(set:ArmProgramSet,model:ArmModelSI){
+ const bad=(what:string)=>{throw new Error(`ARM_PROGRAM_INVALID: ${what}`);},pos=(v:unknown)=>typeof v==='number'&&Number.isFinite(v)&&v>0,tick=(v:unknown)=>Number.isInteger(v)&&(v as number)>=1,n=model.links.length;
+ for(const [name,q] of Object.entries(set.waypoints??{})){
+  if(!Array.isArray(q)||q.length!==n||!q.every(Number.isFinite))bad(`waypoint ${name} needs ${n} finite values`);
+  q.forEach((v,i)=>{if(v<model.limits[i]!.min||v>model.limits[i]!.max)bad(`waypoint ${name} joint ${i+1} outside the model limits`);});
+ }
+ const steps=Object.entries(set.choreography??{});
+ for(const name of ['home',...steps.some(([,s])=>s.some(x=>x.waypoint==='lift'))?['pick']:[]])if(!set.waypoints?.[name])bad(`waypoint ${name} missing`);
+ for(const [program,list] of steps){if(!Array.isArray(list)||list.length===0)bad(`program ${program} has no step`);
+  for(const x of list){if(!set.waypoints[x.waypoint])bad(`program ${program} names missing waypoint ${x.waypoint}`);if(x.action!==undefined&&x.action!=='grip'&&x.action!=='release')bad(`program ${program} action ${String(x.action)}`);}}
+ const m=set.motion;
+ if(m?.profile==='quintic-sync-v1'){
+  if(!Array.isArray(m.maxAccelerationRadS2)||m.maxAccelerationRadS2.length!==n||!m.maxAccelerationRadS2.every(pos))bad(`maxAccelerationRadS2 needs ${n} finite positive values`);
+  if(!pos(m.speedFraction)||m.speedFraction>1)bad('speedFraction must be in (0,1]');
+  if(!model.limits.every(l=>pos(l.maxVelocity)))bad('model velocity limits must be finite and positive');
+ }else if(m?.profile!=='linear-clamp')bad('motion profile');
+ const c=set.contact;
+ if(c){
+  if(!tick(c.gripSettleTicks)||!tick(c.dropTicks)||!tick(c.releaseTimeoutTicks))bad('contact tick counts must be integers >= 1');
+  if(![c.openM,c.closedM,c.liftMinM].every(Number.isFinite)||!(c.openM>c.closedM)||!(c.closedM>=0))bad('contact needs finite openM > closedM >= 0 and liftMinM');
+ }
+}
 const dist=(a:readonly number[],b:readonly number[])=>Math.hypot(a[0]!-b[0]!,a[1]!-b[1]!,a[2]!-b[2]!);
 export interface ArmCupWorld {take(cupId?:string):string|null;put(cupId:string,receiver:{robotId:string;slot:number}):void}
 export type ArmFault='arm-reboot'|'arm-drop'|'arm-following-error'|'arm-stop'|'arm-estop'|'arm-reset'|'arm-collision';
@@ -54,9 +77,10 @@ export class MockArmPlant {
  constructor(readonly state:ArmPlantState,private nowMs:()=>number,private newBootId:()=>string,private cups:ArmCupWorld,private receiver:()=>{robotId:string;slot:number}|null,private model:ArmModelSI=PUMA560_SI,private tracking?:ArmTracking,private programs:ArmProgramSet=PUMA_PROGRAMS){
   if(programs.modelId!==model.id)throw new Error(`ARM_PROGRAM_MODEL_MISMATCH: ${programs.modelId} on ${model.id}`);
   if(programs.contact&&!tracking)throw new Error('ARM_CONTACT_NEEDS_TRACKING');
+  validatePrograms(programs,model);
   state.collision??={world:[],checks:0,last:null};state.collision.evidence??={intervals:[],worlds:{},droppedIntervals:state.collision.checks};
   if(tracking)state.tracking??={gen:[...state.q],settled:0,followCount:0,samples:0,peakRad:state.q.map(()=>0),sumSq:state.q.map(()=>0),trace:[]};}
- static initial(deviceId:string,bootId='boot-0:arm',programs:ArmProgramSet=PUMA_PROGRAMS):ArmPlantState {return {deviceId,q:[...programs.waypoints.home!],gripper:'open',holding:null,bootId,seq:0,tick:0,programs:[],modifiers:[],trace:[],limitsOk:true};}
+ static initial(deviceId:string,bootId='boot-0:arm',programs:ArmProgramSet=PUMA_PROGRAMS):ArmPlantState {const home=programs.waypoints?.home;if(!Array.isArray(home))throw new Error('ARM_PROGRAM_INVALID: waypoint home missing');return {deviceId,q:[...home],gripper:'open',holding:null,bootId,seq:0,tick:0,programs:[],modifiers:[],trace:[],limitsOk:true};}
  on(l:(r:CellReport)=>void){this.listeners.add(l);return ()=>{this.listeners.delete(l);};}
  private emit(p:Program,result:'accepted'|'completed'|'failed'|'outcome_unknown',reasonCodes:string[]=[],evidence?:TransferEvidence){
   const s=this.state;s.seq++;const at=new Date(this.nowMs()).toISOString();
@@ -173,28 +197,35 @@ export class MockArmPlant {
   * release: command open, wait until the cup rests on the tray, then put it. The cup is taken and put only on the plant's word. */
  private completeContact(p:Program,stage:{waypoint:string;action?:'grip'|'release'},steps:{waypoint:string;action?:'grip'|'release'}[],extras?:PlantExtras){
   const s=this.state,c=this.programs.contact!,g=s.grip;
-  if(stage.action==='grip'&&s.gripper==='open'){s.gripper='closed';s.gripperCommandM=c.closedM;s.holding=null;s.grip={phase:'closing',ticks:0,lost:0,liftFromM:null,maxSlipM:0,openingM:extras?.gripper?.openingM??null,slipFromM:null,elapsed:0};return;}
+  if(stage.action==='grip'&&s.gripper==='open'){s.gripper='closed';s.gripperCommandM=c.closedM;s.holding=null;s.grip={phase:'closing',ticks:0,lost:0,liftFromM:null,maxSlipM:null,openingM:extras?.gripper?.openingM??null,slipFromM:null,elapsed:0};return;}
   if(stage.action==='grip'&&g?.phase==='closing'&&s.holding===null){
    if(g.ticks<c.gripSettleTicks)return;
-   const held=extras?.gripper?.heldPropIds[0]??null,cup=held===null?null:this.cups.take(held),at=extras?.props?.find(x=>x.propId===cup)?.position;
-   s.holding=cup;if(!cup)delete s.grip;else if(at){g.liftFromM=at[2]!;g.slipFromM=dist(at,this.tcp(s.q));}
+   const held=extras?.gripper?.heldPropIds[0]??null,cup=held===null?null:this.cups.take(held);
    Object.assign(p.evidence,{gripperClosed:true,objectPresent:held!==null,cupId:cup,grip:'contact'});
+   // the pads hold a cup the cup world did not hand over: custody is unknown, never a completed pick
+   if(held!==null&&cup===null){Object.assign(p.evidence,{heldPropId:held});this.stop('CUP_CUSTODY_MISMATCH');return;}
+   s.holding=cup;if(!cup)delete s.grip;else{this.baseline(g,extras);p.evidence.maxSlipM=g.maxSlipM;}
   }
   if(stage.action==='release'&&s.gripper==='closed'){
    if(g?.phase!=='opening'){
     const rx=this.receiver();
     if(!rx){if(++p.waiting>=MOCK_ARM_PARAMS.receiverWaitTicks){p.state='failed';this.emit(p,'failed',['RECEIVER_NOT_READY'],{...p.evidence});}return;}
     s.gripperCommandM=c.openM;
-    if(s.holding!==null){s.grip={...g??{lost:0,liftFromM:null,maxSlipM:0,openingM:null,slipFromM:null},phase:'opening',ticks:0,elapsed:0,receiver:rx};return;}
+    if(s.holding!==null){s.grip={...g??{lost:0,liftFromM:null,maxSlipM:null,openingM:null,slipFromM:null},phase:'opening',ticks:0,elapsed:0,receiver:rx};return;}
     s.gripper='open';delete s.grip;Object.assign(p.evidence,{released:true,receiverId:rx.robotId,slot:rx.slot,cupId:null}); // nothing was held: open, as the event grip does
    }else if(g.ticks<c.gripSettleTicks){
-    // the cup stays in custody of the arm: it was let go but the plant never saw it on the tray
-    if(g.elapsed>c.releaseTimeoutTicks){s.gripper='open';p.state='failed';this.emit(p,'failed',['RELEASE_NOT_ON_RECEIVER'],{...p.evidence});}
+    // the cup was let go but the plant never saw it on the tray: its whereabouts are unknown. The program fails, the arm latches until reconciled, the cup stays in the arm's custody.
+    if(g.elapsed>c.releaseTimeoutTicks){s.gripper='open';p.state='failed';this.emit(p,'failed',['RELEASE_NOT_ON_RECEIVER'],{...p.evidence});this.stop('RELEASE_NOT_ON_RECEIVER');}
     return;
    }else{const rx=g.receiver!;s.gripper='open';this.cups.put(s.holding!,rx);Object.assign(p.evidence,{released:true,receiverId:rx.robotId,slot:rx.slot,cupId:s.holding});s.holding=null;delete s.grip;}
   }
   if(stage.waypoint==='lift'){const z=extras?.props?.find(x=>x.propId===s.holding)?.position[2],from=s.grip?.liftFromM??null;p.evidence.liftPoseReached=s.holding!==null&&z!==undefined&&from!==null&&z-from>=c.liftMinM;}
   if(++p.index>=steps.length){p.state='completed';this.emit(p,'completed',[],{...p.evidence});}
+ }
+ /** The slip and lift baseline of a held cup, on the first tick its position is seen: until then slip is null (unmeasured), never 0. */
+ private baseline(g:ArmGripState,extras?:PlantExtras){
+  const at=extras?.props?.find(x=>x.propId===this.state.holding)?.position;if(!at||g.slipFromM!==null)return;
+  g.liftFromM=at[2]!;g.slipFromM=dist(at,this.tcp(this.state.q));g.maxSlipM=0;
  }
  /** Contact grip, every tick after the plant stepped: the closing and opening counters and the drop watch. A tick without plant extras reads as no cup held and no cup resting
   * on the tray (a missing opening counts as unchanged). Returns true when it stopped the arm. */
@@ -204,7 +235,8 @@ export class MockArmPlant {
   if(s.holding===null){const o=extras?.gripper?.openingM;g.ticks=o===undefined||g.openingM!==null&&Math.abs(o-g.openingM)<1e-4?g.ticks+1:0;if(o!==undefined)g.openingM=o;return false;}
   const held=extras?.gripper?.heldPropIds.includes(s.holding)??false,at=extras?.props?.find(x=>x.propId===s.holding)?.position;
   g.lost=held?0:g.lost+1;
-  if(held&&at&&g.slipFromM!==null)g.maxSlipM=Math.max(g.maxSlipM,Math.abs(dist(at,this.tcp(s.q))-g.slipFromM));
+  if(held&&at&&g.slipFromM!==null)g.maxSlipM=Math.max(g.maxSlipM??0,Math.abs(dist(at,this.tcp(s.q))-g.slipFromM));
+  else if(held)this.baseline(g,extras);
   if(p)p.evidence.maxSlipM=g.maxSlipM;
   if(g.lost>=this.programs.contact!.dropTicks){this.stop('CUP_DROPPED');return true;}
   return false;

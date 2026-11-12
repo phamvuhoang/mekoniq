@@ -28,3 +28,10 @@ test('a zero-length segment is one tick, and the result is deterministic', () =>
   for (let k = 0; k <= a.ticks; k++) expect(b.at(k)).toEqual(a.at(k));
   expect(a.at(37)).toEqual(a.at(37));
 });
+
+test('limits that are zero, NaN or missing, a bad speed fraction or dtS, and a length mismatch are refused, never a NaN or endless segment', () => {
+  const bad: MotionLimits[] = [{ ...LIM, maxVelocity: [1, 0] }, { ...LIM, maxAcceleration: [2, NaN] }, { ...LIM, maxAcceleration: [2] }, { ...LIM, speedFraction: 0 }, { ...LIM, speedFraction: -0.5 }, { ...LIM, dtS: 0 }];
+  for (const lim of bad) expect(() => quinticSegment([0, 0], [1, 0.2], lim), JSON.stringify(lim)).toThrow('MOTION_LIMITS_INVALID');
+  expect(() => quinticSegment([0, 0], [1, 0.2, 0], LIM)).toThrow('MOTION_LIMITS_INVALID');
+  expect(() => quinticSegment([0, NaN], [1, 0.2], LIM)).toThrow('MOTION_LIMITS_INVALID');
+});

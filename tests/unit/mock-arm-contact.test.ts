@@ -2,7 +2,7 @@
 // hold it, and it is put only once the plant says it rests on the tray. The plant here is a scripted pure function (actual = commanded, a simple gripper and one cup).
 import { expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { MockArmPlant, MOCK_ARM_PARAMS, type ArmProgramSet, type ArmTracking, type PlantExtras } from '../../packages/cell-adapters/src/mock-arm';
+import { MockArmPlant, MOCK_ARM_PARAMS, PUMA_PROGRAMS, type ArmProgramSet, type ArmTracking, type PlantExtras } from '../../packages/cell-adapters/src/mock-arm';
 import { quinticSegment } from '../../packages/cell-adapters/src/arm-motion';
 import type { CellCommand, CellReport } from '../../packages/cell-adapters/src/contract';
 import { forwardKinematics, PUMA560_SI, XARM6_SI } from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
@@ -20,7 +20,7 @@ const command = (id: string, program: 'cup-pick' | 'cup-place'): CellCommand => 
 const tcp = (q: readonly number[]) => forwardKinematics(XARM6_SI, q).tcp.position;
 const dist = (a: readonly number[], b: readonly number[]) => Math.hypot(a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!);
 
-interface Script { noCup?: boolean; contactLost?: (tick: number) => boolean; noExtras?: (tick: number) => boolean; releaseMisses?: boolean }
+interface Script { noCup?: boolean; contactLost?: (tick: number) => boolean; noExtras?: (tick: number) => boolean; releaseMisses?: boolean; hideHeldCup?: (tick: number) => boolean; takeRefuses?: boolean }
 /** A scripted plant: the joints do what they are told; the fingers move 3 mm a tick towards the command and stop on the cup; the pads hold the cup 3 ticks after closing on it;
  * a held cup keeps its offset from the TCP; an opened gripper lets go at once; a cup let go at the place pose rests on the tray 2 ticks later. Positions in the arm base frame. */
 function scriptedPlant(script: Script = {}) {
@@ -38,39 +38,40 @@ function scriptedPlant(script: Script = {}) {
       if (c.held) c.pos = t.map((v, i) => v + c.offset[i]!);
       else if (c.restingOn === null && ++c.free >= 2) c.restingOn = script.releaseMisses ? 'floor' : 'tray';
       const extras: PlantExtras = { gripper: { openingM: w.opening, heldPropIds: c.held && !script.contactLost?.(w.tick) ? ['cup-1'] : [] },
-        props: script.noCup ? [] : [{ propId: 'cup-1', position: [...c.pos], restingOn: c.restingOn }] };
+        props: script.noCup || (c.held && script.hideHeldCup?.(w.tick)) ? [] : [{ propId: 'cup-1', position: [...c.pos], restingOn: c.restingOn }] };
       return { actual: [...commanded], ...script.noExtras?.(w.tick) ? {} : { extras } };
     },
   };
 }
 function make(script: Script = {}, programs: ArmProgramSet = PROGRAMS) {
   const state = MockArmPlant.initial('arm', 'boot-0:arm', programs), fake = scriptedPlant(script), reports: CellReport[] = [];
-  const takes: { id: string | undefined; heldNow: boolean }[] = [], puts: { id: string; restingOn: string | null | undefined }[] = [];
+  const takes: { id: string | undefined; heldNow: boolean }[] = [], puts: { id: string; restingOn: string | null | undefined }[] = [], takeTicks: number[] = [];
   let last: PlantExtras | undefined;
-  const cups = { take: (id?: string) => { takes.push({ id, heldNow: !!id && !!last?.gripper?.heldPropIds.includes(id) }); return id ?? null; },
+  const cups = { take: (id?: string) => { takes.push({ id, heldNow: !!id && !!last?.gripper?.heldPropIds.includes(id) }); takeTicks.push(fake.w.tick); return script.takeRefuses ? null : id ?? null; },
     put: (id: string) => { puts.push({ id, restingOn: last?.props?.find((p) => p.propId === id)?.restingOn }); } };
-  const plant = new MockArmPlant(state, () => Date.parse('2026-11-12T00:00:00Z'), () => 'boot-2', cups, () => RX, XARM6_SI, TRACKING, programs);
-  plant.on((r) => reports.push(r));
-  const tick = (p: MockArmPlant) => { p.advance(); const out = fake.step(p.state.commandedQ ?? p.state.q, p.state.gripperCommandM ?? OPEN); last = out.extras; p.observe(out.actual, [], out.extras); };
-  const drive = (id: string, program: 'cup-pick' | 'cup-place', limit = 4000, p = plant) => {
-    expect(p.execute(command(id, program)).accepted).toBe(true);
-    for (let n = 0; n < limit && p.state.programs.find((x) => x.commandId === id)!.state === 'running' && !p.state.stop?.latched; n++) tick(p);
-    return p.state.programs.find((x) => x.commandId === id)!;
+  const build = (st: typeof state) => { const p = new MockArmPlant(st, () => Date.parse('2026-11-12T00:00:00Z'), () => 'boot-2', cups, () => RX, XARM6_SI, TRACKING, programs); p.on((r) => reports.push(r)); return p; };
+  const h = {
+    plant: build(state), state, fake, restored: false, reports, takes, takeTicks, puts, trace: [] as string[],
+    /** One tick: advance, the scripted plant, observe. Every tick's command and grip state go to `trace`, to compare a restored run with an uninterrupted one. */
+    tick() { const p = h.plant; p.advance(); const out = fake.step(p.state.commandedQ ?? p.state.q, p.state.gripperCommandM ?? OPEN); last = out.extras; p.observe(out.actual, [], out.extras);
+      h.trace.push(JSON.stringify([p.state.tick, p.state.commandedQ, p.state.gripperCommandM, p.state.grip ?? null, p.state.segment ?? null])); },
+    /** Checkpoint: the state goes through JSON into a new plant, as a restored run would. */
+    restore() { h.plant = build(JSON.parse(JSON.stringify(h.plant.state))); h.state = h.plant.state; h.restored = true; },
+    drive(id: string, program: 'cup-pick' | 'cup-place', limit = 4000, restoreWhen?: (s: typeof state) => boolean) {
+      expect(h.plant.execute(command(id, program)).accepted).toBe(true);
+      const run = () => h.plant.state.programs.find((x) => x.commandId === id)!;
+      for (let n = 0; n < limit && run().state === 'running' && !h.plant.state.stop?.latched; n++) { if (restoreWhen?.(h.plant.state)) { restoreWhen = undefined; h.restore(); } h.tick(); }
+      return run();
+    },
   };
-  return { plant, state, fake, reports, takes, puts, drive, tick };
+  return h;
 }
 
-test('the fixture programs of xarm6-g2-v1 are an ArmProgramSet for XARM6_SI as they are', () => {
+test('the fixture programs of xarm6-g2-v1 are accepted by MockArmPlant with XARM6_SI as they are', () => {
   const set: ArmProgramSet = FILE.programs;
-  expect(set.modelId).toBe(XARM6_SI.id);
-  expect(set.motion).toMatchObject({ profile: 'quintic-sync-v1', speedFraction: 0.5 });
-  expect(set.motion.profile === 'quintic-sync-v1' && set.motion.maxAccelerationRadS2.length).toBe(6);
   expect(Object.keys(set).sort()).toEqual(['choreography', 'modelId', 'motion', 'waypoints']);
-  for (const steps of Object.values(set.choreography)) for (const s of steps) expect(set.waypoints[s.waypoint], s.waypoint).toBeDefined();
-  for (const [name, q] of Object.entries(set.waypoints)) {
-    expect(q, name).toHaveLength(6);
-    q.forEach((v, i) => { expect(v).toBeGreaterThanOrEqual(XARM6_SI.limits[i]!.min); expect(v).toBeLessThanOrEqual(XARM6_SI.limits[i]!.max); });
-  }
+  expect(set.motion.profile).toBe('quintic-sync-v1');
+  expect(Object.values(set.choreography).flat().map((x) => x.action ?? null)).toEqual([null, 'grip', null, null, 'release', null]);
   expect(() => new MockArmPlant(MockArmPlant.initial('arm', 'b', set), () => 0, () => 'b', { take: () => null, put: () => {} }, () => null, XARM6_SI, TRACKING, set)).not.toThrow();
 });
 
@@ -97,16 +98,18 @@ test('success: cup-pick then cup-place complete; the cup is taken only once the 
   expect(JSON.parse(JSON.stringify(h.state))).toEqual(h.state);
 });
 
-test('a state saved mid-grip and restored continues the grip the same way', () => {
+test.each([
+  ['mid-closing', (st: ReturnType<typeof MockArmPlant.initial>) => st.grip?.phase === 'closing' && st.grip.ticks > 5 && st.holding === null],
+  ['mid-quintic segment', (st: ReturnType<typeof MockArmPlant.initial>) => st.programs.at(-1)?.program === 'cup-place' && (st.segment?.k ?? 0) > 10 && st.segment!.k < 40],
+  ['mid-opening', (st: ReturnType<typeof MockArmPlant.initial>) => st.grip?.phase === 'opening' && st.grip.elapsed > 3],
+])('a state saved %s and restored through JSON continues tick for tick like an uninterrupted run', (_, when) => {
   const a = make(), b = make();
-  expect(a.drive('p1', 'cup-pick').state).toBe('completed');
-  expect(b.plant.execute(command('p1', 'cup-pick')).accepted).toBe(true);
-  for (let n = 0; n < 4000 && !(b.state.grip?.phase === 'closing' && b.state.grip.ticks > 5); n++) b.tick(b.plant);
-  expect(b.state.grip).toMatchObject({ phase: 'closing' }); expect(b.state.holding).toBeNull();
-  const restored = new MockArmPlant(JSON.parse(JSON.stringify(b.state)), () => Date.parse('2026-11-12T00:00:00Z'), () => 'boot-2', { take: (id?: string) => id ?? null, put: () => {} }, () => RX, XARM6_SI, TRACKING, PROGRAMS);
-  for (let n = 0; n < 4000 && restored.state.programs[0]!.state === 'running'; n++) b.tick(restored);
-  expect(restored.state.programs[0]!.evidence).toEqual(a.state.programs[0]!.evidence);
-  expect(restored.state.tick).toBe(a.state.tick);
+  for (const h of [a, b]) {
+    expect(h.drive('p1', 'cup-pick', 4000, h === b ? when : undefined).state).toBe('completed');
+    expect(h.drive('p2', 'cup-place', 4000, h === b ? when : undefined).state).toBe('completed');
+  }
+  expect(b.restored).toBe(true); expect(a.restored).toBe(false); expect(b.state).toEqual(a.state); expect(b.trace).toEqual(a.trace);
+  expect(b.state.programs.map((x) => x.evidence)).toEqual(a.state.programs.map((x) => x.evidence));
 });
 
 test('the gripper closes with no cup between the pads: objectPresent false, nothing held, nothing taken', () => {
@@ -150,14 +153,82 @@ test('ticks with no plant extras while a cup is held read as no cup held: CUP_DR
   expect(h2.state.stop?.reason).toBe('CUP_DROPPED'); expect(h2.state.tick).toBe(from + CONTACT.dropTicks - 1); expect(h2.puts).toEqual([]);
 });
 
-test('a released cup that does not come to rest on the tray within releaseTimeoutTicks fails the program with RELEASE_NOT_ON_RECEIVER', () => {
+test('a released cup that does not come to rest on the tray within releaseTimeoutTicks fails the program with RELEASE_NOT_ON_RECEIVER and latches the arm until reconciled', () => {
   const h = make({ releaseMisses: true });
   expect(h.drive('p1', 'cup-pick').state).toBe('completed');
   const place = h.drive('p2', 'cup-place');
   expect(place.state).toBe('failed');
-  expect(h.reports.at(-1)!.observation).toMatchObject({ result: 'failed', reasonCodes: ['RELEASE_NOT_ON_RECEIVER'] });
-  expect(h.puts).toEqual([]); expect(h.state.stop).toBeUndefined();
-  expect(place.evidence.released).toBeUndefined();
+  const last = h.reports.filter((r) => r.observation).at(-1)!;
+  expect(last.observation).toMatchObject({ commandId: 'p2', result: 'failed', reasonCodes: ['RELEASE_NOT_ON_RECEIVER'] });
+  expect(h.reports.some((r) => r.observation?.result === 'outcome_unknown')).toBe(false);
+  expect(h.state.stop).toMatchObject({ latched: true, reconcileRequired: true, reason: 'RELEASE_NOT_ON_RECEIVER' });
+  expect(h.state).toMatchObject({ holding: 'cup-1', gripper: 'open', gripperCommandM: OPEN });
+  expect(h.puts).toEqual([]); expect(place.evidence.released).toBeUndefined();
+  expect(h.plant.execute(command('p3', 'cup-place'))).toMatchObject({ accepted: false, reason: 'ARM_STOP_LATCHED' });
+  expect(h.plant.execute(command('p4', 'cup-pick'))).toMatchObject({ accepted: false, reason: 'ARM_STOP_LATCHED' });
+  for (let i = 0; i < 2 * CONTACT.dropTicks; i++) h.tick();
+  expect(h.state.stop!.reason).toBe('RELEASE_NOT_ON_RECEIVER'); expect(h.state.programs.find((x) => x.commandId === 'p2')!.state).toBe('failed');
+  expect(h.state.gripperCommandM).toBe(OPEN); expect(h.state.holding).toBe('cup-1'); expect(h.puts).toEqual([]);
+});
+
+test('slip and lift are null/false until the held cup has been seen: absent from props for the whole carry, then absent only for two ticks', () => {
+  const ref = make();
+  expect(ref.drive('p1', 'cup-pick').state).toBe('completed');
+  const T = ref.takeTicks[0]!;
+  const blind = make({ hideHeldCup: () => true });
+  const pick = blind.drive('p1', 'cup-pick');
+  expect(pick.state).toBe('completed');
+  expect(pick.evidence).toMatchObject({ objectPresent: true, cupId: 'cup-1', liftPoseReached: false, maxSlipM: null });
+  expect(blind.state.grip).toMatchObject({ maxSlipM: null, slipFromM: null, liftFromM: null });
+  expect(blind.drive('p2', 'cup-place').evidence.maxSlipM).toBeNull();
+  const late = make({ hideHeldCup: (t) => t === T || t === T + 1 });
+  const p2 = late.drive('p1', 'cup-pick');
+  expect(late.takeTicks).toEqual([T]);
+  expect(typeof p2.evidence.maxSlipM).toBe('number'); expect(p2.evidence.liftPoseReached).toBe(true);
+  expect(typeof late.drive('p2', 'cup-place').evidence.maxSlipM).toBe('number');
+});
+
+test('the pads hold a cup the cup world will not hand over: CUP_CUSTODY_MISMATCH, never a completed pick', () => {
+  const h = make({ takeRefuses: true });
+  const pick = h.drive('p1', 'cup-pick');
+  expect(pick.state).toBe('unknown');
+  expect(h.state.stop).toMatchObject({ latched: true, reconcileRequired: true, reason: 'CUP_CUSTODY_MISMATCH' });
+  expect(h.takes).toEqual([{ id: 'cup-1', heldNow: true }]);
+  expect(h.state).toMatchObject({ holding: null, gripper: 'closed', gripperCommandM: CONTACT.closedM });
+  expect(h.reports.at(-1)!.observation).toMatchObject({ result: 'outcome_unknown', reasonCodes: ['CUP_CUSTODY_MISMATCH'] });
+});
+
+const cups0 = { take: () => null, put: () => {} };
+const build = (set: ArmProgramSet, tracking: ArmTracking | undefined = TRACKING) => () => new MockArmPlant(MockArmPlant.initial('arm', 'b'), () => 0, () => 'b', cups0, () => null, set.modelId === PUMA560_SI.id ? PUMA560_SI : XARM6_SI, tracking, set);
+test.each<[string, (s: ArmProgramSet) => ArmProgramSet]>([
+  ['a waypoint with one value too few', (s) => ({ ...s, waypoints: { ...s.waypoints, lift: s.waypoints.lift!.slice(1) } })],
+  ['a waypoint with a NaN', (s) => ({ ...s, waypoints: { ...s.waypoints, lift: s.waypoints.lift!.map((v, i) => (i === 2 ? NaN : v)) } })],
+  ['a step naming a missing waypoint', (s) => ({ ...s, choreography: { ...s.choreography, 'cup-pick': [{ waypoint: 'nowhere' }] } })],
+  ['no home', (s) => ({ ...s, waypoints: Object.fromEntries(Object.entries(s.waypoints).filter(([k]) => k !== 'home')) })],
+  ['an unknown action', (s) => ({ ...s, choreography: { ...s.choreography, 'cup-pick': [{ waypoint: 'pick', action: 'squeeze' as 'grip' }] } })],
+  ['a waypoint outside the joint limits', (s) => ({ ...s, waypoints: { ...s.waypoints, lift: s.waypoints.lift!.map((v, i) => (i === 1 ? 2.5 : v)) } })],
+  ['five accelerations', (s) => ({ ...s, motion: { profile: 'quintic-sync-v1', maxAccelerationRadS2: [6, 6, 6, 8, 8], speedFraction: 0.5 } })],
+  ['a zero acceleration', (s) => ({ ...s, motion: { profile: 'quintic-sync-v1', maxAccelerationRadS2: [6, 0, 6, 8, 8, 8], speedFraction: 0.5 } })],
+  ['speedFraction 0', (s) => ({ ...s, motion: { profile: 'quintic-sync-v1', maxAccelerationRadS2: [6, 6, 6, 8, 8, 8], speedFraction: 0 } })],
+  ['speedFraction above 1', (s) => ({ ...s, motion: { profile: 'quintic-sync-v1', maxAccelerationRadS2: [6, 6, 6, 8, 8, 8], speedFraction: 1.5 } })],
+  ['gripSettleTicks 0', (s) => ({ ...s, contact: { ...CONTACT, gripSettleTicks: 0 } })],
+  ['dropTicks 2.5', (s) => ({ ...s, contact: { ...CONTACT, dropTicks: 2.5 } })],
+  ['releaseTimeoutTicks NaN', (s) => ({ ...s, contact: { ...CONTACT, releaseTimeoutTicks: NaN } })],
+  ['openM not above closedM', (s) => ({ ...s, contact: { ...CONTACT, openM: 0, closedM: 0 } })],
+  ['closedM below 0', (s) => ({ ...s, contact: { ...CONTACT, closedM: -0.01 } })],
+  ['liftMinM NaN', (s) => ({ ...s, contact: { ...CONTACT, liftMinM: NaN } })],
+])('a program set with %s is refused with ARM_PROGRAM_INVALID before anything runs', (_, bad) => {
+  expect(build(PROGRAMS)).not.toThrow();
+  expect(build(bad(PROGRAMS))).toThrow('ARM_PROGRAM_INVALID');
+});
+
+test('a quintic set on a model with a zero velocity limit is refused, initial() without home is a named error, and PUMA_PROGRAMS is valid on the PUMA model', () => {
+  const slow = { ...XARM6_SI, limits: XARM6_SI.limits.map((l, i) => (i === 3 ? { ...l, maxVelocity: 0 } : l)) };
+  expect(() => new MockArmPlant(MockArmPlant.initial('arm', 'b'), () => 0, () => 'b', cups0, () => null, slow, TRACKING, PROGRAMS)).toThrow('ARM_PROGRAM_INVALID');
+  const waypoints = Object.fromEntries(Object.entries(PROGRAMS.waypoints).filter(([k]) => k !== 'home'));
+  expect(() => MockArmPlant.initial('arm', 'b', { ...PROGRAMS, waypoints })).toThrow('ARM_PROGRAM_INVALID');
+  expect(() => new MockArmPlant(MockArmPlant.initial('arm'), () => 0, () => 'b', cups0, () => null)).not.toThrow();
+  expect(build(PUMA_PROGRAMS, undefined)).not.toThrow();
 });
 
 test("fault('arm-stop') and halt() while holding never change the gripper command", () => {
@@ -165,10 +236,10 @@ test("fault('arm-stop') and halt() while holding never change the gripper comman
   expect(h.drive('p1', 'cup-pick').state).toBe('completed');
   expect(h.state.gripperCommandM).toBe(CONTACT.closedM);
   expect(h.plant.execute(command('p2', 'cup-place')).accepted).toBe(true);
-  for (let i = 0; i < 30; i++) h.tick(h.plant);
+  for (let i = 0; i < 30; i++) h.tick();
   h.plant.fault('arm-stop');
   expect(h.state.stop?.reason).toBe('MODEL_STOP'); expect(h.state.gripperCommandM).toBe(CONTACT.closedM); expect(h.state.holding).toBe('cup-1');
-  for (let i = 0; i < 30; i++) h.tick(h.plant);
+  for (let i = 0; i < 30; i++) h.tick();
   h.plant.halt('WORKER_LOST');
   expect(h.state.gripperCommandM).toBe(CONTACT.closedM); expect(h.puts).toEqual([]);
 });
@@ -181,7 +252,7 @@ test('quintic-sync-v1: the command reaches the waypoint in exactly quinticSegmen
   expect(h.state.q).toEqual(home);
   expect(h.plant.execute(command('p1', 'cup-pick')).accepted).toBe(true);
   const commanded: number[][] = [];
-  for (let k = 1; k <= seg.ticks; k++) { h.tick(h.plant); commanded.push([...h.state.commandedQ!]); }
+  for (let k = 1; k <= seg.ticks; k++) { h.tick(); commanded.push([...h.state.commandedQ!]); }
   expect(commanded.at(-1)).toEqual(goal);
   commanded.forEach((c, k) => expect(c).toEqual(seg.at(k + 1)));
   const before = commanded.at(-2)!;
