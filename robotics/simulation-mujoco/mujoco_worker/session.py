@@ -158,6 +158,7 @@ class WorkerSession:
 
     def _advance(self, targets, opening, placements, tick):
         reading = self.engine.step(targets, opening, placements)
+        snapshot.check_stable(reading, self.engine.arm_limits)  # first: MuJoCo resets its clock when it finds a bad state
         if abs(reading["time"] - (tick + 1) * TICK_S) > CLOCK_TOLERANCE_S:
             raise WorkerError("CLOCK_DRIFT", f"engine time {reading['time']} is not (tick {tick} + 1) x {TICK_S}", fatal=True)
         self.seq += 1

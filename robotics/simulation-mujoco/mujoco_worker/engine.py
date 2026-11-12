@@ -1,7 +1,9 @@
 """The MuJoCo plant of one arm cell: the only module that imports mujoco. It knows the model only through `compile_cell`'s `names`; it validates nothing (the session does).
 
 One tick: set the arm actuator targets and the gripper actuator target, apply the cup placements, re-pin every parked cup at its park pose with zero velocity, then
-mj_step(nstep = scene.engine.substeps).
+`scene.engine.substeps` single mj_step calls (bit-identical to one mj_step(nstep=substeps)), collecting the contacts of every substep: a tick's collisions are the
+ones that happened during it, not only at its last instant. MuJoCo answers a non-finite or huge qpos/qvel/qacc with a warning and a silent reset to a finite
+state; the warning counters are read after each substep and reported as `unstable`.
 
 Gripper: the wire carries `openingM`, the distance between the inner faces of the two pads (0 .. physics.gripper.openingMaxM). The command maps it linearly onto the
 gripper actuator's control range (the drive joint range): ctrl = lo + (hi - lo) * (1 - openingM / openingMaxM), so openingMaxM -> lo (open) and 0 -> hi (closed). The
@@ -9,6 +11,8 @@ reported opening is measured, not inverted: the separation of the two pad boxes 
 """
 import mujoco
 import numpy as np
+
+BAD_STATE = {"BADQPOS": mujoco.mjtWarning.mjWARN_BADQPOS, "BADQVEL": mujoco.mjtWarning.mjWARN_BADQVEL, "BADQACC": mujoco.mjtWarning.mjWARN_BADQACC}
 
 from .compile import compile_cell
 
@@ -90,8 +94,13 @@ class MujocoEngine:
             self.in_scene.add(pid)
         for pid in self.prop.keys() - self.in_scene:  # parked cups do not fall: held at the park pose, contacts off
             self._put(pid, self.prop[pid]["park"])
-        mujoco.mj_step(self.model, d, nstep=self.substeps)
-        return self.read()
+        seen, unstable = set(), set()
+        for _ in range(self.substeps):
+            before = {k: d.warning[w].number for k, w in BAD_STATE.items()}
+            mujoco.mj_step(self.model, d)
+            unstable.update(k for k, w in BAD_STATE.items() if d.warning[w].number != before[k])
+            seen.update(self.contacts())
+        return {**self.read(), "tickContacts": sorted(seen), "unstable": ",".join(sorted(unstable)) or None}
 
     # ---- readings ----
     def opening(self):
@@ -101,7 +110,13 @@ class MujocoEngine:
         axis = d.geom_xmat[a].reshape(3, 3)[:, k]
         return float(abs(np.dot(d.geom_xpos[b] - d.geom_xpos[a], axis)) - size[a][k] - size[b][k])
 
+    def contacts(self):
+        """The active contacts of the current state as tag pairs."""
+        d, n = self.data, self.data.ncon
+        return [(self.tags[int(g1)], self.tags[int(g2)]) for (g1, g2), ex in zip(d.contact.geom[:n], d.contact.exclude[:n]) if ex == 0]
+
     def read(self):
+        """The state at the end of the tick (its `contacts` are the last substep's)."""
         d = self.data
         props = {}
         for pid in sorted(self.in_scene):
@@ -109,11 +124,9 @@ class MujocoEngine:
             w, x, y, z = d.qpos[p["qpos"] + 3:p["qpos"] + 7]
             props[pid] = {"position": d.qpos[p["qpos"]:p["qpos"] + 3].tolist(), "quaternionXyzw": [float(x), float(y), float(z), float(w)],
                           "speed": float(np.linalg.norm(d.qvel[p["qvel"]:p["qvel"] + 3]))}
-        n = d.ncon
-        contacts = [(self.tags[int(g1)], self.tags[int(g2)]) for (g1, g2), ex in zip(d.contact.geom[:n], d.contact.exclude[:n]) if ex == 0]
         return {"time": float(d.time), "arm": {"positions": d.qpos[self.arm_qpos].tolist(), "velocities": d.qvel[self.arm_qvel].tolist()},
                 "gripper": {"positions": d.qpos[self.grip_qpos].tolist(), "velocities": d.qvel[self.grip_qvel].tolist(), "openingM": self.opening()},
-                "props": props, "contacts": contacts}
+                "props": props, "contacts": self.contacts()}
 
     def readback(self):
         """The arm as the compiled MjModel holds it: per arm joint (chain order) the child link's mass, the hinge axis in the parent body frame, the range and the actuator's force limit."""

@@ -71,6 +71,23 @@ def test_a_parked_cup_has_no_contact_and_is_not_in_the_snapshot(run):
     assert e.data.qpos[e.prop["cup-1"]["qpos"] + 2] > -12  # pinned near its park pose (-11), not falling for 40 ticks
 
 
+def test_a_contact_that_ends_inside_one_tick_is_still_a_collision(run):
+    # a cup placed 1 mm into the arm base is pushed out within the tick: in contact for substeps 1-8, free after the 10th (measured on MuJoCo 3.17.0)
+    r = run.handle(step(0, placements=[("cup-1", pose([0.102, 0.0, 0.051]))]))
+    assert r["ok"], r
+    e = run.engine
+    ended = {(e.tags[int(a)][0], e.tags[int(b)][0]) for a, b in e.data.contact.geom[:e.data.ncon]}
+    assert ("link", "prop") not in ended and ("prop", "link") not in ended  # last-substep sampling would report nothing
+    assert r["result"]["arms"][0]["collisionIds"] == ["cup-1"]
+
+
+def test_an_engine_that_resets_itself_on_a_bad_state_is_plant_unstable(run, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)  # MuJoCo appends its warning to MUJOCO_LOG.TXT in the working directory (the worker's is its private run directory)
+    run.engine.data.qvel[:] = 1e20  # MuJoCo warns (mjWARN_BADQVEL) and silently resets the state to finite values
+    r = run.handle(step(0))
+    assert not r["ok"] and r["error"]["code"] == "PLANT_UNSTABLE" and run.state == "failed", r
+
+
 def test_engine_time_after_n_steps_is_n_times_20_ms():
     e = engine()
     for n in range(1, 101):

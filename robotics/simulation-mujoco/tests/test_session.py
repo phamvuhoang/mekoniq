@@ -27,6 +27,7 @@ class FakeEngine:
         self.scene, self.blob_dir, self.time, self.calls, self.closed = scene, blob_dir, 0.0, [], False
         self.arm_limits, self.opening_max_m = LIMITS, OPEN
         self.opening, self.cups, self.contacts, self.next_positions = OPEN, {}, [], None
+        self.tick_contacts, self.unstable = None, None  # contacts seen during the tick (default: the end-of-tick ones); an engine warning
 
     def step(self, targets, opening, placements):
         self.time += 0.02
@@ -40,7 +41,8 @@ class FakeEngine:
                 self.cups[pid] = pose
         q = list(self.next_positions if self.next_positions is not None else targets)
         return {"time": self.time, "arm": {"positions": q, "velocities": [0.0] * len(q)}, "gripper": {"positions": [0.1], "velocities": [0.0], "openingM": self.opening},
-                "props": {pid: {"position": list(p["position"]), "quaternionXyzw": list(p["quaternionXyzw"]), "speed": 0.0} for pid, p in self.cups.items()}, "contacts": list(self.contacts)}
+                "props": {pid: {"position": list(p["position"]), "quaternionXyzw": list(p["quaternionXyzw"]), "speed": 0.0} for pid, p in self.cups.items()}, "contacts": list(self.contacts),
+                "tickContacts": list(self.contacts if self.tick_contacts is None else self.tick_contacts), "unstable": self.unstable}
 
     def readback(self):
         return {"robots": [], "arm": {"links": [{"name": "link1", "massKg": 2.3814}], "joints": [{"name": "J1", "axis": [0.0, 0.0, 1.0], "lower": -6.28, "upper": 6.28, "forceN": 179.4445}]}}
@@ -200,6 +202,30 @@ def test_a_held_cup_cannot_be_placed_or_parked_and_a_cup_cannot_be_placed_into_a
         r = s.handle(step(3, placements=[placement]))
         assert not r["ok"] and r["error"]["code"] == "PROP_HELD" and r["tick"] == 3
     assert len(e.calls) == 4
+
+
+def test_a_gripper_part_on_an_arm_link_is_a_self_collision(run):
+    s, e, _ = run
+    for pair in ((("pad", 1), ("link", "link3")), (("gripper",), ("link", "link2")), (("link", "link4"), ("palm",))):
+        e.contacts = [pair]
+        r = s.handle(step(s.tick))
+        assert r["result"]["arms"][0]["collisionIds"] == ["self"], pair
+
+
+def test_collisions_are_what_happened_during_the_tick_and_holding_is_read_at_its_end(run):
+    s, e, _ = run
+    assert s.handle(step(0, placements=[("cup-1", pose(STAND))]))["ok"]
+    e.contacts = [(("prop", "cup-1"), ("support", "nozzle-stand"))]  # the end of the tick
+    e.tick_contacts = [(("link", "link3"), ("static", "wall-1")), (("pad", 0), ("prop", "cup-1")), (("pad", 1), ("prop", "cup-1")), *e.contacts]
+    snap = s.handle(step(1))["result"]
+    assert snap["arms"][0]["collisionIds"] == ["wall-1"] and snap["arms"][0]["gripper"]["heldPropIds"] == [] and snap["props"][0]["restingOn"] == "nozzle-stand"
+
+
+def test_an_engine_instability_warning_is_plant_unstable_before_any_clock_check(run):
+    s, e, _ = run
+    e.unstable, e.time = "BADQVEL", 0.0  # MuJoCo resets the state (and its time) when it warns
+    r = s.handle(step(0))
+    assert not r["ok"] and r["error"]["code"] == "PLANT_UNSTABLE" and "BADQVEL" in r["error"]["detail"] and s.state == "failed"
 
 
 def test_collisions_name_what_the_arm_touched_and_leave_out_grasping_and_resting(run):

@@ -18,6 +18,10 @@ The plant of the `mujoco_arm` provider (R2a): UFACTORY xArm 6 + Gripper G2, a no
   rules (`protocol.py`, `session.py`); `engine.py` is the only module that imports `mujoco` (one tick = ctrl, cup placements, re-pin parked cups,
   `mj_step(nstep=substeps)`), `snapshot.py` turns a reading into the snapshot (held cups, `restingOn`, `collisionIds`, `PLANT_UNSTABLE`). The bundle holds
   `arm-cell-scene.json`, `component.json`, `physics.json` and `blobs/`.
+- Contacts: `collisionIds` are the union over every substep of the tick (the engine steps one substep at a time); held cups, `restingOn`, the opening and
+  every pose are read at the end of the tick. Two arm links, or any gripper part (palm, pads) against an arm link, is `"self"` (with these contact bits pads
+  cannot touch arm links; the rule is stated for any model). A MuJoCo bad-state warning (`BADQPOS`/`BADQVEL`/`BADQACC`, after which MuJoCo resets the
+  state) is `PLANT_UNSTABLE`.
 - `physics.capsuleRadiusM`/`capsuleSegmentsM` are not used here: they are the TS capsule sweep's (ARM03), not the engine's collision.
 
 Friction: MuJoCo combines two geoms of equal `priority` by taking the larger of each coefficient; a geom with a higher `priority` imposes its own. Pads have
