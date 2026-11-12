@@ -11,12 +11,16 @@ declare const __LAB_SOURCE_COMMIT__:string;
 declare const __LAB_SCHEMA_HASH__:string;
 const args=process.argv.slice(2);
 if(args.includes('--help')){
- console.log('Dev-only business simulator: node runtime.mjs [--port 4176] [--data-dir ./runs] [--native-config /absolute/native.json] [--engineering-catalog DIR --engineering-simulation DIR [--engineering-python PATH] [--linkforge-python PATH --linkforge-worker DIR] [--irsim-python PATH --irsim-worker DIR [--irsim-lock FILE]]] [--mujoco-python PATH] [--mujoco-worker DIR] [--mujoco-lock FILE]\nDefault: offline mock providers. Opt-in native config connects simulation providers. MEKONIQ_LAB_LINKFORGE=1 / MEKONIQ_LAB_IRSIM=1 / MEKONIQ_LAB_MUJOCO=1 switch on shadow validation / the portable IR-SIM 2D provider / the MuJoCo arm provider (independent). Pairs one local browser session; never connects to robot hardware.');
+ console.log('Dev-only business simulator: node runtime.mjs [--port 4176] [--bind 127.0.0.1] [--public-host HOST]... [--allow-origin https://host[:port]]... [--data-dir ./runs] [--native-config /absolute/native.json] [--engineering-catalog DIR --engineering-simulation DIR [--engineering-python PATH] [--linkforge-python PATH --linkforge-worker DIR] [--irsim-python PATH --irsim-worker DIR [--irsim-lock FILE]]] [--mujoco-python PATH] [--mujoco-worker DIR] [--mujoco-lock FILE]\nDefault: offline mock providers. Opt-in native config connects simulation providers. MEKONIQ_LAB_LINKFORGE=1 / MEKONIQ_LAB_IRSIM=1 / MEKONIQ_LAB_MUJOCO=1 switch on shadow validation / the portable IR-SIM 2D provider / the MuJoCo arm provider (independent). Pairs one local browser session; never connects to robot hardware.\nPORT sets the port when --port is absent. A bind other than loopback needs MEKONIQ_LAB_ACCESS_KEY (>= 32 characters, environment only), accepted by /lab/v2/sessions like the pairing code; with it set no pairing code is printed.');
 }else{
  if(Number(process.versions.node.split('.')[0])!==24)throw new Error('NODE_24_REQUIRED');
- let port=4176,directory=resolve('runs'),nativeConfig:string|undefined;const engineeringFlags:{catalogRoot?:string;simulationRoot?:string;python?:string}={},linkforgeFlags:{python?:string;workerRoot?:string}={},irsimFlags:{python?:string;workerRoot?:string;lockPath?:string}={},webotsFlags:{python?:string;workerRoot?:string;lockPath?:string;home?:string}={},mujocoFlags:{python?:string;workerRoot?:string;lockPath?:string}={};
+ const portOf=(v:string|undefined)=>{const p=Number(v);if(!Number.isInteger(p)||p<1||p>65535)throw new Error('INVALID_PORT');return p;};
+ let port=process.env.PORT!==undefined?portOf(process.env.PORT):4176,directory=resolve('runs'),nativeConfig:string|undefined,bind:string|undefined;const publicHosts:string[]=[],allowOrigins:string[]=[];const engineeringFlags:{catalogRoot?:string;simulationRoot?:string;python?:string}={},linkforgeFlags:{python?:string;workerRoot?:string}={},irsimFlags:{python?:string;workerRoot?:string;lockPath?:string}={},webotsFlags:{python?:string;workerRoot?:string;lockPath?:string;home?:string}={},mujocoFlags:{python?:string;workerRoot?:string;lockPath?:string}={};
  for(let i=0;i<args.length;i++){
-  if(args[i]==='--port'){port=Number(args[++i]);if(!Number.isInteger(port)||port<1||port>65535)throw new Error('INVALID_PORT');}
+  if(args[i]==='--port')port=portOf(args[++i]);
+  else if(args[i]==='--bind'){if(!args[i+1])throw new Error('BIND_REQUIRED');bind=args[++i]!;}
+  else if(args[i]==='--public-host'){if(!args[i+1])throw new Error('PUBLIC_HOST_REQUIRED');publicHosts.push(args[++i]!);}
+  else if(args[i]==='--allow-origin'){if(!args[i+1])throw new Error('INVALID_ALLOW_ORIGIN');allowOrigins.push(args[++i]!);}
   else if(args[i]==='--data-dir'){if(!args[i+1])throw new Error('DATA_DIRECTORY_REQUIRED');directory=resolve(args[++i]!);}
   else if(args[i]==='--native-config'){if(!args[i+1])throw new Error('NATIVE_CONFIG_REQUIRED');nativeConfig=resolve(args[++i]!);}
   else if(args[i]==='--engineering-catalog'){if(!args[i+1])throw new Error('ENGINEERING_CATALOG_REQUIRED');engineeringFlags.catalogRoot=resolve(args[++i]!);}
@@ -56,8 +60,10 @@ if(args.includes('--help')){
  const portable=irsimOn||webotsOn||mujocoOn?await portableSimulationFromOptions({enabled:irsimOn&&!!engineering,...irsim,lockPath:irsimFlags.lockPath??resolve(irsim.workerRoot,'requirements.lock'),directory,...native?{nativeFactory:native.simulationFactory,baseCatalog:native.catalog}:{},...engineering?{bundleFile:(d:string,p:string)=>engineering.bundleFile(d,p)}:{},...webots?{webots}:{},...mujoco?{mujoco}:{}}):undefined;
  if(irsimOn&&portable?.unavailable)console.error(`IR-SIM provider unavailable: ${portable.catalog.backends.find(b=>b.id==='irsim_2d')?.reason}`);
  const v2=portable?{...legacy,catalog:portable.catalog,enabledBackends:[...legacy.enabledBackends,...portable.enabledBackends],simulationFactory:portable.simulationFactory,...portable.readinessChecks?{portableChecks:portable.readinessChecks}:{}}:legacy;
- const gateway=await startLabGateway({port,directory,sourceCommit:__LAB_SOURCE_COMMIT__,schemaHash:__LAB_SCHEMA_HASH__,v2:{...v2,...engineering?{engineering}:{}}});
- console.log(`Mekoniq Robot Lab business_sim\nGateway: ${gateway.url}\nPairing token (expires in 5 minutes; one use): ${gateway.pairingToken}\nSource: ${__LAB_SOURCE_COMMIT__}`);
+ // the access key is read from the environment only: a flag would show in process listings; it is never printed
+ const accessKey=process.env.MEKONIQ_LAB_ACCESS_KEY;
+ const gateway=await startLabGateway({port,directory,...bind!==undefined?{bind}:{},publicHosts,allowOrigins,...accessKey!==undefined?{accessKey}:{},sourceCommit:__LAB_SOURCE_COMMIT__,schemaHash:__LAB_SCHEMA_HASH__,v2:{...v2,...engineering?{engineering}:{}}});
+ console.log(`Mekoniq Robot Lab business_sim\nGateway: ${gateway.url}\n${accessKey!==undefined?'Access key: from MEKONIQ_LAB_ACCESS_KEY (no pairing code printed)':`Pairing token (expires in 5 minutes; one use): ${gateway.pairingToken}`}\nSource: ${__LAB_SOURCE_COMMIT__}`);
  const close=()=>{void gateway.close().then(()=>process.exit(0),()=>process.exit(1));};
  process.once('SIGINT',close);process.once('SIGTERM',close);
 }

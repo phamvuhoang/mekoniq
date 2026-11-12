@@ -19,6 +19,10 @@ export interface V2Deps {
  /** Backends whose execution has been switched on. Schema-only builds enable none, so every run is denied before any backend starts. */
  enabledBackends?:readonly string[];
  pairingValid(token:unknown):boolean;spendPairing():void;same(a:string,b:string):boolean;
+ /** The configured access key (D55): accepted like the pairing code, never spent. */
+ accessKeyValid?(token:unknown):boolean;
+ /** Where the gateway listens, for health; nothing else about the configuration is published. */
+ deployment?:{bind:'loopback'|'public'};
  readBody(request:IncomingMessage,limit?:number):Promise<Record<string,unknown>>;send(response:ServerResponse,status:number,data:unknown):void;
  /** SSE timing and the resumable business-event window (tests shorten them). */
  stream?:Partial<StreamOptions>;
@@ -35,6 +39,8 @@ const COOKIE='mekoniq_lab_session_v2';
 // Local demo pairing may only drive simulations and read-only shadow; hil/live belong to native provisioning.
 const PAIRING_ACCESS:readonly Access[]=['simulated','shadow'];
 const UUID='[0-9a-f-]{36}';
+// D55: failed pairings are counted for the whole runtime (a proxy hides client addresses)
+const PAIRING_FAILURES=5,PAIRING_WINDOW_MS=60000;
 const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
 const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_SCHEDULE_UNSUPPORTED$)/.test(m)?422:500;
 export function createV2Gateway(deps:V2Deps){
@@ -43,6 +49,7 @@ export function createV2Gateway(deps:V2Deps){
  // Runs are owned by the v2 pairing session that created them; another session sees 404, exactly as for an unknown id.
  const runs=new Map<string,{owner:string;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput}>();let creating=0;
  const reclaiming=new Set<string>();
+ let pairingFailures:number[]=[];
  const streams=new Set<ServerResponse>(),streamOptions={...STREAM_DEFAULTS,...deps.stream};
  const token=()=>randomBytes(32).toString('base64url');
  const deny=(response:ServerResponse,status:number,error:string,reasonCodes:string[],issues?:Issue[])=>deps.send(response,status,{error,reasonCodes,...issues?{issues}:{}});
@@ -55,7 +62,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(method==='GET'&&sub==='/health')return send(response,200,{
    protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
-   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true},
+   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true},deployment:{bind:deps.deployment?.bind??'loopback'},
    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
    capabilities:[...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
     // the arm plant needs no engineering bundle: its scene is built from the run's project
@@ -65,31 +72,41 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(method==='POST'&&!origin)return deny(response,403,'ORIGIN_REQUIRED',[]);
   if(method==='POST'&&sub==='/sessions'){
    const b=await deps.readBody(request),extra=Object.keys(b).filter(k=>k!=='token');
+   // checked after the body so concurrent attempts cannot all pass the gate before one is counted; a valid attempt does not reset the count
+   pairingFailures=pairingFailures.filter(t=>deps.now()-t<PAIRING_WINDOW_MS);
+   if(pairingFailures.length>=PAIRING_FAILURES){response.setHeader('Retry-After',String(Math.max(1,Math.ceil((pairingFailures[0]!+PAIRING_WINDOW_MS-deps.now())/1000))));return deny(response,429,'PAIRING_RATE_LIMITED',[]);}
    if(extra.length){const issues=extra.map(k=>({path:'',code:classifyField(k),message:`Property "${k}" is not allowed`}));return deny(response,422,'INVALID_SESSION_REQUEST',codesOf(issues),issues);}
-   if(!deps.pairingValid(b.token))return deny(response,401,'PAIRING_INVALID',[]);
+   const viaKey=!!deps.accessKeyValid?.(b.token);
+   if(!viaKey&&!deps.pairingValid(b.token)){pairingFailures.push(deps.now());return deny(response,401,'PAIRING_INVALID',[]);}
    for(const [id,s]of sessions)if(deps.now()>=s.expiresAt)sessions.delete(id);
    if(sessions.size>=10)return deny(response,429,'SESSION_LIMIT',[]);
-   deps.spendPairing();const id=token(),csrf=token();sessions.set(id,{csrf,expiresAt:deps.now()+3600000});
+   if(!viaKey)deps.spendPairing();const id=token(),csrf=token();sessions.set(id,{csrf,expiresAt:deps.now()+3600000});
    response.setHeader('Set-Cookie',`${COOKIE}=${id}; HttpOnly; SameSite=Strict; Path=/lab/v2; Max-Age=3600`);
    // The principal is assigned by the server; nothing in the request can choose it.
-   return send(response,201,{csrfToken:csrf,principal:{kind:'local_pairing',controlOwner:'lab_simulation',accesses:PAIRING_ACCESS}});
+   return send(response,201,{csrfToken:csrf,sessionToken:id,principal:{kind:'local_pairing',controlOwner:'lab_simulation',accesses:PAIRING_ACCESS}});
   }
-  const sessionId=new RegExp(`(?:^|;\\s*)${COOKIE}=([A-Za-z0-9_-]+)`).exec(request.headers.cookie??'')?.[1]??'',session=sessions.get(sessionId);
+  // D53: the bearer header, when present, is the only credential looked at; otherwise the cookie. Never from the URL.
+  const authorization=request.headers.authorization,bearer=authorization!==undefined;
+  const presented=bearer?/^Bearer ([A-Za-z0-9_-]{1,200})$/.exec(authorization)?.[1]??'':new RegExp(`(?:^|;\\s*)${COOKIE}=([A-Za-z0-9_-]+)`).exec(request.headers.cookie??'')?.[1]??'';
+  let sessionId='';for(const id of sessions.keys())if(presented&&deps.same(presented,id))sessionId=id;
+  const session=sessions.get(sessionId);
   if(!session||deps.now()>=session.expiresAt)return deny(response,401,'SESSION_REQUIRED',[]);
+  // a bearer session is never attached by the browser on its own, so it carries no CSRF risk
+  const csrfValid=()=>bearer||deps.same(String(request.headers['x-csrf-token']??''),session.csrf);
   const engineeringRoute=/^\/engineering\/(?:(compile|validate)|bundles\/([^/]+)\/manifest|blobs\/([^/]+)|validations\/([^/]+))$/.exec(sub);
   if(engineeringRoute){
    if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);
    const [,action,manifestDigest,blobDigest,validationDigest]=engineeringRoute;
    if(action==='validate'){
     if(method!=='POST')return deny(response,405,'METHOD_NOT_ALLOWED',[]);
-    if(!deps.same(String(request.headers['x-csrf-token']??''),session.csrf))return deny(response,403,'CSRF_INVALID',[]);
+    if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
     const body=await deps.readBody(request,64*1024),extra=Object.keys(body).filter(k=>!['engineeringRef','robotId'].includes(k));
     if(extra.length||!body.engineeringRef||typeof body.robotId!=='string'){const issues=extra.map(k=>({path:'',code:classifyField(k),message:`Property "${k}" is not allowed`}));return deny(response,422,'INVALID_ENGINEERING_REQUEST',codesOf(issues),issues);}
     try{return send(response,200,await deps.engineering.validateRobotModel(sessionId,body.engineeringRef,body.robotId));}catch(e){return engineeringFailed(response,e);}
    }
    if(action==='compile'){
     if(method!=='POST')return deny(response,405,'METHOD_NOT_ALLOWED',[]);
-    if(!deps.same(String(request.headers['x-csrf-token']??''),session.csrf))return deny(response,403,'CSRF_INVALID',[]);
+    if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
     const body=await deps.readBody(request,2*1024*1024),extra=Object.keys(body).filter(k=>k!=='project');
     if(extra.length||!body.project||typeof body.project!=='object'){const issues=extra.map(k=>({path:'',code:classifyField(k),message:`Property "${k}" is not allowed`}));return deny(response,422,'INVALID_ENGINEERING_REQUEST',codesOf(issues),issues);}
     try{return send(response,200,await deps.engineering.compileEngineeringProject(body.project as never,sessionId));}catch(e){return engineeringFailed(response,e);}
@@ -113,7 +130,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     if([...params.keys()].some(k=>!['scenarioId','backendSetId'].includes(k))||['scenarioId','backendSetId'].some(k=>params.getAll(k).length!==1||!/^[A-Za-z0-9_.:-]{1,200}$/.test(params.get(k)??'')))return deny(response,400,'INVALID_READINESS_QUERY',[]);
     context={scenarioId:params.get('scenarioId')!,backendSetId:params.get('backendSetId')!};
    }else if(method==='POST'){
-    if(!deps.same(String(request.headers['x-csrf-token']??''),session.csrf))return deny(response,403,'CSRF_INVALID',[]);
+    if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
     const body=await deps.readBody(request);
     if(params.size||Object.keys(body).some(k=>!['scenarioId','backendSetId','project','engineeringRef'].includes(k))||['scenarioId','backendSetId'].some(k=>typeof body[k]!=='string'||!/^[A-Za-z0-9_.:-]{1,200}$/.test(body[k] as string))||!Object.hasOwn(body,'project')&&!Object.hasOwn(body,'engineeringRef'))return deny(response,400,'INVALID_READINESS_QUERY',[]);
     context={scenarioId:body.scenarioId as string,backendSetId:body.backendSetId as string,project:body.project};
@@ -132,7 +149,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   const runAllow=runRoute?({actions:'POST',reclaim:'POST',archive:'POST'}as Record<string,string>)[runRoute[2]??'']??'GET':undefined;
   if(!route&&!runRoute)return deny(response,404,'NOT_FOUND',[]);
   if(method!==(route?.allow??runAllow))return deny(response,405,'METHOD_NOT_ALLOWED',[]);
-  if(method==='POST'&&!deps.same(String(request.headers['x-csrf-token']??''),session.csrf))return deny(response,403,'CSRF_INVALID',[]);
+  if(method==='POST'&&!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
   if(route?.name==='validate'){
    const result=validateProjectV2(await deps.readBody(request));
    return result.ok?send(response,200,{ok:true}):deny(response,422,'INVALID_PROJECT',codesOf(result.issues),result.issues);
