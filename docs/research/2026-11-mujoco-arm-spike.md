@@ -34,10 +34,30 @@ File dùng (tất cả trong `xarm_ros2@ac736c9`, `xarm_description/`):
 | `config/xarm6/joint_limits_1305.yaml` | `db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb` | lực khớp 179.4445/179.4445/92/81.558/30.6/30.6 N·m |
 | `urdf/gripper/xarm_gripper.urdf.xacro` | `e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb` | G2 = cùng macro G1, chỉ đổi đuôi mesh `_g2`/`dae` (dòng 9–13); khớp, trục, giới hạn 0–0.85 rad, effort 50, velocity 2, mimic, quán tính (dòng 23–223), `joint_tcp` z = 0.172 (dòng 227–228) |
 | `urdf/xarm_device_macro.xacro` | `571dd90dd5ae4d8aa549686a253050e0576d0ef29755121cd2d7a95b24649eda` | `link_eef` trùng gốc `link6` (dòng 240–243), tay kẹp gắn vào `link_eef` (dòng 257) |
-| `meshes/xarm6_1305/visual/link_base.stl` … `link6.stl` | `479e88e7…2dc28`, `25fdfe13…52b9`, `d9fdfbb4…2d82`, `48336e39…3a81`, `29d52195…7943`, `25272c88…d771`, `7604bde7…6d4f` (base, 1…6; đầy đủ ở báo cáo) | mesh hiển thị (STL nhị phân) |
-| `meshes/gripper/xarm/{base_link,left_finger,left_inner_knuckle,left_outer_knuckle,right_finger,right_inner_knuckle,right_outer_knuckle}_g2.dae` | `d46f7e33…7575`, `69c88852…a59b`, `f12e642f…1b86`, `b791ec24…a80b`, `c2914ea7…0b36`, `9e73e1fb…aa3`, `d9ed7ed5…1f55` | mesh hiển thị G2 (COLLADA do Blender 4.0 xuất, 2026-02-26) |
+| `meshes/xarm6_1305/visual/link_base.stl` | `479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28` | mesh hiển thị (STL nhị phân), 3000 tam giác |
+| `meshes/xarm6_1305/visual/link1.stl` | `25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9` | mesh hiển thị (STL nhị phân), 5814 tam giác |
+| `meshes/xarm6_1305/visual/link2.stl` | `d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82` | mesh hiển thị (STL nhị phân), 5830 tam giác |
+| `meshes/xarm6_1305/visual/link3.stl` | `48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81` | mesh hiển thị (STL nhị phân), 6816 tam giác |
+| `meshes/xarm6_1305/visual/link4.stl` | `29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943` | mesh hiển thị (STL nhị phân), 4860 tam giác |
+| `meshes/xarm6_1305/visual/link5.stl` | `25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771` | mesh hiển thị (STL nhị phân), 11270 tam giác |
+| `meshes/xarm6_1305/visual/link6.stl` | `7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f` | mesh hiển thị (STL nhị phân), 4046 tam giác |
+| `meshes/gripper/xarm/base_link_g2.dae` | `d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575` | mesh hiển thị G2 (COLLADA do Blender 4.0 xuất, 2026-02-26), 50415 tam giác |
+| `meshes/gripper/xarm/left_finger_g2.dae` | `69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b` | mesh hiển thị G2 (COLLADA do Blender 4.0 xuất, 2026-02-26), 4852 tam giác |
+| `meshes/gripper/xarm/left_inner_knuckle_g2.dae` | `f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86` | mesh hiển thị G2 (COLLADA do Blender 4.0 xuất, 2026-02-26), 7324 tam giác |
+| `meshes/gripper/xarm/left_outer_knuckle_g2.dae` | `b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b` | mesh hiển thị G2 (COLLADA do Blender 4.0 xuất, 2026-02-26), 444 tam giác |
+| `meshes/gripper/xarm/right_finger_g2.dae` | `c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36` | mesh hiển thị G2 (COLLADA do Blender 4.0 xuất, 2026-02-26), 4852 tam giác |
+| `meshes/gripper/xarm/right_inner_knuckle_g2.dae` | `9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3` | mesh hiển thị G2 (COLLADA do Blender 4.0 xuất, 2026-02-26), 7324 tam giác |
+| `meshes/gripper/xarm/right_outer_knuckle_g2.dae` | `d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55` | mesh hiển thị G2 (COLLADA do Blender 4.0 xuất, 2026-02-26), 444 tam giác |
 
-- **Đối chiếu:** `ufactory_genesis/assets/urdf/xarm6/xarm6_1305.urdf` (URDF đã khai triển, sha256 `73e03c90…2cb5ad`) khớp **37/37** giá trị đã chép (gốc khớp, rpy, effort, velocity, khối lượng, trọng tâm, quán tính, base) với sai lệch ≤ 1e-9 (`crosscheck.py`); giới hạn ±2π của nó ghi `±6.2832`.
+- **Đối chiếu:** `ufactory_genesis/assets/urdf/xarm6/xarm6_1305.urdf` (URDF đã khai triển, sha256 `73e03c904b18c70e489205c4d8c57242a6577d53b7b0ecb1f9384b487e2cb5ad`) khớp **37/37** giá trị đã chép (gốc khớp, rpy, effort, velocity, khối lượng, trọng tâm, quán tính, base) với sai lệch ≤ 1e-9 (`crosscheck.py`); giới hạn ±2π của nó ghi `±6.2832`.
+- **STL G2 sau chuyển** (không phải file của hãng; M02 sinh lại từ các DAE đã hash ở trên bằng `python3 -I -B meshinfo.py dae2stl <file>_g2.dae <file>_g2.stl` (script nhúng ở cuối ghi chép, không tham số khác) rồi so với sha256 dưới. Chuyển lần hai vào thư mục mới cho đúng các byte này (`shasum -a 256 -c`: 7/7 OK)):
+  - `base_link_g2.stl` 50415 tam giác: `2aa35bd24370722bf2c0bc1b383cc5d97a818e769e61cc687fd752529a898e65`
+  - `left_finger_g2.stl` 4852 tam giác: `1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060`
+  - `left_inner_knuckle_g2.stl` 7324 tam giác: `c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5`
+  - `left_outer_knuckle_g2.stl` 444 tam giác: `0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7`
+  - `right_finger_g2.stl` 4852 tam giác: `9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9`
+  - `right_inner_knuckle_g2.stl` 7324 tam giác: `f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344`
+  - `right_outer_knuckle_g2.stl` 444 tam giác: `fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97`
 - **Không dùng** mesh va chạm của hãng (`collision/*.obj` của xarm_ros2; 22 bao lồi của genesis là sản phẩm của repo đó): va chạm tay máy là capsule giả định, va chạm tay kẹp là má kẹp hộp và lòng bàn tay hộp giả định.
 - Trang D-H của hãng ([xArm 6](https://docs.supportarticle.ufactory.cc/support_articles/developer/kinematic-and-dynamic-parameters/xArm_Series/xarm-6.html), đọc 2026-11-12): bảng modified D-H (mm, rad) `J1 (a 0, α 0, d 267, θ₀ 0)`, `J2 (0, −π/2, 0, T2)`, `J3 (a2, 0, 0, −T2)`, `J4 (77.5, −π/2, 342.5, 0)`, `J5 (0, π/2, 0, 0)`, `J6 (76, −π/2, 97, 0)`, `a2 = √(284.5²+53.5²)`, `T2 = −atan(284.5/53.5) = −1.3849179`. Trang in `a2 = 289.48866`; tính lại công thức được 289.48661 (tôi đọc trang qua công cụ tóm tắt nên chưa chắc chữ số in trên trang; script dùng công thức). Trang không ghi bảng áp cho phiên bản phần cứng nào; bảng khối lượng "Model 3" trên trang trùng (làm tròn) với `xarm6_type6_HT_BR2.yaml`.
 
