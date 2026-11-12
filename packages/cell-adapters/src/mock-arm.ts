@@ -25,7 +25,8 @@ export interface ArmProgramSet {modelId:string;waypoints:Record<string,number[]>
  collision?:{geometry:ArmGeometry;allowedPairs:readonly (readonly [string,string])[]}}
 export const PUMA_PROGRAMS:ArmProgramSet={modelId:PUMA560_SI.id,waypoints:W,choreography:ARM_CHOREOGRAPHY,motion:{profile:'linear-clamp'}};
 /** What a contact plant reports each tick beside the joints: the measured gripper opening (m, between the pads), the cups both pads touch, and each cup's position (m, arm base frame) and support. */
-export interface PlantExtras {gripper?:{openingM:number;heldPropIds:readonly string[]};props?:readonly {propId:string;position:readonly number[];restingOn:string|null}[]}
+/** `inMap` (optional) is the same cup's pose in the map frame, kept untouched with the entry for the telemetry projection; the machine reads only `position`. */
+export interface PlantExtras {gripper?:{openingM:number;heldPropIds:readonly string[]};props?:readonly {propId:string;position:readonly number[];restingOn:string|null;inMap?:{positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}}[]}
 /** Contact grip counters (JSON). `ticks`: closing = ticks the opening changed < 1e-4 m, opening = ticks the cup rested on the tray; `lost`: ticks the held cup was not between the pads.
  * `maxSlipM` is null until a baseline was measured. `openingM` the last measured opening, `slipFromM` the cup–TCP distance on the first tick, at or after the take, the held cup's position was seen, `elapsed` ticks since the release command, `receiver` the receiver the release started for. */
 export interface ArmGripState {phase:'closing'|'opening';ticks:number;lost:number;liftFromM:number|null;maxSlipM:number|null;openingM:number|null;slipFromM:number|null;elapsed:number;receiver?:{robotId:string;slot:number}}
@@ -71,7 +72,7 @@ export interface ArmPlantState {deviceId:string;q:number[];gripper:'open'|'close
  trace:{tick:number;q:number[];tcp:[number,number,number]}[];limitsOk:boolean;commandedQ?:number[];stop?:ArmStopState;tracking?:ArmTrackingState;
  collision?:{/** Manually injected obstacles in arm-base coordinates; scene refresh does not replace these. */world:ArmObstacle[];checks:number;last:SweepResult|null;scene?:ArmSceneSnapshot;evidence?:ArmCollisionEvidence};
  plantId?:'webots_arm'|'mujoco_arm';/** Contact mode: the gripper opening commanded to the plant (m). Only a grip or a release step writes it; stop() and halt() never do. */gripperCommandM?:number;
- props?:PlantExtras['props'];grip?:ArmGripState;/** quintic-sync-v1: the segment being commanded (k ticks done of from -> to). */segment?:{from:number[];to:number[];k:number}}
+ props?:PlantExtras['props'];/** The gripper opening the plant measured on the last observed tick (m), whatever the grip phase. */gripperOpeningM?:number;grip?:ArmGripState;/** quintic-sync-v1: the segment being commanded (k ticks done of from -> to). */segment?:{from:number[];to:number[];k:number}}
 export class MockArmPlant {
  private listeners=new Set<(r:CellReport)=>void>();
  constructor(readonly state:ArmPlantState,private nowMs:()=>number,private newBootId:()=>string,private cups:ArmCupWorld,private receiver:()=>{robotId:string;slot:number}|null,private model:ArmModelSI=PUMA560_SI,private tracking?:ArmTracking,private programs:ArmProgramSet=PUMA_PROGRAMS){
@@ -247,6 +248,7 @@ export class MockArmPlant {
   const s=this.state,t=s.tracking;
   if(!this.tracking||!t)throw new Error('ARM_TRACKING_DISABLED: observe needs the tracking mode');
   if(this.programs.contact)s.props=structuredClone(extras?.props??[]);
+  if(extras?.gripper)s.gripperOpeningM=extras.gripper.openingM;
   const finite=actualQ.length===s.q.length&&actualQ.every(Number.isFinite);
   // a stopped arm runs no program and no check, but its joints stay what the plant reports (it is held where it stopped, see hold())
   if(s.stop?.latched||s.stop?.reconcileRequired){if(finite)s.q=[...actualQ];return;}

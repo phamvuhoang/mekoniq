@@ -8,7 +8,9 @@ import type {ArmSceneSnapshot} from '../models/arm-scene';
 import type {CoffeeContext,CoffeeState} from '../scenarios/coffee';
 import type {CorrelatedTransferEvidence,CupLedger,CupPhysicalState} from './cup-ledger';
 /** D24: every report of a plant-backed arm says what the arm plant is, so no one reads it as real dynamics. `tracking` is the per-joint |actual - commanded| over the programs that ran. */
-export interface ArmPlantReport {engine:'webots_3d';control:'position_servo';grip:'event';dynamics:'assumed';calibration:'not_calibrated';tracking:{samples:number;peakRad:number[];rmsRad:number[]}}
+export interface WebotsArmPlantReport {engine:'webots_3d';control:'position_servo';grip:'event';dynamics:'assumed';calibration:'not_calibrated';tracking:{samples:number;peakRad:number[];rmsRad:number[]}}
+/** R2a: the MuJoCo xArm 6 grips by contact; its masses and limits are the manufacturer's nominal values, every other parameter assumed. */
+export type ArmPlantReport=WebotsArmPlantReport|{engine:'mujoco_3d';engineVersion:string;control:'position_actuator';grip:'contact';dynamics:'manufacturer_nominal+assumed';calibration:'not_calibrated';tracking:{samples:number;peakRad:number[];rmsRad:number[]}}
 export interface CoffeePlantPorts {
  adapters:readonly CellAdapter[];
  advance():Promise<void>;

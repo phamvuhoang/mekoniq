@@ -1,7 +1,9 @@
 // The MuJoCo arm cell as a document (R2a): the xarm6-g2-v1 fixture (read only after every file matched its manifest) placed on the project's arm base pose. Supports and grasp frames are the
-// fixture's cell layout carried from the arm base frame into the map frame; statics are the project's fixed obstacles in the arm base frame (as R1.1); cups are the run's. Pure apart from reading files.
+// fixture's cell layout carried from the arm base frame into the map frame; statics are the project's fixed obstacles in the arm base frame (as R1.1); cups are the run's. Pure apart from reading files
+// and writing the worker's bundle (writeArmCellBundle), which holds only what the reader verified.
 import {createHash} from 'node:crypto';
 import {readFileSync,readdirSync} from 'node:fs';
+import {mkdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import type {LabProjectV2} from '../contracts';
 import {hashJson} from '../hash';
@@ -89,4 +91,14 @@ export function buildArmCellScene(project:LabProjectV2,fixture:Pick<XArmFixture,
  const checked=validateArmCellScene(scene);
  if(!checked.ok)throw new Error(`ARM_SCENE_INVALID: ${checked.issues.map(i=>`${i.path} ${i.code}`).join('; ')}`);
  return scene;
+}
+
+/** The bundle the worker's `create` reads: arm-cell-scene.json, component.json, physics.json (the fixture's, or a test/fault override of it) and blobs/, regular files only, each written from
+ * the verified fixture content (a blob is hashed again as it is copied). */
+export async function writeArmCellBundle(dir:string,scene:ArmCellSceneV1,fixture:Pick<XArmFixture,'componentText'|'physics'|'blobDir'>,physics:XArmPhysics=fixture.physics){
+ await mkdir(join(dir,'blobs'),{recursive:true,mode:0o700});
+ await writeFile(join(dir,'arm-cell-scene.json'),JSON.stringify(scene),{mode:0o600});
+ await writeFile(join(dir,'component.json'),fixture.componentText,{mode:0o600});
+ await writeFile(join(dir,'physics.json'),JSON.stringify(physics),{mode:0o600});
+ for(const name of readdirSync(fixture.blobDir).sort())await writeFile(join(dir,'blobs',name),readXArmBlob(fixture.blobDir,name),{mode:0o600});
 }

@@ -19,6 +19,8 @@ import {createFixedStepScenarioRun,irsimCapacity,IRSIM_BACKEND,type IRSimRuntime
 import {irsimPlant,type PlantPort} from './plant';
 import {webotsArmPorts} from '../simulation3d/arm-ports';
 import type {WebotsRuntimeOptions} from '../simulation3d/webots';
+import {mujocoArmPorts} from '../simulation3d/mujoco-arm-ports';
+import type {MujocoRuntimeOptions} from '../simulation3d/mujoco';
 
 /** The server catalog with irsim_2d marked usable (`usable`) or left unconfigured. Production code sets it usable only after a real worker describe. */
 export const portableCatalog=(usable:boolean,base:CapabilityCatalog=defaultCatalog,reason?:string):CapabilityCatalog=>({...base,backends:base.backends.map(b=>{
@@ -32,13 +34,16 @@ export type SimulationFactory=(input:RunManifestInput,providers:RunProviders)=>P
 export interface WebotsProviderLike {plant?:{port:PlantPort;runtime:IRSimRuntimeOptions};capability:BackendCapability;readinessChecks?:NativeReadinessChecks;
  /** The Webots arm (R1.1): the same engine and flag, its own backend id, capability and readiness. */
  arm?:{runtime?:WebotsRuntimeOptions;capability:BackendCapability;readinessChecks?:NativeReadinessChecks}}
+/** The MuJoCo arm provider (simulation3d/mujoco.ts, R2a): its own opt-in, backend id, capability and readiness; it never makes another provider usable. */
+export interface MujocoProviderLike {arm:{runtime?:MujocoRuntimeOptions;capability:BackendCapability;readinessChecks?:NativeReadinessChecks}}
 export interface PortableSimulationOptions {enabled:boolean;python:string;workerRoot:string;lockPath:string;directory:string;nativeFactory?:SimulationFactory;
  /** Catalog to extend (the native one when native is configured). */baseCatalog?:CapabilityCatalog;
  /** Admitted-bundle reader (the engineering service), for readiness. */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;
  schemaDir?:string;
  /** Test/fault option: the worker entry (a double). Never exposed through a request. */entry?:string[];
  /** Live IR-SIM workers allowed on this host at once (default 2, workers-runtime §6). */maxActiveRuns?:number;
- webots?:WebotsProviderLike;}
+ webots?:WebotsProviderLike;
+ mujoco?:MujocoProviderLike;}
 export interface PortableSimulation {plants?:PlantTable;catalog:CapabilityCatalog;enabledBackends:string[];simulationFactory:SimulationFactory;readinessChecks?:NativeReadinessChecks;unavailable?:string;describe?:{packageVersion:string;pythonVersion:string;lockDigest:string}}
 const MIN_FREE_BYTES=2*100*1024*1024; // two active runs at the 100 MiB evidence quota
 const SMOKE_TTL_MS=60_000;
@@ -47,17 +52,17 @@ const sha256=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
 /** The live plants of this host by provider id (`set.providers.amr`), each with the operator options of its worker. */
 export type PlantTable=Readonly<Record<string,{port:PlantPort;runtime:IRSimRuntimeOptions}>>;
 /** Factory dispatch by backend set: a portable set goes to the shared runner with the plant its AMR provider names (only when that plant is live), native simulation sets to the native factory, anything else refused. */
-/** The live Webots arm of this host (`set.providers.arm`): its runtime options; the run builds its own ports from the manifest's project and seed. */
-export type ArmPlantTable=Readonly<Record<string,{runtime:WebotsRuntimeOptions}>>;
+/** The live arm plants of this host by provider id (`set.providers.arm`): each builds a run's own ports from the manifest's project and seed. */
+export type ArmPlantTable=Readonly<Record<string,{ports:(run:{project:LabProjectV2;seed:number})=>NonNullable<RunProviders['coffeePorts']>}>>;
 export function plantDispatcher(catalog:CapabilityCatalog,plants:PlantTable|undefined,nativeFactory?:SimulationFactory,arms?:ArmPlantTable):SimulationFactory{
  return async(input,providers)=>{
   const set=Object.hasOwn(catalog.sets,input.backendSetId)?catalog.sets[input.backendSetId]:undefined;
   if(!set)throw new Error('BACKEND_SET_UNKNOWN');
-  if(set.execution?.host==='portable_python'&&set.providers?.arm===WEBOTS_ARM_ID){
-   const live=arms&&Object.hasOwn(arms,WEBOTS_ARM_ID)?arms[WEBOTS_ARM_ID]:undefined;
+  if(set.execution?.host==='portable_python'&&set.providers?.arm!==undefined){
+   const live=arms&&Object.hasOwn(arms,set.providers.arm)?arms[set.providers.arm]:undefined;
    if(!live)throw new Error('BACKEND_EXECUTION_DISABLED');
    // the AMR and the coffee machine stay mocks; only the arm is the plant, and its ports need the run's own project and seed
-   return createScenarioRun(input,{...providers,coffeePorts:webotsArmPorts(live.runtime,{project:input.project as LabProjectV2,seed:input.seed})});
+   return createScenarioRun(input,{...providers,coffeePorts:live.ports({project:input.project as LabProjectV2,seed:input.seed})});
   }
   if(set.execution?.host==='portable_python'){
    const live=set.providers?.amr!==undefined&&plants&&Object.hasOwn(plants,set.providers.amr)?plants[set.providers.amr]:undefined;
@@ -69,21 +74,24 @@ export function plantDispatcher(catalog:CapabilityCatalog,plants:PlantTable|unde
  };
 }
 
-const WEBOTS_ID='webots_3d',WEBOTS_ARM_ID='webots_arm';
-/** IR-SIM (when enabled) plus Webots (when its provider is live): one catalog, one dispatcher over the live plants, readiness chosen by the set's AMR provider. */
+const WEBOTS_ID='webots_3d',WEBOTS_ARM_ID='webots_arm',MUJOCO_ARM_ID='mujoco_arm';
+/** IR-SIM (when enabled) plus Webots and the MuJoCo arm (when their providers are live): one catalog, one dispatcher over the live plants, readiness chosen by the set's arm or AMR provider. */
 export async function portableSimulationFromOptions(o:PortableSimulationOptions):Promise<PortableSimulation>{
- const base=await irsimPortable(o),w=o.webots;
- if(!w)return base;
- const catalog:CapabilityCatalog={...base.catalog,backends:base.catalog.backends.map(b=>b.id===WEBOTS_ID?w.capability:b.id===WEBOTS_ARM_ID&&w.arm?w.arm.capability:b)};
- const plants:PlantTable={...base.plants,...w.plant?{[WEBOTS_ID]:w.plant}:{}},live=!!w.plant&&w.capability.installed;
- const armLive=!!w.arm?.runtime&&w.arm.capability.installed,arms:ArmPlantTable=armLive?{[WEBOTS_ARM_ID]:{runtime:w.arm!.runtime!}}:{};
- const ir=base.readinessChecks,wb=w.readinessChecks,wa=w.arm?.readinessChecks;
- const readinessChecks:NativeReadinessChecks|undefined=ir||wb||wa?async(context,signal)=>{
-  const providers=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]!.providers:undefined,pick=providers?.arm===WEBOTS_ARM_ID?wa:providers?.amr===WEBOTS_ID?wb:ir;
+ const base=await irsimPortable(o),w=o.webots,m=o.mujoco?.arm;
+ if(!w&&!m)return base;
+ const replaced:Record<string,BackendCapability>={...w?{[WEBOTS_ID]:w.capability}:{},...w?.arm?{[WEBOTS_ARM_ID]:w.arm.capability}:{},...m?{[MUJOCO_ARM_ID]:m.capability}:{}};
+ const catalog:CapabilityCatalog={...base.catalog,backends:base.catalog.backends.map(b=>Object.hasOwn(replaced,b.id)?replaced[b.id]!:b)};
+ const plants:PlantTable={...base.plants,...w?.plant?{[WEBOTS_ID]:w.plant}:{}},live=!!w?.plant&&w.capability.installed;
+ const wr=w?.arm?.capability.installed?w.arm.runtime:undefined,mr=m?.capability.installed?m.runtime:undefined;
+ const arms:ArmPlantTable={...wr?{[WEBOTS_ARM_ID]:{ports:run=>webotsArmPorts(wr,run)}}:{},...mr?{[MUJOCO_ARM_ID]:{ports:run=>mujocoArmPorts(mr,run)}}:{}};
+ const ir=base.readinessChecks,wb=w?.readinessChecks,wa=w?.arm?.readinessChecks,ma=m?.readinessChecks;
+ const readinessChecks:NativeReadinessChecks|undefined=ir||wb||wa||ma?async(context,signal)=>{
+  const providers=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]!.providers:undefined,
+   pick=providers?.arm===WEBOTS_ARM_ID?wa:providers?.arm===MUJOCO_ARM_ID&&m?ma:providers?.amr===WEBOTS_ID?wb:ir; // without the MuJoCo option a set is routed as before
   if(!pick)throw new Error('PORTABLE_PROVIDER_UNAVAILABLE');
   return pick(context,signal);
  }:undefined;
- return {...base,catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[],...armLive?[WEBOTS_ARM_ID]:[]],plants,simulationFactory:plantDispatcher(catalog,plants,o.nativeFactory,arms),...readinessChecks?{readinessChecks}:{}};
+ return {...base,catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[],...wr?[WEBOTS_ARM_ID]:[],...mr?[MUJOCO_ARM_ID]:[]],plants,simulationFactory:plantDispatcher(catalog,plants,o.nativeFactory,arms),...readinessChecks?{readinessChecks}:{}};
 }
 
 async function irsimPortable(o:PortableSimulationOptions):Promise<PortableSimulation>{

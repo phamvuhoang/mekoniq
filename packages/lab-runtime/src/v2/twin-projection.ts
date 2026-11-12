@@ -12,10 +12,16 @@ export function projectSamples(i:ProjectionInput,receivedMonotonicNs:string):Twi
    commanded:g?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM:r.pose.x,yM:r.pose.y,yawRad:r.pose.yawRad,moving:r.moving,hold:r.hold},causationId:g?.commandId??null};});
  const c=i.coffee;if(!c)return out;
  const arm=c.arm,running=arm.programs.find(p=>p.state==='running');
- // tracking = the arm is a plant (webots_arm): q is what the engine reported, commandedQ what the state machine asked for; the grip stays a commanded event
- if(arm.tracking)out.push({...base,origin:'physics_sim' as const,entityId:c.armId,providerId:'webots_arm',bootId:arm.bootId,frameId:'arm_base',quality:'valid',reasonCodes:[],
-  commanded:{jointsRad:[...(arm.commandedQ??arm.q)],gripper:arm.gripper,limitsOk:arm.limitsOk},observed:{jointsRad:[...arm.q],limitsOk:arm.limitsOk},causationId:running?.commandId??null});
- else out.push({...base,entityId:c.armId,providerId:'mock_arm',bootId:arm.bootId,frameId:'arm_base',quality:'unknown',reasonCodes:['NO_ENCODER_MOCK'],
+ // tracking = the arm is a plant (webots_arm, or the one arm.plantId names): q is what the engine reported, commandedQ what the state machine asked for. A contact plant (mujoco_arm) also
+ // reports the measured gripper opening and every cup of its cell (map frame), with the cup's owner as the plant state says
+ if(arm.tracking){
+  const providerId=arm.plantId??'webots_arm',owner=(cupId:string)=>{const robot=Object.entries(c.trays??{}).find(([,v])=>v===cupId)?.[0];
+   return arm.holding===cupId?{ownerKind:'arm' as const,ownerId:c.armId}:robot?{ownerKind:'robot' as const,ownerId:robot}:c.plant.cups.some(x=>x.cupId===cupId&&x.at==='nozzle')?{ownerKind:'cell' as const,ownerId:c.cellId}:{ownerKind:'unknown' as const,ownerId:null};};
+  out.push({...base,origin:'physics_sim' as const,entityId:c.armId,providerId,bootId:arm.bootId,frameId:'arm_base',quality:'valid',reasonCodes:[],
+   commanded:{jointsRad:[...(arm.commandedQ??arm.q)],gripper:arm.gripper,limitsOk:arm.limitsOk},observed:{jointsRad:[...arm.q],limitsOk:arm.limitsOk,...arm.gripperOpeningM!==undefined?{gripperOpeningM:arm.gripperOpeningM}:{}},causationId:running?.commandId??null});
+  for(const p of arm.props??[])if(p.inMap)out.push({...base,origin:'physics_sim' as const,entityId:p.propId,providerId,bootId:arm.bootId,frameId:'map',quality:'valid',reasonCodes:[],commanded:null,
+   observed:{...owner(p.propId),positionM:[...p.inMap.positionM],quaternionXyzw:[...p.inMap.quaternionXyzw],restingOn:p.restingOn},causationId:null});
+ }else out.push({...base,entityId:c.armId,providerId:'mock_arm',bootId:arm.bootId,frameId:'arm_base',quality:'unknown',reasonCodes:['NO_ENCODER_MOCK'],
   commanded:{jointsRad:[...arm.q],gripper:arm.gripper,limitsOk:arm.limitsOk},observed:null,causationId:running?.commandId??null});
  const machine=c.plant.devices.find(d=>d.role==='machine')!,cmd=c.plant.commands.find(x=>x.state==='running'||x.state==='settling');
  out.push({...base,entityId:c.cellId,providerId:'mock_coffee',bootId:machine.bootId,frameId:'cell_base',quality:'valid',reasonCodes:[],commanded:null,

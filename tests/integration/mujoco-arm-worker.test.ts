@@ -10,9 +10,10 @@ import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/c
 import { qrotate } from '../../packages/lab-runtime/src/v2/frames';
 import type { Sim3DSnapshotV1 } from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import { spawnMujocoWorker } from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
-import { XARM6_FX, armCellScene, writeArmCellBundle } from '../support/arm-cell-scene';
+import { buildArmCellScene, readXArmFixture, writeArmCellBundle, XARM_FIXTURE_ID } from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
+import type { LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
 
-const python = resolve('.venv-mujoco/bin/python'), workerRoot = resolve('robotics/simulation-mujoco');
+const python = resolve('.venv-mujoco/bin/python'), workerRoot = resolve('robotics/simulation-mujoco'), XARM6_FX = join(workerRoot, 'fixtures', XARM_FIXTURE_ID);
 const mujocoReady = existsSync(python) && (() => { try { return execFileSync(python, ['-I', '-B', '-c', 'import mujoco;print(mujoco.__version__)'], { encoding: 'utf8', timeout: 30_000 }).trim() === '3.17.0'; } catch { return false; } })();
 const running = () => { try { return execFileSync('pgrep', ['-f', 'mujoco_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
 
@@ -24,8 +25,9 @@ afterEach(async () => { for (const w of opened.splice(0)) await w.close('test do
 
 async function start() {
   const root = await mkdtemp(join(tmpdir(), 'mujoco-arm-w-')); dirs.push(root);
-  const scene = await armCellScene(['cup-1'], 7);
-  await writeArmCellBundle(join(root, 'bundle'), scene);
+  const fixture = readXArmFixture(workerRoot), project = JSON.parse(await readFile(join(XARM6_FX, 'coffee-cell-project.json'), 'utf8')) as LabProjectV2;
+  const scene = buildArmCellScene(project, fixture, 7, { armId: 'xarm-1', propIds: ['cup-1'] }); // the xArm coffee cell project: base at (2.65, 0.65, 0.7), the counter as a static
+  await writeArmCellBundle(join(root, 'bundle'), scene, fixture);
   const runId = 'ma-1';
   const w = await spawnMujocoWorker({ python, workerRoot, runId, bundleRoot: join(root, 'bundle'), runDirectory: join(root, 'run'), lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), schemaDir: resolve('packages/contracts/schemas'), sceneDigest: scene.sceneDigest });
   opened.push(w);

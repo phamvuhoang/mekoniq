@@ -17,8 +17,9 @@ import {spawnSim3DWorker} from './worker-client';
 /** The arm shares the Webots engine (and its one-per-host slot) with webots_3d. */
 export const WEBOTS_SLOT=WEBOTS_AMR.id;
 export interface ArmRunInput {project:LabProjectV2;seed:number}
-export const armPlantReport=(st:{samples:number;peakRad:number[];sumSq:number[]}):ArmPlantReport=>({engine:'webots_3d',control:'position_servo',grip:'event',dynamics:'assumed',calibration:'not_calibrated',
- tracking:{samples:st.samples,peakRad:[...st.peakRad],rmsRad:st.sumSq.map(v=>st.samples?Math.sqrt(v/st.samples):0)}});
+/** Per-joint |actual - commanded| over the programs that ran: peak and RMS. */
+export const trackingStats=(st:{samples:number;peakRad:number[];sumSq:number[]}):ArmPlantReport['tracking']=>({samples:st.samples,peakRad:[...st.peakRad],rmsRad:st.sumSq.map(v=>st.samples?Math.sqrt(v/st.samples):0)});
+export const armPlantReport=(st:{samples:number;peakRad:number[];sumSq:number[]}):ArmPlantReport=>({engine:'webots_3d',control:'position_servo',grip:'event',dynamics:'assumed',calibration:'not_calibrated',tracking:trackingStats(st)});
 
 export function webotsArmPorts(runtime:WebotsRuntimeOptions,run:ArmRunInput):NonNullable<RunProviders['coffeePorts']>{
  return async(st,ctx,newBootId,directory)=>{
