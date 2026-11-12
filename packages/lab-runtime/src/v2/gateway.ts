@@ -59,7 +59,8 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
    capabilities:[...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
     // the arm plant needs no engineering bundle: its scene is built from the run's project
-    ...enabled.has('webots_arm')&&catalog.backends.some(b=>b.id==='webots_arm'&&b.installed&&b.reachable)?['sim3d_arm_v1']:[]],
+    ...enabled.has('webots_arm')&&catalog.backends.some(b=>b.id==='webots_arm'&&b.installed&&b.reachable)?['sim3d_arm_v1']:[],
+    ...enabled.has('mujoco_arm')&&catalog.backends.some(b=>b.id==='mujoco_arm'&&b.installed&&b.reachable)?['sim3d_arm_contact_v1']:[]],
   });
   if(method==='POST'&&!origin)return deny(response,403,'ORIGIN_REQUIRED',[]);
   if(method==='POST'&&sub==='/sessions'){

@@ -53,7 +53,7 @@ const simulationTools={distribution:'separate',path:'robotics/simulation',digest
 // Portable developer tools (IR-SIM 2D plant, LinkForge shadow validation, algorithm checks, Webots 3D worker, MuJoCo arm cell worker): also distributed separately (the operator provisions each worker's Python 3.11 venv from its
 // lock), described apart from the Linux simulationTools so neither overwrites the other. The Lab importer verifies this closure; the launcher re-hashes the files it runs.
 const portable=portableToolClosure(root),lockOf=(path)=>{const f=portable.files.find(x=>x.path===path);if(!f)throw new Error(`PORTABLE_LOCK_MISSING:${path}`);return {path,sha256:f.sha256};};
-const portableSimulationTools={distribution:'separate',version:1,python:{implementation:'cpython',version:'3.11'},flags:['MEKONIQ_LAB_IRSIM','MEKONIQ_LAB_LINKFORGE','MEKONIQ_LAB_WEBOTS'],
+const portableSimulationTools={distribution:'separate',version:1,python:{implementation:'cpython',version:'3.11'},flags:['MEKONIQ_LAB_IRSIM','MEKONIQ_LAB_LINKFORGE','MEKONIQ_LAB_WEBOTS','MEKONIQ_LAB_MUJOCO'],
  // host engines are installed by the operator and never bundled: the manifest only names the version the Lab pins
  hostEngines:[{id:'webots_3d',version:'R2025a',bundled:false}],
  tools:[{id:'irsim_worker',provider:'irsim_2d',protocol:'mekoniq-irsim/1',root:'robotics/navigation-2d',module:'irsim_worker',lock:lockOf('robotics/navigation-2d/requirements.lock'),licenses:lockOf('robotics/navigation-2d/licenses.json')},

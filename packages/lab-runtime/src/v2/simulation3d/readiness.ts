@@ -6,7 +6,7 @@ import {join,resolve} from 'node:path';
 import {WEBOTS_ARM,WEBOTS_ARM_UNCONFIGURED,WEBOTS_UNCONFIGURED,type BackendCapability} from '../capabilities';
 import {lockDigestOf} from '../../engineering/linkforge';
 import type {NativeReadinessChecks,ReadinessCheck} from '../readiness';
-import {validateProjectV2} from '../contracts';
+import {validateProjectV2,type LabProjectV2} from '../contracts';
 import {loadOracleProfile} from '../algorithm/checker';
 import {closeOnAbort,exclusiveSmoke,providerReadiness} from '../navigation2d/readiness';
 import {buildArmScene3D,readArmFixture} from './arm-scene';
@@ -72,45 +72,52 @@ export async function webotsFromOptions(o:WebotsOptions):Promise<WebotsProvider>
   }});
  // a worker entry override is a test double: it can exercise every row above, but it never makes the provider installed
  const evidence=`webots:${describe.engineVersion}/sha256:${describe.executableSha256.slice(0,16)}/python-${describe.pythonVersion}/lock:${lockDigest.slice(0,16)}`;
- const armChecks=armReadiness({runtime,lockPath:o.lockPath,directory:o.directory,probeDir,evidence,gate,...o.entry?{entry:o.entry}:{}});
+ const armChecks=armReadiness({prefix:'WEBOTS',slot:WEBOTS_AMR.id,maxRuns:WEBOTS_MAX_ACTIVE_RUNS,oracle:'webotsArm',lockPath:o.lockPath,lockDigest,probeDir,evidence,gate,
+  // the AMR is a mock there, so there is no admitted navigation bundle to read: the scene is built from the project (arm-scene.ts) exactly as the run will
+  scene(project){const f=readArmFixture(runtime.workerRoot),scene=buildArmScene3D(project,f,1);
+   return {scene,async write(bundle){await mkdir(bundle,{recursive:true});await writeFile(join(bundle,'arm-scene.json'),JSON.stringify(scene),{mode:0o600});await writeFile(join(bundle,'arm-component.json'),f.componentText,{mode:0o600});}};},
+  smoke:(scene,bundle,run,signal)=>armSmoke(runtime,scene,bundle,run,signal)});
  const double='WEBOTS_TEST_DOUBLE: a worker entry override never makes the provider installed';
  return {plant:{port,runtime},capability:o.entry?cap(double):cap(),readinessChecks,arm:{runtime,capability:o.entry?cap(double,WEBOTS_ARM.id):cap(undefined,WEBOTS_ARM.id),readinessChecks:armChecks}};
 }
 
-/** Per-request readiness of `engineering-webots-arm-v1`: the lock and oracle thresholds, the project's arm scene and the fixture, a free Webots slot, and a real create on the arm scene.
- * The AMR is a mock there, so there is no admitted navigation bundle to read: the scene is built from the project (arm-scene.ts) exactly as the run will. */
-function armReadiness(spec:{runtime:WebotsRuntimeOptions;lockPath:string;directory:string;probeDir:string;evidence:string;gate:{busy:boolean};entry?:string[]}):NativeReadinessChecks{
- const smoked=new Map<string,number>(),{runtime}=spec;
+/** What differs between the arm plants' per-request readiness: the reason-code prefix, the host slot, the oracle thresholds, the scene the run will build from its project and a real create smoke on it. */
+export interface ArmReadinessSpec<S extends {sceneDigest:string;arm:{modelId:string;modelRevision:string}}> {prefix:string;slot:string;maxRuns:number;oracle:'webotsArm'|'mujocoArm';
+ lockPath:string;lockDigest:string;probeDir:string;evidence:string;/** One smoke at a time per engine. */gate:{busy:boolean};
+ /** The run's scene from the project (throws ARM_* codes) and how its worker bundle is written. */scene(project:LabProjectV2):{scene:S;write(bundle:string):Promise<void>};
+ /** A real worker create on the scene: reason codes, [] when it worked. */smoke(scene:S,bundleRoot:string,runDirectory:string,signal:AbortSignal):Promise<string[]>}
+/** Per-request readiness of an arm plant set (`engineering-webots-arm-v1`, `engineering-mujoco-arm-v1`): the lock and oracle thresholds, the project's arm scene and the fixture, a free
+ * engine slot, and a real create on the arm scene (cached per scene; a failure is never cached). */
+export function armReadiness<S extends {sceneDigest:string;arm:{modelId:string;modelRevision:string}}>(spec:ArmReadinessSpec<S>):NativeReadinessChecks{
+ const smoked=new Map<string,number>(),P=spec.prefix;
  return async(context,signal)=>{
   const row=(id:string,reasonCodes:string[],evidenceRef:string|null=null):ReadinessCheck=>({id,status:reasonCodes.length?'blocked':'ready',reasonCodes,evidenceRef});
   const profile:string[]=[],model:string[]=[],fixture:string[]=[],runner:string[]=[];
-  if(await lockDigestOf(spec.lockPath).catch(()=>null)!==runtime.lockDigest)profile.push('WEBOTS_LOCK_CHANGED');
-  try{if(!loadOracleProfile().profile.webotsArm)profile.push('WEBOTS_ORACLE_PROFILE_MISSING');}catch{profile.push('WEBOTS_ORACLE_PROFILE_MISSING');}
-  let scene:ReturnType<typeof buildArmScene3D>|undefined,component='';
+  if(await lockDigestOf(spec.lockPath).catch(()=>null)!==spec.lockDigest)profile.push(`${P}_LOCK_CHANGED`);
+  try{if(!loadOracleProfile().profile[spec.oracle])profile.push(`${P}_ORACLE_PROFILE_MISSING`);}catch{profile.push(`${P}_ORACLE_PROFILE_MISSING`);}
+  let built:ReturnType<typeof spec.scene>|undefined;
   const project=validateProjectV2(context.project);
   if(!project.ok)fixture.push('PROJECT_INVALID');
-  else try{
-   const f=readArmFixture(runtime.workerRoot);component=f.componentText;
-   scene=buildArmScene3D(project.value,f,1);
-  }catch(e){const code=/^(ARM_[A-Z_]+)/.exec((e as Error).message)?.[1];(code==='ARM_SCENE_UNAVAILABLE'?fixture:model).push(code??'ARM_SCENE_INVALID');}
+  else try{built=spec.scene(project.value);}
+  catch(e){const code=/^(ARM_[A-Z_]+)/.exec((e as Error).message)?.[1];(code==='ARM_SCENE_UNAVAILABLE'||code==='ARM_CELL_LAYOUT_MISMATCH'?fixture:model).push(code??'ARM_SCENE_INVALID');}
+  const scene=built?.scene;
   signal.throwIfAborted();
   // a full host is a blocked start, not a failure: the run that already holds the slot is never counted against itself
-  if(activeRunCount(WEBOTS_AMR.id,context.runId)>=WEBOTS_MAX_ACTIVE_RUNS)runner.push('WEBOTS_CAPACITY');
-  // a run that already holds the host's Webots (an arm run does from its creation) is its own proof: a smoke would start a second engine beside it
-  if(holdsSlot(WEBOTS_AMR.id,context.runId)){/* no smoke */}
-  else if(scene&&!model.length&&!fixture.length&&!profile.length&&!runner.length&&!((smoked.get(scene.sceneDigest)??0)>Date.now())){
+  if(activeRunCount(spec.slot,context.runId)>=spec.maxRuns)runner.push(`${P}_CAPACITY`);
+  // a run that already holds the host's engine (an arm run does from its creation) is its own proof: a smoke would start a second engine beside it
+  if(holdsSlot(spec.slot,context.runId)){/* no smoke */}
+  else if(built&&scene&&!model.length&&!fixture.length&&!profile.length&&!runner.length&&!((smoked.get(scene.sceneDigest)??0)>Date.now())){
    const scratch=await mkdtemp(join(spec.probeDir,'arm-smoke-'));
    try{
-    const bundle=join(scratch,'bundle');await mkdir(bundle,{recursive:true});
-    await writeFile(join(bundle,'arm-scene.json'),JSON.stringify(scene),{mode:0o600});await writeFile(join(bundle,'arm-component.json'),component,{mode:0o600});
-    const failed=await exclusiveSmoke(spec.gate,()=>armSmoke(runtime,scene!,bundle,join(scratch,'run'),signal));
-    if(failed===null)runner.push('WEBOTS_SMOKE_BUSY');else if(failed.length)runner.push(...failed);else smoked.set(scene.sceneDigest,Date.now()+SMOKE_TTL_MS);
-   }catch(e){runner.push(`WEBOTS_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`);}
+    const bundle=join(scratch,'bundle');await built.write(bundle);
+    const failed=await exclusiveSmoke(spec.gate,()=>spec.smoke(scene,bundle,join(scratch,'run'),signal));
+    if(failed===null)runner.push(`${P}_SMOKE_BUSY`);else if(failed.length)runner.push(...failed);else smoked.set(scene.sceneDigest,Date.now()+SMOKE_TTL_MS);
+   }catch(e){runner.push(`${P}_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'SPAWN_FAILED'}`);}
    finally{await rm(scratch,{recursive:true,force:true});}
-  }else if(!scene)runner.push('WEBOTS_SMOKE_NOT_RUN');
-  else if(!(smoked.get(scene.sceneDigest)??0))runner.push('WEBOTS_SMOKE_NOT_RUN');
+  }else if(!scene)runner.push(`${P}_SMOKE_NOT_RUN`);
+  else if(!(smoked.get(scene.sceneDigest)??0))runner.push(`${P}_SMOKE_NOT_RUN`);
   return [row('profile',profile,spec.evidence),row('model',model,scene?`arm-scene:${scene.sceneDigest}`:null),row('fixture',fixture,scene?`arm-fixture:${scene.arm.modelId}:${scene.arm.modelRevision.slice(0,16)}`:null),
-   row('clock',[],'source_fixed_step:tick-ms-20'),row('runner',runner,scene?`webots-arm-smoke:${scene.sceneDigest}`:null)];
+   row('clock',[],'source_fixed_step:tick-ms-20'),row('runner',runner,scene?`${P.toLowerCase()}-arm-smoke:${scene.sceneDigest}`:null)];
  };
 }
 async function armSmoke(runtime:WebotsRuntimeOptions,scene:ReturnType<typeof buildArmScene3D>,bundleRoot:string,runDirectory:string,signal:AbortSignal):Promise<string[]>{

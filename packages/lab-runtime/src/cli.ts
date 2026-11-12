@@ -6,14 +6,15 @@ import {startLabGateway} from './gateway';
 import {engineeringFromOptions} from './engineering/runtime-options';
 import {portableSimulationFromOptions} from './v2/navigation2d/readiness';
 import {webotsFromOptions} from './v2/simulation3d/readiness';
+import {mujocoFromOptions} from './v2/simulation3d/mujoco';
 declare const __LAB_SOURCE_COMMIT__:string;
 declare const __LAB_SCHEMA_HASH__:string;
 const args=process.argv.slice(2);
 if(args.includes('--help')){
- console.log('Dev-only business simulator: node runtime.mjs [--port 4176] [--data-dir ./runs] [--native-config /absolute/native.json] [--engineering-catalog DIR --engineering-simulation DIR [--engineering-python PATH] [--linkforge-python PATH --linkforge-worker DIR] [--irsim-python PATH --irsim-worker DIR [--irsim-lock FILE]]]\nDefault: offline mock providers. Opt-in native config connects simulation providers. MEKONIQ_LAB_LINKFORGE=1 / MEKONIQ_LAB_IRSIM=1 switch on shadow validation / the portable IR-SIM 2D provider (independent). Pairs one local browser session; never connects to robot hardware.');
+ console.log('Dev-only business simulator: node runtime.mjs [--port 4176] [--data-dir ./runs] [--native-config /absolute/native.json] [--engineering-catalog DIR --engineering-simulation DIR [--engineering-python PATH] [--linkforge-python PATH --linkforge-worker DIR] [--irsim-python PATH --irsim-worker DIR [--irsim-lock FILE]]] [--mujoco-python PATH] [--mujoco-worker DIR] [--mujoco-lock FILE]\nDefault: offline mock providers. Opt-in native config connects simulation providers. MEKONIQ_LAB_LINKFORGE=1 / MEKONIQ_LAB_IRSIM=1 / MEKONIQ_LAB_MUJOCO=1 switch on shadow validation / the portable IR-SIM 2D provider / the MuJoCo arm provider (independent). Pairs one local browser session; never connects to robot hardware.');
 }else{
  if(Number(process.versions.node.split('.')[0])!==24)throw new Error('NODE_24_REQUIRED');
- let port=4176,directory=resolve('runs'),nativeConfig:string|undefined;const engineeringFlags:{catalogRoot?:string;simulationRoot?:string;python?:string}={},linkforgeFlags:{python?:string;workerRoot?:string}={},irsimFlags:{python?:string;workerRoot?:string;lockPath?:string}={},webotsFlags:{python?:string;workerRoot?:string;lockPath?:string;home?:string}={};
+ let port=4176,directory=resolve('runs'),nativeConfig:string|undefined;const engineeringFlags:{catalogRoot?:string;simulationRoot?:string;python?:string}={},linkforgeFlags:{python?:string;workerRoot?:string}={},irsimFlags:{python?:string;workerRoot?:string;lockPath?:string}={},webotsFlags:{python?:string;workerRoot?:string;lockPath?:string;home?:string}={},mujocoFlags:{python?:string;workerRoot?:string;lockPath?:string}={};
  for(let i=0;i<args.length;i++){
   if(args[i]==='--port'){port=Number(args[++i]);if(!Number.isInteger(port)||port<1||port>65535)throw new Error('INVALID_PORT');}
   else if(args[i]==='--data-dir'){if(!args[i+1])throw new Error('DATA_DIRECTORY_REQUIRED');directory=resolve(args[++i]!);}
@@ -30,6 +31,9 @@ if(args.includes('--help')){
   else if(args[i]==='--webots-worker'){if(!args[i+1])throw new Error('WEBOTS_WORKER_REQUIRED');webotsFlags.workerRoot=resolve(args[++i]!);}
   else if(args[i]==='--webots-lock'){if(!args[i+1])throw new Error('WEBOTS_LOCK_REQUIRED');webotsFlags.lockPath=resolve(args[++i]!);}
   else if(args[i]==='--webots-home'){if(!args[i+1])throw new Error('WEBOTS_HOME_REQUIRED');webotsFlags.home=resolve(args[++i]!);}
+  else if(args[i]==='--mujoco-python'){if(!args[i+1])throw new Error('MUJOCO_PYTHON_REQUIRED');mujocoFlags.python=args[++i]!;}
+  else if(args[i]==='--mujoco-worker'){if(!args[i+1])throw new Error('MUJOCO_WORKER_REQUIRED');mujocoFlags.workerRoot=resolve(args[++i]!);}
+  else if(args[i]==='--mujoco-lock'){if(!args[i+1])throw new Error('MUJOCO_LOCK_REQUIRED');mujocoFlags.lockPath=resolve(args[++i]!);}
   else throw new Error(`UNKNOWN_ARGUMENT:${args[i]}`);
  }
  // Native simulation is an explicit server-owned opt-in; the default stays offline/mock.
@@ -45,7 +49,11 @@ if(args.includes('--help')){
  const webotsOn=process.env.MEKONIQ_LAB_WEBOTS==='1',webotsRoot=webotsFlags.workerRoot??resolve('robotics/simulation-3d');
  const webots=webotsOn?await webotsFromOptions({enabled:!!engineering,python:webotsFlags.python??resolve('.venv-webots/bin/python'),workerRoot:webotsRoot,lockPath:webotsFlags.lockPath??resolve(webotsRoot,'requirements.lock'),webotsHome:webotsFlags.home??process.env.MEKONIQ_WEBOTS_HOME??'/Applications/Webots.app',directory,...engineering?{bundleFile:(d:string,p:string)=>engineering.bundleFile(d,p)}:{}}):undefined;
  if(webots&&!webots.plant)console.error(`Webots provider unavailable: ${webots.capability.reason}`);
- const portable=irsimOn||webotsOn?await portableSimulationFromOptions({enabled:irsimOn&&!!engineering,...irsim,lockPath:irsimFlags.lockPath??resolve(irsim.workerRoot,'requirements.lock'),directory,...native?{nativeFactory:native.simulationFactory,baseCatalog:native.catalog}:{},...engineering?{bundleFile:(d:string,p:string)=>engineering.bundleFile(d,p)}:{},...webots?{webots}:{}}):undefined;
+ // The MuJoCo arm provider is a fifth opt-in (MEKONIQ_LAB_MUJOCO=1): .venv-mujoco exactly as its lock, a real worker describe, no engineering bundle (the cell is built from the run's project), no fallback.
+ const mujocoOn=process.env.MEKONIQ_LAB_MUJOCO==='1',mujocoRoot=mujocoFlags.workerRoot??resolve('robotics/simulation-mujoco');
+ const mujoco=mujocoOn?await mujocoFromOptions({enabled:true,python:mujocoFlags.python??resolve('.venv-mujoco/bin/python'),workerRoot:mujocoRoot,lockPath:mujocoFlags.lockPath??resolve(mujocoRoot,'requirements.lock'),directory}):undefined;
+ if(mujoco&&!mujoco.arm.runtime)console.error(`MuJoCo arm provider unavailable: ${mujoco.arm.capability.reason}`);
+ const portable=irsimOn||webotsOn||mujocoOn?await portableSimulationFromOptions({enabled:irsimOn&&!!engineering,...irsim,lockPath:irsimFlags.lockPath??resolve(irsim.workerRoot,'requirements.lock'),directory,...native?{nativeFactory:native.simulationFactory,baseCatalog:native.catalog}:{},...engineering?{bundleFile:(d:string,p:string)=>engineering.bundleFile(d,p)}:{},...webots?{webots}:{},...mujoco?{mujoco}:{}}):undefined;
  if(irsimOn&&portable?.unavailable)console.error(`IR-SIM provider unavailable: ${portable.catalog.backends.find(b=>b.id==='irsim_2d')?.reason}`);
  const v2=portable?{...legacy,catalog:portable.catalog,enabledBackends:[...legacy.enabledBackends,...portable.enabledBackends],simulationFactory:portable.simulationFactory,...portable.readinessChecks?{portableChecks:portable.readinessChecks}:{}}:legacy;
  const gateway=await startLabGateway({port,directory,sourceCommit:__LAB_SOURCE_COMMIT__,schemaHash:__LAB_SCHEMA_HASH__,v2:{...v2,...engineering?{engineering}:{}}});
