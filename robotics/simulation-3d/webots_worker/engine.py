@@ -30,6 +30,11 @@ def webots_executable(webots_home):
     return exe
 
 
+def webots_argv(exe, port, world, watch=False):
+    """Headless and unrendered by default (fast, minimized). Watch mode (dev only, set by the runtime for real runs, never for a smoke) keeps the window up and rendering at real time; the sim clock is unchanged."""
+    return [str(exe), "--batch", *(["--mode=realtime"] if watch else ["--minimize", "--mode=fast"]), "--stdout", "--stderr", f"--port={port}", str(world)]
+
+
 def host_engine(webots_home):
     """(version, sha256 of the executable) of the installed Webots, without starting a simulation."""
     exe = webots_executable(webots_home)
@@ -146,7 +151,7 @@ class WebotsEngine:
         log = open(self.run_dir / "webots.log", "wb")
         self.logs.append(log)
         env = engine_env()
-        self.webots = subprocess.Popen([str(exe), "--batch", "--minimize", "--mode=fast", "--stdout", "--stderr", f"--port={self.port}", str(world)], stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT, env=env)
+        self.webots = subprocess.Popen(webots_argv(exe, self.port, world, watch=os.environ.get("MEKONIQ_WEBOTS_WATCH") == "1"), stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT, env=env)
         arm = self.config.get("arm")
         wanted = len(self.config["robots"]) + (1 if arm else 0) + 1
         deadline = time.monotonic() + START_TIMEOUT_S

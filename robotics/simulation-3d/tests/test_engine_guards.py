@@ -50,3 +50,10 @@ def test_a_webots_that_is_not_the_pinned_version_is_refused_before_it_starts(tmp
     with pytest.raises(WorkerError) as err:
         e.start()
     assert err.value.code == "WEBOTS_VERSION_MISMATCH" and err.value.fatal
+
+
+def test_watch_mode_renders_at_real_time_and_the_default_stays_headless_and_fast():
+    default = engine.webots_argv("/w", 1, "/x.wbt")
+    assert "--mode=fast" in default and "--minimize" in default and "--mode=realtime" not in default
+    watch = engine.webots_argv("/w", 1, "/x.wbt", watch=True)
+    assert "--mode=realtime" in watch and "--minimize" not in watch and "--mode=fast" not in watch and "--batch" in watch
