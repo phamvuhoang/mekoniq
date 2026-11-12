@@ -8,7 +8,9 @@ export type ArmObstacle={id:string;kind:'sphere';center:Vec3;radiusM:number}|{id
  * absent, the cup stands on the tool axis beyond the gripper as before. Without the two fields every result is the same, number for number. */
 export interface ArmGeometry {linkRadiusM:number;gripperRadiusM:number;gripperLengthM:number;cupRadiusM:number;cupHeightM:number;provenance:'illustrative'|'assumed';linkRadiiM?:number[];cupAxisInTool?:[number,number,number]}
 export const DEFAULT_ARM_GEOMETRY:ArmGeometry={linkRadiusM:0.025,gripperRadiusM:0.02,gripperLengthM:0.025,cupRadiusM:0.035,cupHeightM:0.09,provenance:'illustrative'};
-export interface SweepResult {ok:boolean;engine:'capsule-sweep-v1';modelRevision:string;geometryRevision:string;toleranceM:number;evaluations:number;reason?:'COLLISION'|'SWEEP_UNCERTAIN';pair?:[string,string];fraction?:number;clearanceM?:number}
+/** `allowed` is present only when allowed pairs were given: the pairs, and those of them that were in contact (clearance <= 0) at any evaluated configuration of the sweep, in the given order. */
+export interface SweepResult {ok:boolean;engine:'capsule-sweep-v1';modelRevision:string;geometryRevision:string;toleranceM:number;evaluations:number;reason?:'COLLISION'|'SWEEP_UNCERTAIN';pair?:[string,string];fraction?:number;clearanceM?:number;
+ allowed?:{pairs:[string,string][];inContact:[string,string][]}}
 interface Capsule {id:string;a:Vec3;b:Vec3;radius:number;link:number;kind:'link'|'gripper'|'cup'}
 const add=(a:Vec3,b:Vec3):Vec3=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
 const sub=(a:Vec3,b:Vec3):Vec3=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
@@ -49,17 +51,19 @@ function bodies(model:ArmModelSI,q:readonly number[],geometry:ArmGeometry,heldCu
  else if(heldCup)out.push({id:'held-cup',a:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM])),b:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM+geometry.cupHeightM])),radius:geometry.cupRadiusM,link,kind:'cup'});
  return out;
 }
-function clearance(capsules:Capsule[],world:readonly ArmObstacle[],allowed:readonly (readonly [string,string])[]=[]){
+function clearance(capsules:Capsule[],world:readonly ArmObstacle[],allowed:readonly (readonly [string,string])[]=[],touched?:Set<number>){
  let clearanceM=Infinity,pair:[string,string]|undefined;
- const skip=(a:string,b:string)=>allowed.some(([x,y])=>x===a&&y===b||x===b&&y===a); // phase-scoped allowed contact (gripper/held cup only; the caller validates)
+ // phase-scoped allowed contact (gripper/held cup only; the caller validates). A skipped pair still counts as touched when it is in contact.
+ const allowedIndex=(a:string,b:string)=>allowed.findIndex(([x,y])=>x===a&&y===b||x===b&&y===a);
+ const skip=(a:string,b:string,distance?:()=>number)=>{const i=allowedIndex(a,b);if(i<0)return false;if(touched&&distance&&!touched.has(i)&&distance()<=0)touched.add(i);return true;};
  const keep=(n:number,a:string,b:string)=>{if(n<clearanceM){clearanceM=n;pair=[a,b];}};
  for(let i=0;i<capsules.length;i++){
   const c=capsules[i]!;
-  for(const o of world)if(!skip(c.id,o.id))keep((o.kind==='sphere'?segmentDistance(c.a,c.b,o.center,o.center)-o.radiusM:boxDistance(c.a,c.b,o.min,o.max))-c.radius,c.id,o.id);
+  for(const o of world){const d=()=>(o.kind==='sphere'?segmentDistance(c.a,c.b,o.center,o.center)-o.radiusM:boxDistance(c.a,c.b,o.min,o.max))-c.radius;if(!skip(c.id,o.id,d))keep(d(),c.id,o.id);}
   for(let j=i+1;j<capsules.length;j++){
    const b=capsules[j]!;
    // Adjacent bodies meet intentionally at a joint; gripper/cup attach to the last link.
-   if(Math.abs(c.link-b.link)<=1||skip(c.id,b.id))continue;
+   if(Math.abs(c.link-b.link)<=1||skip(c.id,b.id,()=>segmentDistance(c.a,c.b,b.a,b.b)-c.radius-b.radius))continue;
    keep(segmentDistance(c.a,c.b,b.a,b.b)-c.radius-b.radius,c.id,b.id);
   }
  }
@@ -78,9 +82,11 @@ export function checkArmSweep(model:ArmModelSI,from:readonly number[],to:readonl
  const result:SweepResult={ok:true,engine:'capsule-sweep-v1',modelRevision:model.revision,geometryRevision:hashJson({geometry,world:options.world}),toleranceM,evaluations:0};
  const reach=model.links.reduce((sum,l)=>sum+Math.abs(l.a)+Math.abs(l.d),Math.hypot(...model.toolM))+geometry.gripperLengthM+geometry.cupHeightM;
  const totalMovement=reach*from.reduce((sum,q,i)=>sum+Math.abs(to[i]!-q),0);
- const evaluate=(fraction:number)=>{result.evaluations++;return clearance(bodies(model,from.map((q,i)=>q+(to[i]!-q)*fraction),geometry,options.heldCup??false),options.world,options.allowedPairs??[]);};
+ const pairs=options.allowedPairs??[],touched=pairs.length?new Set<number>():undefined;
+ const evaluate=(fraction:number)=>{result.evaluations++;return clearance(bodies(model,from.map((q,i)=>q+(to[i]!-q)*fraction),geometry,options.heldCup??false),options.world,pairs,touched);};
  const fail=(fraction:number,c:ReturnType<typeof clearance>,reason:SweepResult['reason'])=>{Object.assign(result,{ok:false,reason,pair:c.pair,fraction,clearanceM:c.clearanceM});};
- for(const t of [0,1]){const c=evaluate(t);if(c.clearanceM<=0){fail(t,c,'COLLISION');return result;}}
+ const done=()=>{if(touched)result.allowed={pairs:pairs.map(p=>[p[0],p[1]]),inContact:pairs.filter((_,i)=>touched.has(i)).map(p=>[p[0],p[1]])};return result;};
+ for(const t of [0,1]){const c=evaluate(t);if(c.clearanceM<=0){fail(t,c,'COLLISION');return done();}}
  const visit=(lo:number,hi:number,depth:number):void=>{
   if(!result.ok)return;
   const mid=(lo+hi)/2,c=evaluate(mid),bound=totalMovement*(hi-lo)/2;
@@ -89,5 +95,5 @@ export function checkArmSweep(model:ArmModelSI,from:readonly number[],to:readonl
   if(bound<=toleranceM||depth>=24||result.evaluations>=32768){fail(mid,c,'SWEEP_UNCERTAIN');return;}
   visit(lo,mid,depth+1);visit(mid,hi,depth+1);
  };
- visit(0,1,0);return result;
+ visit(0,1,0);return done();
 }

@@ -15,6 +15,7 @@ import { armCollisionRecord } from '../../packages/lab-runtime/src/v2/beverage/a
 import type { CoffeeContext, CoffeeState } from '../../packages/lab-runtime/src/v2/scenarios/coffee';
 import type { CoffeePlantPorts } from '../../packages/lab-runtime/src/v2/beverage/coffee-ports';
 import type { LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
+import { XARM6_SI } from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
 import { XARM_FIXTURE_ID } from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
 import { mujocoArmPorts } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports';
 import type { MujocoRuntimeOptions } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco';
@@ -62,7 +63,8 @@ describe.skipIf(!mujocoReady)('MuJoCo arm programs (MA04)', () => {
     const ev = st.arm.collision!.evidence!, arm03 = armCollisionRecord(st.arm, { id: 'w', revision: 1, hash: 'h' } as never, { id: 'arm' });
     console.log('MA04', JSON.stringify({ pickTicks: pick, placeTicks: place, peakRad: stats.tracking.peakRad, rmsRad: stats.tracking.rmsRad, followTolRad: profile.followTolRad, heldTick: heldAt?.tick,
       liftM: pickEnd.z! - liftFrom, liftMinM: profile.liftMinM, maxSlipM: ev2.maxSlipM ?? ev1.maxSlipM, slipTolM: profile.slipTolM, trayTick: trayAt?.tick, lastSeen, stop: st.arm.stop?.reason ?? null,
-      states: [state(st, 'p1'), state(st, 'p2')], ev1, ev2, arm03: { result: arm03.result, reasonCodes: arm03.reasonCodes, intervals: ev.intervals.length } }));
+      states: [state(st, 'p1'), state(st, 'p2')], ev1, ev2, arm03: { result: arm03.result, reasonCodes: arm03.reasonCodes, modelRevision: arm03.modelRevision, coverage: arm03.coverage, allowedContacts: arm03.allowedContacts,
+        contactIntervals: ev.intervals.filter((i) => i.result.allowed?.inContact.length).map((i) => [i.firstTick, i.lastTick, i.result.allowed!.inContact.map((x) => x.join('/')).join(',')]) } }));
     expect(state(st, 'p1')).toBe('completed'); expect(state(st, 'p2')).toBe('completed');
     expect(st.arm.stop).toBeUndefined(); expect(st.arm.holding).toBeNull(); expect(st.arm.gripper).toBe('open');
     expect(ev1).toMatchObject({ grip: 'contact', gripperClosed: true, objectPresent: true, cupId: 'cup-1', liftPoseReached: true });
@@ -76,6 +78,11 @@ describe.skipIf(!mujocoReady)('MuJoCo arm programs (MA04)', () => {
     const scene = JSON.parse(await readFile(join(directory, 'mujoco-arm', 'bundle', 'arm-cell-scene.json'), 'utf8'));
     expect(scene.allowedContacts).toEqual([{ a: 'gripper', b: 'nozzle-stand' }, { a: 'gripper', b: 'tray' }, { a: 'held_prop', b: 'nozzle-stand' }, { a: 'held_prop', b: 'tray' }]);
     expect(arm03.result).toBe('pass'); expect(ev.firstFailure).toBeUndefined(); expect(ev.droppedIntervals).toBe(0); expect(ev.intervals.some((i) => i.heldCupId === 'cup-1')).toBe(true);
+    // the record names what was swept: the xArm model, the cell's allowed contacts and how often they were in contact; every swept world held both supports
+    expect(arm03.modelRevision).toBe(XARM6_SI.revision);
+    expect(arm03.allowedContacts.map((c) => c.pair)).toEqual([['gripper', 'nozzle-stand'], ['gripper', 'tray'], ['held-cup', 'nozzle-stand'], ['held-cup', 'tray']]);
+    expect(Object.values(ev.worlds).every((w) => ['nozzle-stand', 'tray'].every((id) => w.some((o) => o.id === id)))).toBe(true);
+    expect(arm03.coverage!.allowedContactsApplied).toBeGreaterThan(0);
     expect(stats).toMatchObject({ engine: 'mujoco_3d', engineVersion: '3.17.0', control: 'position_actuator', grip: 'contact', calibration: 'not_calibrated' });
     expect(stats.tracking.samples).toBe(pick + place);
   }, 180_000);

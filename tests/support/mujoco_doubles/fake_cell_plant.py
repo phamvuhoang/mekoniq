@@ -1,6 +1,7 @@
 """The real MuJoCo worker (protocol, session, receipts, refusals) over a fake cell engine, so no MuJoCo is imported. argv: fake_cell_plant.py MODE N [worker args...]
 MODE ok: the arm reaches every target at once, the gripper its commanded opening, a placed cup stays where it was put, nothing touches anything. quit: the whole process exits
-cleanly at engine step N. badcreate: the engine refuses to compile (MESH_BLOB_MISSING). Every engine step (the create's priming step is the first) appends
+cleanly at engine step N. badcreate: the engine refuses to compile (MESH_BLOB_MISSING). narrow: the engine's gripper range is 0.05 m, so every step carrying
+the full opening is refused (GRIPPER_TARGET_OUT_OF_RANGE, non-fatal). Every engine step (the create's priming step is the first) appends
 {n, targets, opening, placements} to steps.jsonl in the run directory."""
 import json
 import os
@@ -19,7 +20,7 @@ class Fake:
             raise CompileError("MESH_BLOB_MISSING", "fake engine")
         chain = [j for j in component["joints"] if j["id"] in ("J1", "J2", "J3", "J4", "J5", "J6")]
         self.arm_limits = [(j["limits"]["lower"]["value"], j["limits"]["upper"]["value"]) for j in chain]
-        self.opening_max_m = physics["gripper"]["openingMaxM"]
+        self.opening_max_m = 0.05 if mode == "narrow" else physics["gripper"]["openingMaxM"]
         self.opening, self.time, self.count, self.cups = self.opening_max_m, 0.0, 0, {}
 
     def step(self, targets, opening, placements):

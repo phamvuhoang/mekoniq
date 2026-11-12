@@ -7,7 +7,7 @@ import type {ArmPlantState} from '../../../../cell-adapters/src/mock-arm';
 import type {JsonObject} from '../../../../contracts/src/index';
 import {hashJson} from '../hash';
 import {PUMA560_SI} from '../models/arm-kinematics';
-import {METHOD,type ArmCollisionEvidenceRecord} from '../arm/session';
+import {METHOD,type AllowedContact,type ArmCollisionEvidenceRecord} from '../arm/session';
 import type {ArmPlantReport} from './coffee-ports';
 
 export const ARM_TRACE_FILE='arm-trace.json';
@@ -15,7 +15,9 @@ export interface ArmTraceFile {schemaVersion:1;note:string;samples:{tick:number;
 export interface ArmReportBlock {trace:{path:string;sha256:string;samples:number};tracking:ArmPlantReport['tracking'];armPlant:ArmPlantReport;collision:ArmCollisionEvidenceRecord}
 type WorldRevision=ArmCollisionEvidenceRecord['worldRevision'];
 
-/** ARM03 from the plant's own evidence: pass only when every checked interval was clear, none was dropped, and the arm was not stopped for a collision (its own check or the engine's). */
+/** ARM03 from the plant's own evidence: pass only when every checked interval was clear, none was dropped, and the arm was not stopped for a collision (its own check or the engine's).
+ * The record names what was swept: the model revision of the sweeps, and the allowed pairs they skipped (static for the whole trace; a pair with a support named `tray` is the release's,
+ * any other the grasp's) with `allowedContactsApplied` = the intervals x pairs that were actually in contact. A plant without allowed pairs (Webots) records none, as before. */
 export function armCollisionRecord(arm:ArmPlantState,worldRevision:WorldRevision,assetRef:JsonObject):ArmCollisionEvidenceRecord{
  const base:ArmCollisionEvidenceRecord={id:'ARM03',result:'not_run',reasonCodes:[],engine:null,modelRevision:PUMA560_SI.revision,geometryRevision:null,worldRevision,assetRef,trace:null,attachments:[],allowedContacts:[],method:null,coverage:null,colliding:[],provenance:'geometric_checker',fidelity:'modeled'};
  const ev=arm.collision?.evidence,trace=arm.tracking?.trace??[];
@@ -31,8 +33,14 @@ export function armCollisionRecord(arm:ArmPlantState,worldRevision:WorldRevision
  return {...base,result:colliding.length||plantStop?'fail':'pass',reasonCodes:[...new Set([...colliding.map(c=>c.reason),...plantStop?['ARM_COLLISION']:[]])],engine:ev.intervals[0]!.result.engine,
   geometryRevision:revisions.length===1?revisions[0]!:hashJson({revisions} as unknown as JsonObject),trace:{samples:trace.length,fromTick:trace[0]!.tick,toTick:trace.at(-1)!.tick},attachments,
   method:{...METHOD,toleranceM:ev.intervals[0]!.result.toleranceM},
-  coverage:{intervals:ev.intervals.length,evaluations:ev.intervals.reduce((n,i)=>n+i.result.evaluations,0),uncertain:ev.intervals.filter(i=>i.result.reason==='SWEEP_UNCERTAIN').length,allowedContactsApplied:0},colliding};
+  coverage:{intervals:ev.intervals.length,evaluations:ev.intervals.reduce((n,i)=>n+i.result.evaluations,0),uncertain:ev.intervals.filter(i=>i.result.reason==='SWEEP_UNCERTAIN').length,
+   allowedContactsApplied:ev.intervals.reduce((n,i)=>n+(i.result.allowed?.inContact.length??0),0)},colliding,
+  modelRevision:ev.intervals[0]!.result.modelRevision,allowedContacts:allowedOf(ev.intervals.map(i=>i.result),trace[0]!.tick,trace.at(-1)!.tick)};
 }
+const allowedOf=(results:readonly {allowed?:{pairs:[string,string][]}}[],fromTick:number,toTick:number):AllowedContact[]=>{
+ const seen=new Map<string,[string,string]>();for(const r of results)for(const p of r.allowed?.pairs??[])if(!seen.has(p.join('\u0000')))seen.set(p.join('\u0000'),[p[0],p[1]]);
+ return [...seen.values()].map(pair=>({pair,phase:pair.includes('tray')?'release' as const:'grasp' as const,fromTick,toTick,revision:1}));
+};
 /** Writes the trace beside the run's other files and returns the block. The file is the evidence: its sha256 is in the report, `readArmTrace` re-checks it. */
 export async function buildArmReport(arm:ArmPlantState,plant:ArmPlantReport,directory:string,worldRevision:WorldRevision,assetRef:JsonObject):Promise<ArmReportBlock>{
  const file:ArmTraceFile={schemaVersion:1,note:'Per tick of a running arm program: the joints the Webots plant reported (actual) and the joints the program commanded. Radians.',samples:arm.tracking?.trace??[]};

@@ -17,7 +17,8 @@ import { composePose, qrotate } from '../../packages/lab-runtime/src/v2/frames';
 import { forwardKinematics, XARM6_SI } from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
 import { DEFAULT_ARM_GEOMETRY } from '../../packages/lab-runtime/src/v2/models/arm-collision';
 import { readXArmFixture, XARM_FIXTURE_ID } from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
-import { MUJOCO_ARM_RELEASE_TIMEOUT_TICKS, mujocoArmPorts, mujocoProgramSet } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports';
+import { checkArmSweep } from '../../packages/lab-runtime/src/v2/models/arm-collision';
+import { cellSupports, MUJOCO_ARM_RELEASE_TIMEOUT_TICKS, mujocoArmPorts, mujocoProgramSet } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports';
 import { MUJOCO_SLOT, type MujocoRuntimeOptions } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco';
 import { validateTwinSampleV2, type LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
 import { projectSamples } from '../../packages/lab-runtime/src/v2/twin-projection';
@@ -33,10 +34,10 @@ const command = (id: string, program: 'cup-pick' | 'cup-place'): CellCommand => 
 async function runtime(mode = 'ok', at = 0): Promise<MujocoRuntimeOptions> {
   return { python, workerRoot, schemaDir: resolve('packages/contracts/schemas'), lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), engineVersion: '3.17.0', maxActiveRuns: 1, entry: [double, mode, String(at)] };
 }
-async function ports(rt: MujocoRuntimeOptions, runId = 'run-a', proj?: LabProjectV2) {
+const fresh = () => ({ stationId: 'coffee-pickup', cellId: 'cell-1', armId: 'arm-1', registered: false, sessions: {}, workload: [{ cupId: 'cup-1' }, { cupId: 'cup-2' }], plant: MockCoffeePlant.initial('cell-1'),
+  arm: MockArmPlant.initial('arm-1'), trays: {} } as unknown as CoffeeState);
+async function ports(rt: MujocoRuntimeOptions, runId = 'run-a', proj?: LabProjectV2, st: CoffeeState = fresh()) {
   const directory = await mkdtemp(join(tmpdir(), 'mujoco-ports-')); dirs.push(directory);
-  const st = { stationId: 'coffee-pickup', cellId: 'cell-1', armId: 'arm-1', registered: false, sessions: {}, workload: [{ cupId: 'cup-1' }, { cupId: 'cup-2' }], plant: MockCoffeePlant.initial('cell-1'),
-    arm: MockArmPlant.initial('arm-1'), trays: {} } as unknown as CoffeeState;
   const ctx = { runId, nowMs: () => Date.parse('2026-11-05T00:00:00Z'), tick: () => 0, receiver: () => ({ robotId: 'amr-1', slot: 1 }) } as unknown as CoffeeContext;
   const p = await mujocoArmPorts(rt, { project: proj ?? await project(), seed: 42 })(st, ctx, () => 'boot-1', directory);
   open.push(p);
@@ -49,6 +50,16 @@ const advance = async (p: CoffeePlantPorts, k: number) => { for (let i = 0; i < 
 const workers = (directory: string) => { try { return execFileSync('pgrep', ['-f', `fake_cell_plant.py.*${directory}`], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
 
 describe('mujocoProgramSet', () => {
+  test('the cell supports are in the swept world: at the pick pose the held cup reaches into the stand, which only the allowed pairs clear (and they say so)', () => {
+    const set = mujocoProgramSet(fixture, oracle, [{ a: 'gripper', b: 'nozzle-stand' }, { a: 'gripper', b: 'tray' }, { a: 'held_prop', b: 'nozzle-stand' }, { a: 'held_prop', b: 'tray' }]);
+    const world = cellSupports(fixture.layout), pick = fixture.programs.waypoints.pick!, L = fixture.layout;
+    expect(world).toEqual([{ id: 'nozzle-stand', kind: 'box', min: L.nozzleStand.centerM.map((c, i) => c - L.nozzleStand.sizeM[i]! / 2), max: L.nozzleStand.centerM.map((c, i) => c + L.nozzleStand.sizeM[i]! / 2) },
+      { id: 'tray', kind: 'box', min: L.tray.centerM.map((c, i) => c - L.tray.sizeM[i]! / 2), max: L.tray.centerM.map((c, i) => c + L.tray.sizeM[i]! / 2) }]);
+    const allowed = checkArmSweep(XARM6_SI, pick, pick, { world, heldCup: true, ...set.collision! });
+    expect(allowed.ok).toBe(true); expect(allowed.allowed).toEqual({ pairs: set.collision!.allowedPairs, inContact: [['held-cup', 'nozzle-stand']] });
+    const strict = checkArmSweep(XARM6_SI, pick, pick, { world, heldCup: true, geometry: set.collision!.geometry });
+    expect(strict).toMatchObject({ ok: false, reason: 'COLLISION', pair: ['held-cup', 'nozzle-stand'] }); expect(strict.allowed).toBeUndefined();
+  });
   test('the fixture programs verbatim, contact from physics and the oracle, collision from the capsule radii, the cup and the scene\'s allowed contacts', () => {
     const set = mujocoProgramSet(fixture, oracle, [{ a: 'gripper', b: 'nozzle-stand' }, { a: 'held_prop', b: 'tray' }]);
     expect({ ...set, contact: undefined, collision: undefined }).toEqual({ ...fixture.programs, contact: undefined, collision: undefined });
@@ -166,5 +177,35 @@ describe.skipIf(!existsSync(python))('mujocoArmPorts over a fake cell engine', (
     const bad = await project(); delete (bad as { armCollisionProfile?: unknown }).armCollisionProfile;
     await expect(ports(await runtime(), 'run-a', bad)).rejects.toThrow('ARM_SCENE_UNAVAILABLE');
     expect(activeRunCount(MUJOCO_SLOT)).toBe(0);
+  }, 60_000);
+  test('the supports join the arm\'s own obstacles when the ports open, once, also when a run reopens them', async () => {
+    const st = fresh(), first = await ports(await runtime(), 'run-a', undefined, st);
+    const ids = () => st.arm.collision!.world.map((o) => o.id);
+    expect(ids()).toEqual(['nozzle-stand', 'tray']); expect(st.arm.collision!.world).toEqual(cellSupports(fixture.layout));
+    await first.p.close(); open.splice(0);
+    await ports(await runtime(), 'run-a', undefined, st);
+    expect(ids()).toEqual(['nozzle-stand', 'tray']);
+  }, 60_000);
+
+  test('a refused step that placed nothing means the plant cannot even hold: the session is lost, nothing more is sent', async () => {
+    const { p, st, log } = await ports(await runtime('narrow')); // the engine's gripper range is narrower than the command: every step is refused
+    p.mockArm!.execute(command('p1', 'cup-pick'));
+    await advance(p, 10);
+    expect(st.arm.stop).toMatchObject({ latched: true, reason: 'GRIPPER_TARGET_OUT_OF_RANGE' }); expect(state(st, 'p1')).toBe('unknown');
+    expect(await log()).toHaveLength(1); // only the create's priming step reached the engine
+    expect(st.arm.stop!.events.filter((e) => e.stage === 'requested')).toHaveLength(1); // one loss, not one refusal per tick
+  }, 60_000);
+
+  test('an error that is not the worker\'s (here thrown by the state machine) is WORKER_FAILED and keeps its message', async () => {
+    const { p, st } = await ports(await runtime());
+    p.mockArm!.observe = () => { throw new Error('boom: observe failed'); };
+    await p.advance();
+    expect(st.arm.stop).toMatchObject({ latched: true, reason: 'WORKER_FAILED', detail: 'boom: observe failed' });
+  }, 60_000);
+
+  test('a failed open leaves the run\'s arm state as it was', async () => {
+    const st = fresh(), before = st.arm, copy = structuredClone(st.arm);
+    await expect(ports(await runtime('badcreate'), 'run-a', undefined, st)).rejects.toThrow('MUJOCO_ARM_CREATE_FAILED');
+    expect(st.arm).toBe(before); expect(st.arm).toEqual(copy);
   }, 60_000);
 });

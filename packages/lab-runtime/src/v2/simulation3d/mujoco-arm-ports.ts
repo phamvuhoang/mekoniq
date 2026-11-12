@@ -12,9 +12,9 @@ import {WorkerLostError} from '../navigation2d/plant';
 import {holdSlot,irsimCapacity,releaseSlot} from '../navigation2d/runner';
 import type {ArmCellSceneV1,Sim3DSnapshotV1} from '../navigation2d/contracts';
 import {composePose,invertPose,qconj,qrotate} from '../frames';
-import {DEFAULT_ARM_GEOMETRY} from '../models/arm-collision';
+import {DEFAULT_ARM_GEOMETRY,type ArmObstacle} from '../models/arm-collision';
 import {XARM6_SI} from '../models/arm-kinematics';
-import {buildArmCellScene,readXArmFixture,writeArmCellBundle,type XArmFixture} from './arm-cell-scene';
+import {buildArmCellScene,readXArmFixture,writeArmCellBundle,type CellLayout,type XArmFixture} from './arm-cell-scene';
 import {trackingStats} from './arm-ports';
 import {MUJOCO_MAX_ACTIVE_RUNS,MUJOCO_SLOT,type MujocoRuntimeOptions} from './mujoco';
 import {SIM3D_FATAL_CODES,spawnMujocoWorker} from './worker-client';
@@ -36,6 +36,10 @@ export function mujocoProgramSet(fixture:Pick<XArmFixture,'programs'|'physics'|'
   collision:{geometry:{...DEFAULT_ARM_GEOMETRY,provenance:'assumed',linkRadiiM:[...physics.capsuleRadiusM],cupRadiusM:layout.cup.radiusM,cupHeightM:layout.cup.heightM,cupAxisInTool:[axis[0]!,axis[1]!,axis[2]!]},
    allowedPairs:allowed.map(c=>[c.a==='held_prop'?'held-cup':c.a,c.b] as const)}};
 }
+/** The cell's two supports as ARM03 obstacles (arm base frame, the layout's boxes, ids as in the scene): the gripper and the held cup may touch them through the allowed pairs, nothing else may. */
+export const cellSupports=(layout:Pick<CellLayout,'nozzleStand'|'tray'>):ArmObstacle[]=>([['nozzle-stand',layout.nozzleStand],['tray',layout.tray]] as const).map(([id,b])=>
+ ({id,kind:'box',min:b.centerM.map((c,i)=>c-b.sizeM[i]!/2),max:b.centerM.map((c,i)=>c+b.sizeM[i]!/2)}));
+const SUPPORT_IDS=new Set(['nozzle-stand','tray']);
 export const mujocoArmPlantReport=(engineVersion:string,st:{samples:number;peakRad:number[];sumSq:number[]}):ArmPlantReport=>({engine:'mujoco_3d',engineVersion,control:'position_actuator',grip:'contact',
  dynamics:'manufacturer_nominal+assumed',calibration:'not_calibrated',tracking:trackingStats(st)});
 
@@ -43,22 +47,23 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
  return async(st,ctx,newBootId,directory)=>{
   if(!irsimCapacity(runtime.maxActiveRuns??MUJOCO_MAX_ACTIVE_RUNS,ctx.runId,MUJOCO_SLOT))throw new Error('MUJOCO_CAPACITY');
   holdSlot(MUJOCO_SLOT,ctx.runId); // from here to close (or a failed open) this run owns the host's MuJoCo slot
-  try{return await open();}catch(e){releaseSlot(MUJOCO_SLOT,ctx.runId);throw e;}
+  const arm0=st.arm; // a failed open leaves the run's arm state as it was
+  try{return await open();}catch(e){st.arm=arm0;releaseSlot(MUJOCO_SLOT,ctx.runId);throw e;}
   async function open():Promise<CoffeePlantPorts>{
   const oracle=loadOracleProfile().profile.mujocoArm;
   if(!oracle)throw new Error('ARM_ORACLE_PROFILE_MISSING: the oracle profile has no mujocoArm thresholds');
   const fixture=readXArmFixture(runtime.workerRoot),physics={...fixture.physics,...runtime.physicsOverride};
-  // a run's coffee state starts with the mock arm at its home; the first open makes it the xArm at the fixture's home. A reopened run keeps its arm, which the ports then own.
-  if(st.arm.plantId!=='mujoco_arm'){
-   if(st.arm.programs.length)throw new Error('ARM_STATE_MISMATCH: the arm already ran programs on another plant');
-   st.arm={...MockArmPlant.initial(st.armId,st.arm.bootId,fixture.programs),plantId:'mujoco_arm'};
-  }
+  // a run's coffee state starts with the mock arm at its home; the first open makes it the xArm at the fixture's home (assigned below, once nothing before the ports can throw).
+  // A reopened run keeps its arm, which the ports then own.
+  if(st.arm.plantId!=='mujoco_arm'&&st.arm.programs.length)throw new Error('ARM_STATE_MISMATCH: the arm already ran programs on another plant');
+  const armState=st.arm.plantId==='mujoco_arm'?st.arm:{...MockArmPlant.initial(st.armId,st.arm.bootId,fixture.programs),plantId:'mujoco_arm' as const};
   // the cell's cups: those the coffee plant already has and those the run's workload will put under the nozzle (the plant learns a cup only when it is placed)
   const known=[...new Set([...st.plant.cups.map(c=>c.cupId),...st.workload.map(w=>w.cupId)])].sort();
-  const scene=buildArmCellScene(run.project,{...fixture,physics},run.seed,{armId:st.armId,propIds:known,homeRad:st.arm.q,
+  const scene=buildArmCellScene(run.project,{...fixture,physics},run.seed,{armId:st.armId,propIds:known,homeRad:armState.q,
    ...runtime.armExtraStatics?{extraStatics:runtime.armExtraStatics}:{},...runtime.padFrictionOverride!==undefined?{padFriction:runtime.padFrictionOverride}:{}});
   const programs=mujocoProgramSet({...fixture,physics},oracle,scene.allowedContacts),bundle=join(directory,'mujoco-arm','bundle');
   await writeArmCellBundle(bundle,scene,fixture,physics);
+  st.arm=armState;
   const base=createMockCoffeePorts(st,ctx,newBootId,{tracking:{reachTolRad:oracle.reachTolRad,settleTicks:oracle.settleTicks,followTolRad:oracle.followTolRad,followTicks:oracle.followTicks},programs,model:XARM6_SI});
   // the run directory is the run's own (MuJoCo writes MUJOCO_LOG.TXT into its working directory on a warning), never a tool root
   const w=await spawnMujocoWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:ctx.runId,bundleRoot:bundle,runDirectory:join(directory,'mujoco-arm','run'),lockDigest:runtime.lockDigest,
@@ -71,11 +76,14 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
     const r=await ask(op,payload);if(!r.ok)throw new Error(`MUJOCO_ARM_CREATE_FAILED: ${(r as {error:{code:string}}).error.code}`);
    }
   }catch(e){await w.close('create failed').catch(()=>{});throw e instanceof WorkerLostError?new Error(`MUJOCO_ARM_CREATE_FAILED: ${e.code}`):e;}
-  const arm=base.mockArm!,openM=programs.contact!.openM,mapInBase=invertPose(scene.arm.baseInMap),inScene=new Set(known),placed=new Set<string>(),parked=new Set<string>(),unknown=new Set<string>();
+  const arm=base.mockArm!;
+  // ARM03 sweeps the cell's supports: they join the arm's own obstacles (kept when a run sets its scene), replacing any earlier copy, so a reopened run never holds two
+  arm.setCollisionWorld([...st.arm.collision!.world.filter(o=>!SUPPORT_IDS.has(o.id)),...cellSupports(fixture.layout)]);
+  const openM=programs.contact!.openM,mapInBase=invertPose(scene.arm.baseInMap),inScene=new Set(known),placed=new Set<string>(),parked=new Set<string>(),unknown=new Set<string>();
   const L=fixture.layout,onStand=composePose(scene.arm.baseInMap,{position:[L.nozzleStand.centerM[0],L.nozzleStand.centerM[1],L.nozzleStand.centerM[2]+L.nozzleStand.sizeM[2]/2+L.cup.heightM/2+PLACE_CLEAR_M],quaternionXyzw:[0,0,0,1]});
   const standPose:Pose={position:[...onStand.position],quaternionXyzw:[...onStand.quaternionXyzw]};
   /** The engine is gone or failed: the running program's outcome is unknown, the arm is latched, the worker is not replaced. */
-  const lose=(reason:string)=>{if(!lost){lost=true;arm.halt(reason);}};
+  const lose=(reason:string,detail?:string)=>{if(!lost){lost=true;arm.halt(reason,detail);}};
   /** This tick's placements: a cup the coffee plant has under the nozzle enters the cell once, on the stand; a delivered cup (on a tray) leaves it once. A cup the pads hold is never moved. */
   const due=()=>{
    const out:{propId:string;pose:Pose|null}[]=[];
@@ -100,8 +108,9 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
       gripperTargets:[{armId:st.armId,openingM:st.arm.gripperCommandM??openM}],...placements.length?{propPlacements:placements}:{}});
      if(!r.ok){
       const code=(r as {error:{code:string}}).error.code;
-      // fatal: the worker has ended. Otherwise the tick did not advance: the arm latches with the worker's code and the next ticks send the hold command
-      if((SIM3D_FATAL_CODES as readonly string[]).includes(code))lose(code);else{refused=true;arm.halt(code);}
+      // fatal: the worker has ended. A refused step that placed nothing means the plant cannot be commanded even to hold: lost too. Otherwise (a placement was refused) the tick did
+      // not advance: the arm latches with the worker's code and the next ticks send the hold command without placements
+      if((SIM3D_FATAL_CODES as readonly string[]).includes(code)||!placements.length)lose(code);else{refused=true;arm.halt(code);}
       return;
      }
      tick++;
@@ -110,7 +119,7 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
      if(!a){lose('ARM_SNAPSHOT_MISSING');return;}
      held=a.gripper?.heldPropIds??[];
      arm.observe(a.positionsRad,a.collisionIds,extras(s,a));
-    }catch(e){lose(e instanceof WorkerLostError?'WORKER_LOST':'WORKER_FAILED');}
+    }catch(e){lose(e instanceof WorkerLostError?'WORKER_LOST':'WORKER_FAILED',e instanceof WorkerLostError?undefined:String((e as Error)?.message??e).slice(0,500));}
    },
    report:()=>({...base.report(),...st.arm.tracking?{armPlant:mujocoArmPlantReport(runtime.engineVersion,st.arm.tracking)}:{}}),
    async close(){try{await base.close();}finally{await release();}}} satisfies CoffeePlantPorts;

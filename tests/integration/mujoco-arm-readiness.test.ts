@@ -15,7 +15,7 @@ import { startLabGateway, type LabGateway } from '../../packages/lab-runtime/src
 import type { LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
 import { coffeeProject } from '../support/lab-v2';
 
-const root = resolve('robotics/simulation-mujoco'), lockPath = join(root, 'requirements.lock'), python = resolve('.venv-mujoco/bin/python');
+const otherVenv = resolve('.venv-webots/bin/python'), root = resolve('robotics/simulation-mujoco'), lockPath = join(root, 'requirements.lock'), python = resolve('.venv-mujoco/bin/python');
 const mujocoReady = existsSync(python) && (() => { try { return execFileSync(python, ['-I', '-B', '-c', 'import mujoco;print(mujoco.__version__)'], { encoding: 'utf8', timeout: 30_000 }).trim() === '3.17.0'; } catch { return false; } })();
 const running = () => { try { return execFileSync('pgrep', ['-f', 'mujoco_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
 const dirs: string[] = [], gateways: LabGateway[] = [];
@@ -44,10 +44,13 @@ test('flag off: mujoco_arm is the catalog entry of a runtime never given the opt
   expect(h).toEqual(await health(without));
 });
 
-test('an interpreter whose venv lacks the packages of the lock is MUJOCO_LOCK_MISMATCH, never installed', async () => {
-  const p = await mujocoFromOptions(await opts({ python: resolve('.venv-webots/bin/python') }));
+// another worker's venv (Python 3.11 without MuJoCo) stands for a venv that lacks the lock's packages; skipped where it does not exist
+test.skipIf(!existsSync(otherVenv))('an interpreter whose venv lacks the packages of the lock is MUJOCO_LOCK_MISMATCH, never installed', async () => {
+  const p = await mujocoFromOptions(await opts({ python: otherVenv }));
   expect(p.arm.capability.installed).toBe(false); expect(p.arm.capability.reason).toMatch(/^MUJOCO_LOCK_MISMATCH: .*mujoco==3\.17\.0/); expect(p.arm.runtime).toBeUndefined();
-  // flag on without any environment: an unavailable capability with its reason, never a crash; the gateway advertises nothing
+});
+
+test('flag on without any environment: an unavailable capability with its reason, never a crash; the gateway advertises nothing', async () => {
   const none = await mujocoFromOptions(await opts({ python: '/nonexistent/.venv-mujoco/bin/python' }));
   expect(none.arm.capability).toMatchObject({ id: 'mujoco_arm', installed: false, reachable: false }); expect(none.arm.capability.reason).toMatch(/^MUJOCO_WORKER_UNAVAILABLE/);
   const sim = await portableSimulationFromOptions({ ...(await base()), mujoco: none });

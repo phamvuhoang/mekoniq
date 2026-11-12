@@ -60,7 +60,7 @@ export type ArmFault='arm-reboot'|'arm-drop'|'arm-following-error'|'arm-stop'|'a
 export interface ArmTracking {reachTolRad:number;settleTicks:number;followTolRad:number;followTicks:number}
 /** What the tracking mode keeps beside the plant state (JSON, so it survives a checkpoint): the generator's own commanded position, the settle and following-error counters, and per-joint stats of actual - commanded while a program runs. */
 export interface ArmTrackingState {gen:number[];settled:number;followCount:number;samples:number;peakRad:number[];sumSq:number[];trace:{tick:number;actualRad:number[];commandedRad:number[]}[]}
-export interface ArmStopState {latched:boolean;reconcileRequired:boolean;reason:string;events:{tick:number;stage:'requested'|'acknowledged'|'observed'|'reset';reason:string;provenance:'modelled'}[]}
+export interface ArmStopState {latched:boolean;reconcileRequired:boolean;reason:string;/** Set only by halt(reason, detail): what the plant's caller knows beyond the code (e.g. the message of an unexpected error). */detail?:string;events:{tick:number;stage:'requested'|'acknowledged'|'observed'|'reset';reason:string;provenance:'modelled'}[]}
 export const ARM_COLLISION_TRACE_LIMIT=4096;
 const TRACKED_REST_RAD=2e-4;
 export interface ArmCollisionInterval {firstTick:number;lastTick:number;fromQ:number[];toQ:number[];heldCupId:string|null;worldRevision:string;sceneRevision:string|null;result:SweepResult}
@@ -120,7 +120,7 @@ export class MockArmPlant {
   }
  }
  /** The plant behind a tracked arm is gone (worker lost): latch the arm and leave every running program unknown. Nothing is resent, nothing is released. */
- halt(reason:string){this.stop(reason);}
+ halt(reason:string,detail?:string){this.stop(reason);if(detail!==undefined)this.state.stop!.detail=detail;}
  private stop(reason:string){
   const s=this.state,events=s.stop?.events??[];
   for(const stage of ['requested','acknowledged','observed'] as const)events.push({tick:s.tick,stage,reason,provenance:'modelled'});
