@@ -3,7 +3,7 @@
 import type {LabProjectV2} from '../contracts';
 import {checkQuaternion,invertPose,qrotate,type Pose,type Vec3} from '../frames';
 import {hashJson} from '../hash';
-import {PUMA560_SI} from './arm-kinematics';
+import {PUMA560_SI,type ArmModelSI} from './arm-kinematics';
 import type {ArmObstacle} from './arm-collision';
 export type ArmCollisionProfile=NonNullable<LabProjectV2['armCollisionProfile']>;
 export interface ArmSceneDeclaration {
@@ -17,15 +17,15 @@ export interface ArmSceneSnapshot {
  /** Endpoints bound robot motion during this tick; the arm checker sees the enclosing swept AABB. */
  robotPoses:{id:string;from:[number,number];to:[number,number]}[];
 }
-export function validateArmCollisionProfile(p:ArmCollisionProfile){
+export function validateArmCollisionProfile(p:ArmCollisionProfile,model:ArmModelSI=PUMA560_SI){
  if(p.schemaVersion!==1||p.units!=='SI'||p.provenance!=='illustrative'||!p.id||!p.reference||!Number.isSafeInteger(p.revision)||p.revision<1)throw new Error('ARM_COLLISION_PROFILE_INVALID');
- if(p.modelId!==PUMA560_SI.id||p.modelRevision!==PUMA560_SI.revision)throw new Error('ARM_COLLISION_MODEL_MISMATCH');
+ if(p.modelId!==model.id||p.modelRevision!==model.revision)throw new Error('ARM_COLLISION_MODEL_MISMATCH');
  if(!p.baseInMap||p.baseInMap.position.length!==3||p.baseInMap.position.some(n=>!Number.isFinite(n)||Math.abs(n)>1000))throw new Error('ARM_COLLISION_POSE_INVALID');
  checkQuaternion(p.baseInMap.quaternionXyzw);
  if(![p.fixtureHeightM,p.robotHeightM].every(n=>Number.isFinite(n)&&n>0&&n<=100))throw new Error('ARM_COLLISION_HEIGHT_INVALID');
 }
-export function declareArmScene(project:LabProjectV2,radius:Record<string,number|null>,activeRobotIds:readonly string[]=project.entities.filter(e=>e.kind==='amr').map(e=>e.id)):ArmSceneDeclaration {
- const profile=project.armCollisionProfile??null;if(profile)validateArmCollisionProfile(profile);
+export function declareArmScene(project:LabProjectV2,radius:Record<string,number|null>,activeRobotIds:readonly string[]=project.entities.filter(e=>e.kind==='amr').map(e=>e.id),model:ArmModelSI=PUMA560_SI):ArmSceneDeclaration {
+ const profile=project.armCollisionProfile??null;if(profile)validateArmCollisionProfile(profile,model);
  // Extend the scenario's sorted entity/parking binding to every project AMR. Unused AMRs are
  // stationary model obstacles, not erased physical objects; an absent parking binding stays unknown.
  const byId=(a:{id:string},b:{id:string})=>a.id<b.id?-1:a.id>b.id?1:0,parking=project.world.points.filter(p=>p.kind==='parking').sort(byId);
@@ -34,6 +34,9 @@ export function declareArmScene(project:LabProjectV2,radius:Record<string,number
    return {id:e.id,radiusM:radius[e.id]??null,motion:active?'dynamic' as const:'static_parked' as const,parkingId:point?.id??null,parkedPose:!active&&point?{x:point.x,y:point.y,yawRad:0}:null};})};
  return {...declaration,hash:hashJson(declaration)};
 }
+/** The project's fixed obstacles (sorted by id) as boxes in the arm base frame, extruded to the profile's fixture height: the statics of every 3D arm world. */
+export const fixtureStatics=(world:LabProjectV2['world'],profile:ArmCollisionProfile):ArmObstacle[]=>{const mapInArm=invertPose(profile.baseInMap);
+ return [...world.obstacles].sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0).map(o=>boxInArm(`fixture:${o.id}`,[o.x,o.y,0],[o.x+o.width,o.y+o.height,profile.fixtureHeightM],mapInArm));};
 /** All eight transformed corners are enclosed: arbitrary normalized base rotation is conservative, not yaw-only. */
 export function boxInArm(id:string,min:Vec3,max:Vec3,mapInArm:Pose):ArmObstacle {
  const points:Vec3[]=[];
