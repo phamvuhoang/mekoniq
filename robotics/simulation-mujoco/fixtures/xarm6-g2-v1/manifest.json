@@ -150,9 +150,9 @@
       "sha256": "7b06a81d2e13936d721ea6ab2d0e3fc00901600a4f4c2cd6aa2829698518303c"
     },
     {
-      "bytes": 5490,
+      "bytes": 5711,
       "path": "README.md",
-      "sha256": "176e5a9144c06f3dc48a16c5941d83d3fab392bea9e7456caa116a0a1d19cf0b"
+      "sha256": "df05605c06720016a640746dc5ec4f09e2f91c3b315c059d283e8c30fe347316"
     },
     {
       "bytes": 967,
@@ -160,9 +160,9 @@
       "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1"
     },
     {
-      "bytes": 2776,
+      "bytes": 2917,
       "path": "coffee-cell-project.json",
-      "sha256": "67048111f1995fcf1343d1b7bc5684b0179d156b65baec7f39188d7d4fe3cb7b"
+      "sha256": "c22cc9d91c261e6b23d27c99472e5545c1a8fd9b564421fa86a4996f3f49ca7e"
     },
     {
       "bytes": 69507,

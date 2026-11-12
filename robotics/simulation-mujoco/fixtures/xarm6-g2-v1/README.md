@@ -23,7 +23,7 @@ Cản và ma sát khớp (`jointDynamics`) là thiết lập mô phỏng Gazebo 
 | `gripper.forceN` (13,15 N mỗi má), `gripper.openingMaxM` (88,9 mm) | `physics.json` | số đo của spike trên mô hình này, không phải số của sản phẩm |
 | Bệ vòi, khay, cốc, pose gắp/đặt, `approachM`, `liftM` | `cell-layout.json` | giả định của spike M00 (bảng bố cục trạm); pose là pose TCP trong khung base, gắp ngang theo hướng bán kính, TCP vượt trục cốc `graspDepthM` 0,022 m, đáy cốc khi đặt cao hơn khay 2 mm |
 | Waypoint | `programs.json` | `solvePose(XARM6_SI)` (seed nối tiếp từ `home` của spike, `rngSeed` 20261112); `home` là TCP (0,38, 0, 0,40) hướng như gắp; `pickApproach` = `pick` lùi `approachM` dọc trục tiếp cận, `lift` = `pick` + `liftM` theo z, `placeApproach` = `place` + `approachM` theo z |
-| Trạm cà phê | `coffee-cell-project.json` | project `coffee-cell-v2` của Lab; `baseInMap` đặt khay của `cell-layout` lên điểm `coffee_pickup`, đế ở độ cao `robotHeightM` |
+| Trạm cà phê | `coffee-cell-project.json` | project `coffee-cell-v2` của Lab; `baseInMap` đặt khay của `cell-layout` lên điểm `coffee_pickup`, đế tay máy cao 0,7 m; thân AMR (`robotHeightM`, đùn lên) cao 0,6 m, thấp hơn mặt phẳng đế tay máy, khay của AMR (khay của `cell-layout`, mặt trên 0,76 m) đặt trên giá nâng phía trên thân; minh họa, chưa hiệu chuẩn |
 
 ## Mesh
 

@@ -256,13 +256,14 @@ const BASE_PROJECT={schemaVersion:2,name:'Coffee cell',revision:1,updatedAt:'202
     points:[{id:'parking',name:'Parking',kind:'parking',x:0.8,y:0.8},{id:'coffee-pickup',name:'Coffee pickup',kind:'coffee_pickup',x:3,y:1},{id:'table-1',name:'T01',kind:'table',x:5,y:3}],
     handoffPoints:[{id:'coffee-pickup',name:'Coffee pickup',kind:'coffee_pickup',position:[3,1,0],yawRad:1.5707963267948966}],
     obstacles:[{id:'counter',x:2,y:1.5,width:2,height:0.6}]}}; // lab/fixtures/twins/coffee-cell-v2.json project (Lab 98ef987), copied
-/** The Lab coffee cell with the xArm placed so the layout's tray lands on coffee_pickup; the base sits at the declared AMR deck height (robotHeightM). */
+/** The Lab coffee cell with the xArm placed so the layout's tray lands on coffee_pickup. The base sits 0.7 m above the floor; the AMR body (robotHeightM, extruded) is 0.6 m, below the
+ * arm base plane, and the AMR's tray (the layout's `tray` support, top 0.76 m in the map) stands on a riser above the body. Illustrative, not calibrated. */
 function coffeeProject(layout){
-  const pickup=BASE_PROJECT.world.points.find((p)=>p.kind==='coffee_pickup'),robotHeightM=0.7;
+  const pickup=BASE_PROJECT.world.points.find((p)=>p.kind==='coffee_pickup'),baseHeightM=0.7,robotHeightM=0.6;
   return {...structuredClone(BASE_PROJECT),id:'coffee-cell-xarm6',name:'Coffee cell (xArm 6)',
     armCollisionProfile:{schemaVersion:1,id:'coffee-arm-scene-xarm6',revision:1,units:'SI',provenance:'illustrative',
-      reference:'Illustrative xArm 6 base placement: the xarm6-g2-v1 cell-layout tray lands on coffee_pickup and the base sits at the AMR deck height; extruded fixture/AMR heights; not calibrated or physical safety evidence',
-      modelId:XARM6_SI.id,modelRevision:XARM6_SI.revision,baseInMap:{position:[pickup.x-layout.tray.centerM[0],pickup.y-layout.tray.centerM[1],robotHeightM],quaternionXyzw:[0,0,0,1]},fixtureHeightM:1,robotHeightM}};
+      reference:'Illustrative xArm 6 base placement: the xarm6-g2-v1 cell-layout tray lands on coffee_pickup; the arm base is 0.7 m above the floor; the AMR body is extruded to 0.6 m, below the arm base plane, and its tray (the cell-layout tray, top 0.76 m) stands on a riser above the body; extruded fixture/AMR heights; not calibrated or physical safety evidence',
+      modelId:XARM6_SI.id,modelRevision:XARM6_SI.revision,baseInMap:{position:[pickup.x-layout.tray.centerM[0],pickup.y-layout.tray.centerM[1],baseHeightM],quaternionXyzw:[0,0,0,1]},fixtureHeightM:1,robotHeightM}};
 }
 
 function physics(d){
@@ -302,7 +303,7 @@ Cản và ma sát khớp (\`jointDynamics\`) là thiết lập mô phỏng Gazeb
 | \`gripper.forceN\` (13,15 N mỗi má), \`gripper.openingMaxM\` (88,9 mm) | \`physics.json\` | số đo của spike trên mô hình này, không phải số của sản phẩm |
 | Bệ vòi, khay, cốc, pose gắp/đặt, \`approachM\`, \`liftM\` | \`cell-layout.json\` | giả định của spike M00 (bảng bố cục trạm); pose là pose TCP trong khung base, gắp ngang theo hướng bán kính, TCP vượt trục cốc \`graspDepthM\` 0,022 m, đáy cốc khi đặt cao hơn khay 2 mm |
 | Waypoint | \`programs.json\` | \`solvePose(XARM6_SI)\` (seed nối tiếp từ \`home\` của spike, \`rngSeed\` ${IK_RNG_SEED}); \`home\` là TCP (0,38, 0, 0,40) hướng như gắp; \`pickApproach\` = \`pick\` lùi \`approachM\` dọc trục tiếp cận, \`lift\` = \`pick\` + \`liftM\` theo z, \`placeApproach\` = \`place\` + \`approachM\` theo z |
-| Trạm cà phê | \`coffee-cell-project.json\` | project \`coffee-cell-v2\` của Lab; \`baseInMap\` đặt khay của \`cell-layout\` lên điểm \`coffee_pickup\`, đế ở độ cao \`robotHeightM\` |
+| Trạm cà phê | \`coffee-cell-project.json\` | project \`coffee-cell-v2\` của Lab; \`baseInMap\` đặt khay của \`cell-layout\` lên điểm \`coffee_pickup\`, đế tay máy cao 0,7 m; thân AMR (\`robotHeightM\`, đùn lên) cao 0,6 m, thấp hơn mặt phẳng đế tay máy, khay của AMR (khay của \`cell-layout\`, mặt trên 0,76 m) đặt trên giá nâng phía trên thân; minh họa, chưa hiệu chuẩn |
 
 ## Mesh
 

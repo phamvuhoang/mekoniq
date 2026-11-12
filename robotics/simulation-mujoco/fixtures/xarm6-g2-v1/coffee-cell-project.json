@@ -18,9 +18,9 @@
     "modelId": "xarm6-reference",
     "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
     "provenance": "illustrative",
-    "reference": "Illustrative xArm 6 base placement: the xarm6-g2-v1 cell-layout tray lands on coffee_pickup and the base sits at the AMR deck height; extruded fixture/AMR heights; not calibrated or physical safety evidence",
+    "reference": "Illustrative xArm 6 base placement: the xarm6-g2-v1 cell-layout tray lands on coffee_pickup; the arm base is 0.7 m above the floor; the AMR body is extruded to 0.6 m, below the arm base plane, and its tray (the cell-layout tray, top 0.76 m) stands on a riser above the body; extruded fixture/AMR heights; not calibrated or physical safety evidence",
     "revision": 1,
-    "robotHeightM": 0.7,
+    "robotHeightM": 0.6,
     "schemaVersion": 1,
     "units": "SI"
   },
