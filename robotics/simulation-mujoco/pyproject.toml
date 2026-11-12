@@ -1,0 +1,9 @@
+[project]
+name = "mekoniq-mujoco-worker"
+version = "0.1.0"
+description = "MuJoCo arm cell compiler and worker, isolated venv. The engine is the pinned mujoco wheel of requirements.lock."
+requires-python = ">=3.11,<3.12"
+dependencies = ["mujoco==3.17.0", "jsonschema==4.26.0", "referencing==0.37.0", "rfc8785==0.1.4"]
+
+[project.optional-dependencies]
+test = ["pytest==9.2.0"]

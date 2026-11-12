@@ -63,5 +63,6 @@ const portableSimulationTools={distribution:'separate',version:1,python:{impleme
   {id:'description_helper',root:'robotics/simulation/compiler'}],
  roots:PORTABLE_TOOL_PATHS,closure:portable,note:'not bundled; provision each venv from its lock (no download at run time), then lab:irsim verifies these files'};
 const manifest={sourceCommit,schemaHash,protocolMajor:2,protocolMajors:[1,2],artifactSha256,entrypoint:'runtime.mjs',nodeMajor:24,packageVersion:pkg.version,dirty:Boolean(dirty),schemas:names,toolchain:{node:process.version},simulationTools,nativeTools,portableSimulationTools};
-await writeFile(join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+// compact: the Lab importer refuses a manifest above 65,536 bytes and the portable tool closure lists every file
+await writeFile(join(out,'manifest.json'),JSON.stringify(manifest)+'\n');
 console.log(JSON.stringify({output:out,...manifest},null,2));

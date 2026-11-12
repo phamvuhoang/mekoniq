@@ -13,6 +13,7 @@ export const PORTABLE_TOOLS=[
  {id:'linkforge_worker',root:'robotics/model-validation',lock:'robotics/model-validation/requirements.lock',python:'.venv-linkforge/bin/python'},
  {id:'algorithm_checks',root:'robotics/algorithm',lock:'robotics/algorithm/requirements.lock',python:'.venv-algorithm/bin/python'},
  {id:'webots_worker',root:'robotics/simulation-3d',lock:'robotics/simulation-3d/requirements.lock',python:'.venv-webots/bin/python'},
+ {id:'mujoco_worker',root:'robotics/simulation-mujoco',lock:'robotics/simulation-mujoco/requirements.lock',python:'.venv-mujoco/bin/python'},
 ];
 const norm=(n)=>n.toLowerCase().replace(/[_.]/g,'-');
 /** `[name, version]` of every `name==version` pin of a requirements.lock (hash lines ignored). */

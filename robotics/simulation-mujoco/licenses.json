@@ -1,0 +1,138 @@
+{
+ "schemaVersion": 1,
+ "documentType": "portable-license-inventory",
+ "tool": "mujoco_worker",
+ "lock": {
+  "path": "robotics/simulation-mujoco/requirements.lock",
+  "sha256": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+ },
+ "readFrom": "importlib.metadata of the pinned venv (isolated mode)",
+ "packages": [
+  {
+   "name": "absl-py",
+   "version": "2.5.1",
+   "license": "Apache-2.0",
+   "source": "License-Expression"
+  },
+  {
+   "name": "attrs",
+   "version": "26.1.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "etils",
+   "version": "1.15.0",
+   "license": "Apache Software License",
+   "source": "Classifier"
+  },
+  {
+   "name": "fsspec",
+   "version": "2026.9.0",
+   "license": "BSD-3-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "glfw",
+   "version": "2.11.0",
+   "license": "MIT",
+   "source": "License"
+  },
+  {
+   "name": "iniconfig",
+   "version": "2.3.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "jsonschema",
+   "version": "4.26.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "jsonschema-specifications",
+   "version": "2025.9.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "mujoco",
+   "version": "3.17.0",
+   "license": "Apache-2.0",
+   "source": "License-Expression"
+  },
+  {
+   "name": "numpy",
+   "version": "2.4.6",
+   "license": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+   "source": "License-Expression"
+  },
+  {
+   "name": "packaging",
+   "version": "26.3",
+   "license": "Apache-2.0 OR BSD-2-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pluggy",
+   "version": "1.7.0",
+   "license": "MIT",
+   "source": "License"
+  },
+  {
+   "name": "pygments",
+   "version": "2.21.0",
+   "license": "BSD-2-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "pyopengl",
+   "version": "3.1.10",
+   "license": "BSD License",
+   "source": "Classifier"
+  },
+  {
+   "name": "pytest",
+   "version": "9.2.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "referencing",
+   "version": "0.37.0",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "rfc8785",
+   "version": "0.1.4",
+   "license": "Apache Software License",
+   "source": "Classifier"
+  },
+  {
+   "name": "rpds-py",
+   "version": "2026.9.1",
+   "license": "MIT",
+   "source": "License-Expression"
+  },
+  {
+   "name": "typing-extensions",
+   "version": "4.16.0",
+   "license": "PSF-2.0",
+   "source": "License-Expression"
+  },
+  {
+   "name": "websockets",
+   "version": "17.4",
+   "license": "BSD-3-Clause",
+   "source": "License-Expression"
+  },
+  {
+   "name": "zipp",
+   "version": "4.1.2",
+   "license": "MIT",
+   "source": "License-Expression"
+  }
+ ]
+}
