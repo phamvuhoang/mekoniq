@@ -95,7 +95,10 @@
                     "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
                   },
                   "sceneRef": {
-                    "const": "arm-scene.json"
+                    "enum": [
+                      "arm-scene.json",
+                      "arm-cell-scene.json"
+                    ]
                   }
                 },
                 "required": [
@@ -1099,6 +1102,10 @@
                   },
                   "upper": {
                     "type": "number"
+                  },
+                  "forceN": {
+                    "type": "number",
+                    "description": "The joint actuator's force (torque, N*m for a hinge) limit as the engine loaded it; MuJoCo plant only."
                   }
                 },
                 "required": [

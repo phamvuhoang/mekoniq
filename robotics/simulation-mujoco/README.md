@@ -14,6 +14,10 @@ The plant of the `mujoco_arm` provider (R2a): UFACTORY xArm 6 + Gripper G2, a no
   only through the assumed palm and pad boxes of `physics.json` (its meshes are visual only and are not compiled). Position actuators `J<i>_act` and `grip_act` on the
   drive joint; the other gripper joints follow it through `equality/joint` (the `mimic` table). Cups are free cylinders, parked at `z = -10 - n` with contacts off;
   the worker places them (and must reset geom and body contact bits, see `compile.py`). Keyframe `home` = `homeRad`, gripper open.
+- `python -m mujoco_worker` is the plant worker (M04): `mekoniq-sim3d/1` NDJSON on stdio with the Webots worker's envelope, ops, ACK, clock, priming and idempotency
+  rules (`protocol.py`, `session.py`); `engine.py` is the only module that imports `mujoco` (one tick = ctrl, cup placements, re-pin parked cups,
+  `mj_step(nstep=substeps)`), `snapshot.py` turns a reading into the snapshot (held cups, `restingOn`, `collisionIds`, `PLANT_UNSTABLE`). The bundle holds
+  `arm-cell-scene.json`, `component.json`, `physics.json` and `blobs/`.
 - `physics.capsuleRadiusM`/`capsuleSegmentsM` are not used here: they are the TS capsule sweep's (ARM03), not the engine's collision.
 
 Friction: MuJoCo combines two geoms of equal `priority` by taking the larger of each coefficient; a geom with a higher `priority` imposes its own. Pads have

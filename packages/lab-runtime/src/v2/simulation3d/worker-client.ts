@@ -14,3 +14,7 @@ export const SIM3D_WIRE:WireSpec={protocol:'mekoniq-sim3d/1',module:'webots_work
  validateRequest:validateSim3DRequest,validateResponse:validateSim3DResponse as WireSpec['validateResponse'],fatalCodes:SIM3D_FATAL_CODES};
 // MEKONIQ_WEBOTS_WATCH=1 (dev): a real run's Webots stays visible and rendered; readiness describe/smoke workers ('webots-…' run ids) stay headless
 export const spawnSim3DWorker=(o:SpawnOptions&{webotsHome:string}):Promise<IRSimWorkerClient>=>spawnWorker(o,process.env.MEKONIQ_WEBOTS_WATCH==='1'&&!o.runId.startsWith('webots-')?{...SIM3D_WIRE,env:{...SIM3D_WIRE.env,MEKONIQ_WEBOTS_WATCH:'1'}}:SIM3D_WIRE);
+// R2a: the MuJoCo arm cell worker speaks the same wire; MuJoCo runs inside the worker process (no host engine, no extra argv or environment). create compiles the MJCF and loads the meshes.
+export const MUJOCO_WIRE:WireSpec={protocol:'mekoniq-sim3d/1',module:'mujoco_worker',deadlinesMs:{create:20_000,describe:15_000},extraArgs:()=>[],
+ validateRequest:validateSim3DRequest,validateResponse:validateSim3DResponse as WireSpec['validateResponse'],fatalCodes:SIM3D_FATAL_CODES};
+export const spawnMujocoWorker=(o:SpawnOptions):Promise<IRSimWorkerClient>=>spawnWorker(o,MUJOCO_WIRE);

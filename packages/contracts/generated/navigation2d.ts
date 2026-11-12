@@ -226,7 +226,7 @@ export type Sim3DRequestV1 =
          */
         arms?: {
           armId: EngineeringId;
-          sceneRef: 'arm-scene.json';
+          sceneRef: 'arm-scene.json' | 'arm-cell-scene.json';
         }[];
       };
     }
@@ -1234,6 +1234,10 @@ export interface Sim3DModelReadbackV1 {
       axis: number[];
       lower: number;
       upper: number;
+      /**
+       * The joint actuator's force (torque, N*m for a hinge) limit as the engine loaded it; MuJoCo plant only.
+       */
+      forceN?: number;
     }[];
   };
 }

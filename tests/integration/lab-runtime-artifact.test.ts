@@ -23,12 +23,13 @@ test('self-contained exported artifact opens its embedded SQLite migration away 
   expect(paths).toEqual(expect.arrayContaining(['robotics/navigation-2d/irsim_worker/__main__.py','robotics/model-validation/linkforge_worker/__main__.py','robotics/simulation/compiler/description.py','robotics/navigation-2d/fixtures/serve-demo-v1/serve-project.json','packages/contracts/schemas/irsim-worker-v1.schema.json']));
   expect(paths.filter((p:string)=>/\/(tests|__pycache__|\.venv[^/]*)\//.test(p)||p.endsWith('.pyc'))).toEqual([]);
   for(const t of portable.tools.filter((t:{lock?:unknown})=>t.lock))expect(portable.closure.files.find((f:{path:string})=>f.path===t.lock.path).sha256).toBe(createHash('sha256').update(await readFile(t.lock.path)).digest('hex'));
-  expect(portable.tools.map((t:{id:string})=>t.id)).toEqual(['irsim_worker','linkforge_worker','algorithm_checks','webots_worker','description_helper']);
+  expect(portable.tools.map((t:{id:string})=>t.id)).toEqual(['irsim_worker','linkforge_worker','algorithm_checks','webots_worker','mujoco_worker','description_helper']);
   // Webots itself is a host engine: named in the manifest, never part of the closure
   expect(portable.flags).toEqual(expect.arrayContaining(['MEKONIQ_LAB_IRSIM','MEKONIQ_LAB_LINKFORGE','MEKONIQ_LAB_WEBOTS']));
   expect(portable.hostEngines).toEqual([{id:'webots_3d',version:'R2025a',bundled:false}]);
   expect(paths.filter((p:string)=>/\.app\/|\/Contents\/|libController/.test(p))).toEqual([]);
   expect(portable.tools.find((t:{id:string})=>t.id==='webots_worker')).toMatchObject({provider:'webots_3d',protocol:'mekoniq-sim3d/1',root:'robotics/simulation-3d',module:'webots_worker'});
+  expect(portable.tools.find((t:{id:string})=>t.id==='mujoco_worker')).toMatchObject({provider:'mujoco_arm',protocol:'mekoniq-sim3d/1',root:'robotics/simulation-mujoco',module:'mujoco_worker'});
   // C03 LFIR-17: each worker ships its license inventory inside the closure, next to its lock
   for(const t of portable.tools.filter((t:{lock?:unknown})=>t.lock)){expect(t.licenses.path,t.id).toBe(`${t.root}/licenses.json`);expect(portable.closure.files.find((f:{path:string})=>f.path===t.licenses.path).sha256).toBe(t.licenses.sha256);}
   expect(portable.roots).toEqual(['robotics/navigation-2d','robotics/model-validation','robotics/algorithm','robotics/simulation-3d','robotics/simulation-mujoco','robotics/simulation/compiler','robotics/simulation/actors','robotics/simulation/worlds','packages/contracts/schemas']);expect(paths.every((p:string)=>portable.roots.some((r:string)=>p.startsWith(r+'/')))).toBe(true);
