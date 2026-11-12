@@ -208,3 +208,40 @@
 - [ ] **Step 2:** Viết hộp runtime và nối vào `workspace.ts` (`twin-connect`: `parseTarget` → `saveTarget` → health → kiểm pin → `pair`); thêm preset, capability, nhãn, khối report; `prepareMujoco` (kiểm closure, venv theo lock, không cần engineering catalog) và `checkMujocoHealth`; provider `mujoco` trong `test-irsim-e2e.mjs` với mẫu tiến trình sót `mujoco_worker`.
 - [ ] **Step 3: e2e** `mujoco-coffee.spec.ts` (INT15; một spec mỗi launcher): `pnpm lab:mujoco`, ghép nối qua hộp runtime, chọn `mujoco-coffee`, tự chạy ở 1× trong 10 s rồi 16× tới `completed`; `run-served` là 2; trong lúc chạy `canvas.dataset.rebuilds` không tăng; mở thẻ Kỹ thuật thấy hai cột khớp và nhãn `thực (MuJoCo)`; thẻ Báo cáo có `not_calibrated`, `contact` và bảng waypoint; chụp `screens/mujoco-coffee.png` ở 1440 × 900 với bảng chi tiết đóng. Spec mặc định bị Playwright bỏ qua như `webots-*.spec.ts`.
 - [ ] **Step 4:** `pnpm typecheck && pnpm exec vitest run && pnpm test:mock-e2e && pnpm test:mujoco-e2e -- mujoco-coffee.spec.ts && pnpm test:irsim-e2e -- irsim-journey.spec.ts && pnpm test:webots-e2e -- webots-coffee.spec.ts` xanh (INT16). Commit `feat: runtime connection box, the mujoco coffee preset and its launcher`.
+
+---
+
+### Task U07: Dọn dẹp hiển thị theo ảnh chụp (thêm khi thực thi, 2026-11-12)
+
+Thêm bởi người điều phối sau khi xem ảnh chụp của U01–U04: các lỗi nhìn thấy được mà không task nào ở trên sở hữu, và các ý nhỏ review đã hoãn. Chạy sau U04, trước M01. Không đổi hành vi run, không đổi request.
+
+**Files:**
+- Modify: `src/ui/run-bar.ts`, `src/ui/problems.ts`, `src/ui/transport.ts`, `src/ui/keys.ts`, `src/ui/engineering-panel.ts`, `src/ui/report-panel.ts`, `src/ui/workspace.ts`, `src/scenarios/preflight.ts`, `src/styles/main.css`, `tests/e2e/twin-layout.spec.ts`, `tests/e2e/twin-transport.spec.ts`, `tests/e2e/coffee-journey.spec.ts`, `tests/unit/twin-problems.test.ts`, `tests/unit/twin-keys.test.ts`, `tests/unit/twin-shell.test.ts`
+- Create: `tests/e2e/twin-polish.spec.ts`
+
+**Interfaces:**
+- Consumes: `RunBarState.runtime{state,label,detail}`, `collectProblems`, `pickerItems`, `keyAction`, `shortcutsDialog`, `replayMarks`, `TwinUiState`, `BOXES` (U01–U04).
+- Produces:
+  ```ts
+  // run-bar.ts: chip runtime chỉ hiện chấm trạng thái và một từ: 'Chưa ghép nối' | 'Đang kết nối' | 'Trực tiếp' | 'Chậm' | 'Mất kết nối' | 'Bản ghi' (ba ngôn ngữ);
+  //   chuỗi chi tiết (data-testid twin-telemetry, id #twin-telemetry) chuyển lên đầu thẻ Kỹ thuật và vào hộp runtime
+  export function runtimeWord(link:LinkState,freshness:'live'|'stale'|'frozen_sim'|'disconnected'|'unknown',paired:boolean,replay:boolean):{state:'none'|'connecting'|'live'|'slow'|'lost'|'recorded';label:string}
+  // problems.ts: collectProblems bỏ đầu vào `notice` (thông báo không phải vấn đề: chỉ còn banner trong khung nhìn); Problem thêm entityName?:string
+  export function backendReasons(...)   // preflight.ts: một hàm duy nhất cho lý do backend/scenario, dùng chung bởi preflight và pickerItems; mỗi backend một lý do
+  // keys.ts: keyAction coi input[type=range] như không phải ô nhập (target thêm trường type?:string); bỏ qua sự kiện lặp phím (repeat) cho twin-toggle-play
+  ```
+
+- [ ] **Step 1: e2e fail trước** (`twin-polish.spec.ts`, launcher mock, preset `coffee`, 1440 × 900 trừ khi ghi khác):
+  - chip runtime: chữ của `runtime-chip` là đúng một trong các từ ở Interfaces trong từng trạng thái (chưa ghép nối, đang chạy, xem lại); không chứa `SSE`, mã lý do hay số giây; `twin-telemetry` nằm trong `#inspector-panel-engineering` và trong `runtime-popover`, không còn trên thanh run; tên kịch bản trên `scenario-picker` hiện đủ ("Cà phê sữa đá"), không bị cắt (scrollWidth ≤ clientWidth) khi có một vấn đề và nút hành động chính;
+  - thẻ Kỹ thuật, chọn `arm-1` khi đang chạy: `#inspector-panel-engineering` không tràn ngang (scrollWidth ≤ clientWidth) và mọi ô của bảng có cạnh phải không vượt cạnh phải của panel;
+  - hộp Vấn đề với một attention: đúng một thẻ cho vấn đề đó, `attention-reason` nằm trong thẻ ấy; nút tới đối tượng mang tên hiển thị (`nameOf`) và `aria-label` có tên đối tượng;
+  - một thông báo (ví dụ sau khi ghép nối) hiện ở banner, `problems-count` không tăng vì nó; khi danh sách vấn đề về rỗng rồi có vấn đề mới, hộp không tự mở;
+  - bộ chọn kịch bản: mỗi preset không chạy được liệt kê mỗi backend đúng một lý do;
+  - xem lại: thanh run không có `primary-action`, có `data-testid="recorded-tag"` cạnh trạng thái, ô tốc độ chạy không hiện trên thanh điều khiển; nhấn `Space` khi thanh trượt đang có focus phát/dừng xem lại; giữ `Space` (sự kiện lặp) không đổi trạng thái nhiều lần;
+  - `?`: focus vào nút đóng của `shortcuts`; đóng lại thì focus trở về phần tử trước đó; nút chế độ xem có `aria-pressed`, nút bảng phím có `aria-expanded`, và chỉ có một nút `twin-help` trên trang;
+  - chế độ xem: bấm `mode-badge` mở `caveat-detail` nhìn thấy được;
+  - 1024 × 700: trang không cuộn dọc; thanh run cao bằng lúc ở 1440 × 900 (nhãn mô phỏng không xuống dòng);
+  - thẻ Đối tượng: dòng cốc hiện tại (`cup-owner`) cách thẻ công việc phía trên ít nhất 8 px.
+- [ ] **Step 2: Unit fail trước:** `twin-problems.test.ts`: không còn đầu vào `notice`; `pickerItems` và `preflight` cho cùng danh sách lý do với cùng health (một lý do mỗi backend). `twin-keys.test.ts`: `keyAction` với `target:{tagName:'INPUT',type:'range'}` trả hành động; với `type:'text'` trả `null`; `replayMarks(report,1)` trả một mốc, không chia cho 0. `twin-shell.test.ts`: `runtimeWord` cho từng tổ hợp ở Interfaces.
+- [ ] **Step 3:** Sửa theo Interfaces và các phép thử. Bảng Kỹ thuật ở bề rộng bảng chi tiết xếp mỗi đại lượng thành một khối (tên; quan sát; lệnh; một dòng phụ gồm đơn vị, nguồn, tuổi dữ liệu) thay cho sáu cột. `coffee-journey.spec.ts` mở thẻ Đối tượng trước khi đọc `cycle-queue`. `Object.hasOwn(BOXES,action)` thay cho `in`.
+- [ ] **Step 4:** `pnpm typecheck && pnpm exec vitest run` và toàn bộ danh sách mock e2e (17 spec hiện có + `twin-polish.spec.ts`) xanh; ngưỡng 60 %/45 % của `twin-layout.spec.ts` vẫn đạt. Commit `fix: twin page polish from screenshots — plain runtime state, readable engineering table, one card per problem`.

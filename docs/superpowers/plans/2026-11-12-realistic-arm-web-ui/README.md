@@ -40,13 +40,13 @@
 |---|---|---|
 | [01 — Tay máy MuJoCo](01-mujoco-arm.md) | M00–M07 | Spike, contract, fixture xArm 6, compiler MJCF, worker, máy trạng thái gắp tiếp xúc, ports, `MJ-BV01` |
 | [02 — Runtime từ web](02-web-runtime.md) | N01–N05 | Gateway bearer/allowlist, `step` có nhịp, client Lab, image container, runbook Cloud Run |
-| [03 — UI Lab](03-lab-ui.md) | U01–U06 | Bố cục mới, Vấn đề và bộ chọn, thanh điều khiển, khung nhìn, mesh, kết nối và preset |
+| [03 — UI Lab](03-lab-ui.md) | U01–U07 | Bố cục mới, Vấn đề và bộ chọn, thanh điều khiển, khung nhìn, mesh, kết nối và preset; U07 là task dọn dẹp thêm khi thực thi |
 | [04 — Qualification](04-qualification.md) | Q01–Q02 | Bảng `r2a`, recorder, bản ghi |
 
 ```mermaid
 flowchart LR
   M00 --> M01 --> M02 --> M03 --> M04 --> M05 --> M06 --> M07
-  M00 --> U01 --> U02 --> U03 --> U04
+  M00 --> U01 --> U02 --> U03 --> U04 --> U07
   N01 --> N02 --> N03 --> N04 --> N05
   M02 --> U05
   M06 --> U05
@@ -60,7 +60,7 @@ flowchart LR
   N04 --> Q01 --> Q02
 ```
 
-Thứ tự cho một người: M00 → U01–U04 → M01–M07 → N01–N04 → U05–U06 → N05 → Q01–Q02. M00 trượt tiêu chí dừng (spec §6.1) → dừng gói 01 và hỏi người dùng; gói 02 (N01–N03) và gói 03 (U01–U04) không phụ thuộc M00, vẫn làm được và vẫn có gate riêng (`G-RT1`, `G-UI1`), khi đó `G-MA1`, `G-MA2`, `G-RT2`, `G-INT4` ghi `blocked` (spec D70, D71). Task `source/` và task `lab/` không chạy song song trong cùng checkout.
+Thứ tự cho một người: M00 → U01–U04 → U07 → M01–M07 → N01–N04 → U05–U06 → N05 → Q01–Q02. M00 trượt tiêu chí dừng (spec §6.1) → dừng gói 01 và hỏi người dùng; gói 02 (N01–N03) và gói 03 (U01–U04) không phụ thuộc M00, vẫn làm được và vẫn có gate riêng (`G-RT1`, `G-UI1`), khi đó `G-MA1`, `G-MA2`, `G-RT2`, `G-INT4` ghi `blocked` (spec D70, D71). Task `source/` và task `lab/` không chạy song song trong cùng checkout.
 
 ## Traceability
 
@@ -83,6 +83,7 @@ Thứ tự cho một người: M00 → U01–U04 → M01–M07 → N01–N04 →
 | SX-53, SX-56 | U02 | UI02 → G-UI1 |
 | SX-54, SX-55 | U03 | UI03 → G-UI1 |
 | SX-46, SX-58 | U04 | UI04 → G-UI1 |
+| SX-51, SX-52, SX-58 (dọn dẹp) | U07 | UI01, UI02, UI04 → G-UI1 |
 | SX-57 | U05 | UI05 → G-INT4 |
 | SX-47 (UI), SX-59 | U06 | INT15, INT16 → G-INT4 |
 | SX-60, D71 | Q01, Q02 | REG03 → G-REG3; mọi gate |
