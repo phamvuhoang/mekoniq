@@ -47,17 +47,15 @@ The runtime's own asset catalog resolves the project's robot asset by content ha
 
 ## Status and measurements (2026-11-13)
 
-Base image: `node:24.22.2-bookworm-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9` (index; linux/arm64 and linux/amd64). Image size about 474 MB (arm64) and 457 MB (amd64) (the 178 MB venv holds the whole lock, including pytest). Builds take about 40-60 s with a warm layer cache.
+Base image: `node:24.22.2-bookworm-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9` (index; linux/arm64 and linux/amd64). Image size about 474 MB (arm64) and 457 MB (amd64) (the 178 MB venv holds the whole lock, including pytest). Builds take about 10-15 s with a warm layer cache, 40-60 s cold.
 
-**Open defect in the runtime (not fixed here, `packages/lab-runtime/src/v2/readiness.ts:81`).** The `gripper` readiness check exempts only `set.providers.arm==='webots_arm'`, so for the MuJoCo set `POST /lab/v2/runs` answers `422 BACKEND_UNAVAILABLE ["GRIP_PROVIDER_UNAVAILABLE"]`. The M07 tests never went through the gateway's create, so nothing caught it. With the one-line change `set.providers?.arm!=='webots_arm'` -> `!isArmPlantSet(set)` (from `backend-registry`) the test below passed on linux/arm64 (measured in a scratch copy, not committed). Until that fix is committed the image cannot complete `MJ-BV01` through the public API and RT05 is not met.
-
-Wall time of the whole stepping loop of `MJ-BV01` (4800 ticks, `step{ticks:50}`, through HTTP, in the container, seed 42):
+Wall time of the whole stepping loop of `MJ-BV01` (4800 ticks, `step{ticks:50}`, through the public HTTP API, in the container, seed 42, `armSceneCollision: true`):
 
 | Architecture | Result | Wall time per tick |
 |---|---|---|
-| linux/arm64 (native, with the one-line readiness change) | completed, served 2 | 1.82-1.97 ms (8.8-9.4 s) |
-| linux/amd64 under emulation (same change) | not completed: `needs_attention` at tick 1600, `TRANSFER_UNKNOWN` of `coffee-job-1` (the pick, outcome unknown, first attention at tick 1585), served 0 | 3.3-3.4 ms over the 1600 ticks it ran |
+| linux/arm64 (native, RT05) | passed: completed at tick 4800, served 2 | 1.88 ms (9.0 s) |
+| linux/amd64 under emulation (a measurement, not a criterion) | not completed: `needs_attention` at tick 1600, served 0; `TRANSFER_UNKNOWN` of `coffee-job-1` first raised at tick 1585; arm stop `PLANT_UNSTABLE`, detail "the engine reported a bad state (BADQACC) and reset itself" (stop tick 1585) | 3.4-3.5 ms over the 1600 ticks it ran (5.4-5.6 s) |
 
 ## Real amd64 hardware has not been tested
 
-Cloud Run runs linux/amd64; this Mac is arm64, so the amd64 image only ever ran under emulation here. The emulated run above fails in the first cup pick (probably the contact grasp failure the engine spike saw under emulation on MuJoCo 3.17.0; not confirmed here, the engine's own error is not in the report). It stopped at tick 1600 in all three runs. It is a measurement, not a verdict: the cause is unknown, it may be the emulation or the engine on x86-64, and it must be checked on real amd64 hardware before anyone relies on the Cloud Run image. In the amd64 image the tool root's 39 Python tests (`tests/` of `robotics/simulation-mujoco`, mounted read-only) all passed (2.2 s), as they do on arm64 (0.75 s), so the engine itself starts, compiles the cell and passes its unit tests under emulation; only the full cell grasp fails.
+Cloud Run runs linux/amd64; this Mac is arm64, so the amd64 image only ever ran under emulation here. The emulated run fails in the first cup pick, at tick 1585, with the engine reporting `BADQACC` (an invalid joint acceleration, i.e. a numerical blow-up) and resetting itself; the runtime stops the arm with `PLANT_UNSTABLE`. It failed identically in every emulated run (six runs on two builds), always at tick 1585/1600. This matches the engine spike's observation (NaN in the contact grasp on MuJoCo 3.17.0 under emulation). The cause is unknown: it may be the emulation or the engine on x86-64, and it must be checked on real amd64 hardware before anyone relies on the Cloud Run image. In the amd64 image the tool root's 39 Python tests (`tests/` of `robotics/simulation-mujoco`, mounted read-only) all pass (2.2 s), as they do on arm64 (0.75 s), so the engine starts, compiles the cell and passes its unit tests under emulation; only the full-cell grasp fails.
