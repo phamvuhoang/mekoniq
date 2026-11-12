@@ -4,7 +4,9 @@ import {forwardKinematics,type ArmModelSI} from './arm-kinematics';
 import {qrotate,type Vec3} from '../frames';
 import {hashJson} from '../hash';
 export type ArmObstacle={id:string;kind:'sphere';center:Vec3;radiusM:number}|{id:string;kind:'box';min:Vec3;max:Vec3};
-export interface ArmGeometry {linkRadiusM:number;gripperRadiusM:number;gripperLengthM:number;cupRadiusM:number;cupHeightM:number;provenance:'illustrative'}
+/** `linkRadiiM` (one per link, link-1..link-6) replaces `linkRadiusM` link by link. `cupAxisInTool` lays the held cup along that tool-frame axis, centred on the TCP (side grip);
+ * absent, the cup stands on the tool axis beyond the gripper as before. Without the two fields every result is the same, number for number. */
+export interface ArmGeometry {linkRadiusM:number;gripperRadiusM:number;gripperLengthM:number;cupRadiusM:number;cupHeightM:number;provenance:'illustrative'|'assumed';linkRadiiM?:number[];cupAxisInTool?:[number,number,number]}
 export const DEFAULT_ARM_GEOMETRY:ArmGeometry={linkRadiusM:0.025,gripperRadiusM:0.02,gripperLengthM:0.025,cupRadiusM:0.035,cupHeightM:0.09,provenance:'illustrative'};
 export interface SweepResult {ok:boolean;engine:'capsule-sweep-v1';modelRevision:string;geometryRevision:string;toleranceM:number;evaluations:number;reason?:'COLLISION'|'SWEEP_UNCERTAIN';pair?:[string,string];fraction?:number;clearanceM?:number}
 interface Capsule {id:string;a:Vec3;b:Vec3;radius:number;link:number;kind:'link'|'gripper'|'cup'}
@@ -39,10 +41,12 @@ function boxDistance(a:Vec3,b:Vec3,min:Vec3,max:Vec3){
 }
 function bodies(model:ArmModelSI,q:readonly number[],geometry:ArmGeometry,heldCup:boolean):Capsule[]{
  const fk=forwardKinematics(model,q),points:Vec3[]=[[0,0,0],...fk.frames.map(f=>f.position)],out:Capsule[]=[];
- for(let i=1;i<points.length;i++)if(Math.hypot(...sub(points[i]!,points[i-1]!))>1e-9)out.push({id:`link-${i}`,a:points[i-1]!,b:points[i]!,radius:geometry.linkRadiusM,link:out.length,kind:'link'});
+ for(let i=1;i<points.length;i++)if(Math.hypot(...sub(points[i]!,points[i-1]!))>1e-9)out.push({id:`link-${i}`,a:points[i-1]!,b:points[i]!,radius:geometry.linkRadiiM?.[i-1]??geometry.linkRadiusM,link:out.length,kind:'link'});
  const link=out.length;
  out.push({id:'gripper',a:fk.tcp.position,b:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM])),radius:geometry.gripperRadiusM,link,kind:'gripper'});
- if(heldCup)out.push({id:'held-cup',a:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM])),b:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM+geometry.cupHeightM])),radius:geometry.cupRadiusM,link,kind:'cup'});
+ const axis=geometry.cupAxisInTool;
+ if(heldCup&&axis){const n=Math.hypot(...axis),half=qrotate(fk.tcp.quaternionXyzw,axis.map(v=>v/n*geometry.cupHeightM/2) as Vec3);out.push({id:'held-cup',a:sub(fk.tcp.position,half),b:add(fk.tcp.position,half),radius:geometry.cupRadiusM,link,kind:'cup'});}
+ else if(heldCup)out.push({id:'held-cup',a:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM])),b:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM+geometry.cupHeightM])),radius:geometry.cupRadiusM,link,kind:'cup'});
  return out;
 }
 function clearance(capsules:Capsule[],world:readonly ArmObstacle[],allowed:readonly (readonly [string,string])[]=[]){
@@ -64,7 +68,10 @@ function clearance(capsules:Capsule[],world:readonly ArmObstacle[],allowed:reado
 export function checkArmSweep(model:ArmModelSI,from:readonly number[],to:readonly number[],options:{world:readonly ArmObstacle[];heldCup?:boolean;geometry?:ArmGeometry;toleranceM?:number;allowedPairs?:readonly (readonly [string,string])[]}):SweepResult{
  const geometry=options.geometry??DEFAULT_ARM_GEOMETRY,toleranceM=options.toleranceM??0.0005;
  const vector=(v:Vec3)=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite);
- if(!Number.isFinite(toleranceM)||toleranceM<=0||toleranceM>0.01||Object.entries(geometry).some(([k,v])=>k!=='provenance'&&(typeof v!=='number'||!Number.isFinite(v)||v<=0)))throw new Error('COLLISION_GEOMETRY_INVALID');
+ const positive=(v:unknown)=>typeof v==='number'&&Number.isFinite(v)&&v>0;
+ if(!Number.isFinite(toleranceM)||toleranceM<=0||toleranceM>0.01||Object.entries(geometry).some(([k,v])=>k!=='provenance'&&k!=='linkRadiiM'&&k!=='cupAxisInTool'&&!positive(v)))throw new Error('COLLISION_GEOMETRY_INVALID');
+ if(geometry.linkRadiiM!==undefined&&(!Array.isArray(geometry.linkRadiiM)||geometry.linkRadiiM.length!==model.links.length||!geometry.linkRadiiM.every(positive)))throw new Error('COLLISION_GEOMETRY_INVALID');
+ if(geometry.cupAxisInTool!==undefined&&(!vector(geometry.cupAxisInTool)||!(Math.hypot(...geometry.cupAxisInTool)>1e-9)))throw new Error('COLLISION_GEOMETRY_INVALID');
  if(options.allowedPairs?.some(p=>!p.some(id=>id==='gripper'||id==='held-cup')))throw new Error('ALLOWED_PAIR_INVALID');
  for(const o of options.world)if(!o.id||(o.kind==='sphere'?(!vector(o.center)||!Number.isFinite(o.radiusM)||o.radiusM<=0):o.kind!=='box'||!vector(o.min)||!vector(o.max)||o.min.some((n,k)=>n>=o.max[k]!)))throw new Error('COLLISION_WORLD_INVALID');
  forwardKinematics(model,from);forwardKinematics(model,to);

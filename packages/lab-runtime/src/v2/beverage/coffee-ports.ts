@@ -1,7 +1,8 @@
 // The workflow consumes plant facts; it never creates controller telemetry or grip from completion ACKs.
 import type {CellAdapter,CellReport} from '../../../../cell-adapters/src/contract';
 import {MockCoffeeAdapter,MockCoffeePlant,type CoffeePlantState} from '../../../../cell-adapters/src/mock-coffee';
-import {MockArmAdapter,MockArmPlant,type ArmPlantState,type ArmTracking} from '../../../../cell-adapters/src/mock-arm';
+import {MockArmAdapter,MockArmPlant,type ArmPlantState,type ArmProgramSet,type ArmTracking} from '../../../../cell-adapters/src/mock-arm';
+import type {ArmModelSI} from '../models/arm-kinematics';
 import type {ArmCollisionEvidenceRecord} from '../arm/session';
 import type {ArmSceneSnapshot} from '../models/arm-scene';
 import type {CoffeeContext,CoffeeState} from '../scenarios/coffee';
@@ -26,11 +27,11 @@ export interface CoffeePlantPorts {
  acknowledgeCompletion?(commandId:string,observationId:string):void|Promise<void>;
 }
 /** Default uses precisely the old mock choreography and mutable checkpoint objects. */
-export function createMockCoffeePorts(st:CoffeeState,ctx:CoffeeContext,newBootId:()=>string,options:{tracking?:ArmTracking}={}):CoffeePlantPorts {
+export function createMockCoffeePorts(st:CoffeeState,ctx:CoffeeContext,newBootId:()=>string,options:{tracking?:ArmTracking;programs?:ArmProgramSet;model?:ArmModelSI}={}):CoffeePlantPorts {
  st.trays??={};
  const parents=new Map<string,string>();
  const coffee=new MockCoffeePlant(st.plant,ctx.nowMs,newBootId),arm=new MockArmPlant(st.arm,ctx.nowMs,newBootId,
-  {take:()=>{const c=st.plant.cups.find(x=>x.at==='nozzle');if(!c||!coffee.takeCup(c.cupId))return null;parents.set(c.cupId,`arm:${st.armId}/tcp`);return c.cupId;},put:(cupId,rx)=>{st.trays[rx.robotId]=cupId;parents.set(cupId,`robot:${rx.robotId}/tray:${rx.slot}`);}},ctx.receiver,undefined,options.tracking);
+  {take:cupId=>{const c=st.plant.cups.find(x=>x.at==='nozzle'&&(cupId===undefined||x.cupId===cupId));if(!c||!coffee.takeCup(c.cupId))return null;parents.set(c.cupId,`arm:${st.armId}/tcp`);return c.cupId;},put:(cupId,rx)=>{st.trays[rx.robotId]=cupId;parents.set(cupId,`robot:${rx.robotId}/tray:${rx.slot}`);}},ctx.receiver,options.model,options.tracking,options.programs);
  const adapters=[new MockCoffeeAdapter(coffee,ctx.runId),new MockArmAdapter(arm,ctx.runId,st.cellId)],reports:CellReport[]=[];
  const off=adapters.map(a=>a.observe(r=>reports.push(r)));
  return {adapters,coffeePlant:coffee,mockArm:arm,setArmScene:s=>arm.setCollisionScene(s),
