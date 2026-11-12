@@ -11,11 +11,13 @@ declare const __LAB_SOURCE_COMMIT__:string;
 declare const __LAB_SCHEMA_HASH__:string;
 const args=process.argv.slice(2);
 if(args.includes('--help')){
- console.log('Dev-only business simulator: node runtime.mjs [--port 4176] [--bind 127.0.0.1] [--public-host HOST]... [--allow-origin https://host[:port]]... [--data-dir ./runs] [--native-config /absolute/native.json] [--engineering-catalog DIR --engineering-simulation DIR [--engineering-python PATH] [--linkforge-python PATH --linkforge-worker DIR] [--irsim-python PATH --irsim-worker DIR [--irsim-lock FILE]]] [--mujoco-python PATH] [--mujoco-worker DIR] [--mujoco-lock FILE]\nDefault: offline mock providers. Opt-in native config connects simulation providers. MEKONIQ_LAB_LINKFORGE=1 / MEKONIQ_LAB_IRSIM=1 / MEKONIQ_LAB_MUJOCO=1 switch on shadow validation / the portable IR-SIM 2D provider / the MuJoCo arm provider (independent). Pairs one local browser session; never connects to robot hardware.\nPORT sets the port when --port is absent. A bind other than loopback needs MEKONIQ_LAB_ACCESS_KEY (>= 32 characters, environment only), accepted by /lab/v2/sessions like the pairing code; with it set no pairing code is printed.');
+ console.log('Dev-only business simulator: node runtime.mjs [--port 4176] [--bind 127.0.0.1] [--public-host HOST]... [--allow-origin https://host[:port]]... [--data-dir ./runs] [--native-config /absolute/native.json] [--engineering-catalog DIR --engineering-simulation DIR [--engineering-python PATH] [--linkforge-python PATH --linkforge-worker DIR] [--irsim-python PATH --irsim-worker DIR [--irsim-lock FILE]]] [--mujoco-python PATH] [--mujoco-worker DIR] [--mujoco-lock FILE]\nDefault: offline mock providers. Opt-in native config connects simulation providers. MEKONIQ_LAB_LINKFORGE=1 / MEKONIQ_LAB_IRSIM=1 / MEKONIQ_LAB_MUJOCO=1 switch on shadow validation / the portable IR-SIM 2D provider / the MuJoCo arm provider (independent). Pairs one local browser session; never connects to robot hardware.\nPORT sets the port when --port is absent. A bind other than loopback needs MEKONIQ_LAB_ACCESS_KEY (>= 32 characters, environment only), then the only credential: /lab/v2/sessions accepts it in place of a pairing code (none is minted or printed) and /lab/v1/sessions is refused.');
 }else{
  if(Number(process.versions.node.split('.')[0])!==24)throw new Error('NODE_24_REQUIRED');
+ // the access key is read from the environment only (a flag would show in process listings), removed at once so no worker child inherits it, and never printed
+ const accessKey=process.env.MEKONIQ_LAB_ACCESS_KEY;delete process.env.MEKONIQ_LAB_ACCESS_KEY;
  const portOf=(v:string|undefined)=>{const p=Number(v);if(!Number.isInteger(p)||p<1||p>65535)throw new Error('INVALID_PORT');return p;};
- let port=process.env.PORT!==undefined?portOf(process.env.PORT):4176,directory=resolve('runs'),nativeConfig:string|undefined,bind:string|undefined;const publicHosts:string[]=[],allowOrigins:string[]=[];const engineeringFlags:{catalogRoot?:string;simulationRoot?:string;python?:string}={},linkforgeFlags:{python?:string;workerRoot?:string}={},irsimFlags:{python?:string;workerRoot?:string;lockPath?:string}={},webotsFlags:{python?:string;workerRoot?:string;lockPath?:string;home?:string}={},mujocoFlags:{python?:string;workerRoot?:string;lockPath?:string}={};
+ let port:number|undefined,directory=resolve('runs'),nativeConfig:string|undefined,bind:string|undefined;const publicHosts:string[]=[],allowOrigins:string[]=[];const engineeringFlags:{catalogRoot?:string;simulationRoot?:string;python?:string}={},linkforgeFlags:{python?:string;workerRoot?:string}={},irsimFlags:{python?:string;workerRoot?:string;lockPath?:string}={},webotsFlags:{python?:string;workerRoot?:string;lockPath?:string;home?:string}={},mujocoFlags:{python?:string;workerRoot?:string;lockPath?:string}={};
  for(let i=0;i<args.length;i++){
   if(args[i]==='--port')port=portOf(args[++i]);
   else if(args[i]==='--bind'){if(!args[i+1])throw new Error('BIND_REQUIRED');bind=args[++i]!;}
@@ -40,6 +42,8 @@ if(args.includes('--help')){
   else if(args[i]==='--mujoco-lock'){if(!args[i+1])throw new Error('MUJOCO_LOCK_REQUIRED');mujocoFlags.lockPath=resolve(args[++i]!);}
   else throw new Error(`UNKNOWN_ARGUMENT:${args[i]}`);
  }
+ // PORT (Cloud Run) only when --port is absent
+ port??=process.env.PORT!==undefined?portOf(process.env.PORT):4176;
  // Native simulation is an explicit server-owned opt-in; the default stays offline/mock.
  const native=nativeConfig?await nativeRuntimeOptions(JSON.parse(await readFile(nativeConfig,'utf8')) as NativeServerConfig):undefined;
  // Engineering is an explicit opt-in too: no catalog and working compiler, no capability.
@@ -60,8 +64,6 @@ if(args.includes('--help')){
  const portable=irsimOn||webotsOn||mujocoOn?await portableSimulationFromOptions({enabled:irsimOn&&!!engineering,...irsim,lockPath:irsimFlags.lockPath??resolve(irsim.workerRoot,'requirements.lock'),directory,...native?{nativeFactory:native.simulationFactory,baseCatalog:native.catalog}:{},...engineering?{bundleFile:(d:string,p:string)=>engineering.bundleFile(d,p)}:{},...webots?{webots}:{},...mujoco?{mujoco}:{}}):undefined;
  if(irsimOn&&portable?.unavailable)console.error(`IR-SIM provider unavailable: ${portable.catalog.backends.find(b=>b.id==='irsim_2d')?.reason}`);
  const v2=portable?{...legacy,catalog:portable.catalog,enabledBackends:[...legacy.enabledBackends,...portable.enabledBackends],simulationFactory:portable.simulationFactory,...portable.readinessChecks?{portableChecks:portable.readinessChecks}:{}}:legacy;
- // the access key is read from the environment only: a flag would show in process listings; it is never printed
- const accessKey=process.env.MEKONIQ_LAB_ACCESS_KEY;
  const gateway=await startLabGateway({port,directory,...bind!==undefined?{bind}:{},publicHosts,allowOrigins,...accessKey!==undefined?{accessKey}:{},sourceCommit:__LAB_SOURCE_COMMIT__,schemaHash:__LAB_SCHEMA_HASH__,v2:{...v2,...engineering?{engineering}:{}}});
  console.log(`Mekoniq Robot Lab business_sim\nGateway: ${gateway.url}\n${accessKey!==undefined?'Access key: from MEKONIQ_LAB_ACCESS_KEY (no pairing code printed)':`Pairing token (expires in 5 minutes; one use): ${gateway.pairingToken}`}\nSource: ${__LAB_SOURCE_COMMIT__}`);
  const close=()=>{void gateway.close().then(()=>process.exit(0),()=>process.exit(1));};

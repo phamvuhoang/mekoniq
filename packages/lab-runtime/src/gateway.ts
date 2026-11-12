@@ -51,11 +51,12 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
  const sessions=new Map<string,{csrf:string;expiresAt:number}>();
  const runs=new Map<string,{owner:string;session:LabSession}>();
  let creatingRuns=0;
- const issuePairingToken=()=>{currentToken=token();tokenExpiresAt=now()+(options.pairingTtlMs??300000);return currentToken;};
+ // with an access key it is the only credential: no pairing code is minted, so none can be accepted anywhere
+ const issuePairingToken=()=>{if(accessKey)return '';currentToken=token();tokenExpiresAt=now()+(options.pairingTtlMs??300000);return currentToken;};
  const pairingToken=issuePairingToken();
  const pairingValid=(t:unknown)=>typeof t==='string'&&!!currentToken&&now()<tokenExpiresAt&&same(t,currentToken);
  const accessKeyValid=(t:unknown)=>typeof t==='string'&&!!accessKey&&same(t,accessKey);
- const v2=createV2Gateway({directory:options.directory,sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,now,catalog:options.v2?.catalog,enabledBackends:options.v2?.enabledBackends,stream:options.v2?.stream,readinessProbes:options.v2?.readinessProbes,nativeChecks:options.v2?.nativeChecks,portableChecks:options.v2?.portableChecks,simulationFactory:options.v2?.simulationFactory,engineering:options.v2?.engineering,pairingValid,accessKeyValid,spendPairing(){currentToken='';},same,deployment:{bind:loopbackBind(bind)?'loopback':'public'},readBody:body,send:(r,s,d)=>send(r,s,d)});
+ const v2=createV2Gateway({directory:options.directory,sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,now,catalog:options.v2?.catalog,enabledBackends:options.v2?.enabledBackends,stream:options.v2?.stream,readinessProbes:options.v2?.readinessProbes,nativeChecks:options.v2?.nativeChecks,portableChecks:options.v2?.portableChecks,simulationFactory:options.v2?.simulationFactory,engineering:options.v2?.engineering,pairingValid,...accessKey?{accessKeyValid}:{},spendPairing(){currentToken='';},same,deployment:{bind:loopbackBind(bind)?'loopback':'public'},readBody:body,send:(r,s,d)=>send(r,s,d)});
  let port=options.port??4176;
  const server=createServer((request,response)=>{void handle(request,response).catch(error=>{
   const message=error instanceof Error?error.message:'INTERNAL_ERROR';
@@ -79,6 +80,8 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
   if(request.method==='GET'&&path==='/lab/v1/health')return send(response,200,{sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,protocolMajor:1,backends:[{id:'business_sim',available:true},{id:'gazebo_sil',available:false,reason:'W06 backend not installed'},{id:'shadow',available:false,reason:'Native read-only telemetry not provisioned'},{id:'hardware_test',available:false,reason:'Native execution is outside this dev-only gateway'}],scenarioIds:['S01'],features:{polling:true,sse:false}});
   if(request.method==='POST'&&!origin)throw new GatewayError(403,'ORIGIN_REQUIRED');
   if(request.method==='POST'&&path==='/lab/v1/sessions'){
+   // the legacy API serves the keyless loopback launcher only
+   if(accessKey)throw new GatewayError(403,'V1_PAIRING_DISABLED');
    const b=await body(request);
    if(!pairingValid(b.token))throw new GatewayError(401,'PAIRING_INVALID');
    for(const [id,s]of sessions)if(now()>=s.expiresAt)sessions.delete(id);

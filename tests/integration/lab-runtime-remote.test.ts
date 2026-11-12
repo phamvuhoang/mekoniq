@@ -139,11 +139,11 @@ beforeAll(async()=>{
  await build({entryPoints:[join(process.cwd(),'packages/lab-runtime/src/cli.ts')],outfile:join(cliDir,'runtime.mjs'),bundle:true,platform:'node',format:'esm',target:'node24',packages:'bundle',logLevel:'silent',banner:{js:"import {createRequire as __labCreateRequire} from 'node:module';const require=__labCreateRequire(import.meta.url);"},define:{__LAB_SOURCE_DIRTY__:'false',__LAB_NATIVE_TOOLS__:'{}',__LAB_SOURCE_COMMIT__:'"test-commit"',__LAB_SCHEMA_HASH__:JSON.stringify(hash)}});
 },60000);
 afterAll(async()=>{if(cliDir)await rm(cliDir,{recursive:true,force:true});});
-function cli(args:string[],env:Record<string,string>){
+function cli(args:string[],env:Record<string,string>,node:string[]=[]){
  const base={...process.env};delete base.MEKONIQ_LAB_ACCESS_KEY;delete base.PORT;
- const child=spawn(process.execPath,[join(cliDir,'runtime.mjs'),'--data-dir',join(cliDir,'runs'),...args],{cwd:cliDir,env:{...base,...env},stdio:['ignore','pipe','pipe']});
+ const child=spawn(process.execPath,[...node,join(cliDir,'runtime.mjs'),'--data-dir',join(cliDir,'runs'),...args],{cwd:cliDir,env:{...base,...env},stdio:['ignore','pipe','pipe']});
  let out='',err='';child.stdout.on('data',c=>out+=c);child.stderr.on('data',c=>err+=c);
- const exited=new Promise<number|null>(r=>child.once('exit',code=>r(code)));
+ const exited=new Promise<number|null>(r=>child.once('close',code=>r(code)));// 'close': stdio drained too
  const started=new Promise<string>((resolve,reject)=>{const t=setInterval(()=>{if(out.includes('Source:')){clearInterval(t);resolve(out);}},20);void exited.then(code=>{clearInterval(t);reject(new Error(`EXIT_${code}:${err}`));});});
  return {child,started,exited,output:()=>out+err};
 }
@@ -162,4 +162,44 @@ test('CLI: PORT and the key come from the environment, neither the key nor a pai
   const r=cli(['--port',String(await freePort()),...args],{...env});void r.started.catch(()=>{});
   expect(await r.exited,args.join(' ')).not.toBe(0);expect(r.output()).toContain(code);expect(r.output()).not.toContain(key);
  }
+},60000);
+
+// Fix round 1 (D55): the limiter exists only with a key; with a key there is exactly one credential.
+test('without an access key pairing behaves as before: no limiter, six wrong codes then the right one pairs on v2 and v1',async()=>{
+ const g=await setup();
+ for(let i=0;i<6;i++)expect(await pairWith(g,'wrong',loopback)).toMatchObject({status:401,body:{error:'PAIRING_INVALID'}});
+ const ok=await pairWith(g,g.issuePairingToken(),loopback);expect(ok.status).toBe(201);expect(ok.headers['retry-after']).toBeUndefined();
+ for(let i=0;i<6;i++)expect((await call(g.url+'/lab/v1/sessions',{method:'POST',headers:{Origin:loopback},body:{token:'wrong'}})).status).toBe(401);
+ expect((await call(g.url+'/lab/v1/sessions',{method:'POST',headers:{Origin:loopback},body:{token:g.issuePairingToken()}})).status).toBe(201);
+});
+test('with an access key no pairing code exists: a code-shaped token fails and counts, v1 sessions are refused and count nothing, v1 refuses the key',async()=>{
+ const g=await setup({accessKey:key});
+ expect(g.pairingToken).toBe('');expect(g.issuePairingToken()).toBe('');
+ expect(await pairWith(g,'p'.repeat(43),loopback)).toMatchObject({status:401,body:{error:'PAIRING_INVALID'}});
+ for(const token of [key,'',g.pairingToken])expect(await call(g.url+'/lab/v1/sessions',{method:'POST',headers:{Origin:loopback},body:{token}})).toMatchObject({status:403,body:{error:'V1_PAIRING_DISABLED'}});
+ for(let i=0;i<4;i++)expect((await pairWith(g,'wrong',loopback)).status).toBe(401);// failures 2..5: v1 refusals were not counted
+ expect(await pairWith(g,key,loopback)).toMatchObject({status:429,body:{error:'PAIRING_RATE_LIMITED'}});
+});
+test('bind ::1 is loopback and starts without a key',async()=>{
+ const g=await setup({bind:'::1'});expect(g.url).toMatch(/^http:\/\/\[::1\]:\d+$/);
+ expect((await call(g.url+'/lab/v2/health')).body).toMatchObject({deployment:{bind:'loopback'}});
+});
+test('origin matching is exact: an upper-case request Origin is refused',async()=>{
+ const g=await setup({allowOrigins:[remote]});
+ for(const origin of ['HTTPS://LAB.EXAMPLE','https://LAB.example','Https://lab.example','HTTP://127.0.0.1:4175'])expect(await call(g.url+'/lab/v2/health',{headers:{Origin:origin}}),origin).toMatchObject({status:403,body:{error:'ORIGIN_FORBIDDEN'}});
+});
+test('CLI: PORT is read only when --port is absent; the access key is removed from the environment before anything can inherit it',async()=>{
+ const flag=await freePort(),a=cli(['--port',String(flag)],{PORT:'not-a-port'});
+ try{expect(await a.started).toContain(`Gateway: http://127.0.0.1:${flag}`);}finally{a.child.kill('SIGTERM');await a.exited;}
+ const env=await freePort(),b=cli([],{PORT:String(env)});
+ try{expect(await b.started).toContain(`Gateway: http://127.0.0.1:${env}`);}finally{b.child.kill('SIGTERM');await b.exited;}
+ for(const [args,e] of [[[],{PORT:'not-a-port'}],[['--port','0'],{PORT:String(env)}]] as [string[],Record<string,string>][]){const r=cli(args,e);void r.started.catch(()=>{});expect(await r.exited).not.toBe(0);expect(r.output()).toContain('INVALID_PORT');}
+ // a preload reports, at exit, whether the variable is still visible to the process (and so to any child it spawns)
+ const probe=join(cliDir,'env-probe.mjs');await (await import('node:fs/promises')).writeFile(probe,"import {writeSync} from 'node:fs';process.on('exit',()=>writeSync(2,'KEY_IN_ENV:'+('MEKONIQ_LAB_ACCESS_KEY' in process.env)+'\\n'));");
+ const k=cli(['--port',String(await freePort())],{MEKONIQ_LAB_ACCESS_KEY:key},['--import',pathToFileURL(probe).href]);
+ try{await k.started;}finally{k.child.kill('SIGTERM');await k.exited;}
+ expect(k.output()).toContain('KEY_IN_ENV:false');expect(k.output()).not.toContain(key);
+ const n=cli(['--port',String(await freePort())],{},['--import',pathToFileURL(probe).href]);
+ try{await n.started;}finally{n.child.kill('SIGTERM');await n.exited;}
+ expect(n.output()).toContain('KEY_IN_ENV:false');
 },60000);

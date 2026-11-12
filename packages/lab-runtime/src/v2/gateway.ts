@@ -19,7 +19,7 @@ export interface V2Deps {
  /** Backends whose execution has been switched on. Schema-only builds enable none, so every run is denied before any backend starts. */
  enabledBackends?:readonly string[];
  pairingValid(token:unknown):boolean;spendPairing():void;same(a:string,b:string):boolean;
- /** The configured access key (D55): accepted like the pairing code, never spent. */
+ /** Present only when an access key is configured (D55): accepted instead of a pairing code, never spent; its presence switches the pairing limiter on. */
  accessKeyValid?(token:unknown):boolean;
  /** Where the gateway listens, for health; nothing else about the configuration is published. */
  deployment?:{bind:'loopback'|'public'};
@@ -72,12 +72,13 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(method==='POST'&&!origin)return deny(response,403,'ORIGIN_REQUIRED',[]);
   if(method==='POST'&&sub==='/sessions'){
    const b=await deps.readBody(request),extra=Object.keys(b).filter(k=>k!=='token');
-   // checked after the body so concurrent attempts cannot all pass the gate before one is counted; a valid attempt does not reset the count
+   // only with an access key (D55); checked after the body so concurrent attempts cannot all pass the gate before one is counted; a valid attempt does not reset the count
+   const limited=!!deps.accessKeyValid;
    pairingFailures=pairingFailures.filter(t=>deps.now()-t<PAIRING_WINDOW_MS);
-   if(pairingFailures.length>=PAIRING_FAILURES){response.setHeader('Retry-After',String(Math.max(1,Math.ceil((pairingFailures[0]!+PAIRING_WINDOW_MS-deps.now())/1000))));return deny(response,429,'PAIRING_RATE_LIMITED',[]);}
+   if(limited&&pairingFailures.length>=PAIRING_FAILURES){response.setHeader('Retry-After',String(Math.max(1,Math.ceil((pairingFailures[0]!+PAIRING_WINDOW_MS-deps.now())/1000))));return deny(response,429,'PAIRING_RATE_LIMITED',[]);}
    if(extra.length){const issues=extra.map(k=>({path:'',code:classifyField(k),message:`Property "${k}" is not allowed`}));return deny(response,422,'INVALID_SESSION_REQUEST',codesOf(issues),issues);}
    const viaKey=!!deps.accessKeyValid?.(b.token);
-   if(!viaKey&&!deps.pairingValid(b.token)){pairingFailures.push(deps.now());return deny(response,401,'PAIRING_INVALID',[]);}
+   if(!viaKey&&!deps.pairingValid(b.token)){if(limited)pairingFailures.push(deps.now());return deny(response,401,'PAIRING_INVALID',[]);}
    for(const [id,s]of sessions)if(deps.now()>=s.expiresAt)sessions.delete(id);
    if(sessions.size>=10)return deny(response,429,'SESSION_LIMIT',[]);
    if(!viaKey)deps.spendPairing();const id=token(),csrf=token();sessions.set(id,{csrf,expiresAt:deps.now()+3600000});
