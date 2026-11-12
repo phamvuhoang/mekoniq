@@ -3,21 +3,26 @@
 import {createHash} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
-import type {ArmPlantState} from '../../../../cell-adapters/src/mock-arm';
+import type {ArmPlantState,ArmPropSample} from '../../../../cell-adapters/src/mock-arm';
 import type {JsonObject} from '../../../../contracts/src/index';
 import {hashJson} from '../hash';
 import {PUMA560_SI} from '../models/arm-kinematics';
 import {METHOD,type AllowedContact,type ArmCollisionEvidenceRecord} from '../arm/session';
-import type {ArmPlantReport} from './coffee-ports';
+import type {ArmCellEvidence,ArmPlantReport} from './coffee-ports';
 
-export const ARM_TRACE_FILE='arm-trace.json';
-export interface ArmTraceFile {schemaVersion:1;note:string;samples:{tick:number;actualRad:number[];commandedRad:number[]}[]}
-export interface ArmReportBlock {trace:{path:string;sha256:string;samples:number};tracking:ArmPlantReport['tracking'];armPlant:ArmPlantReport;collision:ArmCollisionEvidenceRecord}
+export const ARM_TRACE_FILE='arm-trace.json',ARM_PROPS_FILE='arm-props-trace.json';
+export interface ArmTraceFile {schemaVersion:1;note:string;samples:{tick:number;actualRad:number[];commandedRad:number[];gripperCommandM?:number}[]}
+export interface ArmPropsFile {schemaVersion:1;note:string;frame:'map';samples:ArmPropSample[]}
+type FileRef={path:string;sha256:string;samples:number};
+/** A contact plant (MuJoCo, R2a) adds the cell's evidence: the solved waypoint table, the cup trace file, the allowed contacts, the assumed release timeout and the statements that qualify them. */
+export interface ArmReportBlock {trace:FileRef;tracking:ArmPlantReport['tracking'];armPlant:ArmPlantReport;collision:ArmCollisionEvidenceRecord;
+ waypoints?:ArmCellEvidence['waypoints'];props?:FileRef;allowedContacts?:ArmCellEvidence['allowedContacts'];releaseTimeoutTicks?:number;notes?:string[]}
 type WorldRevision=ArmCollisionEvidenceRecord['worldRevision'];
 
 /** ARM03 from the plant's own evidence: pass only when every checked interval was clear, none was dropped, and the arm was not stopped for a collision (its own check or the engine's).
- * The record names what was swept: the model revision of the sweeps, and the allowed pairs they skipped (static for the whole trace; a pair with a support named `tray` is the release's,
- * any other the grasp's) with `allowedContactsApplied` = the intervals x pairs that were actually in contact. A plant without allowed pairs (Webots) records none, as before. */
+ * The record names what was swept: the model revision of the sweeps, and the allowed pairs they skipped with `allowedContactsApplied` = the intervals x pairs that were actually in contact.
+ * The pairs are static: each spans the whole trace and carries the run's world revision; its required `phase` only names the support (`tray`: release, any other: grasp), it is no time
+ * window (the report's notes say so). A plant without allowed pairs (Webots) records none, as before. */
 export function armCollisionRecord(arm:ArmPlantState,worldRevision:WorldRevision,assetRef:JsonObject):ArmCollisionEvidenceRecord{
  const base:ArmCollisionEvidenceRecord={id:'ARM03',result:'not_run',reasonCodes:[],engine:null,modelRevision:PUMA560_SI.revision,geometryRevision:null,worldRevision,assetRef,trace:null,attachments:[],allowedContacts:[],method:null,coverage:null,colliding:[],provenance:'geometric_checker',fidelity:'modeled'};
  const ev=arm.collision?.evidence,trace=arm.tracking?.trace??[];
@@ -35,21 +40,33 @@ export function armCollisionRecord(arm:ArmPlantState,worldRevision:WorldRevision
   method:{...METHOD,toleranceM:ev.intervals[0]!.result.toleranceM},
   coverage:{intervals:ev.intervals.length,evaluations:ev.intervals.reduce((n,i)=>n+i.result.evaluations,0),uncertain:ev.intervals.filter(i=>i.result.reason==='SWEEP_UNCERTAIN').length,
    allowedContactsApplied:ev.intervals.reduce((n,i)=>n+(i.result.allowed?.inContact.length??0),0)},colliding,
-  modelRevision:ev.intervals[0]!.result.modelRevision,allowedContacts:allowedOf(ev.intervals.map(i=>i.result),trace[0]!.tick,trace.at(-1)!.tick)};
+  modelRevision:ev.intervals[0]!.result.modelRevision,allowedContacts:allowedOf(ev.intervals.map(i=>i.result),trace[0]!.tick,trace.at(-1)!.tick,worldRevision.revision)};
 }
-const allowedOf=(results:readonly {allowed?:{pairs:[string,string][]}}[],fromTick:number,toTick:number):AllowedContact[]=>{
+const allowedOf=(results:readonly {allowed?:{pairs:[string,string][]}}[],fromTick:number,toTick:number,revision:number):AllowedContact[]=>{
  const seen=new Map<string,[string,string]>();for(const r of results)for(const p of r.allowed?.pairs??[])if(!seen.has(p.join('\u0000')))seen.set(p.join('\u0000'),[p[0],p[1]]);
- return [...seen.values()].map(pair=>({pair,phase:pair.includes('tray')?'release' as const:'grasp' as const,fromTick,toTick,revision:1}));
+ return [...seen.values()].map(pair=>({pair,phase:pair.includes('tray')?'release' as const:'grasp' as const,fromTick,toTick,revision}));
 };
 /** Writes the trace beside the run's other files and returns the block. The file is the evidence: its sha256 is in the report, `readArmTrace` re-checks it. */
-export async function buildArmReport(arm:ArmPlantState,plant:ArmPlantReport,directory:string,worldRevision:WorldRevision,assetRef:JsonObject):Promise<ArmReportBlock>{
- const file:ArmTraceFile={schemaVersion:1,note:'Per tick of a running arm program: the joints the Webots plant reported (actual) and the joints the program commanded. Radians.',samples:arm.tracking?.trace??[]};
- const bytes=Buffer.from(JSON.stringify(file));
- await writeFile(join(directory,ARM_TRACE_FILE),bytes,{mode:0o600});
- return {trace:{path:ARM_TRACE_FILE,sha256:createHash('sha256').update(bytes).digest('hex'),samples:file.samples.length},tracking:plant.tracking,armPlant:plant,collision:armCollisionRecord(arm,worldRevision,assetRef)};
+const sha=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
+async function writeEvidence(directory:string,path:string,file:ArmTraceFile|ArmPropsFile):Promise<FileRef>{const bytes=Buffer.from(JSON.stringify(file));await writeFile(join(directory,path),bytes,{mode:0o600});return {path,sha256:sha(bytes),samples:file.samples.length};}
+export async function buildArmReport(arm:ArmPlantState,plant:ArmPlantReport,directory:string,worldRevision:WorldRevision,assetRef:JsonObject,cell?:ArmCellEvidence):Promise<ArmReportBlock>{
+ const mujoco=plant.engine==='mujoco_3d';
+ const trace=await writeEvidence(directory,ARM_TRACE_FILE,{schemaVersion:1,note:mujoco?'Per tick of a running arm program: the joints the MuJoCo plant reported (actual), the joints the program commanded, and the gripper opening it commanded (m, from the first grip). Radians.'
+  :'Per tick of a running arm program: the joints the Webots plant reported (actual) and the joints the program commanded. Radians.',samples:arm.tracking?.trace??[]} satisfies ArmTraceFile);
+ const block:ArmReportBlock={trace,tracking:plant.tracking,armPlant:plant,collision:armCollisionRecord(arm,worldRevision,assetRef)};
+ if(!cell)return block;
+ const props=await writeEvidence(directory,ARM_PROPS_FILE,{schemaVersion:1,note:'The cups in the arm cell at each tick of the joint trace: position (m) and orientation in the map frame, the support they rest on, and whether the pads hold them; read at the end of the tick.',
+  frame:'map',samples:arm.tracking?.props??[]} satisfies ArmPropsFile);
+ return {...block,waypoints:structuredClone(cell.waypoints),props,allowedContacts:structuredClone(cell.allowedContacts),releaseTimeoutTicks:cell.releaseTimeoutTicks,notes:[...cell.notes]};
 }
 export async function readArmTrace(directory:string,block:ArmReportBlock):Promise<ArmTraceFile>{
  const bytes=await readFile(join(directory,block.trace.path));
- if(createHash('sha256').update(bytes).digest('hex')!==block.trace.sha256)throw new Error('ARM_TRACE_CORRUPT');
+ if(sha(bytes)!==block.trace.sha256)throw new Error('ARM_TRACE_CORRUPT');
  return JSON.parse(bytes.toString('utf8')) as ArmTraceFile;
+}
+export async function readArmProps(directory:string,block:ArmReportBlock):Promise<ArmPropsFile>{
+ if(!block.props)throw new Error('ARM_PROPS_MISSING');
+ const bytes=await readFile(join(directory,block.props.path));
+ if(sha(bytes)!==block.props.sha256)throw new Error('ARM_PROPS_CORRUPT');
+ return JSON.parse(bytes.toString('utf8')) as ArmPropsFile;
 }

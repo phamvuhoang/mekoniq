@@ -11,6 +11,9 @@ import type {CorrelatedTransferEvidence,CupLedger,CupPhysicalState} from './cup-
 export interface WebotsArmPlantReport {engine:'webots_3d';control:'position_servo';grip:'event';dynamics:'assumed';calibration:'not_calibrated';tracking:{samples:number;peakRad:number[];rmsRad:number[]}}
 /** R2a: the MuJoCo xArm 6 grips by contact; its masses and limits are the manufacturer's nominal values, every other parameter assumed. */
 export type ArmPlantReport=WebotsArmPlantReport|{engine:'mujoco_3d';engineVersion:string;control:'position_actuator';grip:'contact';dynamics:'manufacturer_nominal+assumed';calibration:'not_calibrated';tracking:{samples:number;peakRad:number[];rmsRad:number[]}}
+/** R2a: what a contact arm plant's cell was built from, for the report (SX-41): the fixture's solved waypoint table and its digest, the scene's allowed contacts, the assumed release
+ * timeout, and statements a person reads with the numbers. */
+export interface ArmCellEvidence {waypoints:{digest:string;table:{waypoint:string;q:number[];positionErrorM:number;orientationErrorRad:number;condition:number}[]};allowedContacts:{a:string;b:string}[];releaseTimeoutTicks:number;notes:string[]}
 export interface CoffeePlantPorts {
  adapters:readonly CellAdapter[];
  advance():Promise<void>;
@@ -18,7 +21,7 @@ export interface CoffeePlantPorts {
  snapshot():{coffee:CoffeePlantState;arm:ArmPlantState|null};
  drain():readonly CellReport[];
  transferEvidence(transferId:string):CorrelatedTransferEvidence|null;
- report():{cupLedger:readonly CupPhysicalState[];arm:ArmCollisionEvidenceRecord|null;/** Set by a plant-backed arm (R1.1): what plant it is and how closely it followed the commands. */armPlant?:ArmPlantReport};
+ report():{cupLedger:readonly CupPhysicalState[];arm:ArmCollisionEvidenceRecord|null;/** Set by a plant-backed arm (R1.1): what plant it is and how closely it followed the commands. */armPlant?:ArmPlantReport;/** Set by a contact arm plant (R2a). */armCell?:ArmCellEvidence};
  close():Promise<void>;
  /** Scripted cup input and fault controls. These never assert domain custody. */
  coffeePlant?:MockCoffeePlant;

@@ -13,7 +13,7 @@ import {buildArmReport,type ArmReportBlock} from '../beverage/arm-plant-report';
 import type {ArmCollisionEvidenceRecord} from '../arm/session';
 import {dispatchCellEffects,cellReportPayload} from '../../../../cell-adapters/src/dispatch';
 import type {CellReport} from '../../../../cell-adapters/src/contract';
-import {PUMA560_SI,MOCK_KINEMATIC} from '../models/arm-kinematics';
+import {PUMA560_SI,XARM6_SI,MOCK_KINEMATIC} from '../models/arm-kinematics';
 import type {ArmSceneSnapshot} from '../models/arm-scene';
 import type {SourceSession} from '../session';
 import type {Attention,CoffeeReport,CoffeeView} from '../report';
@@ -289,13 +289,13 @@ export class CoffeeDriver {
  /** The `arm` block of the run report when the arm is a plant (R1.1); null for the mock arm. Writes the trace file into `directory`. */
  async armEvidence(directory:string,world:ArmCollisionEvidenceRecord['worldRevision'],assetRef:JsonObject):Promise<ArmReportBlock|null>{
   const r=this.ports.report();
-  return r.armPlant?buildArmReport(this.st.arm,r.armPlant,directory,world,assetRef):null;
+  return r.armPlant?buildArmReport(this.st.arm,r.armPlant,directory,world,assetRef,r.armCell):null;
  }
  async close(){try{await this.ports.close();}finally{this.ledger?.close();this.ledger=undefined;}}
  async report():Promise<CoffeeReport>{
   const jobs:JsonObject[]=[],cups:CoffeeReport['cups']=[];
   for(const w of this.st.workload){const j=await this.ctx.source.read('coffee-job',w.jobId).catch(()=>null),cup=await this.ctx.source.read('cup',w.cupId);if(!j?.version||!cup.version)continue;jobs.push(j.state);cups.push(cup.state as unknown as CoffeeReport['cups'][number]);}
   return {jobs,cups,cellEffects:(await this.ctx.source.effects()).filter(e=>e.type==='cell.execute').map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
-   armTrace:{tag:MOCK_KINEMATIC,interpolation:'linear_joint_illustrative',modelRevision:PUMA560_SI.revision,limitsOk:this.arm?this.st.arm.limitsOk:false,samples:this.arm?structuredClone(this.st.arm.trace):[],collision:this.arm?structuredClone(this.st.arm.collision??null):null,stop:this.arm?structuredClone(this.st.arm.stop??null):null},plantLog:structuredClone(this.st.plant.log) as unknown as JsonObject[]};
+   armTrace:{tag:MOCK_KINEMATIC,interpolation:'linear_joint_illustrative',modelRevision:this.st.arm.plantId==='mujoco_arm'?XARM6_SI.revision:PUMA560_SI.revision,limitsOk:this.arm?this.st.arm.limitsOk:false,samples:this.arm?structuredClone(this.st.arm.trace):[],collision:this.arm?structuredClone(this.st.arm.collision??null):null,stop:this.arm?structuredClone(this.st.arm.stop??null):null},plantLog:structuredClone(this.st.plant.log) as unknown as JsonObject[]};
  }
 }

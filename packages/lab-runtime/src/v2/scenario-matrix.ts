@@ -97,6 +97,11 @@ export const scenarioMatrix:readonly MatrixRow[]=[
   tests:['tests/integration/webots-arm-bv01.test.ts','tests/integration/webots-arm-faults.test.ts','tests/integration/webots-arm-double.test.ts','tests/integration/webots-arm-programs.test.ts','tests/integration/webots-arm-readiness.test.ts'],
   backendSupport:{mock:false,simulation:true,hardware:false},oracle:'the BV01 oracle on the arm plant: grip and release are events of the program state machine, never physics; ARM03 is the swept capsule check on the ACTUAL joints every tick; a following error or a plant-reported collision stops the program with the cup still held; a lost worker or engine leaves the outcome unknown, never resent',
   measurements:['arm-tracking','arm-collision'],invariants:[...BEV,'espresso-without-ice-or-milk','parked-not-charging']},
+ {id:'MJ-BV01',title:'Espresso and iced milk coffee with the arm as a MuJoCo xArm 6 that grips by contact: recipe -> verify -> arm -> robot -> table (BV01 business template)',requirementIds:['BV-01','BV-03','BV-04','BV-05','BV-08','SIM-08','SIM-10'],runnerScenarios:['MJ-BV01'],
+  fixtures:['robotics/simulation-mujoco/fixtures/xarm6-g2-v1/component.json','robotics/simulation-mujoco/fixtures/xarm6-g2-v1/coffee-cell-project.json'],cell:true,
+  tests:['tests/integration/mujoco-arm-bv01.test.ts','tests/integration/mujoco-arm-faults.test.ts','tests/integration/mujoco-arm-programs.test.ts','tests/integration/mujoco-arm-readiness.test.ts','tests/integration/mujoco-arm-worker.test.ts'],
+  backendSupport:{mock:false,simulation:true,hardware:false},oracle:'the BV01 oracle on the contact arm plant: the cup is held, lifted and released only on the plant\'s word (pads, height, resting on the tray); ARM03 is the swept capsule check on the ACTUAL joints every tick with the cell\'s allowed contacts; a following error, an engine-reported collision or a dropped cup stops the program with the gripper command unchanged; a lost worker leaves the outcome unknown, never resent',
+  measurements:['arm-tracking','arm-collision'],invariants:[...BEV,'espresso-without-ice-or-milk','parked-not-charging']},
  {id:'IR-FD01',title:'One order, one robot on the IR-SIM 2D plant: kitchen -> table -> parking (FD01 business template)',requirementIds:['FD-01','FD-02','FD-04','FD-08','SIM-10'],runnerScenarios:['IR-FD01'],fixtures:['robotics/navigation-2d/fixtures/serve-demo-v1/serve-project.json'],cell:false,
   tests:['tests/integration/irsim-mission.test.ts','tests/integration/irsim-recovery.test.ts','tests/integration/irsim-readiness.test.ts','tests/security/irsim-authority.test.ts'],
   backendSupport:{mock:false,simulation:true,hardware:false},oracle:'served only after CargoLoaded and DeliveryHandedOff in the journal; navigation arrival ends a leg only; cancel only on a stopped observation; a lost step ACK stays unknown and is never resent',
@@ -141,8 +146,8 @@ const BACKENDS:Record<'mock'|'simulation',{amr:string;cell:string[]}>={mock:{amr
 const needsCell=(target:ScenarioDefinition|MatrixRow)=>'cell' in target?target.cell:!!target.coffee;
 export interface BackendResolution {ok:boolean;required:string[];reasonCodes:string[]}
 const ownedScenarios=(target:ScenarioDefinition|MatrixRow)=>'runnerScenarios' in target?[target.id,...target.runnerScenarios]:[target.id];
-/** IR-* scenarios run only on a set that lists them; the legacy mode formula never maps them onto mock or Gazebo backends. */
-const providerVariant=(target:ScenarioDefinition|MatrixRow)=>ownedScenarios(target).some(id=>/^(IR|WB)-/.test(id));
+/** IR-*, WB-* and MJ-* scenarios run only on a set that lists them; the legacy mode formula never maps them onto mock or Gazebo backends. */
+const providerVariant=(target:ScenarioDefinition|MatrixRow)=>ownedScenarios(target).some(id=>/^(IR|WB|MJ)-/.test(id));
 /**
  * Non-throwing form of requiredBackends. Without a set id the answer is the legacy mode formula. With one, the set must exist and match the mode (no fallback);
  * engineering sets (those declaring scenarioIds) must support the scenario and supply every role it needs; legacy sets keep the legacy formula.
@@ -166,9 +171,13 @@ export function requiredBackends(target:ScenarioDefinition|MatrixRow,mode:'mock'
  if(!r.ok)throw new Error(r.reasonCodes[0]);
  return r.required;
 }
+/** MJ-* scenarios exist for a runtime only once the operator turned the MuJoCo arm on (MEKONIQ_LAB_MUJOCO=1: the catalog's mujoco_arm is then no longer the MUJOCO_DISABLED entry).
+ * With the flag off they are neither offered by /health nor admitted, so the runtime is what it was before R2a. */
+export const scenarioOffered=(id:string,catalog:CapabilityCatalog=defaultCatalog)=>!id.startsWith('MJ-')||catalog.backends.some(b=>b.id==='mujoco_arm'&&!b.reason?.startsWith('MUJOCO_DISABLED'));
+export const offeredScenarios=(catalog:CapabilityCatalog=defaultCatalog)=>[...scenarioRegistry].filter(([id])=>scenarioOffered(id,catalog));
 /** Health view: scenario id -> backend set id -> what that pairing needs. Only sets of a mode the scenario can run in are listed. */
 export function requirementsByBackendSet(catalog:CapabilityCatalog=defaultCatalog,options:{engineering?:boolean}={}):Record<string,Record<string,{supported:boolean;required:string[];reasonCodes:string[]}>>{
- return Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,Object.fromEntries(Object.entries(catalog.sets).filter(([,s])=>s.mode==='mock'||s.mode==='simulation').map(([setId,s])=>{if(s.scenarioIds&&!options.engineering)return [setId,{supported:false,required:[],reasonCodes:['ENGINEERING_CAPABILITY_REQUIRED']}];const r=resolveBackends(def,s.mode as 'mock'|'simulation',setId,catalog);return [setId,{supported:r.ok,required:r.required,reasonCodes:r.reasonCodes}];}))]));
+ return Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,Object.fromEntries(Object.entries(catalog.sets).filter(([,s])=>s.mode==='mock'||s.mode==='simulation').map(([setId,s])=>{if(s.scenarioIds&&!options.engineering)return [setId,{supported:false,required:[],reasonCodes:['ENGINEERING_CAPABILITY_REQUIRED']}];const r=resolveBackends(def,s.mode as 'mock'|'simulation',setId,catalog);return [setId,{supported:r.ok,required:r.required,reasonCodes:r.reasonCodes}];}))]));
 }
 export interface Admission {status:'admitted'|'unavailable'|'unsupported';reasons:string[];required:string[];effects:never[]}
 /**

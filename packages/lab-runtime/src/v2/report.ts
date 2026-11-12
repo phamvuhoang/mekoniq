@@ -45,7 +45,8 @@ export interface RunReport {
  telemetry:TelemetryReport;
  /** IR-SIM only (navigation-run-evidence-v1): durable evidence manifest, identities, seeds, digests and assertions. Not part of canonicalOutcome. */
  navigation2d?:NavigationRunEvidenceV1;
- /** Only a run whose arm is a plant (R1.1): the joint trace file, per-joint tracking error, what the plant is, and ARM03 on the actual joints. Not part of canonicalOutcome. */
+ /** Only a run whose arm is a plant (R1.1): the joint trace file, per-joint tracking error, what the plant is, and ARM03 on the actual joints; a contact plant (MuJoCo, R2a) adds the waypoint
+  * table, the cup trace file, the allowed contacts, the release timeout and the notes that qualify them. Not part of canonicalOutcome. */
  arm?:ArmReportBlock;
 }
 const UUID=/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;

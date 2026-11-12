@@ -38,7 +38,7 @@ export interface ScenarioDefinition {
 const FD01={orders:[{actor:'guest-1',table:0,quantity:1,atTick:[25,500] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true};
 const FD07={orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,10] as const},{actor:'guest-2',table:1,quantity:1,atTick:[12,12] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true};
 const fixedOrder={robots:1,orders:[{actor:'guest-1',table:0,quantity:1,atTick:[10,10] as const}],confirm:{mode:'scripted' as const,delayTicks:50},park:true,maxTicks:90000};
-/** BV01's script, roles and bound; WB-BV01 is exactly this on the Webots arm. */
+/** BV01's script, roles and bound; WB-BV01 and MJ-BV01 are exactly this on the Webots and the MuJoCo arm. */
 const bv01={robots:1,orders:[],coffee:{orders:[{actor:'guest-1',table:0,recipe:'espresso',atTick:[10,10] as const},{actor:'guest-2',table:0,recipe:'iced-milk-coffee',atTick:[20,20] as const}]},confirm:{mode:'scripted' as const,delayTicks:50},park:true,maxTicks:180000};
 const corridorGap={x:4.5,y:2.5,width:1,height:1};
 const irOrder={...fixedOrder,maxTicks:30000};
@@ -72,6 +72,9 @@ export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<str
  ['WB-FD07',{id:'WB-FD07',revision:1,title:'Two robots with their own drives and LiDARs take turns through a reserved aisle on the Webots 3D plant (movers serialized by the source)',robots:2,...FD07,maxTicks:12000,basedOn:{id:'FD07',revision:1}}],
  // Webots arm (R1.1): the BV01 business template with the arm as a Webots plant under position servo; the AMR and the coffee machine stay mocks, gripping is an event. Only engineering-webots-arm-v1 runs it.
  ['WB-BV01',{id:'WB-BV01',revision:1,title:'Espresso and iced milk coffee on the Webots arm: recipe -> verify -> arm (position servo) -> robot -> table',...bv01,basedOn:{id:'BV01',revision:1}}],
+ // MuJoCo arm (R2a): the BV01 business template with the arm as a MuJoCo xArm 6 that grips the cup by contact; the AMR and the coffee machine stay mocks. Only engineering-mujoco-arm-v1 runs it,
+ // and only a runtime given MEKONIQ_LAB_MUJOCO=1 offers it (scenario-matrix.ts scenarioOffered).
+ ['MJ-BV01',{id:'MJ-BV01',revision:1,title:'Espresso and iced milk coffee on the MuJoCo arm: recipe -> verify -> arm (contact grip) -> robot -> table',...bv01,basedOn:{id:'BV01',revision:1}}],
 ]);
 export const scenarioHash=(d:ScenarioDefinition)=>hashJson(d);
 const ID=/^[A-Za-z0-9_.:-]{1,200}$/,int=(n:unknown,min:number,max:number)=>Number.isSafeInteger(n)&&(n as number)>=min&&(n as number)<=max;

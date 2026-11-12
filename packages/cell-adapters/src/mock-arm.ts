@@ -59,7 +59,10 @@ export type ArmFault='arm-reboot'|'arm-drop'|'arm-following-error'|'arm-stop'|'a
 /** Tracking mode (R1.1): the arm is a plant that follows the commanded joints (Webots). Thresholds come from the oracle profile `webotsArm` and are test thresholds, not a capability. */
 export interface ArmTracking {reachTolRad:number;settleTicks:number;followTolRad:number;followTicks:number}
 /** What the tracking mode keeps beside the plant state (JSON, so it survives a checkpoint): the generator's own commanded position, the settle and following-error counters, and per-joint stats of actual - commanded while a program runs. */
-export interface ArmTrackingState {gen:number[];settled:number;followCount:number;samples:number;peakRad:number[];sumSq:number[];trace:{tick:number;actualRad:number[];commandedRad:number[]}[]}
+export interface ArmTrackingState {gen:number[];settled:number;followCount:number;samples:number;peakRad:number[];sumSq:number[];
+ /** One sample per tick of a running program. Contact mode also records the gripper opening it commanded that tick (m). */trace:{tick:number;actualRad:number[];commandedRad:number[];gripperCommandM?:number}[];
+ /** Contact plants only (written by their ports): the cups of the cell at the ticks of `trace`, in the map frame. */props?:ArmPropSample[]}
+export interface ArmPropSample {tick:number;props:{propId:string;positionM:[number,number,number];quaternionXyzw:[number,number,number,number];restingOn:string|null;held:boolean}[]}
 export interface ArmStopState {latched:boolean;reconcileRequired:boolean;reason:string;/** Set only by halt(reason, detail): what the plant's caller knows beyond the code (e.g. the message of an unexpected error). */detail?:string;events:{tick:number;stage:'requested'|'acknowledged'|'observed'|'reset';reason:string;provenance:'modelled'}[]}
 export const ARM_COLLISION_TRACE_LIMIT=4096;
 const TRACKED_REST_RAD=2e-4;
@@ -267,7 +270,7 @@ export class MockArmPlant {
   const commanded=s.commandedQ??t.gen,error=s.q.map((q,i)=>Math.abs(q-commanded[i]!));
   if(p){
    t.samples++;error.forEach((e,i)=>{t.peakRad[i]=Math.max(t.peakRad[i]!,e);t.sumSq[i]=t.sumSq[i]!+e*e;});
-   if(t.trace.length<MOCK_ARM_PARAMS.traceCap)t.trace.push({tick:s.tick,actualRad:[...s.q],commandedRad:[...commanded]});
+   if(t.trace.length<MOCK_ARM_PARAMS.traceCap)t.trace.push({tick:s.tick,actualRad:[...s.q],commandedRad:[...commanded],...s.gripperCommandM!==undefined?{gripperCommandM:s.gripperCommandM}:{}});
    if(s.tick%MOCK_ARM_PARAMS.traceEvery===0&&s.trace.length<MOCK_ARM_PARAMS.traceCap)s.trace.push({tick:s.tick,q:[...s.q],tcp:this.tcp(s.q)});
   }
   if(Math.max(...error)>this.tracking.followTolRad){if(++t.followCount>=this.tracking.followTicks){this.stop('ARM_FOLLOWING_ERROR');return;}}else t.followCount=0;

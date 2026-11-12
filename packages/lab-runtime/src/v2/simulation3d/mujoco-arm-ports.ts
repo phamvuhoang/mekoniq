@@ -5,7 +5,7 @@
 import {join} from 'node:path';
 import type {LabProjectV2} from '../contracts';
 import type {RunProviders} from '../scenario-runner';
-import {createMockCoffeePorts,type CoffeePlantPorts,type ArmPlantReport} from '../beverage/coffee-ports';
+import {createMockCoffeePorts,type ArmCellEvidence,type CoffeePlantPorts,type ArmPlantReport} from '../beverage/coffee-ports';
 import {MockArmPlant,type ArmProgramSet,type PlantExtras} from '../../../../cell-adapters/src/mock-arm';
 import {loadOracleProfile} from '../algorithm/checker';
 import {WorkerLostError} from '../navigation2d/plant';
@@ -40,6 +40,13 @@ export function mujocoProgramSet(fixture:Pick<XArmFixture,'programs'|'physics'|'
 export const cellSupports=(layout:Pick<CellLayout,'nozzleStand'|'tray'>):ArmObstacle[]=>([['nozzle-stand',layout.nozzleStand],['tray',layout.tray]] as const).map(([id,b])=>
  ({id,kind:'box',min:b.centerM.map((c,i)=>c-b.sizeM[i]!/2),max:b.centerM.map((c,i)=>c+b.sizeM[i]!/2)}));
 const SUPPORT_IDS=new Set(['nozzle-stand','tray']);
+/** The report's statements about this plant (SX-41, D49), with the numbers they qualify. */
+export const mujocoArmCellEvidence=(engineVersion:string,fixture:Pick<XArmFixture,'waypoints'>,allowed:ArmCellSceneV1['allowedContacts']):ArmCellEvidence=>({waypoints:structuredClone(fixture.waypoints),
+ allowedContacts:allowed.map(c=>({a:c.a,b:c.b})),releaseTimeoutTicks:MUJOCO_ARM_RELEASE_TIMEOUT_TICKS,notes:[
+ `Plant: MuJoCo ${engineVersion}, xArm 6 with Gripper G2 under position actuators; not_calibrated: masses, inertia, limits and forces are manufacturer nominal values, gains, friction, contact, pads and the cell layout assumed.`,
+ `Release timeout: ${MUJOCO_ARM_RELEASE_TIMEOUT_TICKS} ticks, an assumed controller value (in neither the spec nor the oracle profile): how long the open gripper waits at the place pose for the cup to rest on the tray.`,
+ 'Sampling: collisions are those the engine reported over every physics substep of a tick (10 x 2 ms); the cups between the pads, the resting state and every pose are read at the end of the tick.',
+ 'Allowed contacts: the gripper and the held cup may touch the nozzle stand and the tray; the pairs are static for the whole trace (not scoped to a phase). An ARM03 phase only names the support (stand: grasp, tray: release), and its revision is the world revision of the run.']});
 export const mujocoArmPlantReport=(engineVersion:string,st:{samples:number;peakRad:number[];sumSq:number[]}):ArmPlantReport=>({engine:'mujoco_3d',engineVersion,control:'position_actuator',grip:'contact',
  dynamics:'manufacturer_nominal+assumed',calibration:'not_calibrated',tracking:trackingStats(st)});
 
@@ -118,10 +125,13 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
      const s=r.result as Sim3DSnapshotV1,a=s.arms?.[0];
      if(!a){lose('ARM_SNAPSHOT_MISSING');return;}
      held=a.gripper?.heldPropIds??[];
-     arm.observe(a.positionsRad,a.collisionIds,extras(s,a));
+     const ex=extras(s,a),t=st.arm.tracking!,n0=t.trace.length;
+     arm.observe(a.positionsRad,a.collisionIds,ex);
+     // the cup trace, at the cadence of the joint trace (a sample whenever the arm recorded one), in the map frame
+     if(t.trace.length>n0)(t.props??=[]).push({tick:t.trace.at(-1)!.tick,props:(ex.props??[]).map(p=>({propId:p.propId,positionM:p.inMap!.positionM,quaternionXyzw:p.inMap!.quaternionXyzw,restingOn:p.restingOn,held:held.includes(p.propId)}))});
     }catch(e){lose(e instanceof WorkerLostError?'WORKER_LOST':'WORKER_FAILED',e instanceof WorkerLostError?undefined:String((e as Error)?.message??e).slice(0,500));}
    },
-   report:()=>({...base.report(),...st.arm.tracking?{armPlant:mujocoArmPlantReport(runtime.engineVersion,st.arm.tracking)}:{}}),
+   report:()=>({...base.report(),...st.arm.tracking?{armPlant:mujocoArmPlantReport(runtime.engineVersion,st.arm.tracking),armCell:mujocoArmCellEvidence(runtime.engineVersion,fixture,scene.allowedContacts)}:{}}),
    async close(){try{await base.close();}finally{await release();}}} satisfies CoffeePlantPorts;
   }
  };

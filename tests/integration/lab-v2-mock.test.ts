@@ -132,7 +132,7 @@ test('no robot network transport is instantiated by a mock run; only enabled moc
  expect(()=>instantiateBackends('mock-amr',defaultCatalog,[])).toThrow('BACKEND_EXECUTION_DISABLED');
  expect(instantiateBackends('mock-amr',defaultCatalog,['mock_amr'])).toMatchObject({mode:'mock',access:'simulated',backends:['mock_amr']});
  expect(instantiateBackends('mock-default',defaultCatalog,['mock_amr','mock_coffee','mock_arm'])).toMatchObject({backends:['mock_amr','mock_coffee','mock_arm']});
- expect([...scenarioRegistry.keys()]).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','WB-FD01','WB-FD07','WB-BV01']);
+ expect([...scenarioRegistry.keys()]).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','WB-FD01','WB-FD07','WB-BV01','MJ-BV01']);
 });
 
 // ---- gateway: run ownership and action idempotency (carried from F01) ----

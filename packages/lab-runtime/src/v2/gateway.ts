@@ -5,7 +5,7 @@ import type {IncomingMessage,ServerResponse} from 'node:http';
 import {admitBackend,defaultCatalog,type CapabilityCatalog,type Access} from './capabilities';
 import {classifyField,validateProjectV2,validateRunRequestV2,validateActionV2,type Issue} from './contracts';
 import {collectReadiness,type ReadinessProbe,type NativeReadinessChecks} from './readiness';
-import {requirementsByBackendSet,resolveBackends} from './scenario-matrix';
+import {offeredScenarios,requirementsByBackendSet,resolveBackends,scenarioOffered} from './scenario-matrix';
 import {scenarioRegistry} from './scenario-registry';
 import {createScenarioRun,type ScenarioRun,type RunManifestInput,type RunProviders} from './scenario-runner';
 import {serveRunStream,STREAM_DEFAULTS,type StreamOptions} from './event-stream';
@@ -55,7 +55,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(method==='GET'&&sub==='/health')return send(response,200,{
    protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
-   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:[...scenarioRegistry.keys()],scenarioRequirements:Object.fromEntries([...scenarioRegistry].map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true},
+   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true},
    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
    capabilities:[...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
     // the arm plant needs no engineering bundle: its scene is built from the run's project
@@ -158,7 +158,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(set.access!==r.access)return deny(response,422,'BACKEND_UNAVAILABLE',['ACCESS_MODE_MISMATCH']);
    // engineering sets run a compiled bundle only: no ref means no run, never the caller's raw project
    if(set.scenarioIds&&set.bundle!==false&&!r.engineeringRef)return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
-   const scenario=scenarioRegistry.get(r.scenarioId);
+   const scenario=scenarioOffered(r.scenarioId,catalog)?scenarioRegistry.get(r.scenarioId):undefined; // a scenario this runtime does not offer is unknown here
    if(!scenario)return deny(response,422,'SCENARIO_UNSUPPORTED',[]);
    const resolution=r.mode==='hardware'?undefined:resolveBackends(scenario,r.mode,r.backendSetId,catalog);
    if(resolution&&!resolution.ok)return deny(response,422,'BACKEND_UNAVAILABLE',resolution.reasonCodes);
