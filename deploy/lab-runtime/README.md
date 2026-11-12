@@ -43,7 +43,7 @@ LAB_CONTAINER_IMAGE=mekoniq-lab-runtime:dev perl -e 'alarm 900; exec @ARGV' pnpm
 
 Skipped (never failed or passed) when `docker info` fails or `LAB_CONTAINER_IMAGE` is unset. It fails with `IMAGE_STALE` when the image's `sourceCommit` is not the repository HEAD. It publishes the port on `127.0.0.1` only, generates a random access key, runs with a read-only root and a tmpfs `/tmp`, pairs with the key, runs `MJ-BV01` through the public API, checks `served 2`, `not_calibrated`, an empty `docker diff`, a non-root user and a prompt clean stop, and leaves no container.
 
-The robot asset `service-robot-asset@1` cannot be supplied through the public API (the gateway resolves assets only for engineering bundles), so ARM03 in a container run has no docked robot, as noted in M07.
+The runtime's own asset catalog resolves the project's robot asset by content hash, so a run created over the public API sweeps the arm against the docked robot; the test asserts `coverage.armSceneCollision`.
 
 ## Status and measurements (2026-11-13)
 

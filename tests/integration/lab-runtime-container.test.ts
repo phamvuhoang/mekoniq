@@ -48,7 +48,7 @@ describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
    expect((await api('/sessions',{method:'POST',body:{token:'x'.repeat(40)}})).status).toBe(401);
    const paired=await api('/sessions',{method:'POST',body:{token:key}});expect(paired.status).toBe(201);
    const token=paired.body.sessionToken as string;
-   // the robot asset (service-robot-asset@1) has no public way into a run: the gateway resolves assets only for engineering bundles, so the docked robot is not in ARM03 here
+   // the runtime's own asset catalog resolves the project's robot (by content hash), so the arm's collision sweep includes the docked robot (asserted below)
    const created=await api('/runs',{method:'POST',token,body:{project:xarmProject(),scenarioId:'MJ-BV01',scenarioRevision:1,seed:42,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-arm-v1',runtimeIdentity:{sourceCommit:health.sourceCommit,schemaHash:health.schemaHash}}});
    expect(created.status,JSON.stringify(created.body).slice(0,300)).toBe(201);
    const url=`/runs/${created.body.run.id}`;let rev=created.body.run.runRevision as number,n=0;
@@ -58,8 +58,9 @@ describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
    const wallMs=Date.now()-t0;
    console.log('MJ-BV01 container',JSON.stringify({image,platform:docker(['image','inspect','--format','{{.Os}}/{{.Architecture}}',image]).out,finalTick:view.tick,wallMs,msPerTick:+(wallMs/view.tick).toFixed(3),status:view.run.status}));
    const report=(await api(`${url}/report`,{token})).body as Record<string,any>;
-   if(view.run.status!=='completed')console.log('MJ-BV01 container NOT COMPLETED',JSON.stringify({tick:view.tick,outcome:report.outcome,attention:report.attention,arm:{...report.arm,trace:undefined,props:undefined,collision:undefined},coffee:report.coffee?.cups,logs:docker(['logs','--tail','15',name]).err.replaceAll(key,'<key>')}).slice(0,6000));
+   if(view.run.status!=='completed')console.log('MJ-BV01 container NOT COMPLETED',JSON.stringify({tick:view.tick,outcome:report.outcome,attention:report.attention,armStop:report.coffee?.armTrace?.stop,arm:{...report.arm,trace:undefined,props:undefined,collision:undefined},coffee:report.coffee?.cups,logs:docker(['logs','--tail','15',name]).err.replaceAll(key,'<key>')}).slice(0,6000));
    expect(report.outcome).toMatchObject({status:'completed',served:'2'});
+   expect(report.coverage).toMatchObject({armSceneCollision:true});
    expect(report.manifest).toMatchObject({scenario:{id:'MJ-BV01'},backendSetId:'engineering-mujoco-arm-v1',calibration:{status:'not_calibrated'}});
    expect(report.arm.armPlant).toMatchObject({engine:'mujoco_3d',calibration:'not_calibrated'});
    // nothing written outside /tmp (read-only root + empty diff; OrbStack alone adds its CA certificate under /usr/local/share/ca-certificates at container start), not root
