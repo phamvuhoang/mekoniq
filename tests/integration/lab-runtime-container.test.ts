@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- untyped JSON from the wire, checked by the assertions below */
 // N04 (D59, SX-48, RT05): the Lab runtime image runs headless with the mock backends and the MuJoCo arm; MJ-BV01 completes inside it, driven only through the public HTTP API.
 // Not a gate proof for G-MA1/G-MA2 (D50): it shows that the image runs. Skipped (never failed or passed) where `docker info` fails or LAB_CONTAINER_IMAGE is not set.
 // Run: LAB_CONTAINER_IMAGE=mekoniq-lab-runtime:dev pnpm test:integration -- tests/integration/lab-runtime-container.test.ts   (build: deploy/lab-runtime/build.sh mekoniq-lab-runtime:dev)
