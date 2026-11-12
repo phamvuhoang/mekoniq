@@ -268,9 +268,9 @@ function coffeeProject(layout){
 function physics(d){
   const g=M00.gripper,pad=(link,s)=>({link,centerM:[M00.padCenter[0],s*M00.padCenter[1],M00.padCenter[2]],sizeM:M00.padHalf.map((h)=>2*h)});
   return {schemaVersion:1,provenance:'assumed',substitute:false,not_calibrated:true,
-    note:'Spike M00 values (docs/research/2026-11-mujoco-arm-spike.md), copied verbatim: gains, armature, gripper drive, pads, palm, contact and motion limits are assumed; jointDynamics is the manufacturer xacro <dynamics> (Gazebo values); gripper.forceN and openingMaxM are spike measurements of this model, not product data.',
+    note:'Spike M00 values (docs/research/2026-11-mujoco-arm-spike.md), copied verbatim: gains, armature, gripper drive, pads, palm, contact and motion limits are assumed; jointDynamics (damping 1, frictionloss 1) is cited from the vendor xacro <dynamics>, which are Gazebo simulation settings, so it is assumed too, not a measured joint property; gripper.forceN and openingMaxM are spike measurements of this model, not product data.',
     actuators:M00.kp.map((kp,i)=>({joint:`J${i+1}`,kp,kv:M00.kv[i]})),armatureKgM2:M00.armature,
-    jointDynamics:{damping:d.dynamics.damping,frictionloss:d.dynamics.friction,source:{kind:'manufacturer',documentId:d.dynamics.doc.documentId,revision:d.dynamics.doc.commit,locator:'joint1..6 <dynamics damping friction> (Gazebo values)',contentSha256:d.dynamics.doc.sha256}},
+    jointDynamics:{damping:d.dynamics.damping,frictionloss:d.dynamics.friction,source:{kind:'assumed',documentId:d.dynamics.doc.documentId,revision:d.dynamics.doc.commit,locator:'joint1..6 <dynamics damping friction> (Gazebo values)',contentSha256:d.dynamics.doc.sha256}},
     gripper:{driveJoint:'drive_joint',mimic:d.mimic.map(({joint,multiplier,mimics})=>{if(mimics!=='drive_joint')throw new Error(`VENDOR_FORMAT: ${joint} mimics ${mimics}`);return {joint,multiplier};}),
       openingMaxM:g.openingMaxM,forceN:g.forceN,kp:g.kp,kv:g.kv,forceRangeNm:g.forceRangeNm,armatureKgM2:g.armatureKgM2,closedRad:g.closedRad,commandRateRadPerTick:g.commandRateRadPerTick,mimicSolref:g.mimicSolref},
     pads:[pad('left_finger',-1),pad('right_finger',1)],palm:{link:'xarm_gripper_base_link',centerM:M00.palm.centerM,sizeM:M00.palm.half.map((h)=>2*h)},
@@ -282,6 +282,8 @@ const README=(m)=>`# xarm6-g2-v1
 UFACTORY xArm 6 (bản 1305) với Gripper G2, dưới dạng một \`engineering-component\` cho plant MuJoCo của R2a (D38). Sinh bởi \`scripts/generate-xarm6-fixture.mjs\` từ file của hãng đã ghim; không sửa tay.
 
 **Khối lượng và quán tính là số danh định của hãng; ma sát, hệ số điều khiển và má kẹp là giả định; chưa hiệu chuẩn.**
+
+Cản và ma sát khớp (\`jointDynamics\`) là thiết lập mô phỏng Gazebo trong file của hãng, được lấy làm giả định (\`source.kind\` \`assumed\`, vẫn trích xacro của hãng), không phải đặc tính đo được của khớp.
 
 ## Nguồn từng nhóm số
 
@@ -295,7 +297,7 @@ UFACTORY xArm 6 (bản 1305) với Gripper G2, dưới dạng một \`engineerin
 | Mesh tay máy | \`blobs/<sha256>.stl\` | \`xarm_description/meshes/xarm6_1305/visual/*.stl\`, chép nguyên byte |
 | Mesh tay kẹp | \`blobs/<sha256>.stl\` | \`xarm_description/meshes/gripper/xarm/*_g2.dae\`, đổi sang STL nhị phân (xem dưới) |
 | Bảng modified D-H \`XARM6_REFERENCE\` | \`packages/lab-runtime/src/v2/models/arm-kinematics.ts\` | trang D-H xArm 6 của hãng (spike M00); \`toolTranslation\` = \`joint_tcp\` z 172 mm |
-| \`jointDynamics\` (damping 1, frictionloss 1) | \`physics.json\` | \`<dynamics>\` trong xacro của hãng (giá trị Gazebo) |
+| \`jointDynamics\` (damping 1, frictionloss 1) | \`physics.json\` | \`<dynamics>\` trong xacro của hãng: giá trị mô phỏng Gazebo, ghi \`assumed\` |
 | \`kp\`, \`kv\`, \`armatureKgM2\`, tay kẹp (\`kp\`, \`kv\`, \`forceRangeNm\`, \`armatureKgM2\`, \`closedRad\`, \`commandRateRadPerTick\`, \`mimicSolref\`), má kẹp, lòng bàn tay, \`contact\`, \`capsuleRadiusM\`, \`maxAccelerationRadS2\`, \`speedFraction\` | \`physics.json\` | giả định của spike M00 (\`docs/research/2026-11-mujoco-arm-spike.md\`, bảng "Tham số chọn"), chép nguyên; \`solimp\` ghi 3 số đầu, hai số cuối (0.5, 2) là mặc định của MuJoCo |
 | \`gripper.forceN\` (13,15 N mỗi má), \`gripper.openingMaxM\` (88,9 mm) | \`physics.json\` | số đo của spike trên mô hình này, không phải số của sản phẩm |
 | Bệ vòi, khay, cốc, pose gắp/đặt, \`approachM\`, \`liftM\` | \`cell-layout.json\` | giả định của spike M00 (bảng bố cục trạm); pose là pose TCP trong khung base, gắp ngang theo hướng bán kính, TCP vượt trục cốc \`graspDepthM\` 0,022 m, đáy cốc khi đặt cao hơn khay 2 mm |

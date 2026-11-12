@@ -187,7 +187,7 @@
     "source": {
       "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
       "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
-      "kind": "manufacturer",
+      "kind": "assumed",
       "locator": "joint1..6 <dynamics damping friction> (Gazebo values)",
       "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
     }
@@ -201,7 +201,7 @@
     8
   ],
   "not_calibrated": true,
-  "note": "Spike M00 values (docs/research/2026-11-mujoco-arm-spike.md), copied verbatim: gains, armature, gripper drive, pads, palm, contact and motion limits are assumed; jointDynamics is the manufacturer xacro <dynamics> (Gazebo values); gripper.forceN and openingMaxM are spike measurements of this model, not product data.",
+  "note": "Spike M00 values (docs/research/2026-11-mujoco-arm-spike.md), copied verbatim: gains, armature, gripper drive, pads, palm, contact and motion limits are assumed; jointDynamics (damping 1, frictionloss 1) is cited from the vendor xacro <dynamics>, which are Gazebo simulation settings, so it is assumed too, not a measured joint property; gripper.forceN and openingMaxM are spike measurements of this model, not product data.",
   "pads": [
     {
       "centerM": [

@@ -4,6 +4,8 @@ UFACTORY xArm 6 (bản 1305) với Gripper G2, dưới dạng một `engineering
 
 **Khối lượng và quán tính là số danh định của hãng; ma sát, hệ số điều khiển và má kẹp là giả định; chưa hiệu chuẩn.**
 
+Cản và ma sát khớp (`jointDynamics`) là thiết lập mô phỏng Gazebo trong file của hãng, được lấy làm giả định (`source.kind` `assumed`, vẫn trích xacro của hãng), không phải đặc tính đo được của khớp.
+
 ## Nguồn từng nhóm số
 
 | Nhóm | File | Nguồn |
@@ -16,7 +18,7 @@ UFACTORY xArm 6 (bản 1305) với Gripper G2, dưới dạng một `engineering
 | Mesh tay máy | `blobs/<sha256>.stl` | `xarm_description/meshes/xarm6_1305/visual/*.stl`, chép nguyên byte |
 | Mesh tay kẹp | `blobs/<sha256>.stl` | `xarm_description/meshes/gripper/xarm/*_g2.dae`, đổi sang STL nhị phân (xem dưới) |
 | Bảng modified D-H `XARM6_REFERENCE` | `packages/lab-runtime/src/v2/models/arm-kinematics.ts` | trang D-H xArm 6 của hãng (spike M00); `toolTranslation` = `joint_tcp` z 172 mm |
-| `jointDynamics` (damping 1, frictionloss 1) | `physics.json` | `<dynamics>` trong xacro của hãng (giá trị Gazebo) |
+| `jointDynamics` (damping 1, frictionloss 1) | `physics.json` | `<dynamics>` trong xacro của hãng: giá trị mô phỏng Gazebo, ghi `assumed` |
 | `kp`, `kv`, `armatureKgM2`, tay kẹp (`kp`, `kv`, `forceRangeNm`, `armatureKgM2`, `closedRad`, `commandRateRadPerTick`, `mimicSolref`), má kẹp, lòng bàn tay, `contact`, `capsuleRadiusM`, `maxAccelerationRadS2`, `speedFraction` | `physics.json` | giả định của spike M00 (`docs/research/2026-11-mujoco-arm-spike.md`, bảng "Tham số chọn"), chép nguyên; `solimp` ghi 3 số đầu, hai số cuối (0.5, 2) là mặc định của MuJoCo |
 | `gripper.forceN` (13,15 N mỗi má), `gripper.openingMaxM` (88,9 mm) | `physics.json` | số đo của spike trên mô hình này, không phải số của sản phẩm |
 | Bệ vòi, khay, cốc, pose gắp/đặt, `approachM`, `liftM` | `cell-layout.json` | giả định của spike M00 (bảng bố cục trạm); pose là pose TCP trong khung base, gắp ngang theo hướng bán kính, TCP vượt trục cốc `graspDepthM` 0,022 m, đáy cốc khi đặt cao hơn khay 2 mm |

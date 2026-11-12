@@ -122,6 +122,9 @@ test('physics.json and cell-layout.json are assumed, complete and keep the cell 
   const ph = await json<XArmPhysics>('physics.json'), L = await json<CellLayout>('cell-layout.json');
   expect([ph.provenance, L.provenance, L.frame]).toEqual(['assumed', 'assumed', 'arm_base']);
   expect(ph.substitute).toBe(false);
+  // the vendor <dynamics damping friction> are Gazebo simulation settings: cited from the xacro, but assumed, not product data
+  const jd = (ph as unknown as { jointDynamics: { source: { kind: string; documentId: string } } }).jointDynamics;
+  expect([jd.source.kind, jd.source.documentId]).toEqual(['assumed', 'xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro']);
   expect(ph.actuators.map((a) => a.joint)).toEqual(['J1', 'J2', 'J3', 'J4', 'J5', 'J6']);
   expect(ph.capsuleRadiusM).toHaveLength(6);
   expect(ph.maxAccelerationRadS2).toHaveLength(6);
