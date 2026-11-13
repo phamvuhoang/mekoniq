@@ -19,6 +19,19 @@ const rows = (r: { checks: { id: string; status: string; reasonCodes: string[] }
 const PLACEHOLDER = (id: string) => [id, 'unknown', ['IRSIM_PROVIDER_UNAVAILABLE']];
 
 describe('readiness of the arm plant sets (no engine)', () => {
+  test('a MuJoCo capacity refusal is a 409 conflict and a failed create a 503 with its cause as the reason code (no leading space); the Webots codes keep their status', async () => {
+    let thrown = '';
+    const g = await startLabGateway({ port: 0, directory: await mujocoTemp('mj-status-'), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), v2: { catalog: installed('mujoco_arm'), enabledBackends: ['mock_amr', 'mock_coffee', 'mujoco_arm'], simulationFactory: async () => { throw new Error(thrown); },
+      portableChecks: async () => ['model', 'clock', 'fixture', 'profile', 'runner'].map((id) => ({ id, status: 'ready' as const, reasonCodes: [], evidenceRef: 'test-double' })) } });
+    gateways.push(g);
+    const paired = await fetch(g.url + '/lab/v2/sessions', { method: 'POST', headers: { origin: 'http://127.0.0.1:4175', 'content-type': 'application/json' }, body: JSON.stringify({ token: g.issuePairingToken() }) });
+    const h = { cookie: paired.headers.get('set-cookie')!.split(';')[0]!, origin: 'http://127.0.0.1:4175', 'content-type': 'application/json', 'x-csrf-token': String((await paired.json()).csrfToken) };
+    const create = async (message: string) => { thrown = message; const r = await fetch(g.url + '/lab/v2/runs', { method: 'POST', headers: h, body: JSON.stringify({ project: xarmProject(), scenarioId: 'MJ-BV01', scenarioRevision: 1, seed: 42, mode: 'simulation', access: 'simulated', backendSetId: 'engineering-mujoco-arm-v1', runtimeIdentity: { sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64) } }) }); return { status: r.status, body: await r.json() }; };
+    expect(await create('MUJOCO_CAPACITY')).toEqual({ status: 409, body: { error: 'MUJOCO_CAPACITY', reasonCodes: [] } });
+    expect(await create('MUJOCO_ARM_CREATE_FAILED: MESH_BLOB_MISSING')).toEqual({ status: 503, body: { error: 'MUJOCO_ARM_CREATE_FAILED', reasonCodes: ['MESH_BLOB_MISSING'] } });
+    for (const m of ['WEBOTS_CAPACITY', 'WEBOTS_ARM_CREATE_FAILED: WORKER_LOST']) expect((await create(m)).status).toBe(500);
+  });
+
   test('MJ-BV01 on the MuJoCo arm set asks for no gripper provider: its grip is contact inside the plant', async () => {
     const r = await collectReadiness({ scenarioId: 'MJ-BV01', backendSetId: 'engineering-mujoco-arm-v1', project: xarmProject() }, { catalog: installed('mujoco_arm'), enabledBackends: ['mock_amr', 'mock_coffee', 'mock_arm', 'mujoco_arm'] });
     expect(r.checks.map((c) => c.id)).not.toContain('gripper'); expect(r.checks.flatMap((c) => c.reasonCodes)).not.toContain('GRIP_PROVIDER_UNAVAILABLE');
