@@ -2,7 +2,7 @@
 owns the clock and every command. Exactly one engine step (substeps x timestep of the scene) per accepted step request, no free-running loop.
 
 Clock (as the Webots worker): `create` runs one priming step (arm at home, gripper open, no cup placed) and calls the result tick 0, so engine time = (tick + 1) x 20 ms for
-the whole run; simTimeNs in every snapshot is the source clock, tick x 20 ms.
+the whole run (checked against the count of substeps asked for, see CLOCK_TOLERANCE_S); simTimeNs in every snapshot is the source clock, tick x 20 ms.
 
 Refusals that leave the tick and the engine untouched: JOINT_TARGET_SHAPE, JOINT_TARGET_OUT_OF_RANGE (no tolerance), GRIPPER_TARGET_OUT_OF_RANGE ([0, openingMaxM]),
 PROP_UNKNOWN, PROP_HELD (placing or parking a cup both pads touch), PROP_PLACEMENT_OCCUPIED (the upright cylinder of the placed cup overlaps a cup in the scene).
@@ -20,9 +20,11 @@ import rfc8785
 from . import snapshot
 from .protocol import OPS, PROTOCOL, Receipts, WorkerError
 
-TICK_S = 0.02
 SCENE_FILE, COMPONENT_FILE, PHYSICS_FILE, BLOB_DIR = "arm-cell-scene.json", "component.json", "physics.json", "blobs"
-CLOCK_TOLERANCE_S = 1e-9
+# The clock check compares the engine's time with the substeps the worker has asked for x the timestep (the same double MuJoCo adds). MuJoCo adds the timestep once
+# per substep, rounding each sum by at most half an ulp: over the longest run (maxTicks 180,000 + the priming tick = 1,800,010 substeps, t <= 3600.02 s, ulp(t) =
+# 2^-41 s) that is at most 1,800,010 x 2^-42 = 4.1e-7 s. 1e-5 s is 24 times that bound, and 1/200 of one lost or extra substep (2e-3 s), which therefore always trips it.
+CLOCK_TOLERANCE_S = 1e-5
 
 
 def confined(root: Path, rel: str, directory=False) -> Path:
@@ -60,7 +62,7 @@ class WorkerSession:
         self.run_id, self.bundle_root, self.lock_digest, self.expected_scene_digest = run_id, Path(bundle_root), lock_digest, expected_scene_digest
         self._factory, self._host = engine_factory, host_info
         self.boot_id = str(uuid.uuid4())
-        self.state, self.tick, self.seq = "new", 0, 0
+        self.state, self.tick, self.seq, self.substeps = "new", 0, 0, 0  # substeps: how many the engine has been asked for (the clock check's reference)
         self.engine = self.scene = self.snapshot = None
         self.receipts = Receipts()
         self.cups, self.present = {}, {}  # propId -> (radius, height); cups in the scene -> position after the last step
@@ -157,10 +159,13 @@ class WorkerSession:
         return self._advance(list(scene["arm"]["homeRad"]), self.engine.opening_max_m, [], tick=0)  # the priming step: home, gripper open
 
     def _advance(self, targets, opening, placements, tick):
+        engine = self.scene["engine"]
         reading = self.engine.step(targets, opening, placements)
+        self.substeps += engine["substeps"]
         snapshot.check_stable(reading, self.engine.arm_limits)  # first: MuJoCo resets its clock when it finds a bad state
-        if abs(reading["time"] - (tick + 1) * TICK_S) > CLOCK_TOLERANCE_S:
-            raise WorkerError("CLOCK_DRIFT", f"engine time {reading['time']} is not (tick {tick} + 1) x {TICK_S}", fatal=True)
+        expected = self.substeps * (engine["timestepMs"] / 1000)
+        if abs(reading["time"] - expected) > CLOCK_TOLERANCE_S:
+            raise WorkerError("CLOCK_DRIFT", f"engine time {reading['time']} at tick {tick} is not {self.substeps} substeps x {engine['timestepMs']} ms = {expected}", fatal=True)
         self.seq += 1
         self.snapshot = snapshot.build(run_id=self.run_id, boot_id=self.boot_id, seq=self.seq, tick=tick, scene=self.scene, reading=reading, limits=self.engine.arm_limits)
         self.present = {pid: tuple(r["position"]) for pid, r in reading["props"].items()}

@@ -267,6 +267,42 @@ def test_create_refuses_what_it_cannot_trust(tmp_path):
     assert r["error"]["code"] == "SCENE_DIGEST_MISMATCH"
 
 
+class SubstepClock(FakeEngine):
+    """Advances time as MuJoCo does: += timestep once per substep (10 x 0.002 per tick), so its rounding accumulates; `lose_at` drops one substep at that tick."""
+    lose_at = None
+
+    def step(self, targets, opening, placements):
+        r = super().step(targets, opening, placements)
+        self.time -= 0.02
+        for k in range(10 - (len(self.calls) - 1 == self.lose_at)):
+            self.time += 0.002
+        return {**r, "time": self.time}
+
+
+def substep_run(tmp_path, lose_at=None):
+    scene = make_bundle(tmp_path)
+    s = WorkerSession(run_id=RUN, bundle_root=tmp_path, lock_digest="b" * 64, expected_scene_digest=scene["sceneDigest"], engine_factory=lambda *a: type("E", (SubstepClock,), {"lose_at": lose_at})(*a))
+    assert s.handle(req("create", {"sceneRef": "arm-cell-scene.json", "seed": 7, "arms": [TOKEN]}))["ok"] and s.handle(req("start"))["ok"]
+    return s
+
+
+def test_a_clock_that_accumulates_one_timestep_per_substep_runs_to_the_longest_scenario_without_drift(tmp_path):
+    s = substep_run(tmp_path)
+    for k in range(180_000):  # the scenario's maxTicks; the old 1e-9 check against (tick + 1) x 0.02 ended this at tick 18,096
+        r = s._op_step(step(k)["payload"])  # the step path without the per-request plumbing, to keep 180,000 ticks fast
+    assert r["tick"] == 180_000 and s.state == "running"
+    assert abs(s.engine.time - 180_001 * 0.02) > 1e-9  # the double really drifted past the old tolerance
+
+
+@pytest.mark.parametrize("lose_at", [1, 50_000])
+def test_one_lost_substep_is_clock_drift_at_that_tick(tmp_path, lose_at):
+    s = substep_run(tmp_path, lose_at)
+    for k in range(lose_at - 1):
+        s._op_step(step(k)["payload"])
+    r = s.handle(step(lose_at - 1, request_id=f"lost-{lose_at}"))
+    assert not r["ok"] and r["error"]["code"] == "CLOCK_DRIFT" and s.state == "failed" and s.tick == lose_at - 1, r
+
+
 def test_the_clock_moves_only_on_a_step_and_expected_tick_must_match(run):
     s, e, _ = run
     assert s.handle(req("pause"))["ok"] and s.handle(req("resume"))["ok"] and s.tick == 0 and len(e.calls) == 1

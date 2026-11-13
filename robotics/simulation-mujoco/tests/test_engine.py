@@ -95,6 +95,14 @@ def test_engine_time_after_n_steps_is_n_times_20_ms():
         assert abs(e.data.time - n * 0.02) < 1e-12, n
 
 
+def test_a_hold_at_home_through_the_worker_passes_tick_18096_without_clock_drift(run):
+    # MuJoCo adds the 2 ms timestep once per substep: its accumulated rounding first exceeds 1e-9 s at tick 18,096 (the old check failed there)
+    for k in range(18_200):
+        r = run.handle(step(k))
+        assert r["ok"], (k, r["error"])
+    assert r["result"]["tick"] == 18_200
+
+
 def test_two_engines_with_the_same_seed_and_commands_give_the_same_qpos_bit_for_bit():
     a, b = engine(), engine()
     for k in range(200):
