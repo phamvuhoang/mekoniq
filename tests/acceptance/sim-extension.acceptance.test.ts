@@ -69,9 +69,10 @@ test('no gate is accepted by this record, only its own release\'s gates are name
  for(const n of m.notRun as {id:string;reason:string}[])expect(n.reason,n.id).toMatch(/\S/);
  if(m.release==='r1.1'){for(const g of ids)expect(m.gates[g].status,g).toBe('tested');return;}
  if(m.release==='r2a'){
-  // G-CLOUD1 is blocked_external until a CL01 result is recorded; a part A gate may be blocked (D70) only as the record's own `blocked` names it; every other gate is tested
-  const blocked:string[]=m.blocked?.gates??[];
-  for(const g of ids)expect(m.gates[g].status,g).toBe(g==='G-CLOUD1'&&!m.cl01?'blocked_external':blocked.includes(g)?'blocked':'tested');
+  // G-CLOUD1 is always blocked_external (no deployment has been ordered, no CL01 producer exists); a part A gate may be blocked (D70) only as the record's own `blocked` names it;
+  // every other gate is tested
+  const blocked:string[]=m.blocked?.gates??[];expect(m.cl01).toBeUndefined();
+  for(const g of ids)expect(m.gates[g].status,g).toBe(g==='G-CLOUD1'?'blocked_external':blocked.includes(g)?'blocked':'tested');
   return;
  }
  expect(m.cases.ALG04).toMatchObject({status:'not_run',reason:expect.stringMatching(/R3/)});

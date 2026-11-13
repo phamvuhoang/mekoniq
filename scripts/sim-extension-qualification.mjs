@@ -135,24 +135,25 @@ export const qualifyR11=(input)=>qualifyWith(input,TABLE_R11);
 
 // ---- Release R2a (spec 2026-11-12-realistic-arm-web-ui-design.md §6.4, D70, D71): the MuJoCo arm (part A), the runtime reachable from the web (B) and the rebuilt twin page (C).
 // No campaign: the engine evidence is the suites that drive the real MuJoCo worker. REG03 re-checks the R1.1 record of the same commit and the R1, IR-SIM and R-MOCK records it carries.
-// Two statuses the suites cannot express come from `adjust`: G-CLOUD1 is `blocked_external` until a CL01 result of this commit is recorded (D60), and a part A gate is `blocked`
-// (its cases not_run, its suites not run) only when the M00 spike note concludes failure (D70).
+// Two statuses the suites cannot express come from `adjust`: G-CLOUD1 is always `blocked_external` (D60: no deployment has been ordered; a CL01 producer and its record format belong to
+// that deployment work, so no input of this table can make it tested), and a part A gate is `blocked` (its cases not_run, its suites not run) only when the M00 spike note concludes
+// failure (D70). Every input is bound to the record's source commit AND its Lab commit (the Lab adds UI commits under an unchanged pin).
 const MOCK_E2E=(id,spec)=>({id,repo:'lab',kind:'playwright',command:['scripts/test-mock-e2e.mjs',spec]});
-const LAUNCHER_E2E=(id,provider,spec)=>({id,repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs',...provider?['--provider',provider]:[],spec]});
+const LAUNCHER_E2E=(id,provider,spec)=>({id,repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs',...provider?['--provider',provider]:[],spec],venvs:[`.venv-${provider??'irsim'}`]});
 export const SUITES_R2A=[
  // part A: the fixture, the engine and the worker (MA01-MA03); RTB is the pinned .venv-algorithm
  {id:'ma-static',...V(['tests/unit/xarm6-fixture.test.ts','tests/unit/capabilities-mujoco-arm.test.ts','tests/unit/arm-cell-scene.test.ts','tests/unit/xarm6-cell-dock.test.ts','tests/contracts/sim3d-mujoco-schema.test.ts'])},
- {id:'ma-rtb',...V(['tests/integration/xarm6-rtb.test.ts'])},
+ {id:'ma-rtb',...V(['tests/integration/xarm6-rtb.test.ts']),venvs:['.venv-algorithm']},
  {id:'ma-py',repo:'source',kind:'pytest',python:'.venv-mujoco/bin/python',pythonPath:['robotics/simulation-mujoco'],files:['robotics/simulation-mujoco/tests']},
- {id:'ma-worker',...V(['tests/integration/mujoco-arm-worker.test.ts'])},
- {id:'ma-ports',...V(['tests/unit/mujoco-arm-ports.test.ts'])},
+ {id:'ma-worker',...V(['tests/integration/mujoco-arm-worker.test.ts']),venvs:['.venv-mujoco']},
+ {id:'ma-ports',...V(['tests/unit/mujoco-arm-ports.test.ts']),venvs:['.venv-mujoco']},
  // part A: programs, MJ-BV01, faults and the flag (MA04-MA08, INT16)
- {id:'ma-programs',...V(['tests/integration/mujoco-arm-programs.test.ts'])},
- {id:'ma-bv01',...V(['tests/integration/mujoco-arm-bv01.test.ts','tests/integration/mujoco-arm-gateway.test.ts'])},
- {id:'ma-faults',...V(['tests/integration/mujoco-arm-faults.test.ts','tests/integration/mujoco-arm-readiness.test.ts'])},
+ {id:'ma-programs',...V(['tests/integration/mujoco-arm-programs.test.ts']),venvs:['.venv-mujoco']},
+ {id:'ma-bv01',...V(['tests/integration/mujoco-arm-bv01.test.ts','tests/integration/mujoco-arm-gateway.test.ts']),venvs:['.venv-mujoco']},
+ {id:'ma-faults',...V(['tests/integration/mujoco-arm-faults.test.ts','tests/integration/mujoco-arm-readiness.test.ts']),venvs:['.venv-mujoco']},
  // part B: the gateway matrix, the paced step on both runners, the container (built by the recorder from this commit: rt-image)
  {id:'rt-remote',...V(['tests/integration/lab-runtime-remote.test.ts'])},
- {id:'rt-paced',...V(['tests/unit/paced-step.test.ts','tests/integration/lab-v2-paced-step.test.ts','tests/integration/irsim-plant-port.test.ts'])},
+ {id:'rt-paced',...V(['tests/unit/paced-step.test.ts','tests/integration/lab-v2-paced-step.test.ts','tests/integration/irsim-plant-port.test.ts']),venvs:['.venv-irsim']},
  {id:'rt-container',...V(['tests/integration/lab-runtime-container.test.ts']),image:true},
  // regressions: the mock BV01 golden, the exported closure (mujoco_worker and its licences), this table
  {id:'regress',...V(['tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts'])},
@@ -168,7 +169,7 @@ export const SUITES_R2A=[
  LAUNCHER_E2E('lab-e2e-mujoco-coffee','mujoco','mujoco-coffee.spec.ts'),LAUNCHER_E2E('lab-e2e-mujoco-mesh-fallback','mujoco','mujoco-mesh-fallback.spec.ts'),
  LAUNCHER_E2E('lab-e2e-irsim-journey',null,'irsim-journey.spec.ts'),LAUNCHER_E2E('lab-e2e-webots-coffee','webots','webots-coffee.spec.ts'),
 ];
-const CLOUD_REASON='blocked_external: no Cloud Run deployment has been ordered (D60); CL01 is run on the deployed service only';
+const CLOUD_REASON='blocked_external: no Cloud Run deployment has been ordered (D60); CL01 runs on a deployed service only, and its producer and record format belong to that deployment work';
 export const CASES_R2A={
  MA01:{suites:['ma-static','ma-rtb','ma-py']},
  MA02:{suites:['ma-worker','ma-py']},
@@ -217,30 +218,24 @@ export function checkR11Record(doc,sourceCommit){
  if(!doc||doc.documentType!=='sim-extension-qualification'||doc.release!=='r1.1')return ['R11_RECORD_NOT_R11'];
  if(doc.accepted!==false)r.push('R11_RECORD_ACCEPTED');
  if(doc.identity?.before?.sourceCommit!==sourceCommit)r.push(`R11_RECORD_COMMIT: ${doc.identity?.before?.sourceCommit??'none'}, this source ${sourceCommit}`);
- const gates=Object.entries(doc.gates??{});if(gates.length!==GATE_IDS_R11.length)r.push('R11_RECORD_GATES');
+ const gates=Object.entries(doc.gates??{});if(JSON.stringify(gates.map(([g])=>g).sort())!==JSON.stringify([...GATE_IDS_R11].sort()))r.push('R11_RECORD_GATES');
  for(const [g,x] of gates)if(x.status!=='tested')r.push(`R11_GATE_NOT_TESTED:${g}`);
  return r;
 }
-/** A CL01 result (cl01-result/1, written after the smoke of docs/operations/lab-runtime-cloud-run.md §5 on the deployed service): every check recorded as pass, this commit. */
-export const CL01_CHECKS=['health','accessKeyPairing','mjBv01Completed','streamResumed'];
-function cl01Status(doc,sourceCommit){
- if(!doc)return {status:'not_run',reason:CLOUD_REASON};
- if(doc.schema!=='cl01-result/1')return {status:'not_run',reason:'the CL01 result is not a cl01-result/1 document'};
- if(doc.sourceCommit!==sourceCommit)return {status:'not_run',reason:'the CL01 result is of another commit'};
- const failed=CL01_CHECKS.filter(k=>doc.checks?.[k]==='fail'),missing=CL01_CHECKS.filter(k=>doc.checks?.[k]!=='pass'&&doc.checks?.[k]!=='fail');
- if(failed.length)return {status:'failed',reason:`CL01 checks failed: ${failed.join(',')}`};
- if(missing.length)return {status:'not_run',reason:`CL01 checks not recorded as pass: ${missing.join(',')}`};
- return {status:'tested'};
+/** R2a binds its inputs to the Lab commit of the record being made (labCommit): the R1.1, R1 and IR-SIM records' own `lab.commit`, and the mock regression's start and end Lab commit. */
+export function checkLabCommits({r11,r1,irsim,mock},labCommit){
+ const r=[],c=(doc,code)=>{if(doc&&doc.lab?.commit!==labCommit)r.push(`${code}: ${doc.lab?.commit??'none'}, this record's Lab ${labCommit??'none'}`);};
+ c(r11,'R11_RECORD_LAB_COMMIT');c(r1,'R1_RECORD_LAB_COMMIT');c(irsim,'IRSIM_RECORD_LAB_COMMIT');
+ if(mock){const a=mock.identity?.start?.lab?.commit,b=mock.identity?.end?.lab?.commit;if(a!==labCommit||b!==labCommit)r.push(`MOCK_REGRESSION_LAB_COMMIT: start ${a??'none'}, end ${b??'none'}, this record's Lab ${labCommit??'none'}`);}
+ return r;
 }
 function adjustR2a(q,input){
- const cases={...q.cases},gates={...q.gates},c=cl01Status(input.cl01,input.sourceCommit);
- cases.CL01=c.status==='tested'?{status:'tested',evidence:['record:cl01']}:{status:c.status,evidence:[],reason:c.reason};
- gates['G-CLOUD1']={...gates['G-CLOUD1'],status:c.status==='tested'?'tested':input.cl01?'not_run':'blocked_external'};
+ const cases={...q.cases,CL01:{status:'not_run',evidence:[],reason:CLOUD_REASON}},gates={...q.gates,'G-CLOUD1':{...q.gates['G-CLOUD1'],status:'blocked_external'}};
  for(const g of input.blocked?.gates??[])if(gates[g])gates[g]={...gates[g],status:'blocked',reason:input.blocked.reason};
- return {cases,gates,notRun:[...q.notRun.filter(n=>n.id!=='CL01'),...c.status==='tested'?[]:[{id:'CL01',reason:c.reason}]]};
+ return {cases,gates,notRun:[...q.notRun.filter(n=>n.id!=='CL01'),{id:'CL01',reason:CLOUD_REASON}]};
 }
-/** The recorded inputs of the R2a table, read back from beside qualification.json: the R1.1 record and, byte for byte, the R1, IR-SIM and mock records it carries; a CL01 result and the
- * spike note copy when the record names them. A record is never accepted: `accepted` is false whatever reviewer it names (acceptance is a human-written sidecar). */
+/** The recorded inputs of the R2a table, read back from beside qualification.json: the R1.1 record and, byte for byte, the R1, IR-SIM and mock records it carries, all of the record's
+ * source and Lab commits; the spike note copy when the record names a block. G-CLOUD1 is never anything but blocked_external, and a record naming a CL01 result is refused. A record is never accepted: `accepted` is false whatever reviewer it names (acceptance is a human-written sidecar). */
 function inputsR2a(m,read){
  const reasons=[],input={},raw=(ref,missing,corrupt)=>{
   if(!ref?.file||!HEX.test(ref.sha256??'')){reasons.push(missing);return null;}
@@ -257,7 +252,9 @@ function inputsR2a(m,read){
  if(irs){input.irsim=irs;reasons.push(...checkIrsimRecord(irs,commit));if(r11&&r11.irsimRecord?.sha256!==m.irsimRecord.sha256)reasons.push('IRSIM_RECORD_NOT_THE_R11_ONE');}
  const mock=parsed(m.mockRegression,'MOCK_REGRESSION_MISSING','MOCK_REGRESSION_CORRUPT');
  if(mock){input.mock=mock;if(mock.schema!=='lab-v2-regression/1')reasons.push('MOCK_REGRESSION_NOT_LAB_MANIFEST');if(r11&&r11.mockRegression?.sha256!==m.mockRegression.sha256)reasons.push('MOCK_REGRESSION_NOT_THE_R11_ONE');}
- if(m.cl01)input.cl01=parsed(m.cl01,'CL01_RESULT_MISSING','CL01_RESULT_CORRUPT');
+ reasons.push(...checkLabCommits({r11,r1,irsim:irs,mock},m.lab?.commit));
+ if(m.cl01!==undefined)reasons.push('CL01_RESULT_NOT_ACCEPTED: no CL01 producer exists in this release; G-CLOUD1 stays blocked_external');
+ if(m.gates?.['G-CLOUD1']?.status!=='blocked_external')reasons.push(`CLOUD_GATE_NOT_BLOCKED_EXTERNAL: ${m.gates?.['G-CLOUD1']?.status??'missing'}`);
  if(m.blocked){const note=raw(m.blocked.spikeNote,'SPIKE_NOTE_MISSING','SPIKE_NOTE_CORRUPT');reasons.push(...checkBlocked(m.blocked,note));input.blocked={gates:m.blocked.gates,reason:m.blocked.reason};}
  return {input,reasons};
 }
@@ -269,6 +266,33 @@ export function tableR2a(blocked=[],reason=''){
  return {documentType:'sim-extension-qualification',cases,gates:GATES_R2A,suites:SUITES_R2A.filter(s=>used.has(s.id)),campaign:false,inputs:inputsR2a,adjust:adjustR2a};
 }
 export const TABLE_R2A=tableR2a();
+
+// ---- pre-flight (every release): refuse before a long recording what would fail it later; it changes nothing in a record. Probes are injected so each check is testable.
+/** The Python environments a planned recording uses: each pytest suite's interpreter, the venvs the R2a suites name, and the releases' own steps (R1: algorithm oracles and the
+ * Webots campaign; R1.1: the Webots arm worker). */
+export function plannedVenvs(release,suites){
+ const v=new Set(suites.flatMap(s=>[...s.python?[s.python.split('/')[0]]:[],...s.venvs??[]]));
+ if(release==='r1')for(const x of ['.venv-algorithm','.venv-webots'])v.add(x);
+ if(release==='r1.1')v.add('.venv-webots');
+ return [...v].sort();
+}
+/** Whether a planned step starts the Webots application: R1's campaign and R1.1's arm suites always do; in R2a only the Webots launcher spec does. */
+export const startsWebots=(release,suites)=>release!=='r2a'||suites.some(s=>(s.command??[]).includes('webots'));
+/** The console session's lock state from `ioreg -n Root -d1 -a` (a plist): CGSSessionScreenIsLocked true. */
+export const screenLockedFromIoreg=(text)=>/<key>CGSSessionScreenIsLocked<\/key>\s*<true\/>/.test(String(text??''));
+/** [{id,ok,code?,message}] for docker, python-env and screen; probes: {docker:()=>bool, exists:(venvRelPath)=>bool, screenLocked:()=>bool, platform}. */
+export function preflight({release,suites},probes){
+ const out=[],image=suites.some(s=>s.image);
+ out.push(!image?{id:'docker',ok:true,message:'no container suite planned'}:probes.docker()?{id:'docker',ok:true,message:'docker info succeeded'}
+  :{id:'docker',ok:false,code:'DOCKER_UNAVAILABLE',message:'`docker info` failed: start Docker (OrbStack) first; the container suite (RT05) needs it'});
+ const venvs=plannedVenvs(release,suites);
+ for(const v of venvs)if(!probes.exists(`${v}/bin/python`))out.push({id:'python-env',ok:false,code:`PYTHON_ENV_MISSING:${v}`,message:`${v}/bin/python is missing (provision it from its lock: node scripts/bootstrap-portable-simulation.mjs)`});
+ if(!out.some(c=>c.id==='python-env'))out.push({id:'python-env',ok:true,message:`present: ${venvs.join(', ')||'none planned'}`});
+ out.push(probes.platform!=='darwin'||!startsWebots(release,suites)?{id:'screen',ok:true,message:probes.platform!=='darwin'?'not macOS':'nothing planned starts the Webots application'}
+  :probes.screenLocked()?{id:'screen',ok:false,code:'SCREEN_LOCKED',message:'the console session is locked and the Webots application does not come up behind a locked screen (its readiness probe would time out): unlock the screen and run the recording under caffeinate -dims'}
+  :{id:'screen',ok:true,message:'console session unlocked'});
+ return out;
+}
 export const qualifyR2a=(input)=>qualifyWith(input,tableR2a(input.blocked?.gates??[],input.blocked?.reason));
 
 export const qualify=(input)=>qualifyWith(input,TABLE);

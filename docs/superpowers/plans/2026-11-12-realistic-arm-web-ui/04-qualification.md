@@ -25,6 +25,9 @@
 - [ ] **Step 1: Unit fail trước:** bảng `r2a` ánh xạ đúng từng case của spec §6.4 vào gate ở Interfaces; REG03 `not_run` khi bản ghi R1.1 khác commit, `failed` khi bản ghi R1.1 có gate không `tested`; `G-CLOUD1` là `blocked_external` khi thiếu kết quả CL01 và không làm bản ghi thất bại; `--blocked G-RT1` bị từ chối; `--blocked G-MA1` khi ghi chép spike kết luận ĐẠT bị từ chối; guard từ chối `accepted:true`; suite thiếu file kết quả → `SUITE_RESULT_MISSING`; bản ghi `r1` và `r1.1` hiện có vẫn qua `checkQualification`.
 - [ ] **Step 2:** Viết bảng, recorder, guard; `export-lab-runtime.mjs` đưa tool `mujoco_worker` và license của nó vào `portableSimulationTools`. `pnpm test:unit -- tests/unit/sim-extension-qualification.test.ts` xanh. Commit `feat: r2a qualification table, recorder and guard`, Lab re-pin, cả hai cây sạch.
 
+
+**Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):** trong bản phát hành `r2a`, `G-CLOUD1` luôn là `blocked_external` (CL01 `not_run`, lý do: chưa có lệnh deploy); recorder và guard không có đường nào biến nó thành `tested`, và guard từ chối một bản ghi `r2a` có `G-CLOUD1` khác. Thứ tạo kết quả CL01 và định dạng bản ghi của nó thuộc phần việc deploy mà người dùng chưa ra lệnh. Mọi bản ghi nền của `r2a` (R1.1, và R1, IR-SIM, R-MOCK mà nó mang) phải cùng commit source **và** cùng commit Lab với bản ghi đang ghi. Recorder (mọi bản phát hành) kiểm môi trường trước khi chạy suite nào: Docker khi có suite container (`DOCKER_UNAVAILABLE`), venv Python cần dùng (`PYTHON_ENV_MISSING:<venv>`), và trên macOS màn hình bị khóa khi có bước mở ứng dụng Webots (`SCREEN_LOCKED`); image do recorder dựng bị xóa khi lần ghi kết thúc.
+
 ---
 
 ### Task Q02: Ghi lại các bản ghi nền và ghi `r2a-candidate-01`

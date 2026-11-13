@@ -13,13 +13,13 @@ import * as Q from '../../scripts/sim-extension-qualification.mjs';
 import * as ir from '../../scripts/irsim-qualification.mjs';
 type M=Record<string,any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 const sha=(s:string)=>createHash('sha256').update(s).digest('hex');
-const HEX='a'.repeat(64),HEX2='b'.repeat(64),COMMIT='c'.repeat(40),pass={passed:3,failed:0,skipped:0,total:3};
+const HEX='a'.repeat(64),HEX2='b'.repeat(64),COMMIT='c'.repeat(40),LABC='d'.repeat(40),pass={passed:3,failed:0,skipped:0,total:3};
 const ALG=['ALG01','ALG02','ALG03','ALG05','PID01','PID02','PID03'];
 const RUNS=['WB-FD01','WB-FD07','WB-FD01-cancel','WB-FD01-enginekill'];
 const campaignSummary=(over:M={})=>({status:'completed',complete:true,evidenceComplete:false,provider:{id:'webots_3d',kind:'webots_engine'},campaignSha256:sha('{"c":1}'),sourceCommit:COMMIT,
  runs:RUNS.map((scenarioId,i)=>({id:`${String(i+1).padStart(3,'0')}-${scenarioId}`,scenarioId,result:'pass',reasons:[]})),...over});
-const irsimRecord=(over:M={})=>({schemaVersion:1,documentType:'linkforge-irsim-qualification',accepted:false,identity:{before:{sourceCommit:COMMIT}},gates:Object.fromEntries(['G-LF1','G-LF2','G-IR1','G-IR2','G-IR3','G-INT1'].map(g=>[g,{status:'tested',accepted:false}])),...over});
-const mockManifest=(over:M={})=>({schema:'lab-v2-regression/1',identity:{start:{source:{commit:COMMIT}}},commands:[{id:'x',exitCode:0}],notRun:[],...over});
+const irsimRecord=(over:M={})=>({schemaVersion:1,documentType:'linkforge-irsim-qualification',accepted:false,identity:{before:{sourceCommit:COMMIT}},lab:{commit:LABC},gates:Object.fromEntries(['G-LF1','G-LF2','G-IR1','G-IR2','G-IR3','G-INT1'].map(g=>[g,{status:'tested',accepted:false}])),...over});
+const mockManifest=(over:M={})=>({schema:'lab-v2-regression/1',identity:{start:{source:{commit:COMMIT},lab:{commit:LABC}},end:{source:{commit:COMMIT},lab:{commit:LABC}}},commands:[{id:'x',exitCode:0}],notRun:[],...over});
 const results=(over:Record<string,string>={})=>({results:ALG.map(caseId=>({caseId,verdict:over[caseId]??'pass',reasons:[]})),oracleProfileDigest:HEX,lockDigest:HEX2});
 
 const resultText=(kind:string,s:{passed:number;failed:number;skipped:number;total:number})=>kind==='pytest'?`<testsuite tests="${s.total}" failures="${s.failed}" errors="0" skipped="${s.skipped}"/>`:kind==='vitest'?JSON.stringify({numPassedTests:s.passed,numFailedTests:s.failed,numPendingTests:s.skipped,numTotalTests:s.total}):JSON.stringify({stats:{expected:s.passed,unexpected:s.failed,skipped:s.skipped}});
@@ -142,7 +142,7 @@ test('suites: the manifest alone cannot make a suite green — the result file m
 });
 
 // ---- Release 1.1 (X08): the r1.1 table, REG02 and the guard on a record without a campaign ----
-const r1Record=(over:M={})=>({schemaVersion:1,documentType:'sim-extension-qualification',release:'r1',accepted:false,identity:{before:{sourceCommit:COMMIT}},
+const r1Record=(over:M={})=>({schemaVersion:1,documentType:'sim-extension-qualification',release:'r1',accepted:false,identity:{before:{sourceCommit:COMMIT}},lab:{commit:LABC},
  irsimRecord:{file:'irsim-record.json',sha256:sha(JSON.stringify(irsimRecord()))},mockRegression:{file:'mock-regression.json',sha256:sha(JSON.stringify(mockManifest()))},
  gates:Object.fromEntries(Object.keys(GATES).map(g=>[g,{status:'tested',accepted:false,cases:[]}])),...over});
 const allSuites11=(skip:(id:string)=>boolean=()=>false)=>SUITES_R11.map((s:{id:string})=>({id:s.id,exitCode:0,result:{summary:skip(s.id)?{passed:0,failed:0,skipped:2,total:2}:pass}}));
@@ -217,28 +217,27 @@ test('r1.1 guard: a complete record has no reasons; accepted:true, a missing res
 // ---- Release R2a (Q01): the r2a table of spec 2026-11-12-realistic-arm-web-ui-design.md §6.4, REG03, G-CLOUD1, --blocked and the guard ----
 const R2A=async()=>Q as M;
 const LAB_ROOT='../lab',CASE_IDS_R2A=['MA01','MA02','MA03','MA04','MA05','MA06','MA07','MA08','RT01','RT02','RT03','RT04','RT05','CL01','UI01','UI02','UI03','UI04','UI05','INT15','INT16','REG03'];
-const r11Record=(over:M={})=>({schemaVersion:1,documentType:'sim-extension-qualification',release:'r1.1',accepted:false,identity:{before:{sourceCommit:COMMIT}},
+const r11Record=(over:M={})=>({schemaVersion:1,documentType:'sim-extension-qualification',release:'r1.1',accepted:false,identity:{before:{sourceCommit:COMMIT}},lab:{commit:LABC},
  r1Record:{file:'r1-record.json',sha256:sha(JSON.stringify(r1Record()))},irsimRecord:{file:'irsim-record.json',sha256:sha(JSON.stringify(irsimRecord()))},mockRegression:{file:'mock-regression.json',sha256:sha(JSON.stringify(mockManifest()))},
  gates:Object.fromEntries(Object.keys(GATES_R11).map(g=>[g,{status:'tested',accepted:false,cases:[]}])),...over});
-const cl01=(over:M={})=>({schema:'cl01-result/1',sourceCommit:COMMIT,checks:{health:'pass',accessKeyPairing:'pass',mjBv01Completed:'pass',streamResumed:'pass'},...over});
 const SPIKE_PASS='- **Kết luận: ĐẠT cả chín tiêu chí trên máy này**',SPIKE_FAIL='- **Kết luận: TRƯỢT tiêu chí 4**';
 const allSuites2a=(suites:{id:string}[],skip:(id:string)=>boolean=()=>false)=>suites.map(s=>({id:s.id,exitCode:0,result:{summary:skip(s.id)?{passed:0,failed:0,skipped:2,total:2}:pass}}));
 const base2a=async(over:M={})=>{const q=await R2A();return {suites:allSuites2a(q.SUITES_R2A),lab:true,sourceCommit:COMMIT,r11:r11Record(),r1:r1Record(),irsim:irsimRecord(),mock:mockManifest(),...over};};
 
-async function candidate2a(over:(m:M,files:Map<string,string>)=>void=()=>{},opts:{blocked?:{gates:string[];reason:string;spike:string};cl01?:M}={}){
+async function candidate2a(over:(m:M,files:Map<string,string>)=>void=()=>{},opts:{blocked?:{gates:string[];reason:string;spike:string}}={}){
  const q=await R2A(),table=q.tableR2a(opts.blocked?.gates??[]);
  const files=new Map<string,string>(),put=(p:string,t:string)=>{files.set(p,t);return {file:p,sha256:sha(t),bytes:Buffer.byteLength(t)};};
  const irs=put('irsim-record.json',JSON.stringify(irsimRecord())),mock=put('mock-regression.json',JSON.stringify(mockManifest())),r1=put('r1-record.json',JSON.stringify(r1Record()));
  const r11=put('r11-record.json',JSON.stringify(r11Record({r1Record:{file:'r1-record.json',sha256:r1.sha256},irsimRecord:{file:'irsim-record.json',sha256:irs.sha256},mockRegression:{file:'mock-regression.json',sha256:mock.sha256}})));
- const spike=opts.blocked?put('spike-note.md',opts.blocked.spike):null,cl=opts.cl01?put('cl01-result.json',JSON.stringify(opts.cl01)):null;
+ const spike=opts.blocked?put('spike-note.md',opts.blocked.spike):null;
  const suites=table.suites.map((s:{id:string;kind:string;repo:string})=>{const result=put(`suites/${s.id}.json`,resultText(s.kind,pass));const log=put(`suites/${s.id}.log`,'ok');return {id:s.id,exitCode:0,command:'x',startedAt:'t',finishedAt:'t',log:log.file,logSha256:log.sha256,repo:s.repo,kind:s.kind,result:{file:result.file,sha256:result.sha256,summary:pass}};});
  const blocked=opts.blocked?{gates:opts.blocked.gates,reason:opts.blocked.reason,spikeNote:{file:spike!.file,sha256:spike!.sha256}}:null;
  const before={sourceCommit:COMMIT,dirty:false,toolClosures:{portable:HEX,native:HEX2},node:'v24.22.2',os:'darwin',arch:'arm64',lockSha256:HEX,oracleProfileDigest:HEX,at:'t'};
- const qq=q.qualifyR2a({suites,lab:true,sourceCommit:COMMIT,r11:JSON.parse(files.get('r11-record.json')!),r1:r1Record(),irsim:irsimRecord(),mock:mockManifest(),blocked,cl01:opts.cl01??null});
+ const qq=q.qualifyR2a({suites,lab:true,sourceCommit:COMMIT,r11:JSON.parse(files.get('r11-record.json')!),r1:r1Record(),irsim:irsimRecord(),mock:mockManifest(),blocked});
  const m:M={schemaVersion:1,documentType:'sim-extension-qualification',release:'r2a',candidateId:'r2a-candidate-01',accepted:false,acceptedBy:null,acceptedAt:null,note:'evidence input',
   identity:{before,after:structuredClone(before),identityStable:true},lab:{commit:'d'.repeat(40),dirty:false,pin:{sourceCommit:COMMIT,artifactSha256:HEX,portableToolsDigest:HEX,schemaHash:HEX}},campaign:null,
   r11Record:{file:r11.file,sha256:r11.sha256,candidate:'r11-candidate-03'},r1Record:{file:r1.file,sha256:r1.sha256,candidate:'r1-candidate-06'},irsimRecord:{file:irs.file,sha256:irs.sha256,candidate:'candidate-08'},mockRegression:{file:mock.file,sha256:mock.sha256},
-  ...blocked?{blocked}:{},...cl?{cl01:{file:cl.file,sha256:cl.sha256}}:{},
+  ...blocked?{blocked}:{},
   suites,commands:[{id:'licenses',exitCode:0}],cases:qq.cases,gates:qq.gates,notRun:qq.notRun,artifacts:[...files.keys()].sort().map(p=>({file:p,sha256:sha(files.get(p)!),bytes:Buffer.byteLength(files.get(p)!)}))};
  over(m,files);
  return {m,read:(p:string)=>files.has(p)?Buffer.from(files.get(p)!):null};
@@ -293,13 +292,13 @@ test('r2a REG03: not_run when the R1.1 record is of another commit or missing, f
  expect(q.checkR11Record(r11Record({identity:{before:{sourceCommit:'e'.repeat(40)}}}),COMMIT).join()).toMatch(/R11_RECORD_COMMIT/);
 });
 
-test('r2a CL01: a CL01 result of this commit with every check passed makes G-CLOUD1 tested; a failed check is failed; another commit or a foreign file stays not_run',async()=>{
- const q=await R2A(),run=async(c:M|null)=>q.qualifyR2a(await base2a({cl01:c}));
- const ok=await run(cl01());expect(ok.cases.CL01.status).toBe('tested');expect(ok.gates['G-CLOUD1'].status).toBe('tested');expect(ok.notRun).toEqual([]);
- const bad=await run(cl01({checks:{...cl01().checks,mjBv01Completed:'fail'}}));expect(bad.cases.CL01.status).toBe('failed');expect(bad.gates['G-CLOUD1'].status).toBe('not_run');
- expect((await run(cl01({sourceCommit:'e'.repeat(40)}))).cases.CL01.status).toBe('not_run');
- expect((await run({schema:'x'})).cases.CL01.status).toBe('not_run');
- expect((await run(cl01({checks:{health:'pass'}}))).cases.CL01.status).toBe('not_run'); // a check that is not recorded is not a pass
+test('r2a CL01: no input makes G-CLOUD1 tested; it is always blocked_external with CL01 not_run (no deployment has been ordered)',async()=>{
+ const q=await R2A();
+ expect(q.CL01_CHECKS).toBeUndefined();
+ for(const cl01 of [undefined,null,{schema:'cl01-result/1',sourceCommit:COMMIT,checks:{health:'pass',accessKeyPairing:'pass',mjBv01Completed:'pass',streamResumed:'pass'}}]){
+  const r=q.qualifyR2a(await base2a({cl01}));
+  expect(r.gates['G-CLOUD1'].status).toBe('blocked_external');expect(r.cases.CL01).toMatchObject({status:'not_run',reason:expect.stringMatching(/^blocked_external: no Cloud Run deployment has been ordered/)});
+ }
 });
 
 test('r2a --blocked: only part A gates, only when the spike note concludes failure, always with a reason; the real spike note concludes success, so it is refused today',async()=>{
@@ -325,8 +324,10 @@ test('r2a recorder refuses --blocked G-RT1 and --blocked G-MA1 (the spike conclu
  const nr=run('--blocked','G-MA1');expect(nr.status).toBe(2);expect(nr.stderr).toMatch(/BLOCKED_REASON_MISSING|MISSING_OPTION:--blocked-reason/);
  const r1=spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r1','--out','/nonexistent/x','--irsim-record','/n','--mock-regression','/n','--blocked','G-MA1','--blocked-reason','x'],{encoding:'utf8',timeout:60000});
  expect(r1.status).toBe(2);expect(r1.stderr).toMatch(/UNKNOWN_OPTION:--blocked/);
+ const cl=run('--cl01-result','/nonexistent/cl01.json');expect(cl.status).toBe(2);expect(cl.stderr).toMatch(/UNKNOWN_OPTION:--cl01-result/);
  const plan=run('--plan');expect(plan.status,plan.stderr).toBe(0);
- expect(plan.stdout).toMatch(/rt-image/);expect(plan.stdout).toMatch(/lab-e2e-mujoco-coffee/);expect(plan.stdout).toMatch(/test-irsim-e2e\.mjs --provider mujoco mujoco-coffee\.spec\.ts/);
+ expect(plan.stdout).toMatch(/rt-image/);expect(plan.stdout).toMatch(/removed when the recording ends/);
+ for(const id of ['docker','python-env','screen'])expect(plan.stdout,id).toMatch(new RegExp(`^preflight\\t${id}`,'m'));expect(plan.stdout).toMatch(/lab-e2e-mujoco-coffee/);expect(plan.stdout).toMatch(/test-irsim-e2e\.mjs --provider mujoco mujoco-coffee\.spec\.ts/);
  expect(existsSync('/nonexistent/r2a-x')).toBe(false);
 });
 
@@ -352,14 +353,17 @@ test('r2a guard: a complete record has no reasons and G-CLOUD1 blocked_external 
  await one(m=>{m.cases.MA06.note='x';},/CASE_NOTE_MISSING:MA06/);
 });
 
-test('r2a guard: a blocked record is valid only with the spike note copy concluding failure; a CL01 result is read back from its file',async()=>{
+test('r2a guard: a blocked record is valid only with the spike note copy concluding failure; G-CLOUD1 is only ever blocked_external',async()=>{
  const ok=await candidate2a(()=>{},{blocked:{gates:['G-MA1','G-MA2','G-RT2','G-INT4'],reason:'M00 criterion 4 failed',spike:SPIKE_FAIL}});
  expect(checkQualification(ok.m,ok.read)).toEqual([]);
  expect(ok.m.gates['G-MA2']).toMatchObject({status:'blocked',reason:'M00 criterion 4 failed'});expect(ok.m.suites.some((s:{id:string})=>s.id==='ma-bv01')).toBe(false);
  const passed=await candidate2a(()=>{},{blocked:{gates:['G-MA1'],reason:'x',spike:SPIKE_PASS}});expect(checkQualification(passed.m,passed.read).join()).toMatch(/BLOCKED_SPIKE_NOT_FAILED/);
  const rt=await candidate2a(()=>{},{blocked:{gates:['G-RT1'],reason:'x',spike:SPIKE_FAIL}});expect(checkQualification(rt.m,rt.read).join()).toMatch(/BLOCKED_NOT_PART_A:G-RT1/);
- const cl=await candidate2a(()=>{},{cl01:cl01()});expect(checkQualification(cl.m,cl.read)).toEqual([]);expect(cl.m.gates['G-CLOUD1'].status).toBe('tested');
- const forged=await candidate2a(m=>{m.cl01.sha256=HEX;},{cl01:cl01()});expect(checkQualification(forged.m,forged.read).join()).toMatch(/CL01_RESULT_CORRUPT/);
+ // G-CLOUD1 has no path to tested: a record claiming it, or naming a CL01 result file, is refused
+ const forged=await candidate2a(m=>{m.gates['G-CLOUD1'].status='tested';m.cases.CL01={status:'tested',evidence:['record:cl01']};m.notRun=m.notRun.filter((n:{id:string})=>n.id!=='CL01');});
+ expect(checkQualification(forged.m,forged.read).join()).toMatch(/CLOUD_GATE_NOT_BLOCKED_EXTERNAL/);
+ const named=await candidate2a((m,f)=>{f.set('cl01-result.json','{}');m.cl01={file:'cl01-result.json',sha256:sha('{}')};});
+ expect(checkQualification(named.m,named.read).join()).toMatch(/CL01_RESULT_NOT_ACCEPTED/);
 });
 
 test('the recorded r1 and r1.1 candidates in the tree still check clean (newest of each)',()=>{
@@ -368,4 +372,46 @@ test('the recorded r1 and r1.1 candidates in the tree still check clean (newest 
   expect(c).toBeTruthy();const d=join(dir,c!),read=(p:string)=>existsSync(join(d,p))?readFileSync(join(d,p)):null;
   expect(checkQualification(JSON.parse(readFileSync(join(d,'qualification.json'),'utf8')),read),c).toEqual([]);
  }
+});
+
+test('r2a binds every input to the Lab commit of the record: each input of another Lab commit is named; r1 and r1.1 checks are unchanged',async()=>{
+ const q=await R2A(),OTHER='e'.repeat(40);
+ expect(q.checkLabCommits({r11:r11Record(),r1:r1Record(),irsim:irsimRecord(),mock:mockManifest()},LABC)).toEqual([]);
+ expect(q.checkLabCommits({r11:r11Record({lab:{commit:OTHER}})},LABC).join()).toMatch(/R11_RECORD_LAB_COMMIT/);
+ expect(q.checkLabCommits({r1:r1Record({lab:{commit:OTHER}})},LABC).join()).toMatch(/R1_RECORD_LAB_COMMIT/);
+ expect(q.checkLabCommits({irsim:irsimRecord({lab:null})},LABC).join()).toMatch(/IRSIM_RECORD_LAB_COMMIT/);
+ const m0=mockManifest();m0.identity.end.lab.commit=OTHER;expect(q.checkLabCommits({mock:m0},LABC).join()).toMatch(/MOCK_REGRESSION_LAB_COMMIT/);
+ const m1=mockManifest();m1.identity.start.lab.commit=OTHER;expect(q.checkLabCommits({mock:m1},LABC).join()).toMatch(/MOCK_REGRESSION_LAB_COMMIT/);
+ // the guard: each input re-sealed with another Lab commit (and the R1.1 record naming the new bytes) is refused with its code
+ const relab=async(file:string,make:()=>M,code:RegExp)=>{const c=await candidate2a((m,f)=>{
+  const t=JSON.stringify(make()),h=reseal(m,f,file,t),key={'r1-record.json':'r1Record','irsim-record.json':'irsimRecord','mock-regression.json':'mockRegression'}[file];
+  if(file==='r11-record.json')m.r11Record.sha256=h;else{m[key!].sha256=h;const r11=JSON.parse(f.get('r11-record.json')!);r11[key!].sha256=h;m.r11Record.sha256=reseal(m,f,'r11-record.json',JSON.stringify(r11));}});
+  expect(checkQualification(c.m,c.read).join(' | ')).toMatch(code);};
+ await relab('r11-record.json',()=>{const x=JSON.parse(JSON.stringify(r11Record()));return {...x,lab:{commit:OTHER}};},/R11_RECORD_LAB_COMMIT/);
+ await relab('r1-record.json',()=>r1Record({lab:{commit:OTHER}}),/R1_RECORD_LAB_COMMIT/);
+ await relab('irsim-record.json',()=>irsimRecord({lab:{commit:OTHER}}),/IRSIM_RECORD_LAB_COMMIT/);
+ await relab('mock-regression.json',()=>{const x=mockManifest();x.identity.start.lab.commit=OTHER;x.identity.end.lab.commit=OTHER;return x;},/MOCK_REGRESSION_LAB_COMMIT/);
+ const c=await candidate2a(m=>{m.lab.commit=OTHER;});expect(checkQualification(c.m,c.read).join(' | ')).toMatch(/R11_RECORD_LAB_COMMIT/);
+});
+
+test('r2a checkR11Record compares the gate names with the R1.1 table, not only their number',async()=>{
+ const q=await R2A(),x=r11Record({gates:Object.fromEntries(['G-A','G-B','G-C','G-D'].map(g=>[g,{status:'tested',accepted:false}]))});
+ expect(q.checkR11Record(x,COMMIT).join()).toMatch(/R11_RECORD_GATES/);
+});
+
+test('pre-flight: refuses early what would fail later, from injected probe results; nothing is refused when every probe is good',async()=>{
+ const q=await R2A(),suites=q.SUITES_R2A,ok={docker:()=>true,exists:()=>true,screenLocked:()=>false,platform:'darwin'};
+ const codes=(release:string,s:M[],probes:M)=>q.preflight({release,suites:s},{...ok,...probes}).filter((c:M)=>!c.ok).map((c:M)=>c.code);
+ expect(codes('r2a',suites,{})).toEqual([]);
+ expect(codes('r2a',suites,{docker:()=>false})).toEqual(['DOCKER_UNAVAILABLE']);
+ expect(codes('r1.1',SUITES_R11,{docker:()=>false})).toEqual([]); // no container suite there
+ expect(codes('r2a',suites,{exists:(p:string)=>!p.startsWith('.venv-mujoco')})).toEqual(['PYTHON_ENV_MISSING:.venv-mujoco']);
+ expect(codes('r1',SUITES,{exists:(p:string)=>!p.startsWith('.venv-algorithm')})).toEqual(['PYTHON_ENV_MISSING:.venv-algorithm']);
+ expect(codes('r2a',suites,{screenLocked:()=>true})).toEqual(['SCREEN_LOCKED']);
+ expect(codes('r2a',suites,{screenLocked:()=>true,platform:'linux'})).toEqual([]);
+ expect(codes('r2a',suites.filter((s:{id:string})=>!s.id.includes('webots')),{screenLocked:()=>true})).toEqual([]); // nothing starts the Webots application
+ expect(codes('r1',SUITES,{screenLocked:()=>true})).toEqual(['SCREEN_LOCKED']); // the campaign starts Webots
+ const locked=q.preflight({release:'r2a',suites},{...ok,screenLocked:()=>true}).find((c:M)=>c.code==='SCREEN_LOCKED');expect(locked.message).toMatch(/unlock the screen.*caffeinate -dims/);
+ expect(q.screenLockedFromIoreg('<key>CGSSessionScreenIsLocked</key>\n\t\t<true/>')).toBe(true);
+ expect(q.screenLockedFromIoreg('<key>CGSSessionOnConsoleKey</key><true/>')).toBe(false);
 });

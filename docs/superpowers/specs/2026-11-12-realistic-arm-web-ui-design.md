@@ -191,7 +191,7 @@ Mã spike nằm ngoài cây git. Đạt **cả** chín:
 | SX-45 | `step` có `pace` trên `mock-default` giữ tỉ lệ thời gian mô phỏng/thời gian thực trong ±3 % qua 30 s ở 1× và 4×; từ lúc bấm dừng tới tick cuối ≤ 500 ms ở 1×; runner fixed-step (IR-SIM, Webots) nhận cùng `pace`; không `pace` thì hai runner chạy đúng như hôm nay. *Đã chốt khi triển khai (2026-11-13):* với runner fixed-step, bằng chứng là evidence có nhịp và không nhịp giống hệt nhau cho cùng một chuỗi hành động, và golden không nhịp không đổi mà không gọi đồng hồ thật lần nào; run có nhịp không thể tái tạo golden 500 tick (một `step` có nhịp mang tối đa 50 tick) |
 | SX-46 | Bộ đệm mẫu: giá trị hiển thị luôn nằm giữa hai mẫu đã nhận; mẫu cũ quá ngưỡng thì đứng yên và hiện "cũ" như hiện nay |
 | SX-47 | Lab: thiết lập địa chỉ runtime, kết nối bằng thao tác bấm, so commit runtime với bản ghim (`RUNTIME_PIN_MISMATCH` chặn chạy), thông báo rõ khi trình duyệt chặn loopback. *Đã chốt khi triển khai (2026-11-13):* lệch commit chặn tạo run trên mọi đích, kể cả cùng origin, và không chặn ghép nối, xem hay đọc báo cáo (D52) |
-| SX-48 | Image dựng từ một export sạch; trong container `MJ-BV01` hoàn tất; health chỉ có mock và `mujoco_arm` |
+| SX-48 | Image dựng từ một cây làm việc sạch ở HEAD (`deploy/lab-runtime/build.sh` từ chối mọi file sửa đổi hoặc chưa theo dõi; `runtime.mjs` do `scripts/export-lab-runtime.mjs` đóng gói từ cây đó, tool root MuJoCo lấy từ `git archive HEAD`); trong container `MJ-BV01` hoàn tất; health chỉ có mock và `mujoco_arm`. (*Đã chốt khi triển khai (2026-11-13):* bản trước ghi "từ một export sạch") |
 | SX-49 | Runbook và script deploy Cloud Run (`--dry-run` in ra lệnh, không gọi API); deploy thật chỉ theo lệnh |
 | SX-50 | Bố cục D61: ở 1440 × 900 khung nhìn ≥ 60 % diện tích cửa sổ khi bảng chi tiết đóng, ≥ 45 % khi mở; trang không cuộn dọc |
 | SX-51 | Mức 1 đúng danh sách D62; bảng chi tiết đóng khi mở trang; trạng thái đóng/mở và thẻ đang chọn được nhớ trong trình duyệt |
@@ -257,7 +257,7 @@ Mã spike nằm ngoài cây git. Đạt **cả** chín:
 | RT02 | Stream qua `fetch`: cắt giữa chừng rồi nối lại không mất sự kiện bền; server tự đóng; gap telemetry rõ ràng; mất phiên | G-RT1 |
 | RT03 | `step` có nhịp (SX-45, kèm ghi chú đã chốt về runner fixed-step) | G-RT1 |
 | RT04 | Lab phục vụ từ một origin khác điều khiển BV01 mock trên runtime cục bộ (Playwright, Chromium) | G-RT1 |
-| RT05 | Container (SX-48): image dựng cho kiến trúc của máy ghi chạy `MJ-BV01` tới `completed`; lần chạy linux/amd64 được ghi số đo, không là tiêu chí | G-RT2 |
+| RT05 | Container (SX-48): image dựng cho kiến trúc của máy ghi chạy `MJ-BV01` tới `completed`. (*Đã chốt khi triển khai (2026-11-13):* số đo linux/amd64 là số đã ghi trong `deploy/lab-runtime/README.md`, đo khi triển khai, chạy qua giả lập; bản ghi `r2a` không lặp lại nó; bản trước ghi "lần chạy linux/amd64 được ghi số đo, không là tiêu chí") | G-RT2 |
 | CL01 | Trên Cloud Run: health, kết nối bằng khóa truy cập, `MJ-BV01` hoàn tất, stream nối lại | G-CLOUD1 (`blocked_external` tới khi có lệnh deploy) |
 | UI01 | Bố cục và không cuộn (SX-50) | G-UI1 |
 | UI02 | Mức 1 đúng danh sách; từng dòng của bảng §6.3 tới được (SX-51, SX-52) | G-UI1 |

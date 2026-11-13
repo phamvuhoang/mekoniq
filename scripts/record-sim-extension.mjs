@@ -9,11 +9,13 @@
 //   node scripts/record-sim-extension.mjs --release r1.1 --out DIR --candidate-id ID --r1-record DIR --mock-regression DIR [--lab DIR|none] [--skip-suites] [--webots-home DIR] [--webots-python PATH]
 // R1.1 (D32) records the Webots arm suites and REG02: the R1 record (and the IR-SIM record and mock regression it was built on, taken from its own directory) must be of the SAME commit.
 //   node scripts/record-sim-extension.mjs --release r2a --out DIR --candidate-id ID --r11-record DIR --mock-regression DIR [--lab DIR|none] [--skip-suites] [--webots-home DIR] [--webots-python PATH]
-//        [--blocked G-MA1,G-MA2,G-RT2,G-INT4 --blocked-reason TEXT] [--cl01-result FILE] [--plan]
-// R2a (D71) records the MuJoCo arm, web runtime and twin UI suites and REG03: the R1.1 record (and the R1, IR-SIM and mock records it carries) must be of the SAME commit, and the
-// mock regression given must be the one it carries. Before anything is written it builds the runtime image for this machine's architecture from this commit (deploy/lab-runtime/build.sh,
-// which refuses a dirty tree; nothing is pushed, no cloud command runs) for the container suite (RT05); without Docker that suite is recorded not run. --blocked is refused unless the
-// M00 spike note concludes failure and every gate named is of part A (D70). G-CLOUD1 is blocked_external unless --cl01-result names a cl01-result/1 file. --plan prints the steps and exits.
+//        [--blocked G-MA1,G-MA2,G-RT2,G-INT4 --blocked-reason TEXT] [--plan]
+// R2a (D71) records the MuJoCo arm, web runtime and twin UI suites and REG03: the R1.1 record (and the R1, IR-SIM and mock records it carries) must be of the SAME source commit and
+// the SAME Lab commit as this recording, and the mock regression given must be the one it carries. Before anything is written it builds the runtime image for this machine's
+// architecture from this commit (deploy/lab-runtime/build.sh, which refuses a dirty tree; nothing is pushed, no cloud command runs) for the container suite (RT05), and removes that
+// image when the recording ends, on every exit path. --blocked is refused unless the M00 spike note concludes failure and every gate named is of part A (D70). G-CLOUD1 is always
+// blocked_external (no deployment has been ordered). Every release: a pre-flight refuses a missing Docker (when the container suite is planned), a missing Python environment and, on
+// macOS, a locked screen when a step starts the Webots application, before any suite runs. --plan prints the steps and the pre-flight results and exits.
 // Refuses an existing --out, a dirty source tree, a Lab whose pin is not this source commit/closure, bytecode under a tool root, and an --irsim-record of another commit.
 // A record that exits 1 or 2 is never edited by hand: fix the cause and record the next candidate. Exit 0 complete (not_run only where declared), 1 a suite or the campaign failed or
 // the record is inconsistent, 2 prerequisite/usage (not_run), 130/143 on a signal.
@@ -26,18 +28,18 @@ import {dirname,join,relative,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {closureIdentity,ownOutput,treeState} from './lab-irsim.mjs';
 import {bytecodeUnder,summarizeResult as summarize} from './irsim-qualification.mjs';
-import {SPIKE_NOTE,SUITES,SUITES_R11,checkBlocked,checkIrsimRecord,checkR1Record,checkR11Record,checkQualification,qualify,qualifyR11,qualifyR2a,tableR2a} from './sim-extension-qualification.mjs';
+import {SPIKE_NOTE,SUITES,SUITES_R11,checkBlocked,checkLabCommits,preflight,screenLockedFromIoreg,checkIrsimRecord,checkR1Record,checkR11Record,checkQualification,qualify,qualifyR11,qualifyR2a,tableR2a} from './sim-extension-qualification.mjs';
 import {PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const fail=(code,m)=>{console.error(`${code}: ${m}`);process.exit(code==='NOT_RUN'?2:1);};
-const raw=process.argv.slice(2),own={release:undefined,out:undefined,candidateId:undefined,irsimRecord:undefined,r1Record:undefined,r11Record:undefined,mock:undefined,lab:undefined,skipSuites:false,plan:false,webotsHome:undefined,webotsPython:undefined,blocked:undefined,blockedReason:undefined,cl01:undefined};
-const VALUE={'--release':'release','--out':'out','--candidate-id':'candidateId','--irsim-record':'irsimRecord','--r1-record':'r1Record','--r11-record':'r11Record','--mock-regression':'mock','--lab':'lab','--webots-home':'webotsHome','--webots-python':'webotsPython','--blocked':'blocked','--blocked-reason':'blockedReason','--cl01-result':'cl01'};
+const raw=process.argv.slice(2),own={release:undefined,out:undefined,candidateId:undefined,irsimRecord:undefined,r1Record:undefined,r11Record:undefined,mock:undefined,lab:undefined,skipSuites:false,plan:false,webotsHome:undefined,webotsPython:undefined,blocked:undefined,blockedReason:undefined};
+const VALUE={'--release':'release','--out':'out','--candidate-id':'candidateId','--irsim-record':'irsimRecord','--r1-record':'r1Record','--r11-record':'r11Record','--mock-regression':'mock','--lab':'lab','--webots-home':'webotsHome','--webots-python':'webotsPython','--blocked':'blocked','--blocked-reason':'blockedReason'};
 for(let i=0;i<raw.length;i++){const a=raw[i];if(a==='--skip-suites')own.skipSuites=true;else if(a==='--plan')own.plan=true;else if(VALUE[a]){const v=raw[++i];if(v===undefined||v.startsWith('--'))fail('NOT_RUN',`MISSING_VALUE:${a}`);own[VALUE[a]]=v;}else fail('NOT_RUN',`UNKNOWN_OPTION:${a}`);}
 if(!['r1','r1.1','r2a'].includes(own.release))fail('NOT_RUN',`MISSING_OPTION:--release r1|r1.1|r2a${own.release?` (got ${own.release})`:''}`);
 const R11=own.release==='r1.1',R2A=own.release==='r2a';
 if(own.irsimRecord&&own.release!=='r1')fail('NOT_RUN','UNKNOWN_OPTION:--irsim-record (R1.1 and R2a take the IR-SIM record from the record they build on)');
 if(own.r1Record&&!R11)fail('NOT_RUN','UNKNOWN_OPTION:--r1-record (only Release 1.1)');
-for(const [k,f] of [['r11Record','--r11-record'],['blocked','--blocked'],['blockedReason','--blocked-reason'],['cl01','--cl01-result']])if(own[k]!==undefined&&!R2A)fail('NOT_RUN',`UNKNOWN_OPTION:${f} (only Release R2a)`);
+for(const [k,f] of [['r11Record','--r11-record'],['blocked','--blocked'],['blockedReason','--blocked-reason']])if(own[k]!==undefined&&!R2A)fail('NOT_RUN',`UNKNOWN_OPTION:${f} (only Release R2a)`);
 // --blocked (D70): part A gates only, with a reason, and only when the M00 spike note concludes failure; checked before anything else is read or written
 const blocked=R2A&&(own.blocked!==undefined||own.blockedReason!==undefined)?{gates:(own.blocked??'').split(',').filter(Boolean),reason:own.blockedReason??''}:null;
 if(blocked){const p=checkBlocked(blocked,existsSync(join(root,SPIKE_NOTE))?readFileSync(join(root,SPIKE_NOTE),'utf8'):'');if(p.length)fail('NOT_RUN',p.join('; '));}
@@ -49,11 +51,16 @@ const imageTag=`mekoniq-lab-runtime:record-${process.pid}`,imagePlatform=`linux/
 /** How a suite of the table is run: the same for the plan and the recording. */
 const suiteRun=(s,cwd,abs,env={})=>s.kind==='vitest'?{cmd:process.execPath,args:[join(cwd,'node_modules/vitest/vitest.mjs'),'run',...s.files,'--reporter=json',`--outputFile=${abs}`,'--reporter=default'],env}
  :s.kind==='pytest'?{cmd:join(root,s.python),args:['-m','pytest',...s.files,'-q',`--junitxml=${abs}`],env}:{cmd:process.execPath,args:s.command.map(a=>a.endsWith('.mjs')?join(cwd,a):a),env};
+const PLANNED=own.skipSuites?[]:SUITES_RUN;
+const probes={docker:()=>spawnSync('docker',['info'],{stdio:'ignore',timeout:30_000}).status===0,exists:(p)=>existsSync(join(root,p)),platform:platform(),
+ screenLocked:()=>screenLockedFromIoreg(spawnSync('ioreg',['-n','Root','-d1','-a'],{encoding:'utf8',timeout:10_000}).stdout)};
+const checks=()=>preflight({release:own.release,suites:PLANNED},probes);
 if(own.plan){
  const line=(id,cwd,cmd,args)=>console.log(`${id}\t${cwd}\t${[cmd,...args].join(' ')}`);
+ for(const c of checks())console.log(`preflight\t${c.id}\t${c.ok?'ok':c.code}\t${c.message}`);
  console.log(`# record-sim-extension --release ${own.release}: the steps it would run, in order (id, working directory, command); nothing is run`);
  if(!R11&&!R2A){line('algorithm',root,process.execPath,['scripts/lab-algorithm.mjs','run','--out','<scratch>']);line('campaign',root,process.execPath,['scripts/lab-irsim.mjs','run','--provider','webots','--campaign','r1-qualification','--out',join(out,'campaign'),'…']);}
- if(R2A&&SUITES_RUN.some(s=>s.image))line('rt-image',root,'sh',['deploy/lab-runtime/build.sh',imageTag,'--platform',imagePlatform,'(only when `docker info` succeeds; before the record directory exists)']);
+ if(R2A&&SUITES_RUN.some(s=>s.image))line('rt-image',root,'sh',['deploy/lab-runtime/build.sh',imageTag,'--platform',imagePlatform,'(before the record directory exists; the image is removed when the recording ends, on every exit path)']);
  for(const s of SUITES_RUN){const cwd=s.repo==='lab'?labDir??'<no Lab: not run>':root,r=suiteRun(s,cwd,join(out,`suites/${s.id}.${s.kind==='pytest'?'xml':'json'}`));line(s.id,cwd,r.cmd,r.args);}
  line('licenses',root,process.execPath,['scripts/portable-licenses.mjs','--check']);if(!R11&&!R2A)line('performance',root,process.execPath,['scripts/measure-webots.mjs','…']);
  if(blocked)console.log(`# blocked: ${blocked.gates.join(',')} (${blocked.reason})`);
@@ -73,7 +80,6 @@ const identity=()=>{const tree=treeState(root,ownPaths);
 const before=identity();
 if(before.dirty)fail('NOT_RUN',`SOURCE_DIRTY: commit the source before recording evidence (${before.dirtyReasons.slice(0,5).join('; ')})`);
 if(!before.webots)fail('NOT_RUN',`WEBOTS_NOT_INSTALLED: no Webots R2025a at ${webotsHome}`);
-if(R2A&&SUITES_RUN.some(s=>s.python==='.venv-mujoco/bin/python')&&!existsSync(join(root,'.venv-mujoco/bin/python')))fail('NOT_RUN','MUJOCO_NOT_INSTALLED: no .venv-mujoco (node scripts/bootstrap-portable-simulation.mjs mujoco)');
 // the recorded inputs this record builds on: the LinkForge + IR-SIM record and the Lab's mock regression, both of THIS source commit
 const readJson=(p,what)=>{try{return JSON.parse(readFileSync(p,'utf8'));}catch{return fail('NOT_RUN',`${what}: cannot read ${p}`);}};
 const mockDoc=readJson(join(mockDir,'manifest.json'),'MOCK_REGRESSION_MISSING');
@@ -88,7 +94,7 @@ const r1Doc=R11?readJson(join(r1Dir,'qualification.json'),'R1_RECORD_MISSING'):R
 if(R11||R2A){const p=checkR1Record(r1Doc,before.sourceCommit);if(p.length)fail('NOT_RUN',`${p.join('; ')} (record release r1 for this commit first)`);}
 if(R11)carried(r1Dir,r1Doc,'irsimRecord','IRSIM_RECORD_MISSING');
 const irsimDoc=R11?readJson(join(r1Dir,r1Doc.irsimRecord.file),'IRSIM_RECORD_MISSING'):R2A?readJson(join(r11Dir,r11Doc.irsimRecord.file),'IRSIM_RECORD_MISSING'):readJson(join(irsimDir,'qualification.json'),'IRSIM_RECORD_MISSING');
-const cl01Doc=own.cl01?readJson(resolve(own.cl01),'CL01_RESULT_MISSING'):null;
+
 const irsimProblems=checkIrsimRecord(irsimDoc,before.sourceCommit);if(irsimProblems.length)fail('NOT_RUN',`${irsimProblems.join('; ')} (record linkforge-irsim for this commit first)`);
 if(mockDoc.schema!=='lab-v2-regression/1'||mockDoc.identity?.start?.source?.commit!==before.sourceCommit)fail('NOT_RUN',`MOCK_REGRESSION_COMMIT: the Lab regression is of ${mockDoc.identity?.start?.source?.commit??'no commit'}, this source is ${before.sourceCommit}`);
 if(own.lab&&own.lab!=='none'&&!existsSync(join(labDir,'config/source-runtime.lock.json')))fail('NOT_RUN',`LAB_NOT_FOUND: ${own.lab}`);
@@ -101,12 +107,19 @@ if(labBefore){
  if(labBefore.pin.sourceCommit!==before.sourceCommit)fail('NOT_RUN',`LAB_PIN_MISMATCH: the Lab pins ${labBefore.pin.sourceCommit}, this source is ${before.sourceCommit} (export, import and pin first)`);
  if(labBefore.pin.portableToolsDigest!==before.toolClosures.portable)fail('NOT_RUN',`LAB_PORTABLE_DIGEST_MISMATCH: Lab ${labBefore.pin.portableToolsDigest}, tree ${before.toolClosures.portable}`);
 }
+// R2a: every input is of this Lab commit too (the Lab adds UI commits under an unchanged pin)
+if(R2A){if(!labBefore)fail('NOT_RUN','LAB_NOT_FOUND: release r2a records the Lab and binds its inputs to the Lab commit');
+ const p=checkLabCommits({r11:r11Doc,r1:r1Doc,irsim:irsimDoc,mock:mockDoc},labBefore.commit);if(p.length)fail('NOT_RUN',`${p.join('; ')} (record the chain at this Lab commit)`);}
+// pre-flight (every release): what would fail the recording later is refused now
+{const bad=checks().filter(c=>!c.ok);if(bad.length)fail('NOT_RUN',bad.map(c=>`${c.code}: ${c.message}`).join('; '));}
 // R2a, RT05: the runtime image of THIS commit for this machine's architecture, built before the record directory exists (build.sh refuses any untracked file). Never pushed.
-let image=null,imageBuild=null;
+let image=null,imageBuild=null,trapped=false;
 if(R2A&&!own.skipSuites&&SUITES_RUN.some(s=>s.image)){
- const up=spawnSync('docker',['info'],{stdio:'ignore',timeout:30_000});
- if(up.status!==0)notRunEarly.push({id:'suite:rt-container',reason:'DOCKER_UNAVAILABLE: `docker info` failed, so the image was not built and the container suite was not run (G-RT2 is not tested)'});
- else{const startedAt=new Date().toISOString(),b=spawnSync('sh',[join(root,'deploy/lab-runtime/build.sh'),imageTag,'--platform',imagePlatform],{cwd:root,encoding:'utf8',timeout:1_800_000,env:{...process.env,PATH:`${dirname(process.execPath)}:${process.env.PATH}`}});
+ // the image is this recording's own: removed when the process exits, whatever the path (process.exit, a signal handled below, an uncaught error)
+ process.on('exit',()=>{spawnSync('docker',['image','rm','-f',imageTag],{stdio:'ignore',timeout:60_000});});
+ // a signal before the recorder's own handlers exist (during the build) exits through 'exit' too, instead of the default termination that skips it
+ for(const [sig,code] of [['SIGINT',130],['SIGTERM',143],['SIGHUP',129]])process.on(sig,()=>{if(!trapped)process.exit(code);});
+ {const startedAt=new Date().toISOString(),b=spawnSync('sh',[join(root,'deploy/lab-runtime/build.sh'),imageTag,'--platform',imagePlatform],{cwd:root,encoding:'utf8',timeout:1_800_000,env:{...process.env,PATH:`${dirname(process.execPath)}:${process.env.PATH}`}});
   const label=spawnSync('docker',['image','inspect','--format','{{.Id}} {{index .Config.Labels "org.opencontainers.image.revision"}} {{.Os}}/{{.Architecture}}',imageTag],{encoding:'utf8'}),[id,revision,plat]=(label.stdout??'').trim().split(' ');
   imageBuild={startedAt,finishedAt:new Date().toISOString(),exitCode:b.status??1,text:`${b.stdout??''}${b.stderr??''}`};
   image={tag:imageTag,platform:plat??null,id:id??null,revision:revision??null,built:b.status===0,revisionIsRecordedCommit:revision===before.sourceCommit};
@@ -120,6 +133,7 @@ let signalled=0;const children=new Set();
 // first signal is a polite one: lab-irsim and the vitest teardown close their workers on SIGTERM. SIGKILL follows only if the suite is still running 8 s later.
 const sendGroup=(c,sig)=>{try{process.kill(-c.pid,sig);}catch{try{c.kill(sig);}catch{/* already gone */}}};
 const killGroup=(c,sig)=>{sendGroup(c,sig==='SIGKILL'?'SIGTERM':sig);setTimeout(()=>{if(children.has(c))sendGroup(c,'SIGKILL');},8000).unref();};
+trapped=true;
 for(const [sig,code] of [['SIGINT',130],['SIGTERM',143],['SIGHUP',129]])process.on(sig,()=>{signalled||=code;for(const c of children)killGroup(c,sig);});
 async function record(id,cmd,args,{cwd=root,env={},timeoutMs=3_600_000}={}){
  const startedAt=new Date().toISOString(),log=`suites/${id}.log`;
@@ -177,14 +191,14 @@ if(!signalled){
 // ---- 5. the inputs this record builds on, copied byte for byte (the check reads them back from here, never from a claim) ----
 if(R11){copyFileSync(join(r1Dir,'qualification.json'),join(out,'r1-record.json'));copyFileSync(join(r1Dir,r1Doc.irsimRecord.file),join(out,'irsim-record.json'));}
 else if(R2A){copyFileSync(join(r11Dir,'qualification.json'),join(out,'r11-record.json'));copyFileSync(join(r11Dir,r11Doc.r1Record.file),join(out,'r1-record.json'));copyFileSync(join(r11Dir,r11Doc.irsimRecord.file),join(out,'irsim-record.json'));
- if(cl01Doc)copyFileSync(resolve(own.cl01),join(out,'cl01-result.json'));if(blocked)copyFileSync(join(root,SPIKE_NOTE),join(out,'spike-note.md'));}
+ if(blocked)copyFileSync(join(root,SPIKE_NOTE),join(out,'spike-note.md'));}
 else copyFileSync(join(irsimDir,'qualification.json'),join(out,'irsim-record.json'));
 copyFileSync(join(mockDir,'manifest.json'),join(out,'mock-regression.json'));
 const ref=(file,extra={})=>({file,sha256:sha(readFileSync(join(out,file))),...extra});
 const irsimRecord=ref('irsim-record.json',{candidate:R11?r1Doc.irsimRecord.candidate:R2A?r11Doc.irsimRecord.candidate:irsimDir.replace(/\/+$/,'').split('/').pop(),sourceCommit:irsimDoc.identity.before.sourceCommit});
 const r1Record=R11?ref('r1-record.json',{candidate:r1Dir.replace(/\/+$/,'').split('/').pop(),sourceCommit:r1Doc.identity.before.sourceCommit}):R2A?ref('r1-record.json',{candidate:r11Doc.r1Record.candidate,sourceCommit:r1Doc.identity.before.sourceCommit}):null;
 const r11Record=R2A?ref('r11-record.json',{candidate:r11Dir.replace(/\/+$/,'').split('/').pop(),sourceCommit:r11Doc.identity.before.sourceCommit}):null;
-const r2aExtra=R2A?{r11Record,image,...blocked?{blocked:{...blocked,spikeNote:ref('spike-note.md')}}:{},...cl01Doc?{cl01:ref('cl01-result.json')}:{}}:{};
+const r2aExtra=R2A?{r11Record,image,...blocked?{blocked:{...blocked,spikeNote:ref('spike-note.md')}}:{}}:{};
 const mockRegression={file:'mock-regression.json',sha256:sha(readFileSync(join(out,'mock-regression.json'))),labCommit:mockDoc.identity?.start?.lab?.commit??null,source:mockDir.includes('/docs/')?mockDir.slice(mockDir.indexOf('/docs/')+1):'(outside the repositories)'};
 
 // ---- 6. identity after, statuses, the record ----
@@ -192,7 +206,7 @@ const after=identity(),labAfter=labInfo();
 const identityStable=before.sourceCommit===after.sourceCommit&&!after.dirty&&before.toolClosures.portable===after.toolClosures.portable&&before.toolClosures.native===after.toolClosures.native&&JSON.stringify(before.locks)===JSON.stringify(after.locks)&&before.webots.executableSha256===after.webots?.executableSha256&&before.oracleProfileDigest===after.oracleProfileDigest&&(!labBefore||labBefore.commit===labAfter.commit&&!labAfter.dirty);
 const algorithmDoc=algorithm?JSON.parse(readFileSync(join(out,algorithm.file),'utf8')):null;
 const labRecorded=!!labDir&&suites.some(s=>s.id.startsWith('lab-e2e'));
-const q=R2A?qualifyR2a({suites,lab:labRecorded,sourceCommit:before.sourceCommit,r11:r11Doc,r1:r1Doc,irsim:irsimDoc,mock:mockDoc,blocked,cl01:cl01Doc}):R11?qualifyR11({suites,lab:labRecorded,sourceCommit:before.sourceCommit,r1:r1Doc,irsim:irsimDoc,mock:mockDoc}):qualify({campaign:summary&&summary.status==='completed'?summary:null,suites,lab:labRecorded,sourceCommit:before.sourceCommit,algorithm:algorithmDoc,irsim:irsimDoc,mock:mockDoc});
+const q=R2A?qualifyR2a({suites,lab:labRecorded,sourceCommit:before.sourceCommit,r11:r11Doc,r1:r1Doc,irsim:irsimDoc,mock:mockDoc,blocked}):R11?qualifyR11({suites,lab:labRecorded,sourceCommit:before.sourceCommit,r1:r1Doc,irsim:irsimDoc,mock:mockDoc}):qualify({campaign:summary&&summary.status==='completed'?summary:null,suites,lab:labRecorded,sourceCommit:before.sourceCommit,algorithm:algorithmDoc,irsim:irsimDoc,mock:mockDoc});
 const walk=(d,rel='')=>readdirSync(d,{withFileTypes:true}).sort((a,b)=>a.name<b.name?-1:1).flatMap(e=>e.isDirectory()?walk(join(d,e.name),`${rel}${e.name}/`):e.isFile()&&`${rel}${e.name}`!=='qualification.json'?[{file:`${rel}${e.name}`,sha256:sha(readFileSync(join(d,e.name))),bytes:statSync(join(d,e.name)).size}]:[]);
 const recordDoc={schemaVersion:1,documentType:'sim-extension-qualification',release:own.release,candidateId,accepted:false,acceptedBy:null,acceptedAt:null,
  note:R2A?'evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; the MuJoCo arm is a plant with manufacturer-nominal and assumed parameters (not_calibrated) that grips by contact; a container run is not evidence for G-MA1/G-MA2 (D50); G-CLOUD1 is blocked_external until CL01 runs on a deployed service; no real arm, real amd64 machine, Cloud Run or hardware gate is in its scope':R11?'evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; the arm is a Webots plant with assumed parameters (not_calibrated), gripping is an event, and no real arm, MuJoCo, Linux or hardware gate is in its scope':'evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; MuJoCo, Linux and hardware gates are outside its scope',
