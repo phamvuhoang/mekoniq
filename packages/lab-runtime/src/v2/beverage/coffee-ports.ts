@@ -13,7 +13,8 @@ export interface WebotsArmPlantReport {engine:'webots_3d';control:'position_serv
 export type ArmPlantReport=WebotsArmPlantReport|{engine:'mujoco_3d';engineVersion:string;control:'position_actuator';grip:'contact';dynamics:'manufacturer_nominal+assumed';calibration:'not_calibrated';tracking:{samples:number;peakRad:number[];rmsRad:number[]}}
 /** R2a: what a contact arm plant's cell was built from, for the report (SX-41): the fixture's solved waypoint table and its digest, the scene's allowed contacts, the assumed release
  * timeout, and statements a person reads with the numbers. */
-export interface ArmCellEvidence {waypoints:{digest:string;table:{waypoint:string;q:number[];positionErrorM:number;orientationErrorRad:number;condition:number}[]};allowedContacts:{a:string;b:string}[];releaseTimeoutTicks:number;notes:string[]}
+export interface ArmCellEvidence {waypoints:{digest:string;table:{waypoint:string;q:number[];positionErrorM:number;orientationErrorRad:number;condition:number}[]};allowedContacts:{a:string;b:string}[];releaseTimeoutTicks:number;notes:string[];
+ /** What the engine was given: the fixture's componentDigest, the digest of physics.json as used (after any override) and the sceneDigest of the cell scene the worker was bound to. */inputs?:{componentDigest:string;physicsDigest:string;sceneDigest:string}}
 export interface CoffeePlantPorts {
  adapters:readonly CellAdapter[];
  advance():Promise<void>;

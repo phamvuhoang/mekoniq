@@ -52,7 +52,7 @@ export const cellSupports=(layout:Pick<CellLayout,'nozzleStand'|'tray'>):ArmObst
  ({id,kind:'box',min:b.centerM.map((c,i)=>c-b.sizeM[i]!/2),max:b.centerM.map((c,i)=>c+b.sizeM[i]!/2)}));
 const SUPPORT_IDS=new Set(['nozzle-stand','tray']);
 /** The report's statements about this plant (SX-41, D49), with the numbers they qualify. */
-export const mujocoArmCellEvidence=(engineVersion:string,fixture:Pick<XArmFixture,'waypoints'>,allowed:ArmCellSceneV1['allowedContacts']):ArmCellEvidence=>({waypoints:structuredClone(fixture.waypoints),
+export const mujocoArmCellEvidence=(engineVersion:string,fixture:Pick<XArmFixture,'waypoints'>,allowed:ArmCellSceneV1['allowedContacts'],inputs:NonNullable<ArmCellEvidence['inputs']>):ArmCellEvidence=>({waypoints:structuredClone(fixture.waypoints),inputs:{...inputs},
  allowedContacts:allowed.map(c=>({a:c.a,b:c.b})),releaseTimeoutTicks:MUJOCO_ARM_RELEASE_TIMEOUT_TICKS,notes:[
  `Plant: MuJoCo ${engineVersion}, xArm 6 with Gripper G2 under position actuators; not_calibrated: masses, inertia, limits and forces are manufacturer nominal values, gains, friction, contact, pads and the cell layout assumed.`,
  `Release timeout: ${MUJOCO_ARM_RELEASE_TIMEOUT_TICKS} ticks, an assumed controller value (in neither the spec nor the oracle profile): how long the open gripper waits at the place pose for the cup to rest on the tray.`,
@@ -90,7 +90,7 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
   const known=[...new Set([...st.plant.cups.map(c=>c.cupId),...st.workload.map(w=>w.cupId)])].sort();
   const scene=buildArmCellScene(run.project,{...fixture,physics},run.seed,{armId:st.armId,propIds:known,homeRad:armState.q,
    ...runtime.armExtraStatics?{extraStatics:runtime.armExtraStatics}:{},...runtime.padFrictionOverride!==undefined?{padFriction:runtime.padFrictionOverride}:{}});
-  const bundle=join(directory,'mujoco-arm','bundle');
+  const bundle=join(directory,'mujoco-arm','bundle'),inputs={componentDigest:hashJson(JSON.parse(fixture.componentText) as never),physicsDigest:hashJson(physics as never),sceneDigest:scene.sceneDigest};
   await writeArmCellBundle(bundle,scene,fixture,physics);
   st.arm=armState;
   const base=createMockCoffeePorts(st,ctx,newBootId,{tracking:{reachTolRad:oracle.reachTolRad,settleTicks:oracle.settleTicks,followTolRad:oracle.followTolRad,followTicks:oracle.followTicks},programs,model:XARM6_SI});
@@ -154,7 +154,7 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
      if(grew||!latched0&&st.arm.stop?.latched)(t.props??=[]).push({tick:grew?t.trace.at(-1)!.tick:st.arm.tick,props:(ex.props??[]).map(p=>({propId:p.propId,positionM:p.inMap!.positionM,quaternionXyzw:p.inMap!.quaternionXyzw,restingOn:p.restingOn,held:held.includes(p.propId)}))});
     }catch(e){if(e instanceof WorkerLostError)lose('WORKER_LOST',lostDetail(e));else lose('WORKER_FAILED',errorDetail(e));}
    },
-   report:()=>({...base.report(),...st.arm.tracking?{armPlant:mujocoArmPlantReport(runtime.engineVersion,st.arm.tracking),armCell:mujocoArmCellEvidence(runtime.engineVersion,fixture,scene.allowedContacts)}:{}}),
+   report:()=>({...base.report(),...st.arm.tracking?{armPlant:mujocoArmPlantReport(runtime.engineVersion,st.arm.tracking),armCell:mujocoArmCellEvidence(runtime.engineVersion,fixture,scene.allowedContacts,inputs)}:{}}),
    async close(){try{await base.close();}finally{await release();}}} satisfies CoffeePlantPorts;
   }
  };

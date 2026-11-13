@@ -17,7 +17,7 @@ export interface ArmPropsFile {schemaVersion:1;note:string;frame:'map';samples:A
 type FileRef={path:string;sha256:string;samples:number};
 /** A contact plant (MuJoCo, R2a) adds the cell's evidence: the solved waypoint table, the cup trace file, the allowed contacts, the assumed release timeout and the statements that qualify them. */
 export interface ArmReportBlock {trace:FileRef;tracking:ArmPlantReport['tracking'];armPlant:ArmPlantReport;collision:ArmCollisionEvidenceRecord;
- waypoints?:ArmCellEvidence['waypoints'];props?:FileRef;allowedContacts?:ArmCellEvidence['allowedContacts'];releaseTimeoutTicks?:number;notes?:string[]}
+ waypoints?:ArmCellEvidence['waypoints'];props?:FileRef;allowedContacts?:ArmCellEvidence['allowedContacts'];releaseTimeoutTicks?:number;notes?:string[];inputs?:ArmCellEvidence['inputs']}
 type WorldRevision=ArmCollisionEvidenceRecord['worldRevision'];
 
 /** ARM03 from the plant's own evidence: pass only when every checked interval was clear, none was dropped, and the arm was not stopped for a collision (its own check or the engine's).
@@ -65,7 +65,7 @@ export async function buildArmReport(arm:ArmPlantState,plant:ArmPlantReport,dire
  if(!cell)return block;
  const props=await writeEvidence(directory,ARM_PROPS_FILE,{schemaVersion:1,note:'The cups in the arm cell at each tick of the joint trace and at the tick the arm latched (if it did): position (m) and orientation in the map frame, the support they rest on, and whether the pads hold them; read at the end of the tick.',
   frame:'map',samples:arm.tracking?.props??[]} satisfies ArmPropsFile);
- return {...block,waypoints:structuredClone(cell.waypoints),props,allowedContacts:structuredClone(cell.allowedContacts),releaseTimeoutTicks:cell.releaseTimeoutTicks,notes:[...cell.notes,...block.collision.assetNote?[block.collision.assetNote]:[]]};
+ return {...block,waypoints:structuredClone(cell.waypoints),props,allowedContacts:structuredClone(cell.allowedContacts),releaseTimeoutTicks:cell.releaseTimeoutTicks,notes:[...cell.notes,...block.collision.assetNote?[block.collision.assetNote]:[]],...cell.inputs?{inputs:{...cell.inputs}}:{}};
 }
 export async function readArmTrace(directory:string,block:ArmReportBlock):Promise<ArmTraceFile>{
  const bytes=await readFile(join(directory,block.trace.path));

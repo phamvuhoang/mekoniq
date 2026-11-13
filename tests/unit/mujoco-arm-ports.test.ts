@@ -18,7 +18,7 @@ import { forwardKinematics, XARM6_SI } from '../../packages/lab-runtime/src/v2/m
 import { DEFAULT_ARM_GEOMETRY } from '../../packages/lab-runtime/src/v2/models/arm-collision';
 import { readXArmFixture, XARM_FIXTURE_ID } from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
 import { checkArmSweep } from '../../packages/lab-runtime/src/v2/models/arm-collision';
-import { cellSupports, MUJOCO_ARM_RELEASE_TIMEOUT_TICKS, mujocoArmPorts, mujocoProgramSet } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports';
+import { cellSupports, MUJOCO_ARM_RELEASE_TIMEOUT_TICKS, mujocoArmPorts, mujocoArmProgram, mujocoProgramSet } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports';
 import { MUJOCO_SLOT, type MujocoRuntimeOptions } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco';
 import { validateTwinSampleV2, type LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
 import { projectSamples } from '../../packages/lab-runtime/src/v2/twin-projection';
@@ -169,6 +169,16 @@ describe.skipIf(!existsSync(python))('mujocoArmPorts over a fake cell engine', (
     await first.p.close();
     expect(activeRunCount(MUJOCO_SLOT)).toBe(0); expect(workers(first.directory)).toEqual([]);
     expect((await ports(rt, 'run-b')).p).toBeDefined();
+  }, 60_000);
+
+  test('the arm block names what the engine was given: the component, the physics as used and the cell scene; a pad friction override changes the scene digest', async () => {
+    const nominal = await ports(await runtime());
+    const a = nominal.p.report().armCell!.inputs!, scene = JSON.parse(await readFile(join(nominal.directory, 'mujoco-arm', 'bundle', 'arm-cell-scene.json'), 'utf8'));
+    const manifest = JSON.parse(await readFile(join(FX, 'manifest.json'), 'utf8'));
+    expect(a).toEqual({ componentDigest: manifest.componentDigest, physicsDigest: mujocoArmProgram({ workerRoot }).physicsDigest, sceneDigest: scene.sceneDigest });
+    await nominal.p.close();
+    const slippery = await ports({ ...await runtime(), padFrictionOverride: 0.1 }, 'run-b'), b = slippery.p.report().armCell!.inputs!;
+    expect(b.componentDigest).toBe(a.componentDigest); expect(b.physicsDigest).toBe(a.physicsDigest); expect(b.sceneDigest).not.toBe(a.sceneDigest);
   }, 60_000);
 
   test('a failed create or a project without a cell scene gives the slot back, with the code, and leaves no worker', async () => {
