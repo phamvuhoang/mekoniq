@@ -20,6 +20,17 @@ function fixture(){
 }
 const recording=(start:RegressionIdentity):RegressionIdentityRecord=>({revisions:{source:start.source.commit,sourceDirty:false,lab:start.lab.commit,labDirty:false},identity:{schema:'regression-identity/1',start:structuredClone(start),end:structuredClone(start),checkpoints:[{id:'suite:before',identity:structuredClone(start)},{id:'suite:after',identity:structuredClone(start)}]},commands:[{id:'suite'}]});
 afterEach(()=>{for(const path of roots.splice(0))rmSync(path,{recursive:true,force:true});});
+test('recording captures a Git tree larger than 1 MiB without losing entries at its end',()=>{
+ const f=fixture(),files=Array.from({length:5000},(_,i)=>`docs/${String(i).padStart(5,'0')}-${'e'.repeat(170)}.json`);
+ for(const path of files)write(f.source,path,'{}\n');commit(f.source);
+ const listing=execFileSync('git',['ls-tree','-r','-z','HEAD'],{cwd:f.source,maxBuffer:16*1024*1024});
+ expect(listing.byteLength).toBeGreaterThan(1024*1024);
+ const before=captureRegressionIdentity(f.source,f.lab);
+ expect(()=>assertRecordableIdentity(before)).not.toThrow();expect(before.source.codeHash).toMatch(/^[a-f0-9]{64}$/);
+ write(f.source,files.at(-1)!,'{"changed":true}\n');commit(f.source);
+ const after=captureRegressionIdentity(f.source,f.lab);
+ expect(after.source.codeHash).not.toBe(before.source.codeHash);
+});
 test.each(['source','lab'] as const)('recording rejects dirty %s code before executing suites',repo=>{
  const f=fixture();write(f[repo],'src/main.ts','changed');expect(()=>assertRecordableIdentity(captureRegressionIdentity(f.source,f.lab))).toThrow(/CODE_DIRTY/);
 });

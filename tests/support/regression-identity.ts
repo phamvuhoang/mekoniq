@@ -10,7 +10,8 @@ export interface RegressionIdentityRecord {
  identity:{schema:'regression-identity/1';start:RegressionIdentity;end:RegressionIdentity;checkpoints:{id:string;identity:RegressionIdentity}[]};
  commands:{id:string}[];
 }
-const git=(directory:string,args:string[])=>execFileSync('git',['-C',directory,...args],{encoding:'utf8'});
+// Qualification artifacts make ls-tree exceed Node's default 1 MiB buffer. Keep the complete listing (and a bounded failure), never truncate the identity input.
+const git=(directory:string,args:string[])=>execFileSync('git',['-C',directory,...args],{encoding:'utf8',maxBuffer:64*1024*1024});
 const mutableLabPath=(path:string)=>LAB_EVIDENCE_MUTABLE_PATHS.some(p=>p.endsWith('/')?path.startsWith(p):path===p);
 function treeHash(directory:string,revision:string,lab:boolean){
  const entries=git(directory,['ls-tree','-r','-z',revision]).split('\0').filter(Boolean).filter(e=>!lab||!mutableLabPath(e.slice(e.indexOf('\t')+1))).sort();
