@@ -83,7 +83,9 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    const viaKey=!!deps.accessKeyValid?.(b.token);
    if(!viaKey&&!deps.pairingValid(b.token)){if(limited)pairingFailures.push(deps.now());return deny(response,401,'PAIRING_INVALID',[]);}
    for(const [id,s]of sessions)if(deps.now()>=s.expiresAt)sessions.delete(id);
-   if(sessions.size>=10)return deny(response,429,'SESSION_LIMIT',[]);
+   // single tenant with an access key: whoever holds the key owns the runtime, so a pairing with the key at the cap ends the oldest session (its runs are then handled as
+   // runs of an expired session: closed by the next create, reclaimable with their proof). Without a key the cap refuses, as before.
+   if(sessions.size>=10){if(!viaKey)return deny(response,429,'SESSION_LIMIT',[]);sessions.delete(sessions.keys().next().value!);}
    if(!viaKey)deps.spendPairing();const id=token(),csrf=token();sessions.set(id,{csrf,expiresAt:deps.now()+3600000});
    response.setHeader('Set-Cookie',`${COOKIE}=${id}; HttpOnly; SameSite=Strict; Path=/lab/v2; Max-Age=3600`);
    // The principal is assigned by the server; nothing in the request can choose it.
@@ -189,10 +191,10 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(!admission.ok)return deny(response,422,'BACKEND_UNAVAILABLE',admission.reasonCodes);
    // Contract admission and execution availability are separate; native runs require a server-owned factory.
    if((set.mode!=='mock'&&!(set.mode==='simulation'&&deps.simulationFactory))||!required.every(b=>enabled.has(b)))return deny(response,501,'BACKEND_UNAVAILABLE',['BACKEND_EXECUTION_DISABLED']);
+   // Expired sessions free active slots (before readiness: a single-slot provider must not count a run that is already due to close). Their durable checkpoints can later be reclaimed with local ownership proof.
+   for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});}}
    const readiness=await collectReadiness({scenarioId:r.scenarioId,backendSetId:r.backendSetId,project,...engineering?{engineering:engineering.ref}:{}},readinessOptions());
    if(!readiness.canStart)return deny(response,422,'BACKEND_UNAVAILABLE',readiness.checks.flatMap(c=>c.reasonCodes));
-   // Expired sessions free active slots. Their durable checkpoints can later be reclaimed with local ownership proof.
-   for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});}}
    if(runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
    creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
    try{

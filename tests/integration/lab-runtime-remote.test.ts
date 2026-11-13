@@ -203,3 +203,27 @@ test('CLI: PORT is read only when --port is absent; the access key is removed fr
  try{await n.started;}finally{n.child.kill('SIGTERM');await n.exited;}
  expect(n.output()).toContain('KEY_IN_ENV:false');
 },60000);
+
+test('with an access key a pairing at the session cap ends the oldest session; its run is then an expired session\'s run; a failed pairing evicts nothing',async()=>{
+ const g=await setup({allowOrigins:[remote],accessKey:key});
+ const auth=(t:string)=>({Origin:remote,Authorization:`Bearer ${t}`}),live=async(t:string)=>(await call(g.url+readiness,{headers:auth(t)})).status;
+ const sessions:string[]=[];for(let i=0;i<10;i++){const r=await pairWith(g,key);expect(r.status).toBe(201);sessions.push(r.body.sessionToken as string);}
+ const created=await call(g.url+'/lab/v2/runs',{method:'POST',headers:auth(sessions[0]!),body:runBody});expect(created.status).toBe(201);
+ const runId=(created.body.run as {id:string}).id,proof=created.body.reclaimToken as string;
+ // a wrong key at the cap is refused and ends nothing
+ expect(await pairWith(g,key.slice(1)+'x')).toMatchObject({status:401,body:{error:'PAIRING_INVALID'}});
+ for(const t of sessions)expect(await live(t)).toBe(200);
+ const eleventh=await pairWith(g,key);expect(eleventh.status).toBe(201);const t11=eleventh.body.sessionToken as string;
+ expect(await live(sessions[0]!)).toBe(401);for(const t of [...sessions.slice(1),t11])expect(await live(t)).toBe(200);
+ // the evicted session's run: nobody else sees it, a create closes it, the proof reclaims it read-only
+ expect((await call(g.url+`/lab/v2/runs/${runId}`,{headers:auth(t11)})).status).toBe(404);
+ expect((await call(g.url+'/lab/v2/runs',{method:'POST',headers:auth(t11),body:runBody})).status).toBe(201);
+ expect(await call(g.url+`/lab/v2/runs/${runId}/reclaim`,{method:'POST',headers:auth(t11),body:{proof}})).toMatchObject({status:200,body:{controlAccess:'view_reconcile'}});
+});
+
+test('without an access key the session cap refuses as before and ends no session',async()=>{
+ const g=await setup();
+ const sessions:string[]=[];for(let i=0;i<10;i++)sessions.push((await bearer(g,loopback)).sessionToken);
+ expect(await pairWith(g,g.issuePairingToken(),loopback)).toMatchObject({status:429,body:{error:'SESSION_LIMIT'}});
+ for(const t of sessions)expect((await call(g.url+readiness,{headers:{Origin:loopback,Authorization:`Bearer ${t}`}})).status).toBe(200);
+});

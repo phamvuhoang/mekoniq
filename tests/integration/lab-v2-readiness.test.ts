@@ -1,9 +1,10 @@
-import {afterEach,expect,test} from 'vitest';
+import {afterEach,expect,test,vi} from 'vitest';
 import {mkdtemp,readdir,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
 import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
+import {createScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
 import {restaurant} from '../support/lab-v2';
 const roots:string[]=[],gateways:LabGateway[]=[];
 afterEach(async()=>{for(const g of gateways.splice(0))await g.close();for(const d of roots.splice(0))await rm(d,{recursive:true,force:true});});
@@ -100,4 +101,23 @@ test.each(['start','resume'] as const)('an accepted %s replays its receipt after
  const conflict=await post({...action,expectedRevision:current.run.runRevision});expect(conflict.status).toBe(409);expect((await conflict.json()).error).toBe('ACTION_CONFLICT');
  const fresh=await post({actionId:'new-resume',expectedRevision:current.run.runRevision,kind:'resume',payload:{}});expect(fresh.status).toBe(422);expect((await fresh.json()).reasonCodes).toContain('WORLD_REVISION_MISMATCH');
  const after=await (await fetch(url,{headers:{cookie}})).json();expect(after.run).toEqual(current.run);
+});
+
+test('runs of an expired session are closed before readiness: a slot held by such a run never refuses a later create',async()=>{
+ // the probe stands for a single-slot provider (MuJoCo, the Webots arm): blocked while any run is open
+ const directory=await mkdtemp(join(tmpdir(),'lab-sweep-'));roots.push(directory);let now=1_000_000;
+ const probeDir=await mkdtemp(join(tmpdir(),'lab-sweep-proto-'));roots.push(probeDir);
+ const probeRun=await createScenarioRun({project:restaurant(),scenarioId:'FD01',scenarioRevision:1,seed:1,mode:'mock',access:'simulated',backendSetId:'mock-amr',sourceCommit:'test-commit'} as never,{directory:probeDir,enabledBackends:['mock_amr']} as never),proto=Object.getPrototypeOf(probeRun);await probeRun.close();
+ const open=new Set<object>(),snapshot=proto.snapshot,close=proto.close;
+ const spies=[vi.spyOn(proto,'snapshot').mockImplementation(function(this:object,...a:unknown[]){open.add(this);return snapshot.apply(this,a);}),
+  vi.spyOn(proto,'close').mockImplementation(function(this:object,...a:unknown[]){open.delete(this);return close.apply(this,a);})];
+ try{
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),nowMs:()=>now,v2:{enabledBackends:['mock_amr'],readinessProbes:{slot:async()=>({status:open.size?'blocked':'ready',reasonCodes:open.size?['SLOT_BUSY']:[],evidenceRef:null})}}});gateways.push(g);
+  const pair=async()=>{const r=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});return {cookie:r.headers.get('set-cookie')!.split(';')[0]!,csrf:(await r.json()).csrfToken as string};};
+  const create=(s:{cookie:string;csrf:string})=>fetch(g.url+'/lab/v2/runs',{method:'POST',headers:{cookie:s.cookie,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':s.csrf},body:JSON.stringify({project:restaurant(),scenarioId:'FD01',scenarioRevision:1,seed:17,mode:'mock',access:'simulated',backendSetId:'mock-amr',runtimeIdentity:{sourceCommit:'test-commit',schemaHash:'a'.repeat(64)}})});
+  const a=await pair();expect((await create(a)).status).toBe(201);expect(open.size).toBe(1);
+  const b=await pair();const busy=await create(b);expect(busy.status).toBe(422);expect((await busy.json()).reasonCodes).toContain('SLOT_BUSY'); // a live session keeps its run
+  now+=3_600_000;const c=await pair();
+  expect((await create(c)).status).toBe(201);expect(open.size).toBe(1); // the expired session's run was closed first; the new run holds the slot
+ }finally{for(const s of spies)s.mockRestore();}
 });
