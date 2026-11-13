@@ -149,6 +149,8 @@ export const SUITES_R2A=[
  {id:'ma-ports',...V(['tests/unit/mujoco-arm-ports.test.ts']),venvs:['.venv-mujoco']},
  // part A: programs, MJ-BV01, faults and the flag (MA04-MA08, INT16)
  {id:'ma-programs',...V(['tests/integration/mujoco-arm-programs.test.ts']),venvs:['.venv-mujoco']},
+ // engine-free: the contact state machine, the quintic motion, the sweep geometry (MA04) and the arm report block (MA08)
+ {id:'ma-contact',...V(['tests/unit/mock-arm-contact.test.ts','tests/unit/arm-motion.test.ts','tests/unit/arm-collision-geometry.test.ts','tests/unit/arm-plant-report.test.ts'])},
  {id:'ma-bv01',...V(['tests/integration/mujoco-arm-bv01.test.ts','tests/integration/mujoco-arm-gateway.test.ts']),venvs:['.venv-mujoco']},
  {id:'ma-faults',...V(['tests/integration/mujoco-arm-faults.test.ts','tests/integration/mujoco-arm-readiness.test.ts']),venvs:['.venv-mujoco']},
  // part B: the gateway matrix, the paced step on both runners, the container (built by the recorder from this commit: rt-image)
@@ -173,12 +175,12 @@ const CLOUD_REASON='blocked_external: no Cloud Run deployment has been ordered (
 export const CASES_R2A={
  MA01:{suites:['ma-static','ma-rtb','ma-py']},
  MA02:{suites:['ma-worker','ma-py']},
- MA03:{suites:['ma-py','ma-ports']},
- MA04:{suites:['ma-programs']},
+ MA03:{suites:['ma-py','ma-ports','ma-worker']},
+ MA04:{suites:['ma-programs','ma-contact']},
  MA05:{suites:['ma-bv01']},
  MA06:{suites:['ma-faults'],note:'ruled 2026-11-13: with the pads\' friction lowered the cup slips during the lift, so the transfer is refused at the lift check (TRANSFER_REJECTED, run needs_attention) and CUP_DROPPED latches when the cup leaves the pads; the case is an explicit failure at the lift check and/or CUP_DROPPED, never completed, the gripper never commanded open. The weakened-joint fault runs on a temporary copy of the worker root; the occupied-stand run ends in ARM_COLLISION before the worker\'s occupied refusal, which is proven at worker and ports level'},
  MA07:{suites:['ma-bv01']},
- MA08:{suites:['ma-bv01']},
+ MA08:{suites:['ma-bv01','ma-contact']},
  RT01:{suites:['rt-remote']},
  RT02:{suites:['lab-rt-unit']},
  RT03:{suites:['rt-paced'],note:'ruled 2026-11-13: on the fixed-step runner, paced and unpaced evidence are identical for the same action sequence and the unpaced golden is unchanged with no wall-clock call; a paced run cannot reproduce the 500-tick golden (a paced step carries at most 50 ticks)'},

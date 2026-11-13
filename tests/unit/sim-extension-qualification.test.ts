@@ -262,6 +262,11 @@ test('r2a mapping: the brief\'s eight gates, every case of spec §6.4 on exactly
  expect(q.CASES_R2A.MA06.note).toMatch(/lift check/);expect(q.CASES_R2A.MA06.note).toMatch(/never commanded open/);
  expect(q.CASES_R2A.REG03).toMatchObject({r11Record:true,r1Record:true,irsimRecord:true,mockRegression:true});
  expect(q.CASES_R2A.RT05.suites).toEqual(['rt-container']);
+ // the worker's real-engine test proves MA03 too; the engine-free contact state machine, motion, sweep geometry and arm report tests run under MA04 / MA08
+ expect(q.CASES_R2A.MA03.suites).toContain('ma-worker');
+ const files=(c:string)=>(q.CASES_R2A[c].suites as string[]).flatMap(id=>(q.SUITES_R2A as {id:string;files?:string[]}[]).find(s=>s.id===id)!.files??[]);
+ for(const f of ['tests/unit/mock-arm-contact.test.ts','tests/unit/arm-motion.test.ts','tests/unit/arm-collision-geometry.test.ts'])expect(files('MA04'),f).toContain(f);
+ expect(files('MA08')).toContain('tests/unit/arm-plant-report.test.ts');
  expect(Object.keys(GATES).length).toBe(6);expect(Object.keys(GATES_R11).length).toBe(4); // the R1 and R1.1 tables are untouched
 });
 
