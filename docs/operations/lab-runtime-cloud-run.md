@@ -12,7 +12,7 @@ Vì vậy: **việc đầu tiên sau khi deploy là chạy smoke `MJ-BV01` (ca C
 
 ## Chưa kiểm chứng: hành vi của Cloud Run
 
-Các điều sau về Cloud Run **chưa được kiểm chứng ở đây** (chưa deploy lần nào); mỗi điều chỉ là điều tài liệu của Cloud Run được cho là nói, phải đối chiếu với trang tài liệu hiện hành khi deploy:
+Các điều sau về Cloud Run **chưa được kiểm chứng ở đây** (chưa deploy lần nào); mỗi điều chỉ là điều tài liệu của Cloud Run được cho là nói, phải đối chiếu với trang tài liệu hiện hành khi deploy. **Các URL tài liệu trong mục này không được mở khi viết runbook** (riêng trang giá được tải một lần và chỉ trả về tiêu đề, xem mục 8): cả nội dung lẫn địa chỉ đều chưa được đối chiếu.
 
 - Khi không đặt thăm dò khởi động, Cloud Run dùng thăm dò TCP mặc định trên cổng container (https://cloud.google.com/run/docs/configuring/healthchecks).
 - Một secret tham chiếu bằng `:latest` được phân giải khi instance khởi động, không theo thời gian thực (https://cloud.google.com/run/docs/configuring/services/secrets).
@@ -51,7 +51,7 @@ gcloud secrets add-iam-policy-binding lab-access-key --member=serviceAccount:PRO
 
 Có thể thay tệp bằng đường ống để không tạo tệp: `openssl rand -base64 48 | tr -d '\n' | gcloud secrets create lab-access-key --replication-policy=automatic --data-file=- --project=my-project`. **Không để ký tự xuống dòng ở cuối** (giữ `tr -d '\n'`; dùng `printf '%s'`, không dùng `echo`): một dòng mới lưu vào secret trở thành một phần của khóa và Lab sẽ ghép nối sai. Khi đó khóa chỉ còn trong secret; lấy ra bằng `gcloud secrets versions access latest --secret=lab-access-key --project=my-project` và cất vào trình quản lý mật khẩu.
 
-**Xoay khóa:** thêm phiên bản mới (`gcloud secrets versions add lab-access-key --data-file=lab-access-key-moi.txt --project=my-project`), rồi chạy lại script với `--execute`. Chạy lại là an toàn: dịch vụ đã tồn tại nên script giữ nguyên host đang dùng và chỉ deploy một lần (mục 4). Cần revision mới vì (theo tài liệu Cloud Run, cần kiểm tra khi deploy) `:latest` chỉ được phân giải khi instance khởi động. **Một instance đang chạy giữ khóa cũ cho đến khi nó bị thay, nên khóa cũ vẫn dùng được cho đến khi revision mới thực sự phục vụ.** Sau đó kiểm tra khóa mới ghép nối được, rồi vô hiệu hóa phiên bản cũ (`gcloud secrets versions disable N --secret=lab-access-key --project=my-project`). Instance bị thay nên run mất và các phiên có thể phải ghép nối lại bằng khóa mới.
+**Xoay khóa:** thêm phiên bản mới (`gcloud secrets versions add lab-access-key --data-file=lab-access-key-moi.txt --project=my-project`), rồi chạy lại script với `--execute`. Chạy lại là an toàn: dịch vụ đã tồn tại nên script giữ nguyên host đang dùng và chỉ deploy một lần (mục 4). Cần revision mới vì (theo tài liệu Cloud Run, cần kiểm tra khi deploy) `:latest` chỉ được phân giải khi instance khởi động. **Giả định chưa kiểm, phải kiểm khi deploy:** chạy lại `gcloud run deploy` với cấu hình không đổi tạo ra một revision mới, và revision đó đọc phiên bản secret mới. Nếu không có revision mới, khóa cũ vẫn là khóa đang dùng; vì vậy đừng vô hiệu hóa phiên bản cũ trước khi khóa mới ghép nối được. **Một instance đang chạy giữ khóa cũ cho đến khi nó bị thay, nên khóa cũ vẫn dùng được cho đến khi revision mới thực sự phục vụ.** Sau đó kiểm tra khóa mới ghép nối được, rồi vô hiệu hóa phiên bản cũ (`gcloud secrets versions disable N --secret=lab-access-key --project=my-project`). Instance bị thay nên run mất và các phiên có thể phải ghép nối lại bằng khóa mới.
 
 ## 3. Dựng và đẩy image
 
@@ -102,7 +102,7 @@ deploy/lab-runtime/cloud-run.sh              # chạy thử: chỉ in lệnh, kh
 deploy/lab-runtime/cloud-run.sh --execute    # chạy thật, theo lệnh của người dùng
 ```
 
-Không có `--execute` script chỉ in, thoát 0, không gọi `gcloud` (kể cả để đọc project cấu hình) và chạy được cả trên máy không cài `gcloud`; nó in các lệnh của cả hai trường hợp bên dưới, có nhãn A và B. Với `--execute` nó in từng lệnh rồi chạy. Trước hết nó đọc URL dịch vụ (`gcloud run services describe ... --format=value(status.url)`); lần đọc thất bại được hiểu là dịch vụ chưa tồn tại (nếu lỗi thật là xác thực hay mạng, lần deploy sau đó cũng sẽ lỗi; đọc thông báo `gcloud` trên màn hình). `gcloud run deploy` luôn được gọi đúng một lần.
+Không có `--execute` script chỉ in, thoát 0, không gọi `gcloud` (kể cả để đọc project cấu hình) và chạy được cả trên máy không cài `gcloud`; nó in các lệnh của cả hai trường hợp bên dưới, có nhãn A và B. Với `--execute` nó in từng lệnh rồi chạy. Trước hết nó đọc URL dịch vụ (`gcloud run services describe ... --format=value(status.url)`); lần đọc thất bại được hiểu là dịch vụ chưa tồn tại, kể cả khi lỗi thật là xác thực, quyền hay mạng. Khi đó script đi theo trường hợp B; lần deploy sau đó có thể lỗi, nhưng cũng có thể qua (ví dụ lỗi mạng chỉ thoáng qua). Nếu dịch vụ thật ra đã tồn tại và lần deploy đó qua, dịch vụ chạy với host giữ chỗ (đóng-khi-lỗi, từ chối mọi yêu cầu) cho đến khi host được đặt lại (bước 3, hoặc lệnh mà script in ra khi bước 3 lỗi). Đọc thông báo `gcloud` trên màn hình trước khi tiếp tục. `gcloud run deploy` luôn được gọi đúng một lần.
 
 **Trường hợp A, dịch vụ đã tồn tại (chạy lại, xoay khóa, đổi image):** một lệnh `gcloud run deploy` mang theo host hiện tại làm `LAB_PUBLIC_HOST`, không có bước cập nhật. Dịch vụ đang chạy không bị đặt lại về host giữ chỗ.
 

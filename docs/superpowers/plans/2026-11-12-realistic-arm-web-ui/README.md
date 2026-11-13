@@ -38,9 +38,9 @@
 
 | Gói | Tasks | Đầu ra review độc lập |
 |---|---|---|
-| [01 — Tay máy MuJoCo](01-mujoco-arm.md) | M00–M07 | Spike, contract, fixture xArm 6, compiler MJCF, worker, máy trạng thái gắp tiếp xúc, ports, `MJ-BV01` |
+| [01 — Tay máy MuJoCo](01-mujoco-arm.md) | M00–M07; M06b, M07b thêm khi thực thi | Spike, contract, fixture xArm 6, compiler MJCF, worker, máy trạng thái gắp tiếp xúc, ports, `MJ-BV01`; M06b sửa chiều cao thân robot của project trạm, M07b sửa readiness cho mọi set tay máy và mã dừng của worker |
 | [02 — Runtime từ web](02-web-runtime.md) | N01–N05 | Gateway bearer/allowlist, `step` có nhịp, client Lab, image container, runbook Cloud Run |
-| [03 — UI Lab](03-lab-ui.md) | U01–U07 | Bố cục mới, Vấn đề và bộ chọn, thanh điều khiển, khung nhìn, mesh, kết nối và preset; U07 là task dọn dẹp thêm khi thực thi |
+| [03 — UI Lab](03-lab-ui.md) | U01–U07; U08 thêm khi thực thi | Bố cục mới, Vấn đề và bộ chọn, thanh điều khiển, khung nhìn, mesh, kết nối và preset; U07 là task dọn dẹp thêm khi thực thi; U08 là lượt hồi quy các spec e2e chưa chạy, thêm khi thực thi |
 | [04 — Qualification](04-qualification.md) | Q01–Q02 | Bảng `r2a`, recorder, bản ghi |
 
 ```mermaid

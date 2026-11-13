@@ -49,7 +49,7 @@ The runtime's own asset catalog resolves the project's robot asset by content ha
 
 Base image: `node:24.22.2-bookworm-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9` (index; linux/arm64 and linux/amd64). Image size about 474 MB (arm64) and 457 MB (amd64) (the 178 MB venv holds the whole lock, including pytest). Builds take about 10-15 s with a warm layer cache, 40-60 s cold.
 
-Each row names the commit its image was built from. Any later commit makes an earlier image stale (the test refuses it), so the rows are history, not a claim about HEAD: the gate run is repeated at the commit of a qualification record by the recorder, not by this README. Times are the wall time of the stepping loop divided by ticks, through the public HTTP API, in the container, seed 42, `armSceneCollision: true`, on this Mac (they vary by about 20 % from run to run with machine load).
+Each row names the commit its image was built from. Any later commit makes an earlier image stale (the test refuses it), so the rows are history, not a claim about HEAD. For a qualification record, the recorder (`scripts/record-sim-extension.mjs --release r2a`) builds the image for the recording machine's architecture from the recorded commit with `build.sh` and runs the container test against it (RT05); without Docker it records that suite as not run. None of the rows below is such a recorded run. Times are the wall time of the stepping loop divided by ticks, through the public HTTP API, in the container, seed 42, `armSceneCollision: true`, on this Mac (they vary by about 20 % from run to run with machine load).
 
 | Built from | Architecture | Result | Wall time per tick |
 |---|---|---|---|

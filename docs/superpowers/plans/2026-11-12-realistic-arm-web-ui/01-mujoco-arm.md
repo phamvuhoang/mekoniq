@@ -142,6 +142,8 @@
 - [ ] **Step 3:** Viết `compile_cell`. Mesh va chạm của link tay máy là bao lồi (mặc định của MuJoCo); cặp link kề nhau loại khỏi va chạm bằng `<exclude>`.
 - [ ] **Step 4:** `PYTHONDONTWRITEBYTECODE=1 .venv-mujoco/bin/python -m pytest robotics/simulation-mujoco/tests/test_compile.py -q` xanh; `pnpm test:unit` xanh (closure đổi). Commit `feat: mujoco tool root and the arm cell MJCF compiler`. Lab re-pin.
 
+**Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):** thêm `robotics/simulation-mujoco` vào closure làm `manifest.json` do exporter viết ra dài 73 007 byte, vượt giới hạn 65 536 byte của importer Lab (`INVALID_RUNTIME_MANIFEST`). `scripts/export-lab-runtime.mjs` ghi `manifest.json` dạng gọn (không thụt lề) để nằm dưới giới hạn (55 527 byte lúc đo); giới hạn của importer Lab và assertion của test source giữ nguyên. Một tool root hay closure lớn sau này có thể chạm giới hạn lần nữa.
+
 ---
 
 ### Task M04: Worker MuJoCo
@@ -268,6 +270,8 @@
 - [ ] **Step 5: Engine thật** (`mujoco-arm-programs.test.ts`, MA04): `cup-pick` + `cup-place` `completed`; sai số bám đỉnh mỗi khớp ≤ `followTolRad`; cốc được nhấc ≥ `liftMinM`; `maxSlipM ≤ slipTolM`; cốc `restingOn==='tray'` khi kết thúc; ARM03 `pass` trên trace thực với `allowedContacts` trong evidence.
 - [ ] **Step 6:** `pnpm test:unit && pnpm typecheck && pnpm lint` + ba test integration trên + `tests/integration/webots-arm-programs.test.ts` xanh. Commit `feat: mujoco arm ports, cell scene, dispatcher and readiness`. Lab re-pin.
 
+**Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):** thêm **Task M06b** (không có trong plan): project trạm cà phê của fixture từng đặt mặt base tay máy ngang mặt thân AMR (cùng 0,7 m), nên ARM03 hỏng mọi đoạn đặt cốc khi robot đã dock. Sửa khai báo, không sửa phép kiểm: chiều cao thân robot `robotHeightM` của project trạm là **0,6 m** (mặt base vẫn 0,7 m; khay của AMR đặt trên một bệ nâng). Trạm MuJoCo (layout trong khung base, programs, physics) không đổi. Test `tests/unit/xarm6-cell-dock.test.ts` khẳng định chương trình danh định sạch ARM03 với robot đã dock, kèm đối chứng âm ở chiều cao cũ.
+
 ---
 
 ### Task M07: `MJ-BV01`, lỗi, lặp lại, evidence
@@ -291,3 +295,10 @@
     - `BV01` và `WB-BV01` trên set MuJoCo arm, `MJ-BV01` trên `mock-default` và trên set Webots arm → từ chối ở admission.
 - [ ] **Step 2:** Thêm scenario, ma trận, khối report (trace cốc ghi cùng nhịp trace khớp).
 - [ ] **Step 3:** `perl -e 'alarm 900; exec @ARGV' pnpm test:integration -- tests/integration/mujoco-arm-bv01.test.ts tests/integration/mujoco-arm-faults.test.ts` xanh; `pnpm test:unit` xanh; `pgrep -f mujoco_worker` rỗng. Commit `feat: MJ-BV01 on the mujoco arm with contact grip, fault and repeat evidence`. Lab re-pin.
+
+**Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):**
+- Lỗi hạ ma sát (SX-40, MA06): với ma sát má 0,1 cốc trượt trong lúc nhấc, nên chuyển giao bị từ chối ở bước kiểm nhấc (`TRANSFER_REJECTED`, run `needs_attention`) và `CUP_DROPPED` chốt khi cốc rời má kẹp; test khẳng định cả hai theo thứ tự, pose cuối của cốc và việc không có lệnh mở kẹp. Định nghĩa của case là "thất bại rõ ràng ở bước kiểm nhấc và/hoặc `CUP_DROPPED`, không bao giờ hoàn tất, không có lệnh mở kẹp", không phải "`CUP_DROPPED` ngay lập tức".
+- Lỗi hạ lực khớp chạy trên một bản sao tạm của tool root worker (`physics.json` của fixture không mang giới hạn lực actuator, nên `physicsOverride` của plan không làm được); không thêm tùy chọn nào cho bản phát hành.
+- Ca bệ vòi còn cốc (thêm) kết thúc bằng `ARM_COLLISION` trước khi worker kịp từ chối `PROP_PLACEMENT_OCCUPIED`; lời từ chối đó được chứng minh ở mức worker (M04) và ports (M06).
+
+**Task M07b** (thêm khi thực thi, không có trong plan): readiness từng thêm kiểm tay kẹp cho mọi kịch bản cà phê mô phỏng mà tay máy không phải `webots_arm`, nên tạo `MJ-BV01` qua gateway bị từ chối. Miễn trừ nay áp dụng cho mọi set có plant tay máy; `tests/integration/mujoco-arm-gateway.test.ts` tạo và chạy `MJ-BV01` qua HTTP. Bản ghi dừng của một worker bị mất mang mã lỗi của worker (`PLANT_UNSTABLE`, `CLOCK_DRIFT`, …) hoặc, khi tiến trình chết, mã của client kèm mã thoát hoặc tín hiệu; chỉ mã và câu cố định, không văn bản lỗi thô.

@@ -181,6 +181,8 @@
 - [ ] **Step 4: e2e** thêm vào `twin-layout.spec.ts` với route Playwright chặn `**/blobs/*.stl` trả 404: trang vẫn vẽ tay máy (chuỗi trụ), `problems-count` có mục `ARM_MESH_UNAVAILABLE`, chạy mock tới `completed`.
 - [ ] **Step 5:** `pnpm typecheck && pnpm exec vitest run && node scripts/test-mock-e2e.mjs twin-layout.spec.ts` xanh. Commit `feat: the twin draws the xArm 6 from its vendor meshes and cups where the plant reports them`.
 
+**Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):** bước 4 (e2e trên launcher mock với request STL bị chặn) không làm được: backend mock không sinh mẫu `mujoco_arm` và launcher MuJoCo thuộc U06. Thay bằng spec trình duyệt chỉ có UI (`tests/e2e/arm-mesh.spec.ts`, sau thêm `tests/e2e/arm-cell.spec.ts`) gắn khung 3D với mẫu `mujoco_arm` tổng hợp; phần kiểm ở mức launcher (đường lùi khi mesh lỗi trong một run `MJ-BV01` thật) nằm trong spec của launcher MuJoCo `tests/e2e/mujoco-mesh-fallback.spec.ts` (U06).
+
 ---
 
 ### Task U06: Hộp runtime, preset `mujoco-coffee`, launcher và e2e trên MuJoCo thật
@@ -208,6 +210,10 @@
 - [ ] **Step 2:** Viết hộp runtime và nối vào `workspace.ts` (`twin-connect`: `parseTarget` → `saveTarget` → health → kiểm pin → `pair`); thêm preset, capability, nhãn, khối report; `prepareMujoco` (kiểm closure, venv theo lock, không cần engineering catalog) và `checkMujocoHealth`; provider `mujoco` trong `test-irsim-e2e.mjs` với mẫu tiến trình sót `mujoco_worker`.
 - [ ] **Step 3: e2e** `mujoco-coffee.spec.ts` (INT15; một spec mỗi launcher): `pnpm lab:mujoco`, ghép nối qua hộp runtime, chọn `mujoco-coffee`, tự chạy ở 1× trong 10 s rồi 16× tới `completed`; `run-served` là 2; trong lúc chạy `canvas.dataset.rebuilds` không tăng; mở thẻ Kỹ thuật thấy hai cột khớp và nhãn `thực (MuJoCo)`; thẻ Báo cáo có `not_calibrated`, `contact` và bảng waypoint; chụp `screens/mujoco-coffee.png` ở 1440 × 900 với bảng chi tiết đóng. Spec mặc định bị Playwright bỏ qua như `webots-*.spec.ts`.
 - [ ] **Step 4:** `pnpm typecheck && pnpm exec vitest run && pnpm test:mock-e2e && pnpm test:mujoco-e2e -- mujoco-coffee.spec.ts && pnpm test:irsim-e2e -- irsim-journey.spec.ts && pnpm test:webots-e2e -- webots-coffee.spec.ts` xanh (INT16). Commit `feat: runtime connection box, the mujoco coffee preset and its launcher`.
+
+**Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):**
+- Commit của runtime khác commit Lab đã ghim thì chặn tạo run trên mọi đích, kể cả cùng origin; không bao giờ chặn ghép nối, xem, nhận lại run hay đọc báo cáo.
+- Khung 3D của trạm MuJoCo vẽ thêm hai giá đỡ của trạm (bệ vòi và khay, lấy từ `cell-layout.json` qua `baseInMap`: hình học giả định của trạm mô phỏng) và một chân đế dưới base tay máy cùng các chân minh họa dưới hai giá đỡ, **không** được mô phỏng, vẽ theo kiểu khung dây minh họa. Preset `mujoco-coffee` mở với khung nhìn đặt vào trạm tay máy, tốc độ 1×.
 
 ---
 
@@ -245,3 +251,9 @@ Thêm bởi người điều phối sau khi xem ảnh chụp của U01–U04: c�
 - [ ] **Step 2: Unit fail trước:** `twin-problems.test.ts`: không còn đầu vào `notice`; `pickerItems` và `preflight` cho cùng danh sách lý do với cùng health (một lý do mỗi backend). `twin-keys.test.ts`: `keyAction` với `target:{tagName:'INPUT',type:'range'}` trả hành động; với `type:'text'` trả `null`; `replayMarks(report,1)` trả một mốc, không chia cho 0. `twin-shell.test.ts`: `runtimeWord` cho từng tổ hợp ở Interfaces.
 - [ ] **Step 3:** Sửa theo Interfaces và các phép thử. Bảng Kỹ thuật ở bề rộng bảng chi tiết xếp mỗi đại lượng thành một khối (tên; quan sát; lệnh; một dòng phụ gồm đơn vị, nguồn, tuổi dữ liệu) thay cho sáu cột. `coffee-journey.spec.ts` mở thẻ Đối tượng trước khi đọc `cycle-queue`. `Object.hasOwn(BOXES,action)` thay cho `in`.
 - [ ] **Step 4:** `pnpm typecheck && pnpm exec vitest run` và toàn bộ danh sách mock e2e (17 spec hiện có + `twin-polish.spec.ts`) xanh; ngưỡng 60 %/45 % của `twin-layout.spec.ts` vẫn đạt. Commit `fix: twin page polish from screenshots — plain runtime state, readable engineering table, one card per problem`.
+
+---
+
+### Task U08: Hồi quy các spec e2e chưa chạy (thêm khi thực thi, 2026-11-13)
+
+Thêm bởi người điều phối: U01–U07 và N03 đổi bố cục trang mà các spec IR-SIM, Webots, native và offline chưa được chạy lại. Chạy mọi kiểm tra và spec e2e còn lại của Lab một lần (spec của cấu hình mặc định không phải spec mock, `irsim-journey`, `irsim-fleet`, `offline-bv01` với gói offline, e2e runtime, native nếu có điều kiện, ba spec Webots sau cùng), sửa spec chỉ cần theo bố cục mới (không nới assertion nào), báo hồi quy thật của sản phẩm, chạy thử recorder regression vào một thư mục nháp, kiểm bản build production (file ghim được phục vụ, mesh xArm và NOTICE có mặt, kích thước). Chạy trước Q02, vì các recorder qualification chạy các spec này.

@@ -1,4 +1,4 @@
-# Headless Lab runtime: mock backends + the MuJoCo arm (D59). Built only by build.sh, from a dedicated context (a clean export of HEAD), never from the repository.
+# Headless Lab runtime: mock backends + the MuJoCo arm (D59). Built only by build.sh, from a dedicated context assembled from a clean working tree at HEAD (build.sh refuses any modified or untracked file), never from the repository.
 # Base: Node 24.22.2 on Debian 12 (bookworm), which provides Python 3.11.2. Tag and index digest (multi-arch) are both pinned.
 ARG BASE=node:24.22.2-bookworm-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9
 

@@ -43,6 +43,8 @@
 - [ ] **Step 2:** Sửa gateway và CLI theo Interfaces. Hằng `origins` và danh sách Host hiện có thành giá trị mặc định cộng với tham số.
 - [ ] **Step 3:** `pnpm test:integration -- tests/integration/lab-runtime-remote.test.ts tests/integration/lab-runtime-gateway.test.ts tests/integration/lab-v2-stream.test.ts && pnpm typecheck && pnpm lint` xanh. Commit `feat: lab gateway accepts bearer sessions, configured origins and an access key`. Lab re-pin.
 
+**Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):** số lần ghép nối sai được đếm **cho cả runtime**, không theo địa chỉ (sau proxy và trên loopback mọi client có cùng địa chỉ socket; `X-Forwarded-For` giả được); hệ quả: một client có thể giữ cho việc ghép nối bị khóa theo từng cửa sổ 60 s. Giới hạn chỉ hoạt động khi có khóa truy cập. Khi có khóa thì khóa là credential duy nhất: không phát hay nhận mã ghép nối trên route nào, route phiên `/lab/v1` bị từ chối; CLI xóa khóa khỏi môi trường tiến trình ngay sau khi đọc. Spec D55 đã được sửa theo.
+
 ---
 
 ### Task N02: `step` có nhịp và chu kỳ đẩy telemetry
@@ -80,6 +82,8 @@
 - [ ] **Step 4:** Sửa schema, `pnpm contracts:generate`; viết `pace.ts`; trong nhánh `step` của hai runner gọi `paceDelay` trước mỗi tick và `await wall.sleep(delayMs)` khi `delayMs>0`.
 - [ ] **Step 5:** `pnpm test:unit -- tests/unit/paced-step.test.ts tests/unit/bv01-mock-golden.test.ts && pnpm test:contracts && pnpm test:integration -- tests/integration/lab-v2-paced-step.test.ts tests/integration/lab-v2-stream.test.ts` và test fixed-step ở Step 3 xanh. Commit `feat: paced step holds a run at wall-clock rate; telemetry is pushed every 40 ms`. Lab re-pin.
 
+**Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):** bước 3 của plan yêu cầu run fixed-step có nhịp tái tạo golden chunk 500 tick; điều đó không thể (một `step` có nhịp mang tối đa 50 tick, chunk theo kích thước hành động). Bằng chứng được nhận: evidence có nhịp và không nhịp giống hệt nhau cho cùng một chuỗi hành động, và golden không nhịp không đổi mà không gọi đồng hồ thật lần nào (ca có nhịp trong `tests/integration/irsim-plant-port.test.ts`).
+
 ---
 
 ### Task N03: Lab — địa chỉ runtime, bearer, SSE qua `fetch`, vòng chạy có nhịp
@@ -116,6 +120,8 @@
 - [ ] **Step 3: e2e** `remote-origin.spec.ts` (RT04; một spec mỗi launcher): launcher mock khởi động runtime với `--allow-origin http://localhost:4177`; Lab được phục vụ thêm ở `http://localhost:4177` (origin khác `127.0.0.1:4176`); mở trang đó, khẳng định không có request nào tới `127.0.0.1:4176` trước khi bấm Kết nối; nhập địa chỉ và mã, chạy `BV01` mock tới `completed`; chip runtime báo trực tiếp. `lab/scripts/start-mock.mjs` nhận `--allow-origin` và `--extra-ui-port` để phục vụ việc này.
 - [ ] **Step 4:** `pnpm typecheck && pnpm exec vitest run` + `node scripts/test-mock-e2e.mjs remote-origin.spec.ts twin-workspace.spec.ts coffee-journey.spec.ts` xanh. Commit `feat: the Lab connects to a chosen runtime with a bearer session and fetch-based streams`.
 
+**Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):** Lab giữ token phiên bearer trong session storage của tab, theo từng địa chỉ runtime (không bao giờ local storage), xóa khi gặp 401 và khi ngắt kết nối: runtime chỉ in mã ghép nối một lần lúc khởi động, nên token chỉ trong bộ nhớ sẽ buộc khởi động lại runtime sau mỗi lần tải lại trang. Hệ quả: script cùng origin đọc được token trong suốt đời của tab.
+
 ---
 
 ### Task N04: Image container
@@ -131,6 +137,8 @@
 - [ ] **Step 1: Test fail trước** (`lab-runtime-container.test.ts`; `not_run` khi `docker info` lỗi hoặc `LAB_CONTAINER_IMAGE` không đặt): chạy image với `MEKONIQ_LAB_ACCESS_KEY` 40 ký tự, `LAB_PUBLIC_HOST=127.0.0.1:<cổng>`, `LAB_ALLOW_ORIGIN=http://127.0.0.1:4175`; `/lab/v2/health` có `sourceCommit` bằng `git rev-parse HEAD`, backend `mujoco_arm` `installed` và `reachable`, không có `webots_3d`/`irsim_2d` nào `installed`, `deployment.bind==='public'`; ghép nối bằng khóa truy cập; tạo `MJ-BV01` với `coffee-cell-project.json`, gửi `step{ticks:50}` tới khi `completed`, `served===2`; container không ghi gì ngoài `/tmp`; dừng container không để lại tiến trình.
 - [ ] **Step 2:** Viết Dockerfile, `build.sh`, README (cách dựng, biến môi trường, câu "run trong container không phải bằng chứng gate").
 - [ ] **Step 3:** Dựng cho kiến trúc của máy (`--platform linux/arm64` trên Mac này) rồi `LAB_CONTAINER_IMAGE=mekoniq-lab-runtime:dev perl -e 'alarm 900; exec @ARGV' pnpm test:integration -- tests/integration/lab-runtime-container.test.ts` xanh: đây là RT05 của `G-RT2`. Dựng thêm `--platform linux/amd64` (thứ Cloud Run chạy) và chạy lại test một lần; ghi thời gian mỗi tick của cả hai vào README, lần amd64 qua giả lập chỉ là số đo. Commit `build: headless lab runtime image with the mujoco arm`.
+
+**Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):** `deploy/lab-runtime/build.sh` dựng từ cây làm việc sạch ở HEAD (từ chối mọi file sửa đổi hoặc chưa theo dõi): `runtime.mjs` do `scripts/export-lab-runtime.mjs` đóng gói với `node_modules` đã cài của cây (không cài lại theo lockfile), tool root MuJoCo lấy từ `git archive HEAD`; dựng từ bản clone mới với cài đặt khóa cứng là đường Cloud Build của runbook (N05). Image linux/amd64 mới chỉ chạy qua giả lập trên máy arm64, ở đó `MJ-BV01` dừng với `PLANT_UNSTABLE` (engine báo `BADQACC` trong lần gắp đầu); chưa rõ nguyên nhân, chưa thử trên máy amd64 thật. `G-RT2` nói về image cho kiến trúc của máy ghi bản ghi.
 
 ---
 

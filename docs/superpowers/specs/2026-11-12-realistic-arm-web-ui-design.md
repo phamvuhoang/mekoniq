@@ -108,10 +108,10 @@ Mỗi tick: bộ sinh quỹ đạo tính `commandedQ` và độ mở kẹp → w
 
 | ID | Quyết định | Lý do |
 |---|---|---|
-| D52 | Địa chỉ runtime là một thiết lập của Lab: mặc định cùng origin (`/lab`, launcher như hiện nay, chạy mọi trình duyệt); tùy chọn `http://127.0.0.1:<cổng>` hoặc URL HTTPS. Lab mở từ origin không phải loopback **không tự dò** runtime; kết nối luôn bắt đầu từ một thao tác bấm | H13: quyền mạng cục bộ chỉ nên hỏi khi người dùng chủ động |
-| D53 | `/lab/v2/sessions` trả thêm `sessionToken`; gateway nhận phiên từ `Authorization: Bearer` hoặc cookie hiện có. Phiên đến bằng bearer không cần `X-CSRF-Token` (không có credential tự gửi). `/lab/v1` giữ nguyên, chỉ cùng origin | H1; đường cookie giữ nguyên nên test và bằng chứng cũ không đổi |
+| D52 | Địa chỉ runtime là một thiết lập của Lab: mặc định cùng origin (`/lab`, launcher như hiện nay, chạy mọi trình duyệt); tùy chọn `http://127.0.0.1:<cổng>` hoặc URL HTTPS. Lab mở từ origin không phải loopback **không tự dò** runtime; kết nối luôn bắt đầu từ một thao tác bấm. *Đã chốt khi triển khai (2026-11-13):* commit của runtime khác commit Lab đã ghim thì chặn tạo run trên **mọi** đích, kể cả cùng origin; không bao giờ chặn ghép nối hay xem | H13: quyền mạng cục bộ chỉ nên hỏi khi người dùng chủ động |
+| D53 | `/lab/v2/sessions` trả thêm `sessionToken`; gateway nhận phiên từ `Authorization: Bearer` hoặc cookie hiện có. Phiên đến bằng bearer không cần `X-CSRF-Token` (không có credential tự gửi). `/lab/v1` giữ nguyên, chỉ cùng origin. *Đã chốt khi triển khai (2026-11-13):* Lab giữ token phiên bearer trong session storage của tab trình duyệt (không dùng local storage), xóa khi gặp 401 hoặc khi ngắt kết nối | H1; đường cookie giữ nguyên nên test và bằng chứng cũ không đổi |
 | D54 | Bind, Host và Origin thành tham số khởi động: `--bind` (mặc định `127.0.0.1`), `--public-host`, `--allow-origin` (lặp được, khớp chính xác, không wildcard). Mặc định đúng như hôm nay. Preflight cho phép `Authorization`, `Last-Event-ID`; không gửi `Access-Control-Allow-Private-Network` | H13; mặc định đóng |
-| D55 | Host không có terminal dùng khóa truy cập `MEKONIQ_LAB_ACCESS_KEY` (≥ 32 ký tự): `/sessions` nhận nó như mã ghép nối nhưng không tiêu hủy; sai quá 5 lần/phút từ một địa chỉ → 429. Chỉ có hiệu lực khi biến môi trường được đặt. Trần: một khóa chung, một người thuê; nhiều người dùng thì chuyển sang IAP | H14 |
+| D55 | Host không có terminal dùng khóa truy cập `MEKONIQ_LAB_ACCESS_KEY` (≥ 32 ký tự): `/sessions` nhận nó như mã ghép nối nhưng không tiêu hủy; sai quá 5 lần/phút **tính cho cả runtime** (không theo địa chỉ) → 429. Giới hạn này và khóa chỉ có hiệu lực khi biến môi trường được đặt; khi đó khóa là credential duy nhất: không phát hay nhận mã ghép nối nào, route phiên `/lab/v1` bị từ chối. Trần: một khóa chung, một người thuê; nhiều người dùng thì chuyển sang IAP. Bất kỳ ai tới được URL đều có thể giữ cho việc ghép nối bị khóa trong từng phút. (*Đã chốt khi triển khai (2026-11-13):* bản trước ghi "từ một địa chỉ"; sau proxy và trên loopback mọi client có cùng địa chỉ socket, còn `X-Forwarded-For` giả được) | H14 |
 | D56 | Stream giữ SSE. Lab đọc bằng `fetch` + `ReadableStream` qua lớp `FetchEventSource` có đúng phần giao diện `EventSource` mà `stream.ts` dùng, gửi bearer và `targetAddressSpace:'loopback'` khi đích là loopback. Nối lại và cursor không đổi | H2; không thêm dependency, chạy qua Cloud Run |
 | D57 | `step.payload.pace?:{factor}` (1, 4, 16, 64), ở **cả hai runner** (H20): runtime ngủ giữa các tick để thời gian mô phỏng không vượt thời gian thực × `factor`, tính từ một mốc của đoạn chạy liên tục; chậm quá 250 ms thì đặt lại mốc, không chạy bù (plant chậm hơn nhịp thì run chạy chậm hơn và UI hiện tốc độ đo được). Có `pace` thì `ticks ≤ 50`. Trình duyệt vẫn là thứ duy nhất làm run tiến: Lab gửi liên tiếp các `step` 20 tick, nên `maxTicks` 180 000 cần 9 000 receipt, dưới giới hạn 10 000. Health báo `features.pacedStep` | H3, H20; không có vòng lặp tự chạy ở server nên không có xung đột revision và không tốn CPU khi không ai xem |
 | D58 | Hình trực tiếp dùng chính các mẫu 10 Hz của báo cáo; không có đường lấy mẫu thứ hai. Thay đổi duy nhất ở runtime là chu kỳ đẩy 40 ms (giảm trễ). Lab phát mẫu theo thời gian mô phỏng qua bộ đệm trễ cố định 150 ms, nội suy góc khớp và pose giữa hai mẫu đã nhận, không bao giờ vượt mẫu mới nhất | H3, H15; giữ quy tắc "không ngoại suy" của twin và không đổi số mẫu của báo cáo |
@@ -183,14 +183,14 @@ Mã spike nằm ngoài cây git. Đạt **cả** chín:
 | SX-37 | `ArmProgramSet` và `quintic-sync-v1` trong `MockArmPlant`; không truyền gì thì hành vi mock giữ nguyên từng byte |
 | SX-38 | Gắp tiếp xúc theo D44: `objectPresent`, `holding`, kiểm nhấc, kiểm thả đều lấy từ plant; `TransferEvidence.grip='contact'` |
 | SX-39 | `MJ-BV01` hoàn tất: `completed`, `served=2`, cốc ở `table:…`, ARM03 `pass` trên góc khớp thực, mỗi lần chuyển cốc có bằng chứng gắp tiếp xúc |
-| SX-40 | Lỗi dừng chương trình ngay với mã đúng: vật cản chèn vào → `ARM_COLLISION`; hạ lực khớp → `ARM_FOLLOWING_ERROR`; hạ ma sát → `CUP_DROPPED`; giết worker → outcome `unknown`, không gửi lại, không tiến trình sót; cancel khi đang giữ cốc → không có lệnh mở kẹp |
+| SX-40 | Lỗi dừng chương trình ngay với mã đúng: vật cản chèn vào → `ARM_COLLISION`; hạ lực khớp → `ARM_FOLLOWING_ERROR`; hạ ma sát má kẹp → thất bại rõ ràng ở bước kiểm nhấc (`TRANSFER_REJECTED`, run `needs_attention`) và/hoặc `CUP_DROPPED`, không bao giờ `completed`, không có lệnh mở kẹp; giết worker → outcome `unknown`, không gửi lại, không tiến trình sót; cancel khi đang giữ cốc → không có lệnh mở kẹp. *Đã chốt khi triển khai (2026-11-13):* bản trước ghi "hạ ma sát → `CUP_DROPPED`". Với ma sát má 0,1 cốc trượt trong lúc nhấc, nên chuyển giao bị từ chối ở bước kiểm nhấc, rồi `CUP_DROPPED` chốt khi cốc rời má kẹp; test khẳng định cả hai theo thứ tự. Lỗi hạ lực khớp chạy trên một bản sao tạm của tool root worker (`physics.json` của fixture không mang giới hạn lực actuator). Ca bệ vòi còn cốc (thêm khi triển khai) kết thúc bằng `ARM_COLLISION` trước khi worker kịp từ chối `PROP_PLACEMENT_OCCUPIED`; lời từ chối đó được chứng minh ở mức worker và ports |
 | SX-41 | Report có trace khớp (lệnh/thực), sai số bám đỉnh và RMS, bảng waypoint IK, trace cốc, khối `armPlant` (D49), danh sách `allowedContacts` |
 | SX-42 | Readiness của set: venv và lock, phiên bản engine, smoke `create` thật trên cảnh của project, slot, `ARM_SCENE_UNAVAILABLE`, `ARM_MODEL_MISMATCH`, `ARM_CELL_LAYOUT_MISMATCH` |
 | SX-43 | Gateway: phiên bearer, allowlist, bind, khóa truy cập, giới hạn thử (D53–D55); mặc định không đổi |
 | SX-44 | `FetchEventSource` cho đúng các hành vi `stream.ts` đang dựa vào: nối lại từ cursor, `reset`, heartbeat quá hạn, `session_lost`, `run_lost`, mất mạng |
-| SX-45 | `step` có `pace` trên `mock-default` giữ tỉ lệ thời gian mô phỏng/thời gian thực trong ±3 % qua 30 s ở 1× và 4×; từ lúc bấm dừng tới tick cuối ≤ 500 ms ở 1×; runner fixed-step (IR-SIM, Webots) nhận cùng `pace`; không `pace` thì hai runner chạy đúng như hôm nay |
+| SX-45 | `step` có `pace` trên `mock-default` giữ tỉ lệ thời gian mô phỏng/thời gian thực trong ±3 % qua 30 s ở 1× và 4×; từ lúc bấm dừng tới tick cuối ≤ 500 ms ở 1×; runner fixed-step (IR-SIM, Webots) nhận cùng `pace`; không `pace` thì hai runner chạy đúng như hôm nay. *Đã chốt khi triển khai (2026-11-13):* với runner fixed-step, bằng chứng là evidence có nhịp và không nhịp giống hệt nhau cho cùng một chuỗi hành động, và golden không nhịp không đổi mà không gọi đồng hồ thật lần nào; run có nhịp không thể tái tạo golden 500 tick (một `step` có nhịp mang tối đa 50 tick) |
 | SX-46 | Bộ đệm mẫu: giá trị hiển thị luôn nằm giữa hai mẫu đã nhận; mẫu cũ quá ngưỡng thì đứng yên và hiện "cũ" như hiện nay |
-| SX-47 | Lab: thiết lập địa chỉ runtime, kết nối bằng thao tác bấm, so commit runtime với bản ghim (`RUNTIME_PIN_MISMATCH` chặn chạy), thông báo rõ khi trình duyệt chặn loopback |
+| SX-47 | Lab: thiết lập địa chỉ runtime, kết nối bằng thao tác bấm, so commit runtime với bản ghim (`RUNTIME_PIN_MISMATCH` chặn chạy), thông báo rõ khi trình duyệt chặn loopback. *Đã chốt khi triển khai (2026-11-13):* lệch commit chặn tạo run trên mọi đích, kể cả cùng origin, và không chặn ghép nối, xem hay đọc báo cáo (D52) |
 | SX-48 | Image dựng từ một export sạch; trong container `MJ-BV01` hoàn tất; health chỉ có mock và `mujoco_arm` |
 | SX-49 | Runbook và script deploy Cloud Run (`--dry-run` in ra lệnh, không gọi API); deploy thật chỉ theo lệnh |
 | SX-50 | Bố cục D61: ở 1440 × 900 khung nhìn ≥ 60 % diện tích cửa sổ khi bảng chi tiết đóng, ≥ 45 % khi mở; trang không cuộn dọc |
@@ -200,7 +200,7 @@ Mã spike nằm ngoài cây git. Đạt **cả** chín:
 | SX-54 | Thanh điều khiển và phím (D66); xem lại dùng cùng thanh |
 | SX-55 | Chế độ xem (`W`) và bảng phím (`?`) |
 | SX-56 | Bộ chọn kịch bản (D67) |
-| SX-57 | Tay máy, tay kẹp vẽ bằng mesh; cốc vẽ tại pose plant báo; flange của chuỗi mesh trùng flange tính từ gốc khớp của component ≤ 1e-6 m (không phải bảng D-H, thứ được phép lệch engine tới `fkTolM`); mesh không tải được thì vẽ chuỗi trụ và báo `ARM_MESH_UNAVAILABLE` |
+| SX-57 | Tay máy, tay kẹp vẽ bằng mesh; cốc vẽ tại pose plant báo; flange của chuỗi mesh trùng flange tính từ gốc khớp của component ≤ 1e-6 m (không phải bảng D-H, thứ được phép lệch engine tới `fkTolM`); mesh không tải được thì vẽ chuỗi trụ và báo `ARM_MESH_UNAVAILABLE`. *Đã chốt khi triển khai (2026-11-13):* phần kiểm ở mức launcher nằm trong spec của launcher MuJoCo (`mujoco-mesh-fallback.spec.ts`); e2e trên launcher mock mà plan định được thay bằng spec trình duyệt chỉ có UI (`arm-mesh.spec.ts`, `arm-cell.spec.ts`), vì backend mock không sinh mẫu `mujoco_arm`. Khung 3D của trạm MuJoCo vẽ thêm hai giá đỡ của trạm (bệ vòi và khay: hình học giả định của trạm mô phỏng) và một chân đế cùng các chân minh họa **không** được mô phỏng; preset `mujoco-coffee` mở với khung nhìn đặt vào trạm tay máy, tốc độ 1× |
 | SX-58 | Không lỗi axe mức serious/critical; giảm chuyển động được tôn trọng; VI/JA/EN; dùng được ở bề rộng 390 px (bảng chi tiết thành tấm dưới) |
 | SX-59 | Preset `mujoco-coffee`, launcher `pnpm lab:mujoco`, capability `sim3d_arm_contact_v1`; cờ tắt → mục bị chặn có lý do |
 | SX-60 | Qualification bảng `r2a`, recorder, guard; `accepted:false` |
@@ -250,12 +250,12 @@ Mã spike nằm ngoài cây git. Đạt **cả** chín:
 | MA03 | Clock, ACK, idempotency với khớp, kẹp, cốc; target ngoài giới hạn bị từ chối | G-MA1 |
 | MA04 | Gắp và đặt hoàn tất trên engine thật: sai số bám trong ngưỡng, cốc được nhấc, trượt ≤ `slipTolM`, nằm yên trên khay | G-MA2 |
 | MA05 | `MJ-BV01` đầu-cuối (SX-39) | G-MA2 |
-| MA06 | Năm lỗi của SX-40 | G-MA2 |
+| MA06 | Năm lỗi của SX-40; lỗi hạ ma sát là thất bại rõ ràng ở bước kiểm nhấc và/hoặc `CUP_DROPPED`, không bao giờ hoàn tất, không có lệnh mở kẹp (*Đã chốt khi triển khai (2026-11-13):* bản trước: "`CUP_DROPPED`") | G-MA2 |
 | MA07 | Lặp lại cùng seed (D50) | G-MA2 |
 | MA08 | Evidence và report đầy đủ (SX-41), đọc lại được | G-MA2 |
 | RT01 | Ma trận gateway: mặc định đóng, bearer, cookie cũ, origin lạ, Host lạ, khóa truy cập, giới hạn thử | G-RT1 |
 | RT02 | Stream qua `fetch`: cắt giữa chừng rồi nối lại không mất sự kiện bền; server tự đóng; gap telemetry rõ ràng; mất phiên | G-RT1 |
-| RT03 | `step` có nhịp (SX-45) | G-RT1 |
+| RT03 | `step` có nhịp (SX-45, kèm ghi chú đã chốt về runner fixed-step) | G-RT1 |
 | RT04 | Lab phục vụ từ một origin khác điều khiển BV01 mock trên runtime cục bộ (Playwright, Chromium) | G-RT1 |
 | RT05 | Container (SX-48): image dựng cho kiến trúc của máy ghi chạy `MJ-BV01` tới `completed`; lần chạy linux/amd64 được ghi số đo, không là tiêu chí | G-RT2 |
 | CL01 | Trên Cloud Run: health, kết nối bằng khóa truy cập, `MJ-BV01` hoàn tất, stream nối lại | G-CLOUD1 (`blocked_external` tới khi có lệnh deploy) |
@@ -272,7 +272,7 @@ Mã spike nằm ngoài cây git. Đạt **cả** chín:
 
 Kiểm tay, ghi trong README của bản ghi, không thuộc gate: Lab đã deploy nối runtime cục bộ trên Chrome và Firefox (có ảnh hộp hỏi quyền); thông báo trên Safari.
 
-**Không được suy ra từ các gate này:** lực kẹp thật, ma sát thật giữa má kẹp và cốc, cốc đổ hay tràn, tải thật, độ chính xác lặp lại của xArm thật, hành vi firmware xArm, an toàn người, độ trễ trên mạng thật ngoài phép đo đã ghi, an toàn đa người dùng trên cloud.
+**Không được suy ra từ các gate này:** lực kẹp thật, ma sát thật giữa má kẹp và cốc, cốc đổ hay tràn, tải thật, độ chính xác lặp lại của xArm thật, hành vi firmware xArm, an toàn người, độ trễ trên mạng thật ngoài phép đo đã ghi, an toàn đa người dùng trên cloud. Cũng không suy ra rằng `MJ-BV01` chạy được trên linux/amd64: image linux/amd64 mới chỉ chạy qua giả lập, ở đó `MJ-BV01` dừng với `PLANT_UNSTABLE` (engine báo gia tốc hỏng trong lần gắp đầu), chưa rõ nguyên nhân, chưa thử trên máy amd64 thật; `G-RT2` chỉ nói về image dựng cho kiến trúc của máy ghi (*Đã chốt khi triển khai (2026-11-13):*).
 
 ## 7. Bố trí file
 
