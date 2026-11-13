@@ -54,9 +54,10 @@ def test_a_webots_that_is_not_the_pinned_version_is_refused_before_it_starts(tmp
 
 def test_watch_mode_renders_at_real_time_and_the_default_stays_headless_and_fast():
     default = engine.webots_argv("/w", 1, "/x.wbt")
-    assert "--mode=fast" in default and "--minimize" in default and "--mode=realtime" not in default
+    # never --minimize: on macOS a minimized Webots R2025a intermittently never loads its world after a few killed instances (WEBOTS_START_FAILED)
+    assert "--mode=fast" in default and "--no-rendering" in default and "--minimize" not in default and "--mode=realtime" not in default and "--batch" in default
     watch = engine.webots_argv("/w", 1, "/x.wbt", watch=True)
-    assert "--mode=realtime" in watch and "--minimize" not in watch and "--mode=fast" not in watch and "--batch" in watch
+    assert "--mode=realtime" in watch and "--minimize" not in watch and "--no-rendering" not in watch and "--mode=fast" not in watch and "--batch" in watch
 
 
 def test_watch_mode_adds_the_light_the_compiled_world_lacks():

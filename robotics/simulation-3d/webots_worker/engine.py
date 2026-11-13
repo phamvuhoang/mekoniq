@@ -50,8 +50,10 @@ def watching():
 
 
 def webots_argv(exe, port, world, watch=False):
-    """Headless and unrendered by default (fast, minimized). Watch mode (dev only, set by the runtime for real runs, never for a smoke) keeps the window up and rendering at real time; the sim clock is unchanged."""
-    return [str(exe), "--batch", *(["--mode=realtime"] if watch else ["--minimize", "--mode=fast"]), "--stdout", "--stderr", f"--port={port}", str(world)]
+    """Unrendered by default (--no-rendering, fast): the window opens but its 3D view does not render; sensors, the lidar included, report the same as with rendering (measured).
+    Never --minimize: on macOS a minimized Webots R2025a intermittently never loads its world once a few earlier instances were killed (WEBOTS_START_FAILED after 60 s),
+    while a normal window starts in 1-2 s. Watch mode (dev only, set by the runtime for real runs, never for a smoke) renders at real time; the sim clock is unchanged."""
+    return [str(exe), "--batch", *(["--mode=realtime"] if watch else ["--no-rendering", "--mode=fast"]), "--stdout", "--stderr", f"--port={port}", str(world)]
 
 
 def host_engine(webots_home):

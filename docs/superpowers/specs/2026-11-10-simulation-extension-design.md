@@ -95,7 +95,7 @@ Giữ nguyên toàn bộ Global Constraints của spec `2026-11-08-linkforge-irs
 Chạy trong thư mục scratch, không commit code spike; chỉ commit ghi chép vào `docs/research/2026-11-10-simulation-extension.md`. Tiêu chí, tất cả phải đạt để tiếp tục W03+:
 
 1. Cài R2025a từ dmg chính thức; `webots --version` trả đúng chuỗi; ghi sha256 executable và dmg.
-2. Python 3.11 trong venv import được `controller` từ `WEBOTS_HOME` và nối extern controller tới Webots do tiến trình cha khởi động với `--batch --minimize --mode=fast` trên port không mặc định.
+2. Python 3.11 trong venv import được `controller` từ `WEBOTS_HOME` và nối extern controller tới Webots do tiến trình cha khởi động với `--batch --minimize --mode=fast` trên port không mặc định. (Sửa 2026-11-13: worker không còn dùng `--minimize`, vì trên macOS Webots R2025a thu nhỏ đôi khi không bao giờ nạp world sau vài lần bị kill; nay là `--batch --no-rendering --mode=fast`, đo được lidar và giá trị đọc lại giống hệt khi có render.)
 3. Một supervisor + hai robot controller, tất cả synchronized: thời gian engine **chỉ** tiến khi mọi controller đã `step(20)`; 1000 tick liên tiếp, `simTime == tick × 20 ms` chính xác.
 4. LiDAR 360 tia trả scan hữu hạn khi cửa sổ thu nhỏ (và ghi rõ có dùng được `--no-rendering` hay không).
 5. Hai lần chạy cùng seed, cùng lệnh bánh: pose cuối lệch ≤ 1e-6 m (ghi luôn có bit-identical hay không).
