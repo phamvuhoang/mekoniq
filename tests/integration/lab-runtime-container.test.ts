@@ -14,6 +14,8 @@ const dockerUp=(()=>{try{execFileSync('docker',['info'],{stdio:'ignore',timeout:
 const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 const freePort=()=>new Promise<number>((resolve,reject)=>{const s=createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=(s.address() as {port:number}).port;s.close(()=>resolve(p));});});
 const logs=(name:string,key:string)=>{const l=docker(['logs','--tail','20',name]);return `${l.out}\n${l.err}`.replaceAll(key,'<key>');};
+// MuJoCo writes its warnings (which name the DOF and the time) to MUJOCO_LOG.TXT in the run's working directory: the last 20 lines of each, for a run that did not complete
+const mujocoLog=(name:string,key:string)=>{const l=docker(['exec',name,'sh','-c','for f in $(find /tmp/runs -name MUJOCO_LOG.TXT 2>/dev/null); do echo "== $f"; tail -n 20 "$f"; done']);return `${l.out}\n${l.err}`.trim().replaceAll(key,'<key>');};
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 const runId=randomUUID(),names:string[]=[];
 afterAll(()=>{for(const n of names)docker(['rm','-f',n]);});
@@ -59,7 +61,7 @@ describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
    const wallMs=Date.now()-t0;
    console.log('MJ-BV01 container',JSON.stringify({image,platform:docker(['image','inspect','--format','{{.Os}}/{{.Architecture}}',image]).out,finalTick:view.tick,wallMs,msPerTick:+(wallMs/view.tick).toFixed(3),status:view.run.status}));
    const report=(await api(`${url}/report`,{token})).body as Record<string,any>;
-   if(view.run.status!=='completed')console.log('MJ-BV01 container NOT COMPLETED',JSON.stringify({tick:view.tick,outcome:report.outcome,attention:report.attention,armStop:report.coffee?.armTrace?.stop,arm:{...report.arm,trace:undefined,props:undefined,collision:undefined},coffee:report.coffee?.cups,logs:logs(name,key)}).slice(0,6000));
+   if(view.run.status!=='completed')console.log('MJ-BV01 container NOT COMPLETED',JSON.stringify({tick:view.tick,outcome:report.outcome,attention:report.attention,armStop:report.coffee?.armTrace?.stop,arm:{...report.arm,trace:undefined,props:undefined,collision:undefined},coffee:report.coffee?.cups,logs:logs(name,key)}).slice(0,6000),`\nMUJOCO_LOG.TXT (last 20 lines):\n${mujocoLog(name,key)||'(none)'}`);
    expect(report.outcome).toMatchObject({status:'completed',served:'2'});
    expect(report.coverage).toMatchObject({armSceneCollision:true});
    expect(report.manifest).toMatchObject({scenario:{id:'MJ-BV01'},backendSetId:'engineering-mujoco-arm-v1',calibration:{status:'not_calibrated'}});
