@@ -1,6 +1,6 @@
 // M06 step 4: the MuJoCo arm provider's registration, readiness, dispatch and health capability. The flag, interpreter, worker and lock are operator options. The provider rows run
 // the real worker (.venv-mujoco): a describe at boot and a create smoke on the project's cell scene. Skipped, with the reason, where .venv-mujoco is missing (not_run, never a pass).
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
@@ -46,13 +46,22 @@ test('flag off: mujoco_arm is the catalog entry of a runtime never given the opt
 
 // another worker's venv (Python 3.11 without MuJoCo) stands for a venv that lacks the lock's packages; skipped where it does not exist
 test.skipIf(!existsSync(otherVenv))('an interpreter whose venv lacks the packages of the lock is MUJOCO_LOCK_MISMATCH, never installed', async () => {
-  const p = await mujocoFromOptions(await opts({ python: otherVenv }));
-  expect(p.arm.capability.installed).toBe(false); expect(p.arm.capability.reason).toMatch(/^MUJOCO_LOCK_MISMATCH: .*mujoco==3\.17\.0/); expect(p.arm.runtime).toBeUndefined();
+  const err = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+  try {
+    const p = await mujocoFromOptions(await opts({ python: otherVenv }));
+    expect(p.arm.capability.installed).toBe(false); expect(p.arm.capability.reason).toBe('MUJOCO_LOCK_MISMATCH: the interpreter does not hold exactly the packages of requirements.lock'); expect(p.arm.runtime).toBeUndefined();
+    expect(err.mock.calls.map((c) => String(c[0])).join('')).toMatch(/MUJOCO_LOCK_MISMATCH: .*mujoco==3\.17\.0/); // the package list goes to stderr
+  } finally { err.mockRestore(); }
 });
 
 test('flag on without any environment: an unavailable capability with its reason, never a crash; the gateway advertises nothing', async () => {
-  const none = await mujocoFromOptions(await opts({ python: '/nonexistent/.venv-mujoco/bin/python' }));
-  expect(none.arm.capability).toMatchObject({ id: 'mujoco_arm', installed: false, reachable: false }); expect(none.arm.capability.reason).toMatch(/^MUJOCO_WORKER_UNAVAILABLE/);
+  const err = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+  let written = '';
+  const none = await mujocoFromOptions(await opts({ python: '/nonexistent/.venv-mujoco/bin/python' })).finally(() => { written = err.mock.calls.map((c) => String(c[0])).join(''); err.mockRestore(); });
+  expect(none.arm.capability).toMatchObject({ id: 'mujoco_arm', installed: false, reachable: false });
+  // health may be public: a code and fixed wording, never the exception text or the path (that goes to the runtime's stderr)
+  expect(none.arm.capability.reason).toBe('MUJOCO_WORKER_UNAVAILABLE: the MuJoCo worker could not be started or did not answer describe');
+  expect(written).toContain('/nonexistent/.venv-mujoco/bin/python');
   const sim = await portableSimulationFromOptions({ ...(await base()), mujoco: none });
   expect(sim.enabledBackends).not.toContain('mujoco_arm'); expect((await health(sim)).capabilities).not.toContain('sim3d_arm_contact_v1');
 });

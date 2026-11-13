@@ -143,7 +143,7 @@ Mong đợi `201` (thân trả `sessionToken`; lệnh trên chỉ in mã trạng
 ## 6. Giới hạn bảo mật
 
 - Dịch vụ **công khai** (`--allow-unauthenticated`) và chỉ được bảo vệ bằng **một khóa truy cập chung** (một người thuê, D55). Ai có khóa là có toàn quyền.
-- Route health không cần phiên và cho thấy commit source, schema hash và danh mục backend. Nó không lộ origin hay host, và không có trường nào nói thẳng khóa có được đặt; tuy vậy `deployment.bind: "public"` ngụ ý có khóa, vì runtime chỉ bind công khai khi có khóa.
+- Route health không cần phiên và cho thấy commit source, schema hash và danh mục backend. Nó không lộ origin hay host, và không có trường nào nói thẳng khóa có được đặt; tuy vậy `deployment.bind: "public"` ngụ ý có khóa, vì runtime chỉ bind công khai khi có khóa. `reason` của backend `mujoco_arm` chỉ mang mã và câu cố định, không bao giờ mang nội dung ngoại lệ hay đường dẫn (chi tiết đầy đủ đi vào stderr của runtime, tức nhật ký Cloud Run); `reason` của Webots và IR-SIM giữ như trước.
 - Số lần ghép nối sai được đếm **cho cả runtime**, không theo địa chỉ: bất kỳ ai tới được URL đều có thể giữ cho việc ghép nối bị khóa (5 lần sai mỗi phút) dù họ không vào được; các phiên đang có vẫn hoạt động.
 - Trình duyệt giữ token phiên trong session storage của tab.
 - Với dùng nhiều người hoặc nhiều hơn một lần thử một người: đặt dịch vụ sau một proxy nhận biết danh tính (Identity-Aware Proxy) hoặc giới hạn ingress. **Script không thiết lập điều đó.**

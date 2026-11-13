@@ -35,31 +35,34 @@ async function lockMismatch(python:string,lockPath:string):Promise<string[]>{
  return want.filter(([n,v])=>have[n]!==v).map(([n,v])=>`${n}==${v}`);
 }
 
+/** Health may be served on a public bind: a MuJoCo reason is a code and fixed wording only. What varies (exception text, paths, versions, package names) goes to the runtime's stderr. */
+const OFF_WORDING={NODE_24_REQUIRED:'the runtime needs Node 24',HOST_UNSUPPORTED:'MuJoCo runs on macOS or Linux only',MUJOCO_LOCK_MISMATCH:'the interpreter does not hold exactly the packages of requirements.lock',
+ MUJOCO_WORKER_UNAVAILABLE:'the MuJoCo worker could not be started or did not answer describe',PYTHON_311_REQUIRED:'the MuJoCo worker needs Python 3.11'} as const;
 export async function mujocoFromOptions(o:MujocoOptions):Promise<{arm:{runtime?:MujocoRuntimeOptions;capability:BackendCapability;readinessChecks?:NativeReadinessChecks}}>{
- const off=(reason:string)=>({arm:{capability:cap(reason)}});
+ const off=(code:keyof typeof OFF_WORDING,detail?:string)=>{if(detail)process.stderr.write(`mujoco_arm unavailable: ${code}: ${detail}\n`);return {arm:{capability:cap(`${code}: ${OFF_WORDING[code]}`)}};};
  if(!o.enabled)return {arm:{capability:MUJOCO_ARM_UNCONFIGURED}}; // exactly the catalog entry of a runtime that was never given the option
  if(!process.versions.node.startsWith('24.'))return off('NODE_24_REQUIRED');
- if(!['darwin','linux'].includes(process.platform))return off(`HOST_UNSUPPORTED: ${process.platform}`);
+ if(!['darwin','linux'].includes(process.platform))return off('HOST_UNSUPPORTED',process.platform);
  const workerRoot=resolve(o.workerRoot),schemaDir=resolve(o.schemaDir??join(workerRoot,'..','..','packages','contracts','schemas')),probeDir=join(o.directory,'mujoco-probe');
  let lockDigest:string,describe:{engineVersion:string;pythonVersion:string;lockDigest:string};
  try{
   lockDigest=await lockDigestOf(o.lockPath);
   // the venv must hold exactly the lock: a worker that merely starts on another set of packages is not this provider
   const missing=await lockMismatch(o.python,o.lockPath);
-  if(missing.length)return off(`MUJOCO_LOCK_MISMATCH: ${missing.slice(0,5).join(', ')}${missing.length>5?` (+${missing.length-5})`:''}`);
+  if(missing.length)return off('MUJOCO_LOCK_MISMATCH',`${missing.slice(0,5).join(', ')}${missing.length>5?` (+${missing.length-5})`:''}`);
   await mkdir(probeDir,{recursive:true,mode:0o700});
   const scratch=await mkdtemp(join(probeDir,'describe-'));
   try{
    const w=await spawnMujocoWorker({python:o.python,workerRoot,runId:'mujoco-describe',bundleRoot:scratch,runDirectory:join(scratch,'run'),lockDigest,schemaDir});
    try{
     const r=await w.request({protocol:'mekoniq-sim3d/1',requestId:'describe-1',runId:'mujoco-describe',expectedTick:0,op:'describe',payload:{}});
-    if(!r.ok)return off(`MUJOCO_WORKER_UNAVAILABLE: ${(r as {error:{code:string}}).error.code}`);
+    if(!r.ok)return off('MUJOCO_WORKER_UNAVAILABLE',(r as {error:{code:string}}).error.code);
     describe=r.result as unknown as typeof describe;
    }finally{await w.close('describe done');}
   }finally{await rm(scratch,{recursive:true,force:true});}
- }catch(e){return off(`MUJOCO_WORKER_UNAVAILABLE: ${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,160)}`);}
- if(!describe.pythonVersion.startsWith('3.11.'))return off(`PYTHON_311_REQUIRED: ${describe.pythonVersion}`);
- if(describe.lockDigest!==lockDigest)return off('MUJOCO_LOCK_MISMATCH: the worker reported another lock');
+ }catch(e){return off('MUJOCO_WORKER_UNAVAILABLE',e instanceof WorkerLostError?e.code:(e as Error).message);}
+ if(!describe.pythonVersion.startsWith('3.11.'))return off('PYTHON_311_REQUIRED',describe.pythonVersion);
+ if(describe.lockDigest!==lockDigest)return off('MUJOCO_LOCK_MISMATCH','the worker reported another lock');
  const runtime:MujocoRuntimeOptions={python:o.python,workerRoot,schemaDir,lockDigest,engineVersion:describe.engineVersion,maxActiveRuns:MUJOCO_MAX_ACTIVE_RUNS};
  const readinessChecks=armReadiness({prefix:'MUJOCO',slot:MUJOCO_SLOT,maxRuns:MUJOCO_MAX_ACTIVE_RUNS,oracle:'mujocoArm',lockPath:o.lockPath,lockDigest,probeDir,gate:{busy:false},
   evidence:`mujoco:${describe.engineVersion}/python-${describe.pythonVersion}/lock:${lockDigest.slice(0,16)}`,
