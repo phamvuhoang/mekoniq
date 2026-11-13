@@ -267,7 +267,6 @@ export function tableR2a(blocked=[],reason=''){
  const used=new Set(Object.values(cases).flatMap(c=>c.suites??[]));
  return {documentType:'sim-extension-qualification',cases,gates:GATES_R2A,suites:SUITES_R2A.filter(s=>used.has(s.id)),campaign:false,inputs:inputsR2a,adjust:adjustR2a};
 }
-export const TABLE_R2A=tableR2a();
 
 // ---- pre-flight (every release): refuse before a long recording what would fail it later; it changes nothing in a record. Probes are injected so each check is testable.
 /** The Python environments a planned recording uses: each pytest suite's interpreter, the venvs the R2a suites name, and the releases' own steps (R1: algorithm oracles and the

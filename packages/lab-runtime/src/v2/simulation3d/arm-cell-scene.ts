@@ -31,18 +31,18 @@ export interface XArmPhysics {schemaVersion:1;provenance:'assumed';substitute:bo
 export interface WaypointRow {waypoint:string;q:number[];positionErrorM:number;orientationErrorRad:number;condition:number}
 export interface XArmFixture {id:string;revision:string;componentText:string;physics:XArmPhysics;layout:CellLayout;programs:ArmProgramSet;waypoints:{table:WaypointRow[];digest:string};blobDir:string}
 /** Assumed: the cup–stand/tray friction the spike's supports had in effect (MuJoCo's default sliding friction 1.0, docs/research/2026-11-mujoco-arm-spike.md "Ma sát cốc"); physics.json carries none. */
-export const XARM_SUPPORT_FRICTION=1;
+const XARM_SUPPORT_FRICTION=1;
 /** The contacts every cell allows: the gripper and a held cup on the nozzle stand and on the tray (static for the whole run). */
 export const ARM_CELL_ALLOWED_CONTACTS:readonly {a:'gripper'|'held_prop';b:'nozzle-stand'|'tray'}[]=(['gripper','held_prop'] as const).flatMap(a=>(['nozzle-stand','tray'] as const).map(b=>({a,b})));
 /** How far (xy, m) the tray in the map frame may sit from the project's coffee pickup point. */
-export const ARM_CELL_LAYOUT_TOL_M=0.05;
-export type ArmCellErrorCode='ARM_SCENE_UNAVAILABLE'|'ARM_MODEL_MISMATCH'|'ARM_CELL_LAYOUT_MISMATCH';
+const ARM_CELL_LAYOUT_TOL_M=0.05;
+type ArmCellErrorCode='ARM_SCENE_UNAVAILABLE'|'ARM_MODEL_MISMATCH'|'ARM_CELL_LAYOUT_MISMATCH';
 const fail=(code:ArmCellErrorCode,detail:string)=>new Error(`${code}: ${detail}`);
 const sha256=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
 const read=(path:string)=>{try{return readFileSync(path);}catch{throw fail('ARM_MODEL_MISMATCH',`${XARM_FIXTURE_ID}: ${path} is missing`);}};
 
 /** The bytes of one mesh blob of the fixture, only when they hash to the name they are listed under. */
-export function readXArmBlob(blobDir:string,name:string):Buffer{
+function readXArmBlob(blobDir:string,name:string):Buffer{
  const sha=/^([0-9a-f]{64})\.stl$/.exec(name)?.[1],bytes=sha?read(join(blobDir,name)):undefined;
  if(!sha||!bytes||sha256(bytes)!==sha)throw fail('ARM_MODEL_MISMATCH',`${XARM_FIXTURE_ID}: blob ${name} does not hash to its name`);
  return bytes;

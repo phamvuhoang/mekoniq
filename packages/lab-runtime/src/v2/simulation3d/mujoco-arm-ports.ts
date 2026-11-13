@@ -52,17 +52,17 @@ export const cellSupports=(layout:Pick<CellLayout,'nozzleStand'|'tray'>):ArmObst
  ({id,kind:'box',min:b.centerM.map((c,i)=>c-b.sizeM[i]!/2),max:b.centerM.map((c,i)=>c+b.sizeM[i]!/2)}));
 const SUPPORT_IDS=new Set(['nozzle-stand','tray']);
 /** The report's statements about this plant (SX-41, D49), with the numbers they qualify. */
-export const mujocoArmCellEvidence=(engineVersion:string,fixture:Pick<XArmFixture,'waypoints'>,allowed:ArmCellSceneV1['allowedContacts'],inputs:NonNullable<ArmCellEvidence['inputs']>):ArmCellEvidence=>({waypoints:structuredClone(fixture.waypoints),inputs:{...inputs},
+const mujocoArmCellEvidence=(engineVersion:string,fixture:Pick<XArmFixture,'waypoints'>,allowed:ArmCellSceneV1['allowedContacts'],inputs:NonNullable<ArmCellEvidence['inputs']>):ArmCellEvidence=>({waypoints:structuredClone(fixture.waypoints),inputs:{...inputs},
  allowedContacts:allowed.map(c=>({a:c.a,b:c.b})),releaseTimeoutTicks:MUJOCO_ARM_RELEASE_TIMEOUT_TICKS,notes:[
  `Plant: MuJoCo ${engineVersion}, xArm 6 with Gripper G2 under position actuators; not_calibrated: masses, inertia, limits and forces are manufacturer nominal values, gains, friction, contact, pads and the cell layout assumed.`,
  `Release timeout: ${MUJOCO_ARM_RELEASE_TIMEOUT_TICKS} ticks, an assumed controller value (in neither the spec nor the oracle profile): how long the open gripper waits at the place pose for the cup to rest on the tray.`,
  'Sampling: collisions are those the engine reported over every physics substep of a tick (10 x 2 ms); the cups between the pads, the resting state and every pose are read at the end of the tick.',
  'Allowed contacts: the gripper and the held cup may touch the nozzle stand and the tray; the pairs are static for the whole trace (not scoped to a phase). An ARM03 phase only names the support (stand: grasp, tray: release), and its revision is the world revision of the run.']});
-export const mujocoArmPlantReport=(engineVersion:string,st:{samples:number;peakRad:number[];sumSq:number[]}):ArmPlantReport=>({engine:'mujoco_3d',engineVersion,control:'position_actuator',grip:'contact',
+const mujocoArmPlantReport=(engineVersion:string,st:{samples:number;peakRad:number[];sumSq:number[]}):ArmPlantReport=>({engine:'mujoco_3d',engineVersion,control:'position_actuator',grip:'contact',
  dynamics:'manufacturer_nominal+assumed',calibration:'not_calibrated',tracking:trackingStats(st)});
 
 /** What a MuJoCo arm run commands, from one place for the ports and the run's manifest: the fixture (and its physics with the runtime's override), the oracle thresholds and the program set. */
-export function mujocoRunPrograms(runtime:Pick<MujocoRuntimeOptions,'workerRoot'|'physicsOverride'>){
+function mujocoRunPrograms(runtime:Pick<MujocoRuntimeOptions,'workerRoot'|'physicsOverride'>){
  const oracle=loadOracleProfile().profile.mujocoArm;
  if(!oracle)throw new Error('ARM_ORACLE_PROFILE_MISSING: the oracle profile has no mujocoArm thresholds');
  const fixture=readXArmFixture(runtime.workerRoot),physics={...fixture.physics,...runtime.physicsOverride};
