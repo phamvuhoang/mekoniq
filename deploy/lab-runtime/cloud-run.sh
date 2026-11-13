@@ -75,7 +75,7 @@ if [ -n "$url" ]; then
 fi
 echo "# Case B: a new service. 1. deploy with the placeholder host"
 mkdeploy "$placeholder"; show "${deploy[@]}"; "${deploy[@]}"
-echo "# 2. read the service URL"; show "${describe[@]}"; url=$("${describe[@]}")
+echo "# 2. read the service URL"; show "${describe[@]}"; url=$("${describe[@]}") || url= # a failed read is a missing URL: the message below names the command to run by hand
 host=; host_of "$url" || die "SERVICE_URL_INVALID: gcloud did not return an https service URL; LAB_PUBLIC_HOST is still the placeholder, so the service refuses every request. Set it by hand: gcloud run services update $SERVICE ${common[*]} --update-env-vars=LAB_PUBLIC_HOST=<host of the service URL>" 1
 echo "# 3. LAB_PUBLIC_HOST = $host"
 cmd=(gcloud run services update "$SERVICE" "${common[@]}" "--update-env-vars=LAB_PUBLIC_HOST=$host"); show "${cmd[@]}"

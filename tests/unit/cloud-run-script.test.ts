@@ -21,6 +21,7 @@ printf '%s\\n' "$(IFS='	'; echo "$*")" >> "$FAKE_LOG"
 case "$*" in
  *"services describe"*) # a new service: the first describe fails (not found); FAKE_EXISTS=1: always answers
   if [ -z "\${FAKE_EXISTS:-}" ] && [ ! -e "$FAKE_LOG.d" ]; then : > "$FAKE_LOG.d"; exit 1; fi
+  [ "\${FAKE_FAIL:-}" != describe ] || exit 7 # FAKE_FAIL=describe: the read after the first deploy fails
   echo "\${FAKE_URL-${URL_}}";;
  *"run deploy"*) [ "\${FAKE_FAIL:-}" != deploy ] || exit 1;;
  *"services update"*) [ "\${FAKE_FAIL:-}" != update ] || exit 1;;
@@ -96,6 +97,12 @@ test('a failing deploy stops the script; a URL that is not https stops it, befor
  const c=run(['--execute'],{FAKE_URL:'http://x.example.com'}); // first describe fails (new), deploy, then the URL is not https
  expect(c.status).toBe(1);expect(c.err).toContain('SERVICE_URL_INVALID');expect(c.calls.length).toBe(3);
  const d=run(['--execute'],{FAKE_URL:''});expect(d.status).toBe(1);expect(d.calls.length).toBe(3);
+});
+
+test('when the read of the URL fails after a first deploy, the script exits 1 and prints the command to set the host by hand',()=>{
+ const r=run(['--execute'],{FAKE_FAIL:'describe'});
+ expect(r.status).toBe(1);expect(r.calls.map(c=>c.slice(0,3).join(' '))).toEqual(['run services describe','run deploy mekoniq-lab-runtime','run services describe']);
+ expect(r.err).toContain('SERVICE_URL_INVALID');expect(r.err).toContain('gcloud run services update mekoniq-lab-runtime --project=my-project --region=asia-southeast1 --update-env-vars=LAB_PUBLIC_HOST=<host of the service URL>');
 });
 
 test('when the update fails the script exits non-zero and prints the exact command to run by hand, with no key anywhere',()=>{
