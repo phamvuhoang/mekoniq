@@ -7,6 +7,7 @@ import { quinticSegment } from '../../packages/cell-adapters/src/arm-motion';
 import type { CellCommand, CellReport } from '../../packages/cell-adapters/src/contract';
 import { forwardKinematics, PUMA560_SI, XARM6_SI } from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
 import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/checker';
+import { qrotate } from '../../packages/lab-runtime/src/v2/frames';
 
 const FILE = JSON.parse(readFileSync('robotics/simulation-mujoco/fixtures/xarm6-g2-v1/programs.json', 'utf8')) as { programs: ArmProgramSet };
 const P = (loadOracleProfile().profile as unknown as { mujocoArm: Record<string, number> }).mujocoArm;
@@ -20,7 +21,8 @@ const command = (id: string, program: 'cup-pick' | 'cup-place'): CellCommand => 
 const tcp = (q: readonly number[]) => forwardKinematics(XARM6_SI, q).tcp.position;
 const dist = (a: readonly number[], b: readonly number[]) => Math.hypot(a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!);
 
-interface Script { noCup?: boolean; contactLost?: (tick: number) => boolean; noExtras?: (tick: number) => boolean; releaseMisses?: boolean; hideHeldCup?: (tick: number) => boolean; takeRefuses?: boolean }
+interface Script { noCup?: boolean; contactLost?: (tick: number) => boolean; noExtras?: (tick: number) => boolean; releaseMisses?: boolean; hideHeldCup?: (tick: number) => boolean; takeRefuses?: boolean;
+  /** A held cup sits at this offset in the TCP frame (it turns with the TCP) instead of keeping its pick offset in the base frame. */ heldInTcp?: (tick: number) => number[] }
 /** A scripted plant: the joints do what they are told; the fingers move 3 mm a tick towards the command and stop on the cup; the pads hold the cup 3 ticks after closing on it;
  * a held cup keeps its offset from the TCP; an opened gripper lets go at once; a cup let go at the place pose rests on the tray 2 ticks later. Positions in the arm base frame. */
 function scriptedPlant(script: Script = {}) {
@@ -35,7 +37,8 @@ function scriptedPlant(script: Script = {}) {
       w.closedTicks = gripperM < CUP_W ? w.closedTicks + 1 : 0;
       if (!c.held && near && w.closedTicks >= 3) { c.held = true; c.restingOn = null; c.offset = c.pos.map((v, i) => v - t[i]!); }
       if (c.held && gripperM >= CUP_W) { c.held = false; c.free = 0; }
-      if (c.held) c.pos = t.map((v, i) => v + c.offset[i]!);
+      if (c.held && script.heldInTcp) { const f = forwardKinematics(XARM6_SI, commanded).tcp, o = qrotate(f.quaternionXyzw, script.heldInTcp(w.tick)); c.pos = t.map((v, i) => v + o[i]!); }
+      else if (c.held) c.pos = t.map((v, i) => v + c.offset[i]!);
       else if (c.restingOn === null && ++c.free >= 2) c.restingOn = script.releaseMisses ? 'floor' : 'tray';
       const extras: PlantExtras = { gripper: { openingM: w.opening, heldPropIds: c.held && !script.contactLost?.(w.tick) ? ['cup-1'] : [] },
         props: script.noCup || (c.held && script.hideHeldCup?.(w.tick)) ? [] : [{ propId: 'cup-1', position: [...c.pos], restingOn: c.restingOn }] };
@@ -186,6 +189,20 @@ test('slip and lift are null/false until the held cup has been seen: absent from
   expect(late.takeTicks).toEqual([T]);
   expect(typeof p2.evidence.maxSlipM).toBe('number'); expect(p2.evidence.liftPoseReached).toBe(true);
   expect(typeof late.drive('p2', 'cup-place').evidence.maxSlipM).toBe('number');
+});
+
+test('slip is the change of the cup position in the TCP frame: a 4 mm slip along the TCP z axis at a 22 mm offset is 4 mm, not the 0.36 mm change of the cup-TCP distance', () => {
+  const ref = make();
+  expect(ref.drive('p1', 'cup-pick').state).toBe('completed');
+  const from = ref.fake.w.tick + 20, off = [0.022, 0, 0], slipped = [0.022, 0, 0.004];
+  const h = make({ heldInTcp: (t) => (t < from ? off : slipped) });
+  const pick = h.drive('p1', 'cup-pick');
+  expect(pick.state).toBe('completed'); expect(pick.evidence.maxSlipM as number).toBeLessThan(1e-12); // the cup turns with the TCP through the lift: no slip
+  const place = h.drive('p2', 'cup-place');
+  expect(place.state).toBe('completed');
+  expect(place.evidence.maxSlipM as number).toBeCloseTo(0.004, 9);
+  expect(Math.abs(Math.hypot(...slipped) - Math.hypot(...off))).toBeCloseTo(0.00036, 5); // what the scalar distance metric would have reported
+  expect(h.state.programs[1]!.evidence.maxSlipM).toBe(place.evidence.maxSlipM);
 });
 
 test('the pads hold a cup the cup world will not hand over: CUP_CUSTODY_MISMATCH, never a completed pick', () => {

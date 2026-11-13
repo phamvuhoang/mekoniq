@@ -5,6 +5,7 @@ import {checkArmSweep,type ArmGeometry,type ArmObstacle,type SweepResult} from '
 import {quinticSegment} from './arm-motion';
 import type {ArmSceneSnapshot} from '../../lab-runtime/src/v2/models/arm-scene';
 import {hashJson} from '../../lab-runtime/src/v2/hash';
+import {qconj,qrotate} from '../../lab-runtime/src/v2/frames';
 import type {JsonObject} from '../../contracts/src/index';
 import type {CellAcceptance,CellAdapter,CellCommand,CellExecutionState,CellManifest,CellReport,TransferEvidence} from './contract';
 export const MOCK_ARM={id:'mock_arm',version:'2',model:'mock_kinematic',dynamics:false} as const;
@@ -28,8 +29,9 @@ export const PUMA_PROGRAMS:ArmProgramSet={modelId:PUMA560_SI.id,waypoints:W,chor
 /** `inMap` (optional) is the same cup's pose in the map frame, kept untouched with the entry for the telemetry projection; the machine reads only `position`. */
 export interface PlantExtras {gripper?:{openingM:number;heldPropIds:readonly string[]};props?:readonly {propId:string;position:readonly number[];restingOn:string|null;inMap?:{positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}}[]}
 /** Contact grip counters (JSON). `ticks`: closing = ticks the opening changed < 1e-4 m, opening = ticks the cup rested on the tray; `lost`: ticks the held cup was not between the pads.
- * `maxSlipM` is null until a baseline was measured. `openingM` the last measured opening, `slipFromM` the cup–TCP distance on the first tick, at or after the take, the held cup's position was seen, `elapsed` ticks since the release command, `receiver` the receiver the release started for. */
-export interface ArmGripState {phase:'closing'|'opening';ticks:number;lost:number;liftFromM:number|null;maxSlipM:number|null;openingM:number|null;slipFromM:number|null;elapsed:number;receiver?:{robotId:string;slot:number}}
+ * `maxSlipM` (the largest norm of the change of the cup's position in the TCP frame since the baseline) is null until a baseline was measured. `openingM` the last measured opening,
+ * `slipFromM` the cup's position in the TCP frame (m) on the first tick, at or after the take, the held cup's position was seen, `elapsed` ticks since the release command, `receiver` the receiver the release started for. */
+export interface ArmGripState {phase:'closing'|'opening';ticks:number;lost:number;liftFromM:number|null;maxSlipM:number|null;openingM:number|null;slipFromM:number[]|null;elapsed:number;receiver?:{robotId:string;slot:number}}
 /** Refuses a program set the machine cannot run (ARM_PROGRAM_INVALID: what), before any state is touched. The joint-limit check applies to every set: PUMA_PROGRAMS lies inside the limits of every model the tests use. */
 function validatePrograms(set:ArmProgramSet,model:ArmModelSI){
  const bad=(what:string)=>{throw new Error(`ARM_PROGRAM_INVALID: ${what}`);},pos=(v:unknown)=>typeof v==='number'&&Number.isFinite(v)&&v>0,tick=(v:unknown)=>Number.isInteger(v)&&(v as number)>=1,n=model.links.length;
@@ -92,6 +94,8 @@ export class MockArmPlant {
   for(const l of this.listeners)l(r);
  }
  tcp(q:readonly number[]){const p=forwardKinematics(this.model,q).tcp.position;return [p[0],p[1],p[2]] as [number,number,number];}
+ /** A point of the arm base frame in the TCP frame of the current joints (slip is measured there: a cup that turns with the TCP has not slipped). */
+ private inTcp(at:readonly number[]){const t=forwardKinematics(this.model,this.state.q).tcp;return [...qrotate(qconj(t.quaternionXyzw),[at[0]!-t.position[0]!,at[1]!-t.position[1]!,at[2]!-t.position[2]!])];}
  execute(command:CellCommand):CellAcceptance {
   const old=this.state.programs.find(p=>p.commandId===command.commandId);if(old)return old.accepted;
   if(this.state.stop?.latched)return {accepted:false,unknown:false,reason:'ARM_STOP_LATCHED'};
@@ -229,7 +233,7 @@ export class MockArmPlant {
  /** The slip and lift baseline of a held cup, on the first tick its position is seen: until then slip is null (unmeasured), never 0. */
  private baseline(g:ArmGripState,extras?:PlantExtras){
   const at=extras?.props?.find(x=>x.propId===this.state.holding)?.position;if(!at||g.slipFromM!==null)return;
-  g.liftFromM=at[2]!;g.slipFromM=dist(at,this.tcp(this.state.q));g.maxSlipM=0;
+  g.liftFromM=at[2]!;g.slipFromM=this.inTcp(at);g.maxSlipM=0;
  }
  /** Contact grip, every tick after the plant stepped: the closing and opening counters and the drop watch. A tick without plant extras reads as no cup held and no cup resting
   * on the tray (a missing opening counts as unchanged). Returns true when it stopped the arm. */
@@ -239,7 +243,7 @@ export class MockArmPlant {
   if(s.holding===null){const o=extras?.gripper?.openingM;g.ticks=o===undefined||g.openingM!==null&&Math.abs(o-g.openingM)<1e-4?g.ticks+1:0;if(o!==undefined)g.openingM=o;return false;}
   const held=extras?.gripper?.heldPropIds.includes(s.holding)??false,at=extras?.props?.find(x=>x.propId===s.holding)?.position;
   g.lost=held?0:g.lost+1;
-  if(held&&at&&g.slipFromM!==null)g.maxSlipM=Math.max(g.maxSlipM??0,Math.abs(dist(at,this.tcp(s.q))-g.slipFromM));
+  if(held&&at&&g.slipFromM!==null)g.maxSlipM=Math.max(g.maxSlipM??0,dist(this.inTcp(at),g.slipFromM));
   else if(held)this.baseline(g,extras);
   if(p)p.evidence.maxSlipM=g.maxSlipM;
   if(g.lost>=this.programs.contact!.dropTicks){this.stop('CUP_DROPPED');return true;}
