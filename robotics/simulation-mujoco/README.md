@@ -36,8 +36,9 @@ max(cup, other): the cup has `world3d.propFriction`, the stand, the tray, the fl
 these from `physics.contact.propFriction`). So cup–stand and cup–tray are governed by `max(propFriction, supportFriction)`: with the spike's 0.6 and 1.0 that is 1.0,
 the value the spike had in effect (its stand and tray carried MuJoCo's default 1.0).
 
-In the Lab, `pnpm lab:mujoco` (`lab/`) starts the pinned runtime with this worker (provider `mujoco_arm`, scenario `MJ-BV01`); the container image is `deploy/lab-runtime/`. Latest record:
-`docs/implementation/evidence/sim-extension/r2a-candidate-01/` (every gate `tested` except `G-CLOUD1`, `blocked_external`; not accepted).
+In the Lab, `pnpm lab:mujoco` (`lab/`) starts the pinned runtime with this worker (provider `mujoco_arm`, scenario `MJ-BV01`); the container image is `deploy/lab-runtime/`.
+The [implementation evidence index](../../docs/implementation/README.md) names the current qualification records and their gate and acceptance status. Keep candidate-specific updates in that index:
+this README belongs to the pinned portable tool closure, so editing it after a recording would invalidate the Lab's pin.
 
 ```sh
 node scripts/bootstrap-portable-simulation.mjs mujoco
