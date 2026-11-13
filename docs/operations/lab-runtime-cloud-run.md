@@ -155,7 +155,7 @@ Mong đợi `201` (thân trả `sessionToken`; lệnh trên chỉ in mã trạng
 - Với `--timeout=3600` (theo tài liệu Cloud Run, cần kiểm tra khi deploy: mục "Chưa kiểm chứng"), một yêu cầu bị cắt sau thời hạn đó, nên stream sự kiện kết thúc **tối đa mỗi 60 phút**; Lab nối lại từ con trỏ.
 - Run chỉ tiến khi Lab gửi bước: đóng tab thì run đứng yên, và instance có thể co về 0 rồi mất run.
 - Khi tắt, nền tảng được cho là gửi `SIGTERM` (cần kiểm tra khi deploy); Node là PID 1 và đóng gateway rồi thoát mã 0. Một bước có nhịp đang chạy hoàn tất các tick của nó trước (tối đa khoảng một giây). Run đang có vẫn mất.
-- Phiên sống 1 giờ; tối đa 10 phiên cùng lúc.
+- Phiên sống 1 giờ; tối đa 10 phiên cùng lúc. Khi có khóa, một lần ghép nối đúng khóa lúc đã đủ 10 phiên sẽ kết thúc phiên cũ nhất (run của phiên đó được xử lý như run của phiên hết hạn: lần tạo run kế tiếp đóng nó, và có thể lấy lại bằng bằng chứng reclaim); ghép nối sai không kết thúc phiên nào.
 
 ## 8. Chi phí
 
