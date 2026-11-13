@@ -1,0 +1,1390 @@
+{
+  "schemaVersion": 1,
+  "accepted": false,
+  "calibration": "not_calibrated",
+  "engineVersion": "3.17.0",
+  "pythonVersion": "3.11.15",
+  "machine": "arm64",
+  "platform": "macOS-26.5-arm64-arm-64bit",
+  "repeats": [
+    {
+      "load": "empty",
+      "case": "hold",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 5.960464477539063e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "hold",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 5.960464477539063e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "hold",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 5.960464477539063e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "straight",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.429369702178807e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "straight",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.429369702178807e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "straight",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.429369702178807e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "circle",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.429369702178807e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "circle",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.429369702178807e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "circle",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.429369702178807e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "stop",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 7.884953353001448e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "stop",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 7.884953353001448e-08,
+      "pass": true
+    },
+    {
+      "load": "empty",
+      "case": "stop",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 7.884953353001448e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "hold",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 7.884953353001448e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "hold",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 7.884953353001448e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "hold",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 7.884953353001448e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "straight",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.884312124119402e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "straight",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.884312124119402e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "straight",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.884312124119402e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "circle",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.424321830774485e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "circle",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.424321830774485e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "circle",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.424321830774485e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "stop",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.884312124119402e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "stop",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.884312124119402e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-center",
+      "case": "stop",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.884312124119402e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "hold",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.429369702178807e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "hold",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.429369702178807e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "hold",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.429369702178807e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "straight",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.884312124119402e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "straight",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.884312124119402e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "straight",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.884312124119402e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "circle",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.940696716308595e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "circle",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.940696716308595e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "circle",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 8.940696716308595e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "stop",
+      "repeat": 1,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.424321830774485e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "stop",
+      "repeat": 2,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.424321830774485e-08,
+      "pass": true
+    },
+    {
+      "load": "cup-offset",
+      "case": "stop",
+      "repeat": 3,
+      "maxPositionDifferenceM": 0.0,
+      "maxAngleDifferenceRad": 9.424321830774485e-08,
+      "pass": true
+    }
+  ],
+  "runs": [
+    {
+      "case": "hold",
+      "load": "empty",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 5.11734997381985e-06,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 1.5172963767629e-06,
+      "maxOdomResidualRad": 3.637392382775696e-16,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 133.35171989478374,
+      "stepP95Ms": 1.7391249653883276,
+      "finalPoseDriveMap": [
+        1.999998051047855,
+        1.5,
+        -2.023678174814246e-17
+      ],
+      "finalBodySpeed": [
+        3.3861890743155233e-13,
+        1.4311841991481635e-21
+      ],
+      "stopDistanceM": null,
+      "stoppedAtTick": null,
+      "raw": {
+        "path": "empty-hold-r1.ndjson.gz",
+        "sha256": "caaf4a500a8e73234aa95e7c4a47712b35e9f918ccc1c3ceb2298fe7d3177881",
+        "bytes": 190584
+      }
+    },
+    {
+      "case": "hold",
+      "load": "empty",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 5.11734997381985e-06,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 1.5172963767629e-06,
+      "maxOdomResidualRad": 3.637392382775696e-16,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 133.35171989478374,
+      "stepP95Ms": 1.7975125345401464,
+      "finalPoseDriveMap": [
+        1.999998051047855,
+        1.5,
+        -2.023678174814246e-17
+      ],
+      "finalBodySpeed": [
+        3.3861890743155233e-13,
+        1.4311841991481635e-21
+      ],
+      "stopDistanceM": null,
+      "stoppedAtTick": null,
+      "raw": {
+        "path": "empty-hold-r2.ndjson.gz",
+        "sha256": "74ebf808c92f4941723390e7381cd9a85e5badfda4bda4c843681a66c9628ad0",
+        "bytes": 190583
+      }
+    },
+    {
+      "case": "hold",
+      "load": "empty",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 5.11734997381985e-06,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 1.5172963767629e-06,
+      "maxOdomResidualRad": 3.637392382775696e-16,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 133.35171989478374,
+      "stepP95Ms": 1.7326187808066607,
+      "finalPoseDriveMap": [
+        1.999998051047855,
+        1.5,
+        -2.023678174814246e-17
+      ],
+      "finalBodySpeed": [
+        3.3861890743155233e-13,
+        1.4311841991481635e-21
+      ],
+      "stopDistanceM": null,
+      "stoppedAtTick": null,
+      "raw": {
+        "path": "empty-hold-r3.ndjson.gz",
+        "sha256": "b5f989a6e5f826de316d87230015a2ffa12d21d828ccd1746249837d2b203bbc",
+        "bytes": 190583
+      }
+    },
+    {
+      "case": "straight",
+      "load": "empty",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00017902844346703636,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 0.03715878568443021,
+      "maxOdomResidualRad": 3.8604214187084743e-14,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 137.74593911764,
+      "stepP95Ms": 1.759154291357845,
+      "finalPoseDriveMap": [
+        3.0203314048491796,
+        1.5,
+        -2.7945534564492146e-14
+      ],
+      "finalBodySpeed": [
+        1.404456362068934e-14,
+        3.8163492346622505e-20
+      ],
+      "stopDistanceM": 0.006246051676273456,
+      "stoppedAtTick": 408,
+      "raw": {
+        "path": "empty-straight-r1.ndjson.gz",
+        "sha256": "1975ac727dc3deec1a50b36a81b57bca7c2dbcc29d3787ec18ee5459ce13127a",
+        "bytes": 206401
+      }
+    },
+    {
+      "case": "straight",
+      "load": "empty",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00017902844346703636,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 0.03715878568443021,
+      "maxOdomResidualRad": 3.8604214187084743e-14,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 137.74593911764,
+      "stepP95Ms": 1.7201500246301291,
+      "finalPoseDriveMap": [
+        3.0203314048491796,
+        1.5,
+        -2.7945534564492146e-14
+      ],
+      "finalBodySpeed": [
+        1.404456362068934e-14,
+        3.8163492346622505e-20
+      ],
+      "stopDistanceM": 0.006246051676273456,
+      "stoppedAtTick": 408,
+      "raw": {
+        "path": "empty-straight-r2.ndjson.gz",
+        "sha256": "6194baa2ffc202f70081c403c92491f1e6106c95ce054a100799ce3e8b1e716e",
+        "bytes": 206401
+      }
+    },
+    {
+      "case": "straight",
+      "load": "empty",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00017902844346703636,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 0.03715878568443021,
+      "maxOdomResidualRad": 3.8604214187084743e-14,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 137.74593911764,
+      "stepP95Ms": 1.737703557591885,
+      "finalPoseDriveMap": [
+        3.0203314048491796,
+        1.5,
+        -2.7945534564492146e-14
+      ],
+      "finalBodySpeed": [
+        1.404456362068934e-14,
+        3.8163492346622505e-20
+      ],
+      "stopDistanceM": 0.006246051676273456,
+      "stoppedAtTick": 408,
+      "raw": {
+        "path": "empty-straight-r3.ndjson.gz",
+        "sha256": "a71e15c4de3d8ca5dbccb1d90f659ca8d7a5502beba6743add152e49471317c7",
+        "bytes": 206401
+      }
+    },
+    {
+      "case": "circle",
+      "load": "empty",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00026966920026980497,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 0.1340356429017285,
+      "maxOdomResidualRad": 0.2699004535933758,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 162.29340821358372,
+      "stepP95Ms": 1.7288000672124326,
+      "finalPoseDriveMap": [
+        2.647288300469684,
+        2.176707552793086,
+        1.6329898693172216
+      ],
+      "finalBodySpeed": [
+        1.9690907363725878e-14,
+        4.426271268791352e-20
+      ],
+      "stopDistanceM": 0.00898484125211098,
+      "stoppedAtTick": 411,
+      "raw": {
+        "path": "empty-circle-r1.ndjson.gz",
+        "sha256": "d6806e3de7ff275e910be52c07f270db45e90eb01de08ccc6094ab6f2244c5e4",
+        "bytes": 253388
+      }
+    },
+    {
+      "case": "circle",
+      "load": "empty",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00026966920026980497,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 0.1340356429017285,
+      "maxOdomResidualRad": 0.2699004535933758,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 162.29340821358372,
+      "stepP95Ms": 1.762672292534262,
+      "finalPoseDriveMap": [
+        2.647288300469684,
+        2.176707552793086,
+        1.6329898693172216
+      ],
+      "finalBodySpeed": [
+        1.9690907363725878e-14,
+        4.426271268791352e-20
+      ],
+      "stopDistanceM": 0.00898484125211098,
+      "stoppedAtTick": 411,
+      "raw": {
+        "path": "empty-circle-r2.ndjson.gz",
+        "sha256": "ee32c9986571b3267b6dc9aab1834301619905296e4afdbb4fedea1ec565c0a0",
+        "bytes": 253387
+      }
+    },
+    {
+      "case": "circle",
+      "load": "empty",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00026966920026980497,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 0.1340356429017285,
+      "maxOdomResidualRad": 0.2699004535933758,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 162.29340821358372,
+      "stepP95Ms": 1.720353798009455,
+      "finalPoseDriveMap": [
+        2.647288300469684,
+        2.176707552793086,
+        1.6329898693172216
+      ],
+      "finalBodySpeed": [
+        1.9690907363725878e-14,
+        4.426271268791352e-20
+      ],
+      "stopDistanceM": 0.00898484125211098,
+      "stoppedAtTick": 411,
+      "raw": {
+        "path": "empty-circle-r3.ndjson.gz",
+        "sha256": "e7f00cb6c1a9e165a24ee162c76a6a9673f65bfdba4f2a0a696fdb07a65c2567",
+        "bytes": 253387
+      }
+    },
+    {
+      "case": "stop",
+      "load": "empty",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00021867400936884798,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 0.048386962082529905,
+      "maxOdomResidualRad": 7.262254059927264e-15,
+      "saturatedSubsteps": 3,
+      "peakPairNormalN": 154.8368721344967,
+      "stepP95Ms": 1.7090416513383386,
+      "finalPoseDriveMap": [
+        3.6922315712495117,
+        1.5,
+        -1.932287993891093e-15
+      ],
+      "finalBodySpeed": [
+        1.924952112702774e-14,
+        1.2855227814884478e-19
+      ],
+      "stopDistanceM": 0.03166915468695519,
+      "stoppedAtTick": 313,
+      "raw": {
+        "path": "empty-stop-r1.ndjson.gz",
+        "sha256": "48703fddfe8d20349e43dba16d36f950fff731b20bf9475e4ecc91120844e48c",
+        "bytes": 204402
+      }
+    },
+    {
+      "case": "stop",
+      "load": "empty",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00021867400936884798,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 0.048386962082529905,
+      "maxOdomResidualRad": 7.262254059927264e-15,
+      "saturatedSubsteps": 3,
+      "peakPairNormalN": 154.8368721344967,
+      "stepP95Ms": 1.7146276542916894,
+      "finalPoseDriveMap": [
+        3.6922315712495117,
+        1.5,
+        -1.932287993891093e-15
+      ],
+      "finalBodySpeed": [
+        1.924952112702774e-14,
+        1.2855227814884478e-19
+      ],
+      "stopDistanceM": 0.03166915468695519,
+      "stoppedAtTick": 313,
+      "raw": {
+        "path": "empty-stop-r2.ndjson.gz",
+        "sha256": "b1897e688ee0c16088ab24ae49fb4eff3cd909496873db37e5770cf0634b2cc5",
+        "bytes": 204402
+      }
+    },
+    {
+      "case": "stop",
+      "load": "empty",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00021867400936884798,
+      "maxLoadDisplacementM": null,
+      "maxOdomResidualM": 0.048386962082529905,
+      "maxOdomResidualRad": 7.262254059927264e-15,
+      "saturatedSubsteps": 3,
+      "peakPairNormalN": 154.8368721344967,
+      "stepP95Ms": 1.7045729560777545,
+      "finalPoseDriveMap": [
+        3.6922315712495117,
+        1.5,
+        -1.932287993891093e-15
+      ],
+      "finalBodySpeed": [
+        1.924952112702774e-14,
+        1.2855227814884478e-19
+      ],
+      "stopDistanceM": 0.03166915468695519,
+      "stoppedAtTick": 313,
+      "raw": {
+        "path": "empty-stop-r3.ndjson.gz",
+        "sha256": "40156e07cbc44c5599ecd6017582b3748aa92195e05aa80b08770139f75805c9",
+        "bytes": 204402
+      }
+    },
+    {
+      "case": "hold",
+      "load": "cup-center",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 1.2734962653628082e-08,
+      "maxLoadDisplacementM": 2.2704768838939643e-06,
+      "maxOdomResidualM": 1.261870895250042e-09,
+      "maxOdomResidualRad": 2.505540655178988e-10,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 133.35171989478374,
+      "stepP95Ms": 2.0262789912521835,
+      "finalPoseDriveMap": [
+        1.9999999986555084,
+        1.5000000000813112,
+        -2.86099025873937e-10
+      ],
+      "finalBodySpeed": [
+        1.5298775354442768e-08,
+        6.867614882955039e-09
+      ],
+      "stopDistanceM": null,
+      "stoppedAtTick": null,
+      "raw": {
+        "path": "cup-center-hold-r1.ndjson.gz",
+        "sha256": "92899817a960e06b3f2dc0d9d2244c86d55e44eca2935005b23eae96d996aeef",
+        "bytes": 387638
+      }
+    },
+    {
+      "case": "hold",
+      "load": "cup-center",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 1.2734962653628082e-08,
+      "maxLoadDisplacementM": 2.2704768838939643e-06,
+      "maxOdomResidualM": 1.261870895250042e-09,
+      "maxOdomResidualRad": 2.505540655178988e-10,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 133.35171989478374,
+      "stepP95Ms": 2.055635384749621,
+      "finalPoseDriveMap": [
+        1.9999999986555084,
+        1.5000000000813112,
+        -2.86099025873937e-10
+      ],
+      "finalBodySpeed": [
+        1.5298775354442768e-08,
+        6.867614882955039e-09
+      ],
+      "stopDistanceM": null,
+      "stoppedAtTick": null,
+      "raw": {
+        "path": "cup-center-hold-r2.ndjson.gz",
+        "sha256": "38cd11dc28232e3f75f22512bc71e1a35dd951544cd1b3f15289b50a17a4982b",
+        "bytes": 387638
+      }
+    },
+    {
+      "case": "hold",
+      "load": "cup-center",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 1.2734962653628082e-08,
+      "maxLoadDisplacementM": 2.2704768838939643e-06,
+      "maxOdomResidualM": 1.261870895250042e-09,
+      "maxOdomResidualRad": 2.505540655178988e-10,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 133.35171989478374,
+      "stepP95Ms": 2.032466814853251,
+      "finalPoseDriveMap": [
+        1.9999999986555084,
+        1.5000000000813112,
+        -2.86099025873937e-10
+      ],
+      "finalBodySpeed": [
+        1.5298775354442768e-08,
+        6.867614882955039e-09
+      ],
+      "stopDistanceM": null,
+      "stoppedAtTick": null,
+      "raw": {
+        "path": "cup-center-hold-r3.ndjson.gz",
+        "sha256": "6168daedc2d49739c1e3c618ed83193acb164bc78d5c423e8bc5dcf532e77c45",
+        "bytes": 387638
+      }
+    },
+    {
+      "case": "straight",
+      "load": "cup-center",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.0004316456804523739,
+      "maxLoadDisplacementM": 0.0022482680913895456,
+      "maxOdomResidualM": 0.07125951011034712,
+      "maxOdomResidualRad": 0.006536400377492036,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 169.09692840523527,
+      "stepP95Ms": 2.205783186946064,
+      "finalPoseDriveMap": [
+        2.994095839088133,
+        1.5021079481836057,
+        0.0009004344161075785
+      ],
+      "finalBodySpeed": [
+        3.562426946211369e-09,
+        3.065084213922309e-08
+      ],
+      "stopDistanceM": 0.010279318978281198,
+      "stoppedAtTick": 411,
+      "raw": {
+        "path": "cup-center-straight-r1.ndjson.gz",
+        "sha256": "e72570f76a289edca424b82f40a2689bb66ac4f0e898b5ee674d4af19264a5da",
+        "bytes": 406200
+      }
+    },
+    {
+      "case": "straight",
+      "load": "cup-center",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.0004316456804523739,
+      "maxLoadDisplacementM": 0.0022482680913895456,
+      "maxOdomResidualM": 0.07125951011034712,
+      "maxOdomResidualRad": 0.006536400377492036,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 169.09692840523527,
+      "stepP95Ms": 2.168802439700812,
+      "finalPoseDriveMap": [
+        2.994095839088133,
+        1.5021079481836057,
+        0.0009004344161075785
+      ],
+      "finalBodySpeed": [
+        3.562426946211369e-09,
+        3.065084213922309e-08
+      ],
+      "stopDistanceM": 0.010279318978281198,
+      "stoppedAtTick": 411,
+      "raw": {
+        "path": "cup-center-straight-r2.ndjson.gz",
+        "sha256": "4fbca37773a44ae83abdc0cf338318a6cb7e05a5440f2d1bbbc97f723b7feba0",
+        "bytes": 406200
+      }
+    },
+    {
+      "case": "straight",
+      "load": "cup-center",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.0004316456804523739,
+      "maxLoadDisplacementM": 0.0022482680913895456,
+      "maxOdomResidualM": 0.07125951011034712,
+      "maxOdomResidualRad": 0.006536400377492036,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 169.09692840523527,
+      "stepP95Ms": 2.157002210151404,
+      "finalPoseDriveMap": [
+        2.994095839088133,
+        1.5021079481836057,
+        0.0009004344161075785
+      ],
+      "finalBodySpeed": [
+        3.562426946211369e-09,
+        3.065084213922309e-08
+      ],
+      "stopDistanceM": 0.010279318978281198,
+      "stoppedAtTick": 411,
+      "raw": {
+        "path": "cup-center-straight-r3.ndjson.gz",
+        "sha256": "08b3117daebc412d3c3a97a40f7a9bc0bb7491284e2efb98aeeccda6a36d4ff4",
+        "bytes": 406200
+      }
+    },
+    {
+      "case": "circle",
+      "load": "cup-center",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00031931543841256827,
+      "maxLoadDisplacementM": 0.000985189005290766,
+      "maxOdomResidualM": 0.12723159465770423,
+      "maxOdomResidualRad": 0.2537678409969952,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 164.66045865511225,
+      "stepP95Ms": 2.2356188041158016,
+      "finalPoseDriveMap": [
+        2.64323892232983,
+        2.1830444947821386,
+        1.6608646301874246
+      ],
+      "finalBodySpeed": [
+        8.28437363061056e-10,
+        1.3100071683516867e-08
+      ],
+      "stopDistanceM": 0.013816462770953325,
+      "stoppedAtTick": 413,
+      "raw": {
+        "path": "cup-center-circle-r1.ndjson.gz",
+        "sha256": "4915e66e516cfc0a82d2a707b8cecb059b012a8be69dc6fd119036e7a32695ad",
+        "bytes": 412534
+      }
+    },
+    {
+      "case": "circle",
+      "load": "cup-center",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00031931543841256827,
+      "maxLoadDisplacementM": 0.000985189005290766,
+      "maxOdomResidualM": 0.12723159465770423,
+      "maxOdomResidualRad": 0.2537678409969952,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 164.66045865511225,
+      "stepP95Ms": 2.2191332769580185,
+      "finalPoseDriveMap": [
+        2.64323892232983,
+        2.1830444947821386,
+        1.6608646301874246
+      ],
+      "finalBodySpeed": [
+        8.28437363061056e-10,
+        1.3100071683516867e-08
+      ],
+      "stopDistanceM": 0.013816462770953325,
+      "stoppedAtTick": 413,
+      "raw": {
+        "path": "cup-center-circle-r2.ndjson.gz",
+        "sha256": "67d04245482c03b42dd6e25243f0a2fcde9045f88307839360ab312ae92b805a",
+        "bytes": 412534
+      }
+    },
+    {
+      "case": "circle",
+      "load": "cup-center",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00031931543841256827,
+      "maxLoadDisplacementM": 0.000985189005290766,
+      "maxOdomResidualM": 0.12723159465770423,
+      "maxOdomResidualRad": 0.2537678409969952,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 164.66045865511225,
+      "stepP95Ms": 2.235886198468506,
+      "finalPoseDriveMap": [
+        2.64323892232983,
+        2.1830444947821386,
+        1.6608646301874246
+      ],
+      "finalBodySpeed": [
+        8.28437363061056e-10,
+        1.3100071683516867e-08
+      ],
+      "stopDistanceM": 0.013816462770953325,
+      "stoppedAtTick": 413,
+      "raw": {
+        "path": "cup-center-circle-r3.ndjson.gz",
+        "sha256": "63a7cf643abe6664ca2306805e57484745c663f43020e487f0bb90424f34859d",
+        "bytes": 412534
+      }
+    },
+    {
+      "case": "stop",
+      "load": "cup-center",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.0009638446248197859,
+      "maxLoadDisplacementM": 0.004113544025482901,
+      "maxOdomResidualM": 0.06618135109419522,
+      "maxOdomResidualRad": 0.01757627622415603,
+      "saturatedSubsteps": 12,
+      "peakPairNormalN": 175.0321728281663,
+      "stepP95Ms": 2.1733954199589784,
+      "finalPoseDriveMap": [
+        3.6935415723341625,
+        1.4969004855385946,
+        0.00831918827802427
+      ],
+      "finalBodySpeed": [
+        6.635933995464232e-10,
+        3.8676914187905824e-08
+      ],
+      "stopDistanceM": 0.049298119718564126,
+      "stoppedAtTick": 319,
+      "raw": {
+        "path": "cup-center-stop-r1.ndjson.gz",
+        "sha256": "26494c1487020cb4a48e7a210d3be770ef06b508068cad8554defee811309edc",
+        "bytes": 400484
+      }
+    },
+    {
+      "case": "stop",
+      "load": "cup-center",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.0009638446248197859,
+      "maxLoadDisplacementM": 0.004113544025482901,
+      "maxOdomResidualM": 0.06618135109419522,
+      "maxOdomResidualRad": 0.01757627622415603,
+      "saturatedSubsteps": 12,
+      "peakPairNormalN": 175.0321728281663,
+      "stepP95Ms": 2.1574562415480614,
+      "finalPoseDriveMap": [
+        3.6935415723341625,
+        1.4969004855385946,
+        0.00831918827802427
+      ],
+      "finalBodySpeed": [
+        6.635933995464232e-10,
+        3.8676914187905824e-08
+      ],
+      "stopDistanceM": 0.049298119718564126,
+      "stoppedAtTick": 319,
+      "raw": {
+        "path": "cup-center-stop-r2.ndjson.gz",
+        "sha256": "36aa9b493791b020b78e3dce77f1a63dd7327e48a744f4153dceee0cf0e40411",
+        "bytes": 400484
+      }
+    },
+    {
+      "case": "stop",
+      "load": "cup-center",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.0009638446248197859,
+      "maxLoadDisplacementM": 0.004113544025482901,
+      "maxOdomResidualM": 0.06618135109419522,
+      "maxOdomResidualRad": 0.01757627622415603,
+      "saturatedSubsteps": 12,
+      "peakPairNormalN": 175.0321728281663,
+      "stepP95Ms": 2.347759727854281,
+      "finalPoseDriveMap": [
+        3.6935415723341625,
+        1.4969004855385946,
+        0.00831918827802427
+      ],
+      "finalBodySpeed": [
+        6.635933995464232e-10,
+        3.8676914187905824e-08
+      ],
+      "stopDistanceM": 0.049298119718564126,
+      "stoppedAtTick": 319,
+      "raw": {
+        "path": "cup-center-stop-r3.ndjson.gz",
+        "sha256": "4940e29a3815c55c8b530d0aea061556ec4b55e480c24e43b9fff69fadeb49e6",
+        "bytes": 400484
+      }
+    },
+    {
+      "case": "hold",
+      "load": "cup-offset",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 1.4448868242426355e-06,
+      "maxLoadDisplacementM": 2.2104094796625104e-06,
+      "maxOdomResidualM": 1.301521702877727e-07,
+      "maxOdomResidualRad": 4.197186554338493e-09,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 133.35171989478374,
+      "stepP95Ms": 1.9616026431322096,
+      "finalPoseDriveMap": [
+        1.9999999986329522,
+        1.5000001298065577,
+        3.204783624244383e-10
+      ],
+      "finalBodySpeed": [
+        2.1293602241211262e-09,
+        4.3355783807229726e-08
+      ],
+      "stopDistanceM": null,
+      "stoppedAtTick": null,
+      "raw": {
+        "path": "cup-offset-hold-r1.ndjson.gz",
+        "sha256": "ce3a785917df7589b953894495e4fca6b992345536340557daa155aedcd9fe71",
+        "bytes": 351419
+      }
+    },
+    {
+      "case": "hold",
+      "load": "cup-offset",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 1.4448868242426355e-06,
+      "maxLoadDisplacementM": 2.2104094796625104e-06,
+      "maxOdomResidualM": 1.301521702877727e-07,
+      "maxOdomResidualRad": 4.197186554338493e-09,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 133.35171989478374,
+      "stepP95Ms": 1.9282544497400522,
+      "finalPoseDriveMap": [
+        1.9999999986329522,
+        1.5000001298065577,
+        3.204783624244383e-10
+      ],
+      "finalBodySpeed": [
+        2.1293602241211262e-09,
+        4.3355783807229726e-08
+      ],
+      "stopDistanceM": null,
+      "stoppedAtTick": null,
+      "raw": {
+        "path": "cup-offset-hold-r2.ndjson.gz",
+        "sha256": "b390bc99fdeca3b373bcd04867e5cb8bda1181137dfcb8ad45fd975ed91ab7f6",
+        "bytes": 351419
+      }
+    },
+    {
+      "case": "hold",
+      "load": "cup-offset",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 1.4448868242426355e-06,
+      "maxLoadDisplacementM": 2.2104094796625104e-06,
+      "maxOdomResidualM": 1.301521702877727e-07,
+      "maxOdomResidualRad": 4.197186554338493e-09,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 133.35171989478374,
+      "stepP95Ms": 2.0115562598221,
+      "finalPoseDriveMap": [
+        1.9999999986329522,
+        1.5000001298065577,
+        3.204783624244383e-10
+      ],
+      "finalBodySpeed": [
+        2.1293602241211262e-09,
+        4.3355783807229726e-08
+      ],
+      "stopDistanceM": null,
+      "stoppedAtTick": null,
+      "raw": {
+        "path": "cup-offset-hold-r3.ndjson.gz",
+        "sha256": "b1ae87b9d2281b39e4fd50a00ea1f6e8fda04513b1846668840c853357c00f95",
+        "bytes": 351419
+      }
+    },
+    {
+      "case": "straight",
+      "load": "cup-offset",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00045683551035615355,
+      "maxLoadDisplacementM": 0.002346034147267224,
+      "maxOdomResidualM": 0.07098493401926748,
+      "maxOdomResidualRad": 0.014351535642798513,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 165.70308212657622,
+      "stepP95Ms": 2.1757622715085745,
+      "finalPoseDriveMap": [
+        2.9998200427718618,
+        1.491965513315294,
+        -0.007260065842690246
+      ],
+      "finalBodySpeed": [
+        1.4879266702541216e-08,
+        4.652870241450511e-08
+      ],
+      "stopDistanceM": 0.015001143693363524,
+      "stoppedAtTick": 413,
+      "raw": {
+        "path": "cup-offset-straight-r1.ndjson.gz",
+        "sha256": "274ebf8bce4d714a12a28eb61d7a099b8af4066c7c9d16a7172b48d67d2783d4",
+        "bytes": 394698
+      }
+    },
+    {
+      "case": "straight",
+      "load": "cup-offset",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00045683551035615355,
+      "maxLoadDisplacementM": 0.002346034147267224,
+      "maxOdomResidualM": 0.07098493401926748,
+      "maxOdomResidualRad": 0.014351535642798513,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 165.70308212657622,
+      "stepP95Ms": 2.1700997254811227,
+      "finalPoseDriveMap": [
+        2.9998200427718618,
+        1.491965513315294,
+        -0.007260065842690246
+      ],
+      "finalBodySpeed": [
+        1.4879266702541216e-08,
+        4.652870241450511e-08
+      ],
+      "stopDistanceM": 0.015001143693363524,
+      "stoppedAtTick": 413,
+      "raw": {
+        "path": "cup-offset-straight-r2.ndjson.gz",
+        "sha256": "de32eb1470d294cbefb7aebda0ff18c2a2059d8645957dbfaef5844c132cf372",
+        "bytes": 394697
+      }
+    },
+    {
+      "case": "straight",
+      "load": "cup-offset",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00045683551035615355,
+      "maxLoadDisplacementM": 0.002346034147267224,
+      "maxOdomResidualM": 0.07098493401926748,
+      "maxOdomResidualRad": 0.014351535642798513,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 165.70308212657622,
+      "stepP95Ms": 4.062944417819377,
+      "finalPoseDriveMap": [
+        2.9998200427718618,
+        1.491965513315294,
+        -0.007260065842690246
+      ],
+      "finalBodySpeed": [
+        1.4879266702541216e-08,
+        4.652870241450511e-08
+      ],
+      "stopDistanceM": 0.015001143693363524,
+      "stoppedAtTick": 413,
+      "raw": {
+        "path": "cup-offset-straight-r3.ndjson.gz",
+        "sha256": "f47b57e9f20834ff091b04c425508694ed755e98d49210ea0307d806f990eb9b",
+        "bytes": 394697
+      }
+    },
+    {
+      "case": "circle",
+      "load": "cup-offset",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00028474624157496245,
+      "maxLoadDisplacementM": 0.0012175692081782769,
+      "maxOdomResidualM": 0.13706253704928292,
+      "maxOdomResidualRad": 0.2649220761938944,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 164.28903019299818,
+      "stepP95Ms": 2.314343734178692,
+      "finalPoseDriveMap": [
+        2.6441308070065084,
+        2.1752238807376263,
+        1.6469205482522182
+      ],
+      "finalBodySpeed": [
+        1.0845710307001305e-08,
+        2.981514051367446e-08
+      ],
+      "stopDistanceM": 0.009875265212244471,
+      "stoppedAtTick": 411,
+      "raw": {
+        "path": "cup-offset-circle-r1.ndjson.gz",
+        "sha256": "93c323b0ff0fb1ec23c6a8c843433d718e3255672d938aec68bd45aa506c5ffb",
+        "bytes": 397828
+      }
+    },
+    {
+      "case": "circle",
+      "load": "cup-offset",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00028474624157496245,
+      "maxLoadDisplacementM": 0.0012175692081782769,
+      "maxOdomResidualM": 0.13706253704928292,
+      "maxOdomResidualRad": 0.2649220761938944,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 164.28903019299818,
+      "stepP95Ms": 2.3744059610180552,
+      "finalPoseDriveMap": [
+        2.6441308070065084,
+        2.1752238807376263,
+        1.6469205482522182
+      ],
+      "finalBodySpeed": [
+        1.0845710307001305e-08,
+        2.981514051367446e-08
+      ],
+      "stopDistanceM": 0.009875265212244471,
+      "stoppedAtTick": 411,
+      "raw": {
+        "path": "cup-offset-circle-r2.ndjson.gz",
+        "sha256": "c446ab3d95db644a5562ee5a0c0bf566c7380d385bc3a5f28733fcc9d4e179f7",
+        "bytes": 397827
+      }
+    },
+    {
+      "case": "circle",
+      "load": "cup-offset",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.00028474624157496245,
+      "maxLoadDisplacementM": 0.0012175692081782769,
+      "maxOdomResidualM": 0.13706253704928292,
+      "maxOdomResidualRad": 0.2649220761938944,
+      "saturatedSubsteps": 0,
+      "peakPairNormalN": 164.28903019299818,
+      "stepP95Ms": 2.220408502034843,
+      "finalPoseDriveMap": [
+        2.6441308070065084,
+        2.1752238807376263,
+        1.6469205482522182
+      ],
+      "finalBodySpeed": [
+        1.0845710307001305e-08,
+        2.981514051367446e-08
+      ],
+      "stopDistanceM": 0.009875265212244471,
+      "stoppedAtTick": 411,
+      "raw": {
+        "path": "cup-offset-circle-r3.ndjson.gz",
+        "sha256": "2fe86ffd52caee6d6ec980df9e02aacaa79b3199190aa6e5d7fe3212b613ee25",
+        "bytes": 397827
+      }
+    },
+    {
+      "case": "stop",
+      "load": "cup-offset",
+      "repeat": 1,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.0008194127166038334,
+      "maxLoadDisplacementM": 0.004408146582621682,
+      "maxOdomResidualM": 0.0883154246892382,
+      "maxOdomResidualRad": 0.04244911686777303,
+      "saturatedSubsteps": 9,
+      "peakPairNormalN": 172.00939111370138,
+      "stepP95Ms": 2.130798168946057,
+      "finalPoseDriveMap": [
+        3.6790174627778,
+        1.4708796992160846,
+        -0.024475877838741875
+      ],
+      "finalBodySpeed": [
+        2.55942393290289e-09,
+        1.8114706361899164e-08
+      ],
+      "stopDistanceM": 0.05052589568594714,
+      "stoppedAtTick": 318,
+      "raw": {
+        "path": "cup-offset-stop-r1.ndjson.gz",
+        "sha256": "b131ce084bc9d00bb2f446154d39fe9993873ff1d338e5c5de3aad00dfe4e81d",
+        "bytes": 381986
+      }
+    },
+    {
+      "case": "stop",
+      "load": "cup-offset",
+      "repeat": 2,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.0008194127166038334,
+      "maxLoadDisplacementM": 0.004408146582621682,
+      "maxOdomResidualM": 0.0883154246892382,
+      "maxOdomResidualRad": 0.04244911686777303,
+      "saturatedSubsteps": 9,
+      "peakPairNormalN": 172.00939111370138,
+      "stepP95Ms": 2.1621290477924044,
+      "finalPoseDriveMap": [
+        3.6790174627778,
+        1.4708796992160846,
+        -0.024475877838741875
+      ],
+      "finalBodySpeed": [
+        2.55942393290289e-09,
+        1.8114706361899164e-08
+      ],
+      "stopDistanceM": 0.05052589568594714,
+      "stoppedAtTick": 318,
+      "raw": {
+        "path": "cup-offset-stop-r2.ndjson.gz",
+        "sha256": "871b3391a33ab92eade2d5adb434b579fe1b26ed2465c9d0e6de5f0e4308a661",
+        "bytes": 381986
+      }
+    },
+    {
+      "case": "stop",
+      "load": "cup-offset",
+      "repeat": 3,
+      "ticks": 500,
+      "finite": true,
+      "maxTiltRad": 0.0008194127166038334,
+      "maxLoadDisplacementM": 0.004408146582621682,
+      "maxOdomResidualM": 0.0883154246892382,
+      "maxOdomResidualRad": 0.04244911686777303,
+      "saturatedSubsteps": 9,
+      "peakPairNormalN": 172.00939111370138,
+      "stepP95Ms": 2.1664916770532727,
+      "finalPoseDriveMap": [
+        3.6790174627778,
+        1.4708796992160846,
+        -0.024475877838741875
+      ],
+      "finalBodySpeed": [
+        2.55942393290289e-09,
+        1.8114706361899164e-08
+      ],
+      "stopDistanceM": 0.05052589568594714,
+      "stoppedAtTick": 318,
+      "raw": {
+        "path": "cup-offset-stop-r3.ndjson.gz",
+        "sha256": "ff0c4a323221e8fc22ce938ef81934efab0e68926eb04897ddb1a3004c53e0b4",
+        "bytes": 381986
+      }
+    }
+  ],
+  "measurementChecks": {
+    "allFinite": true,
+    "repeatWithinTolerance": true
+  },
+  "limitations": [
+    "measurement probe only; no campaign, hardware, native, payload safety or human acceptance",
+    "hold case runs 10 seconds; each maneuver includes 2s hold, bounded ramp and stop",
+    "timings are host observations, not realtime guarantees"
+  ]
+}

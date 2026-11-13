@@ -14,6 +14,28 @@ LIMIT_MARGIN_RAD = 0.05  # a joint this far past its limit means the engine has 
 RESTING_SPEED_MPS = 0.01
 
 
+def check_mobile_stable(reading):
+    if reading.get("unstable"):
+        raise WorkerError("PLANT_UNSTABLE", reading["unstable"], fatal=True)
+    def check(value):
+        if isinstance(value, dict):
+            return all(check(v) for v in value.values())
+        if isinstance(value, list):
+            return all(check(v) for v in value)
+        return not isinstance(value, (int, float)) or math.isfinite(value)
+    if not check(reading):
+        raise WorkerError("PLANT_UNSTABLE", "non-finite mobile state", fatal=True)
+
+
+def build_mobile(*, run_id, boot_id, seq, tick, scene, reading):
+    time = str(tick * TICK_NS)
+    physics = {"schemaVersion": 1, "tick": tick, "simTimeNs": time, "contacts": reading["contacts"], "loads": reading["loads"],
+               "wheels": [reading["wheel"]], "odometry": [{"robotId": reading["robot"]["robotId"], "poseDriveMap": reading["odometry"]}], "base": [reading["base"]]}
+    return {"schemaVersion": 1, "runId": run_id, "bootId": boot_id, "seq": str(seq), "tick": tick, "simTimeNs": time, "sceneDigest": scene["sceneDigest"],
+            "robots": [reading["robot"]], "arms": [], "props": [{"propId": p["propId"], "position": p["poseMap"]["positionM"], "quaternionXyzw": p["poseMap"]["quaternionXyzw"],
+              "restingOn": reading.get("resting", {}).get(p["propId"])} for p in reading["loads"]], "physics": physics}
+
+
 def _finite(values):
     return all(isinstance(v, (int, float)) and math.isfinite(v) for v in values)
 

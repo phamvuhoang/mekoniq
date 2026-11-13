@@ -23,7 +23,7 @@
     "velocityGainNmsPerRad": 2,
     "brakeTorqueNm": 6,
     "curveKneeRadS": 10,
-    "requiresB02MeasurementLock": true
+    "requiresB02MeasurementLock": false
   },
   "contact": {
     "sliding": 0.6,

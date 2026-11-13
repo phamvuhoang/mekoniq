@@ -19,7 +19,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
     out = sys.stdout
     validator, _ = load_validators(args.schema_dir)
-    session = WorkerSession(run_id=args.run_id, bundle_root=args.bundle_root, lock_digest=args.lock_digest, expected_scene_digest=args.scene_digest)
+    session = WorkerSession(run_id=args.run_id, bundle_root=args.bundle_root, lock_digest=args.lock_digest, expected_scene_digest=args.scene_digest, schema_dir=args.schema_dir)
 
     def send(response):
         out.write(json.dumps(response, separators=(",", ":"), allow_nan=False) + "\n")

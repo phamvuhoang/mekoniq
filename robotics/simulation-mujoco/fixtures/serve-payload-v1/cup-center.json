@@ -3,7 +3,7 @@
   "documentType": "load-profile",
   "id": "cup-center",
   "revision": 1,
-  "digest": "ef2013b21538b9ef35c09da5da56a78cc7625619872a6a5e9a99a641ad25af76",
+  "digest": "60cc2c0fff306c38ff0c2e13fb2bd88a5cc658374638b7b8cd5f37088d336d38",
   "calibration": "not_calibrated",
   "modelRef": {
     "path": "physical-model-amr-1.json",
@@ -93,14 +93,14 @@
           "documentId": "serve-payload-v1/assumptions.json",
           "revision": "1",
           "locator": "cup.inertiaAboutCOMKgM2: solid cylinder with R2a mass/radius/height",
-          "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+          "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
         },
         "com": {
           "kind": "assumed",
           "documentId": "serve-payload-v1/assumptions.json",
           "revision": "1",
           "locator": "cup.massDistribution",
-          "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+          "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
         },
         "geometry": {
           "kind": "assumed",
@@ -114,14 +114,14 @@
           "documentId": "serve-payload-v1/assumptions.json",
           "revision": "1",
           "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
-          "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+          "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
         },
         "attachment": {
           "kind": "assumed",
           "documentId": "serve-payload-v1/assumptions.json",
           "revision": "1",
           "locator": "cup.attachment, cup.initialOffsetsYM",
-          "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+          "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
         }
       },
       "attachment": {
@@ -149,7 +149,7 @@
       "documentId": "serve-payload-v1/assumptions.json",
       "revision": "1",
       "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
-      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
     }
   ]
 }

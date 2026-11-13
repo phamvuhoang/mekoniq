@@ -1,4 +1,4 @@
-# MuJoCo arm cell (`mujoco_worker`)
+# MuJoCo mobile and arm cell worker (`mujoco_worker`)
 
 The plant of the `mujoco_arm` provider (R2a): UFACTORY xArm 6 + Gripper G2, a nozzle stand, a tray and up to eight cups, in MuJoCo. The engine is the pinned
 `mujoco==3.17.0` wheel of `requirements.lock` (spec D35), installed with the rest of the hash-locked Python 3.11 venv `.venv-mujoco`; nothing is installed at run time.
@@ -18,7 +18,7 @@ The plant of the `mujoco_arm` provider (R2a): UFACTORY xArm 6 + Gripper G2, a no
   drive joint; the other gripper joints follow it through `equality/joint` (the `mimic` table). Cups are free cylinders, parked at `z = -10 - n` with contacts off;
   the worker places them (and must reset geom and body contact bits, see `compile.py`). Keyframe `home` = `homeRad`, gripper open.
 - `python -m mujoco_worker` is the plant worker (M04): `mekoniq-sim3d/1` NDJSON on stdio with the Webots worker's envelope, ops, ACK, clock, priming and idempotency
-  rules (`protocol.py`, `session.py`); `engine.py` is the only module that imports `mujoco` (one tick = ctrl, cup placements, re-pin parked cups,
+  rules (`protocol.py`, `session.py`); `engine.py` owns the arm engine (one tick = ctrl, cup placements, re-pin parked cups,
   then `substeps` single `mj_step` calls, one substep at a time), `snapshot.py` turns a reading into the snapshot (held cups, `restingOn`, `collisionIds`, `PLANT_UNSTABLE`). The bundle holds
   `arm-cell-scene.json`, `component.json`, `physics.json` and `blobs/`.
 - Contacts: `collisionIds` are the union over every substep of the tick (the engine steps one substep at a time); held cups, `restingOn`, the opening and
@@ -36,7 +36,23 @@ the value the spike had in effect (its stand and tray carried MuJoCo's default 1
 In the Lab, `pnpm lab:mujoco` (`lab/`) starts the pinned runtime with this worker (provider `mujoco_arm`, scenario `MJ-BV01`); the container image is `deploy/lab-runtime/`. Latest record:
 `docs/implementation/evidence/sim-extension/r2a-candidate-01/` (every gate `tested` except `G-CLOUD1`, `blocked_external`; not accepted).
 
+The B02a mobile worker path takes `create.payload={sceneRef:'navigation-scene.json',seed:7}`; robot identity comes from the scene, with no new create-envelope fields.
+`compile_mobile.py` builds canonical primitive colliders, every link's mass/COM/full inertia, two wheel hinges, a free chassis and free payload cylinders.
+`mobile_engine.py` advances ten 2 ms substeps per logical tick, updates the velocity servo torque envelope from actual wheel speed, and reads map pose/twist,
+wheel-angle odometry, engine LiDAR raycasts, payload support-relative poses and force/impulse contact aggregates. The create priming step is tick zero;
+engine time is `(tick+1)*20ms`, while snapshot time is `tick*20ms`, as in the arm worker.
+
+The bundle must contain every hashed `scene.files` input and the load/physics profile refs. Admission checks schemas, safe paths, byte hashes, document digests,
+model/projection IDs, physical support geometry, finite torque/speed limits, initial penetration and the closed numerical lock before stepping. This slice admits
+one differential AMR, one noiseless LiDAR, convex extruded world obstacles, fixed sphere caster supports, and up to eight cylinder payloads. Actors, arm commands
+and interaction placements are refused in the mobile-only world. Canonical robot parts intentionally overlap, so robot self-contact is masked; world and payload
+contacts remain active. Chassis roll/pitch are unconstrained. Caster-floor friction uses explicit pairs; floor-wheel friction uses MuJoCo's componentwise max.
+
+`fixtures/serve-payload-v1/drive-contact-profile.json` freezes numerical inputs before measurement; its result is recorded separately, preventing a hash cycle.
+See `docs/research/2026-11-mujoco-mobility-spike.md` and `probe_mobile.py` for the bounded probe, raw records and observed slip/odometry differences. These are
+uncalibrated software measurements. Provider/runtime readiness, shared engine capacity and campaign evidence are subsequent slices; no mobile backend is advertised here.
+
 ```sh
 node scripts/bootstrap-portable-simulation.mjs mujoco
-PYTHONDONTWRITEBYTECODE=1 .venv-mujoco/bin/python -m pytest robotics/simulation-mujoco/tests -q
+PYTHONDONTWRITEBYTECODE=1 PYTEST_ADDOPTS='-p no:cacheprovider' perl -e 'alarm 300; exec @ARGV' .venv-mujoco/bin/python -m pytest robotics/simulation-mujoco/tests -q
 ```

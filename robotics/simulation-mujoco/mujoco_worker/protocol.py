@@ -22,7 +22,7 @@ class WorkerError(Exception):
         self.code, self.detail, self.fatal = code, str(detail)[:1000], fatal
 
 
-def load_validators(schema_dir):
+def schema_validator(schema_dir, ref):
     registry = Registry()
     for file in sorted(Path(schema_dir).glob("*.schema.json")):
         schema = json.loads(file.read_text())
@@ -30,9 +30,12 @@ def load_validators(schema_dir):
         registry = registry.with_resource(file.name, resource)
         if "$id" in schema:
             registry = registry.with_resource(schema["$id"], resource)
-    request = jsonschema.Draft7Validator({"$ref": "sim3d-worker-v1.schema.json"}, registry=registry)
-    response = jsonschema.Draft7Validator({"$ref": "sim3d-worker-v1.schema.json#/definitions/Sim3DResponseV1"}, registry=registry)
-    return request, response
+    return jsonschema.Draft7Validator({"$ref": ref}, registry=registry)
+
+
+def load_validators(schema_dir):
+    return (schema_validator(schema_dir, "sim3d-worker-v1.schema.json"),
+            schema_validator(schema_dir, "sim3d-worker-v1.schema.json#/definitions/Sim3DResponseV1"))
 
 
 def canonical(value):

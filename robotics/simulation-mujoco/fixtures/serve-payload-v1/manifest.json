@@ -7,17 +7,17 @@
   "files": [
     {
       "path": "assumptions.json",
-      "sha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7",
-      "bytes": 868
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "bytes": 869
     },
     {
       "path": "cup-center.json",
-      "sha256": "28db08b52e6acefd6c195d83835e06c40f46a4da1989ab4503c5df01b9a17a2a",
+      "sha256": "d1b846f1d4f02cd9308a9b58cf503a1284d7f04dc3af61a0a8be48f99c41a0cf",
       "bytes": 4188
     },
     {
       "path": "cup-offset.json",
-      "sha256": "b7b809cfb6881f70c4b1fa89cd9c796f805570b4204e5ab89eca7e4aaf956acf",
+      "sha256": "6633143ea5cd74f4bbdad5713505039fefcb7464af97057a2a55aa4350da9a14",
       "bytes": 4191
     },
     {
@@ -27,17 +27,17 @@
     },
     {
       "path": "drive-contact-profile.json",
-      "sha256": "63afb96162e9bfceae865f47a3409727380a064cb1670fd8a67f59b882fadb0c",
-      "bytes": 2284
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "bytes": 3092
     },
     {
       "path": "empty.json",
-      "sha256": "d31c3df046a1cc832c49c13103d2c59cc602badce2ac0758b8a77fb95d8f4d58",
+      "sha256": "2118b79956c2015afb54d7adeadff5bd976f87eb9936043e1cda000590e4e5df",
       "bytes": 1479
     },
     {
       "path": "navigation-scene.json",
-      "sha256": "b9993ca7733bc79b223345c619f0739d89917c39a8d8336bef8cb5d35bebe319",
+      "sha256": "d69f62f6a6d978549f7ae87a37852817d18be9c526bdd6d5a3e16490f0670881",
       "bytes": 14966
     },
     {
@@ -52,8 +52,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "d6507046e413c08341a211107563dcf5afed9f78e80a7a7a6ea3152c5d6a10f1",
-      "bytes": 1414
+      "sha256": "40fb11cc46e52fafc0d8e915b41682f56693c743cdd8d3a4bb26b78e32054732",
+      "bytes": 1677
     },
     {
       "path": "serve-3d-components.json",

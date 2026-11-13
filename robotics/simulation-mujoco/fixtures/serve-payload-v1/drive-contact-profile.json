@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "serve-drive-contact-v1",
   "revision": 1,
-  "digest": "89a299e8cb44f9134bb23746f2b0e38cf9c2d256643caf8495db17c2c36d5a5a",
+  "digest": "1ef1c4de61894e35e89fbbc8cb534c184ef66944e40fed60dedf496f81956480",
   "calibration": "not_calibrated",
   "tickMs": 20,
   "timestepMs": 2,
@@ -33,20 +33,43 @@
     "torsionalM": 0.005,
     "rollingM": 0.0001
   },
+  "numerics": {
+    "gravityMps2": [
+      0,
+      0,
+      -9.81
+    ],
+    "solver": "Newton",
+    "condim": 6,
+    "solref": [
+      0.02,
+      1
+    ],
+    "solimp": [
+      0.9,
+      0.95,
+      0.001
+    ],
+    "robotSelfContact": "masked-canonical-fixed-overlaps",
+    "casterContactRule": "explicit-floor-pair",
+    "casterPairFriction": "scene-casterFriction-tangent-zero-torsion-rolling",
+    "floorWheelFrictionRule": "max-geom",
+    "lidarSelfFilter": "exclude-robot-geom-group-1"
+  },
   "sources": {
     "velocityGainNmsPerRad": {
       "kind": "assumed",
       "documentId": "serve-payload-v1/assumptions.json",
       "revision": "1",
       "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
-      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
     },
     "brakeTorqueNm": {
       "kind": "assumed",
       "documentId": "serve-payload-v1/assumptions.json",
       "revision": "1",
       "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
-      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
     },
     "driveCurve": {
       "kind": "assumed",
@@ -60,15 +83,23 @@
       "documentId": "serve-payload-v1/assumptions.json",
       "revision": "1",
       "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
-      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
     },
     "solver": {
       "kind": "assumed",
       "documentId": "serve-payload-v1/assumptions.json",
       "revision": "1",
       "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
-      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
     }
   },
-  "requiresB02MeasurementLock": true
+  "requiresB02MeasurementLock": false,
+  "measurementLock": {
+    "probeId": "b02a-locked",
+    "numericalInputSha256": "c29fe1c6cde3923b31a1b5093d81f3c552bf3c5a3f394c674c0e528079f0396f",
+    "engineVersion": "3.17.0",
+    "status": "locked_not_calibrated",
+    "repeatPositionToleranceM": 0.000001,
+    "repeatAngleToleranceRad": 0.000001
+  }
 }
