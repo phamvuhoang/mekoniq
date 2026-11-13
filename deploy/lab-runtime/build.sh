@@ -1,6 +1,8 @@
 #!/bin/sh
 # deploy/lab-runtime/build.sh <tag> [--platform linux/amd64|linux/arm64]
-# Builds the headless Lab runtime image from a clean export of the committed HEAD in a dedicated context. Refuses a dirty source tree. Pushes nothing.
+# Builds the headless Lab runtime image in a dedicated context. Refuses a dirty tree (no modified or untracked file), so the tracked content of the working tree equals HEAD.
+# runtime.mjs is bundled by scripts/export-lab-runtime.mjs from that clean tree, with the tree's installed node_modules (not a fresh frozen install); the MuJoCo tool root
+# comes from `git archive HEAD`. A from-scratch build from a fresh clone with a frozen install is the Cloud Build path of the deployment runbook. Pushes nothing.
 # Run with Node 24 first on PATH (the exporter bundles with the repository's esbuild).
 set -eu
 tag=${1:?usage: build.sh <tag> [--platform linux/amd64|linux/arm64]}; shift
@@ -12,7 +14,7 @@ here=$(cd "$(dirname "$0")" && pwd); root=$(cd "$here/../.." && pwd)
 [ -z "$(git -C "$root" status --porcelain --untracked-files=all)" ] || { echo "DIRTY_SOURCE_TREE: commit first, the image's sourceCommit must be a real commit" >&2; exit 1; }
 commit=$(git -C "$root" rev-parse HEAD)
 ctx=$(mktemp -d); trap 'rm -rf "$ctx"' EXIT
-node "$root/scripts/export-lab-runtime.mjs" "$ctx/export" --clean-checkout >/dev/null
+node "$root/scripts/export-lab-runtime.mjs" "$ctx/export" >/dev/null
 mkdir "$ctx/robotics"
 cp "$ctx/export/runtime.mjs" "$ctx/runtime.mjs"; cp -R "$ctx/export/schemas" "$ctx/schemas"; rm -rf "$ctx/export"
 # only the MuJoCo tool root, as committed, without its tests

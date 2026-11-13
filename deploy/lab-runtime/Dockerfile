@@ -6,7 +6,7 @@ FROM ${BASE} AS venv
 RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-venv && rm -rf /var/lib/apt/lists/*
 COPY robotics/simulation-mujoco/requirements.lock /tmp/requirements.lock
 # every package from the lock, by hash, at build time; nothing is installed when the container runs
-RUN python3 -m venv /opt/venv-mujoco && /opt/venv-mujoco/bin/pip install --no-cache-dir --no-compile --require-hashes --no-deps -r /tmp/requirements.lock
+RUN python3 -m venv /opt/venv-mujoco && /opt/venv-mujoco/bin/pip install --no-cache-dir --no-compile --only-binary=:all: --require-hashes --no-deps -r /tmp/requirements.lock
 
 FROM ${BASE}
 ARG SOURCE_COMMIT=unknown

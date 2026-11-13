@@ -13,6 +13,7 @@ const docker=(args:string[],env?:Record<string,string>)=>{const r=spawnSync('doc
 const dockerUp=(()=>{try{execFileSync('docker',['info'],{stdio:'ignore',timeout:20_000});return true;}catch{return false;}})();
 const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 const freePort=()=>new Promise<number>((resolve,reject)=>{const s=createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=(s.address() as {port:number}).port;s.close(()=>resolve(p));});});
+const logs=(name:string,key:string)=>{const l=docker(['logs','--tail','20',name]);return `${l.out}\n${l.err}`.replaceAll(key,'<key>');};
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 const runId=randomUUID(),names:string[]=[];
 afterAll(()=>{for(const n of names)docker(['rm','-f',n]);});
@@ -35,9 +36,9 @@ describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
    let health:Health|undefined;
    for(const deadline=Date.now()+120_000;!health&&Date.now()<deadline;){
     try{const r=await api('/health');if(r.status===200)health=r.body as unknown as Health;}catch{/* not listening yet */}
-    if(!health){if(docker(['inspect','--format','{{.State.Running}}',name]).out!=='true')throw new Error(`CONTAINER_EXITED: ${docker(['logs','--tail','20',name]).err.replaceAll(key,'<key>')}`);await sleep(500);}
+    if(!health){if(docker(['inspect','--format','{{.State.Running}}',name]).out!=='true')throw new Error(`CONTAINER_EXITED: ${logs(name,key)}`);await sleep(500);}
    }
-   if(!health)throw new Error(`HEALTH_TIMEOUT: ${docker(['logs','--tail','20',name]).err.replaceAll(key,'<key>')}`);
+   if(!health)throw new Error(`HEALTH_TIMEOUT: ${logs(name,key)}`);
    if(health.sourceCommit!==head)throw new Error(`IMAGE_STALE: the image was built from ${health.sourceCommit}, the repository HEAD is ${head}; commit, then rebuild with deploy/lab-runtime/build.sh ${image}`);
    const backend=(id:string)=>health!.backends.find(b=>b.id===id);
    expect(backend('mujoco_arm')).toMatchObject({installed:true,reachable:true});
@@ -58,7 +59,7 @@ describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
    const wallMs=Date.now()-t0;
    console.log('MJ-BV01 container',JSON.stringify({image,platform:docker(['image','inspect','--format','{{.Os}}/{{.Architecture}}',image]).out,finalTick:view.tick,wallMs,msPerTick:+(wallMs/view.tick).toFixed(3),status:view.run.status}));
    const report=(await api(`${url}/report`,{token})).body as Record<string,any>;
-   if(view.run.status!=='completed')console.log('MJ-BV01 container NOT COMPLETED',JSON.stringify({tick:view.tick,outcome:report.outcome,attention:report.attention,armStop:report.coffee?.armTrace?.stop,arm:{...report.arm,trace:undefined,props:undefined,collision:undefined},coffee:report.coffee?.cups,logs:docker(['logs','--tail','15',name]).err.replaceAll(key,'<key>')}).slice(0,6000));
+   if(view.run.status!=='completed')console.log('MJ-BV01 container NOT COMPLETED',JSON.stringify({tick:view.tick,outcome:report.outcome,attention:report.attention,armStop:report.coffee?.armTrace?.stop,arm:{...report.arm,trace:undefined,props:undefined,collision:undefined},coffee:report.coffee?.cups,logs:logs(name,key)}).slice(0,6000));
    expect(report.outcome).toMatchObject({status:'completed',served:'2'});
    expect(report.coverage).toMatchObject({armSceneCollision:true});
    expect(report.manifest).toMatchObject({scenario:{id:'MJ-BV01'},backendSetId:'engineering-mujoco-arm-v1',calibration:{status:'not_calibrated'}});
@@ -68,7 +69,8 @@ describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
    expect(Number(docker(['exec',name,'id','-u']).out)).toBeGreaterThan(0);
    // SIGTERM ends it promptly and cleanly
    const t1=Date.now(),stopped=docker(['stop','-t','20',name]);expect(stopped.ok).toBe(true);
-   expect(Date.now()-t1,'docker stop must not wait for SIGKILL').toBeLessThan(10_000);
+   const stopMs=Date.now()-t1;console.log('MJ-BV01 container stop',JSON.stringify({stopMs}));
+   expect(stopMs,'docker stop must not wait for SIGKILL').toBeLessThan(10_000);
    expect(docker(['inspect','--format','{{.State.Running}} {{.State.ExitCode}}',name]).out).toBe('false 0');
   }finally{docker(['rm','-f',name]);}
   expect(docker(['ps','-a','-q','--filter',`label=${LABEL}=${runId}`]).out).toBe('');
