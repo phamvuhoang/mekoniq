@@ -103,7 +103,7 @@ export class MockArmPlant {
   const program=command.programRef?.id;
   if(command.capability!=='start_job'||!program||!this.programs.choreography[program])return {accepted:false,unknown:false,reason:'PROGRAM_NOT_APPROVED'};
   if(this.state.programs.some(p=>p.state==='running'))return {accepted:false,unknown:false,reason:'ARM_BUSY'};
-  const p:Program={commandId:command.commandId,payloadHash:command.payloadHash,controlEpoch:command.controlEpoch,program,index:0,state:'running',waiting:0,evidence:{source:MOCK_ARM.id,grip:this.programs.contact?'contact':'commanded_mock',forceModel:'none'},accepted:{accepted:true,unknown:false}};
+  const p:Program={commandId:command.commandId,payloadHash:command.payloadHash,controlEpoch:command.controlEpoch,program,index:0,state:'running',waiting:0,evidence:{source:this.programs.contact&&this.state.plantId?this.state.plantId:MOCK_ARM.id,grip:this.programs.contact?'contact':'commanded_mock',forceModel:'none'},accepted:{accepted:true,unknown:false}};
   this.state.programs.push(p);this.emit(p,'accepted');return p.accepted;
  }
  reconcile(commandId:string):CellExecutionState {const p=this.state.programs.find(x=>x.commandId===commandId);return p?{status:p.state,evidence:{...p.evidence} as JsonObject}:{status:'not_found',evidence:{}};}

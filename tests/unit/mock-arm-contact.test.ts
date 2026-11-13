@@ -205,6 +205,17 @@ test('slip is the change of the cup position in the TCP frame: a 4 mm slip along
   expect(h.state.programs[1]!.evidence.maxSlipM).toBe(place.evidence.maxSlipM);
 });
 
+test('the transfer evidence names the plant that produced the contact grip; the state machine alone and the event grip stay mock_arm', () => {
+  const h = make();
+  expect(h.drive('p1', 'cup-pick').evidence).toMatchObject({ source: 'mock_arm', grip: 'contact' }); // no plant attached: the scripted plant is no provider
+  const m = make(); m.state.plantId = 'mujoco_arm';
+  expect(m.drive('p1', 'cup-pick').evidence).toMatchObject({ source: 'mujoco_arm', grip: 'contact', forceModel: 'none' });
+  expect(m.drive('p2', 'cup-place').evidence).toMatchObject({ source: 'mujoco_arm', released: true });
+  const puma = new MockArmPlant({ ...MockArmPlant.initial('arm'), plantId: 'webots_arm' }, () => 0, () => 'b', { take: () => 'cup-1', put: () => {} }, () => RX, PUMA560_SI, TRACKING, PUMA_PROGRAMS);
+  puma.execute(command('w1', 'cup-pick'));
+  expect(puma.reconcile('w1').evidence).toEqual({ source: 'mock_arm', grip: 'commanded_mock', forceModel: 'none' }); // the Webots arm's grip is the state machine's event
+});
+
 test('the pads hold a cup the cup world will not hand over: CUP_CUSTODY_MISMATCH, never a completed pick', () => {
   const h = make({ takeRefuses: true });
   const pick = h.drive('p1', 'cup-pick');
