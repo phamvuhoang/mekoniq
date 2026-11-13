@@ -1,0 +1,12 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/webots-mission.test.ts (1 test) 22265ms
+   ✓ WB03 WB-FD01: arriving at the table does not serve the order; served only after the scripted handoff, then the robot parks  22140ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  20:21:09
+   Duration  23.46s (transform 568ms, setup 0ms, import 1.11s, tests 22.27s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r1-candidate-06/suites/wb-mission.json

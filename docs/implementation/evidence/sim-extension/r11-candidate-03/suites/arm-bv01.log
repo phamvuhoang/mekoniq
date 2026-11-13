@@ -1,0 +1,19 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/webots-arm-bv01.test.ts (2 tests) 36110ms
+     ✓ completes with both cups at the table, ARM03 pass on the actual joints and honest labels; a second run of the same seed repeats within repeatJointRad  24586ms
+     ✓ the trace file is the evidence: a changed byte is caught  11524ms
+ ✓ tests/integration/webots-arm-double.test.ts (5 tests) 19166ms
+     ✓ completes through the runner with both cups at the table, the arm block, ARM03 pass and the simulation-mode labels  6635ms
+     ✓ a plant that lags a tick and sits 5 mrad off still completes, and the report says how far off it was  6354ms
+     ✓ a plant that never moves is a following error: needs_attention, nothing served, long before maxTicks  2038ms
+     ✓ a worker that is lost mid-run leaves the transfer unknown and the run in needs_attention  2031ms
+     ✓ a contact the engine reports stops the arm as ARM_COLLISION and ARM03 says fail  2107ms
+
+ Test Files  2 passed (2)
+      Tests  7 passed (7)
+   Start at  20:35:10
+   Duration  57.25s (transform 601ms, setup 0ms, import 1.79s, tests 55.28s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r11-candidate-03/suites/arm-bv01.json

@@ -1,0 +1,12 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/webots-batch.test.ts (4 tests) 45126ms
+   ✓ smoke campaign on the real Webots: same-seed repeats agree within the profile tolerance, a mid-route cancel is bounded, every run is labelled webots_3d and leaves no process  45092ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  20:24:07
+   Duration  46.48s (transform 676ms, setup 0ms, import 1.27s, tests 45.13s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r1-candidate-06/suites/wb-batch.json

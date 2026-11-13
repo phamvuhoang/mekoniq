@@ -1,0 +1,72 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/irsim-fleet.test.ts (8 tests) 52063ms
+   ✓ IR04 IR-FD07: both robots deliver within 12,000 ticks; the aisle zone has one granted owner per tick, is entered only under a grant and released only after a whole-footprint exit  28956ms
+   ✓ IR04 contention: opposite goals given at the same tick through one corridor band: the second robot waits outside while pending and enters only after the first released on a whole-footprint exit  6754ms
+   ✓ IR04 unknown holder: an owner that is no longer observed keeps the zone; the other robot stays pending (ZONE_HELD_UNKNOWN) and outside, past the 60 s TTL, with no release  11762ms
+   ✓ F2 plant lost while a robot holds the aisle zone: the run needs attention with ZONE_HELD_UNKNOWN; the reservation is not released  2427ms
+   ✓ zone traffic notices become run attention: a conflict is ZONE_OWNERSHIP_CONFLICT, a stranded owner ZONE_HELD_BY_STOPPED_ROBOT, and the run needs attention at that tick  1313ms
+ ✓ tests/integration/irsim-faults.test.ts (6 tests) 46187ms
+   ✓ IR02 IR-FD03: the scheduled person is applied every tick, seen by the LiDAR, never touched; the robot waits, resumes and serves after the handoff  10294ms
+   ✓ IR03: a walled-in handoff is no_path at once (IR-FD04) and a person standing on the handoff is blocked after the no-progress window (IR-FD04-blocked); both serve nothing, and they are never confused  10718ms
+   ✓ IR05: a cancel mid-route passes its business oracle: cancelled, nothing served or handed off, one terminal event per mission, a bounded simulated stop; a duplicate cancel is refused  3092ms
+   ✓ IR06 two robots driven into each other with the controller bypassed (test only): the engine names the other robot, and the pair is one episode per source  1882ms
+   ✓ IR09 pacing: the same run stepped 25 or 500 ticks per request ends at the same tick with identical normalized digests; pause and reads do not advance the clock  14928ms
+   ✓ IR10 worker killed between steps on the table leg: the leg is unknown, nothing is resent or respawned, cargo and reservations stay, the evidence records the unknown tick  4768ms
+ ✓ tests/integration/irsim-recovery.test.ts (7 tests) 35790ms
+   ✓ GATE (c) IR-FD01: a lost step ACK keeps the command unknown and the motion command is never resent  2949ms
+   ✓ source restart with cargo on board: the reopened run reports the leg unknown and keeps cargo, reservation and custody; no worker is started  5504ms
+   ✓ cancel ACK loss: a cancel whose stopping step is never acknowledged leaves the command unknown, not cancelled  2725ms
+   ✓ review B04 #1: a completed observation that the source could not commit is not lost: it is retried, and the leg is never left silently travelling  5549ms
+   ✓ review B04 #1: after a restart, a leg whose completion never reached the journal is unknown and reconcile does not report completed  4528ms
+   ✓ review B04 #2: closing and reopening a finished run keeps it completed (nothing was in flight, so nothing is unknown)  8613ms
+   ✓ review B04-2 #4: a cancelled, stopped run reopens cancelled; a cancel still stopping reopens unknown  5613ms
+ ✓ tests/integration/irsim-mission.test.ts (8 tests) 28492ms
+   ✓ GATE (a) IR-FD01: arriving at the table does not serve the order; served only after the scripted handoff, then the robot parks  9853ms
+   ✓ GATE (b) IR-FD01: cancel completes only after a stopped observation, never on the request alone  3057ms
+   ✓ review B04-2 #1: a cancel on the return-to-parking leg cancels the parking mission and ends cancelled only once the robot is stopped  7873ms
+   ✓ review B04-2 #2: a cancel sent during a long step batch is taken between ticks, against the revision current when it was sent  3119ms
+   ✓ review B04-2 #3: entities and telemetry carry the robot base origin (T_map_base = T_map_drive x inv(T_base_drive)), not the drive axle  1522ms
+   ✓ review4 #9: a cancel (or pause) sent while a step batch is still being admitted is taken at its first tick boundary, not refused as stale  2742ms
+ ✓ tests/unit/navigation2d-controller.test.ts (18 tests) 16092ms
+   ✓ IR01 leg: bay to a table handoff arrives within tolerance, never touches anything and never exceeds a limit  413ms
+   ✓ a lost or stale LiDAR means no clear path: zero velocity and attention, never a guess  461ms
+   ✓ review2 #2: unknown is not free: an all-invalid, mostly-invalid or wrongly-identified scan holds the robot, only a sound scan lets it go  867ms
+   ✓ review3 #1: below_min is an obstacle and an invalid beam ahead is unknown, not free (a few beams are enough)  1109ms
+   ✓ review3 #2: a reservation revoked mid-route is waited for, not "no progress"  346ms
+   ✓ IR02: a person standing in the aisle stops the robot short of contact (not a no_path); when they leave it carries on to the goal  576ms
+   ✓ a denied zone is planned around; once the reservation is granted to this robot the straight way is used  834ms
+   ✓ same inputs, same decisions, same velocities; a tiny state budget is blocked, a short deadline is blocked, cancel is one terminal event  672ms
+   ✓ review #1: a long legitimate detour is not "no progress" (progress is remaining path, not straight-line distance)  5317ms
+   ✓ review #3: a goal whose final heading would sweep into an obstacle is no_path, not a plan that ends in contact  4902ms
+ ✓ tests/integration/irsim-worker.test.ts (10 tests) 15947ms
+   ✓ IR-SIM plant over the wire: two robots with different models move independently under explicit commands, time is integer ticks  1607ms
+   ✓ pause, read and resume; duplicate ids replay the receipt; a changed payload under the same id is refused  1905ms
+   ✓ a path outside the bundle is refused and the run stays usable  1390ms
+   ✓ a process killed after applying a step but before acknowledging it leaves the outcome unknown, and no replacement is ever started  1396ms
+   ✓ fail closed: garbage output, a late or foreign reply, a changing boot id, a missed deadline and schema-invalid requests  2050ms
+   ✓ queue overflow is refused before it is sent; the worker environment is an allowlist  2448ms
+   ✓ review2 #1: a snapshot that contradicts the envelope, the run or the bound scene is never accepted  1315ms
+   ✓ review3 #4: the protocol is held to the letter: result kind per op, tick x 20 ms, a monotonic seq, and the envelope tick of a non-step op is the expected tick  1072ms
+   ✓ close() is bounded by the worker process exit, not by stdio: a survivor that inherited the pipes cannot hold the client open  2509ms
+ ✓ tests/security/irsim-authority.test.ts (5 tests) 12882ms
+   ✓ IR runs: server-locked projections, no caller endpoints/actors/code, bundle and run ownership, no cross-set scenarios  3308ms
+   ✓ review B04-2 #5: at most two IR-SIM runs hold a worker per host; the third start is refused with IRSIM_CAPACITY and spawns nothing  5818ms
+   ✓ review B04-2 #6: a project with a fault schedule is blocked by readiness and refused at creation with FAULT_SCHEDULE_UNSUPPORTED, never a 500  496ms
+   ✓ review4 #9 over HTTP: a step batch and a cancel sent together against the same revision: the cancel is honoured, never a stale 409 after the whole batch  3044ms
+ ✓ tests/integration/irsim-navigation.test.ts (3 tests) 9622ms
+   ✓ IR01: bay -> kitchen pass -> table 05 by body velocities only; the oracle sees no contact and the engine never reports one  6003ms
+   ✓ IR03: a free goal sealed off by walls is no_path before the first step, and the robot never moves  1538ms
+   ✓ IR06: with the controller bypassed (test only) the engine reports contact with the table, stops the robot, and the oracle agrees from the trace  2079ms
+ ✓ tests/integration/irsim-readiness.test.ts (5 tests) 7040ms
+   ✓ missing IR dependencies and test doubles never make the provider installed  5085ms
+   ✓ real worker: IR-FD01 readiness checks bundle, scene, world, scenario and a create smoke; the native Linux gate still holds for Gazebo sets  1793ms
+ ✓ tests/unit/navigation2d-oracle.test.ts (7 tests) 32ms
+
+ Test Files  10 passed (10)
+      Tests  77 passed (77)
+   Start at  19:51:23
+   Duration  233.51s (transform 780ms, setup 0ms, import 8.44s, tests 224.15s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/candidate-08/suites/ir.json

@@ -1,0 +1,68 @@
+{
+ "id": "002-WB-FD01-serve-3d-v1-s5-r2",
+ "index": 0,
+ "scenarioId": "WB-FD01",
+ "fixtureId": "serve-3d-v1",
+ "seed": 5,
+ "repeat": 2,
+ "expectedAssertions": [
+  "EVIDENCE_COMPLETE",
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "NO_PHYSICAL_CONTACT",
+  "REPEATABLE"
+ ],
+ "kind": "scenario",
+ "label": "WB03: one order, one robot, kitchen -> table -> parking on the Webots 3D plant",
+ "stepTicks": 25,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "completed",
+  "served": "1",
+  "tick": 5152,
+  "simTimeNs": "103040000000"
+ },
+ "horizon": 5152,
+ "evidenceComplete": true,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "ac9533419da99098ca0092957025a61f7ec8c7a65e3ac5ab1e8149641a27033f",
+  "sensorDigest": "7d6d375f4d79dcd137a58174b53f5f357d530e296a787d1e1da60373f8e9426a",
+  "assertionDigest": "2df2255bf0c873286bedb3abc3f944904b2d5e48c74327b4f4e9a293665b3e37",
+  "outcomeDigest": "808ed654545c4b36badbc2d3cf0a9e45b05e29221a7972f77a17fdfc7e999e49"
+ },
+ "assertions": [
+  {
+   "id": "EVIDENCE_COMPLETE",
+   "result": "pass"
+  },
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "NO_PHYSICAL_CONTACT",
+   "result": "pass"
+  },
+  {
+   "id": "REPEATABLE",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 27669,
+ "repeatWorstPoseM": 4.618527782440651e-13,
+ "provider": {
+  "id": "webots_3d",
+  "kind": "webots_engine"
+ }
+}

@@ -1,0 +1,1744 @@
+{
+ "schemaVersion": 1,
+ "documentType": "sim-extension-qualification",
+ "release": "r2a",
+ "candidateId": "r2a-candidate-01",
+ "accepted": false,
+ "acceptedBy": null,
+ "acceptedAt": null,
+ "note": "evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; the MuJoCo arm is a plant with manufacturer-nominal and assumed parameters (not_calibrated) that grips by contact; a container run is not evidence for G-MA1/G-MA2 (D50); G-CLOUD1 is blocked_external until CL01 runs on a deployed service; no real arm, real amd64 machine, Cloud Run or hardware gate is in its scope",
+ "identity": {
+  "before": {
+   "sourceCommit": "bb16724859ee8377be62389a851ac36ea4a0309a",
+   "dirty": false,
+   "dirtyReasons": [],
+   "toolClosures": {
+    "portable": "6df2f71fc16380756e6342f229afcfaef8ca8822e462d9f53f6baec377e4c745",
+    "native": "cddf6bc66fc4d6a5175835776dea4be34dd5ba477aa91e1658bbeeccb53cc9d9"
+   },
+   "node": "v24.22.2",
+   "os": "darwin 25.5.0",
+   "arch": "arm64",
+   "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+   "locks": {
+    "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+    "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+    "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+    "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+    "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+   },
+   "webots": {
+    "version": "Webots version: R2025a",
+    "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+   },
+   "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+   "at": "2026-11-13T13:47:43.937Z"
+  },
+  "after": {
+   "sourceCommit": "bb16724859ee8377be62389a851ac36ea4a0309a",
+   "dirty": false,
+   "dirtyReasons": [],
+   "toolClosures": {
+    "portable": "6df2f71fc16380756e6342f229afcfaef8ca8822e462d9f53f6baec377e4c745",
+    "native": "cddf6bc66fc4d6a5175835776dea4be34dd5ba477aa91e1658bbeeccb53cc9d9"
+   },
+   "node": "v24.22.2",
+   "os": "darwin 25.5.0",
+   "arch": "arm64",
+   "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+   "locks": {
+    "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+    "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+    "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+    "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+    "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+   },
+   "webots": {
+    "version": "Webots version: R2025a",
+    "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+   },
+   "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+   "at": "2026-11-13T13:55:57.755Z"
+  },
+  "identityStable": true
+ },
+ "lab": {
+  "commit": "832c84fa0bdac2c18d44a4f102337533d1904436",
+  "dirty": false,
+  "pin": {
+   "sourceCommit": "bb16724859ee8377be62389a851ac36ea4a0309a",
+   "artifactSha256": "67a1a20cf12f79046c89695324505453c7d6ee6548d530bd98abfb2149d208c7",
+   "portableToolsDigest": "6df2f71fc16380756e6342f229afcfaef8ca8822e462d9f53f6baec377e4c745",
+   "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4"
+  }
+ },
+ "campaign": null,
+ "algorithm": null,
+ "r1Record": {
+  "file": "r1-record.json",
+  "sha256": "aab06d2b95c8c4cec70b7b8e86bdff3c982decfc08cfa98dc9c19a3178b7ac60",
+  "candidate": "r1-candidate-06",
+  "sourceCommit": "bb16724859ee8377be62389a851ac36ea4a0309a"
+ },
+ "r11Record": {
+  "file": "r11-record.json",
+  "sha256": "7e21cfebd7fc62d8f7700f783f2bddca33342a0a7d98834c3ff0c55d18549e40",
+  "candidate": "r11-candidate-03",
+  "sourceCommit": "bb16724859ee8377be62389a851ac36ea4a0309a"
+ },
+ "image": {
+  "tag": "mekoniq-lab-runtime:record-11189",
+  "platform": "linux/arm64",
+  "id": "sha256:59709619781dcbbda040da88df058734f11bb1cd6fdeaefef8365a25650bd114",
+  "revision": "bb16724859ee8377be62389a851ac36ea4a0309a",
+  "built": true,
+  "revisionIsRecordedCommit": true
+ },
+ "irsimRecord": {
+  "file": "irsim-record.json",
+  "sha256": "2516f0b24bea18d43d91ab7cfbddd60a7820079417bde20ab62925abff632c56",
+  "candidate": "candidate-08",
+  "sourceCommit": "bb16724859ee8377be62389a851ac36ea4a0309a"
+ },
+ "mockRegression": {
+  "file": "mock-regression.json",
+  "sha256": "936303a682edda5d49bd4cee23ca4f8a65e7fb4b53e57455af73303c52db617c",
+  "labCommit": "832c84fa0bdac2c18d44a4f102337533d1904436",
+  "source": "(outside the repositories)"
+ },
+ "suites": [
+  {
+   "id": "ma-static",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/xarm6-fixture.test.ts tests/unit/capabilities-mujoco-arm.test.ts tests/unit/arm-cell-scene.test.ts tests/unit/xarm6-cell-dock.test.ts tests/contracts/sim3d-mujoco-schema.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/ma-static.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:47:45.746Z",
+   "finishedAt": "2026-11-13T13:47:48.579Z",
+   "exitCode": 0,
+   "log": "suites/ma-static.log",
+   "logSha256": "89403028fc880bef873f3ae7c7c4e21a9ba140d0136dcf7e328bcf55c79fb3c0",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-static.json",
+    "sha256": "98946db6313e2ce67b1d2df0f59fb8d85e6ade91994c98247e8e29367e78a3a3",
+    "summary": {
+     "passed": 34,
+     "failed": 0,
+     "skipped": 0,
+     "total": 34
+    }
+   }
+  },
+  {
+   "id": "ma-rtb",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/xarm6-rtb.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/ma-rtb.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:47:48.580Z",
+   "finishedAt": "2026-11-13T13:47:51.955Z",
+   "exitCode": 0,
+   "log": "suites/ma-rtb.log",
+   "logSha256": "19455dbdc3354c95c65a28e6d8b2121968ae1940e2cc789f25f85cfdf5a46399",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-rtb.json",
+    "sha256": "62da3a45624bcd22e7fb26b0a2d05934382479026416f17f802166ce9045445e",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "ma-py",
+   "command": "PYTHONPATH=<workspace>/source/robotics/simulation-mujoco PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=<tmp>/mekoniq-pycache-11189 PYTHONNOUSERSITE=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <workspace>/source/.venv-mujoco/bin/python -m pytest robotics/simulation-mujoco/tests -q --junitxml=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/ma-py.xml",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:47:51.956Z",
+   "finishedAt": "2026-11-13T13:47:58.500Z",
+   "exitCode": 0,
+   "log": "suites/ma-py.log",
+   "logSha256": "0e5cb64768ba050708f63df4d42c52e9e8911dcf8bbf9e71b92d0cd3b6c99b9f",
+   "repo": "source",
+   "kind": "pytest",
+   "result": {
+    "file": "suites/ma-py.xml",
+    "sha256": "7b92d063719d97e9a11186358f17f388f70abb218620ba209c64274ea47ae93a",
+    "summary": {
+     "passed": 43,
+     "failed": 0,
+     "skipped": 0,
+     "total": 43
+    }
+   }
+  },
+  {
+   "id": "ma-worker",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/mujoco-arm-worker.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/ma-worker.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:47:58.500Z",
+   "finishedAt": "2026-11-13T13:48:00.605Z",
+   "exitCode": 0,
+   "log": "suites/ma-worker.log",
+   "logSha256": "0e96fdb8814e1953b0389596f28112a55f650d07e764115559fff646d073e4d3",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-worker.json",
+    "sha256": "69fbc063d7f2e40d3e22922511d16d0aea03b17204ebe70584761d58f8470b2e",
+    "summary": {
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0,
+     "total": 3
+    }
+   }
+  },
+  {
+   "id": "ma-ports",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/mujoco-arm-ports.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/ma-ports.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:48:00.605Z",
+   "finishedAt": "2026-11-13T13:48:05.863Z",
+   "exitCode": 0,
+   "log": "suites/ma-ports.log",
+   "logSha256": "5631552667df8ac1c58adee0c8352abcc17c760f8976f635556c317b1c96c238",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-ports.json",
+    "sha256": "35e0f3391a537fd3377ba41241b1cadc9722e2726fafbace9b2f528bdbbfb8c3",
+    "summary": {
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0,
+     "total": 15
+    }
+   }
+  },
+  {
+   "id": "ma-programs",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/mujoco-arm-programs.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/ma-programs.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:48:05.863Z",
+   "finishedAt": "2026-11-13T13:48:08.497Z",
+   "exitCode": 0,
+   "log": "suites/ma-programs.log",
+   "logSha256": "d7f781021ae0dced39cfb37bab0fc54cb360499595cdb5ef2a9fbb6a29745094",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-programs.json",
+    "sha256": "6e9cab823b00abbb3df67b7aa625dd8542aa6b4f478efdb13e50472bbe0d6732",
+    "summary": {
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0,
+     "total": 2
+    }
+   }
+  },
+  {
+   "id": "ma-contact",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/mock-arm-contact.test.ts tests/unit/arm-motion.test.ts tests/unit/arm-collision-geometry.test.ts tests/unit/arm-plant-report.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/ma-contact.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:48:08.498Z",
+   "finishedAt": "2026-11-13T13:48:09.778Z",
+   "exitCode": 0,
+   "log": "suites/ma-contact.log",
+   "logSha256": "7f22b59d5eeaa94e47de90a96ba0f53ba12f294c0de61b30a2c9995d38d2eec5",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-contact.json",
+    "sha256": "a3ab90cc05a43f2ba2e75e42d0020859c41dfdc8687e7dfc2a3a656c30d8483f",
+    "summary": {
+     "passed": 43,
+     "failed": 0,
+     "skipped": 0,
+     "total": 43
+    }
+   }
+  },
+  {
+   "id": "ma-bv01",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/mujoco-arm-bv01.test.ts tests/integration/mujoco-arm-gateway.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/ma-bv01.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:48:09.778Z",
+   "finishedAt": "2026-11-13T13:48:58.963Z",
+   "exitCode": 0,
+   "log": "suites/ma-bv01.log",
+   "logSha256": "719f3ffea2d45f18f9460ba0ba8cae92157ac9231eb28a3d9193b178a369ce2a",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-bv01.json",
+    "sha256": "638128bb46a36e8fa83946a6867a7a8fc1e456eb08b9c35c494206e07abf5449",
+    "summary": {
+     "passed": 10,
+     "failed": 0,
+     "skipped": 0,
+     "total": 10
+    }
+   }
+  },
+  {
+   "id": "ma-faults",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/mujoco-arm-faults.test.ts tests/integration/mujoco-arm-readiness.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/ma-faults.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:48:58.964Z",
+   "finishedAt": "2026-11-13T13:49:53.691Z",
+   "exitCode": 0,
+   "log": "suites/ma-faults.log",
+   "logSha256": "f02ca6fe5ca1aa34a43b34bafbf49c456cc21d0566649325a524cf22c059b399",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-faults.json",
+    "sha256": "67032b9854c9be78f388b0db67508d56b0e1ad8a7bf0ce565cafa0e4ccfdf0cf",
+    "summary": {
+     "passed": 17,
+     "failed": 0,
+     "skipped": 0,
+     "total": 17
+    }
+   }
+  },
+  {
+   "id": "rt-remote",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/lab-runtime-remote.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/rt-remote.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:49:53.692Z",
+   "finishedAt": "2026-11-13T13:49:59.864Z",
+   "exitCode": 0,
+   "log": "suites/rt-remote.log",
+   "logSha256": "fa7a1e16a353af99251c75d8874d86971698c29c11d8736688ea4d2d80fcf001",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/rt-remote.json",
+    "sha256": "39175282e31b879ccc5beea1d4c0b7b0798779fcd5b344b3d0c170eb9c06c1f1",
+    "summary": {
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0,
+     "total": 15
+    }
+   }
+  },
+  {
+   "id": "rt-paced",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/paced-step.test.ts tests/integration/lab-v2-paced-step.test.ts tests/integration/irsim-plant-port.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/rt-paced.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:49:59.865Z",
+   "finishedAt": "2026-11-13T13:51:39.665Z",
+   "exitCode": 0,
+   "log": "suites/rt-paced.log",
+   "logSha256": "02f7d69faf02c4196563a90f2e41b33a15953fd4ac1b66351fcb034aca3191b0",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/rt-paced.json",
+    "sha256": "af840c56ee577ec9126fb3e9b9c479ce21c61c6268615b75b228b1a5db353271",
+    "summary": {
+     "passed": 14,
+     "failed": 0,
+     "skipped": 0,
+     "total": 14
+    }
+   }
+  },
+  {
+   "id": "rt-container",
+   "command": "LAB_V2_CLEAN_EXPORT=1 LAB_CONTAINER_IMAGE=mekoniq-lab-runtime:record-11189 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/lab-runtime-container.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/rt-container.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:51:39.666Z",
+   "finishedAt": "2026-11-13T13:51:54.655Z",
+   "exitCode": 0,
+   "log": "suites/rt-container.log",
+   "logSha256": "6c0b76c04f8252d6eb9d586b1d7ef28b4eb415451d6e39d2e4a2996e53984a77",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/rt-container.json",
+    "sha256": "efe379e42294de79a9d8f74e71e853aff205ff8aa66896a72962c3e8f55daf9d",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "regress",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/bv01-mock-golden.test.ts tests/integration/portable-tool-closure.test.ts tests/integration/lab-runtime-artifact.test.ts tests/unit/sim-extension-qualification.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/regress.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:51:54.656Z",
+   "finishedAt": "2026-11-13T13:52:03.945Z",
+   "exitCode": 0,
+   "log": "suites/regress.log",
+   "logSha256": "9f30ad203758354841e89be3c3313468eea7ef469ec1095ed51af58fafcb4a43",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/regress.json",
+    "sha256": "565df503229ffd2658477f020fd3a5efff09927f65948078fa9d891e7a56f316",
+    "summary": {
+     "passed": 35,
+     "failed": 0,
+     "skipped": 0,
+     "total": 35
+    }
+   }
+  },
+  {
+   "id": "lab-rt-unit",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/node_modules/vitest/vitest.mjs run tests/unit/fetch-event-source.test.ts tests/unit/twin-runtime-remote.test.ts tests/unit/runtime-target.test.ts tests/unit/runtime-stream.test.ts tests/unit/runtime-compatibility.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-rt-unit.json --reporter=default",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:52:03.946Z",
+   "finishedAt": "2026-11-13T13:52:09.845Z",
+   "exitCode": 0,
+   "log": "suites/lab-rt-unit.log",
+   "logSha256": "1f2c4a7bf1653365ff28d052578fbcf94ab879e82dc4107c0542fa65b8587b0d",
+   "repo": "lab",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/lab-rt-unit.json",
+    "sha256": "d040f26473749ea152a8166b37286fa2678380f9876913d7cbd23ee162b32a14",
+    "summary": {
+     "passed": 51,
+     "failed": 0,
+     "skipped": 0,
+     "total": 51
+    }
+   }
+  },
+  {
+   "id": "lab-ui-unit",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/node_modules/vitest/vitest.mjs run tests/unit/twin-shell.test.ts tests/unit/twin-problems.test.ts tests/unit/twin-keys.test.ts tests/unit/twin-notes.test.ts tests/unit/sample-buffer.test.ts tests/unit/live-playback.test.ts tests/unit/twin3d-structure.test.ts tests/unit/workspace-conditional-items.test.ts tests/unit/twin-workspace.test.ts tests/unit/playwright-config.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-ui-unit.json --reporter=default",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:52:09.845Z",
+   "finishedAt": "2026-11-13T13:52:10.728Z",
+   "exitCode": 0,
+   "log": "suites/lab-ui-unit.log",
+   "logSha256": "8e22659003b89f7729dc4a1658fe74fc5578affff8374442a66e9b408b162890",
+   "repo": "lab",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/lab-ui-unit.json",
+    "sha256": "8eb136c4d0b257cbfa2f1895744dc6eb30e349e8accfe4950c30b68d4b85332e",
+    "summary": {
+     "passed": 75,
+     "failed": 0,
+     "skipped": 0,
+     "total": 75
+    }
+   }
+  },
+  {
+   "id": "lab-arm-unit",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/node_modules/vitest/vitest.mjs run tests/unit/arm-mesh.test.ts tests/unit/mujoco-coffee.test.ts tests/unit/runtime-popover.test.ts tests/integration/mujoco-launcher.test.ts tests/integration/runtime-artifact.test.ts --reporter=json --outputFile=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-arm-unit.json --reporter=default",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:52:10.729Z",
+   "finishedAt": "2026-11-13T13:52:11.665Z",
+   "exitCode": 0,
+   "log": "suites/lab-arm-unit.log",
+   "logSha256": "7d077fcdca996b917016332c2101653f63a013a4f312ebecce1520390b6e5c43",
+   "repo": "lab",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/lab-arm-unit.json",
+    "sha256": "54a39059aaf85857e17096a7ece70a9fb934d93c5b57817fe91c429d3019ec93",
+    "summary": {
+     "passed": 48,
+     "failed": 0,
+     "skipped": 0,
+     "total": 48
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-remote-origin",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-remote-origin.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-remote-origin LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-remote-origin MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs remote-origin.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:52:11.666Z",
+   "finishedAt": "2026-11-13T13:52:36.991Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-remote-origin.log",
+   "logSha256": "1f6f40caad441115380631174ddc98a8f681e74fb0c091dee4287df987f59e81",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-remote-origin.json",
+    "sha256": "d4cf6d3272fd99356fe14c1194bf6570233234d29b242960a48e3429a065c418",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-twin-layout",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-twin-layout.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-twin-layout LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-twin-layout MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs twin-layout.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:52:36.993Z",
+   "finishedAt": "2026-11-13T13:52:58.654Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-twin-layout.log",
+   "logSha256": "6ccdf6ef1b6650c71f8b5a3356decda9fc00eb132a571dfcd23e51bab58bd390",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-twin-layout.json",
+    "sha256": "480b3996dc213a7617c309ac6d4cdb6b785e41cf7908f6ac22f2c90120ac8780",
+    "summary": {
+     "passed": 9,
+     "failed": 0,
+     "skipped": 0,
+     "total": 9
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-twin-polish",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-twin-polish.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-twin-polish LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-twin-polish MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs twin-polish.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:52:58.655Z",
+   "finishedAt": "2026-11-13T13:53:04.550Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-twin-polish.log",
+   "logSha256": "8c2dde7ec85b867bb6d0c0f646581fef78375182609be222037f83cf39a6e4a2",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-twin-polish.json",
+    "sha256": "dd0ddc3d28440b03fc15a7ead2b54d654cccee2bf7f9140dc4df57dc0789acfe",
+    "summary": {
+     "passed": 10,
+     "failed": 0,
+     "skipped": 0,
+     "total": 10
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-twin-transport",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-twin-transport.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-twin-transport LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-twin-transport MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs twin-transport.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:53:04.551Z",
+   "finishedAt": "2026-11-13T13:53:17.237Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-twin-transport.log",
+   "logSha256": "9cb84fa1580608367e4596043b0d5fe79831f659ade98dd65628dd631a4e9d42",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-twin-transport.json",
+    "sha256": "ec99e8d235d9ecf0aacdbde98d0fd1f6114e5453cb20e9f62c4ab833d7c4f297",
+    "summary": {
+     "passed": 5,
+     "failed": 0,
+     "skipped": 0,
+     "total": 5
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-twin-workspace",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-twin-workspace.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-twin-workspace LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-twin-workspace MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs twin-workspace.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:53:17.238Z",
+   "finishedAt": "2026-11-13T13:53:25.255Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-twin-workspace.log",
+   "logSha256": "5f3d4cf41f157ebb632a817c594f74bd9149fa52c46f352b0010cc610144772e",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-twin-workspace.json",
+    "sha256": "8abd227542d02e26043a7292cef7c10ec6b4ed0552820918016f0d4249935010",
+    "summary": {
+     "passed": 5,
+     "failed": 0,
+     "skipped": 0,
+     "total": 5
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-brand-accessibility",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-brand-accessibility.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-brand-accessibility LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-brand-accessibility MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs brand-accessibility.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:53:25.256Z",
+   "finishedAt": "2026-11-13T13:53:32.847Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-brand-accessibility.log",
+   "logSha256": "26ae7eba9b2e3dfed527bfeb94f20e93496182584cba012581662a6266252c53",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-brand-accessibility.json",
+    "sha256": "6e44fd87daf89fd4b74ef01b2734f69161bf88646bc82a295e9f51c7e6a3c322",
+    "summary": {
+     "passed": 9,
+     "failed": 0,
+     "skipped": 0,
+     "total": 9
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-arm-mesh",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-arm-mesh.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-arm-mesh LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-arm-mesh MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs arm-mesh.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:53:32.848Z",
+   "finishedAt": "2026-11-13T13:53:41.361Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-arm-mesh.log",
+   "logSha256": "d1d9335ab6b53234fde794e3d0fd891f6405a04271bfcc6780904325f2bab657",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-arm-mesh.json",
+    "sha256": "3875de22de0fa1c953bb90cd885779328352d2df4427bc581b44cc841316f4bc",
+    "summary": {
+     "passed": 7,
+     "failed": 0,
+     "skipped": 0,
+     "total": 7
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-arm-cell",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-arm-cell.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-arm-cell LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-arm-cell MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs arm-cell.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:53:41.362Z",
+   "finishedAt": "2026-11-13T13:53:49.458Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-arm-cell.log",
+   "logSha256": "6609be1d993e00ba595214fd3417a18e3030bc967fe6d4904b2de675068e8a69",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-arm-cell.json",
+    "sha256": "09dd4b76645eb77ba2566b401ea62d2737102397f3e3fa91fec67bd96e9b8871",
+    "summary": {
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0,
+     "total": 6
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-mujoco-coffee",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-mujoco-coffee.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-mujoco-coffee LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-mujoco-coffee MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-irsim-e2e.mjs --provider mujoco mujoco-coffee.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:53:49.460Z",
+   "finishedAt": "2026-11-13T13:54:43.629Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-mujoco-coffee.log",
+   "logSha256": "a938388b3f1793c707122e264aaf128d30f2e8bd3bb385e3807566b5aabb761c",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-mujoco-coffee.json",
+    "sha256": "126aef29f65e6216dff0e6e1dce470b42b796ae6fca26737a1527b28f5beffe8",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-mujoco-mesh-fallback",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-mujoco-mesh-fallback.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-mujoco-mesh-fallback LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-mujoco-mesh-fallback MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-irsim-e2e.mjs --provider mujoco mujoco-mesh-fallback.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:54:43.630Z",
+   "finishedAt": "2026-11-13T13:55:04.639Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-mujoco-mesh-fallback.log",
+   "logSha256": "456d74f0cf7ab127a96a50250f51e1df51cfe018801bbe3673ba18a1979605ce",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-mujoco-mesh-fallback.json",
+    "sha256": "9acda61fb12964feb26323e2ac2aa456acac325ee2354d5fd1bc87fd48e796cf",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-irsim-journey",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-irsim-journey.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-irsim-journey LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-irsim-journey MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-irsim-e2e.mjs irsim-journey.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:55:04.640Z",
+   "finishedAt": "2026-11-13T13:55:32.250Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-irsim-journey.log",
+   "logSha256": "49d53c9f364b79c6f5187c2c865a9c39293d943d8c3735b9966ead1cf4e3ed0f",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-irsim-journey.json",
+    "sha256": "8c9705201c3b88c486f2e91bf95e3462564f893bf7b9c1f487f4e6659a35029a",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-webots-coffee",
+   "command": "LAB_PW_JSON=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/lab-e2e-webots-coffee.json LAB_IRSIM_SCREENSHOTS=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-webots-coffee LAB_EVIDENCE_DIR=/private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/screens/lab-e2e-webots-coffee MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-irsim-e2e.mjs --provider webots webots-coffee.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-13T13:55:32.251Z",
+   "finishedAt": "2026-11-13T13:55:56.961Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-webots-coffee.log",
+   "logSha256": "23f785df6e22a773724125ccbe9a9ce723cc5298b4d4d25704606cfbc5305314",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-webots-coffee.json",
+    "sha256": "8e5864f7045e7bfc64e1ab0cb75e74e0670c34e9336f5ce3d37b43ac667e7784",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  }
+ ],
+ "commands": [
+  {
+   "id": "rt-image",
+   "command": "sh deploy/lab-runtime/build.sh mekoniq-lab-runtime:record-11189 --platform linux/arm64",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:47:44.295Z",
+   "finishedAt": "2026-11-13T13:47:45.743Z",
+   "exitCode": 0,
+   "log": "suites/rt-image.log",
+   "logSha256": "6e8d570ccf52e9f6bbfdb9787304011145ade8c27bf7a997c7beed3eaee44fd8"
+  },
+  {
+   "id": "licenses",
+   "command": "<home>/.nvm/versions/node/v24.22.2/bin/node scripts/portable-licenses.mjs --check",
+   "cwd": "source",
+   "startedAt": "2026-11-13T13:55:56.962Z",
+   "finishedAt": "2026-11-13T13:55:57.356Z",
+   "exitCode": 0,
+   "log": "suites/licenses.log",
+   "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+ ],
+ "performance": null,
+ "cases": {
+  "MA01": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-static",
+    "suite:ma-rtb",
+    "suite:ma-py"
+   ]
+  },
+  "MA02": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-worker",
+    "suite:ma-py"
+   ]
+  },
+  "MA03": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-py",
+    "suite:ma-ports",
+    "suite:ma-worker"
+   ]
+  },
+  "MA04": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-programs",
+    "suite:ma-contact"
+   ]
+  },
+  "MA05": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-bv01"
+   ]
+  },
+  "MA06": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-faults"
+   ],
+   "note": "ruled 2026-11-13: with the pads' friction lowered the cup slips during the lift, so the transfer is refused at the lift check (TRANSFER_REJECTED, run needs_attention) and CUP_DROPPED latches when the cup leaves the pads; the case is an explicit failure at the lift check and/or CUP_DROPPED, never completed, the gripper never commanded open. The weakened-joint fault runs on a temporary copy of the worker root; the occupied-stand run ends in ARM_COLLISION before the worker's occupied refusal, which is proven at worker and ports level"
+  },
+  "MA07": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-bv01"
+   ]
+  },
+  "MA08": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-bv01",
+    "suite:ma-contact"
+   ]
+  },
+  "RT01": {
+   "status": "tested",
+   "evidence": [
+    "suite:rt-remote"
+   ]
+  },
+  "RT02": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-rt-unit"
+   ]
+  },
+  "RT03": {
+   "status": "tested",
+   "evidence": [
+    "suite:rt-paced"
+   ],
+   "note": "ruled 2026-11-13: on the fixed-step runner, paced and unpaced evidence are identical for the same action sequence and the unpaced golden is unchanged with no wall-clock call; a paced run cannot reproduce the 500-tick golden (a paced step carries at most 50 ticks)"
+  },
+  "RT04": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-e2e-remote-origin"
+   ]
+  },
+  "RT05": {
+   "status": "tested",
+   "evidence": [
+    "suite:rt-container"
+   ],
+   "note": "the image is built by the recorder for this machine's architecture from the recorded commit; a container run is never evidence for G-MA1/G-MA2 (D50); linux/amd64 has only run under emulation, where MJ-BV01 stops with PLANT_UNSTABLE (cause unknown), and real amd64 hardware is untested"
+  },
+  "CL01": {
+   "status": "not_run",
+   "evidence": [],
+   "reason": "blocked_external: no Cloud Run deployment has been ordered (D60); CL01 runs on a deployed service only, and its producer and record format belong to that deployment work"
+  },
+  "UI01": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-ui-unit",
+    "suite:lab-e2e-twin-layout"
+   ]
+  },
+  "UI02": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-ui-unit",
+    "suite:lab-e2e-twin-layout",
+    "suite:lab-e2e-twin-polish"
+   ]
+  },
+  "UI03": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-ui-unit",
+    "suite:lab-e2e-twin-transport",
+    "suite:lab-e2e-twin-polish"
+   ]
+  },
+  "UI04": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-ui-unit",
+    "suite:lab-e2e-brand-accessibility",
+    "suite:lab-e2e-twin-layout",
+    "suite:lab-e2e-twin-workspace"
+   ]
+  },
+  "UI05": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-arm-unit",
+    "suite:lab-e2e-arm-mesh",
+    "suite:lab-e2e-arm-cell",
+    "suite:lab-e2e-mujoco-mesh-fallback"
+   ],
+   "note": "ruled 2026-11-13: the launcher-level check is the MuJoCo launcher spec (mujoco-mesh-fallback); the plan's mock-launcher e2e was replaced by UI-only browser specs (arm-mesh, arm-cell). The 3D view also draws the cell's two supports (assumed geometry of the simulated cell) and an illustrative mount and legs that are not simulated"
+  },
+  "INT15": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-e2e-mujoco-coffee",
+    "suite:lab-arm-unit"
+   ]
+  },
+  "INT16": {
+   "status": "tested",
+   "evidence": [
+    "suite:regress",
+    "suite:ma-faults",
+    "suite:lab-e2e-irsim-journey",
+    "suite:lab-e2e-webots-coffee",
+    "record:mock-regression"
+   ],
+   "note": "the mock e2e on the new UI is the R-MOCK regression of the same commit (mock-regression.json)"
+  },
+  "REG03": {
+   "status": "tested",
+   "evidence": [
+    "record:linkforge-irsim",
+    "record:mock-regression",
+    "record:r1",
+    "record:r1.1"
+   ]
+  }
+ },
+ "gates": {
+  "G-MA1": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "MA01",
+    "MA02",
+    "MA03"
+   ]
+  },
+  "G-MA2": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "MA04",
+    "MA05",
+    "MA06",
+    "MA07",
+    "MA08"
+   ]
+  },
+  "G-RT1": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "RT01",
+    "RT02",
+    "RT03",
+    "RT04"
+   ]
+  },
+  "G-RT2": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "RT05"
+   ]
+  },
+  "G-UI1": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "UI01",
+    "UI02",
+    "UI03",
+    "UI04"
+   ]
+  },
+  "G-INT4": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "UI05",
+    "INT15",
+    "INT16"
+   ]
+  },
+  "G-REG3": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "REG03"
+   ]
+  },
+  "G-CLOUD1": {
+   "status": "blocked_external",
+   "accepted": false,
+   "cases": [
+    "CL01"
+   ]
+  }
+ },
+ "notRun": [
+  {
+   "id": "CL01",
+   "reason": "blocked_external: no Cloud Run deployment has been ordered (D60); CL01 runs on a deployed service only, and its producer and record format belong to that deployment work"
+  }
+ ],
+ "artifacts": [
+  {
+   "file": "irsim-record.json",
+   "sha256": "2516f0b24bea18d43d91ab7cfbddd60a7820079417bde20ab62925abff632c56",
+   "bytes": 359067
+  },
+  {
+   "file": "mock-regression.json",
+   "sha256": "936303a682edda5d49bd4cee23ca4f8a65e7fb4b53e57455af73303c52db617c",
+   "bytes": 54701
+  },
+  {
+   "file": "r1-record.json",
+   "sha256": "aab06d2b95c8c4cec70b7b8e86bdff3c982decfc08cfa98dc9c19a3178b7ac60",
+   "bytes": 579070
+  },
+  {
+   "file": "r11-record.json",
+   "sha256": "7e21cfebd7fc62d8f7700f783f2bddca33342a0a7d98834c3ff0c55d18549e40",
+   "bytes": 18875
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-fallback-problems.png",
+   "sha256": "7ed35ad131e8d88ace88b9b9ea736cddb3b76618047b1d5b392ef121d27125fa",
+   "bytes": 93043
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-mesh-home.png",
+   "sha256": "c8978fb7d21be4e4a90ac1b4a0c7ce34cdf52d6dcd977945bfabcff6db83bd75",
+   "bytes": 98213
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-mesh-pick-closed.png",
+   "sha256": "714e0a852958a696f22638c94341be4a29df94234d96ff1a8100557250dcaf18",
+   "bytes": 96473
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-runbar-notes-only.png",
+   "sha256": "55e3ee3c88e9a29cd0f27982ce18fb5b2594cf62ff5393f18f8c6aae84df53f3",
+   "bytes": 16450
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-runbar-notes-panel.png",
+   "sha256": "6f9e581360dad602040049f0ea74bc764f465da2e13f55d72656617284ef78e8",
+   "bytes": 45630
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-runbar-problem-and-note-panel.png",
+   "sha256": "ad82935e40d5c096cde5fdb205a8fdde802230bcda0d0936e6d0ddac6ae5d661",
+   "bytes": 52341
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-runbar-problem-and-note.png",
+   "sha256": "ea55d0eee5275386f4df19654b020049091534c51351e5edc2583d2c5ca2f3fa",
+   "bytes": 16514
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-en.png",
+   "sha256": "fd93a4a4d3d928ea62275b7bf53ecfe684720adbc9c40f5bda9f2a45fb07e40a",
+   "bytes": 763379
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-ja.png",
+   "sha256": "ca9eb53ef5e1122ec424a92d47bb193f1e0fcd5bd964804899f9289a4b38a770",
+   "bytes": 807832
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-vi.png",
+   "sha256": "3a8b76c5552860419a65405091731493fc5040a52b6d2467cf13fd36ecd22fa5",
+   "bytes": 789539
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-en.png",
+   "sha256": "90b256bd2da31c0832d12f48796c05f8b77909c076b69b3e93dc937564a395f1",
+   "bytes": 744541
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-ja.png",
+   "sha256": "8c629aeeaf1a7a84fe7b9963edba6a1cf8d1cc03bc2e623be42e325654a5e3e3",
+   "bytes": 783529
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-vi.png",
+   "sha256": "47151663bfa4987e70570d52a005e39ecba0bd16e394c229e0619e249695f8d1",
+   "bytes": 768096
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-en.png",
+   "sha256": "14c1aca89d04a4815ea88a732696a67416a6c6c9da4c1d3e37f4eba39a10e787",
+   "bytes": 141114
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-ja.png",
+   "sha256": "89c7c91b3bd8c489de2427e38802ffd8a479743ba8b54271c30bb4100b30ff0d",
+   "bytes": 148725
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-vi.png",
+   "sha256": "77e2a3b58e42f56faa36c2183b10f61a3a06b9768e1ce964d9895e783fca1ec7",
+   "bytes": 147416
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-en.png",
+   "sha256": "543e2798a0c8caa034f052fbe0099e8f506e3fd74bbf392328351fb64749975c",
+   "bytes": 112628
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-ja.png",
+   "sha256": "29a41ab036cbfaeeba128563e191218b2a68911771dbe698dcec09e103a18a19",
+   "bytes": 117740
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-vi.png",
+   "sha256": "d0d5243dd9593f948a382d973a68b7072fdc06eac6d9b9ce3387626416d6c321",
+   "bytes": 114655
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-en.png",
+   "sha256": "417c1de8af9c2d7a9ba7c5aef6ec0b7ea5c936342c903ee34d8a58f2c35f72ef",
+   "bytes": 128810
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-ja.png",
+   "sha256": "88eb5eaba33a2cc75aa7af3881c540a114d4b2ba0fe3e9f263e9a248010ccb68",
+   "bytes": 133960
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-vi.png",
+   "sha256": "93e1c0dbefe97339348afd1bf17cdaef4f23d27996ee3e21200b950f8675a8a5",
+   "bytes": 136129
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-en.png",
+   "sha256": "657cc3c52c3df290c12d03db508c596426e4a48462e0f46e1e31d5ae595dbf8b",
+   "bytes": 122229
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-ja.png",
+   "sha256": "15d38459cf098246c5986868f389da15df6da4b7ce7443b7a8cc040e055feb07",
+   "bytes": 128069
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-vi.png",
+   "sha256": "0ef9bd759952b26df7913842b550a27c3b5dd44c1f3f46eee37dd5e6f3cbb62a",
+   "bytes": 127527
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-box-loopback-blocked.png",
+   "sha256": "ee01007c3a4c34cef6fa71d04141316b659e4253d74c6718425ab5aa361e8cba",
+   "bytes": 157951
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-box-pin-mismatch.png",
+   "sha256": "637b9bd1c31c9d4892d617d6ec8102933baafce9db9d34421a57357cee77ea54",
+   "bytes": 126262
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-box-this-machine.png",
+   "sha256": "2b527aecfdba5964583f1aefd2c32e964a89df0d11a415e7193c9a0144aa6d5f",
+   "bytes": 122344
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-box-web-page-initial.png",
+   "sha256": "a31f6b98f1ff6b7eface9e8bc9381ea13d22a06a56b33bba0d6bfcf8999d67e7",
+   "bytes": 122936
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-cell-fresh-mount.png",
+   "sha256": "13253f3db7fd2bc7237e2c948b7f5209b2e904953ed6db1fc6789cf96d10706a",
+   "bytes": 215612
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-cell-robot-left.png",
+   "sha256": "a1219cd6dd2413f8c66414c6b42da92c27b4b6882f910d335176106ed8a03289",
+   "bytes": 214116
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-cell-start.png",
+   "sha256": "eac67f490372b61e6efe104af17c43d30ef89532a334ce8bbce1f88c77b11ab2",
+   "bytes": 217750
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-cup-on-tray-robot-docked.png",
+   "sha256": "278288913347c39ca796e7d8dd69dd19475749a305d825ae3c0fccec451e4a3a",
+   "bytes": 218286
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-engineering-identity.png",
+   "sha256": "abe4e50ab1533038c033ebc419b4a84d1ba70b4f1c0e5c82a2064e6f0845adf4",
+   "bytes": 253520
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-engineering-joints.png",
+   "sha256": "2b834f0fa7e9b3d097eccdf55f22963b40da191c61707b4c7668a26026367abf",
+   "bytes": 282872
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding-fit.png",
+   "sha256": "46ffeb8cdbaa6efca4b982e180c0f29b0dd38e491f0f0bfdf4ead3d598a928b0",
+   "bytes": 103671
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding.png",
+   "sha256": "d86d4525ea5c9c6db638d7d39ca9f76558bbc3f5835645c6453767a84be0f50f",
+   "bytes": 215025
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-report-plant.png",
+   "sha256": "f1f59a8b49443e5426abf8f68cc487f5fd849250ff39c5edaf2739d8dac84ee0",
+   "bytes": 287104
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/final-I6-replay-mid-pick.png",
+   "sha256": "e1b05b736f23a52e5141693853b3bea52cca752c6b119ff82800fdfe3b998188",
+   "bytes": 213979
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/final-I6-saved-report-mid-pick.png",
+   "sha256": "ac4b4ec92ffa9be22861d033731adb78975eaab8e62598cf56dfbb5157a1eb9c",
+   "bytes": 213983
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/screens/mujoco-coffee.png",
+   "sha256": "d8463269c03fd2d03c93bdce2bf613223e85d51bbab5f96a81285b14ef87e07f",
+   "bytes": 213648
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-mesh-fallback/U06-mesh-fallback-notes.png",
+   "sha256": "d85098f950c017e793d24befc50616fbdc53d43f7247221ec29e9519ea416cb8",
+   "bytes": 220091
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1024x700.png",
+   "sha256": "a61c408dc4ebc2ccc1ebbbaf0fe51175f7d3cd00c38e836d620a0d236936c748",
+   "bytes": 149591
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1280x800.png",
+   "sha256": "9a1655450ecbc231ada2028a4b965fb75facf3c51b07b7190fab1bccf05d3b36",
+   "bytes": 193954
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1440x900.png",
+   "sha256": "2ced3d28af3e582f23432a255e17165821c6b899764b60c496862db2891af32e",
+   "bytes": 220636
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-address-corrected.png",
+   "sha256": "27f12994bcf0c863bc5449b574421217870e0590911ca6e1a1610cb52571fe4b",
+   "bytes": 132140
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-address-error.png",
+   "sha256": "d883e7f44e87e06ef6bc90d0853935ea8a9046ad90fb371d36a9db4bc866bbe1",
+   "bytes": 139963
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-before-connect.png",
+   "sha256": "8fe9333ea772cd5366cf3afe25703ef0218bf80e72576ed0dd65730c433a3da5",
+   "bytes": 141560
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-completed.png",
+   "sha256": "ddd9689a4fd515902290e4e7fd992f9f5c7db383cf5b00d4bc2b73a080509784",
+   "bytes": 168438
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-connected-run-bar.png",
+   "sha256": "56b432972e0e311383848de5076c32b16345add82a026d7e3aade2315cc7a537",
+   "bytes": 117709
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-paced-1x.png",
+   "sha256": "888c4119b20ef855c2063fc06965ab4ca0c8ecb8015016e5ce524b2809ed4c1b",
+   "bytes": 144325
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-paced-2d-click.png",
+   "sha256": "993bd6ad268879ce7e163ad9fc3e68c0c480ff58320129c64e9422927c9666cb",
+   "bytes": 150444
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-pair-form-filled.png",
+   "sha256": "30f6fbcf58e472655424a2efc57bb91c3ceb74c2400ecab25e1f5350f302f9f2",
+   "bytes": 132328
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-paused.png",
+   "sha256": "c8ceeb16b791efbefef83e7139bcf92dedc6337c671a7e810e04a6c9f768dc0a",
+   "bytes": 153245
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-pausing.png",
+   "sha256": "060bb7cc91311b12afb1313f0a0eb763b6741be05706226225178509839f7549",
+   "bytes": 150210
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/final-I5-chip-not-connected.png",
+   "sha256": "c741d7c700b22ccf679ed724e58ba1a48a6830398b28dd3bae5e3d473734c6c2",
+   "bytes": 128858
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-caveat-desktop-vi.png",
+   "sha256": "c572fb26f86d3b563083d274bed7d3de3d4f85bf2e36245b50aebac3f5d540f4",
+   "bytes": 281398
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-completed-engineering-desktop-vi.png",
+   "sha256": "5e92cd57f4023fcd692a66d614d6472f232b1b0584f45bdaa2361f1f21734e66",
+   "bytes": 187042
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-completed-objects-desktop-vi.png",
+   "sha256": "b833c388acac729d3ec17b3b23a999b8096d8ca8890c3f0a76eb3f15b35de3eb",
+   "bytes": 167265
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-completed-report-desktop-vi.png",
+   "sha256": "60e6d9495243d843a530f5d44c9ed0ae7e5e971489dd10a4c524c455854efecd",
+   "bytes": 169227
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-completed-setup-desktop-vi.png",
+   "sha256": "9c5b6aa6f9d4ba4db7d6511af1cdee19ac97437237fab6f72a75c984a81942b4",
+   "bytes": 157880
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-display-desktop-vi.png",
+   "sha256": "23563e1644e437e58ccbb5364b4d4647b44d1891e741a55ed64de3fed54045e5",
+   "bytes": 175560
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-engineering-desktop-vi.png",
+   "sha256": "69a0a52a4b935e115e44a34c73ccdc644d5d83c9d7393c787e7b5d6158ab51e9",
+   "bytes": 163576
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-first-open-desktop-vi.png",
+   "sha256": "bd7c03d0b5aa310bf56872b1e1cd2460cc52888e16ef765f6579a2fd0d2d83d7",
+   "bytes": 130484
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-low-screen.png",
+   "sha256": "47a117ac7252dcbdad8773fdc9d09e843f32dd93dbca3652063dee96ca271a7b",
+   "bytes": 89084
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-objects-desktop-vi.png",
+   "sha256": "a99e4da6f2b64ddc53040b3a1c9fa53ea4906b4d62addf397744f6c45e0d47e9",
+   "bytes": 155172
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-objects-phone-vi.png",
+   "sha256": "e089ccb63fc5c78d69bc0860466c9fe1e7460ac4effbd57c2e2602997936f2bf",
+   "bytes": 41545
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-picker-desktop-vi.png",
+   "sha256": "9ecd13f244481ca6c6aecf7c09099e24a145c75fd5d05ad974d21da377023da5",
+   "bytes": 277277
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-problems-desktop-vi.png",
+   "sha256": "298b105c27124bd2607f4e76a233f6f86dc8f59847ab104f1082e61a2406b172",
+   "bytes": 215935
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-report-desktop-vi.png",
+   "sha256": "dfecbad88fdaa0ddc921e527da850e9fd450e4f45181c4c60c21a7cb953609ba",
+   "bytes": 169361
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-setup-desktop-vi.png",
+   "sha256": "53708da2c09297a410c5324e54dc285078d09d80347ce10ce01b0f4e75bb82c4",
+   "bytes": 155686
+  },
+  {
+   "file": "screens/lab-e2e-twin-polish/U07-1024x700-vi.png",
+   "sha256": "61cf04a41feed152e1880b182265d0b41c678cd8f26f8c76509c2fe634fb0f05",
+   "bytes": 97844
+  },
+  {
+   "file": "screens/lab-e2e-twin-polish/U07-engineering-arm-desktop-vi.png",
+   "sha256": "4b656b97f4249535c9e0bcfcf31e5dea61ba09e2bc66164767075a89e6af41c8",
+   "bytes": 185326
+  },
+  {
+   "file": "screens/lab-e2e-twin-polish/U07-problems-desktop-vi.png",
+   "sha256": "b19f06be30d89516dbb2fa6f41293683e1ae78e9f8518cf1ea619951ffe7fcbd",
+   "bytes": 162144
+  },
+  {
+   "file": "screens/lab-e2e-twin-polish/U07-replay-desktop-vi.png",
+   "sha256": "63c4d437a40ba6699360af9205b43ec8b93aa4268ccb12b82cb52b5d5ab32174",
+   "bytes": 184031
+  },
+  {
+   "file": "screens/lab-e2e-twin-polish/U07-run-bar-problem-desktop-vi.png",
+   "sha256": "b13cc65e61b00d4ab26806ccb8366b1c4f429013543673d47f42fce12b772e3b",
+   "bytes": 117754
+  },
+  {
+   "file": "screens/lab-e2e-twin-transport/U03-replay-desktop-vi.png",
+   "sha256": "dee90f1f2d693ccc621aed19c0274c7327c78d00d8b2065919a98893759289dc",
+   "bytes": 178562
+  },
+  {
+   "file": "screens/lab-e2e-twin-transport/U03-shortcuts-desktop-vi.png",
+   "sha256": "3cc76ff1cc9f29c0b9c38d57743fadaaccb5e22a513bde0f144258b96bd021ad",
+   "bytes": 122156
+  },
+  {
+   "file": "screens/lab-e2e-twin-transport/U03-watch-desktop.png",
+   "sha256": "cda9c7d5a02ea992f708bcd5734504f5feeaec0442a34aa6edbc6283b7b6fa79",
+   "bytes": 62895
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-coffee-run-desktop-vi.png",
+   "sha256": "5941fb65f146e2e9d305bff66dd2bc1cb2b85f9f5ea7f3900dea3585afaddc11",
+   "bytes": 117993
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-en.png",
+   "sha256": "49506f297c87c5bd689f7dd24d8ab374851678c8edb7c31ccc51fd3d0a1a2cf1",
+   "bytes": 74922
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-ja.png",
+   "sha256": "e6fb78a772a78f7ab0bc0baba47bb2d8d5d9021ea9b44daa93b75f59ce5a1430",
+   "bytes": 71147
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-vi.png",
+   "sha256": "9fc99562854fd229100c240fd332d79e6d34a7da1d26bd214a4c6625404faa96",
+   "bytes": 74326
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-en.png",
+   "sha256": "d3c0e404a0e1ded78d42475567e3fb63d34b23143f7be5e6e6a07fed9f9770a5",
+   "bytes": 170591
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-ja.png",
+   "sha256": "90cccb6af6f65a2140b231ee0114d7074cabf2882409badf14eb3a045a550337",
+   "bytes": 169098
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-vi.png",
+   "sha256": "d82848831c7a9149ae1edc7a40a4f38ae86b24d38fb2bcf967e1285fe085a13b",
+   "bytes": 174747
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+   "sha256": "0910a95804938070a250cc7e3ce21e076fab37442be1025b3837922f3189af88",
+   "bytes": 147916
+  },
+  {
+   "file": "screens/lab-e2e-webots-coffee/webots-coffee.png",
+   "sha256": "36a4467805a940eab57887eab27467344765e0b10c98b1cf90cd0fab62b3fcf6",
+   "bytes": 174758
+  },
+  {
+   "file": "suites/lab-arm-unit.json",
+   "sha256": "54a39059aaf85857e17096a7ece70a9fb934d93c5b57817fe91c429d3019ec93",
+   "bytes": 17641
+  },
+  {
+   "file": "suites/lab-arm-unit.log",
+   "sha256": "7d077fcdca996b917016332c2101653f63a013a4f312ebecce1520390b6e5c43",
+   "bytes": 892
+  },
+  {
+   "file": "suites/lab-e2e-arm-cell.json",
+   "sha256": "09dd4b76645eb77ba2566b401ea62d2737102397f3e3fa91fec67bd96e9b8871",
+   "bytes": 9730
+  },
+  {
+   "file": "suites/lab-e2e-arm-cell.log",
+   "sha256": "6609be1d993e00ba595214fd3417a18e3030bc967fe6d4904b2de675068e8a69",
+   "bytes": 1545
+  },
+  {
+   "file": "suites/lab-e2e-arm-mesh.json",
+   "sha256": "3875de22de0fa1c953bb90cd885779328352d2df4427bc581b44cc841316f4bc",
+   "bytes": 11228
+  },
+  {
+   "file": "suites/lab-e2e-arm-mesh.log",
+   "sha256": "d1d9335ab6b53234fde794e3d0fd891f6405a04271bfcc6780904325f2bab657",
+   "bytes": 1911
+  },
+  {
+   "file": "suites/lab-e2e-brand-accessibility.json",
+   "sha256": "6e44fd87daf89fd4b74ef01b2734f69161bf88646bc82a295e9f51c7e6a3c322",
+   "bytes": 12640
+  },
+  {
+   "file": "suites/lab-e2e-brand-accessibility.log",
+   "sha256": "26ae7eba9b2e3dfed527bfeb94f20e93496182584cba012581662a6266252c53",
+   "bytes": 1625
+  },
+  {
+   "file": "suites/lab-e2e-irsim-journey.json",
+   "sha256": "8c9705201c3b88c486f2e91bf95e3462564f893bf7b9c1f487f4e6659a35029a",
+   "bytes": 4101
+  },
+  {
+   "file": "suites/lab-e2e-irsim-journey.log",
+   "sha256": "49d53c9f364b79c6f5187c2c865a9c39293d943d8c3735b9966ead1cf4e3ed0f",
+   "bytes": 873
+  },
+  {
+   "file": "suites/lab-e2e-mujoco-coffee.json",
+   "sha256": "126aef29f65e6216dff0e6e1dce470b42b796ae6fca26737a1527b28f5beffe8",
+   "bytes": 4581
+  },
+  {
+   "file": "suites/lab-e2e-mujoco-coffee.log",
+   "sha256": "a938388b3f1793c707122e264aaf128d30f2e8bd3bb385e3807566b5aabb761c",
+   "bytes": 1282
+  },
+  {
+   "file": "suites/lab-e2e-mujoco-mesh-fallback.json",
+   "sha256": "9acda61fb12964feb26323e2ac2aa456acac325ee2354d5fd1bc87fd48e796cf",
+   "bytes": 4123
+  },
+  {
+   "file": "suites/lab-e2e-mujoco-mesh-fallback.log",
+   "sha256": "456d74f0cf7ab127a96a50250f51e1df51cfe018801bbe3673ba18a1979605ce",
+   "bytes": 950
+  },
+  {
+   "file": "suites/lab-e2e-remote-origin.json",
+   "sha256": "d4cf6d3272fd99356fe14c1194bf6570233234d29b242960a48e3429a065c418",
+   "bytes": 4359
+  },
+  {
+   "file": "suites/lab-e2e-remote-origin.log",
+   "sha256": "1f6f40caad441115380631174ddc98a8f681e74fb0c091dee4287df987f59e81",
+   "bytes": 958
+  },
+  {
+   "file": "suites/lab-e2e-twin-layout.json",
+   "sha256": "480b3996dc213a7617c309ac6d4cdb6b785e41cf7908f6ac22f2c90120ac8780",
+   "bytes": 20332
+  },
+  {
+   "file": "suites/lab-e2e-twin-layout.log",
+   "sha256": "6ccdf6ef1b6650c71f8b5a3356decda9fc00eb132a571dfcd23e51bab58bd390",
+   "bytes": 2142
+  },
+  {
+   "file": "suites/lab-e2e-twin-polish.json",
+   "sha256": "dd0ddc3d28440b03fc15a7ead2b54d654cccee2bf7f9140dc4df57dc0789acfe",
+   "bytes": 22338
+  },
+  {
+   "file": "suites/lab-e2e-twin-polish.log",
+   "sha256": "8c2dde7ec85b867bb6d0c0f646581fef78375182609be222037f83cf39a6e4a2",
+   "bytes": 2378
+  },
+  {
+   "file": "suites/lab-e2e-twin-transport.json",
+   "sha256": "ec99e8d235d9ecf0aacdbde98d0fd1f6114e5453cb20e9f62c4ab833d7c4f297",
+   "bytes": 12937
+  },
+  {
+   "file": "suites/lab-e2e-twin-transport.log",
+   "sha256": "9cb84fa1580608367e4596043b0d5fe79831f659ade98dd65628dd631a4e9d42",
+   "bytes": 1573
+  },
+  {
+   "file": "suites/lab-e2e-twin-workspace.json",
+   "sha256": "8abd227542d02e26043a7292cef7c10ec6b4ed0552820918016f0d4249935010",
+   "bytes": 11999
+  },
+  {
+   "file": "suites/lab-e2e-twin-workspace.log",
+   "sha256": "5f3d4cf41f157ebb632a817c594f74bd9149fa52c46f352b0010cc610144772e",
+   "bytes": 1365
+  },
+  {
+   "file": "suites/lab-e2e-webots-coffee.json",
+   "sha256": "8e5864f7045e7bfc64e1ab0cb75e74e0670c34e9336f5ce3d37b43ac667e7784",
+   "bytes": 4101
+  },
+  {
+   "file": "suites/lab-e2e-webots-coffee.log",
+   "sha256": "23f785df6e22a773724125ccbe9a9ce723cc5298b4d4d25704606cfbc5305314",
+   "bytes": 931
+  },
+  {
+   "file": "suites/lab-rt-unit.json",
+   "sha256": "d040f26473749ea152a8166b37286fa2678380f9876913d7cbd23ee162b32a14",
+   "bytes": 18466
+  },
+  {
+   "file": "suites/lab-rt-unit.log",
+   "sha256": "1f2c4a7bf1653365ff28d052578fbcf94ab879e82dc4107c0542fa65b8587b0d",
+   "bytes": 1484
+  },
+  {
+   "file": "suites/lab-ui-unit.json",
+   "sha256": "8eb136c4d0b257cbfa2f1895744dc6eb30e349e8accfe4950c30b68d4b85332e",
+   "bytes": 25126
+  },
+  {
+   "file": "suites/lab-ui-unit.log",
+   "sha256": "8e22659003b89f7729dc4a1658fe74fc5578affff8374442a66e9b408b162890",
+   "bytes": 915
+  },
+  {
+   "file": "suites/licenses.log",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "bytes": 0
+  },
+  {
+   "file": "suites/ma-bv01.json",
+   "sha256": "638128bb46a36e8fa83946a6867a7a8fc1e456eb08b9c35c494206e07abf5449",
+   "bytes": 5297
+  },
+  {
+   "file": "suites/ma-bv01.log",
+   "sha256": "719f3ffea2d45f18f9460ba0ba8cae92157ac9231eb28a3d9193b178a369ce2a",
+   "bytes": 5879
+  },
+  {
+   "file": "suites/ma-contact.json",
+   "sha256": "a3ab90cc05a43f2ba2e75e42d0020859c41dfdc8687e7dfc2a3a656c30d8483f",
+   "bytes": 16062
+  },
+  {
+   "file": "suites/ma-contact.log",
+   "sha256": "7f22b59d5eeaa94e47de90a96ba0f53ba12f294c0de61b30a2c9995d38d2eec5",
+   "bytes": 602
+  },
+  {
+   "file": "suites/ma-faults.json",
+   "sha256": "67032b9854c9be78f388b0db67508d56b0e1ad8a7bf0ce565cafa0e4ccfdf0cf",
+   "bytes": 8472
+  },
+  {
+   "file": "suites/ma-faults.log",
+   "sha256": "f02ca6fe5ca1aa34a43b34bafbf49c456cc21d0566649325a524cf22c059b399",
+   "bytes": 6342
+  },
+  {
+   "file": "suites/ma-ports.json",
+   "sha256": "35e0f3391a537fd3377ba41241b1cadc9722e2726fafbace9b2f528bdbbfb8c3",
+   "bytes": 7122
+  },
+  {
+   "file": "suites/ma-ports.log",
+   "sha256": "5631552667df8ac1c58adee0c8352abcc17c760f8976f635556c317b1c96c238",
+   "bytes": 962
+  },
+  {
+   "file": "suites/ma-programs.json",
+   "sha256": "6e9cab823b00abbb3df67b7aa625dd8542aa6b4f478efdb13e50472bbe0d6732",
+   "bytes": 1484
+  },
+  {
+   "file": "suites/ma-programs.log",
+   "sha256": "d7f781021ae0dced39cfb37bab0fc54cb360499595cdb5ef2a9fbb6a29745094",
+   "bytes": 3823
+  },
+  {
+   "file": "suites/ma-py.log",
+   "sha256": "0e5cb64768ba050708f63df4d42c52e9e8911dcf8bbf9e71b92d0cd3b6c99b9f",
+   "bytes": 99
+  },
+  {
+   "file": "suites/ma-py.xml",
+   "sha256": "7b92d063719d97e9a11186358f17f388f70abb218620ba209c64274ea47ae93a",
+   "bytes": 5624
+  },
+  {
+   "file": "suites/ma-rtb.json",
+   "sha256": "62da3a45624bcd22e7fb26b0a2d05934382479026416f17f802166ce9045445e",
+   "bytes": 1038
+  },
+  {
+   "file": "suites/ma-rtb.log",
+   "sha256": "19455dbdc3354c95c65a28e6d8b2121968ae1940e2cc789f25f85cfdf5a46399",
+   "bytes": 544
+  },
+  {
+   "file": "suites/ma-static.json",
+   "sha256": "98946db6313e2ce67b1d2df0f59fb8d85e6ade91994c98247e8e29367e78a3a3",
+   "bytes": 12838
+  },
+  {
+   "file": "suites/ma-static.log",
+   "sha256": "89403028fc880bef873f3ae7c7c4e21a9ba140d0136dcf7e328bcf55c79fb3c0",
+   "bytes": 668
+  },
+  {
+   "file": "suites/ma-worker.json",
+   "sha256": "69fbc063d7f2e40d3e22922511d16d0aea03b17204ebe70584761d58f8470b2e",
+   "bytes": 1824
+  },
+  {
+   "file": "suites/ma-worker.log",
+   "sha256": "0e96fdb8814e1953b0389596f28112a55f650d07e764115559fff646d073e4d3",
+   "bytes": 819
+  },
+  {
+   "file": "suites/regress.json",
+   "sha256": "565df503229ffd2658477f020fd3a5efff09927f65948078fa9d891e7a56f316",
+   "bytes": 14652
+  },
+  {
+   "file": "suites/regress.log",
+   "sha256": "9f30ad203758354841e89be3c3313468eea7ef469ec1095ed51af58fafcb4a43",
+   "bytes": 1688
+  },
+  {
+   "file": "suites/rt-container.json",
+   "sha256": "efe379e42294de79a9d8f74e71e853aff205ff8aa66896a72962c3e8f55daf9d",
+   "bytes": 985
+  },
+  {
+   "file": "suites/rt-container.log",
+   "sha256": "6c0b76c04f8252d6eb9d586b1d7ef28b4eb415451d6e39d2e4a2996e53984a77",
+   "bytes": 1055
+  },
+  {
+   "file": "suites/rt-image.log",
+   "sha256": "6e8d570ccf52e9f6bbfdb9787304011145ade8c27bf7a997c7beed3eaee44fd8",
+   "bytes": 1926
+  },
+  {
+   "file": "suites/rt-paced.json",
+   "sha256": "af840c56ee577ec9126fb3e9b9c479ce21c61c6268615b75b228b1a5db353271",
+   "bytes": 5585
+  },
+  {
+   "file": "suites/rt-paced.log",
+   "sha256": "02f7d69faf02c4196563a90f2e41b33a15953fd4ac1b66351fcb034aca3191b0",
+   "bytes": 1899
+  },
+  {
+   "file": "suites/rt-remote.json",
+   "sha256": "39175282e31b879ccc5beea1d4c0b7b0798779fcd5b344b3d0c170eb9c06c1f1",
+   "bytes": 5953
+  },
+  {
+   "file": "suites/rt-remote.log",
+   "sha256": "fa7a1e16a353af99251c75d8874d86971698c29c11d8736688ea4d2d80fcf001",
+   "bytes": 722
+  }
+ ]
+}

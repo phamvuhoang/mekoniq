@@ -1,0 +1,17 @@
+
+ RUN  v4.1.12 <workspace>/lab
+
+ ✓ tests/unit/arm-chain.test.ts (3 tests) 5ms
+ ✓ tests/integration/runtime-artifact.test.ts (5 tests) 130ms
+ ✓ tests/unit/twin-workspace.test.ts (10 tests) 8ms
+ ✓ tests/unit/webots-coffee.test.ts (6 tests) 6ms
+ ✓ tests/integration/webots-launcher.test.ts (4 tests) 1414ms
+   ✓ without Webots at the configured home the launcher exits WEBOTS_NOT_INSTALLED before any port is opened  484ms
+   ✓ a Webots that is not R2025a exits WEBOTS_VERSION_MISMATCH before any port is opened  927ms
+
+ Test Files  5 passed (5)
+      Tests  28 passed (28)
+   Start at  20:38:06
+   Duration  1.59s (transform 494ms, setup 0ms, import 991ms, tests 1.56s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r11-candidate-03/suites/lab-arm-unit.json

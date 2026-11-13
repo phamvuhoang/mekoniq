@@ -1,6 +1,0 @@
-ERROR: USER or USERNAME environment variable not set, falling back to 'default' username.
-sh: ioreg: command not found
-INFO: 'mekoniq_supervisor' extern controller: Waiting for local or remote connection on port 22233 targeting robot named 'mekoniq_supervisor'.
-INFO: 'amr-1' extern controller: Waiting for local or remote connection on port 22233 targeting robot named 'amr-1'.
-INFO: 'amr-1' extern controller: connected.
-INFO: 'mekoniq_supervisor' extern controller: connected.

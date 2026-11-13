@@ -1,0 +1,15 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/unit/mujoco-arm-ports.test.ts (15 tests) 4110ms
+     ✓ each advance sends exactly one step (the tick advances by one); a nozzle cup is placed once on the stand, a delivered cup is parked once  312ms
+     ✓ close ends the worker and gives the slot back; the host has one MuJoCo slot  549ms
+     ✓ the arm block names what the engine was given: the component, the physics as used and the cell scene; a pad friction override changes the scene digest  536ms
+     ✓ the supports join the arm's own obstacles when the ports open, once, also when a run reopens them  520ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  20:48:00
+   Duration  5.07s (transform 538ms, setup 0ms, import 889ms, tests 4.11s, environment 0ms)
+
+JSON report written to /private/tmp/claude-502/-Users-hoangpham-source-prv-robot/cc93e87d-a07d-4ffd-8fd8-80d0f945b68a/scratchpad/q02d/r2a-candidate-01/suites/ma-ports.json

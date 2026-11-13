@@ -1,0 +1,67 @@
+{
+ "id": "024-IR-FD01-workerkill-serve-demo-v1-s34-r1",
+ "index": 16,
+ "scenarioId": "IR-FD01-workerkill",
+ "fixtureId": "serve-demo-v1",
+ "seed": 34,
+ "repeat": 1,
+ "expectedAssertions": [
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "EVIDENCE_GAP_AS_DECLARED",
+  "CARGO_KEPT",
+  "NO_SECOND_WORKER"
+ ],
+ "kind": "operator_fault",
+ "label": "IR10: worker process killed between steps on the table leg; leg unknown, no resend, no second worker, cargo kept, the unknown tick a recorded gap",
+ "stepTicks": 500,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "needs_attention",
+  "served": "0",
+  "tick": 1250,
+  "simTimeNs": "25000000000"
+ },
+ "horizon": 1250,
+ "evidenceComplete": false,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "6b973de0c2147c0944c006ac3a6c9d0f9f8f636d17f1a1f53b2134c50d1d0efb",
+  "sensorDigest": "edf11d76f1cf444e0c5b08dc030b863a6bf8f5a3eb37b22401f75af2aee93800",
+  "assertionDigest": "d5befe20efef3d1c137ada26291f16326aa75aa72fb7eb503912db019289df7a",
+  "outcomeDigest": "13f72b03a9c0b0a4354278e8181f5e2fd800ea9e301287a97f25dec4f8761bce"
+ },
+ "assertions": [
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "EVIDENCE_GAP_AS_DECLARED",
+   "result": "pass"
+  },
+  {
+   "id": "CARGO_KEPT",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SECOND_WORKER",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 5969,
+ "provider": {
+  "id": "irsim_2d",
+  "kind": "irsim_worker"
+ }
+}

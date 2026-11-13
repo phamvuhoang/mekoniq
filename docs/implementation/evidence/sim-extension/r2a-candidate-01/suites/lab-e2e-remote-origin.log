@@ -1,0 +1,16 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source bb16724859ee8377be62389a851ac36ea4a0309a · artifact 67a1a20cf12f · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>/mekoniq-mock-e2e-ViA4dL/runs-remote-origin.spec.ts
+Owned processes: runtime pid 12948, UI pid 12949
+Also serving the Lab at http://localhost:4177 (no /lab there: enter the runtime address http://127.0.0.1:4176; runtime allows http://localhost:4177)
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 655 ms. Press Ctrl-C to stop.
+Running remote-origin.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/remote-origin.spec.ts:11:1 › a Lab on another origin sends nothing to the runtime before the click, then pairs with a bearer and runs BV01 to completed (22.6s)
+
+  1 passed (24.0s)
+
+Stopping the runtime and UI this launcher started…

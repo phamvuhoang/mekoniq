@@ -1,0 +1,24 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source bb16724859ee8377be62389a851ac36ea4a0309a · artifact 67a1a20cf12f · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>/mekoniq-mock-e2e-JNOPAl/runs-twin-polish.spec.ts
+Owned processes: runtime pid 13071, UI pid 13072
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 556 ms. Press Ctrl-C to stop.
+Running twin-polish.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 10 tests using 1 worker
+
+  ✓   1 tests/e2e/twin-polish.spec.ts:26:2 › twin page polish › a notice is shown in the banner, not counted; an emptied problems box does not reopen by itself (525ms)
+  ✓   2 tests/e2e/twin-polish.spec.ts:42:2 › twin page polish › running: a plain runtime word on the bar, the telemetry detail in the Engineering tab and the runtime box, repainted live (1.4s)
+  ✓   3 tests/e2e/twin-polish.spec.ts:58:2 › twin page polish › Engineering tab with the arm selected: one block per quantity, nothing wider than the panel (221ms)
+  ✓   4 tests/e2e/twin-polish.spec.ts:70:2 › twin page polish › Objects tab: the current cup line keeps its distance from the job cards (15ms)
+  ✓   5 tests/e2e/twin-polish.spec.ts:76:2 › twin page polish › one attention problem: one card holding its chain, object buttons by name; the box stays closed; the scenario name is not cut (310ms)
+  ✓   6 tests/e2e/twin-polish.spec.ts:103:2 › twin page polish › the runtime box repeats the telemetry detail, repainted live (181ms)
+  ✓   7 tests/e2e/twin-polish.spec.ts:113:2 › twin page polish › scenario picker: a preset that cannot run gives one reason per backend (91ms)
+  ✓   8 tests/e2e/twin-polish.spec.ts:122:2 › twin page polish › toolbar buttons expose their state; ? moves focus into the key list and back; one twin-help button; the label explains itself in watch mode (209ms)
+  ✓   9 tests/e2e/twin-polish.spec.ts:147:2 › twin page polish › replay: no live action on the run bar, a recorded tag, no run speed; Space on the scrubber plays, a held Space toggles once (570ms)
+  ✓  10 tests/e2e/twin-polish.spec.ts:173:2 › twin page polish › 1024 × 700: no vertical scroll and the run bar keeps its one row (100ms)
+
+  10 passed (4.7s)
+
+Stopping the runtime and UI this launcher started…

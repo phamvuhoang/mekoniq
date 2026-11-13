@@ -1,0 +1,72 @@
+{
+ "id": "023-IR-FD01-cancel-serve-demo-v1-s33-r1",
+ "index": 15,
+ "scenarioId": "IR-FD01-cancel",
+ "fixtureId": "serve-demo-v1",
+ "seed": 33,
+ "repeat": 1,
+ "expectedAssertions": [
+  "EVIDENCE_COMPLETE",
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "NO_PHYSICAL_CONTACT",
+  "CANCEL_BOUNDED_STOP",
+  "ONE_TERMINAL_PER_MISSION"
+ ],
+ "kind": "operator_fault",
+ "label": "IR05: operator cancel mid-route on the kitchen leg; cancelled, nothing served, bounded simulated stop",
+ "stepTicks": 500,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "cancelled",
+  "served": "0",
+  "tick": 424,
+  "simTimeNs": "8480000000"
+ },
+ "horizon": 424,
+ "evidenceComplete": true,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "0cc082515724cd09fc460f297e86ae3dc5a59b3ca6d9b5a8cc9e237c59ea8d55",
+  "sensorDigest": "758c4fcbd3eb40ccad6ae5cd85a2520a84e70f98f3fde9f00a343d48defea119",
+  "assertionDigest": "23595fd93edef8e5040b063ef5818f1f67af8c2e39d350cf3fe9b7b863e0ae1d",
+  "outcomeDigest": "2cd51f23d47ef5452e40a5bb63ce894b90a0d9aa70d76567f2c5f682bc1cb470"
+ },
+ "assertions": [
+  {
+   "id": "EVIDENCE_COMPLETE",
+   "result": "pass"
+  },
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "NO_PHYSICAL_CONTACT",
+   "result": "pass"
+  },
+  {
+   "id": "CANCEL_BOUNDED_STOP",
+   "result": "pass"
+  },
+  {
+   "id": "ONE_TERMINAL_PER_MISSION",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 3775,
+ "provider": {
+  "id": "irsim_2d",
+  "kind": "irsim_worker"
+ }
+}

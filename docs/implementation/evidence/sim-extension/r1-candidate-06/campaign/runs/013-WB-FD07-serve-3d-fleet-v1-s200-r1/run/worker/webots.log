@@ -1,0 +1,21 @@
+ERROR: USER or USERNAME environment variable not set, falling back to 'default' username.
+sh: ioreg: command not found
+UNSUPPORTED (log once): POSSIBLE ISSUE: unit 0 GLD_TEXTURE_INDEX_2D is unloadable and bound to sampler type (Float) - using zero texture because texture unloadable
+INFO: 'mekoniq_supervisor' extern controller: Waiting for local or remote connection on port 21332 targeting robot named 'mekoniq_supervisor'.
+INFO: 'robot01' extern controller: Waiting for local or remote connection on port 21332 targeting robot named 'robot01'.
+INFO: 'robot02' extern controller: Waiting for local or remote connection on port 21332 targeting robot named 'robot02'.
+INFO: 'mekoniq_supervisor' extern controller: connected.
+INFO: 'robot01' extern controller: connected.
+INFO: 'robot02' extern controller: connected.
+INFO: '<extern>' controller exited successfully.
+INFO: '<extern>' controller exited successfully.
+INFO: '<extern>' controller exited successfully.
+INFO: 'robot02' extern controller: disconnected.
+INFO: 'robot01' extern controller: disconnected.
+INFO: 'mekoniq_supervisor' extern controller: disconnected.
+INFO: 'mekoniq_supervisor' extern controller: Waiting for local or remote connection on port 21332 targeting robot named 'mekoniq_supervisor'.
+INFO: 'robot01' extern controller: Waiting for local or remote connection on port 21332 targeting robot named 'robot01'.
+INFO: 'robot02' extern controller: Waiting for local or remote connection on port 21332 targeting robot named 'robot02'.
+INFO: 'mekoniq_supervisor' extern controller: disconnected.
+INFO: 'robot01' extern controller: disconnected.
+INFO: 'robot02' extern controller: disconnected.
