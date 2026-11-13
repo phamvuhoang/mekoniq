@@ -46,12 +46,17 @@ const UUID='[0-9a-f-]{36}';
 const PAIRING_FAILURES=5,PAIRING_WINDOW_MS=60000;
 const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
 // the MuJoCo slot is taken: a conflict, as IR-SIM's; the engine could not create the cell: unavailable, not a runtime failure (the Webots codes keep 500)
-const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_SCHEDULE_UNSUPPORTED$)/.test(m)?422:500;
+const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
 export function createV2Gateway(deps:V2Deps){
  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
  const sessions=new Map<string,{csrf:string;expiresAt:number}>();
  // Runs are owned by the v2 pairing session that created them; another session sees 404, exactly as for an unknown id.
  const runs=new Map<string,{owner:string;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput}>();let creating=0;
+ // Readiness and creation share cleanup. Concurrent callers wait for the worker to close before probing its slot.
+ let expiryCleanup=Promise.resolve();
+ const closeExpiredRuns=()=>expiryCleanup=expiryCleanup.then(async()=>{
+  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});}}
+ });
  const reclaiming=new Set<string>();
  let pairingFailures:number[]=[];
  const streams=new Set<ServerResponse>(),streamOptions={...STREAM_DEFAULTS,...deps.stream};
@@ -149,6 +154,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    }else return deny(response,405,'METHOD_NOT_ALLOWED',[]);
    const readinessSet=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]:undefined;
    if(readinessSet?.scenarioIds&&readinessSet.bundle!==false&&!(method==='POST'&&context.project!==undefined&&engineeringChecked))return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
+   await closeExpiredRuns();
    return send(response,200,await collectReadiness(context,readinessOptions()));
   }
   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
@@ -193,7 +199,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    // Contract admission and execution availability are separate; native runs require a server-owned factory.
    if((set.mode!=='mock'&&!(set.mode==='simulation'&&deps.simulationFactory))||!required.every(b=>enabled.has(b)))return deny(response,501,'BACKEND_UNAVAILABLE',['BACKEND_EXECUTION_DISABLED']);
    // Expired sessions free active slots (before readiness: a single-slot provider must not count a run that is already due to close). Their durable checkpoints can later be reclaimed with local ownership proof.
-   for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});}}
+   await closeExpiredRuns();
    const readiness=await collectReadiness({scenarioId:r.scenarioId,backendSetId:r.backendSetId,project,...engineering?{engineering:engineering.ref}:{}},readinessOptions());
    if(!readiness.canStart)return deny(response,422,'BACKEND_UNAVAILABLE',readiness.checks.flatMap(c=>c.reasonCodes));
    if(runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
@@ -262,5 +268,5 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
  return Object.assign(handle,{
   /** Ends open SSE connections so the HTTP server can close. */
   endStreams(){for(const r of streams)r.end();streams.clear();},
-  close:async()=>{await Promise.all([...runs.values()].map(x=>x.run.close().catch(()=>{})));runs.clear();}});
+  close:async()=>{await expiryCleanup;await Promise.all([...runs.values()].map(x=>x.run.close().catch(()=>{})));runs.clear();}});
 }

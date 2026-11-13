@@ -5,8 +5,9 @@ import {qrotate,type Vec3} from '../frames';
 import {hashJson} from '../hash';
 export type ArmObstacle={id:string;kind:'sphere';center:Vec3;radiusM:number}|{id:string;kind:'box';min:Vec3;max:Vec3};
 /** `linkRadiiM` (one per link, link-1..link-6) replaces `linkRadiusM` link by link. `cupAxisInTool` lays the held cup along that tool-frame axis, centred on the TCP (side grip);
- * absent, the cup stands on the tool axis beyond the gripper as before. Without the two fields every result is the same, number for number. */
-export interface ArmGeometry {linkRadiusM:number;gripperRadiusM:number;gripperLengthM:number;cupRadiusM:number;cupHeightM:number;provenance:'illustrative'|'assumed';linkRadiiM?:number[];cupAxisInTool?:[number,number,number]}
+ * absent, the cup stands on the tool axis beyond the gripper as before. `gripperBackM` extends the gripper behind the TCP along tool -z to cover the palm;
+ * `gripperLengthM` remains its forward reach along tool +z. Omitted fields preserve the reference geometry exactly. */
+export interface ArmGeometry {linkRadiusM:number;gripperRadiusM:number;gripperLengthM:number;cupRadiusM:number;cupHeightM:number;provenance:'illustrative'|'assumed';linkRadiiM?:number[];cupAxisInTool?:[number,number,number];gripperBackM?:number}
 export const DEFAULT_ARM_GEOMETRY:ArmGeometry={linkRadiusM:0.025,gripperRadiusM:0.02,gripperLengthM:0.025,cupRadiusM:0.035,cupHeightM:0.09,provenance:'illustrative'};
 /** `allowed` is present only when allowed pairs were given: the pairs, and those of them that were in contact (clearance <= 0) at any evaluated configuration of the sweep, in the given order. */
 export interface SweepResult {ok:boolean;engine:'capsule-sweep-v1';modelRevision:string;geometryRevision:string;toleranceM:number;evaluations:number;reason?:'COLLISION'|'SWEEP_UNCERTAIN';pair?:[string,string];fraction?:number;clearanceM?:number;
@@ -45,7 +46,7 @@ function bodies(model:ArmModelSI,q:readonly number[],geometry:ArmGeometry,heldCu
  const fk=forwardKinematics(model,q),points:Vec3[]=[[0,0,0],...fk.frames.map(f=>f.position)],out:Capsule[]=[];
  for(let i=1;i<points.length;i++)if(Math.hypot(...sub(points[i]!,points[i-1]!))>1e-9)out.push({id:`link-${i}`,a:points[i-1]!,b:points[i]!,radius:geometry.linkRadiiM?.[i-1]??geometry.linkRadiusM,link:out.length,kind:'link'});
  const link=out.length;
- out.push({id:'gripper',a:fk.tcp.position,b:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM])),radius:geometry.gripperRadiusM,link,kind:'gripper'});
+ out.push({id:'gripper',a:geometry.gripperBackM?sub(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperBackM])):fk.tcp.position,b:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM])),radius:geometry.gripperRadiusM,link,kind:'gripper'});
  const axis=geometry.cupAxisInTool;
  if(heldCup&&axis){const n=Math.hypot(...axis),half=qrotate(fk.tcp.quaternionXyzw,axis.map(v=>v/n*geometry.cupHeightM/2) as Vec3);out.push({id:'held-cup',a:sub(fk.tcp.position,half),b:add(fk.tcp.position,half),radius:geometry.cupRadiusM,link,kind:'cup'});}
  else if(heldCup)out.push({id:'held-cup',a:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM])),b:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM+geometry.cupHeightM])),radius:geometry.cupRadiusM,link,kind:'cup'});
@@ -80,7 +81,7 @@ export function checkArmSweep(model:ArmModelSI,from:readonly number[],to:readonl
  for(const o of options.world)if(!o.id||(o.kind==='sphere'?(!vector(o.center)||!Number.isFinite(o.radiusM)||o.radiusM<=0):o.kind!=='box'||!vector(o.min)||!vector(o.max)||o.min.some((n,k)=>n>=o.max[k]!)))throw new Error('COLLISION_WORLD_INVALID');
  forwardKinematics(model,from);forwardKinematics(model,to);
  const result:SweepResult={ok:true,engine:'capsule-sweep-v1',modelRevision:model.revision,geometryRevision:hashJson({geometry,world:options.world}),toleranceM,evaluations:0};
- const reach=model.links.reduce((sum,l)=>sum+Math.abs(l.a)+Math.abs(l.d),Math.hypot(...model.toolM))+geometry.gripperLengthM+geometry.cupHeightM;
+ const reach=model.links.reduce((sum,l)=>sum+Math.abs(l.a)+Math.abs(l.d),Math.hypot(...model.toolM))+Math.max(geometry.gripperBackM??0,geometry.gripperLengthM)+geometry.cupHeightM;
  const totalMovement=reach*from.reduce((sum,q,i)=>sum+Math.abs(to[i]!-q),0);
  const pairs=options.allowedPairs??[],touched=pairs.length?new Set<number>():undefined;
  const evaluate=(fraction:number)=>{result.evaluations++;return clearance(bodies(model,from.map((q,i)=>q+(to[i]!-q)*fraction),geometry,options.heldCup??false),options.world,pairs,touched);};

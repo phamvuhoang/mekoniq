@@ -56,7 +56,7 @@ describe('mujocoProgramSet', () => {
     expect(world).toEqual([{ id: 'nozzle-stand', kind: 'box', min: L.nozzleStand.centerM.map((c, i) => c - L.nozzleStand.sizeM[i]! / 2), max: L.nozzleStand.centerM.map((c, i) => c + L.nozzleStand.sizeM[i]! / 2) },
       { id: 'tray', kind: 'box', min: L.tray.centerM.map((c, i) => c - L.tray.sizeM[i]! / 2), max: L.tray.centerM.map((c, i) => c + L.tray.sizeM[i]! / 2) }]);
     const allowed = checkArmSweep(XARM6_SI, pick, pick, { world, heldCup: true, ...set.collision! });
-    expect(allowed.ok).toBe(true); expect(allowed.allowed).toEqual({ pairs: set.collision!.allowedPairs, inContact: [['held-cup', 'nozzle-stand']] });
+    expect(allowed.ok).toBe(true); expect(allowed.allowed).toEqual({ pairs: set.collision!.allowedPairs, inContact: [['gripper', 'nozzle-stand'], ['held-cup', 'nozzle-stand']] });
     const strict = checkArmSweep(XARM6_SI, pick, pick, { world, heldCup: true, geometry: set.collision!.geometry });
     expect(strict).toMatchObject({ ok: false, reason: 'COLLISION', pair: ['held-cup', 'nozzle-stand'] }); expect(strict.allowed).toBeUndefined();
   });
@@ -65,7 +65,7 @@ describe('mujocoProgramSet', () => {
     expect({ ...set, contact: undefined, collision: undefined }).toEqual({ ...fixture.programs, contact: undefined, collision: undefined });
     expect(set.contact).toEqual({ openM: 0.0889, closedM: 0, gripSettleTicks: oracle.gripSettleTicks, dropTicks: oracle.dropTicks, liftMinM: oracle.liftMinM, releaseTimeoutTicks: 200 });
     expect(MUJOCO_ARM_RELEASE_TIMEOUT_TICKS).toBe(200);
-    expect(set.collision!.geometry).toMatchObject({ ...DEFAULT_ARM_GEOMETRY, provenance: 'assumed', linkRadiiM: fixture.physics.capsuleRadiusM, cupRadiusM: 0.04, cupHeightM: 0.1 });
+    expect(set.collision!.geometry).toMatchObject({ ...DEFAULT_ARM_GEOMETRY, gripperBackM: expect.closeTo(0.181, 12), gripperRadiusM: expect.closeTo(0.06330284353802758, 12), provenance: 'assumed', linkRadiiM: fixture.physics.capsuleRadiusM, cupRadiusM: 0.04, cupHeightM: 0.1 });
     expect(set.collision!.allowedPairs).toEqual([['gripper', 'nozzle-stand'], ['held-cup', 'tray']]);
   });
   test('the held cup lies along the map vertical at the pick pose: the side grip\'s cup axis in the tool frame comes from the grasp frame', () => {

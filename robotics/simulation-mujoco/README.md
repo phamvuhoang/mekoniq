@@ -26,6 +26,9 @@ The plant of the `mujoco_arm` provider (R2a): UFACTORY xArm 6 + Gripper G2, a no
   cannot touch arm links; the rule is stated for any model). A MuJoCo bad-state warning (`BADQPOS`/`BADQVEL`/`BADQACC`, after which MuJoCo resets the
   state) is `PLANT_UNSTABLE`.
 - `physics.capsuleRadiusM`/`capsuleSegmentsM` are not used here: they are the TS capsule sweep's (ARM03), not the engine's collision.
+  ARM03 also uses a conservative gripper capsule extending behind the TCP to the palm's back face, with the palm's xy half-diagonal as its radius.
+  For the pinned fixture it encloses the palm and both pads from open to closed; the geometry remains assumed.
+- `arm-drop` is unsupported on this contact plant: both scheduled and immediate injections are refused before being recorded. Cup-loss tests use physical contact faults.
 
 Friction: MuJoCo combines two geoms of equal `priority` by taking the larger of each coefficient; a geom with a higher `priority` imposes its own. Pads have
 `priority 1`, so cup–pad contact uses the pad: `world3d.padFriction` (torsional and rolling from `physics.contact.padFriction`). Every other cup contact is
@@ -38,5 +41,5 @@ In the Lab, `pnpm lab:mujoco` (`lab/`) starts the pinned runtime with this worke
 
 ```sh
 node scripts/bootstrap-portable-simulation.mjs mujoco
-PYTHONDONTWRITEBYTECODE=1 .venv-mujoco/bin/python -m pytest robotics/simulation-mujoco/tests -q
+PYTHONDONTWRITEBYTECODE=1 .venv-mujoco/bin/python -m pytest -p no:cacheprovider robotics/simulation-mujoco/tests -q
 ```
