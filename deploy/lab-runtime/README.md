@@ -49,12 +49,18 @@ The runtime's own asset catalog resolves the project's robot asset by content ha
 
 Base image: `node:24.22.2-bookworm-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9` (index; linux/arm64 and linux/amd64). Image size about 474 MB (arm64) and 457 MB (amd64) (the 178 MB venv holds the whole lock, including pytest). Builds take about 10-15 s with a warm layer cache, 40-60 s cold.
 
-Wall time of the whole stepping loop of `MJ-BV01` (4800 ticks, `step{ticks:50}`, through the public HTTP API, in the container, seed 42, `armSceneCollision: true`):
+Each row names the commit its image was built from. Any later commit makes an earlier image stale (the test refuses it), so the rows are history, not a claim about HEAD: the gate run is repeated at the commit of a qualification record by the recorder, not by this README. Times are the wall time of the stepping loop divided by ticks, through the public HTTP API, in the container, seed 42, `armSceneCollision: true`, on this Mac (they vary by about 20 % from run to run with machine load).
 
-| Architecture | Result | Wall time per tick |
-|---|---|---|
-| linux/arm64 (native, RT05) | passed: completed at tick 4800, served 2 | 1.88 ms (9.0 s) |
-| linux/amd64 under emulation (a measurement, not a criterion) | not completed: `needs_attention` at tick 1600, served 0; `TRANSFER_UNKNOWN` of `coffee-job-1` first raised at tick 1585; arm stop `PLANT_UNSTABLE`, detail "the engine reported a bad state (BADQACC) and reset itself" (stop tick 1585) | 3.4-3.5 ms over the 1600 ticks it ran (5.4-5.6 s) |
+| Built from | Architecture | Result | Wall time per tick |
+|---|---|---|---|
+| `939d8a2` | linux/arm64 (native, RT05) | passed: completed at tick 4800, served 2 | 1.77 ms (8.5 s) |
+| `d6e7b8c`, `78f166c` | linux/arm64 | passed | 1.80-1.88 ms (this 1.88 ms run is not the final-HEAD run) |
+| `69f1be5` (wheels only) | linux/arm64 | passed, `docker stop` 0.33 s | 2.15 ms (10.3 s, a busier machine) |
+| `d6e7b8c`-`69f1be5` | linux/amd64 under emulation | not completed (see below), a partial failed run | 3.4-4.5 ms, over the 1600 ticks it ran |
+
+The amd64 ms/tick covers only a partial, failed run (1600 of 4800 ticks, not the full scenario), so it is not comparable with the arm64 figures.
+
+**The MuJoCo arm is unproven on Cloud Run until it has run on real amd64; the mock backends do not use the engine.**
 
 ## Real amd64 hardware has not been tested
 
