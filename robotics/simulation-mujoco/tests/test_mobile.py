@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 
 from mujoco_worker.drive import wheel_targets, torque_limits
+from mujoco_worker.compile import CompileError
 from mujoco_worker.compile_mobile import compile_mobile
 from mujoco_worker.mobile_engine import MobileEngine
 from mujoco_worker.session import WorkerSession, scene_digest_of
@@ -292,6 +293,58 @@ def test_geometry_quaternion_is_refused_instead_of_normalized_by_engine():
     next(l for l in args[1]["amr-1"]["links"] if l["id"] == "chassis/base")["collision"][0]["pose"]["quaternionXyzw"] = [0,0,0,2]
     with pytest.raises(Exception, match="QUATERNION_NOT_NORMALIZED"):
         compile_mobile(*args)
+
+
+@pytest.mark.parametrize("change,code", [("missing", "SENSOR_REFERENCE_UNKNOWN"), ("ambiguous", "SENSOR_REFERENCE_AMBIGUOUS")])
+def test_direct_compiler_resolves_lidar_before_engine_model_creation(change, code):
+    args = inputs()
+    if change == "missing":
+        args[0]["robots"][0]["model"]["sensors"][0]["id"] = "unknown-lidar"
+    else:
+        args[1]["amr-1"]["sensors"].append(copy.deepcopy(args[1]["amr-1"]["sensors"][0]))
+    with pytest.raises(CompileError, match=code) as error:
+        compile_mobile(*args)
+    assert error.value.code == code
+
+
+@pytest.mark.parametrize("change,code", [("missing", "SENSOR_REFERENCE_UNKNOWN"), ("ambiguous", "SENSOR_REFERENCE_AMBIGUOUS")])
+def test_invalid_lidar_reference_never_reaches_factory_or_priming(tmp_path, change, code):
+    import rfc8785
+
+    session = bundle(tmp_path)
+    scene = json.loads((tmp_path/"navigation-scene.json").read_text())
+    if change == "missing":
+        scene["robots"][0]["model"]["sensors"][0]["id"] = "unknown-lidar"
+    else:
+        path = tmp_path / "physical-model-amr-1.json"
+        model = json.loads(path.read_text())
+        model["sensors"].append(copy.deepcopy(model["sensors"][0]))
+        model["modelDigest"] = hashlib.sha256(rfc8785.dumps({k:v for k,v in model.items() if k != "modelDigest"})).hexdigest()
+        path.write_text(json.dumps(model))
+        scene["robots"][0]["model"]["physicalModelDigest"] = model["modelDigest"]
+        # Reseal load modelRef and both byte identities so semantic admission is tested.
+        load_path = tmp_path / "cup-center.json"
+        load = json.loads(load_path.read_text())
+        load["modelRef"]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+        load["digest"] = hashlib.sha256(rfc8785.dumps({k:v for k,v in load.items() if k != "digest"})).hexdigest()
+        load_path.write_text(json.dumps(load))
+        scene["engine"]["loadProfileRef"]["sha256"] = hashlib.sha256(load_path.read_bytes()).hexdigest()
+        for ref in scene["files"]:
+            if ref["path"] in (path.name, load_path.name):
+                raw = (tmp_path/ref["path"]).read_bytes()
+                ref.update(sha256=hashlib.sha256(raw).hexdigest(), bytes=len(raw))
+    nav = scene["robots"][0]["model"]
+    nav["modelDigest"] = hashlib.sha256(rfc8785.dumps({k:v for k,v in nav.items() if k != "modelDigest"})).hexdigest()
+    scene["sceneDigest"] = scene_digest_of(scene)
+    session._validate_document(scene, "navigation-scene-v1.schema.json")
+    (tmp_path/"navigation-scene.json").write_text(json.dumps(scene))
+    calls = []
+    session._factory = lambda *args: calls.append(args)
+    response = session.handle(create_request())
+    assert response.get("error", {}).get("code") == code, response
+    assert calls == []  # neither engine construction nor its priming step is reached
+    assert (session.state, session.tick, session.seq, session.substeps) == ("new", 0, 0, 0)
+    assert session.engine is session.scene is session.snapshot is None
 
 
 def test_resting_on_measures_contact_and_relative_velocity():

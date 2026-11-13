@@ -229,9 +229,11 @@ class WorkerSession:
         actual = hashlib.sha256(rfc8785.dumps({k:v for k,v in model.items() if k != "modelDigest"})).hexdigest()
         if actual != model["modelDigest"] or actual != scene["robots"][0]["model"]["physicalModelDigest"] or model["robotId"] != rid:
             raise WorkerError("MODEL_DIGEST_MISMATCH", "physical model does not match navigation projection")
-        sensors = scene["robots"][0]["model"]["sensors"]
-        if len(sensors) != 1 or sensors[0]["noise"]["distribution"] != "none":
-            raise WorkerError("MODEL_UNSUPPORTED", "one noiseless independent LiDAR is admitted")
+        from .compile_mobile import resolve_lidar
+        try:
+            resolve_lidar(scene["robots"][0]["model"], model)
+        except CompileError as e:
+            raise WorkerError(e.code, e.detail or e.code)
         factory = self._factory
         if factory is None:
             from .mobile_engine import MobileEngine

@@ -104,6 +104,20 @@ def _convex_ccw(poly):
     return area > 0 and all(np.linalg.norm(e) > 1e-12 and all(e[0]*(v[1]-p[1]) - e[1]*(v[0]-p[0]) >= -1e-12 for v in poly) for p,e in zip(poly,edges))
 
 
+def resolve_lidar(navigation_model, physical_model):
+    """Resolve the one admitted LiDAR before any model construction or engine step."""
+    sensors = navigation_model["sensors"]
+    if len(sensors) != 1 or sensors[0]["type"] != "lidar_2d" or sensors[0]["noise"]["distribution"] != "none":
+        raise CompileError("MODEL_UNSUPPORTED", "one noiseless independent LiDAR is admitted")
+    sensor = sensors[0]
+    matches = [s for s in physical_model["sensors"] if s["sensorId"] == sensor["id"]]
+    if not matches:
+        raise CompileError("SENSOR_REFERENCE_UNKNOWN", f"projected LiDAR {sensor['id']!r} is absent from the physical model")
+    if len(matches) != 1:
+        raise CompileError("SENSOR_REFERENCE_AMBIGUOUS", f"projected LiDAR {sensor['id']!r} matches multiple physical sensors")
+    return sensor, matches[0]
+
+
 def compile_mobile(scene, physical_models, load_profile, physics):
     if len(scene["robots"]) != 1 or len(load_profile["props"]) > 8:
         raise CompileError("WORLD_CAPACITY_EXCEEDED")
@@ -120,6 +134,7 @@ def compile_mobile(scene, physical_models, load_profile, physics):
     entry = scene["robots"][0]
     rid = entry["robotId"]
     model = physical_models[rid]
+    resolve_lidar(entry["model"], model)
     links = {l["id"]: l for l in model["links"]}
     joints = {j["child"]: j for j in model["joints"]}
     root = model["baseFrameId"]
@@ -173,8 +188,6 @@ def compile_mobile(scene, physical_models, load_profile, physics):
         raise CompileError("PHYSICS_PROFILE_INVALID", "drive curve exceeds canonical speed limit")
     if any(nav["kinematics"]["maxWheelRadps"][side] != j["limits"]["velocity"]["value"] for side,j in zip(("left", "right"), wheels)):
         raise CompileError("MODEL_PROJECTION_MISMATCH")
-    if any(s["type"] != "lidar_2d" or s["noise"]["distribution"] != "none" for s in nav["sensors"]):
-        raise CompileError("MODEL_UNSUPPORTED", "only noiseless engine LiDAR is admitted")
     heights = [radius - transforms[j["child"]][2, 3] for j in wheels]
     if abs(heights[0] - heights[1]) > 1e-9:
         raise CompileError("MODEL_WHEEL_HEIGHT_INVALID")

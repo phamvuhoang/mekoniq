@@ -10,7 +10,7 @@ import mujoco
 import numpy as np
 
 from .compile import CompileError
-from .compile_mobile import compile_mobile, matrix_pose, pose
+from .compile_mobile import compile_mobile, matrix_pose, pose, resolve_lidar
 from .drive import wheel_targets, torque_limits
 from .engine import BAD_STATE
 from .protocol import WorkerError
@@ -35,6 +35,7 @@ class MobileEngine:
         self.entry = scene["robots"][0]
         self.rid = self.entry["robotId"]
         self.physical = physical_models[self.rid]
+        self.sensor, self.sensor_physical = resolve_lidar(self.entry["model"], self.physical)
         self.model = m = mujoco.MjModel.from_xml_string(xml)
         self.data = d = mujoco.MjData(m)
         mujoco.mj_forward(m, d)
@@ -144,8 +145,7 @@ class MobileEngine:
         return self.read()
 
     def scan(self, tick):
-        sensor = self.entry["model"]["sensors"][0]
-        physical = next(s for s in self.physical["sensors"] if s["sensorId"] == sensor["id"])
+        sensor, physical = self.sensor, self.sensor_physical
         at = physical["poseInBase"]
         transform = _transform(self.data, self.base) @ pose(at["xyzM"], at["quaternionXyzw"])
         n, fov = sensor["beamCount"], sensor["fieldOfViewRad"]
