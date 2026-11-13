@@ -164,10 +164,10 @@ test('status frames with reconcile state and lifecycle events reach the domain a
  expect(reports.at(-1)).toMatchObject({status:{status:'fault',reasonCodes:['RECONCILE_REQUIRED']}});
 });
 
-const PY=resolve('.venv/bin/python'),pyOk=existsSync(PY)&&spawnSync(PY,['-c','import jsonschema, referencing'],{encoding:'utf8'}).status===0;
+const PY=resolve('.venv/bin/python'),pyOk=existsSync(PY)&&spawnSync(PY,['-B','-c','import jsonschema, referencing'],{encoding:'utf8'}).status===0;
 test.skipIf(!pyOk)('the real Python bridge service (fake controller) accepts the adapter end to end over its Unix socket',async()=>{
  const dir=mkdtempSync(join(tmpdir(),'arm-bridge-')),sock=join(dir,'bridge.sock');
- const child=spawn(PY,['tests/fake_service.py','--socket',sock,'--journal',join(dir,'journal.jsonl')],{cwd:'integrations/arm-controller',stdio:['ignore','pipe','inherit']});
+ const child=spawn(PY,['-B','tests/fake_service.py','--socket',sock,'--journal',join(dir,'journal.jsonl')],{cwd:'integrations/arm-controller',stdio:['ignore','pipe','inherit']});
  try{
   await new Promise<void>((ok,fail)=>{child.stdout.once('data',()=>ok());child.once('exit',c=>fail(new Error(`fake service exit ${c}`)));});
   const cap=await connectArmBackend({socketPath:sock,timeoutMs:3000});
