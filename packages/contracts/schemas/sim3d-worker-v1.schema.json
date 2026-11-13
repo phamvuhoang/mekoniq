@@ -781,6 +781,9 @@
               "restingOn"
             ]
           }
+        },
+        "physics": {
+          "$ref": "physics-evidence-v1.schema.json#/definitions/PhysicsTickRecord"
         }
       },
       "required": [

@@ -1,3 +1,5 @@
+import loadSchema from '../../../../contracts/schemas/load-profile-v1.schema.json';
+import physicsSchema from '../../../../contracts/schemas/physics-evidence-v1.schema.json';
 import Ajv,{type ErrorObject} from 'ajv';
 import addFormats from 'ajv-formats';
 import componentSchema from '../../../../contracts/schemas/engineering-component.schema.json';
@@ -15,6 +17,7 @@ import type {AlgorithmResultV1,ArmCellSceneV1,ArmScene3DV1,Sim3DRequestV1,Sim3DR
 import {inertiaProblems} from '../../engineering/inertia';
 import {hashJson} from '../hash';
 export type {AlgorithmResultV1,ArmCellSceneV1,ArmScene3DV1,Sim3DRequestV1,Sim3DResponseV1,Sim3DSnapshotV1,World3DV1,IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1};
+export type {LoadProfileV1,PhysicsEvidenceV1,PhysicsTickRecord,ContactAggregate,LoadObservation} from '../../../../contracts/generated/navigation2d';
 export type {InputIdentity,ArtifactRef,Vec2,SensorMount,Lidar2DProjection} from '../../../../contracts/generated/navigation2d';
 
 /** Content hash of the schemas a physical model is projected against; recorded as projection.sourceSchemaHash. */
@@ -24,7 +27,7 @@ export interface NavigationIssue{path:string;code:string;message:string;}
 export type NavigationDocument=RobotPhysicalModelV1|NavigationModel2DV1|NavigationSceneV1|ModelValidationReportV1;
 export type NavigationCheck={ok:true;value:NavigationDocument}|{ok:false;issues:NavigationIssue[]};
 
-const FILES:Record<string,object>={'engineering-component.schema.json':componentSchema,'robot-physical-model-v1.schema.json':physicalSchema,'navigation-model-2d-v1.schema.json':modelSchema,'navigation-scene-v1.schema.json':sceneSchema,'model-validation-report-v1.schema.json':reportSchema,'irsim-worker-v1.schema.json':workerSchema,'navigation-run-evidence-v1.schema.json':evidenceSchema,'algorithm-result-v1.schema.json':algorithmSchema,'sim3d-worker-v1.schema.json':sim3dSchema,'arm-scene-3d-v1.schema.json':armScene3dSchema,'arm-cell-scene-v1.schema.json':armCellSceneSchema};
+const FILES:Record<string,object>={'load-profile-v1.schema.json':loadSchema,'physics-evidence-v1.schema.json':physicsSchema,'engineering-component.schema.json':componentSchema,'robot-physical-model-v1.schema.json':physicalSchema,'navigation-model-2d-v1.schema.json':modelSchema,'navigation-scene-v1.schema.json':sceneSchema,'model-validation-report-v1.schema.json':reportSchema,'irsim-worker-v1.schema.json':workerSchema,'navigation-run-evidence-v1.schema.json':evidenceSchema,'algorithm-result-v1.schema.json':algorithmSchema,'sim3d-worker-v1.schema.json':sim3dSchema,'arm-scene-3d-v1.schema.json':armScene3dSchema,'arm-cell-scene-v1.schema.json':armCellSceneSchema};
 const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});addFormats(ajv);
 for(const [key,schema] of Object.entries(FILES))ajv.addSchema(schema,key);
 const KEYS:Record<string,{schema:string;digest:string}>={
@@ -87,6 +90,7 @@ function modelRules(m:NavigationModel2DV1):NavigationIssue[]{
 const same=(a:unknown,b:unknown)=>hashJson(a)===hashJson(b);
 function sceneRules(s:NavigationSceneV1):NavigationIssue[]{
  const out=[...dupes(s.robots.map(r=>r.robotId),'/robots'),...dupes(s.actors.map(a=>a.id),'/actors'),...dupes(s.zones.map(z=>z.id),'/zones'),...dupes([...s.world.obstacles,...s.world.boundaries].map(o=>o.id),'/world/obstacles')];
+ if(s.engine.id==='mujoco_3d'&&s.engine.timestepMs*s.engine.substeps!==s.clock.tickMs)out.push(issue('/engine','PHYSICS_CLOCK_MISMATCH','substep timestepMs times substeps must equal clock.tickMs'));
  if(!same({id:s.world.id,revision:s.world.revision,hash:s.world.hash},s.inputs.world))out.push(issue('/world','WORLD_MISMATCH','scene world differs from the pinned input world'));
  if(documentDigest(s.policy,'hash')!==s.policy.hash)out.push(issue('/policy/hash','DIGEST_MISMATCH','policy hash does not match its content'));
  s.robots.forEach((r,i)=>{

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "serve-drive-contact-v1",
+  "revision": 1,
+  "digest": "89a299e8cb44f9134bb23746f2b0e38cf9c2d256643caf8495db17c2c36d5a5a",
+  "calibration": "not_calibrated",
+  "tickMs": 20,
+  "timestepMs": 2,
+  "substeps": 10,
+  "integrator": "implicitfast",
+  "solver": {
+    "iterations": 100,
+    "tolerance": 1e-8
+  },
+  "velocityGainNmsPerRad": 2,
+  "brakeTorqueNm": 6,
+  "driveCurve": [
+    {
+      "speedRadS": 0,
+      "torqueNm": 6
+    },
+    {
+      "speedRadS": 10,
+      "torqueNm": 6
+    },
+    {
+      "speedRadS": 20,
+      "torqueNm": 0
+    }
+  ],
+  "contact": {
+    "sliding": 0.6,
+    "torsionalM": 0.005,
+    "rollingM": 0.0001
+  },
+  "sources": {
+    "velocityGainNmsPerRad": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+    },
+    "brakeTorqueNm": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+    },
+    "driveCurve": {
+      "kind": "assumed",
+      "documentId": "serve-3d-v1/physical-model-amr-1.json",
+      "revision": "1",
+      "locator": "wheel axle effort 6 Nm and speed 20 rad/s; assumed intermediate knee",
+      "contentSha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9"
+    },
+    "contact": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+    },
+    "solver": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+    }
+  },
+  "requiresB02MeasurementLock": true
+}

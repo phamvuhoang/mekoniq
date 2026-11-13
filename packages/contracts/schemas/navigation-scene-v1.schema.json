@@ -333,6 +333,94 @@
             "version",
             "basicTimeStepMs"
           ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "const": "mujoco_3d"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "timestepMs": {
+              "const": 2
+            },
+            "substeps": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "physicsProfileRef": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "path": {
+                  "type": "string",
+                  "maxLength": 240,
+                  "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_-]+(?:/[A-Za-z0-9_.-]+)*\\.json$"
+                },
+                "sha256": {
+                  "$ref": "engineering-component.schema.json#/definitions/Digest"
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "path",
+                "sha256"
+              ]
+            },
+            "loadProfileRef": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "path": {
+                  "type": "string",
+                  "maxLength": 240,
+                  "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_-]+(?:/[A-Za-z0-9_.-]+)*\\.json$"
+                },
+                "sha256": {
+                  "$ref": "engineering-component.schema.json#/definitions/Digest"
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "path",
+                "sha256"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "timestepMs",
+            "substeps",
+            "physicsProfileRef",
+            "loadProfileRef"
+          ]
         }
       ]
     },
@@ -578,7 +666,10 @@
             "type": "object",
             "properties": {
               "id": {
-                "const": "webots_3d"
+                "enum": [
+                  "webots_3d",
+                  "mujoco_3d"
+                ]
               }
             },
             "required": [
@@ -606,6 +697,36 @@
         "properties": {
           "world3d": false
         }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "engine": {
+            "properties": {
+              "id": {
+                "const": "mujoco_3d"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "engine"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "robots": {
+            "type": "array",
+            "maxItems": 1
+          }
+        },
+        "type": "object"
       }
     }
   ]

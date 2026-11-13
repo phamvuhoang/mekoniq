@@ -1,0 +1,4 @@
+serve-payload-v1
+First-party Serve fixture inputs copied byte-for-byte from simulation-3d/fixtures/serve-3d-v1.
+No vendor mesh or code is redistributed by this fixture. Cup dimensions are assumed R2a cell-layout inputs; this is not a measured hardware model.
+The xArm vendor assets remain in xarm6-g2-v1 with their existing NOTICE/license manifest; no vendor assets are copied here.

@@ -687,6 +687,24 @@ export interface NavigationSceneV11 {
         id: 'webots_3d';
         version: 'R2025a';
         basicTimeStepMs: 1 | 2 | 4 | 5 | 10 | 20;
+      }
+    | {
+        id: 'mujoco_3d';
+        version: string;
+        timestepMs: 2;
+        substeps: number;
+        physicsProfileRef: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
+        loadProfileRef: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
       };
   policy: NavigationPolicyV1;
   /**
@@ -1174,6 +1192,7 @@ export interface Sim3DSnapshotV1 {
     quaternionXyzw: number[];
     restingOn: string | null;
   }[];
+  physics?: PhysicsTickRecord;
 }
 /**
  * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
@@ -1240,6 +1259,150 @@ export interface Sim3DModelReadbackV1 {
       forceN?: number;
     }[];
   };
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "PhysicsTickRecord".
+ */
+export interface PhysicsTickRecord {
+  schemaVersion: 1;
+  tick: number;
+  simTimeNs: string;
+  /**
+   * @minItems 0
+   * @maxItems 256
+   */
+  contacts: ContactAggregate[];
+  /**
+   * @minItems 0
+   * @maxItems 8
+   */
+  loads: LoadObservation[];
+  /**
+   * @minItems 0
+   * @maxItems 1
+   */
+  wheels: {
+    robotId: string;
+    /**
+     * @minItems 2
+     * @maxItems 2
+     */
+    angleRad: number[];
+    /**
+     * @minItems 2
+     * @maxItems 2
+     */
+    velocityRadS: number[];
+    /**
+     * @minItems 2
+     * @maxItems 2
+     */
+    torqueNm: number[];
+    /**
+     * @minItems 2
+     * @maxItems 2
+     */
+    targetRadS: number[];
+    saturatedSubsteps: number;
+  }[];
+  /**
+   * @minItems 0
+   * @maxItems 1
+   */
+  odometry: {
+    robotId: string;
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    poseDriveMap: number[];
+  }[];
+  /**
+   * @minItems 0
+   * @maxItems 1
+   */
+  base: {
+    robotId: string;
+    poseMap: {
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      positionM: number[];
+      /**
+       * @minItems 4
+       * @maxItems 4
+       */
+      quaternionXyzw: number[];
+    };
+    rollRad: number;
+    pitchRad: number;
+  }[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ContactAggregate".
+ */
+export interface ContactAggregate {
+  a: string;
+  b: string;
+  samples: number;
+  peakNormalN: number;
+  normalImpulseNs: number;
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  netImpulseMapNs: number[];
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  pointAtPeakMapM: number[];
+  expected: boolean;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "LoadObservation".
+ */
+export interface LoadObservation {
+  propId: string;
+  poseMap: {
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    positionM: number[];
+    /**
+     * @minItems 4
+     * @maxItems 4
+     */
+    quaternionXyzw: number[];
+  };
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  linearVelocityMapMps: number[];
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  angularVelocityMapRadps: number[];
+  supportId: string | null;
+  poseInSupport: {
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    positionM: number[];
+    /**
+     * @minItems 4
+     * @maxItems 4
+     */
+    quaternionXyzw: number[];
+  } | null;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1393,4 +1556,172 @@ export interface ArmCellSceneV1 {
     substeps: 10;
   };
   engineSeed: number;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "LoadProfileV1".
+ */
+export interface LoadProfileV1 {
+  schemaVersion: 1;
+  documentType: 'load-profile';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  modelRef: {
+    path: string;
+    sha256: Digest;
+  };
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  supports: {
+    supportId: string;
+    parentBodyId: string;
+    poseInBody: {
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      positionM: number[];
+      /**
+       * @minItems 4
+       * @maxItems 4
+       */
+      quaternionXyzw: number[];
+    };
+    /**
+     * @minItems 3
+     * @maxItems 32
+     */
+    polygonM: number[][];
+    source: SourceRef;
+  }[];
+  /**
+   * @minItems 0
+   * @maxItems 8
+   */
+  props: {
+    propId: string;
+    massKg: number;
+    /**
+     * @minItems 6
+     * @maxItems 6
+     */
+    inertiaKgM2: number[];
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    comM: number[];
+    geometry: {
+      kind: 'cylinder';
+      radiusM: number;
+      heightM: number;
+    };
+    friction: {
+      sliding: number;
+      torsionalM: number;
+      rollingM: number;
+    };
+    sources: {
+      mass: SourceRef;
+      inertia: SourceRef;
+      com: SourceRef;
+      geometry: SourceRef;
+      friction: SourceRef;
+      attachment: SourceRef;
+    };
+    attachment:
+      | {
+          kind: 'free';
+          supportId: string;
+          initialPoseInSupport: {
+            /**
+             * @minItems 3
+             * @maxItems 3
+             */
+            positionM: number[];
+            /**
+             * @minItems 4
+             * @maxItems 4
+             */
+            quaternionXyzw: number[];
+          };
+        }
+      | {
+          kind: 'fixed_ballast';
+          parentLinkId: string;
+          poseInLink: {
+            /**
+             * @minItems 3
+             * @maxItems 3
+             */
+            positionM: number[];
+            /**
+             * @minItems 4
+             * @maxItems 4
+             */
+            quaternionXyzw: number[];
+          };
+        };
+  }[];
+  /**
+   * @minItems 1
+   * @maxItems 32
+   */
+  assumptions: SourceRef[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "PhysicsEvidenceV1".
+ */
+export interface PhysicsEvidenceV1 {
+  schemaVersion: 1;
+  documentType: 'physics-evidence';
+  identity: {
+    runId: string;
+    bootId: string;
+    sceneDigest: Digest;
+    loadProfileDigest: Digest;
+    physicsProfileDigest: Digest;
+  };
+  /**
+   * @minItems 0
+   * @maxItems 1
+   */
+  streams: {
+    stream: 'physics';
+    /**
+     * @minItems 0
+     * @maxItems 10000
+     */
+    chunks: {
+      path: string;
+      sha256: Digest;
+      bytes: number;
+    }[];
+  }[];
+  coverage: {
+    firstTick: number;
+    lastTick: number;
+    complete: boolean;
+  };
+  /**
+   * @minItems 0
+   * @maxItems 10000
+   */
+  gaps: {
+    firstTick: number;
+    lastTick: number;
+    reason: string;
+  }[];
+  terminalReason: string | null;
+  metricsPolicyDigest: Digest;
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  assumptions: SourceRef[];
 }

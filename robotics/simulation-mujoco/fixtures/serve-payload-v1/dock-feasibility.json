@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "accepted": false,
+  "calibration": "not_calibrated",
+  "inputs": {
+    "physicalModelSha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+    "cellLayoutSha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+    "armComponentSha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+    "programsSha256": "af99b362b9d22ca2bbb327deef6ab820ae6de9dc181643e6ffd61b85e1ce0e48"
+  },
+  "T_map_base": {
+    "positionM": [
+      0,
+      0,
+      0
+    ],
+    "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "T_map_AMR": {
+    "positionM": [
+      0.48591366218667575,
+      0.35,
+      0.09
+    ],
+    "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "T_AMR_tray": {
+    "positionM": [
+      -0.1359136621866758,
+      0,
+      0.4278425907561599
+    ],
+    "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "T_map_tray": {
+    "positionM": [
+      0.35,
+      0.35,
+      0.5178425907561599
+    ],
+    "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "T_base_TCP": {
+    "positionM": [
+      0.365556349186,
+      0.365556349186,
+      0.56984259075616
+    ],
+    "quaternionXyzw": [
+      -0.270598050073,
+      0.653281482438,
+      0.270598050073,
+      0.653281482438
+    ]
+  },
+  "originalTrayTopM": 0.06,
+  "mobileTrayTopM": 0.5178425907561599,
+  "heightDifferenceM": 0.4578425907561599,
+  "distanceBaseToTCPM": 0.7694046185851018,
+  "legacyWaypointPositionResidualM": 0.4578425907561599,
+  "legacyWaypointsReachable": false,
+  "mobileTargetReachable": true,
+  "proposedDockReachable": true,
+  "ik": {
+    "execution": "ran",
+    "modelId": "xarm6-reference",
+    "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+    "reachable": true,
+    "positionResidualM": 3.0915717427199656e-10,
+    "orientationResidualRad": 1.0575928876609957e-10,
+    "condition": 53.476851247311856,
+    "jointPositionsRad": [
+      0.785398163397358,
+      -0.4938334284006984,
+      -1.1520498469648794,
+      -3.1415926535893073,
+      -0.0750869484649222,
+      -4.847597165850401e-13
+    ],
+    "jointLimits": [
+      {
+        "min": -6.283185307179586,
+        "max": 6.283185307179586,
+        "maxVelocity": 3.14
+      },
+      {
+        "min": -2.059,
+        "max": 2.0944,
+        "maxVelocity": 3.14
+      },
+      {
+        "min": -3.927,
+        "max": 0.19198,
+        "maxVelocity": 3.14
+      },
+      {
+        "min": -6.283185307179586,
+        "max": 6.283185307179586,
+        "maxVelocity": 3.14
+      },
+      {
+        "min": -1.69297,
+        "max": 3.141592653589793,
+        "maxVelocity": 3.14
+      },
+      {
+        "min": -6.283185307179586,
+        "max": 6.283185307179586,
+        "maxVelocity": 3.14
+      }
+    ],
+    "reason": null,
+    "solver": {
+      "name": "dls",
+      "version": 1,
+      "rngSeed": 1701
+    }
+  },
+  "T_base_approachTCP": {
+    "positionM": [
+      0.365556349186,
+      0.365556349186,
+      0.68984259075616
+    ],
+    "quaternionXyzw": [
+      -0.270598050073,
+      0.653281482438,
+      0.270598050073,
+      0.653281482438
+    ]
+  },
+  "approachIk": {
+    "execution": "ran",
+    "modelId": "xarm6-reference",
+    "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+    "reachable": true,
+    "positionResidualM": 2.523512029366641e-9,
+    "orientationResidualRad": 8.168045876347282e-10,
+    "condition": 94.06082574671765,
+    "jointPositionsRad": [
+      0.7853981633977423,
+      -0.2986508444200278,
+      -1.6948960164045839,
+      -3.141592653590641,
+      -0.4227505332129104,
+      7.727749183052444e-13
+    ],
+    "jointLimits": [
+      {
+        "min": -6.283185307179586,
+        "max": 6.283185307179586,
+        "maxVelocity": 3.14
+      },
+      {
+        "min": -2.059,
+        "max": 2.0944,
+        "maxVelocity": 3.14
+      },
+      {
+        "min": -3.927,
+        "max": 0.19198,
+        "maxVelocity": 3.14
+      },
+      {
+        "min": -6.283185307179586,
+        "max": 6.283185307179586,
+        "maxVelocity": 3.14
+      },
+      {
+        "min": -1.69297,
+        "max": 3.141592653589793,
+        "maxVelocity": 3.14
+      },
+      {
+        "min": -6.283185307179586,
+        "max": 6.283185307179586,
+        "maxVelocity": 3.14
+      }
+    ],
+    "reason": null,
+    "solver": {
+      "name": "dls",
+      "version": 1,
+      "rngSeed": 1701
+    }
+  },
+  "sweep": {
+    "execution": "not_run",
+    "reason": "Requires one-world AMR/arm colliders and withdrawal path in B05"
+  },
+  "blocksAMROnly": false,
+  "blocksCell": true,
+  "proposedFixtureDiff": {
+    "id": "coffee-delivery-world-v1",
+    "revision": 1,
+    "apply": false,
+    "changes": [
+      {
+        "path": "armCell.graspFrames.place.position",
+        "from": [
+          0.365556349186,
+          0.365556349186,
+          0.112
+        ],
+        "to": [
+          0.365556349186,
+          0.365556349186,
+          0.56984259075616
+        ],
+        "reason": "Regenerate xArm offline placement and approach for the computed mobile tray height; arm base remains unchanged"
+      },
+      {
+        "path": "armCell.supports.tray",
+        "from": "fixed R2a tray",
+        "to": "amr-1/tray-1",
+        "reason": "Remove static tray collider; preserve nozzle support"
+      }
+    ]
+  }
+}

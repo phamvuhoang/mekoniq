@@ -1,0 +1,542 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.physics-evidence.v1",
+  "title": "PhysicsEvidenceV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "physics-evidence"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "bootId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sceneDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "loadProfileDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "physicsProfileDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "runId",
+        "bootId",
+        "sceneDigest",
+        "loadProfileDigest",
+        "physicsProfileDigest"
+      ]
+    },
+    "streams": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stream": {
+            "enum": [
+              "physics"
+            ]
+          },
+          "chunks": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 10000,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "maxLength": 240,
+                  "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_][A-Za-z0-9_.-]*(?:/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"
+                },
+                "sha256": {
+                  "$ref": "engineering-component.schema.json#/definitions/Digest"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "path",
+                "sha256",
+                "bytes"
+              ]
+            }
+          }
+        },
+        "required": [
+          "stream",
+          "chunks"
+        ]
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "firstTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "lastTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "firstTick",
+        "lastTick",
+        "complete"
+      ]
+    },
+    "gaps": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "firstTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "lastTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "firstTick",
+          "lastTick",
+          "reason"
+        ]
+      }
+    },
+    "terminalReason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metricsPolicyDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "assumptions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "identity",
+    "streams",
+    "coverage",
+    "gaps",
+    "terminalReason",
+    "metricsPolicyDigest",
+    "assumptions"
+  ],
+  "definitions": {
+    "PhysicsTickRecord": {
+      "title": "PhysicsTickRecord",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "simTimeNs": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "maxLength": 30
+        },
+        "contacts": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/definitions/ContactAggregate"
+          }
+        },
+        "loads": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/definitions/LoadObservation"
+          }
+        },
+        "wheels": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "robotId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "angleRad": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "velocityRadS": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "torqueNm": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "targetRadS": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "saturatedSubsteps": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "robotId",
+              "angleRad",
+              "velocityRadS",
+              "torqueNm",
+              "targetRadS",
+              "saturatedSubsteps"
+            ]
+          }
+        },
+        "odometry": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "robotId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "poseDriveMap": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "robotId",
+              "poseDriveMap"
+            ]
+          }
+        },
+        "base": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "robotId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "poseMap": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "positionM": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "quaternionXyzw": {
+                    "type": "array",
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "positionM",
+                  "quaternionXyzw"
+                ]
+              },
+              "rollRad": {
+                "type": "number"
+              },
+              "pitchRad": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "robotId",
+              "poseMap",
+              "rollRad",
+              "pitchRad"
+            ]
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "tick",
+        "simTimeNs",
+        "contacts",
+        "loads",
+        "wheels",
+        "odometry",
+        "base"
+      ]
+    },
+    "ContactAggregate": {
+      "title": "ContactAggregate",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "a": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "b": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "samples": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "peakNormalN": {
+          "type": "number",
+          "minimum": 0
+        },
+        "normalImpulseNs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "netImpulseMapNs": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "pointAtPeakMapM": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "expected": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "a",
+        "b",
+        "samples",
+        "peakNormalN",
+        "normalImpulseNs",
+        "netImpulseMapNs",
+        "pointAtPeakMapM",
+        "expected"
+      ]
+    },
+    "LoadObservation": {
+      "title": "LoadObservation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "propId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "poseMap": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "positionM": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "quaternionXyzw": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          "required": [
+            "positionM",
+            "quaternionXyzw"
+          ]
+        },
+        "linearVelocityMapMps": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "angularVelocityMapRadps": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "supportId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "poseInSupport": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "positionM": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "quaternionXyzw": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "required": [
+                "positionM",
+                "quaternionXyzw"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "propId",
+        "poseMap",
+        "linearVelocityMapMps",
+        "angularVelocityMapRadps",
+        "supportId",
+        "poseInSupport"
+      ]
+    }
+  }
+}

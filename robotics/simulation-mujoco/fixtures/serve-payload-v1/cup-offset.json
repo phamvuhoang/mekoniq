@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "documentType": "load-profile",
+  "id": "cup-offset",
+  "revision": 1,
+  "digest": "ed8ab2caa59fc3e82c8dfd625d1e75857009135572ba54e7e33da87a35c69de1",
+  "calibration": "not_calibrated",
+  "modelRef": {
+    "path": "physical-model-amr-1.json",
+    "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9"
+  },
+  "supports": [
+    {
+      "supportId": "amr-1/tray-1",
+      "parentBodyId": "tray-1/plate",
+      "poseInBody": {
+        "positionM": [
+          0,
+          0,
+          0.01
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "polygonM": [
+        [
+          -0.2,
+          -0.23
+        ],
+        [
+          0.2,
+          -0.23
+        ],
+        [
+          0.2,
+          0.23
+        ],
+        [
+          -0.2,
+          0.23
+        ]
+      ],
+      "source": {
+        "kind": "assumed",
+        "documentId": "serve-fixture-assumptions",
+        "revision": "1",
+        "locator": "plate geometry",
+        "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+      }
+    }
+  ],
+  "props": [
+    {
+      "propId": "cup-1",
+      "massKg": 0.32,
+      "inertiaKgM2": [
+        0.0003946666666666667,
+        0,
+        0,
+        0.0003946666666666667,
+        0,
+        0.00025600000000000004
+      ],
+      "comM": [
+        0,
+        0,
+        0
+      ],
+      "geometry": {
+        "kind": "cylinder",
+        "radiusM": 0.04,
+        "heightM": 0.1
+      },
+      "friction": {
+        "sliding": 0.6,
+        "torsionalM": 0.005,
+        "rollingM": 0.0001
+      },
+      "sources": {
+        "mass": {
+          "kind": "assumed",
+          "documentId": "xarm6-g2-v1/cell-layout.json",
+          "revision": "1",
+          "locator": "cup.emptyMassKg + cup.drinkMassKg",
+          "contentSha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1"
+        },
+        "inertia": {
+          "kind": "derived",
+          "documentId": "serve-payload-v1/assumptions.json",
+          "revision": "1",
+          "locator": "cup.inertiaAboutCOMKgM2: solid cylinder with R2a mass/radius/height",
+          "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+        },
+        "com": {
+          "kind": "assumed",
+          "documentId": "serve-payload-v1/assumptions.json",
+          "revision": "1",
+          "locator": "cup.massDistribution",
+          "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+        },
+        "geometry": {
+          "kind": "assumed",
+          "documentId": "xarm6-g2-v1/cell-layout.json",
+          "revision": "1",
+          "locator": "cup.radiusM, cup.heightM: solid collision proxy",
+          "contentSha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1"
+        },
+        "friction": {
+          "kind": "assumed",
+          "documentId": "serve-payload-v1/assumptions.json",
+          "revision": "1",
+          "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+          "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+        },
+        "attachment": {
+          "kind": "assumed",
+          "documentId": "serve-payload-v1/assumptions.json",
+          "revision": "1",
+          "locator": "cup.attachment, cup.initialOffsetsYM",
+          "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+        }
+      },
+      "attachment": {
+        "kind": "free",
+        "supportId": "amr-1/tray-1",
+        "initialPoseInSupport": {
+          "positionM": [
+            0,
+            0.05,
+            0.05
+          ],
+          "quaternionXyzw": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      }
+    }
+  ],
+  "assumptions": [
+    {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+    }
+  ]
+}

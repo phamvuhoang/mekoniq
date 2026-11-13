@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "documentType": "load-profile",
+  "id": "empty",
+  "revision": 1,
+  "digest": "2080eaf0412f250ee794812300a0221a5c88fd602c6fdfd88cbff7e665f3600b",
+  "calibration": "not_calibrated",
+  "modelRef": {
+    "path": "physical-model-amr-1.json",
+    "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9"
+  },
+  "supports": [
+    {
+      "supportId": "amr-1/tray-1",
+      "parentBodyId": "tray-1/plate",
+      "poseInBody": {
+        "positionM": [
+          0,
+          0,
+          0.01
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "polygonM": [
+        [
+          -0.2,
+          -0.23
+        ],
+        [
+          0.2,
+          -0.23
+        ],
+        [
+          0.2,
+          0.23
+        ],
+        [
+          -0.2,
+          0.23
+        ]
+      ],
+      "source": {
+        "kind": "assumed",
+        "documentId": "serve-fixture-assumptions",
+        "revision": "1",
+        "locator": "plate geometry",
+        "contentSha256": "b47411375225d4b9f9c7875efb8da1bd19878bae12e77228a88599fbe3a907b1"
+      }
+    }
+  ],
+  "props": [],
+  "assumptions": [
+    {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
+      "contentSha256": "6bd2c47d735c3253f19e2bec7592b86d8ceaaf820b1db28cdb576c5d736d4cb7"
+    }
+  ]
+}
