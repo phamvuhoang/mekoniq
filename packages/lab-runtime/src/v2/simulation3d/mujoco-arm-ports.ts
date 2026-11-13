@@ -27,6 +27,15 @@ export const MUJOCO_ARM_RELEASE_TIMEOUT_TICKS=200;
 /** A cup put under the nozzle enters the cell this far (m) above the stand top and settles onto it (the worker tests' placement clearance). */
 const PLACE_CLEAR_M=0.001;
 type Pose={position:number[];quaternionXyzw:number[]};
+/** A stop's detail goes into reports people share: codes and fixed wording only, never a process's output. The worker codes whose detail is a sentence fixed in the worker's source
+ * with only numbers, engine warning names and scene ids filled in (mujoco_worker/snapshot.py, session.py) pass through; any other worker code (WORKER_FAILED is built from an exception)
+ * is kept as the code alone. */
+const FIXED_DETAIL=new Set(['PLANT_UNSTABLE','CLOCK_DRIFT','JOINT_TARGET_OUT_OF_RANGE','GRIPPER_TARGET_OUT_OF_RANGE','PROP_PLACEMENT_OCCUPIED','TICK_MISMATCH']);
+const workerDetail=(code:string,detail?:string)=>FIXED_DETAIL.has(code)&&detail?detail.slice(0,500):undefined;
+/** A lost worker: the client's code, plus the exit code or signal of a process that died, or a bare code the client names (WORKER_FATAL's); never its stderr. */
+const lostDetail=(e:WorkerLostError)=>{const d=e.message.slice(e.code.length+2),exit=/^worker exited \(([A-Za-z0-9]{1,16})\)/.exec(d)?.[1];return exit?`${e.code}: exit ${exit}`:/^[A-Z0-9_]{1,64}$/.test(d)?`${e.code}: ${d}`:e.code;};
+/** Any other error: its name, and the CODE of a `CODE` or `CODE: detail` message of this codebase; never the free text. */
+const errorDetail=(e:unknown)=>{const name=e instanceof Error?e.name.slice(0,64):'Error',code=/^([A-Z][A-Z0-9_]{1,63})(?::|$)/.exec(e instanceof Error?e.message:String(e))?.[1];return code?`${name}: ${code}`:name;};
 
 /** The fixture's programs verbatim, plus grip by contact (open = the gripper's full opening, closed = 0, counts and lift from the oracle profile) and the ARM03 capsule geometry of the xArm:
  * its capsule radii, the cup of the layout lying across the tool (the cup stands upright while the tool approaches it sideways: its axis in the tool frame is the map vertical seen from the
@@ -130,7 +139,7 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
       const {code,detail}=(r as {error:{code:string;detail?:string}}).error;
       // fatal: the worker has ended. A refused step that placed nothing means the plant cannot be commanded even to hold: lost too. Otherwise (a placement was refused) the tick did
       // not advance: the arm latches with the worker's code and the next ticks send the hold command without placements
-      if((SIM3D_FATAL_CODES as readonly string[]).includes(code)||!placements.length)lose(code,detail?.slice(0,500));else{refused=true;arm.halt(code,detail?.slice(0,500));}
+      if((SIM3D_FATAL_CODES as readonly string[]).includes(code)||!placements.length)lose(code,workerDetail(code,detail));else{refused=true;arm.halt(code,workerDetail(code,detail));}
       return;
      }
      tick++;
@@ -143,7 +152,7 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
      // the cup trace, in the map frame, at the cadence of the joint trace (a sample whenever the arm recorded one), plus the tick the arm latched (where the cups were at the stop)
      const grew=t.trace.length>n0;
      if(grew||!latched0&&st.arm.stop?.latched)(t.props??=[]).push({tick:grew?t.trace.at(-1)!.tick:st.arm.tick,props:(ex.props??[]).map(p=>({propId:p.propId,positionM:p.inMap!.positionM,quaternionXyzw:p.inMap!.quaternionXyzw,restingOn:p.restingOn,held:held.includes(p.propId)}))});
-    }catch(e){lose(e instanceof WorkerLostError?'WORKER_LOST':'WORKER_FAILED',String((e as Error)?.message??e).slice(0,500));} // a lost worker's detail names its client code (WORKER_EXITED, WORKER_TIMEOUT, WORKER_PROTOCOL, ...)
+    }catch(e){if(e instanceof WorkerLostError)lose('WORKER_LOST',lostDetail(e));else lose('WORKER_FAILED',errorDetail(e));}
    },
    report:()=>({...base.report(),...st.arm.tracking?{armPlant:mujocoArmPlantReport(runtime.engineVersion,st.arm.tracking),armCell:mujocoArmCellEvidence(runtime.engineVersion,fixture,scene.allowedContacts)}:{}}),
    async close(){try{await base.close();}finally{await release();}}} satisfies CoffeePlantPorts;

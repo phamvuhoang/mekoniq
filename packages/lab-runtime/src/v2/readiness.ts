@@ -1,4 +1,4 @@
-import {defaultCatalog,type CapabilityCatalog} from './capabilities';
+import {defaultCatalog,MUJOCO_ARM,type CapabilityCatalog} from './capabilities';
 import {scenarioRegistry,resolveRoles} from './scenario-registry';
 import {validateProjectV2} from './contracts';
 import {validateArmCollisionProfile} from './models/arm-scene';
@@ -7,7 +7,6 @@ import {hashJson} from './hash';
 import {TICK_MS} from './clock';
 import {resolveBackends} from './scenario-matrix';
 import {isArmPlantSet} from './backend-registry';
-import {MUJOCO_ARM} from './capabilities';
 export interface ReadinessCheck {id:string;status:'ready'|'blocked'|'unknown';reasonCodes:string[];evidenceRef:string|null}
 export interface ReadinessSnapshot {checkedAt:string;expiresAt:string;scenarioId:string;backendSetId:string;checks:ReadinessCheck[];canStart:boolean}
 /** `engineering`: the bundle the gateway admitted for this session (engineering sets only); never a caller-chosen path. `runId`: the existing run asking (start/resume), server-set. */
@@ -32,7 +31,7 @@ async function probe(id:string,fn:ReadinessProbe,context:ReadinessContext):Promi
 }
 /** Server-owned provider checks replace the placeholder model/clock/fixture/profile/runner/gripper rows; anything malformed or late is unknown, never ready. */
 const WEBOTS_BUDGET_MS=45000;
-/** The MuJoCo arm's readiness runs a real create smoke whose ACK deadline is 20 s (simulation3d/worker-client.ts MUJOCO_WIRE): its budget is that plus 5 s for the spawn, so a slow create answers with its own code. */
+/** The MuJoCo arm's readiness runs a real create smoke whose ACK deadline is 20 s (simulation3d/worker-client.ts MUJOCO_WIRE): its budget is that plus an assumed 5 s margin for the spawn (not measured), so a slow create answers with its own code. */
 const MUJOCO_BUDGET_MS=25000;
 async function providerChecks(checks:ReadinessCheck[],context:ReadinessContext,fn:NativeReadinessChecks,prefix:string,id:string,ms:number){
  const controller=new AbortController();let timer:ReturnType<typeof setTimeout>|undefined;

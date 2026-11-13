@@ -1,6 +1,7 @@
 """The real MuJoCo worker (protocol, session, receipts, refusals) over a fake cell engine, so no MuJoCo is imported. argv: fake_cell_plant.py MODE N [worker args...]
 MODE ok: the arm reaches every target at once, the gripper its commanded opening, a placed cup stays where it was put, nothing touches anything. quit: the whole process exits
-cleanly at engine step N. unstable: engine step N reports a bad state (the worker answers PLANT_UNSTABLE, fatal). badcreate: the engine refuses to compile (MESH_BLOB_MISSING). narrow: the engine's gripper range is 0.05 m, so every step carrying
+cleanly at engine step N. unstable: engine step N reports a bad state (the worker answers PLANT_UNSTABLE, fatal). crash: at engine step N the process writes a traceback line with an
+absolute path to stderr and exits 1. boom: engine step N raises an exception whose message names a file (the worker answers WORKER_FAILED). badcreate: the engine refuses to compile (MESH_BLOB_MISSING). narrow: the engine's gripper range is 0.05 m, so every step carrying
 the full opening is refused (GRIPPER_TARGET_OUT_OF_RANGE, non-fatal). Every engine step (the create's priming step is the first) appends
 {n, targets, opening, placements} to steps.jsonl in the run directory."""
 import json
@@ -29,6 +30,12 @@ class Fake:
             f.write(json.dumps({"n": self.count, "targets": list(targets), "opening": opening, "placements": [[p, pose] for p, pose in placements]}) + "\n")
         if mode == "quit" and self.count == at:
             os._exit(0)
+        if mode == "crash" and self.count == at:
+            sys.stderr.write('Traceback (most recent call last):\n  File "/Users/someone/private/mujoco_worker/engine.py", line 1, in step\nRuntimeError: engine died\n')
+            sys.stderr.flush()
+            os._exit(1)
+        if mode == "boom" and self.count == at:
+            raise RuntimeError("could not read /Users/someone/private/cell/engine-state.bin")
         self.time += 0.02
         if opening is not None:
             self.opening = opening

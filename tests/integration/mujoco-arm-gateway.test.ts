@@ -70,13 +70,15 @@ describe.skipIf(!mujocoReady)('MJ-BV01 over HTTP on the real engine', () => {
 const double = resolve('tests/support/mujoco_doubles/fake_cell_plant.py');
 describe.skipIf(!mujocoReady)('a lost worker says why (worker double)', () => {
   // the double's arm reaches every target at once; its pick finds no cup (no contacts), so the run is in its first cup-pick near tick 1450
-  for (const [mode, at, reason, detail] of [['unstable', 1450, 'PLANT_UNSTABLE', /bad state \(fake\)/], ['quit', 1450, 'WORKER_LOST', /^WORKER_EXITED: worker exited/]] as const)
+  // the stop's detail is shared in reports: codes and fixed wording only, never a process's output (paths, tracebacks); the full stderr is not persisted (see the M07b fix report)
+  for (const [mode, at, reason, detail] of [['unstable', 1450, 'PLANT_UNSTABLE', 'the engine reported a bad state (fake) and reset itself'], ['quit', 1450, 'WORKER_LOST', 'WORKER_EXITED: exit 0'],
+    ['crash', 1450, 'WORKER_LOST', 'WORKER_EXITED: exit 1'], ['boom', 1450, 'WORKER_FAILED', undefined]] as const)
     test(`${mode}: the stop is ${reason} with the cause in its detail, the outcome unknown, readable in the run report`, async () => {
       const gw = await mujocoGateway({ entry: [double, mode, String(at)] }), { run } = await openMujocoRun(gw);
       try {
         await run.start(); const view = await stepUntil(run, undefined, 50, 20_000), report = await run.report(), stop = report.coffee!.armTrace.stop!;
         console.log('M07b loss', mode, JSON.stringify({ tick: view.tick, status: view.run.status, stop: { reason: stop.reason, detail: stop.detail }, attention: report.attention.map((a) => a.reason) }));
-        expect(stop).toMatchObject({ latched: true, reason }); expect(stop.detail).toMatch(detail);
+        expect(stop).toMatchObject({ latched: true, reason }); expect(stop.detail).toBe(detail); expect(JSON.stringify(stop)).not.toMatch(/\/(Users|tmp|home)\/|Traceback|engine-state/);
         expect(view.run.status).toBe('needs_attention'); expect(report.attention.map((a) => a.reason)).toContain('TRANSFER_UNKNOWN');
       } finally { await run.close(); }
       expect(mujocoWorkers()).toEqual([]);

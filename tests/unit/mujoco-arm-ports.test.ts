@@ -196,11 +196,18 @@ describe.skipIf(!existsSync(python))('mujocoArmPorts over a fake cell engine', (
     expect(st.arm.stop!.events.filter((e) => e.stage === 'requested')).toHaveLength(1); // one loss, not one refusal per tick
   }, 60_000);
 
-  test('an error that is not the worker\'s (here thrown by the state machine) is WORKER_FAILED and keeps its message', async () => {
+  test('an error that is not the worker\'s (here thrown by the state machine) is WORKER_FAILED and keeps only the error\'s name and its CODE, never its free text', async () => {
     const { p, st } = await ports(await runtime());
     p.mockArm!.observe = () => { throw new Error('boom: observe failed'); };
     await p.advance();
-    expect(st.arm.stop).toMatchObject({ latched: true, reason: 'WORKER_FAILED', detail: 'boom: observe failed' });
+    expect(st.arm.stop).toMatchObject({ latched: true, reason: 'WORKER_FAILED', detail: 'Error' }); // 'boom: observe failed' is not a CODE: only the name is kept
+  }, 60_000);
+
+  test('a CODE: detail error keeps its CODE only', async () => {
+    const { p, st } = await ports(await runtime());
+    p.mockArm!.observe = () => { throw new TypeError('ARM_TRACE_INVALID: /Users/someone/run/arm-trace.json'); };
+    await p.advance();
+    expect(st.arm.stop).toMatchObject({ latched: true, reason: 'WORKER_FAILED', detail: 'TypeError: ARM_TRACE_INVALID' });
   }, 60_000);
 
   test('a failed open leaves the run\'s arm state as it was', async () => {
