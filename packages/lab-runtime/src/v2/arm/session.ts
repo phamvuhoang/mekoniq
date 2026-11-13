@@ -27,7 +27,7 @@ export interface CheckerReport {engine:string;ok:boolean;modelRevision:string;ge
  coverage:{intervals:number;evaluations:number;uncertain:number;allowedContactsApplied:number};allowedContacts:AllowedContact[]}
 export interface ArmCheckerPort {describe():{engine:string;available:boolean;reason?:string};check(input:CheckerInput):Promise<CheckerReport>}
 export interface ArmCollisionEvidenceRecord {id:'ARM03';result:'pass'|'fail'|'not_run';reasonCodes:string[];engine:string|null;modelRevision:string;geometryRevision:string|null;worldRevision:CheckerInput['worldRevision'];assetRef:JsonObject;
- trace:{samples:number;fromTick:number;toTick:number}|null;attachments:{cupId:string;fromTick:number;toTick:number}[];allowedContacts:AllowedContact[];/** Only when the pairs are static for the whole trace (a contact plant). */allowedContactsNote?:string;method:CheckerReport['method']|null;coverage:CheckerReport['coverage']|null;
+ trace:{samples:number;fromTick:number;toTick:number}|null;attachments:{cupId:string;fromTick:number;toTick:number}[];allowedContacts:AllowedContact[];/** Only when the pairs are static for the whole trace (a contact plant). */allowedContactsNote?:string;/** MuJoCo arm only: assetRef is the project's design asset, not the simulated arm. */assetNote?:string;method:CheckerReport['method']|null;coverage:CheckerReport['coverage']|null;
  colliding:CheckerReport['colliding'];provenance:'geometric_checker';fidelity:'modeled'}
 /** The A01 model directory (manifest + modified-dh.json) -> SI model whose revision is the content hash of the source table. */
 export function loadArmModel(dir:string):ArmModelSI{

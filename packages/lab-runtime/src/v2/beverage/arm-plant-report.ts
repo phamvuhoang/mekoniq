@@ -6,7 +6,8 @@ import {join} from 'node:path';
 import type {ArmPlantState,ArmPropSample} from '../../../../cell-adapters/src/mock-arm';
 import type {JsonObject} from '../../../../contracts/src/index';
 import {hashJson} from '../hash';
-import {PUMA560_SI} from '../models/arm-kinematics';
+import {PUMA560_SI,XARM6_SI} from '../models/arm-kinematics';
+import {XARM_FIXTURE_ID} from '../simulation3d/arm-cell-scene';
 import {METHOD,type AllowedContact,type ArmCollisionEvidenceRecord} from '../arm/session';
 import type {ArmCellEvidence,ArmPlantReport} from './coffee-ports';
 
@@ -22,9 +23,11 @@ type WorldRevision=ArmCollisionEvidenceRecord['worldRevision'];
 /** ARM03 from the plant's own evidence: pass only when every checked interval was clear, none was dropped, and the arm was not stopped for a collision (its own check or the engine's).
  * The record names what was swept: the model revision of the sweeps, and the allowed pairs they skipped with `allowedContactsApplied` = the intervals x pairs that were actually in contact.
  * The pairs are static: each spans the whole trace and carries the run's world revision; its required `phase` only names the support (`tray`: release, any other: grasp), it is no time
- * window (the report's notes say so). A plant without allowed pairs (Webots) records none, as before. */
+ * window (the report's notes say so). A plant without allowed pairs (Webots) records none, as before. A not-run record names the model of the run's arm plant. On the MuJoCo arm the record also
+ * says that `assetRef` is the project's design asset, not the simulated arm (mock and Webots records are unchanged). */
 export function armCollisionRecord(arm:ArmPlantState,worldRevision:WorldRevision,assetRef:JsonObject):ArmCollisionEvidenceRecord{
- const base:ArmCollisionEvidenceRecord={id:'ARM03',result:'not_run',reasonCodes:[],engine:null,modelRevision:PUMA560_SI.revision,geometryRevision:null,worldRevision,assetRef,trace:null,attachments:[],allowedContacts:[],method:null,coverage:null,colliding:[],provenance:'geometric_checker',fidelity:'modeled'};
+ const mujoco=arm.plantId==='mujoco_arm';
+ const base:ArmCollisionEvidenceRecord={id:'ARM03',result:'not_run',reasonCodes:[],engine:null,modelRevision:mujoco?XARM6_SI.revision:PUMA560_SI.revision,geometryRevision:null,worldRevision,assetRef,trace:null,attachments:[],allowedContacts:[],method:null,coverage:null,colliding:[],provenance:'geometric_checker',fidelity:'modeled',...mujoco?{assetNote:mujocoAssetNote(assetRef)}:{}};
  const ev=arm.collision?.evidence,trace=arm.tracking?.trace??[];
  if(!ev||!ev.intervals.length||!trace.length)return {...base,reasonCodes:['TRACE_EMPTY']};
  if(ev.droppedIntervals>0)return {...base,reasonCodes:[`EVIDENCE_TRUNCATED:${ev.droppedIntervals}`]};
@@ -42,6 +45,8 @@ export function armCollisionRecord(arm:ArmPlantState,worldRevision:WorldRevision
    allowedContactsApplied:ev.intervals.reduce((n,i)=>n+(i.result.allowed?.inContact.length??0),0)},colliding,
   modelRevision:ev.intervals[0]!.result.modelRevision,...withAllowed(allowedOf(ev.intervals.map(i=>i.result),trace[0]!.tick,trace.at(-1)!.tick,worldRevision.revision))};
 }
+/** The MuJoCo arm's statement of what `assetRef` is: the Lab's illustrative design asset the project's arm entity references, not the arm the engine simulated. */
+export const mujocoAssetNote=(assetRef:JsonObject)=>`The project's arm entity references the Lab's illustrative design asset ${String(assetRef.id)} (revision ${String(assetRef.revision)}); it is not the simulated arm. The simulated arm is the model of fixture ${XARM_FIXTURE_ID}: ${XARM6_SI.id} (revision ${XARM6_SI.revision}).`;
 /** The statement an ARM03 record with allowed pairs carries (absent without pairs, so a Webots record is unchanged). */
 export const ALLOWED_CONTACTS_STATIC_NOTE='The allowed pairs are static: each applies over the whole trace (fromTick..toTick), not within a phase. Its phase only names the support it touches (nozzle stand: grasp, tray: release); its revision is the world revision of the run.';
 const withAllowed=(allowedContacts:AllowedContact[])=>allowedContacts.length?{allowedContacts,allowedContactsNote:ALLOWED_CONTACTS_STATIC_NOTE}:{allowedContacts};
@@ -60,7 +65,7 @@ export async function buildArmReport(arm:ArmPlantState,plant:ArmPlantReport,dire
  if(!cell)return block;
  const props=await writeEvidence(directory,ARM_PROPS_FILE,{schemaVersion:1,note:'The cups in the arm cell at each tick of the joint trace and at the tick the arm latched (if it did): position (m) and orientation in the map frame, the support they rest on, and whether the pads hold them; read at the end of the tick.',
   frame:'map',samples:arm.tracking?.props??[]} satisfies ArmPropsFile);
- return {...block,waypoints:structuredClone(cell.waypoints),props,allowedContacts:structuredClone(cell.allowedContacts),releaseTimeoutTicks:cell.releaseTimeoutTicks,notes:[...cell.notes]};
+ return {...block,waypoints:structuredClone(cell.waypoints),props,allowedContacts:structuredClone(cell.allowedContacts),releaseTimeoutTicks:cell.releaseTimeoutTicks,notes:[...cell.notes,...block.collision.assetNote?[block.collision.assetNote]:[]]};
 }
 export async function readArmTrace(directory:string,block:ArmReportBlock):Promise<ArmTraceFile>{
  const bytes=await readFile(join(directory,block.trace.path));

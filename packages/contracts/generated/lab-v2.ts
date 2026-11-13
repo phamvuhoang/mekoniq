@@ -692,6 +692,10 @@ export interface ArmCollisionEvidenceRecord {
    * Present only when the pairs are static for the whole trace (a contact plant): says so, and what phase and revision mean then.
    */
   allowedContactsNote?: string;
+  /**
+   * Present only on a MuJoCo arm run: says that assetRef is the design asset the project's arm entity references, not the simulated arm, and names the simulated arm's model and revision.
+   */
+  assetNote?: string;
   method: {
     kind: string;
     bound: string;

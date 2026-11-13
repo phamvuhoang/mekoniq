@@ -4,6 +4,9 @@ The plant of the `mujoco_arm` provider (R2a): UFACTORY xArm 6 + Gripper G2, a no
 `mujoco==3.17.0` wheel of `requirements.lock` (spec D35), installed with the rest of the hash-locked Python 3.11 venv `.venv-mujoco`; nothing is installed at run time.
 
 - `fixtures/xarm6-g2-v1/` is the arm (generated from the vendor files, see its README); `physics.json` holds the assumed gains, contact and gripper parameters of spike M00.
+  Its `coffee-cell-project.json` keeps the Lab's arm entity, whose `assetRef` is the Lab's illustrative design asset `arm-puma-reference` (the design catalog has no
+  xArm asset): that asset is not the simulated arm. The simulated arm is this fixture's model (`xarm6-reference`, `modelRevision` of `manifest.json`); a MuJoCo run's
+  ARM03 record (`assetNote`) and arm block notes say so.
 - `mujoco_worker/compile.py` writes the MJCF of a cell from an `ArmCellSceneV1`, `component.json`, `physics.json` and the `blobs/` directory, and returns the names
   it gave (`names`), the only place later code learns them. Pure and deterministic: XML built with ElementTree (fixed order), numbers written as `repr(float)` (shortest
   round-trip text, `-0.0` as `0.0`), no clock, the only absolute path is the blob directory passed in. It refuses (`CompileError(code)`) a link mass ≤ 0
@@ -16,7 +19,7 @@ The plant of the `mujoco_arm` provider (R2a): UFACTORY xArm 6 + Gripper G2, a no
   the worker places them (and must reset geom and body contact bits, see `compile.py`). Keyframe `home` = `homeRad`, gripper open.
 - `python -m mujoco_worker` is the plant worker (M04): `mekoniq-sim3d/1` NDJSON on stdio with the Webots worker's envelope, ops, ACK, clock, priming and idempotency
   rules (`protocol.py`, `session.py`); `engine.py` is the only module that imports `mujoco` (one tick = ctrl, cup placements, re-pin parked cups,
-  `mj_step(nstep=substeps)`), `snapshot.py` turns a reading into the snapshot (held cups, `restingOn`, `collisionIds`, `PLANT_UNSTABLE`). The bundle holds
+  then `substeps` single `mj_step` calls, one substep at a time), `snapshot.py` turns a reading into the snapshot (held cups, `restingOn`, `collisionIds`, `PLANT_UNSTABLE`). The bundle holds
   `arm-cell-scene.json`, `component.json`, `physics.json` and `blobs/`.
 - Contacts: `collisionIds` are the union over every substep of the tick (the engine steps one substep at a time); held cups, `restingOn`, the opening and
   every pose are read at the end of the tick. Two arm links, or any gripper part (palm, pads) against an arm link, is `"self"` (with these contact bits pads
