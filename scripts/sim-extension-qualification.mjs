@@ -133,6 +133,144 @@ function inputsR11(m,read){
 export const TABLE_R11={documentType:'sim-extension-qualification',cases:CASES_R11,gates:GATES_R11,suites:SUITES_R11,campaign:false,inputs:inputsR11};
 export const qualifyR11=(input)=>qualifyWith(input,TABLE_R11);
 
+// ---- Release R2a (spec 2026-11-12-realistic-arm-web-ui-design.md §6.4, D70, D71): the MuJoCo arm (part A), the runtime reachable from the web (B) and the rebuilt twin page (C).
+// No campaign: the engine evidence is the suites that drive the real MuJoCo worker. REG03 re-checks the R1.1 record of the same commit and the R1, IR-SIM and R-MOCK records it carries.
+// Two statuses the suites cannot express come from `adjust`: G-CLOUD1 is `blocked_external` until a CL01 result of this commit is recorded (D60), and a part A gate is `blocked`
+// (its cases not_run, its suites not run) only when the M00 spike note concludes failure (D70).
+const MOCK_E2E=(id,spec)=>({id,repo:'lab',kind:'playwright',command:['scripts/test-mock-e2e.mjs',spec]});
+const LAUNCHER_E2E=(id,provider,spec)=>({id,repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs',...provider?['--provider',provider]:[],spec]});
+export const SUITES_R2A=[
+ // part A: the fixture, the engine and the worker (MA01-MA03); RTB is the pinned .venv-algorithm
+ {id:'ma-static',...V(['tests/unit/xarm6-fixture.test.ts','tests/unit/capabilities-mujoco-arm.test.ts','tests/unit/arm-cell-scene.test.ts','tests/unit/xarm6-cell-dock.test.ts','tests/contracts/sim3d-mujoco-schema.test.ts'])},
+ {id:'ma-rtb',...V(['tests/integration/xarm6-rtb.test.ts'])},
+ {id:'ma-py',repo:'source',kind:'pytest',python:'.venv-mujoco/bin/python',pythonPath:['robotics/simulation-mujoco'],files:['robotics/simulation-mujoco/tests']},
+ {id:'ma-worker',...V(['tests/integration/mujoco-arm-worker.test.ts'])},
+ {id:'ma-ports',...V(['tests/unit/mujoco-arm-ports.test.ts'])},
+ // part A: programs, MJ-BV01, faults and the flag (MA04-MA08, INT16)
+ {id:'ma-programs',...V(['tests/integration/mujoco-arm-programs.test.ts'])},
+ {id:'ma-bv01',...V(['tests/integration/mujoco-arm-bv01.test.ts','tests/integration/mujoco-arm-gateway.test.ts'])},
+ {id:'ma-faults',...V(['tests/integration/mujoco-arm-faults.test.ts','tests/integration/mujoco-arm-readiness.test.ts'])},
+ // part B: the gateway matrix, the paced step on both runners, the container (built by the recorder from this commit: rt-image)
+ {id:'rt-remote',...V(['tests/integration/lab-runtime-remote.test.ts'])},
+ {id:'rt-paced',...V(['tests/unit/paced-step.test.ts','tests/integration/lab-v2-paced-step.test.ts','tests/integration/irsim-plant-port.test.ts'])},
+ {id:'rt-container',...V(['tests/integration/lab-runtime-container.test.ts']),image:true},
+ // regressions: the mock BV01 golden, the exported closure (mujoco_worker and its licences), this table
+ {id:'regress',...V(['tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts'])},
+ // the Lab: unit tests by part
+ {id:'lab-rt-unit',...LAB(['tests/unit/fetch-event-source.test.ts','tests/unit/twin-runtime-remote.test.ts','tests/unit/runtime-target.test.ts','tests/unit/runtime-stream.test.ts','tests/unit/runtime-compatibility.test.ts'])},
+ {id:'lab-ui-unit',...LAB(['tests/unit/twin-shell.test.ts','tests/unit/twin-problems.test.ts','tests/unit/twin-keys.test.ts','tests/unit/twin-notes.test.ts','tests/unit/sample-buffer.test.ts','tests/unit/live-playback.test.ts','tests/unit/twin3d-structure.test.ts','tests/unit/workspace-conditional-items.test.ts','tests/unit/twin-workspace.test.ts','tests/unit/playwright-config.test.ts'])},
+ {id:'lab-arm-unit',...LAB(['tests/unit/arm-mesh.test.ts','tests/unit/mujoco-coffee.test.ts','tests/unit/runtime-popover.test.ts','tests/integration/mujoco-launcher.test.ts','tests/integration/runtime-artifact.test.ts'])},
+ // the Lab in a browser: one spec per launcher run (the pairing code is one-use); arm-mesh and arm-cell need only the Lab UI the mock launcher serves
+ MOCK_E2E('lab-e2e-remote-origin','remote-origin.spec.ts'),
+ MOCK_E2E('lab-e2e-twin-layout','twin-layout.spec.ts'),MOCK_E2E('lab-e2e-twin-polish','twin-polish.spec.ts'),MOCK_E2E('lab-e2e-twin-transport','twin-transport.spec.ts'),
+ MOCK_E2E('lab-e2e-twin-workspace','twin-workspace.spec.ts'),MOCK_E2E('lab-e2e-brand-accessibility','brand-accessibility.spec.ts'),
+ MOCK_E2E('lab-e2e-arm-mesh','arm-mesh.spec.ts'),MOCK_E2E('lab-e2e-arm-cell','arm-cell.spec.ts'),
+ LAUNCHER_E2E('lab-e2e-mujoco-coffee','mujoco','mujoco-coffee.spec.ts'),LAUNCHER_E2E('lab-e2e-mujoco-mesh-fallback','mujoco','mujoco-mesh-fallback.spec.ts'),
+ LAUNCHER_E2E('lab-e2e-irsim-journey',null,'irsim-journey.spec.ts'),LAUNCHER_E2E('lab-e2e-webots-coffee','webots','webots-coffee.spec.ts'),
+];
+const CLOUD_REASON='blocked_external: no Cloud Run deployment has been ordered (D60); CL01 is run on the deployed service only';
+export const CASES_R2A={
+ MA01:{suites:['ma-static','ma-rtb','ma-py']},
+ MA02:{suites:['ma-worker','ma-py']},
+ MA03:{suites:['ma-py','ma-ports']},
+ MA04:{suites:['ma-programs']},
+ MA05:{suites:['ma-bv01']},
+ MA06:{suites:['ma-faults'],note:'ruled 2026-11-13: with the pads\' friction lowered the cup slips during the lift, so the transfer is refused at the lift check (TRANSFER_REJECTED, run needs_attention) and CUP_DROPPED latches when the cup leaves the pads; the case is an explicit failure at the lift check and/or CUP_DROPPED, never completed, the gripper never commanded open. The weakened-joint fault runs on a temporary copy of the worker root; the occupied-stand run ends in ARM_COLLISION before the worker\'s occupied refusal, which is proven at worker and ports level'},
+ MA07:{suites:['ma-bv01']},
+ MA08:{suites:['ma-bv01']},
+ RT01:{suites:['rt-remote']},
+ RT02:{suites:['lab-rt-unit']},
+ RT03:{suites:['rt-paced'],note:'ruled 2026-11-13: on the fixed-step runner, paced and unpaced evidence are identical for the same action sequence and the unpaced golden is unchanged with no wall-clock call; a paced run cannot reproduce the 500-tick golden (a paced step carries at most 50 ticks)'},
+ RT04:{lab:true,suites:['lab-e2e-remote-origin']},
+ RT05:{suites:['rt-container'],note:'the image is built by the recorder for this machine\'s architecture from the recorded commit; a container run is never evidence for G-MA1/G-MA2 (D50); linux/amd64 has only run under emulation, where MJ-BV01 stops with PLANT_UNSTABLE (cause unknown), and real amd64 hardware is untested'},
+ CL01:{notRun:CLOUD_REASON},
+ UI01:{lab:true,suites:['lab-ui-unit','lab-e2e-twin-layout']},
+ UI02:{lab:true,suites:['lab-ui-unit','lab-e2e-twin-layout','lab-e2e-twin-polish']},
+ UI03:{lab:true,suites:['lab-ui-unit','lab-e2e-twin-transport','lab-e2e-twin-polish']},
+ UI04:{lab:true,suites:['lab-ui-unit','lab-e2e-brand-accessibility','lab-e2e-twin-layout','lab-e2e-twin-workspace']},
+ UI05:{lab:true,suites:['lab-arm-unit','lab-e2e-arm-mesh','lab-e2e-arm-cell','lab-e2e-mujoco-mesh-fallback'],note:'ruled 2026-11-13: the launcher-level check is the MuJoCo launcher spec (mujoco-mesh-fallback); the plan\'s mock-launcher e2e was replaced by UI-only browser specs (arm-mesh, arm-cell). The 3D view also draws the cell\'s two supports (assumed geometry of the simulated cell) and an illustrative mount and legs that are not simulated'},
+ INT15:{lab:true,suites:['lab-e2e-mujoco-coffee','lab-arm-unit']},
+ INT16:{lab:true,suites:['regress','ma-faults','lab-e2e-irsim-journey','lab-e2e-webots-coffee'],mockRegression:true,note:'the mock e2e on the new UI is the R-MOCK regression of the same commit (mock-regression.json)'},
+ REG03:{r11Record:true,r1Record:true,irsimRecord:true,mockRegression:true},
+};
+export const GATES_R2A={'G-MA1':['MA01','MA02','MA03'],'G-MA2':['MA04','MA05','MA06','MA07','MA08'],'G-RT1':['RT01','RT02','RT03','RT04'],'G-RT2':['RT05'],
+ 'G-UI1':['UI01','UI02','UI03','UI04'],'G-INT4':['UI05','INT15','INT16'],'G-REG3':['REG03'],'G-CLOUD1':['CL01']};
+export const GATE_IDS_R2A=Object.keys(GATES_R2A);
+/** Part A of R2a (D70): the gates that need MuJoCo, the only ones --blocked may name. */
+export const PART_A_GATES=['G-MA1','G-MA2','G-RT2','G-INT4'];
+export const SPIKE_NOTE='docs/research/2026-11-mujoco-arm-spike.md';
+
+/** The M00 spike note's own verdict: its "**Kết luận: ĐẠT …**" / "**Kết luận: TRƯỢT …**" line; null when it states neither. */
+export const spikeConclusion=(text)=>{const m=/\*\*Kết luận:\s*(ĐẠT|TRƯỢT)/u.exec(String(text??''));return m?(m[1]==='ĐẠT'?'pass':'fail'):null;};
+/** Why a --blocked request is refused ([] when it may be recorded): part A gates only, a reason, and a spike note that concludes failure (D70). */
+export function checkBlocked({gates,reason},spikeText){
+ const r=[];
+ if(!gates?.length)r.push('BLOCKED_NO_GATE');
+ for(const g of gates??[])if(!PART_A_GATES.includes(g))r.push(`BLOCKED_NOT_PART_A:${g} (only ${PART_A_GATES.join(', ')})`);
+ if(!(typeof reason==='string'&&reason.trim()))r.push('BLOCKED_REASON_MISSING');
+ const c=spikeConclusion(spikeText);if(c!=='fail')r.push(`BLOCKED_SPIKE_NOT_FAILED: ${SPIKE_NOTE} concludes ${c==='pass'?'ĐẠT (pass)':'nothing'}; a part A gate is blocked only when the spike failed`);
+ return r;
+}
+/** The R1.1 record this R2a record builds on (REG03): a Release 1.1 record of the SAME source commit, not accepted by the recorder, with its four gates tested. */
+export function checkR11Record(doc,sourceCommit){
+ const r=[];
+ if(!doc||doc.documentType!=='sim-extension-qualification'||doc.release!=='r1.1')return ['R11_RECORD_NOT_R11'];
+ if(doc.accepted!==false)r.push('R11_RECORD_ACCEPTED');
+ if(doc.identity?.before?.sourceCommit!==sourceCommit)r.push(`R11_RECORD_COMMIT: ${doc.identity?.before?.sourceCommit??'none'}, this source ${sourceCommit}`);
+ const gates=Object.entries(doc.gates??{});if(gates.length!==GATE_IDS_R11.length)r.push('R11_RECORD_GATES');
+ for(const [g,x] of gates)if(x.status!=='tested')r.push(`R11_GATE_NOT_TESTED:${g}`);
+ return r;
+}
+/** A CL01 result (cl01-result/1, written after the smoke of docs/operations/lab-runtime-cloud-run.md §5 on the deployed service): every check recorded as pass, this commit. */
+export const CL01_CHECKS=['health','accessKeyPairing','mjBv01Completed','streamResumed'];
+function cl01Status(doc,sourceCommit){
+ if(!doc)return {status:'not_run',reason:CLOUD_REASON};
+ if(doc.schema!=='cl01-result/1')return {status:'not_run',reason:'the CL01 result is not a cl01-result/1 document'};
+ if(doc.sourceCommit!==sourceCommit)return {status:'not_run',reason:'the CL01 result is of another commit'};
+ const failed=CL01_CHECKS.filter(k=>doc.checks?.[k]==='fail'),missing=CL01_CHECKS.filter(k=>doc.checks?.[k]!=='pass'&&doc.checks?.[k]!=='fail');
+ if(failed.length)return {status:'failed',reason:`CL01 checks failed: ${failed.join(',')}`};
+ if(missing.length)return {status:'not_run',reason:`CL01 checks not recorded as pass: ${missing.join(',')}`};
+ return {status:'tested'};
+}
+function adjustR2a(q,input){
+ const cases={...q.cases},gates={...q.gates},c=cl01Status(input.cl01,input.sourceCommit);
+ cases.CL01=c.status==='tested'?{status:'tested',evidence:['record:cl01']}:{status:c.status,evidence:[],reason:c.reason};
+ gates['G-CLOUD1']={...gates['G-CLOUD1'],status:c.status==='tested'?'tested':input.cl01?'not_run':'blocked_external'};
+ for(const g of input.blocked?.gates??[])if(gates[g])gates[g]={...gates[g],status:'blocked',reason:input.blocked.reason};
+ return {cases,gates,notRun:[...q.notRun.filter(n=>n.id!=='CL01'),...c.status==='tested'?[]:[{id:'CL01',reason:c.reason}]]};
+}
+/** The recorded inputs of the R2a table, read back from beside qualification.json: the R1.1 record and, byte for byte, the R1, IR-SIM and mock records it carries; a CL01 result and the
+ * spike note copy when the record names them. A record is never accepted: `accepted` is false whatever reviewer it names (acceptance is a human-written sidecar). */
+function inputsR2a(m,read){
+ const reasons=[],input={},raw=(ref,missing,corrupt)=>{
+  if(!ref?.file||!HEX.test(ref.sha256??'')){reasons.push(missing);return null;}
+  const b=read(ref.file);if(!b){reasons.push(missing);return null;}
+  if(sha(b)!==ref.sha256){reasons.push(corrupt);return null;}
+  return b.toString('utf8');},parsed=(...a)=>{const t=raw(...a);if(t===null)return null;try{return JSON.parse(t);}catch{reasons.push(a[2]);return null;}};
+ if(m.accepted!==false)reasons.push('RECORD_ACCEPTED: acceptance is recorded only in a human-written acceptance.json beside the record');
+ const commit=m.identity?.before?.sourceCommit;
+ const r11=parsed(m.r11Record,'R11_RECORD_MISSING','R11_RECORD_CORRUPT');
+ if(r11){input.r11=r11;reasons.push(...checkR11Record(r11,commit));}
+ const r1=parsed(m.r1Record,'R1_RECORD_MISSING','R1_RECORD_CORRUPT');
+ if(r1){input.r1=r1;reasons.push(...checkR1Record(r1,commit));if(r11&&r11.r1Record?.sha256!==m.r1Record.sha256)reasons.push('R1_RECORD_NOT_THE_R11_ONE');}
+ const irs=parsed(m.irsimRecord,'IRSIM_RECORD_MISSING','IRSIM_RECORD_CORRUPT');
+ if(irs){input.irsim=irs;reasons.push(...checkIrsimRecord(irs,commit));if(r11&&r11.irsimRecord?.sha256!==m.irsimRecord.sha256)reasons.push('IRSIM_RECORD_NOT_THE_R11_ONE');}
+ const mock=parsed(m.mockRegression,'MOCK_REGRESSION_MISSING','MOCK_REGRESSION_CORRUPT');
+ if(mock){input.mock=mock;if(mock.schema!=='lab-v2-regression/1')reasons.push('MOCK_REGRESSION_NOT_LAB_MANIFEST');if(r11&&r11.mockRegression?.sha256!==m.mockRegression.sha256)reasons.push('MOCK_REGRESSION_NOT_THE_R11_ONE');}
+ if(m.cl01)input.cl01=parsed(m.cl01,'CL01_RESULT_MISSING','CL01_RESULT_CORRUPT');
+ if(m.blocked){const note=raw(m.blocked.spikeNote,'SPIKE_NOTE_MISSING','SPIKE_NOTE_CORRUPT');reasons.push(...checkBlocked(m.blocked,note));input.blocked={gates:m.blocked.gates,reason:m.blocked.reason};}
+ return {input,reasons};
+}
+/** The R2a table with the given part A gates blocked: their cases are not_run with the reason, and a suite that serves only blocked cases is not part of the table (not run, not required). */
+export function tableR2a(blocked=[],reason=''){
+ const out=new Set(blocked.flatMap(g=>GATES_R2A[g]??[]));
+ const cases=Object.fromEntries(Object.entries(CASES_R2A).map(([id,c])=>[id,out.has(id)?{notRun:`blocked: ${reason||'part A blocked'} (${blocked.find(g=>GATES_R2A[g]?.includes(id))})`}:c]));
+ const used=new Set(Object.values(cases).flatMap(c=>c.suites??[]));
+ return {documentType:'sim-extension-qualification',cases,gates:GATES_R2A,suites:SUITES_R2A.filter(s=>used.has(s.id)),campaign:false,inputs:inputsR2a,adjust:adjustR2a};
+}
+export const TABLE_R2A=tableR2a();
+export const qualifyR2a=(input)=>qualifyWith(input,tableR2a(input.blocked?.gates??[],input.blocked?.reason));
+
 export const qualify=(input)=>qualifyWith(input,TABLE);
-/** The table follows the record's own release; a record that names neither is checked as R1 and fails on its content. */
-export const checkQualification=(m,read)=>m?.release==='r1.1'?check(m,read,TABLE_R11):check(m,read,TABLE);
+/** The table follows the record's own release; a record that names none of them is checked as R1 and fails on its content. */
+export const checkQualification=(m,read)=>m?.release==='r2a'?check(m,read,tableR2a(m.blocked?.gates??[],m.blocked?.reason)):m?.release==='r1.1'?check(m,read,TABLE_R11):check(m,read,TABLE);

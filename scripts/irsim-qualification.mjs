@@ -71,6 +71,9 @@ export function qualify(input,table=TABLE){
   // R1.1 (REG02): the R1 record of the same commit, every gate of it tested (a gate that is not tested there is a failure of the regression, not a missing input)
   if(c.r1Record){const x=input.r1,bad=x?Object.entries(x.gates??{}).filter(([,g])=>g.status!=='tested').map(([k])=>k):[];
    if(!x||x.documentType!=='sim-extension-qualification'||x.release!=='r1')worse('not_run','no R1 record');else if(x.identity?.before?.sourceCommit!==input.sourceCommit)worse('not_run','the R1 record is of another commit');else if(bad.length||!Object.keys(x.gates??{}).length)worse('failed',`R1 gates not tested: ${bad.join(',')||'none recorded'}`);else evidence.push('record:r1');}
+  // R2a (REG03): the R1.1 record of the same commit, every gate of it tested
+  if(c.r11Record){const x=input.r11,bad=x?Object.entries(x.gates??{}).filter(([,g])=>g.status!=='tested').map(([k])=>k):[];
+   if(!x||x.documentType!=='sim-extension-qualification'||x.release!=='r1.1')worse('not_run','no R1.1 record');else if(x.identity?.before?.sourceCommit!==input.sourceCommit)worse('not_run','the R1.1 record is of another commit');else if(bad.length||!Object.keys(x.gates??{}).length)worse('failed',`R1.1 gates not tested: ${bad.join(',')||'none recorded'}`);else evidence.push('record:r1.1');}
   if(c.campaign){
    if(!campaign)worse('not_run','campaign not recorded');
    else if(c.campaign==='*'){if(campaign.complete&&campaign.runs.every(r=>r.result==='pass'))evidence.push('campaign:*');else worse(campaign.runs.some(r=>r.result==='fail')?'failed':'not_run','campaign not complete');}
@@ -82,7 +85,8 @@ export function qualify(input,table=TABLE){
  }
 
  const gates=Object.fromEntries(Object.entries(table.gates).map(([g,ids])=>[g,{status:ids.every(id=>cases[id].status==='tested')?'tested':'not_run',accepted:false,cases:ids}]));
- return {cases,gates,notRun};
+ // a table may restate statuses the suites cannot express (R2a: `blocked`, `blocked_external`); the guard re-derives through the same function
+ return table.adjust?table.adjust({cases,gates,notRun},input):{cases,gates,notRun};
 }
 const HEX=/^[0-9a-f]{64}$/,COMMIT=/^[0-9a-f]{40}$/;
 /**
