@@ -1,0 +1,13 @@
+Testing the pinned source runtime with a fresh, isolated journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/service-journey.spec.ts:5:1 › paired source runtime drives arrival then human load and handoff (1.8s)
+
+  1 passed (3.3s)
+[WebServer] (node:7770) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:7797) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+(node:7805) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

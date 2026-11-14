@@ -6,6 +6,12 @@ Bản hiện tại có cấu hình robot, mô hình 3D/2D và lắp ráp, sơ đ
 
 Bản ghi lịch sử Plan 01: đã hoàn thiện R01–R12 và 18 mục phần mềm còn thiếu. Vòng kiểm chứng của đợt đó trên source/runtime `c1d1ea7` đã qua toàn bộ lệnh CI tương đương, browser, offline và 41 acceptance tests: 96/106 dòng có bằng chứng pass, không còn `NOT_IMPLEMENTED`. Mười dòng còn lại thuộc gate người dùng/Linux hoặc fidelity vật lý. Xem [bản ghi remediation](docs/reviews/2026-11-05-plan-01-remediation.md) và [bằng chứng](docs/implementation/evidence/digital-twin-v2/mock-report.md); **R-MOCK chưa accepted**.
 
+## Nhánh R2b và bản ghi R2a lịch sử
+
+Nhánh `codex/web-lab-to-physical` giữ UI và runtime pin của B00–B09. B00R2 nhập chứng cứ lịch sử từ source `11d25b47a18adafb88ac21adc249499109996bc5` / Lab `a7449541e118d01f65af0ad1466e0c963a173f3c`; các bản ghi R2a đó vẫn gắn runtime source `4f893ac6fb75dff414a3ee42a726defb7935c734`. Revision đang dùng lấy từ [`config/source-runtime.lock.json`](config/source-runtime.lock.json), không lấy từ metadata cloud/production hoặc compatibility record lịch sử.
+
+Image R2b vẫn `null` (chưa build), WEB05 `not_run` theo R76 vì Docker không phản hồi; B00R2 chỉ kiểm bản ghi đã lưu và không triển khai hay chạy lại cloud/native/browser/Docker. Kết quả R2a không thay cho qualification R2b hoặc nghiệm thu con người (`accepted:false`, `not_calibrated`). Source giữ mission/journal/custody; Lab chỉ mô phỏng/replay, không có đường Lab → phần cứng.
+
 ## Chạy giao diện
 
 Dùng **Node.js 24** và **pnpm 10.32.1**; phiên bản Node nằm trong `.node-version`/`.nvmrc`.

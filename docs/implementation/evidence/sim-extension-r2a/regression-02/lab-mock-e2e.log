@@ -1,0 +1,142 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 6689, UI pid 6690
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 663 ms. Press Ctrl-C to stop.
+Running twin-workspace.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 5 tests using 1 worker
+
+  ✓  1 tests/e2e/twin-workspace.spec.ts:10:1 › WebGL disabled and reduced motion fall back to a 2D twin with the same controls (698ms)
+  ✓  2 tests/e2e/twin-workspace.spec.ts:43:3 › paired source runtime › coffee preset runs on the mock backend with a locked, visible identity (1.4s)
+  ✓  3 tests/e2e/twin-workspace.spec.ts:65:3 › paired source runtime › layers, legend and one shared selection survive a 3D to 2D switch (549ms)
+  ✓  4 tests/e2e/twin-workspace.spec.ts:104:3 › paired source runtime › engineering panel shows units, observed versus commanded and data age (3.1s)
+  ✓  5 tests/e2e/twin-workspace.spec.ts:139:3 › paired source runtime › mobile layout is operable with the keyboard only (663ms)
+
+  5 passed (7.5s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 6771, UI pid 6773
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 764 ms. Press Ctrl-C to stop.
+Running coffee-journey.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/coffee-journey.spec.ts:8:1 › missing cup: visible reason and entity, confirmed reconcile, corrected run completes (9.4s)
+
+  1 passed (10.2s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 6842, UI pid 6843
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 661 ms. Press Ctrl-C to stop.
+Running twin-recovery.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/twin-recovery.spec.ts:17:1 › telemetry stream, stale/frozen states, reconnect, read-only replay, compare, export and a lost session (11.9s)
+
+  1 passed (12.7s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 6888, UI pid 6889
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 662 ms. Press Ctrl-C to stop.
+Running twin-inputs.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/twin-inputs.spec.ts:29:1 › UX05/UX18/QA09b: reset, speed-limit draft, saved report reopening and replay remain independent (2.4s)
+
+  1 passed (3.2s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 6935, UI pid 6936
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 657 ms. Press Ctrl-C to stop.
+Running fault-schedule.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/fault-schedule.spec.ts:4:1 › scheduled missing cup holds the real pinned mock workflow and offers explicit reconcile (3.9s)
+
+  1 passed (4.7s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 6972, UI pid 6973
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 547 ms. Press Ctrl-C to stop.
+Running arm-simulation.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/arm-simulation.spec.ts:7:1 › arm telemetry and ARM03 rows are honest in the mock run; the simulation set is unavailable with a reason (1.7s)
+
+  1 passed (2.5s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 7008, UI pid 7009
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 656 ms. Press Ctrl-C to stop.
+Running twin-plan01.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/twin-plan01.spec.ts:10:1 › SYS01: normalized journal/effects are identical at 15/60 FPS and while the browser renderer is debugger-paused (20.2s)
+
+  1 passed (21.0s)
+
+Stopping the runtime and UI this launcher started…
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>
+Owned processes: runtime pid 7130, UI pid 7131
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 662 ms. Press Ctrl-C to stop.
+Running legacy-campaign.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 3 tests using 1 worker
+
+  ✓  1 tests/e2e/legacy-campaign.spec.ts:27:1 › mixed preset: food and its identified cup on one mission, both served, cup ends with the table (6.9s)
+  ✓  2 tests/e2e/legacy-campaign.spec.ts:37:1 › two-robot campaign: both AMRs act, nothing is served twice, and the campaign id is the legacy one (33.5s)
+  ✓  3 tests/e2e/legacy-campaign.spec.ts:55:1 › cancelling a run keeps the cup with its owner instead of deleting custody (1.7s)
+
+  3 passed (43.7s)
+
+Stopping the runtime and UI this launcher started…
+(node:6707) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6790) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6906) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6953) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6990) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7026) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7149) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
