@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/engineering.ts @ f0fb70f9733bc6eb103fe8e8972cd45926af918d (sha256 30d404a6582ba56b4793dba7e12450a616dc13fe8ac34dea38d0bd5eac87b319). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/engineering.ts @ a3a50a38d2cca1584443d32f103d24be979834f6 (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
 import type {LabProjectV2,AssetRevision} from './types';
 export type CoffeeRecipe=Record<string,unknown>;
@@ -696,6 +696,17 @@ export interface EngineeringProject {
    */
   entityBindings: EntityBinding[];
   requestedProfile: EngineeringProfile;
+  /**
+   * Registered server-owned new-run payload experiment; only engineering-mujoco-3d-v1.
+   */
+  mujocoExperimentId?:
+    | 'payload-empty-v1'
+    | 'payload-center-v1'
+    | 'payload-offset-v1'
+    | 'payload-slow-v1'
+    | 'payload-fast-v1'
+    | 'payload-friction-low-v1'
+    | 'payload-friction-high-v1';
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
