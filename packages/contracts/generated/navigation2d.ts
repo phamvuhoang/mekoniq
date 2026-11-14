@@ -2163,7 +2163,42 @@ export interface WebReplayPackageV1 {
   /**
    * @maxItems 512
    */
-  assets: {
+  assets: ((
+    | {
+        role?: 'report' | 'events' | 'scene' | 'profile' | 'vendor' | 'trace' | 'model';
+        mediaType?: 'application/json';
+        path?: {
+          [k: string]: any;
+        };
+        [k: string]: any;
+      }
+    | {
+        role?: 'model';
+        mediaType?: 'model/stl';
+        encoding?: 'identity';
+        path?: {
+          [k: string]: any;
+        };
+        [k: string]: any;
+      }
+    | {
+        role?: 'notice';
+        mediaType?: 'text/plain';
+        encoding?: 'identity';
+        path?: {
+          [k: string]: any;
+        };
+        [k: string]: any;
+      }
+    | {
+        role?: 'world' | 'physics' | 'navigation';
+        mediaType?: 'application/x-ndjson';
+        path?: {
+          [k: string]: any;
+        };
+        [k: string]: any;
+      }
+  ) & {
     path: string;
     sha256: string;
     decodedSha256: string;
@@ -2183,7 +2218,7 @@ export interface WebReplayPackageV1 {
       | 'physics'
       | 'navigation';
     mediaType: 'application/json' | 'application/x-ndjson' | 'model/stl' | 'text/plain';
-  }[];
+  })[];
   /**
    * @maxItems 3
    */

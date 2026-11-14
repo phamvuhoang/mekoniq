@@ -21,9 +21,10 @@ export interface CapturedReplay {directory:string;report:RunReport;rawReportSha2
 const publications=new Set<string>();
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex'),MAX_INPUT=512*1024*1024;
 /** Refuse symlinks at every component (including root); open with no-follow and check the same bounded inode before reading. */
-export async function readReplayInput(root:string,path:string,max:number):Promise<Buffer>{
- if(!replayPath(path)||!Number.isSafeInteger(max)||max<0||max>MAX_INPUT)throw Error('REPLAY_INPUT_PATH');if((await lstat(root)).isSymbolicLink())throw Error('REPLAY_INPUT_PATH');const absolute=await realpath(root);let at=absolute;for(const part of path.split('/')){at=join(at,part);const s=await lstat(at);if(s.isSymbolicLink()||at!==join(absolute,path)&&!s.isDirectory())throw Error('REPLAY_INPUT_PATH');}
- const file=await open(join(absolute,path),constants.O_RDONLY|constants.O_NOFOLLOW);try{const s=await file.stat();if(!s.isFile()||s.size>max)throw Error('REPLAY_INPUT_LIMIT');const bytes=Buffer.alloc(s.size);let n=0;while(n<bytes.length){const r=await file.read(bytes,n,bytes.length-n,n);if(!r.bytesRead)throw Error('REPLAY_INPUT_CHANGED');n+=r.bytesRead;}const after=await file.stat();if(after.size!==s.size||after.mtimeMs!==s.mtimeMs)throw Error('REPLAY_INPUT_CHANGED');return bytes;}finally{await file.close();}
+export async function readReplayInput(root:string,path:string,max:number,options:{signal?:AbortSignal}={}):Promise<Buffer>{
+ const check=()=>{if(options.signal?.aborted)throw Error('REPLAY_ABORTED');};check();
+ if(!replayPath(path)||!Number.isSafeInteger(max)||max<0||max>MAX_INPUT)throw Error('REPLAY_INPUT_PATH');if((await lstat(root)).isSymbolicLink())throw Error('REPLAY_INPUT_PATH');const absolute=await realpath(root);let at=absolute;for(const part of path.split('/')){at=join(at,part);check();const s=await lstat(at);if(s.isSymbolicLink()||at!==join(absolute,path)&&!s.isDirectory())throw Error('REPLAY_INPUT_PATH');}
+ check();const file=await open(join(absolute,path),constants.O_RDONLY|constants.O_NOFOLLOW);try{const s=await file.stat();check();if(!s.isFile()||s.size>max)throw Error('REPLAY_INPUT_LIMIT');const bytes=Buffer.alloc(s.size);let n=0;while(n<bytes.length){check();const r=await file.read(bytes,n,bytes.length-n,n);if(!r.bytesRead)throw Error('REPLAY_INPUT_CHANGED');n+=r.bytesRead;}check();const after=await file.stat();check();if(after.size!==s.size||after.mtimeMs!==s.mtimeMs)throw Error('REPLAY_INPUT_CHANGED');return bytes;}finally{await file.close();}
 }
 const doc=async(root:string,path:string,max=16*1024*1024)=>JSON.parse((await readReplayInput(root,path,max)).toString());
 export async function loadRetainedReplay(directory:string):Promise<CapturedReplay>{

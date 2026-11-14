@@ -72,7 +72,7 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
   if(origin){response.setHeader('Access-Control-Allow-Origin',origin);response.setHeader('Vary','Origin');if(policy!.credentials)response.setHeader('Access-Control-Allow-Credentials','true');}
   if(request.method==='OPTIONS'){
    if(!origin)throw new GatewayError(403,'ORIGIN_REQUIRED');
-   response.setHeader('Access-Control-Allow-Methods','GET, POST');response.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token, Authorization, Last-Event-ID');response.setHeader('Access-Control-Max-Age','600');return send(response,204,null);
+   response.setHeader('Access-Control-Allow-Methods',/^\/lab\/v2\/runs\/[0-9a-f-]{36}\/replay\/[0-9a-f-]{36}$/.test(path)?'GET, POST, DELETE':'GET, POST');response.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token, Authorization, Last-Event-ID');response.setHeader('Access-Control-Max-Age','600');return send(response,204,null);
   }
   // the only query accepted: the initial business-event cursor of a v2 stream (EventSource cannot send Last-Event-ID on first connect)
   if(url.search&&path!=='/lab/v2/readiness'&&!(/^\/lab\/v2\/runs\/[0-9a-f-]{36}\/events$/.test(path)&&/^\?after=\d{1,20}$/.test(url.search)))throw new GatewayError(400,'QUERY_UNSUPPORTED');

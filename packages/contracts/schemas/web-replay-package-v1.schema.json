@@ -259,7 +259,140 @@
               "text/plain"
             ]
           }
-        }
+        },
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "role": {
+                    "enum": [
+                      "report",
+                      "events",
+                      "scene",
+                      "profile",
+                      "vendor",
+                      "trace",
+                      "model"
+                    ]
+                  },
+                  "mediaType": {
+                    "const": "application/json"
+                  },
+                  "path": {
+                    "pattern": "\\.json(?:\\.gz)?$"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "role": {
+                    "const": "model"
+                  },
+                  "mediaType": {
+                    "const": "model/stl"
+                  },
+                  "encoding": {
+                    "const": "identity"
+                  },
+                  "path": {
+                    "pattern": "\\.stl$"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "role": {
+                    "const": "notice"
+                  },
+                  "mediaType": {
+                    "const": "text/plain"
+                  },
+                  "encoding": {
+                    "const": "identity"
+                  },
+                  "path": {
+                    "pattern": "(?:^|/)(?:NOTICE|LICENSE)(?:\\.txt)?$|\\.txt$"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "role": {
+                    "enum": [
+                      "world",
+                      "physics",
+                      "navigation"
+                    ]
+                  },
+                  "mediaType": {
+                    "const": "application/x-ndjson"
+                  },
+                  "path": {
+                    "pattern": "\\.ndjson(?:\\.gz)?$"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "if": {
+              "properties": {
+                "encoding": {
+                  "const": "identity"
+                },
+                "mediaType": {
+                  "const": "application/json"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "path": {
+                  "pattern": "\\.json$"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "encoding": {
+                  "const": "identity"
+                },
+                "mediaType": {
+                  "const": "application/x-ndjson"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "path": {
+                  "pattern": "\\.ndjson$"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "encoding": {
+                  "const": "gzip"
+                },
+                "mediaType": {
+                  "const": "application/x-ndjson"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "path": {
+                  "pattern": "\\.ndjson\\.gz$"
+                }
+              }
+            }
+          }
+        ]
       }
     },
     "streams": {
