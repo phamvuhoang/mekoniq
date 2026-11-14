@@ -4,6 +4,7 @@ import type {BusinessEvent} from '../report';
 import type {EngineeringProject} from '../../engineering/contracts';
 import {verifiedSimulationInput,type SimulationRunInput,type StudyRef} from './simulation-input';
 import {navigationMetrics} from '../navigation2d/evidence';
+import {verifySemanticMujocoProfiles} from './semantic-study-profiles';
 import {studyTrajectory} from './study-navigation';
 export interface EquivalenceRef {id:string;sha256:string}
 export interface SemanticStudyInput {equivalence:Record<'model'|'world'|'task'|'commonProjection',EquivalenceRef>;runs:(SimulationRunInput&{commonProjection:EquivalenceRef})[];invariantPolicy:{id:string;revision:number}}
@@ -12,10 +13,10 @@ export interface SemanticStudyV1 {schemaVersion:1;documentType:'semantic-study';
 const ref=(id:string,v:unknown):EquivalenceRef=>({id,sha256:hashJson(v)});
 /** Common planar projection includes every model field except its explicitly derived input identities. */
 export function semanticEquivalence(input:SimulationRunInput):SemanticStudyInput['equivalence']{
- const {scene,report,project}=verifiedSimulationInput(input),robot=scene.robots[0]!,{inputs:_inputs,modelDigest:_digest,physicalModelDigest:_physical,...model}=robot.model;void _inputs;void _digest;void _physical;
+ const verified=verifiedSimulationInput(input);verifySemanticMujocoProfiles(verified);
+ const {scene,report,project}=verified,robot=scene.robots[0]!,{inputs:_inputs,modelDigest:_digest,physicalModelDigest:_physical,...model}=robot.model;void _inputs;void _digest;void _physical;
  const scenario=scenarioRegistry.get(report.manifest.scenario.id),base=report.manifest.scenario.basedOn;
  if(!scenario||base?.id!=='FD01'||base.revision!==1||scenarioHash(scenario)!==report.manifest.scenario.hash||scenario.confirm.mode!=='scripted'||scene.actors.length||scene.zones.length||robot.model.sensors.some(s=>s.noise.stddevM!==0||s.noise.distribution!=='none')||scene.clock.tickMs!==20||report.manifest.simulationPerturbation)throw Error('INPUTS_NOT_EQUIVALENT');
- if(scene.engine.id==='mujoco_3d'&&(scene.engine.loadProfileRef.id!=='empty'||scene.engine.physicsProfileRef.id!=='serve-drive-contact-v1'))throw Error('INPUTS_NOT_EQUIVALENT');
  const task={basedOn:base,orders:scenario.orders,confirm:scenario.confirm,park:scenario.park,roles:resolveRoles(scenario,(project as unknown as EngineeringProject).runtimeProject),seed:report.manifest.seed,controller:report.navigation2d!.controller,policy:scene.policy};
  const common={model,world:scene.world,initialPoseMap:robot.initialPoseMap,goals:robot.targetBindings,clock:scene.clock,task,noise:'off',load:'empty',actors:[]};
  return {model:ref('serve-empty-geometric-v1',model),world:ref(scene.world.id,scene.world),task:ref('FD01-scripted-v1',task),commonProjection:ref('serve-empty-fd01-planar-v1',common)};

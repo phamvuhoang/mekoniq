@@ -60,3 +60,26 @@ test('nominal cancel and unknown clauses are explicitly unexercised',()=>{
 test('a load arrival cannot stand in for a handoff and scripted confirmations retain their admitted delay',()=>{
  for(const mutate of [(r:Record<string,unknown>)=>{const events=r.businessEvents as {state:{stops:{action:string}[]}}[];events[0]!.state.stops[0]!.action='load';},(r:Record<string,unknown>)=>{const confirmations=r.confirmations as {provenance:string}[];confirmations[0]!.provenance='manual';}]){const i=input(),r=JSON.parse(i.runs[0]!.report.content);mutate(r);i.runs[0]!.report=artifact('report.json',r);expect(buildSemanticStudy(i).invariants.find(x=>x.runId===r.manifest.runId&&x.id==='arrival-confirmation-served')?.status).toBe('fail');}
 });
+import {resealStudyProfile} from '../support/simulation-study-mutations';
+import {verifiedSimulationInput} from '../../packages/lab-runtime/src/v2/simulation3d/simulation-input';
+import {documentDigest} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
+import cupProfile from '../../robotics/simulation-mujoco/fixtures/serve-payload-v1/cup-center.json';
+const profileMutations:[string,string,(d:Record<string,unknown>)=>void,boolean?][]=[
+ ['friction','drive-contact-profile.json',d=>{(d.contact as {sliding:number}).sliding=.99;}],
+ ['solver','drive-contact-profile.json',d=>{(d.solver as {iterations:number}).iterations++;}],
+ ['actuator','drive-contact-profile.json',d=>{d.velocityGainNmsPerRad=2.01;}],
+ ['unsealed-physics','drive-contact-profile.json',d=>{(d.contact as {sliding:number}).sliding=.99;},false],
+ ['nonempty','empty.json',d=>{d.props=structuredClone(cupProfile.props);}],
+ ['malformed-empty','empty.json',d=>{d.unregisteredLoadSetting=true;}],
+ ['model-hash','empty.json',d=>{(d.modelRef as {sha256:string}).sha256='f'.repeat(64);}],
+ ['model-path','empty.json',d=>{d.modelRef={path:'canonical-physical-model.json',sha256:'830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9'};}],
+];
+test.each(profileMutations)('rejects coherent resealed %s input at semantic admission',(kind,path,mutate,seal=true)=>{
+ const i=input(),original=JSON.stringify(runs[2]),run=resealStudyProfile(i.runs[2]!,path,mutate,seal);
+ // The scene seal, every declared file ref and report/physics identity mirror are already coherent.
+ expect(()=>verifiedSimulationInput(run)).not.toThrow();const changed=JSON.parse(run.artifacts.find(a=>a.ref.path===path)!.content);
+ if(seal)expect(changed.digest).toBe(documentDigest(changed,'digest'));
+ i.runs[2]={...run,commonProjection:i.equivalence.commonProjection};const study=buildSemanticStudy(i);
+ expect(study.status,kind).toBe('incomparable');expect(study.reasonCodes).toContain('INPUTS_NOT_EQUIVALENT');expect(study.reasonCodes.some(r=>/^SEMANTIC_(PHYSICS|EMPTY_LOAD|LOAD_MODEL)_/.test(r))).toBe(true);
+ expect(JSON.stringify(runs[2])).toBe(original);
+});
