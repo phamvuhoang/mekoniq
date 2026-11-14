@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -9,6 +9,7 @@ import * as ownership from '../support/owned-processes';
 const children: ChildProcess[] = [], dirs: string[] = [];
 const alive = (pid: number) => { try { process.kill(pid, 0); return true; } catch { return false; } };
 afterEach(async () => {
+  vi.restoreAllMocks();
   for (const c of children.splice(0)) { if (c.pid) { try { process.kill(-c.pid, 'SIGKILL'); } catch { /* already exited */ } c.kill('SIGKILL'); } }
   for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true });
 });
@@ -87,4 +88,61 @@ test('observing a whole operation retains children when the worker exits before 
   });
   expect(scope.processes().map(p => p.pid)).toContain(descendant);
   process.kill(descendant, 'SIGKILL');
+});
+
+
+test('a newly seen orphan in a remembered group fails cleanup without granting signal authority', () => {
+  const root = { pid: 1001, ppid: process.pid, pgid: 1001, started: 'old', command: 'python --bundle-root /tmp/owned-gap/bundle' };
+  let rows: ownership.ProcessRow[] = [root];
+  const scope = new ownership.OwnedProcesses(() => rows); scope.addDirectory('/tmp/owned-gap');
+  expect(scope.processes().map(p => p.pid)).toEqual([1001]);
+  rows = [{ pid: 1002, ppid: 1, pgid: 1001, started: 'later', command: 'controller' }];
+  expect(() => scope.processes()).toThrow('OWNED_PROCESS_OBSERVATION_UNCERTAIN');
+  const signal = vi.spyOn(process, 'kill').mockImplementation(() => true);
+  expect(scope.kill('/tmp/owned-gap', /controller/)).toEqual([]);
+  expect(signal).not.toHaveBeenCalled();
+});
+
+for (const priorRoot of [false, true]) test(`an operation with a whole unobserved worker lifetime fails cleanup (prior sampled root: ${priorRoot})`, async () => {
+  const directory = await temp();
+  const rows = priorRoot ? [{ pid: 1001, ppid: process.pid, pgid: 1001, started: 'old', command: `python --bundle-root ${directory}/old-bundle` }] : [];
+  const scope = new ownership.OwnedProcesses(() => rows); scope.addDirectory(directory);
+  await expect(scope.observe(async () => {
+    const c = spawn(process.execPath, ['-e', '', '--', '--bundle-root', join(directory, 'short-bundle'), '--run-id', 'short'], { detached: true, stdio: 'ignore' }); children.push(c);
+    await once(c, 'exit');
+  })).rejects.toThrow('OWNED_PROCESS_OBSERVATION_UNCERTAIN');
+  expect(() => scope.processes()).toThrow('OWNED_PROCESS_OBSERVATION_UNCERTAIN');
+  const signal = vi.spyOn(process, 'kill').mockImplementation(() => true);
+  expect(scope.kill(directory, /short-bundle/)).toEqual([]);
+  expect(signal).not.toHaveBeenCalled();
+});
+
+test('a reused group and previously unseen members never gain signal authority', () => {
+  const root = { pid: 1001, ppid: process.pid, pgid: 1001, started: 'old', command: 'python --bundle-root /tmp/owned-new-group/bundle' };
+  let rows: ownership.ProcessRow[] = [root];
+  const scope = new ownership.OwnedProcesses(() => rows); scope.addDirectory('/tmp/owned-new-group');
+  expect(scope.processes()).toHaveLength(1);
+  rows = [{ ...root, ppid: 1, started: 'new', command: 'unrelated' }, { pid: 1002, ppid: 1, pgid: 1001, started: 'new', command: 'controller' }];
+  const signal = vi.spyOn(process, 'kill').mockImplementation(() => true);
+  expect(scope.processes()).toEqual([]);
+  expect(scope.kill('/tmp/owned-new-group', /unrelated|controller/)).toEqual([]);
+  expect(signal).not.toHaveBeenCalled();
+});
+
+
+test('a sampled direct root cannot certify a worker created in another process', () => {
+  const direct = { pid: 1001, ppid: process.pid, pgid: 1001, started: 'old', command: 'python --bundle-root /tmp/owned-external/direct' };
+  const scope = new ownership.OwnedProcesses(() => [direct,
+    { pid: 1002, ppid: process.pid, pgid: 1002, started: 'old', command: 'external worker creator' },
+    { pid: 1003, ppid: 1002, pgid: 1003, started: 'old', command: 'python --bundle-root /tmp/owned-external/indirect' },
+  ]); scope.addDirectory('/tmp/owned-external');
+  expect(() => scope.processes()).toThrow('OWNED_PROCESS_OBSERVATION_UNCERTAIN');
+});
+
+test('a lifecycle callback observation error is latched without escaping the spawn callback', async () => {
+  const directory = await temp(); let broken = true;
+  const scope = new ownership.OwnedProcesses(() => { if (broken) throw new Error('table unavailable'); return []; }); scope.addDirectory(directory);
+  await sentinel(directory);
+  broken = false;
+  expect(() => scope.processes()).toThrow('OWNED_PROCESS_OBSERVATION_UNCERTAIN');
 });

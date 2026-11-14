@@ -1,7 +1,8 @@
 // Test-only ownership: absolute bundle directories AND ancestry from this test process,
 // never a host-wide executable/module selector. Keep detached worker groups and the
 // identities of all descendants so reparented Webots/controllers still count as leaks.
-import { execFileSync } from 'node:child_process';
+import { execFileSync, type ChildProcess } from 'node:child_process';
+import { channel } from 'node:diagnostics_channel';
 import { resolve, sep } from 'node:path';
 import type { ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
 
@@ -14,11 +15,51 @@ export function processTable(): ProcessRow[] {
 }
 const under = (path: string, directory: string) => path === directory || path.startsWith(directory + sep);
 const identity = (p: ProcessRow) => `${p.pid}:${p.started}`;
+// One test-only listener sees every local asynchronous spawn, including workers
+// whose entire lifetime falls between process-table samples. Exact argv limits
+// notification to registered bundle directories; this grants no signal authority.
+interface SpawnObserver { onSpawn(child: ChildProcess): void; onError(): void }
+const spawnObservers = new Set<WeakRef<SpawnObserver>>();
+const observers = () => [...spawnObservers].flatMap(ref => { const observer = ref.deref(); if (observer) return [observer]; spawnObservers.delete(ref); return []; });
+channel('child_process').subscribe(message => {
+  if (!observers().length) return;
+  try {
+    const child = (message as { process: ChildProcess }).process;
+    child.once('spawn', () => {
+      for (const observer of observers()) { try { observer.onSpawn(child); } catch { observer.onError(); } }
+    });
+  } catch { for (const observer of observers()) observer.onError(); }
+});
 export class OwnedProcesses {
   private directories = new Set<string>();
   private known = new Map<string, { row: ProcessRow; bundle: string }>();
   private groups = new Map<number, { leader: string; bundle: string }>();
-  constructor(private readonly snapshot = processTable) {}
+  private uncertainty: string | undefined;
+  private births = new Map<ChildProcess, { bundle: string; captured: boolean }>();
+  // The diagnostics event is experimental: this helper intentionally supports the
+  // repository's exact Node pin, and the generic lifetime tests prove delivery.
+  private readonly spawnObserver: SpawnObserver = { onSpawn: child => this.observeSpawn(child), onError: () => { this.uncertainty ??= 'spawn lifecycle callback failed'; } };
+  constructor(private readonly snapshot = processTable) {
+    if (process.versions.node !== '24.22.2') throw new Error('OWNED_PROCESS_OBSERVATION_UNSUPPORTED_NODE');
+    spawnObservers.add(new WeakRef(this.spawnObserver));
+  }
+  private observeSpawn(child: ChildProcess) {
+    const index = child.spawnargs.indexOf('--bundle-root'), bundle = child.spawnargs[index + 1];
+    if (index < 0 || !bundle || ![...this.directories].some(d => under(bundle, d))) return;
+    const birth = { bundle, captured: false }; this.births.set(child, birth);
+    const sample = () => { try { this.capture(); } catch { this.uncertainty ??= `spawn observation failed: ${child.pid}`; } };
+    sample();
+    child.once('exit', () => {
+      sample();
+      if (!birth.captured) this.uncertainty ??= `root exited without a PID/start sample: ${child.pid}`;
+      this.births.delete(child);
+    });
+  }
+  private assertCertain() {
+    const pending = [...this.births.keys()].find(child => !this.births.get(child)!.captured);
+    const reason = this.uncertainty ?? (pending ? `root has no PID/start sample: ${pending.pid}` : undefined);
+    if (reason) throw new Error(`OWNED_PROCESS_OBSERVATION_UNCERTAIN: ${reason}`);
+  }
   addDirectory(directory: string) { this.directories.add(resolve(directory)); }
   capture(): ProcessRow[] {
     const rows = this.snapshot(), byPid = new Map(rows.map(p => [p.pid, p]));
@@ -32,25 +73,34 @@ export class OwnedProcesses {
       const old = this.known.get(identity(p)); if (old) owned.set(p.pid, { row: p, bundle: old.bundle });
       const bundle = /(?:^| )--bundle-root (.+?)(?= --[a-z-]+(?: |$)|$)/.exec(p.command)?.[1];
       if (bundle && [...this.directories].some(d => under(bundle, d)) && descendant(p)) {
+        // Lifecycle events cover roots created in this Node process only. An
+        // external creator cannot be certified by some other sampled root.
+        if (p.ppid !== process.pid) this.uncertainty ??= `root created outside observed Node process: ${p.pid}`;
         owned.set(p.pid, { row: p, bundle });
         if (p.pgid === p.pid) this.groups.set(p.pgid, { leader: identity(p), bundle });
       }
     }
     for (const [pgid, group] of this.groups) {
       const leader = byPid.get(pgid);
-      // A reused PID/group is not ours. A surviving previously captured member is
-      // required before extending an orphan group; a stale numeric PGID is insufficient.
-      if ((leader && identity(leader) !== group.leader) || ![...owned.values()].some(p => p.row.pgid === pgid)) { this.groups.delete(pgid); continue; }
+      // Reuse proves this is a different group. Otherwise a newly seen orphan
+      // without a known survivor is uncertain cleanup, never signal authority.
+      if (leader && identity(leader) !== group.leader) { this.groups.delete(pgid); continue; }
+      if (![...owned.values()].some(p => p.row.pgid === pgid)) {
+        if (rows.some(p => p.pgid === pgid)) this.uncertainty ??= `unobserved orphan in remembered group: ${pgid}`;
+        else this.groups.delete(pgid);
+        continue;
+      }
       for (const p of rows) if (p.pgid === pgid) owned.set(p.pid, { row: p, bundle: group.bundle });
     }
     let changed = true;
     while (changed) { changed = false; for (const p of rows) { const parent = owned.get(p.ppid); if (parent && !owned.has(p.pid)) { owned.set(p.pid, { row: p, bundle: parent.bundle }); changed = true; } } }
     this.known = new Map([...owned.values()].map(p => [identity(p.row), p]));
+    for (const [child, birth] of this.births) if ([...owned.values()].some(p => p.row.pid === child.pid && p.bundle === birth.bundle)) birth.captured = true;
     return [...owned.values()].map(p => p.row).sort((a, b) => a.pid - b.pid);
   }
-  processes() { return this.capture(); }
-  /** Observe long operations (startup/campaign) while roots are still alive, so
-   * a worker that exits before the caller resumes cannot hide orphan children. */
+  processes() { const rows = this.capture(); this.assertCertain(); return rows; }
+  /** Sampling supplements spawn lifecycle observation; missing root identities
+   * or uncertain orphan ownership fail verification instead of certifying cleanup. */
   async observe<T>(operation: () => Promise<T>): Promise<T> {
     this.capture(); let samplingError: unknown;
     const timer = setInterval(() => { try { this.capture(); } catch (e) { samplingError ??= e; } }, 50); timer.unref();
@@ -58,6 +108,7 @@ export class OwnedProcesses {
     try { result = await operation(); }
     finally { clearInterval(timer); this.capture(); }
     if (samplingError) throw samplingError;
+    this.assertCertain();
     return result;
   }
   kill(directory: string, command: RegExp, signal: NodeJS.Signals = 'SIGKILL'): ProcessRow[] {
