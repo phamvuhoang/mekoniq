@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "artifact": "mekoniq-r2a-demo-guide.html",
+  "sha256": "324f89585f13d48c3a25a178aafed9ec0cd74b76011d8bacd99ad6b257994773",
+  "bytes": 1129953,
+  "inputs": {
+    "build.py": "9c05550e02656d31d2339f920468734136303c43b91a0fcd6ea024dd316629c7",
+    "style.css": "06a984f25a1a8c8c0e932c9bd80e020e9a57a3adef5a9f376b907b1a786ae8d3",
+    "app.js": "8999434c1f7782113fed12f607c664e52fef5230df0d57e2762672a1defb7b30",
+    "facts.json": "5dba1673a1ca96694e44fb621c7daf042a36521228c16cd5dbdbdf8fb7dc383e"
+  },
+  "translationTriples": 177,
+  "shellCommands": [
+    "export PATH=\"$HOME/.nvm/versions/node/v24.22.2/bin:$PATH\"\ncd lab\npnpm check:source\npnpm lab:mujoco",
+    "pnpm dev",
+    "pnpm lab:mock",
+    "cd source\nnode scripts/bootstrap-portable-simulation.mjs mujoco"
+  ],
+  "images": [
+    {
+      "id": "arm",
+      "file": "images/arm.png",
+      "sha256": "079de9679ba1dafc5278e3f7988f9f12bb981a395d8b35ef0fb24671a6488750",
+      "width": 1440,
+      "height": 900,
+      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding.png",
+      "scope": "automated local UI test; not deployed production UI"
+    },
+    {
+      "id": "joints",
+      "file": "images/joints.png",
+      "sha256": "e921c33089182f6cdb3d429258a189c4531ffc2d9a71a043d454216dc9d7a1e7",
+      "width": 1440,
+      "height": 900,
+      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/U06-engineering-joints.png",
+      "scope": "automated local UI test; not deployed production UI"
+    },
+    {
+      "id": "replay",
+      "file": "images/replay.png",
+      "sha256": "e1b05b736f23a52e5141693853b3bea52cca752c6b119ff82800fdfe3b998188",
+      "width": 1440,
+      "height": 900,
+      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/final-I6-replay-mid-pick.png",
+      "scope": "automated local UI test; not deployed production UI"
+    },
+    {
+      "id": "watch",
+      "file": "images/watch.png",
+      "sha256": "cd9368dad6c2a863b30a94d09ff04e5289f210f003bff5378447ca5d2f3886ff",
+      "width": 1440,
+      "height": 900,
+      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-twin-transport/U03-watch-desktop.png",
+      "scope": "automated local UI test; not deployed production UI"
+    }
+  ],
+  "runtimeSourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00"
+}

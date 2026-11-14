@@ -1,6 +1,6 @@
 # MEKONIQ — interactive presentations
 
-Ba bản HTML tự chứa, chuyển trực tiếp **Tiếng Việt / 日本語 / English**. Mở bằng trình duyệt hoặc gửi riêng từng file; không cần cài ứng dụng, chạy server hay tải thư viện/font từ Internet.
+Các bản HTML tự chứa, chuyển trực tiếp **Tiếng Việt / 日本語 / English**. Mở bằng trình duyệt hoặc gửi riêng từng file; không cần cài ứng dụng, chạy server hay tải thư viện/font từ Internet.
 
 | Tài liệu | HTML độc lập | Bản xem riêng tư trên Pages |
 | --- | --- | --- |
@@ -8,6 +8,13 @@ Ba bản HTML tự chứa, chuyển trực tiếp **Tiếng Việt / 日本語 /
 | Business Plan · 11 slide | [business-plan.html](business-plan.html) | [Mở Business Plan](https://chatgpt.com/space/page_86729025d6548191a54021ac49b24dd6) |
 | Robot Lab · 9 trang | [robot-lab.html](robot-lab.html) | File HTML local, chưa xuất bản |
 | Digital Twin · trạng thái & triển khai · 06/11/2026 | [digital-twin-status-2026-11-06.html](digital-twin-status-2026-11-06.html) | Báo cáo tiếng Việt, offline; chưa xuất bản |
+| R2a · demo Web & Local · 14/11/2026 | [mekoniq-r2a-demo-guide.html](mekoniq-r2a-demo-guide.html) | VI/JA/EN, offline; chưa xuất bản |
+
+## Hướng dẫn demo R2a
+
+[HTML R2a](mekoniq-r2a-demo-guide.html) trình bày chức năng và các bước demo xArm 6 trên MuJoCo: ghép nối Web/Local, điều khiển 1× và tăng tốc, xem khớp, camera/watch mode, báo cáo và replay. Có lệnh/URL sao chép, ma trận backend và xử lý lỗi. Bốn ảnh gốc từ bản ghi kiểm UI cục bộ R2a; không phải ảnh production. Snapshot ghi rõ Cloud Run HTTP đã đạt, production Lab còn chờ bản pin mới và chưa nghiệm thu bởi con người.
+
+Nguồn và builder riêng: [src/r2a-demo-guide/README.md](src/r2a-demo-guide/README.md). Build bằng `python3 -B artifacts/src/r2a-demo-guide/build.py`; kiểm bằng `node artifacts/src/r2a-demo-guide/verify.cjs` từ source. HTML không chạy engine hay đọc khóa truy cập. Xem [kết quả kiểm](src/r2a-demo-guide/verification.json), [desktop](src/r2a-demo-guide/desktop-preview.png) và [mobile](src/r2a-demo-guide/mobile-preview.png).
 
 ## Báo cáo Digital Twin ngày 06/11/2026
 

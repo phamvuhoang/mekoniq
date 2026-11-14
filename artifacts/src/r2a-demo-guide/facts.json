@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-11-14",
+  "runtimeSourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+  "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+  "productionLabUrl": "https://mekoniq-lab.vercel.app",
+  "productionLabStatus": "pending_new_pin_deployment",
+  "cloud": {
+    "url": "https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app",
+    "project": "mekoniq",
+    "region": "asia-southeast1",
+    "revision": "mekoniq-lab-runtime-00002-9lx",
+    "httpSmoke": "tested",
+    "browserSmoke": "not_run",
+    "tick": 4800,
+    "served": 2,
+    "httpStepWallMs": 71313,
+    "httpStepTimingScope": "Final CL01 attempt-03 HTTP loop, including network and processing; not a CPU/tick benchmark",
+    "ownRunsArchived": true,
+    "qualificationGate": {
+      "id": "G-CLOUD1",
+      "status": "tested",
+      "basis": "cloud-run supplemental guard",
+      "originalR2aStatus": "blocked_external",
+      "accepted": false
+    }
+  },
+  "humanAcceptance": false,
+  "images": [
+    {
+      "id": "arm",
+      "file": "images/arm.png",
+      "sha256": "079de9679ba1dafc5278e3f7988f9f12bb981a395d8b35ef0fb24671a6488750",
+      "width": 1440,
+      "height": 900,
+      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding.png",
+      "scope": "automated local UI test; not deployed production UI"
+    },
+    {
+      "id": "joints",
+      "file": "images/joints.png",
+      "sha256": "e921c33089182f6cdb3d429258a189c4531ffc2d9a71a043d454216dc9d7a1e7",
+      "width": 1440,
+      "height": 900,
+      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/U06-engineering-joints.png",
+      "scope": "automated local UI test; not deployed production UI"
+    },
+    {
+      "id": "replay",
+      "file": "images/replay.png",
+      "sha256": "e1b05b736f23a52e5141693853b3bea52cca752c6b119ff82800fdfe3b998188",
+      "width": 1440,
+      "height": 900,
+      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/final-I6-replay-mid-pick.png",
+      "scope": "automated local UI test; not deployed production UI"
+    },
+    {
+      "id": "watch",
+      "file": "images/watch.png",
+      "sha256": "cd9368dad6c2a863b30a94d09ff04e5289f210f003bff5378447ca5d2f3886ff",
+      "width": 1440,
+      "height": 900,
+      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-twin-transport/U03-watch-desktop.png",
+      "scope": "automated local UI test; not deployed production UI"
+    }
+  ]
+}

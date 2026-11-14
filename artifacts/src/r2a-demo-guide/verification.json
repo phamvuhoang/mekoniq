@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-14T01:09:09.762Z",
+  "artifact": "mekoniq-r2a-demo-guide.html",
+  "mode": "browser",
+  "checks": [
+    {
+      "name": "Artifact/input/original screenshot hashes, translation triples, scope markers, source links, offline dependencies, secret scan and shell syntax",
+      "details": {
+        "translations": 177,
+        "images": 4,
+        "shellBlocks": 4
+      },
+      "passed": true
+    },
+    {
+      "name": "VI/JA/EN text and image labels; no horizontal overflow at 320/390/768/1024/1440 px",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Web/local buttons, arrow/Home keyboard navigation, focus and hero links",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Copy preserves exact command bytes; denied clipboard selects text for manual copy",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Preparation checklist counts and resets without marking test evidence",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "All four original images open at real dimensions; Escape restores keyboard focus",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Print reveals both routes and all disclosure content; state is restored afterwards",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Fresh-page previews contain one toolbar at the top, one mobile brand and three status chips",
+      "details": {
+        "strategy": "fresh page per viewport; no print-media transitions"
+      },
+      "passed": true
+    },
+    {
+      "name": "No-JavaScript fallback keeps both demo routes and all features readable",
+      "details": true,
+      "passed": true
+    },
+    {
+      "name": "Zero browser errors or HTTP resource requests; no runtime or operational services started",
+      "details": true,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "sha256": "324f89585f13d48c3a25a178aafed9ec0cd74b76011d8bacd99ad6b257994773",
+  "browser": "157.0.8103.78"
+}
