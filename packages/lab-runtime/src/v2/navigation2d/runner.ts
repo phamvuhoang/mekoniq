@@ -40,7 +40,7 @@ export type {IRSimRuntimeOptions,PlantPort};
 export {IRSIM_BACKEND};
 /** Process-wide worker slots (workers-runtime §6: two active runs per host). A run holds one from its start until its plant stops, is lost or the run closes. */
 const slots=new Map<string,Set<string>>();
-const slotsOf=(provider:string)=>{let s=slots.get(provider);if(!s)slots.set(provider,s=new Set());return s;};
+const slotsOf=(provider:string)=>{if(['mujoco_arm','mujoco_3d','mujoco_cell'].includes(provider))provider='mujoco_engine';let s=slots.get(provider);if(!s)slots.set(provider,s=new Set());return s;};
 /** Live workers of one provider on this host (each plant has its own slots: a running IR-SIM never blocks Webots and the other way round). */
 export const activeRunCount=(provider:string,exceptRunId?:string)=>[...slotsOf(provider)].filter(id=>id!==exceptRunId).length;
 /** A plant that is not the fixed-step runner (the Webots arm) takes and gives back a slot of the provider it shares the engine with. */
@@ -127,11 +127,12 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // a new run copies its locked scene out of the bundle; a reopened one reads (and re-verifies) only its own copy
  const read=fresh?(path:string)=>{if(!providers.bundleFile)throw new Error('ENGINEERING_CLOSURE_MISSING');return providers.bundleFile(input.engineering!.ref.bundleDigest,path);}:(path:string)=>readFile(join(bundleDir,path));
  const {scene,files}=await lockScene(input,project,roles,read,amr.id);
+ const stopMonitor=await plant.prepareStopMonitor?.(scene,read);
  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
  const fixture=resolveScenarioFixture(scenario.id,scene,input.seed),fixtureBytes=fixture.actors.length?Buffer.from(JSON.stringify(fixtureFile(fixture))):null;
  const mapId=scene.world.id,mapRevision=scene.sceneDigest,lock=providers.runtime.lockDigest;
  // an IR-FD01 run without actors or zones keeps its configuration identity exactly as before (no fixture key)
- const configuration={revision:1,hash:hashJson({roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
+ const configuration={revision:1,hash:hashJson({roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,...plant.identity.controller?{controllerImplementation:plant.identity.controller.identity}:{},entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
  const backends=[{...amr}];
  const manifest:Omit<RunReport['manifest'],'runId'>={engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario),...scenario.basedOn?{basedOn:{...scenario.basedOn}}:{}},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
@@ -157,12 +158,12 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // the NumPy pin is read from the lock only when that file is the lock the worker was admitted with
  const numpy=sha256(lockText)===lock?/^numpy==(\S+)/m.exec(lockText)?.[1]??'unpinned':'unverified';
  const identity:Omit<EvidenceIdentity,'engine'>={runId:cp.runId,sourceCommit:input.sourceCommit,sceneRef:{path:`bundle/${SCENE}`,sha256:sha256(sceneBytes),bytes:sceneBytes.length},lockDigest:lock,numpyVersion:numpy,runSeed:input.seed,
-  actorRng:{algorithm:`${PRNG.algorithm} ${PRNG.seeding} v${PRNG.version}`,seed:input.seed},controller:{...NAVIGATION_CONTROLLER},businessEpochMs:EPOCH};
+  actorRng:{algorithm:`${PRNG.algorithm} ${PRNG.seeding} v${PRNG.version}`,seed:input.seed},controller:{...(plant.identity.controller?.identity??NAVIGATION_CONTROLLER)},businessEpochMs:EPOCH};
  // the recording limit is the run's tick budget too: the scenario's maxTicks, never above the 30,000-tick quota
  // every terminal the recorder produces (any flush, the tick limit, close) goes into the checkpoint before its manifest write is attempted
  const owner:{run?:FixedStepRun}={},opened=cp;
  const recorder=await openNavigationRecorder({knownTerminal:cp.evidenceTerminal??null,onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.runtime.evidence,maxTicks:Math.min(providers.runtime.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
- const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall);owner.run=run;
+ const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor);owner.run=run;
  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
  run.traffic=fixture.zones.length?createZoneTraffic(createZoneBridge(run.source,{async enter(){}},()=>`op-${++run.checkpoint.ordinal}`),fixture.zones,{clearanceM:scene.policy.parameters.safetyMarginM+2*scene.policy.parameters.gridResolutionM}):undefined;
  try{
@@ -207,14 +208,14 @@ class FixedStepRun implements ScenarioRun {
  private engineSeed:number;
  /** Paced-step anchor (D57): memory only, never checkpointed nor in evidence; cleared by pause, resume, cancel, an unpaced step and a reopen. */
  private anchor:PaceAnchor|null=null;
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock){
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor){
   this.clock=createClock(EPOCH,cp.tick,cp.paused);
   this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
-  this.controller=createNavigationController(fixture.zones.length?{...scene,zones:structuredClone(fixture.zones) as NavigationSceneV1['zones']}:scene);
+  this.controller=createNavigationController(fixture.zones.length?{...scene,zones:structuredClone(fixture.zones) as NavigationSceneV1['zones']}:scene,plant.identity.controller?.options);
   const derived=engineSeedOf(cp.manifest.seed,scene).engineSeed;this.engineSeed=plant.identity.evidence?.engineSeed?plant.identity.evidence.engineSeed(derived):derived;
   for(const r of cp.roles.robots){
-   const a=createIRSimNavigationAdapter({robotId:r.id,scene,controller:this.controller,now:()=>this.clock.nowMs(),state:cp.adapters[r.id]!,...map,trays:cp.trays[r.id]!});
+   const a=createIRSimNavigationAdapter({robotId:r.id,scene,controller:this.controller,now:()=>this.clock.nowMs(),state:cp.adapters[r.id]!,...map,trays:cp.trays[r.id]!,...plant.identity.adapterIdentity?{identity:plant.identity.adapterIdentity}:{}});
    a.observe(e=>this.observations.push(e));this.adapters.set(r.id,a);
   }
  }
@@ -234,13 +235,13 @@ class FixedStepRun implements ScenarioRun {
  }
  private releaseSlot(){slotsOf(this.plant.identity.amr.id).delete(this.cp.runId);}
  /** A finished run needs no plant: the worker stops and its slot is free; the persisted last snapshot stays the run's state. */
- private async stopPlant(){const c=this.cp,w=this.worker;this.worker=undefined;c.plant.status='stopped';c.plant.reason='RUN_FINISHED';this.releaseSlot();await w?.close('RUN_FINISHED').catch(()=>{});await this.rec.flush();}
+ private async stopPlant(){const c=this.cp,w=this.worker;this.worker=undefined;c.plant.status='stopped';c.plant.reason='RUN_FINISHED';await w?.close('RUN_FINISHED').catch(()=>{});this.releaseSlot();await this.rec.flush();}
  record(){
   const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;const at=String(process.hrtime.bigint()),stale=!this.verified();
   // lossy in-memory samples for the live view; the durable per-tick record (and every metric) is the evidence store
   this.telemetry.record(c.roles.robots.flatMap(({id}):TwinSampleV2[]=>{const r=this.robotObs(id),g=this.adapters.get(id)!.goal(),live=g&&(g.state==='executing'||g.state==='cancelling');if(!r)return [];
    const [xM,yM,yawRad]=this.basePose(id,r.poseDriveMap),pose3d=(r as {pose3d?:{z:number;roll:number;pitch:number}}).pose3d;
-   return [{schemaVersion:2,runId:c.runId,entityId:id,providerId:this.plant.identity.amr.id,bootId:c.plant.bootId??c.adapters[id]!.bootId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:'controller_sim',
+   return [{schemaVersion:2,runId:c.runId,entityId:id,providerId:this.plant.identity.amr.id,bootId:c.plant.bootId??c.adapters[id]!.bootId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:this.plant.identity.telemetryOrigin??'controller_sim',
     quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:live?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM,yM,yawRad,...pose3d?{zM:pose3d.z,rollRad:pose3d.roll,pitchRad:pose3d.pitch}:{},moving:this.moving(id),hold:this.holds[id]??null},estimated:null,causationId:live?g.commandId:null} as TwinSampleV2];}));
  }
  // ---- plant (one worker process per run, never a second one) ----
@@ -256,8 +257,9 @@ class FixedStepRun implements ScenarioRun {
    const d=(await this.ask('describe',{})).result as {lockDigest:string;packageVersion:string;pythonVersion:string};
    if(d.lockDigest!==o.lockDigest||d.packageVersion!==this.plant.identity.amr.version)throw new Error('IRSIM_PROVIDER_MISMATCH');
    c.engine={packageVersion:d.packageVersion,pythonVersion:d.pythonVersion};
-   // the engine's NumPy generator gets the derived irsim-env-seed-v1 seed; the actor stream keeps the run seed (separate streams)
+   // The plant's explicit seed profile determines engine identity; IR-SIM keeps its legacy NumPy derivation.
    const snap=(await this.ask('create',{sceneRef:SCENE,seed:this.engineSeed})).result as IRSimSnapshotV1;
+   const fault=this.stopMonitor?.(snap);if(fault)throw new Error(fault.code);
    await this.ask('start',{});
    await this.rec.append(snap,null);
    c.plant={status:'live',reason:null,bootId:this.worker.bootId,requests:c.plant.requests,snapshot:snap};
@@ -267,7 +269,7 @@ class FixedStepRun implements ScenarioRun {
  private async plantLost(code:string,reason='WORKER_LOST'){
   const c=this.cp;if(c.plant.status==='lost')return;
   c.plant.status='lost';c.plant.reason=code;
-  const w=this.worker;this.worker=undefined;this.releaseSlot();await w?.close(code).catch(()=>{});
+  const w=this.worker;this.worker=undefined;await w?.close(code).catch(()=>{});this.releaseSlot();
   for(const a of this.adapters.values())a.sink.lost(reason);
   c.attention.push({reason,subjectId:code,tick:c.tick});this.suspend();
   // a zone held when the plant was lost stays held (the domain keeps it; nothing here frees it) and is named, never left implicit
@@ -427,8 +429,8 @@ class FixedStepRun implements ScenarioRun {
   if(c.tick%TELEMETRY_RATE_TICKS===0)this.record();
   if(this.rec.terminal){await this.evidenceEnded();return false;}
   // a 3D plant's robot that tipped over, sank into the floor or left the physics ends the run now, with that reason: not at the mission timeout with a wrong one
-  const unstable=this.unstableRobot(next);
-  if(unstable!==null){c.attention.push({reason:'PLANT_UNSTABLE',robotId:unstable,tick:c.tick});await this.plantLost('PLANT_UNSTABLE','PLANT_UNSTABLE');return false;}
+  const unstable=this.stopMonitor?this.stopMonitor(next):(()=>{const robotId=this.unstableRobot(next);return robotId===null?null:{code:'PLANT_UNSTABLE',robotId};})();
+  if(unstable){c.attention.push({reason:unstable.code,robotId:unstable.robotId,tick:c.tick});await this.plantLost(unstable.code,unstable.code);return false;}
   return true;
  }
  /** The robot whose 3D pose (pose3d, only 3D plants report it) is unstable (see poseUnstable). `restZ` is the height each robot first reported: the model's base frame may be on the floor or on the axle. */
@@ -450,7 +452,7 @@ class FixedStepRun implements ScenarioRun {
    if(!c.reclaimed){
     this.suspend();c.paused=true;this.clock.pause();
     for(const a of this.adapters.values())await a.requestStop('LOCAL_RECLAIM');await this.drain();
-    if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RECLAIMED';const w=this.worker;this.worker=undefined;this.releaseSlot();await w?.close('RECLAIMED').catch(()=>{});await this.rec.flush();}
+    if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RECLAIMED';const w=this.worker;this.worker=undefined;await w?.close('RECLAIMED').catch(()=>{});this.releaseSlot();await this.rec.flush();}
     if(c.started&&!await this.missionsDone()){
      let targets=0;
      for(const {id:robotId} of c.roles.robots){
@@ -605,5 +607,5 @@ class FixedStepRun implements ScenarioRun {
     'Stop requests are model stops only (physicalStopConfirmed false).',...this.scene.limitations],
    telemetry:this.telemetry.report(),navigation2d};
  }
- async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;this.releaseSlot();try{await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{await this.rec.close().catch(()=>{});await this.source.close();}}}
+ async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;try{await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{this.releaseSlot();await this.rec.close().catch(()=>{});await this.source.close();}}}
 }

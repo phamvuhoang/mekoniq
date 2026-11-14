@@ -24,7 +24,7 @@ const WALL_M=0.1; // boundary walls are 0.1 m thick inside the world rectangle, 
 
 /** Immutable NavigationSceneV1 (without worker files yet) for every robot in `models`. Fails closed: targets and starts that collide or leave the world are refused, never moved. */
 /** Engine of a scene other than the default IR-SIM one. `world3d` (heights and materials a 3D plant needs) is required with, and only with, the webots engine. */
-export interface SceneEngineOptions {engine:{id:'webots_3d';version:'R2025a';basicTimeStepMs:1|2|4|5|10|20};world3d:World3DV1}
+export interface SceneEngineOptions {engine:Exclude<NavigationSceneV1['engine'],{id:'irsim_2d'}>;world3d:World3DV1}
 export function compileNavigationScene(input:EngineeringCompileInput,models:readonly NavigationModel2DV1[],policy:NavigationPolicyV1,schemaHash:string=NAVIGATION_SCHEMA_HASH,options?:SceneEngineOptions):NavigationSceneV1{
  const problems:Problem[]=[],add=(code:string,path:string,detail:string)=>{problems.push({code,path,blocking:true,detail});};
  const w=input.project.runtimeProject.world,sorted=[...models].sort((a,b)=>a.robotId<b.robotId?-1:1);

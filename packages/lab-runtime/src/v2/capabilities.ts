@@ -24,9 +24,10 @@ export const WEBOTS_ARM_UNCONFIGURED:BackendCapability={...WEBOTS_UNCONFIGURED,i
 /** The MuJoCo arm provider (M01) is a portable Python worker like irsim_2d; unconfigured it is a refusal until the operator enables it (MEKONIQ_LAB_MUJOCO=1) and a real worker describe passes. */
 export const MUJOCO_ARM={id:'mujoco_arm'} as const;
 export const MUJOCO_ARM_UNCONFIGURED:BackendCapability={id:'mujoco_arm',modes:['simulation'],accesses:['simulated'],installed:false,compatible:false,reachable:false,commissioned:true,reason:'MUJOCO_DISABLED: the MuJoCo arm provider is not configured on this runtime (MEKONIQ_LAB_MUJOCO=1)'};
+export const MUJOCO_MOBILE_UNCONFIGURED:BackendCapability={...MUJOCO_ARM_UNCONFIGURED,id:'mujoco_3d',reason:'MUJOCO_DISABLED: the MuJoCo mobile provider is not configured on this runtime (MEKONIQ_LAB_MUJOCO=1)'};
 const hw=(id:string,accesses:readonly Access[]):BackendCapability=>({id,modes:['hardware'],accesses,installed:false,compatible:false,reachable:false,commissioned:false,reason:'Native provisioning is outside the local Lab runtime'});
 export const defaultCatalog:CapabilityCatalog={
- backends:[mockBeside('mock_amr'),mockBeside('mock_coffee'),mock('mock_arm'),sim('gazebo_nav2'),sim('linuxcnc_sim'),sim('coffee_io_sim'),unbuilt('moveit_gazebo_arm'),unbuilt('engineering_coffee_process'),hw('valetudo_native',['shadow','hil','live']),hw('cell_native',['hil','live']),IRSIM_UNCONFIGURED,WEBOTS_UNCONFIGURED,WEBOTS_ARM_UNCONFIGURED,MUJOCO_ARM_UNCONFIGURED],
+ backends:[mockBeside('mock_amr'),mockBeside('mock_coffee'),mock('mock_arm'),sim('gazebo_nav2'),sim('linuxcnc_sim'),sim('coffee_io_sim'),unbuilt('moveit_gazebo_arm'),unbuilt('engineering_coffee_process'),hw('valetudo_native',['shadow','hil','live']),hw('cell_native',['hil','live']),IRSIM_UNCONFIGURED,WEBOTS_UNCONFIGURED,WEBOTS_ARM_UNCONFIGURED,MUJOCO_ARM_UNCONFIGURED,MUJOCO_MOBILE_UNCONFIGURED],
  sets:{
   'mock-default':{mode:'mock',access:'simulated',backends:['mock_amr','mock_coffee','mock_arm'],providers:{amr:'mock_amr',arm:'mock_arm',coffee:'mock_coffee'}},
   'mock-amr':{mode:'mock',access:'simulated',backends:['mock_amr'],providers:{amr:'mock_amr'}},
@@ -44,6 +45,7 @@ export const defaultCatalog:CapabilityCatalog={
   'engineering-webots-arm-v1':{mode:'simulation',access:'simulated',backends:['mock_amr','webots_arm','mock_coffee'],providers:{amr:'mock_amr',arm:'webots_arm',coffee:'mock_coffee'},scenarioIds:['WB-BV01'],bundle:false,execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
   /** MuJoCo arm (M01): an xArm 6 with a gripper that picks a cup by contact; AMR and coffee machine stay mocks; only MJ-BV01 runs here. */
   'engineering-mujoco-arm-v1':{mode:'simulation',access:'simulated',backends:['mock_amr','mujoco_arm','mock_coffee'],providers:{amr:'mock_amr',arm:'mujoco_arm',coffee:'mock_coffee'},scenarioIds:['MJ-BV01'],bundle:false,execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
+  'engineering-mujoco-3d-v1':{mode:'simulation',access:'simulated',backends:['mujoco_3d'],providers:{amr:'mujoco_3d'},scenarioIds:['MJ-FD01'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
   'hardware-shadow':{mode:'hardware',access:'shadow',backends:['valetudo_native']},
   'hardware-hil':{mode:'hardware',access:'hil',backends:['valetudo_native','cell_native']},
   'hardware-live':{mode:'hardware',access:'live',backends:['valetudo_native','cell_native']},

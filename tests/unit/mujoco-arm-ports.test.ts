@@ -1,5 +1,6 @@
+import * as workerClient from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
 // M06 step 2: mujocoArmPorts against the real MuJoCo worker session over a fake cell engine (tests/support/mujoco_doubles/fake_cell_plant.py). No MuJoCo is imported.
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { existsSync, lstatSync, readdirSync } from 'node:fs';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
@@ -226,3 +227,9 @@ describe.skipIf(!existsSync(python))('mujocoArmPorts over a fake cell engine', (
     expect(st.arm).toBe(before); expect(st.arm).toEqual(copy);
   }, 60_000);
 });
+
+ test('shared MuJoCo slot remains held while the arm worker is closing',async()=>{
+  const spawn=workerClient.spawnMujocoWorker;let enter!:()=>void,release!:()=>void;const reached=new Promise<void>(r=>enter=r),wait=new Promise<void>(r=>release=r);
+  const spy=vi.spyOn(workerClient,'spawnMujocoWorker').mockImplementation(async o=>{const w=await spawn(o);return {...w,close:async reason=>{enter();await wait;await w.close(reason);}};});
+  try{const {p}=await ports(await runtime());const closing=p.close();await reached;try{expect(activeRunCount('mujoco_3d')).toBe(1);}finally{release();await closing;}}finally{release();spy.mockRestore();}
+ });

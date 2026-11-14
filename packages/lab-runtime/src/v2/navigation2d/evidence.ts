@@ -233,7 +233,15 @@ export async function openNavigationRecorder(o:RecorderOptions):Promise<Navigati
    if(tick>maxTicks){await doFlush(0);return end('EVIDENCE_TICK_LIMIT',{fromTick:tick,toTick:tick,reason:'EVIDENCE_TICK_LIMIT'});}
    const traj:TrajectoryRecord={tick,simTimeNs:s.simTimeNs,robots:s.robots.map(r=>({robotId:r.robotId,poseDriveMap:[...r.poseDriveMap] as [number,number,number],bodyVelocity:[...r.bodyVelocity] as [number,number],collisionIds:[...r.collisionIds],...pose3dOf(r)}))};
    const ctl:ControlRecord|null=controls&&{tick:tick-1,targetTick:tick,singleStep:controls.singleStep===true,velocities:controls.velocities.map(v=>({robotId:v.robotId,vMps:v.vMps,omegaRadps:v.omegaRadps})),actorUpdates:structuredClone(controls.actorUpdates)};
-   const scans=s.robots.flatMap(r=>r.scans.flatMap(scan=>{const k=every.get(`${r.robotId}/${scan.sensorId}`);if(k===undefined||scan.tick!==tick)throw new Error('EVIDENCE_SENSOR_FOREIGN');return tick%k===0?[{tick,robotId:r.robotId,scan}]:[];}));
+   const scans=s.robots.flatMap(r=>{
+    const mobile=o.scene.engine.id==='mujoco_3d',sensors=o.scene.robots.find(x=>x.robotId===r.robotId)?.model.sensors;
+    // Mobile snapshots cache the last real publication. Never relabel it as this tick or silently accept a missing/foreign sensor.
+    if(mobile&&(!sensors||r.scans.length!==sensors.length||new Set(r.scans.map(s=>s.sensorId)).size!==sensors.length))throw new Error('EVIDENCE_SENSOR_FOREIGN');
+    return r.scans.flatMap(scan=>{const k=every.get(`${r.robotId}/${scan.sensorId}`);
+     if(k===undefined||scan.tick!==(mobile?tick-tick%k:tick)||mobile&&(scan.simTimeNs!==String(scan.tick*20_000_000)||scan.frameId!==sensors?.find(s=>s.id===scan.sensorId)?.parentLinkId))throw new Error('EVIDENCE_SENSOR_FOREIGN');
+     return tick%k===0?[{tick,robotId:r.robotId,scan}]:[];
+    });
+   });
    const lines={trajectory:JSON.stringify(traj),control:ctl&&JSON.stringify(ctl),sensors:scans.map(x=>JSON.stringify(x))};
    const key=sha256(JSON.stringify([lines,s.bootId]));
    if(last.tick!==null&&tick<=last.tick){if(tick===last.tick&&key===last.key)return;throw new Error('EVIDENCE_APPEND_CONFLICT');}
@@ -512,7 +520,7 @@ export function evidenceDigests(scene:NavigationSceneV1,id:DigestIdentity,read:E
   assertionDigest:hashJson({header,assertions,episodes:m.episodes,coverage:m.coverage,horizon:m.horizon}),algorithm:DIGEST_ALGORITHM as typeof DIGEST_ALGORITHM,normalizedOmits:[...NORMALIZED_OMITS]};
 }
 /** What a plant adds to the evidence's identity: its engine block, the name of its engine-seed derivation and its first limitation. No profile means the IR-SIM plant. */
-export interface EvidenceProfile {engine(d:{version:string;pythonVersion:string;platform:string;lockDigest:string}):Record<string,unknown>;seedAlgorithm:string;limitation:string;
+export interface EvidenceProfile {engine(d:{version:string;pythonVersion:string;platform:string;lockDigest:string;scene:NavigationSceneV1}):Record<string,unknown>;seedAlgorithm:string;limitation:string;
  /** What the engine really takes of the derived seed (Webots: the low 31 bits, WorldInfo.randomSeed is an SFInt32). The run sends and the evidence records this value. */engineSeed?(derived:number):number}
 /** The report extension (navigation-run-evidence-v1) for the evidence as read from disk now. Artifact paths are relative to the recording root; `recording` is the
  * recorder's own end-of-recording record plus the run's logical tick at export (runTick), which an import passes back to readNavigationEvidence with the artifacts. */
@@ -522,10 +530,10 @@ export function buildNavigationEvidence(scene:NavigationSceneV1,id:EvidenceIdent
  const why=m.coverageReasons.join(', ')||null,complete=m.coverage==='complete';
  return {schemaVersion:1,documentType:'navigation-run-evidence',runId:id.runId,sceneDigest:scene.sceneDigest,sceneRef:id.sceneRef,modelDigests:scene.robots.map(r=>r.model.modelDigest),
   policyRef:{id:scene.policy.id,revision:scene.policy.revision,hash:scene.policy.hash},controller:id.controller,
-  engine:(profile?profile.engine({version:id.engine.version,pythonVersion:id.engine.pythonVersion,platform:host.platform,lockDigest:id.lockDigest}):{id:'irsim_2d',version:id.engine.version,pythonVersion:id.engine.pythonVersion,platform:host.platform,lockDigest:id.lockDigest}) as NavigationRunEvidenceV1['engine'],
+  engine:(profile?profile.engine({version:id.engine.version,pythonVersion:id.engine.pythonVersion,platform:host.platform,lockDigest:id.lockDigest,scene}):{id:'irsim_2d',version:id.engine.version,pythonVersion:id.engine.pythonVersion,platform:host.platform,lockDigest:id.lockDigest}) as NavigationRunEvidenceV1['engine'],
   identity:{sourceCommit:id.sourceCommit,compilerVersion:scene.compilerVersion,sceneSchemaHash:scene.schemaHash,evidenceFormat:EVIDENCE_FORMAT,os:host.os,arch:host.arch,node:host.node},
   clock:{tickMs:20,tickHorizon:Math.min(read.horizon??0,EVIDENCE_LIMITS.maxTicks),businessEpochMs:id.businessEpochMs},
-  seed:{runSeed:id.runSeed,engineSeed,engineSeedAlgorithm:profile?profile.seedAlgorithm as 'webots-worldinfo-seed-v1':'irsim-env-seed-v1',sensorSeeds,actorRng:id.actorRng,...profile?{}:{engineRng:{library:'numpy' as const,version:id.numpyVersion,algorithm:'numpy.random.default_rng(engineSeed) PCG64, one generator per environment',seed:engineSeed}}},
+  seed:{runSeed:id.runSeed,engineSeed,engineSeedAlgorithm:profile?profile.seedAlgorithm as NavigationRunEvidenceV1['seed']['engineSeedAlgorithm']:'irsim-env-seed-v1',sensorSeeds,actorRng:id.actorRng,...profile?{}:{engineRng:{library:'numpy' as const,version:id.numpyVersion,algorithm:'numpy.random.default_rng(engineSeed) PCG64, one generator per environment',seed:engineSeed}}},
   validationReportRef:null,artifacts:structuredClone(listed.chunks),digests:evidenceDigests(scene,id,read,m,assertions,host),assertions,
   metricCoverage:[metric('travelledDistanceM',complete,why),metric('collisionEpisodes',complete,why),metric('minObstacleClearanceM',m.minClearanceM!==null,why),
    metric('minRobotSeparationM',m.minSeparationM!==null,complete?'ONE_ROBOT':why),metric('sensorPublications',m.sensorPublications.complete,why??'SENSOR_PUBLICATIONS_INCOMPLETE')],

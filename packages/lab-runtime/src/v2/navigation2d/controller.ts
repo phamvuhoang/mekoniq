@@ -36,11 +36,13 @@ class Heap{
  * grid-diff-v1: a known-map SE2 lattice planner (8 headings, forward and rotate edges, swept footprint plus margin) with a rotate-translate-rotate follower. The map is known; LiDAR
  * only adds dynamic obstacles. It sends bounded body velocities and never uses an engine goal behavior. Limits are the fixture policy, not a hardware braking certificate.
  */
-export function createNavigationController(scene:NavigationSceneV1):NavigationController{
+export interface NavigationControllerOptions {ramp?:'previous-sent-command-v1'}
+export function createNavigationController(scene:NavigationSceneV1,options:NavigationControllerOptions={}):NavigationController{
  const pol=scene.policy.parameters,margin=pol.safetyMarginM,res=pol.gridResolutionM,H=pol.headingCount,W=scene.world.widthM,Hm=scene.world.heightM;
  const nx=Math.round(W/res)+1,ny=Math.round(Hm/res)+1;
  const statics=[...scene.world.obstacles,...scene.world.boundaries].map(o=>{if(!isConvex(o.verticesM as P[]))throw new Error(`OBSTACLE_NOT_CONVEX ${o.id}`);return o.verticesM as P[];});
  const robots=new Map(scene.robots.map(r=>[r.robotId,{model:r.model,hull:r.model.footprint.verticesM as P[],radius:Math.max(...(r.model.footprint.verticesM as P[]).map(v=>Math.hypot(v[0],v[1])))}]));
+ const sent=new Map<string,[number,number]>();
  const goals=new Map<string,Goal>(),pending:Decision[]=[];
 
  // ---- planning ----
@@ -167,7 +169,7 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
  function follow(robotId:string,goal:Goal,pose:Pose2,vel:[number,number],blocked:boolean){
   const m=robots.get(robotId)!.model,k=m.kinematics,aLin=pol.maxAccelerationMps2,aAng=pol.maxAngularAccelerationRadps2;
   let v=0,w=0;
-  // a finished step hands over to the next one within the same tick, so the command is always ramped from the measured velocity, never cut to zero
+  // a finished step hands over to the next one within the same tick, so the command is ramped from the declared origin (legacy measured velocity; mobile previous command)
   while(!blocked&&goal.steps&&goal.stepIndex<goal.steps.length){
    const step=goal.steps[goal.stepIndex]!,final=goal.stepIndex===goal.steps.length-1;
    if(step.kind==='rotate'){
@@ -182,7 +184,8 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
    }
    break;
   }
-  v=Math.max(vel[0]-aLin*DT,Math.min(vel[0]+aLin*DT,v));w=Math.max(vel[1]-aAng*DT,Math.min(vel[1]+aAng*DT,w));
+  const ramp=options.ramp==='previous-sent-command-v1'?(sent.get(robotId)??[0,0]):vel;
+  v=Math.max(ramp[0]!-aLin*DT,Math.min(ramp[0]!+aLin*DT,v));w=Math.max(ramp[1]!-aAng*DT,Math.min(ramp[1]!+aAng*DT,w));
   const left=(v-w*k.wheelSeparationM/2)/k.wheelRadiusM,right=(v+w*k.wheelSeparationM/2)/k.wheelRadiusM,over=Math.max(Math.abs(left)/k.maxWheelRadps.left,Math.abs(right)/k.maxWheelRadps.right,1);
   return {v:v/over,w:w/over};
  }
@@ -294,6 +297,8 @@ export function createNavigationController(scene:NavigationSceneV1):NavigationCo
     velocities.push({robotId,vMps:f.v,omegaRadps:f.w});
     decisions.push({robotId,commandId:goal.commandId,status:'executing',reason});
    }
+   // All outputs, including explicit terminal/hold zeros, become the next ramp origin. A failed send terminates the run.
+   if(options.ramp==='previous-sent-command-v1')for(const v of velocities)sent.set(v.robotId,[v.vMps,v.omegaRadps]);
    return {velocities,decisions};
   },
  };

@@ -1,6 +1,6 @@
-// The plant port: everything the fixed-step runner needs to know about the engine behind a run, so the same runner drives IR-SIM (irsim_2d) and Webots (webots_3d).
+// The plant port: everything the fixed-step runner needs to know about the engine behind a run, so the same runner drives IR-SIM, Webots and MuJoCo mobile.
 // The runner owns the clock, the missions, the journal and the evidence; a plant only steps, senses and says who it is. One run, one plant, no fallback between them.
-import type {IRSimResponseV1} from './contracts';
+import type {IRSimResponseV1,IRSimSnapshotV1,NavigationSceneV1} from './contracts';
 import {IRSIM_AMR} from './adapter';
 import type {EvidenceProfile} from './evidence';
 import {spawnIRSimWorker,WorkerLostError,type SpawnOptions,type WireRequest} from './worker-client';
@@ -10,8 +10,12 @@ export type {SpawnOptions};
 export const IRSIM_BACKEND=IRSIM_AMR.id;
 /** Who the plant is and what a report may claim about it. */
 export interface PlantIdentity {
- /** the backend manifest entry of the run (`id` is the provider written into the checkpoint and every twin sample) */
+ /** Optional provider-specific controller; absent preserves the legacy controller identity and behavior. */
+ controller?:{identity:{id:'grid-diff-v1';version:string};options:import('./controller').NavigationControllerOptions};
+ adapterIdentity?:{id:string;version:string;model:string};
+ /** Backend identity written into checkpoint and twin samples. */
  amr:{readonly id:string;readonly version:string;readonly model:string;readonly dynamics:boolean};
+ /** Measured physics pose provenance; absent preserves legacy controller_sim samples. */telemetryOrigin?:'physics_sim';
  /** label of the in-memory telemetry recorder */telemetryLabel:string;
  /** first lines of the report's limitations (the scenario's and the scene's follow) */limitations:readonly string[];
  /** what the report may claim: `dynamics` is true only for a plant that simulates it */coverage:{dynamics:boolean};
@@ -25,7 +29,11 @@ export interface PlantWorker {
  close(reason:string):Promise<void>;
  readonly state:'ready'|'failed'|'closed';readonly pid:number|undefined;readonly bootId:string|null;readonly stderrTail:string;
 }
+export type PlantStopMonitor=(snapshot:IRSimSnapshotV1)=>{code:string;robotId:string}|null;
 export interface PlantPort {
+ /** Admitted, plant-specific observation policy; returns a fresh monitor per run. */
+ prepareStopMonitor?(scene:NavigationSceneV1,read:(path:string)=>Promise<Uint8Array>):Promise<PlantStopMonitor>;
+
  identity:PlantIdentity;
  /** wire protocol of the worker, e.g. mekoniq-irsim/1 */protocol:string;
  spawn(o:SpawnOptions):Promise<PlantWorker>;

@@ -705,6 +705,18 @@ export interface NavigationSceneV11 {
           path: string;
           sha256: Digest;
         };
+        stopPolicyRef?: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
+        controllerPolicyRef?: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
       };
   policy: NavigationPolicyV1;
   /**
@@ -881,6 +893,39 @@ export interface NavigationRunEvidenceV11 {
         pythonVersion: string;
         platform: string;
         lockDigest: Digest;
+      }
+    | {
+        id: 'mujoco_3d';
+        engineVersion: '3.17.0';
+        pythonVersion: string;
+        platform: string;
+        lockDigest: Digest;
+        timestepMs: 2;
+        substeps: 10;
+        stopPolicyRef: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
+        physicsProfileRef: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
+        loadProfileRef: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
+        controllerPolicyRef: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
       };
   /**
    * Optional (added with B05): the versions a rerun must match besides the engine and lock.
@@ -902,7 +947,7 @@ export interface NavigationRunEvidenceV11 {
   seed: {
     runSeed: number;
     engineSeed: number;
-    engineSeedAlgorithm: 'irsim-env-seed-v1' | 'webots-worldinfo-seed-v1';
+    engineSeedAlgorithm: 'irsim-env-seed-v1' | 'webots-worldinfo-seed-v1' | 'mujoco-identity-seed-v1';
     /**
      * @minItems 0
      * @maxItems 32

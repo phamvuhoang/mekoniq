@@ -27,14 +27,15 @@ export interface IRSimObservationSink {
 export type IRSimNavigationAdapter=RobotAdapter&{readonly sink:IRSimObservationSink;readonly state:IRSimAdapterState;goal():Goal|undefined};
 const FINAL:GoalState[]=['completed','cancelled','failed','unknown'];
 
-export function createIRSimNavigationAdapter(o:{robotId:string;scene:NavigationSceneV1;controller:NavigationController;now:()=>number;state?:IRSimAdapterState;mapId?:string;mapRevision?:string;trays?:number}):IRSimNavigationAdapter{
+export function createIRSimNavigationAdapter(o:{robotId:string;scene:NavigationSceneV1;controller:NavigationController;now:()=>number;state?:IRSimAdapterState;mapId?:string;mapRevision?:string;trays?:number;identity?:{id:string;version:string;model:string}}):IRSimNavigationAdapter{
  const robot=o.scene.robots.find(r=>r.robotId===o.robotId);
  if(!robot)throw new Error('IRSIM_ROBOT_UNKNOWN');
+ const identity=o.identity??IRSIM_AMR;
  const st=o.state??initialAdapterState(),pol=o.scene.policy.parameters,listeners=new Set<(e:RobotEvent)=>void>();
- const manifest:RobotManifest={id:o.robotId,adapter:'simulator',protocolVersion:'1',firmware:`${IRSIM_AMR.id}@${IRSIM_AMR.version}`,capabilities:['delivery'],mapId:o.mapId??o.scene.world.id,mapRevision:o.mapRevision??o.scene.sceneDigest,offlineExecution:true,maxLoadMinor:'10000',trays:o.trays??1,validation:'simulated'};
+ const manifest:RobotManifest={id:o.robotId,adapter:'simulator',protocolVersion:'1',firmware:`${identity.id}@${identity.version}`,capabilities:['delivery'],mapId:o.mapId??o.scene.world.id,mapRevision:o.mapRevision??o.scene.sceneDigest,offlineExecution:true,maxLoadMinor:'10000',trays:o.trays??1,validation:'simulated'};
  const emit=(g:Goal,type:RobotEvent['type'],extra:Record<string,string>={})=>{
   st.seq++;const c=g.command;
-  const e:RobotEvent={type,id:`${st.bootId}-${st.seq}`,commandId:g.commandId,bootId:st.bootId,sequence:String(st.seq),observedAt:new Date(o.now()).toISOString(),payload:{robotId:c.robotId,missionId:c.missionId,missionRevision:c.missionRevision,controlEpoch:c.controlEpoch,simulated:true,model:IRSIM_AMR.model,...extra}};
+  const e:RobotEvent={type,id:`${st.bootId}-${st.seq}`,commandId:g.commandId,bootId:st.bootId,sequence:String(st.seq),observedAt:new Date(o.now()).toISOString(),payload:{robotId:c.robotId,missionId:c.missionId,missionRevision:c.missionRevision,controlEpoch:c.controlEpoch,simulated:true,model:identity.model,...extra}};
   for(const l of listeners)l(e);
  };
  const live=()=>st.goals.find(g=>g.state==='executing'||g.state==='cancelling');
@@ -118,7 +119,7 @@ export function createIRSimNavigationAdapter(o:{robotId:string;scene:NavigationS
   observe(l){listeners.add(l);return ()=>{listeners.delete(l);};},
   async reconcile(commandId):Promise<NativeExecutionState>{
    const g=st.goals.find(x=>x.commandId===commandId),status=!g||st.plantLost&&!FINAL.includes(g.state)?'unknown':g.state==='cancelling'?'executing':g.state;
-   return {status,evidence:{simulated:true,model:IRSIM_AMR.model,bootId:st.bootId,plantLost:st.plantLost}};
+   return {status,evidence:{simulated:true,model:identity.model,bootId:st.bootId,plantLost:st.plantLost}};
   },
  };
 }

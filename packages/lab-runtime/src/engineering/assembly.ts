@@ -191,7 +191,7 @@ export function resolveAssembly(project:EngineeringProject,components:Record<str
   const {schemaVersion:_v,kind:_k,id:_i,...parameters}=m as Record<string,unknown>;void _v;void _k;void _i;
   return {schemaVersion:1,kind:ref.kind as ModelDocument['kind'],id:ref.id,digest:ref.digest,parameters};
  };
- const perEntity=options.driveBindingsVersion===1||(project.requestedProfile==='engineering-irsim-2d-v1'||project.requestedProfile==='engineering-webots-3d-v1');
+ const perEntity=options.driveBindingsVersion===1||(project.requestedProfile==='engineering-irsim-2d-v1'||project.requestedProfile==='engineering-webots-3d-v1'||project.requestedProfile==='engineering-mujoco-3d-v1');
  const models:ResolvedAssembly['models']={drive:null,arm:{},sensor:{},process:{}};
  const drives:Record<string,NonNullable<ResolvedAssembly['models']['drive']>>={};
  const wheelJoints=new Set<string>();

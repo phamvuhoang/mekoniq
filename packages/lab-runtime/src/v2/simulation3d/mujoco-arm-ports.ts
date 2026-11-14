@@ -99,7 +99,7 @@ export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProj
    schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...runtime.entry?{entry:runtime.entry}:{}});
   let n=0,tick=0,lost=false,refused=false,closed=false,held:readonly string[]=[];
   const ask=(op:string,payload:unknown)=>w.request({protocol:'mekoniq-sim3d/1',requestId:`${op}-${++n}`,runId:ctx.runId,expectedTick:tick,op,payload} as Parameters<typeof w.request>[0]);
-  const release=async()=>{if(closed)return;closed=true;releaseSlot(MUJOCO_SLOT,ctx.runId);await w.close('run closed').catch(()=>{});};
+  const release=async()=>{if(closed)return;closed=true;await w.close('run closed').catch(()=>{});releaseSlot(MUJOCO_SLOT,ctx.runId);};
   try{
    for(const [op,payload] of [['create',{sceneRef:'arm-cell-scene.json',seed:run.seed,arms:[{armId:st.armId,sceneRef:'arm-cell-scene.json'}]}],['start',{}]] as const){
     const r=await ask(op,payload);if(!r.ok)throw new Error(`MUJOCO_ARM_CREATE_FAILED: ${(r as {error:{code:string}}).error.code}`);

@@ -56,3 +56,11 @@ uncalibrated software measurements. Provider/runtime readiness, shared engine ca
 node scripts/bootstrap-portable-simulation.mjs mujoco
 PYTHONDONTWRITEBYTECODE=1 PYTEST_ADDOPTS='-p no:cacheprovider' perl -e 'alarm 300; exec @ARGV' .venv-mujoco/bin/python -m pytest robotics/simulation-mujoco/tests -q
 ```
+
+### Source mobile provider
+
+`MEKONIQ_LAB_MUJOCO=1` now exposes the arm provider plus the mobile `mujoco_3d` plant when an engineering bundle service is configured. Mobile uses `engineering-mujoco-3d-v1` and `MJ-FD01`; the compiler accepts one registered canonical Serve AMR and selects the center load server-side. The existing arm-only CLI options remain sufficient for R2a.
+
+Mobile CLI configuration additionally needs `--engineering-catalog`, `--engineering-simulation`, and a usable `--engineering-python` interpreter with yaml/rfc8785/jsonschema/referencing (the provisioned `.venv-irsim/bin/python` is suitable). `--mujoco-worker` supplies the reviewed fixture/profile closure. No native compiler fallback is used for a missing mobile compiler. The eventual B09 mobile image must ship this actual engineering closure and helper dependencies or implement a separately explicit portable-only mode.
+
+See `docs/research/2026-11-mujoco-mobile-provider-integration.md` for the mobile controller ramp, cached LiDAR publication semantics, stop policy, input hashes and real mission result. Physics and policy assumptions remain `not_calibrated`; durable payload evidence is subsequent B03 work.

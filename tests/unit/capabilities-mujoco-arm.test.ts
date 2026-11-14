@@ -45,12 +45,19 @@ test('the plain BV01 and WB-BV01 are refused by the new set, and no other set li
 });
 
 test('every set and backend that existed before is exactly as it was', () => {
-  const after = Object.entries(defaultCatalog.sets).filter(([k]) => k !== 'engineering-mujoco-arm-v1').map(([k, v]) => [k, v.mode, v.access, [...v.backends]]);
+  const after = Object.entries(defaultCatalog.sets).filter(([k]) => !['engineering-mujoco-arm-v1', 'engineering-mujoco-3d-v1'].includes(k)).map(([k, v]) => [k, v.mode, v.access, [...v.backends]]);
   expect(after).toEqual(BEFORE);
-  expect(defaultCatalog.backends.map((b) => b.id)).toEqual([...BACKENDS_BEFORE, 'mujoco_arm']);
+  expect(defaultCatalog.backends.map((b) => b.id)).toEqual([...BACKENDS_BEFORE, 'mujoco_arm', 'mujoco_3d']);
   expect(defaultCatalog.backends.find((b) => b.id === 'webots_arm')).toEqual(WEBOTS_ARM_UNCONFIGURED);
   expect(defaultCatalog.sets['engineering-webots-arm-v1']).toMatchObject({ providers: { amr: 'mock_amr', arm: 'webots_arm', coffee: 'mock_coffee' }, scenarioIds: ['WB-BV01'] });
   expect(defaultCatalog.sets['engineering-webots-3d-v1']).toMatchObject({ providers: { amr: 'webots_3d' }, scenarioIds: ['WB-FD01', 'WB-FD07'] });
+});
+
+test('mobile catalog adds only an unconfigured simulation backend and the MJ-FD01 engineering set', () => {
+  expect(defaultCatalog.backends.find(b => b.id === 'mujoco_3d')).toMatchObject({ installed: false, modes: ['simulation'], accesses: ['simulated'] });
+  expect(defaultCatalog.sets['engineering-mujoco-3d-v1']).toMatchObject({ mode: 'simulation', access: 'simulated', backends: ['mujoco_3d'], providers: { amr: 'mujoco_3d' }, scenarioIds: ['MJ-FD01'] });
+  expect(defaultCatalog.sets['engineering-mujoco-3d-v1']!.bundle).not.toBe(false);
+  expect(resolveBackends(scenarioRegistry.get('MJ-FD01')!, 'mock', 'mock-default')).toMatchObject({ ok: false });
 });
 
 test('the oracle profile carries the M00 MuJoCo arm thresholds and leaves the Webots ones as they were', () => {

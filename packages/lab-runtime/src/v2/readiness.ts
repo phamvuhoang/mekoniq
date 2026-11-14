@@ -88,7 +88,7 @@ export async function collectReadiness(context:ReadinessContext,o:ReadinessOptio
  const portableSet=set?.execution?.host==='portable_python';
  if(scenario&&set?.mode==='simulation'&&!portableSet&&o.nativeChecks)await providerChecks(checks,context,o.nativeChecks,'NATIVE','native-provider',5000);
  // the IR-SIM create smoke may need its full 15 s startup budget on a cold host; a Webots start is slower (a GUI process), so its smoke gets 45 s under its own name, and the abort closes it
- const webots=set?.providers?.amr==='webots_3d'||set?.providers?.arm==='webots_arm',mujoco=set?.providers?.arm===MUJOCO_ARM.id;
+ const webots=set?.providers?.amr==='webots_3d'||set?.providers?.arm==='webots_arm',mujoco=set?.providers?.arm===MUJOCO_ARM.id||set?.providers?.amr==='mujoco_3d';
  const [prefix,providerId,budget]=webots?['WEBOTS','webots-provider',WEBOTS_BUDGET_MS]:mujoco?['MUJOCO','mujoco-provider',MUJOCO_BUDGET_MS]:['IRSIM','irsim-provider',15000];
  if(scenario&&set?.mode==='simulation'&&portableSet&&o.portableChecks)await providerChecks(checks,context,o.portableChecks,prefix,providerId,budget);
  const entries=Object.entries(o.probes??{});

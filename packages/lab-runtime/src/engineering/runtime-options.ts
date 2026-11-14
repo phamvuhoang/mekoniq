@@ -6,6 +6,7 @@ import {createPythonCompiler} from './compiler';
 import {loadCatalog} from './catalog';
 import {createEngineeringService,type EngineeringService} from './gateway';
 import {createLinkForgeValidator,lockDigestOf,type RobotModelValidator} from './linkforge';
+import {createMujocoCompiler} from './mujoco-compiler';
 import {createWebotsCompiler} from './webots-compiler';
 import {createNavigationCompiler} from './navigation-compiler';
 import type {CompilerPort} from './gateway';
@@ -31,6 +32,8 @@ export interface EngineeringRuntimeOptions{
  portable?:{python:string;workerRoot:string;descriptionHelperRoot?:string};
  /** Webots 3D bundles, MEKONIQ_LAB_WEBOTS=1. The compiler is pure TypeScript (no interpreter needed); whether Webots itself runs is the provider's readiness. */
  webots?:boolean;
+ /** Measured mobile MuJoCo compiler. Arm-only needs no engineering service. */
+ mujoco?:{workerRoot:string};
 }
 /**
  * Builds the engineering service only when the operator asked for it and everything it needs works right now: a readable catalog and a compiler whose Python
@@ -64,6 +67,7 @@ export async function engineeringFromOptions(o:EngineeringRuntimeOptions):Promis
    compilers['engineering-irsim-2d-v1']=createNavigationCompiler({python:o.portable.python,workerRoot:resolve(o.portable.workerRoot),descriptionHelperRoot:resolve(o.portable.descriptionHelperRoot??simulationRoot)});
   }catch{/* the profile stays without a compiler: its receipts say so */}
  }
+ if(o.mujoco)compilers['engineering-mujoco-3d-v1']=createMujocoCompiler({workerRoot:resolve(o.mujoco.workerRoot)});
  if(o.webots)compilers['engineering-webots-3d-v1']=createWebotsCompiler();
  return createEngineeringService({directory:join(o.directory,'engineering'),catalogRoot,compiler:createPythonCompiler({python,simulationRoot}),compilers,validator,validationUnavailable});
 }

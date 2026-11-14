@@ -35,7 +35,7 @@ export interface WebotsProviderLike {plant?:{port:PlantPort;runtime:IRSimRuntime
  /** The Webots arm (R1.1): the same engine and flag, its own backend id, capability and readiness. */
  arm?:{runtime?:WebotsRuntimeOptions;capability:BackendCapability;readinessChecks?:NativeReadinessChecks}}
 /** The MuJoCo arm provider (simulation3d/mujoco.ts, R2a): its own opt-in, backend id, capability and readiness; it never makes another provider usable. */
-export interface MujocoProviderLike {arm:{runtime?:MujocoRuntimeOptions;capability:BackendCapability;readinessChecks?:NativeReadinessChecks}}
+export interface MujocoProviderLike {mobile?:{plant?:{port:PlantPort;runtime:MujocoRuntimeOptions};capability:BackendCapability;readinessChecks?:NativeReadinessChecks};arm:{runtime?:MujocoRuntimeOptions;capability:BackendCapability;readinessChecks?:NativeReadinessChecks}}
 export interface PortableSimulationOptions {enabled:boolean;python:string;workerRoot:string;lockPath:string;directory:string;nativeFactory?:SimulationFactory;
  /** Catalog to extend (the native one when native is configured). */baseCatalog?:CapabilityCatalog;
  /** Admitted-bundle reader (the engineering service), for readiness. */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;
@@ -77,21 +77,21 @@ export function plantDispatcher(catalog:CapabilityCatalog,plants:PlantTable|unde
 const WEBOTS_ID='webots_3d',WEBOTS_ARM_ID='webots_arm',MUJOCO_ARM_ID='mujoco_arm';
 /** IR-SIM (when enabled) plus Webots and the MuJoCo arm (when their providers are live): one catalog, one dispatcher over the live plants, readiness chosen by the set's arm or AMR provider. */
 export async function portableSimulationFromOptions(o:PortableSimulationOptions):Promise<PortableSimulation>{
- const base=await irsimPortable(o),w=o.webots,m=o.mujoco?.arm;
- if(!w&&!m)return base;
- const replaced:Record<string,BackendCapability>={...w?{[WEBOTS_ID]:w.capability}:{},...w?.arm?{[WEBOTS_ARM_ID]:w.arm.capability}:{},...m?{[MUJOCO_ARM_ID]:m.capability}:{}};
+ const base=await irsimPortable(o),w=o.webots,m=o.mujoco?.arm,mm=o.mujoco?.mobile;
+ if(!w&&!m&&!mm)return base;
+ const replaced:Record<string,BackendCapability>={...w?{[WEBOTS_ID]:w.capability}:{},...w?.arm?{[WEBOTS_ARM_ID]:w.arm.capability}:{},...m?{[MUJOCO_ARM_ID]:m.capability}:{},...mm?{mujoco_3d:mm.capability}:{}};
  const catalog:CapabilityCatalog={...base.catalog,backends:base.catalog.backends.map(b=>Object.hasOwn(replaced,b.id)?replaced[b.id]!:b)};
- const plants:PlantTable={...base.plants,...w?.plant?{[WEBOTS_ID]:w.plant}:{}},live=!!w?.plant&&w.capability.installed;
+ const plants:PlantTable={...base.plants,...w?.plant?{[WEBOTS_ID]:w.plant}:{},...mm?.plant?{mujoco_3d:mm.plant}:{}},live=!!w?.plant&&w.capability.installed;
  const wr=w?.arm?.capability.installed?w.arm.runtime:undefined,mr=m?.capability.installed?m.runtime:undefined;
  const arms:ArmPlantTable={...wr?{[WEBOTS_ARM_ID]:{ports:run=>webotsArmPorts(wr,run)}}:{},...mr?{[MUJOCO_ARM_ID]:{ports:run=>mujocoArmPorts(mr,run),program:()=>mujocoArmProgram(mr)}}:{}};
- const ir=base.readinessChecks,wb=w?.readinessChecks,wa=w?.arm?.readinessChecks,ma=m?.readinessChecks;
- const readinessChecks:NativeReadinessChecks|undefined=ir||wb||wa||ma?async(context,signal)=>{
+ const ir=base.readinessChecks,wb=w?.readinessChecks,wa=w?.arm?.readinessChecks,ma=m?.readinessChecks,mb=mm?.readinessChecks;
+ const readinessChecks:NativeReadinessChecks|undefined=ir||wb||wa||ma||mb?async(context,signal)=>{
   const providers=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]!.providers:undefined,
-   pick=providers?.arm===WEBOTS_ARM_ID?wa:providers?.arm===MUJOCO_ARM_ID&&m?ma:providers?.amr===WEBOTS_ID?wb:ir; // without the MuJoCo option a set is routed as before
+   pick=providers?.arm===WEBOTS_ARM_ID?wa:providers?.arm===MUJOCO_ARM_ID&&m?ma:providers?.amr===WEBOTS_ID?wb:providers?.amr==='mujoco_3d'?mb:ir; // without the MuJoCo option a set is routed as before
   if(!pick)throw new Error('PORTABLE_PROVIDER_UNAVAILABLE');
   return pick(context,signal);
  }:undefined;
- return {...base,catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[],...wr?[WEBOTS_ARM_ID]:[],...mr?[MUJOCO_ARM_ID]:[]],plants,simulationFactory:plantDispatcher(catalog,plants,o.nativeFactory,arms),...readinessChecks?{readinessChecks}:{}};
+ return {...base,catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[],...wr?[WEBOTS_ARM_ID]:[],...mr?[MUJOCO_ARM_ID]:[],...mm?.plant&&mm.capability.installed?['mujoco_3d']:[]],plants,simulationFactory:plantDispatcher(catalog,plants,o.nativeFactory,arms),...readinessChecks?{readinessChecks}:{}};
 }
 
 async function irsimPortable(o:PortableSimulationOptions):Promise<PortableSimulation>{

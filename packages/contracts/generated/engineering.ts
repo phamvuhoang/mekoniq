@@ -85,7 +85,11 @@ export type Joint =
  * via the `definition` "EngineeringProfile".
  */
 export type EngineeringProfile =
-  'engineering-rigid-v1' | 'engineering-contact-v1' | 'engineering-irsim-2d-v1' | 'engineering-webots-3d-v1';
+  | 'engineering-rigid-v1'
+  | 'engineering-contact-v1'
+  | 'engineering-irsim-2d-v1'
+  | 'engineering-webots-3d-v1'
+  | 'engineering-mujoco-3d-v1';
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
  * via the `definition` "BundleReceipt".
