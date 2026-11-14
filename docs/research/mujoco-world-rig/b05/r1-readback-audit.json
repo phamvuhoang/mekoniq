@@ -1,0 +1,76 @@
+{
+  "accepted": false,
+  "scope": "R1 recorder-only reread of retained production trials; no new physics or Source custody qualification",
+  "priorInventorySha256": "eac53aea1ee322820048fc5b35cac2492594d570f42006f94fbe50c9eadc43be",
+  "readerSha256": "ac12db61adc87b4f4647671c3b52076bfa2edd7118b9beabff5751519046f33d",
+  "verifiedImmutableFiles": 140,
+  "normalReplay": {
+    "trial": 1,
+    "records": 2503,
+    "chunks": 11,
+    "compressedChunkBytesIdentical": true,
+    "randomChunkFilenamesExcluded": true
+  },
+  "trials": [
+    {
+      "trial": 1,
+      "records": 2503,
+      "complete": true,
+      "issues": []
+    },
+    {
+      "trial": 2,
+      "records": 2503,
+      "complete": true,
+      "issues": []
+    },
+    {
+      "trial": 3,
+      "records": 2503,
+      "complete": true,
+      "issues": []
+    },
+    {
+      "trial": 4,
+      "records": 2503,
+      "complete": true,
+      "issues": []
+    },
+    {
+      "trial": 5,
+      "records": 2503,
+      "complete": true,
+      "issues": []
+    },
+    {
+      "trial": 6,
+      "records": 2503,
+      "complete": true,
+      "issues": []
+    },
+    {
+      "trial": 7,
+      "records": 2503,
+      "complete": true,
+      "issues": []
+    },
+    {
+      "trial": 8,
+      "records": 2503,
+      "complete": true,
+      "issues": []
+    },
+    {
+      "trial": 9,
+      "records": 2503,
+      "complete": true,
+      "issues": []
+    },
+    {
+      "trial": 10,
+      "records": 2503,
+      "complete": true,
+      "issues": []
+    }
+  ]
+}

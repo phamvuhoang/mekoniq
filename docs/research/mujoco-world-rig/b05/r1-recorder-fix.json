@@ -1,0 +1,21 @@
+{
+  "accepted": false,
+  "scope": "R1 recorder failure paths only; no physics/controller or normal record serialization change",
+  "baseSourceCommit": "ddc18dca876fc41e30dc88028dd8365effe32d0e",
+  "gatePolicySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+  "priorCampaignInventorySha256": "eac53aea1ee322820048fc5b35cac2492594d570f42006f94fbe50c9eadc43be",
+  "priorRecorderSha256": "6cc7f4ca823ac71ca4400bd6077ab9f895e1a98b2d04c5eed49ecd9f9b1bcea2",
+  "r1RecorderSha256": "ac12db61adc87b4f4647671c3b52076bfa2edd7118b9beabff5751519046f33d",
+  "patchSha256": "c33d82fa84154dabb47e684bd174e4781989e133bf07354034790006af322235",
+  "readbackAuditSha256": "5aba151ce04decaf57ef1fbfec74256687f29e578c71f9f017d405943570d937",
+  "unchangedFrozenFiles": 38,
+  "gateDifferences": [
+    {
+      "path": "packages/lab-runtime/src/v2/simulation3d/world-evidence.ts",
+      "gateSha256": "28d652f8eb6bfb4bce2b9e8bdf83b450631a7262ce17cf04e76497e815e6fa3d",
+      "r1Sha256": "ac12db61adc87b4f4647671c3b52076bfa2edd7118b9beabff5751519046f33d"
+    }
+  ],
+  "normalRecordProof": "2503 stored observations/commands replayed without physics; all 11 gzip chunks byte-identical; filenames intentionally randomized",
+  "immutablePriorEvidence": "Original frozen policy, campaign files, inventory, prior audit and completion-fix files untouched; R1 evidence is separately named"
+}
