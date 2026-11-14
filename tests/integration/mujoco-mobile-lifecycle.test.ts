@@ -16,12 +16,12 @@ import {testCompiler,writeFixtureCatalog} from '../support/engineering';
 const dirs:string[]=[],runs:ScenarioRun[]=[],root=resolve('robotics/simulation-mujoco');
 const temp=async()=>{const d=await mkdtemp(join(tmpdir(),'mj-lifecycle-'));dirs.push(d);return d;};
 afterEach(async()=>{for(const r of runs.splice(0))await r.close();for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
-async function setup(wrap:(plant:PlantPort)=>void){
+async function setup(wrap:(plant:PlantPort)=>void,evidence?:{maxBytes:number}){
  const f=navigationFixture('serve-3d').fixture;f.project={...f.project,requestedProfile:'engineering-mujoco-3d-v1'};
  const catalogRoot=await temp();await writeFixtureCatalog(catalogRoot,f);
  const service=createEngineeringService({directory:await temp(),catalogRoot,compiler:testCompiler,compilers:{'engineering-mujoco-3d-v1':createMujocoCompiler({workerRoot:root})}});
  const receipt=await service.compileEngineeringProject(f.project,'owner'),locked=await service.admitRun('owner',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},'engineering-mujoco-3d-v1',undefined);
- const runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot:root,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(root,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1};
+ const runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot:root,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(root,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1,...evidence?{evidence}:{}};
  const plant=mujocoMobilePlant(runtime);wrap(plant);
  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)},directory=await temp();
  const open=async()=>{const r=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'lifecycle-test',engineering:locked},{directory,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});runs.push(r);return r;};
@@ -114,4 +114,11 @@ test('restart after an in-flight step joins the explicit unknown horizon into ph
  await act(run,'step',{ticks:1});await run.close();
  await writeFile(join(directory,'run.json'),JSON.stringify(checkpoint));await writeFile(join(directory,'physics','manifest.json'),physics);await writeFile(join(directory,'evidence','manifest.json'),navigation);
  const restored=await open(),report=await restored.report();expect(report.outcome.tick).toBe(100);expect(report.physicsEvidence?.complete).toBe(false);expect(report.physicsEvidence?.manifest.gaps).toContainEqual(expect.objectContaining({firstTick:101,lastTick:101,reason:'STEP_ACK_LOST'}));
+},30_000);
+
+test('impossible physics initialization quota after create retains startup unknown without exceeding the budget',async()=>{
+ let spawns=0,created=0;const {open,directory}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(req.op==='create'&&r.ok)created++;return r;}};};},{maxBytes:1});
+ const run=await open();await expect(run.start()).rejects.toThrow('PHYSICS_QUOTA_EXCEEDED');expect(created).toBe(1);expect((await run.snapshot()).tick).toBe(0);expect((await run.snapshot()).run.status).toBe('needs_attention');
+ const {readdir}=await import('node:fs/promises');expect(await readdir(join(directory,'physics'))).toEqual([]);
+ await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');await run.close();const restored=await open();await expect(act(restored,'start')).rejects.toThrow('STARTUP_UNKNOWN');expect(spawns).toBe(1);
 },30_000);

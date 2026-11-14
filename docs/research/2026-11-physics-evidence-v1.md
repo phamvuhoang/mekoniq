@@ -26,7 +26,11 @@ before source outcome observations. Startup uncertainty remains latched.
 
 The physics and navigation quotas are each at most 100 MiB, including writer
 metadata and orphan accounting, so configuring either above its cap is refused
-on this provider. Physics caps include 30,000 ticks, 2,000 chunks, 256 KiB lines,
+on this provider. Initialization and each atomic metadata publication are checked
+using UTF-8 byte lengths, including simultaneous old-target and temporary-file
+bytes. Healthy writes reserve a worst-case terminal reason and one gap manifest;
+impossible budgets refuse before publication. Terminal/reopen writes obey the
+same cap, even when the terminal can only remain in memory/checkpoint. Physics caps include 30,000 ticks, 2,000 chunks, 256 KiB lines,
 16 MiB compressed / 64 MiB inflated chunks and 400 MiB total inflation. The reader
 checks sizes before reading, confines regular files, verifies hashes before
 bounded inflation, and checks every record and contiguous coverage. A report's

@@ -55,25 +55,31 @@ export async function openPhysicsRecorder(o:PhysicsRecorderOptions):Promise<Phys
  let queue:Promise<void>=Promise.resolve();
  const serial=(fn:()=>Promise<void>)=>{const p=queue.then(fn);queue=p.catch(()=>{});return p;};
  let last=-1,lines:string[]=[],inflated=0,totalInflated=0,closed=false;
- const save=()=>writeDurable(o.directory,MANIFEST,JSON.stringify(m));
+ // Every atomic publication temporarily coexists with all existing bytes, including its old
+ // target and any orphan/tmp file. Reserve one worst-case terminal + gap document before
+ // healthy writes: JSON control-character escapes cost six bytes per UTF-16 code unit.
+ const quota=async(extra:number)=>{if(await sizeOf(o.directory)+extra>maxBytes)throw new Error('PHYSICS_QUOTA_EXCEEDED');};
+ const intentBytes=Buffer.byteLength(JSON.stringify({lastTick:Number.MAX_SAFE_INTEGER}));
+ const reserve=(manifest:PhysicsEvidenceV1)=>manifest.terminalReason?0:Buffer.byteLength(JSON.stringify({...manifest,coverage:{...manifest.coverage,complete:false},terminalReason:'\u0000'.repeat(200),gaps:[...manifest.gaps,{firstTick:Number.MAX_SAFE_INTEGER,lastTick:Number.MAX_SAFE_INTEGER,reason:'\u0000'.repeat(200)}]}))+intentBytes;
+ const publish=async(name:string,bytes:Uint8Array|string,extra=0)=>{await quota(Buffer.byteLength(bytes)+extra);await writeDurable(o.directory,name,bytes);};
+ const save=()=>publish(MANIFEST,JSON.stringify(m),reserve(m));
  if((await readdir(o.directory)).length){const old=await readPhysicsManifest(o.directory);if(!validatePhysicsEvidenceShape(old)||hashJson(old.identity)!==hashJson(o.identity))throw new Error('PHYSICS_IDENTITY_MISMATCH');m=old as PhysicsEvidenceV1;m.coverage.complete=false;m.terminalReason??='PHYSICS_RESTART';closed=true;await save();}
  else await save();
  const end=async(reason:string)=>{m.terminalReason??=reason.slice(0,200);m.coverage.complete=false;closed=true;await save().catch(()=>{});};
- const quota=async(extra:number)=>{if(await sizeOf(o.directory)+extra>maxBytes)throw new Error('PHYSICS_QUOTA_EXCEEDED');};
  const flush=async()=>{
   if(!lines.length)return;
   const bytes=gzipSync(lines.join('')),chunks=m.streams[0]!.chunks;
   if(chunks.length>=READ_LIMITS.chunksPerStream||bytes.length>READ_LIMITS.chunkBytes||totalInflated+inflated>READ_LIMITS.totalInflated)throw new Error('PHYSICS_READ_LIMIT');
-  await quota(bytes.length+JSON.stringify(m).length+512);
-  await writeDurable(o.directory,INTENT,JSON.stringify({lastTick:last}));
-  const path=`physics-${String(chunks.length).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`;
-  await writeDurable(o.directory,path,bytes);chunks.push({path,sha256:sha(bytes),bytes:bytes.length});m.coverage.lastTick=last;m.coverage.complete=!m.terminalReason&&!m.gaps.length;
-  await save();await writeDurable(o.directory,WAL,'');await unlink(join(o.directory,INTENT));totalInflated+=inflated;inflated=0;lines=[];
+  const path=`physics-${String(chunks.length).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`,next=structuredClone(m),intent=JSON.stringify({lastTick:last});
+  next.streams[0]!.chunks.push({path,sha256:sha(bytes),bytes:bytes.length});next.coverage.lastTick=last;next.coverage.complete=!next.terminalReason&&!next.gaps.length;
+  await quota(bytes.length+Buffer.byteLength(intent)+Buffer.byteLength(JSON.stringify(next))+reserve(next));
+  await publish(INTENT,intent);await publish(path,bytes);m=next;
+  await save();await publish(WAL,'');await unlink(join(o.directory,INTENT));totalInflated+=inflated;inflated=0;lines=[];
  };
  return {directory:o.directory,manifest:()=>structuredClone(m),append(record){return serial(async()=>{
   if(closed||m.terminalReason)throw new Error('PHYSICS_RECORDER_TERMINAL');
   const attempted=last+1;
-  try{validatePhysicsRecord(record,o.admission,last+1);if(record.tick>maxTicks)throw new Error('PHYSICS_TICK_LIMIT');const line=JSON.stringify(record)+'\n',n=Buffer.byteLength(line);if(n>READ_LIMITS.lineBytes)throw new Error('PHYSICS_READ_LIMIT');if(inflated+n>12*1024*1024)await flush();await quota(n+512);
+  try{validatePhysicsRecord(record,o.admission,last+1);if(record.tick>maxTicks)throw new Error('PHYSICS_TICK_LIMIT');const line=JSON.stringify(record)+'\n',n=Buffer.byteLength(line);if(n>READ_LIMITS.lineBytes)throw new Error('PHYSICS_READ_LIMIT');if(inflated+n>12*1024*1024)await flush();await quota(n+reserve(m));
    const h=await open(join(o.directory,WAL),'a',0o600);try{await h.writeFile(line);await h.sync();}finally{await h.close();}const d=await open(o.directory,'r');try{await d.sync();}finally{await d.close();}
    lines.push(line);inflated+=n;last=record.tick;if(lines.length>=chunkTicks)await flush();
   }catch(e){const reason=(e as Error).message;m.gaps.push({firstTick:attempted,lastTick:Math.max(attempted,Number.isSafeInteger(record?.tick)?record.tick:attempted),reason:reason.slice(0,200)});await end(reason);throw e;}

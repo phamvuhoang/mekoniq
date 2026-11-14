@@ -48,3 +48,30 @@ test('reader binds supplied identity and admitted metrics policy rather than tru
 test('queued appends preserve one durable tick order for concurrent callers',async()=>{
  const {directory,rec}=await setup();await Promise.all([rec.append(tick()),rec.append(tick(1))]);await rec.flush();expect((await readPhysicsEvidence(directory,rec.manifest(),{admission})).records.map(r=>r.tick)).toEqual([0,1]);
 });
+
+const storedBytes=async(directory:string)=>{const {readdir,stat}=await import('node:fs/promises');let n=0;for(const f of await readdir(directory))n+=(await stat(join(directory,f))).size;return n;};
+test('impossible initial metadata budgets refuse before publishing any file',async()=>{
+ for(const maxBytes of [1,749,750,1000]){const directory=await mkdtemp(join(tmpdir(),'physics-small-quota-'));dirs.push(directory);
+  await expect(openPhysicsRecorder({directory,identity,admission,assumptions,metricsPolicyDigest:'e'.repeat(64),maxBytes})).rejects.toThrow('PHYSICS_QUOTA_EXCEEDED');expect(await storedBytes(directory)).toBe(0);
+ }
+});
+test('initial metadata reserves use UTF-8 bytes and preserve space for a terminal gap',async()=>{
+ const ascii=await setup({identity:{...identity,runId:'a'.repeat(200),bootId:'a'.repeat(200)},maxBytes:5000});expect(ascii.rec.manifest().terminalReason).toBeNull();
+ // Same character count, different byte cost; this reserve cannot fit the same budget.
+ const directory=await mkdtemp(join(tmpdir(),'physics-unicode-quota-'));dirs.push(directory);
+ const unicodeIdentity={...identity,runId:'界'.repeat(200),bootId:'界'.repeat(200)};
+ await expect(openPhysicsRecorder({directory,identity:unicodeIdentity,admission,assumptions,metricsPolicyDigest:'e'.repeat(64),maxBytes:5000})).rejects.toThrow('PHYSICS_QUOTA_EXCEEDED');expect(await storedBytes(directory)).toBe(0);
+ await ascii.rec.gap(1,1,'\u0000'.repeat(200));expect(await storedBytes(ascii.directory)).toBeLessThanOrEqual(5000);expect(JSON.parse(await readFile(join(ascii.directory,'manifest.json'),'utf8')).terminalReason).toBeTruthy();
+});
+test('reopen and repeated terminal metadata never spend beyond the configured cap',async()=>{
+ const {directory,rec}=await setup();await rec.append(tick());await rec.finish(null);
+ const before=await storedBytes(directory),manifest=await readFile(join(directory,'manifest.json'));
+ await expect(openPhysicsRecorder({directory,identity,admission,assumptions,metricsPolicyDigest:'e'.repeat(64),maxBytes:before})).rejects.toThrow('PHYSICS_QUOTA_EXCEEDED');expect(await storedBytes(directory)).toBe(before);expect(await readFile(join(directory,'manifest.json'))).toEqual(manifest);
+ const bounded=await setup({maxBytes:4200});for(let i=0;i<8;i++)await bounded.rec.gap(i,i,'\u0000'.repeat(200));expect(await storedBytes(bounded.directory)).toBeLessThanOrEqual(4200);expect(bounded.rec.manifest().terminalReason).toBeTruthy();
+});
+test('accepted appends retain enough metadata headroom to publish quota termination',async()=>{
+ const {directory,rec}=await setup({maxBytes:6000});let accepted=0;
+ for(let n=0;n<20;n++){try{await rec.append(tick(n));accepted++;}catch(e){expect((e as Error).message).toBe('PHYSICS_QUOTA_EXCEEDED');break;}}
+ expect(accepted).toBeGreaterThan(0);expect(accepted).toBeLessThan(20);expect(await storedBytes(directory)).toBeLessThanOrEqual(6000);
+ const persisted=JSON.parse(await readFile(join(directory,'manifest.json'),'utf8'));expect(persisted.terminalReason).toBe('PHYSICS_QUOTA_EXCEEDED');expect(persisted.gaps).toContainEqual(expect.objectContaining({firstTick:accepted,lastTick:accepted}));
+});
