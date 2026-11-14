@@ -2,7 +2,7 @@ import {exportWebReplay,readReplayInput} from './replay/export';
 import type {ReplayManifest} from './replay/reader';
 import {PAYLOAD_EXPERIMENTS} from './simulation3d/payload-experiments';
 import {createHash,randomBytes,randomUUID} from 'node:crypto';
-import {mkdir,rm,writeFile} from 'node:fs/promises';
+import {lstat,mkdir,opendir,rm,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import type {IncomingMessage,ServerResponse} from 'node:http';
 import {admitBackend,defaultCatalog,type CapabilityCatalog,type Access} from './capabilities';
@@ -56,6 +56,8 @@ export function createV2Gateway(deps:V2Deps){
  // Runs are owned by the v2 pairing session that created them; another session sees 404, exactly as for an unknown id.
  let replayClosing=false;const replayWork=new Map<string,{abort:AbortController;done:Promise<void>;finish():void}>();
  const replayPackages=new Map<string,{runId:string;directory:string;manifest:ReplayManifest}>(),replayPending=new Map<string,number>();
+ /** Count unknown/crash-stale folders as occupied. Never recover or delete a directory this process did not publish. */
+ const replayDiskOccupied=async()=>{const root=join(deps.directory,'replay-exports');try{const stat=await lstat(root);if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('REPLAY_EXPORT_ROOT_INVALID');let count=0;for await(const _entry of await opendir(root)){void _entry;if(++count>=8)break;}return count;}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return 0;throw e;}};
  const runs=new Map<string,{owner:string;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput}>();let creating=0;
  // Readiness and creation share cleanup. Concurrent callers wait for the worker to close before probing its slot.
  let expiryCleanup=Promise.resolve();
@@ -174,6 +176,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);const body=await deps.readBody(request,1024);if(Object.keys(body).length)return deny(response,422,'INVALID_REPLAY_REQUEST',[]);
     if(!entry.run.captureReplay)return deny(response,422,'REPLAY_PROVIDER_UNSUPPORTED',[]);
     if(entry.archiving||reclaiming.has(runId!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
+    let occupied:number;try{occupied=await replayDiskOccupied();}catch{return deny(response,422,'REPLAY_EXPORT_ROOT_INVALID',[]);}if(runs.get(runId!)!==entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);if(occupied+[...replayPending.values()].reduce((n,v)=>n+v,0)>=8)return deny(response,429,'REPLAY_CAPACITY',[]);
     if([...replayPackages.values()].filter(p=>p.runId===runId).length+(replayPending.get(runId!)??0)>=2)return deny(response,429,'REPLAY_VERSION_LIMIT',[]);
     if(replayClosing||replayWork.size>=2||replayPackages.size+[...replayPending.values()].reduce((n,v)=>n+v,0)>=8)return deny(response,429,'REPLAY_CAPACITY',[]);
     replayPending.set(runId!,1+(replayPending.get(runId!)??0));const id=randomUUID(),directory=join(deps.directory,'replay-exports',id),abort=new AbortController(),disconnect=()=>{if(!response.writableFinished)abort.abort();};response.once('close',disconnect);let finish!:()=>void;const done=new Promise<void>(resolve=>finish=resolve);replayWork.set(id,{abort,done,finish});
