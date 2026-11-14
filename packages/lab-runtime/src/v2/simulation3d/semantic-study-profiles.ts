@@ -20,7 +20,7 @@ export function verifySemanticMujocoProfiles(v:ReturnType<typeof verifiedSimulat
  const {digest:_digest,modelRef,...empty}=load;void _digest;
  if(hashJson(empty)!==EMPTY_SHAPE_SHA256)throw Error('SEMANTIC_EMPTY_LOAD_BASELINE_REQUIRED');
  const robot=scene.robots[0]!,path=`physical-model/${robot.robotId}.json`,model=get<RobotPhysicalModelV1>(path),file=refs.get(path);
- if(!file||modelRef.path!==path||modelRef.sha256!==file.sha256||!scene.files.some(f=>f.path===path&&f.sha256===file.sha256&&f.bytes===file.bytes)||!validateNavigationDocument(model).ok||model.robotId!==robot.robotId||model.modelDigest!==robot.model.physicalModelDigest||hashJson(model.inputs)!==hashJson(scene.inputs))throw Error('SEMANTIC_LOAD_MODEL_BINDING_MISMATCH');
+ if(!file||modelRef.path!==path||modelRef.sha256!==file.sha256||!scene.files.some(f=>f.path===path&&f.sha256===file.sha256&&f.bytes===file.bytes)||model?.documentType!=='robot-physical-model'||!validateNavigationDocument(model).ok||model.robotId!==robot.robotId||model.modelDigest!==robot.model.physicalModelDigest||hashJson(model.inputs)!==hashJson(scene.inputs))throw Error('SEMANTIC_LOAD_MODEL_BINDING_MISMATCH');
  const n=report.navigation2d!.engine;
  if(n.id!=='mujoco_3d'||hashJson(n.loadProfileRef)!==hashJson(e.loadProfileRef)||hashJson(n.physicsProfileRef)!==hashJson(e.physicsProfileRef))throw Error('SEMANTIC_PHYSICS_REPORT_BINDING_MISMATCH');
  const p=report.physicsEvidence?.manifest.identity;

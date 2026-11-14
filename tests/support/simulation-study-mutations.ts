@@ -23,3 +23,16 @@ export function resealStudyProfile(input:SimulationRunInput,path:string,mutate:(
  }
  run.report=artifact(run.report.ref.path,report);return run;
 }
+/** A different valid navigation document cannot impersonate the load's physical model, even after every derived binding is resealed. */
+export function substituteStudyPhysicalWithNavigation(input:SimulationRunInput):SimulationRunInput{
+ const run=structuredClone(input),scene=JSON.parse(run.artifacts.find(a=>a.ref.path==='navigation-scene.json')!.content) as NavigationSceneV1,robot=scene.robots[0]!,path=`physical-model/${robot.robotId}.json`;
+ const substituted=artifact(path,robot.model),physicalIndex=run.artifacts.findIndex(a=>a.ref.path===path),physicalRef=scene.files.find(f=>f.path===path);if(physicalIndex<0||!physicalRef)throw Error('MUTATION_PHYSICAL_MODEL_MISSING');
+ run.artifacts[physicalIndex]=substituted;Object.assign(physicalRef,substituted.ref);
+ robot.model=sealDocument({...robot.model,physicalModelDigest:robot.model.modelDigest},'modelDigest');
+ const navPath=`navigation-model/${robot.robotId}.json`,navIndex=run.artifacts.findIndex(a=>a.ref.path===navPath);if(navIndex<0)throw Error('MUTATION_NAVIGATION_MODEL_MISSING');run.artifacts[navIndex]=artifact(navPath,robot.model);
+ run.artifacts[run.artifacts.findIndex(a=>a.ref.path==='navigation-scene.json')]=artifact('navigation-scene.json',scene);
+ const report=JSON.parse(run.report.content) as RunReport;report.navigation2d!.modelDigests=scene.robots.map(r=>r.model.modelDigest);
+ for(const model of report.manifest.models)if(model.id===`navigation-model:${robot.robotId}`)model.hash=robot.model.modelDigest;
+ run.report=artifact(run.report.ref.path,report);
+ return resealStudyProfile(run,'empty.json',load=>{load.modelRef={path,sha256:substituted.ref.sha256};});
+}
