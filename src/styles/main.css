@@ -2635,3 +2635,10 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
  .twin-shell:has(.cell-story-bar) .twin-main{grid-template-rows:minmax(340px,44dvh) auto}
 }
 #replay-time{display:inline-block;color:var(--ink);font-weight:700;white-space:nowrap}
+/* Read-only study details share the existing inspector/table scroll containers. */
+.study-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+[data-testid="semantic-study"]{min-width:0}
+[data-testid="semantic-study"] p,[data-testid="semantic-study"] summary,[data-testid="semantic-study"] code{overflow-wrap:anywhere;white-space:normal}
+[data-testid="semantic-study"] summary{min-height:44px;cursor:pointer;padding:8px 0}
+[data-testid="semantic-study"] td{overflow-wrap:anywhere;max-width:24ch}
+#twin-import-study{max-width:100%;margin:8px 0}

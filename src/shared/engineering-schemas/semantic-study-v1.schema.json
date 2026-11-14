@@ -1,0 +1,435 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.semantic-study.v1",
+  "title": "SemanticStudyV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "semantic-study"
+    },
+    "accepted": {
+      "const": false
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "incomparable",
+        "failed"
+      ]
+    },
+    "reasonCodes": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      }
+    },
+    "equivalence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "id",
+            "sha256"
+          ]
+        },
+        "world": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "id",
+            "sha256"
+          ]
+        },
+        "task": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "id",
+            "sha256"
+          ]
+        },
+        "commonProjection": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "id",
+            "sha256"
+          ]
+        }
+      },
+      "required": [
+        "model",
+        "world",
+        "task",
+        "commonProjection"
+      ]
+    },
+    "invariantPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "const": "fd01-source-causal-v1"
+        },
+        "revision": {
+          "const": 1
+        }
+      },
+      "required": [
+        "id",
+        "revision"
+      ]
+    },
+    "runs": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "engine": {
+            "enum": [
+              "irsim_2d",
+              "webots_3d",
+              "mujoco_3d"
+            ]
+          },
+          "reportRef": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 16777216
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes"
+            ]
+          },
+          "artifactRefs": {
+            "type": "array",
+            "maxItems": 4000,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 16777216
+                }
+              },
+              "required": [
+                "path",
+                "sha256",
+                "bytes"
+              ]
+            }
+          },
+          "sceneDigest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "modelDigest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "firstTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30000
+          },
+          "lastTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30000
+          },
+          "replay": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "runId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "tick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 30000
+              }
+            },
+            "required": [
+              "runId",
+              "tick"
+            ]
+          }
+        },
+        "required": [
+          "runId",
+          "engine",
+          "reportRef",
+          "artifactRefs",
+          "sceneDigest",
+          "modelDigest",
+          "firstTick",
+          "lastTick",
+          "replay"
+        ]
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "not_run"
+            ]
+          },
+          "reasonCodes": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "tick": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 30000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "runId",
+          "id",
+          "status",
+          "reasonCodes",
+          "tick"
+        ]
+      }
+    },
+    "differences": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "dimension": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "status": {
+            "enum": [
+              "observed",
+              "unavailable"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "runId",
+          "dimension",
+          "value",
+          "unit",
+          "status",
+          "reason"
+        ]
+      }
+    },
+    "unsupportedDimensions": {
+      "type": "array",
+      "maxItems": 9,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "engine": {
+            "enum": [
+              "irsim_2d",
+              "webots_3d",
+              "mujoco_3d"
+            ]
+          },
+          "dimension": {
+            "enum": [
+              "contact",
+              "slip",
+              "tipping"
+            ]
+          },
+          "status": {
+            "const": "unsupported"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "engine",
+          "dimension",
+          "status",
+          "reason"
+        ]
+      }
+    },
+    "percentiles": {
+      "type": "null"
+    },
+    "limitations": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "accepted",
+    "status",
+    "reasonCodes",
+    "equivalence",
+    "invariantPolicy",
+    "runs",
+    "invariants",
+    "differences",
+    "unsupportedDimensions",
+    "percentiles",
+    "limitations"
+  ]
+}

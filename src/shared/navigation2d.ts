@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ e07685d947bad36a175b930031e0997e2991799e (sha256 dbb199d1fd6dfdba0a77db1e05759f9d2b9eb9911729e1a4e5ae173b2c0db45f). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 709a797fa791727d0a8c830e935e0d80192843b0 (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -2247,4 +2247,106 @@ export interface WebReplayPackageV1 {
      */
     matchedAssets: string[];
   }[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "SemanticStudyV1".
+ */
+export interface SemanticStudyV1 {
+  schemaVersion: 1;
+  documentType: 'semantic-study';
+  accepted: false;
+  status: 'complete' | 'incomparable' | 'failed';
+  /**
+   * @maxItems 100
+   */
+  reasonCodes: string[];
+  equivalence: {
+    model: {
+      id: string;
+      sha256: string;
+    };
+    world: {
+      id: string;
+      sha256: string;
+    };
+    task: {
+      id: string;
+      sha256: string;
+    };
+    commonProjection: {
+      id: string;
+      sha256: string;
+    };
+  };
+  invariantPolicy: {
+    id: 'fd01-source-causal-v1';
+    revision: 1;
+  };
+  /**
+   * @maxItems 3
+   */
+  runs: {
+    runId: string;
+    engine: 'irsim_2d' | 'webots_3d' | 'mujoco_3d';
+    reportRef: {
+      path: string;
+      sha256: string;
+      bytes: number;
+    };
+    /**
+     * @maxItems 4000
+     */
+    artifactRefs: {
+      path: string;
+      sha256: string;
+      bytes: number;
+    }[];
+    sceneDigest: string;
+    modelDigest: string;
+    firstTick: number;
+    lastTick: number;
+    replay: {
+      runId: string;
+      tick: number;
+    };
+  }[];
+  /**
+   * @maxItems 30
+   */
+  invariants: {
+    runId: string;
+    id: string;
+    status: 'pass' | 'fail' | 'not_run';
+    /**
+     * @maxItems 50
+     */
+    reasonCodes: string[];
+    tick: number | null;
+  }[];
+  /**
+   * @maxItems 30
+   */
+  differences: {
+    runId: string;
+    dimension: string;
+    value: number | null;
+    unit: string;
+    status: 'observed' | 'unavailable';
+    reason: string | null;
+  }[];
+  /**
+   * @maxItems 9
+   */
+  unsupportedDimensions: {
+    engine: 'irsim_2d' | 'webots_3d' | 'mujoco_3d';
+    dimension: 'contact' | 'slip' | 'tipping';
+    status: 'unsupported';
+    reason: string;
+  }[];
+  percentiles: null;
+  /**
+   * @maxItems 20
+   */
+  limitations: string[];
 }

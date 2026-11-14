@@ -17,7 +17,7 @@ if(dirty)throw new Error('SOURCE_CONTRACTS_DIRTY: commit source before syncing')
 const header=`// Synced from source packages/contracts/generated/engineering.ts @ ${commit} (sha256 ${createHash('sha256').update(generated).digest('hex')}). Run node scripts/sync-engineering-contracts.mjs; do not edit.\n`;
 const output=header+body;
 // Schemas the browser validates archives with (runtimeProject stays Lab's own validator; assets and recipes are validated against their full source schemas).
-const SCHEMAS=['engineering-component','engineering-project','engineering-bundle','engineering-project-archive','engineering-candidate','asset-revision','coffee-recipe','robot-physical-model-v1','model-validation-report-v1','navigation-run-evidence-v1','physics-evidence-v1','load-profile-v1','navigation-scene-v1','navigation-model-2d-v1','twin-sample-v2','web-replay-package-v1'];
+const SCHEMAS=['engineering-component','engineering-project','engineering-bundle','engineering-project-archive','engineering-candidate','asset-revision','coffee-recipe','robot-physical-model-v1','model-validation-report-v1','navigation-run-evidence-v1','physics-evidence-v1','load-profile-v1','navigation-scene-v1','navigation-model-2d-v1','twin-sample-v2','web-replay-package-v1','semantic-study-v1'];
 // Navigation/validation types (IR-SIM 2D, LinkForge shadow) come from the same generator; their './engineering' import resolves to shared/engineering.ts here too.
 const navigationGenerated=await readFile(here('../../source/packages/contracts/generated/navigation2d.ts'),'utf8'),navigationTarget=here('../src/shared/navigation2d.ts');
 if(!navigationGenerated.includes("from './engineering';"))throw new Error('GENERATED_IMPORT_CHANGED');
