@@ -2,7 +2,7 @@
 import type {ArmPlantState,ArmPropSample} from '../../../../cell-adapters/src/mock-arm';
 import type {ArmReportMaterialization,WorldReportSource} from '../beverage/coffee-ports';
 import {materializeWorldPrefix,type WorldPrefixCapture,type WorldAdmission} from './world-evidence';
-import {evaluateWorldSweep,unavailableWorldSweep} from './world-sweep';
+import {evaluateWorldSweepAsync,unavailableWorldSweep} from './world-sweep';
 import {worldDocument} from './world-control';
 import type {XArmPhysics} from './arm-cell-scene';
 import {join} from 'node:path';
@@ -25,7 +25,7 @@ export async function materializeWorldArmReport(capture:WorldPrefixCapture,admis
   state.tracking.trace=trace;state.tracking.props=props;
  }catch(e){covered=false;issues.push((e as Error).message);}
  const authority={runId:capture.authority.runId,bootId:capture.authority.bootId,sceneDigest:capture.authority.sceneDigest,lastCommittedTick:h,businessEpochMs:source.businessEpochMs};
- const worldSweep=covered?evaluateWorldSweep(prefix.records,admission,source.journal,authority,true):unavailableWorldSweep(h,issues);worldSweep.complete=worldSweep.complete&&prefix.publication.streamFinalized;
+ const worldSweep=covered?await evaluateWorldSweepAsync(prefix.records,admission,source.journal,authority,true):unavailableWorldSweep(h,issues);worldSweep.complete=worldSweep.complete&&prefix.publication.streamFinalized;
  worldSweep.scope={kind:'source_committed_prefix',publicCommittedTick:h,prefixCovered:covered,streamFinalized:prefix.publication.streamFinalized,identity:{runId:authority.runId,bootId:authority.bootId,sceneDigest:authority.sceneDigest,admissionDigest:admission.digest},publication:prefix.publication};
  if(replay){if(!covered)throw Error('REPLAY_WORLD_PREFIX_UNAVAILABLE');await replay({records:structuredClone(prefix.records),admission:{...admission,files:new Map([...admission.files].map(([p,b])=>[p,new Uint8Array(b)])),scene:structuredClone(admission.scene),physics:structuredClone(admission.physics),modelCounts:{...admission.modelCounts}}});}
  const samples=state.tracking?.trace??[];return {state,worldSweep,worldTrace:{method:'world-committed-trace-v1',scope:covered?'all_world_ticks':'retained_cache_only',publicCommittedTick:h,prefixCovered:covered,streamFinalized:prefix.publication.streamFinalized,trackingStatisticsScope:'active_program_ticks',trackingSamples:critical.tracking?.samples??0,firstTick:samples[0]?.tick??null,lastTick:samples.at(-1)?.tick??null,samples:samples.length,reasonCodes:issues,publication:prefix.publication,...critical.historyRetention?{hotHistoryPolicy:{mode:critical.historyRetention.mode,limit:critical.historyRetention.limit}}:{}}};

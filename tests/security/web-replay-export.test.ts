@@ -1,9 +1,13 @@
-import {afterEach,expect,test} from 'vitest';
+import {afterEach,expect,test,vi} from 'vitest';
+import * as zlib from 'node:zlib';
+import {createHash} from 'node:crypto';
 import {mkdtemp,readFile,readdir,rm,symlink,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {exportWebReplay,loadRetainedReplay,xarmSupplementalLicensing} from '../../packages/lab-runtime/src/v2/replay/export';
-const owned:string[]=[];afterEach(async()=>{for(const p of owned.splice(0))await rm(p,{recursive:true,force:true});});
+const compression=vi.hoisted(()=>({started:()=>{}}));
+vi.mock('node:zlib',async importOriginal=>{const actual=await importOriginal<typeof import('node:zlib')>();return {...actual,gzipSync:vi.fn(actual.gzipSync),gzip:vi.fn((...args:Parameters<typeof actual.gzip>)=>{compression.started();return actual.gzip(...args);})};});
+const owned:string[]=[];afterEach(async()=>{compression.started=()=>{};for(const p of owned.splice(0))await rm(p,{recursive:true,force:true});});
 async function output(){const root=await mkdtemp(join(tmpdir(),'web-replay-test-'));owned.push(root);return join(root,'package');}
 const nominal='/tmp/mekoniq-b06-nominal-7-1iGdiu';
 test('exports actual retained B06 captured horizon without changing evidence or sampling',async()=>{
@@ -39,3 +43,8 @@ test('receipt inventory, run identity, applied horizon and measured force/pose a
  for(const change of [{bootId:'other'},{tick:521},{forceN:[0,0,0]},{forceMapN:[0,0,0]},{afterPoseMap:{positionM:[0,0,0],quaternionXyzw:[0,0,0,1]}}]){const changed=Buffer.from(JSON.stringify({...receipt,...change})),c=structuredClone(record),ref=c.artifacts.find((f:{path:string})=>f.path==='run/worker/payload-perturbation.json');ref.bytes=changed.length;ref.sha256=createHash('sha256').update(changed).digest('hex');await writeFile(receiptPath,changed);await writeFile(casePath,JSON.stringify(c));await expect(loadRetainedReplay(root)).rejects.toThrow(/REPLAY_RECEIPT/);}
  await writeFile(receiptPath,bytes);await writeFile(casePath,JSON.stringify(record));await rm(receiptPath);await expect(loadRetainedReplay(root)).rejects.toThrow();
 });
+
+test('detached export uses sequential asynchronous compression and preserves exact stored/decoded gzip identities',async()=>{const capture=await loadRetainedReplay('/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall'),out=await output(),sync=zlib.gzipSync;const trap=vi.spyOn(zlib,'gzipSync').mockImplementation(()=>{throw Error('SYNCHRONOUS_EXPORT_COMPRESSION');});let manifest;try{manifest=await exportWebReplay(capture,out);}finally{trap.mockRestore();}for(const a of manifest.assets){const bytes=await readFile(join(out,a.path)),plain=a.encoding==='gzip'?zlib.gunzipSync(bytes):bytes;expect(createHash('sha256').update(bytes).digest('hex')).toBe(a.sha256);expect(createHash('sha256').update(plain).digest('hex')).toBe(a.decodedSha256);if(a.encoding==='gzip')expect(bytes).toEqual(sync(plain));}});
+test('the same genuine captured world input retains every original encoded and decoded asset hash',async()=>{const capture=await loadRetainedReplay(nominal),expected=JSON.parse(await readFile('/tmp/b07a-final-packages-ZYL6r5/nominal/manifest.json','utf8')),actual=await exportWebReplay(capture,await output());expect(actual.assets).toEqual(expected.assets);expect(actual.streams).toEqual(expected.streams);});
+
+test('abort during asynchronous compression releases the owned publication only after cleanup and allows retry',async()=>{const capture=await loadRetainedReplay('/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall'),out=await output(),abort=new AbortController();compression.started=()=>abort.abort();await expect(exportWebReplay(capture,out,{signal:abort.signal})).rejects.toThrow('REPLAY_ABORTED');expect((await readdir(join(out,'..'))).filter(p=>p.startsWith('.replay-'))).toEqual([]);compression.started=()=>{};expect((await exportWebReplay(capture,out)).horizon.tick).toBe(520);});

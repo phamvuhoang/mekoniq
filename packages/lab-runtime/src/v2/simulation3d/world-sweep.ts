@@ -1,5 +1,6 @@
 /** Independent, bounded geometric review of complete raw world evidence. Legacy ARM03
  * retains its own truncation result. Native substep contact aggregates stay separate. */
+import {setImmediate as yieldTurn} from 'node:timers/promises';
 import type {DomainEvent,JournalEntry} from '../../../../contracts/src/index';
 import type {WorldEvidenceRecord,RobotPhysicalModelV1} from '../../../../contracts/generated/navigation2d';
 import {readWorldEvidence,validateWorldRecord,type WorldAdmission,type WorldPrefixRead} from './world-evidence';
@@ -19,11 +20,11 @@ export interface WorldSweepResult {scope?:{kind:'source_committed_prefix';public
  method:{engine:'capsule-sweep-v1';toleranceM:number;modelRevision:string;sampling:string};
 }
 export function unavailableWorldSweep(lastCommittedTick:number,reasonCodes:string[]):WorldSweepResult{return {id:'world-full-capsule-v1',accepted:false,calibration:'not_calibrated',status:'not_run',complete:false,reasonCodes:[...reasonCodes],sourceJournal:'trusted_source_session',geometry:{status:'not_run',checkedIntervals:0,expectedIntervals:lastCommittedTick,distinctSceneRevisions:0,uncertainIntervals:0,geometryHash:'',firstFailure:null},nativeContacts:{status:'not_run',aggregateRows:0,unexpected:0,firstUnexpected:null},method:{engine:'capsule-sweep-v1',toleranceM:.0005,modelRevision:XARM6_SI.revision,sampling:'actual consecutive arm joints and current observed full AMR geometry; native aggregates cover all10 substeps separately'}};}
-export function evaluateWorldSweep(records:readonly WorldEvidenceRecord[],admission:WorldAdmission,journal:WorldSourceJournal,authority:WorldSweepAuthority,complete:boolean,onInterval?:(tick:number,result:SweepResult)=>void):WorldSweepResult{
+function* evaluateWorldSweepSteps(records:readonly WorldEvidenceRecord[],admission:WorldAdmission,journal:WorldSourceJournal,authority:WorldSweepAuthority,complete:boolean,onInterval?:(tick:number,result:SweepResult)=>void):Generator<void,WorldSweepResult>{
  const result=unavailableWorldSweep(authority.lastCommittedTick,[]);
  try{
   if(!complete||admission.scene.controlContextVersion!==1||authority.sceneDigest!==admission.scene.sceneDigest||!Number.isFinite(authority.businessEpochMs)||!Number.isSafeInteger(authority.lastCommittedTick)||authority.lastCommittedTick<0||authority.lastCommittedTick>30000||records.length!==authority.lastCommittedTick+1||records.length>30001)throw Error('WORLD_SWEEP_INCOMPLETE');
-  let observationBytes=0;for(const row of records){const n=Buffer.byteLength(JSON.stringify(row))+1;observationBytes+=n;if(n>READ_LIMITS.lineBytes||observationBytes>READ_LIMITS.totalInflated)throw Error('WORLD_SWEEP_READ_LIMIT');}
+  let observationBytes=0;for(const [i,row]of records.entries()){const n=Buffer.byteLength(JSON.stringify(row))+1;observationBytes+=n;if(n>READ_LIMITS.lineBytes||observationBytes>READ_LIMITS.totalInflated)throw Error('WORLD_SWEEP_READ_LIMIT');if((i+1)%32===0)yield;}
   if(journal.length>WORLD_SWEEP_SOURCE_LIMITS.entries||Buffer.byteLength(JSON.stringify(journal))>WORLD_SWEEP_SOURCE_LIMITS.bytes)throw Error('WORLD_SOURCE_JOURNAL_READ_LIMIT');
   const events=new Map<string,{event:DomainEvent;at:number}>();for(const entry of journal){if(entry.organizationId!==`lab-${authority.runId}`||entry.venueId!=='simulation'||!Number.isFinite(Date.parse(entry.recordedAt)))throw Error('WORLD_CONTROL_SOURCE_MISMATCH');const list=entry.payload.events as unknown as DomainEvent[];for(let i=0;i<list.length;i++){const key=`${entry.entryId}:${i}`;if(events.has(key))throw Error('WORLD_CONTROL_SOURCE_MISMATCH');events.set(key,{event:list[i]!,at:Date.parse(entry.recordedAt)});}}
   const scene=admission.scene,physical=worldDocument<RobotPhysicalModelV1>(admission.files,scene.models.mobilePhysical.path),geometry=worldArmGeometry(scene,admission.files),rid=scene.navigation.robots[0]!.robotId,aid=scene.armCell.arm.armId,revision=new Set<string>(),disturbances=new Set<string>();result.geometry.geometryHash=hashJson(geometry);let history:WorldInteractionIntent[]=[];
@@ -43,9 +44,14 @@ export function evaluateWorldSweep(records:readonly WorldEvidenceRecord[],admiss
     if(armSide&&(supportSide||mobileSide)){const primitive=armSide===`${aid}/palm`||armSide.startsWith(`${aid}/pad/`)?'gripper':armSide,target=supportSide??mobileSide!;if(!allowedPairs.some(p=>p[0]===primitive&&p[1]===target))unexpected=true;}
     if(unexpected){result.nativeContacts.unexpected++;result.nativeContacts.firstUnexpected??={tick:s.tick,a:contact.a,b:contact.b};}
    }
+   if((i+1)%32===0)yield;
   }
   result.geometry.distinctSceneRevisions=revision.size;result.complete=true;result.geometry.status=result.geometry.firstFailure?'fail':result.geometry.uncertainIntervals?'not_run':'pass';result.nativeContacts.status=result.nativeContacts.unexpected?'fail':'pass';result.status=result.geometry.status==='fail'||result.nativeContacts.status==='fail'?'fail':result.geometry.status==='pass'&&result.geometry.checkedIntervals===authority.lastCommittedTick?'pass':'not_run';if(result.status!=='pass')result.reasonCodes.push(result.geometry.firstFailure?.reason??'WORLD_NATIVE_CONTACT');
  }catch(error){result.reasonCodes.push((error as Error).message);result.status='not_run';result.complete=false;}
  return result;
 }
+/** One core preserves the legacy synchronous review and callback order. */
+export function evaluateWorldSweep(...args:Parameters<typeof evaluateWorldSweepSteps>):WorldSweepResult{const work=evaluateWorldSweepSteps(...args);let step=work.next();while(!step.done)step=work.next();return step.value;}
+/** Only detached, captured report materialization opts into cooperative scheduling. */
+export async function evaluateWorldSweepAsync(...args:Parameters<typeof evaluateWorldSweepSteps>):Promise<WorldSweepResult>{const work=evaluateWorldSweepSteps(...args);let step=work.next();while(!step.done){await yieldTurn();step=work.next();}return step.value;}
 export async function readWorldSweep(directory:string,admission:WorldAdmission,journal:WorldSourceJournal,authority:WorldSweepAuthority){const read=await readWorldEvidence(directory,admission);return evaluateWorldSweep(read.records,admission,journal,authority,read.complete);}

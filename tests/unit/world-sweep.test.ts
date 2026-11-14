@@ -2,7 +2,7 @@ import {expect,test} from 'vitest';
 import {resolve} from 'node:path';
 import {readWorldFixture} from '../../packages/lab-runtime/src/v2/simulation3d/world-scene';
 import {prepareWorldAdmission} from '../../packages/lab-runtime/src/v2/simulation3d/world-evidence';
-import {evaluateWorldSweep} from '../../packages/lab-runtime/src/v2/simulation3d/world-sweep';
+import {evaluateWorldSweep,evaluateWorldSweepAsync} from '../../packages/lab-runtime/src/v2/simulation3d/world-sweep';
 import {tick} from '../support/physics';
 import type {WorldEvidenceRecord} from '../../packages/contracts/generated/navigation2d';
 import type {WorldControl} from '../../packages/lab-runtime/src/v2/simulation3d/world-ports';
@@ -32,3 +32,6 @@ test('direct sweep review rejects oversized observations and Source journals bef
  const g=await fixture(1),entry={entryId:'j',organizationId:'lab-world-unit',venueId:'simulation',recordedAt:new Date(0).toISOString(),payload:{events:[]}};
  const journal=evaluateWorldSweep(g.records,g.admission,Array(10001).fill(entry),g.authority,true);expect(journal.reasonCodes).toContain('WORLD_SOURCE_JOURNAL_READ_LIMIT');expect(journal.geometry.checkedIntervals).toBe(0);
 });
+
+test('cooperative sweep keeps exact synchronous results/callback order for nominal, fault, invalid and Source mismatch',async()=>{const f=await readWorldFixture(resolve('robotics/simulation-mujoco'),'coffee-delivery-cell-v1'),pick=JSON.parse(Buffer.from(f.files.get('programs.json')!).toString()).programs.waypoints.pick;for(const mode of ['nominal','fault','invalid','source'] as const){const h=await fixture(96,mode==='fault'?pick:undefined);if(mode==='invalid')h.records[20]!.snapshot.tick=999;if(mode==='source')h.records[50]!.command!.worldControl={...idle,movementInterlocked:true,program:{commandId:'c',transferId:'t',cupId:'cup-1',sourceEventId:'missing:0',payloadHash:'0'.repeat(64),controlEpoch:1,programId:'cup-place',stage:0,waypoint:'high'}};const sync:number[]=[],asyncTicks:number[]=[],expected=evaluateWorldSweep(h.records,h.admission,[],h.authority,true,t=>sync.push(t)),actual=await evaluateWorldSweepAsync(h.records,h.admission,[],h.authority,true,t=>asyncTicks.push(t));expect(expected.status).toBe(mode==='nominal'?'pass':mode==='fault'?'fail':'not_run');expect(actual).toEqual(expected);expect(asyncTicks).toEqual(sync);}});
+test('cooperative prevalidation and full sweep allow event loop progress before completion',async()=>{const h=await fixture(256);let progress=0,complete=false;const pulse=()=>{if(!complete){progress++;setImmediate(pulse);}};setImmediate(pulse);try{const r=await evaluateWorldSweepAsync(h.records,h.admission,[],h.authority,true);expect(r.geometry.checkedIntervals).toBe(256);expect(progress).toBeGreaterThanOrEqual(16);}finally{complete=true;}});
