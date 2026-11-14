@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-14T00:26:00.754777+00:00",
+  "command": [
+    "gcloud",
+    "run",
+    "services",
+    "update",
+    "mekoniq-lab-runtime",
+    "--project=mekoniq",
+    "--region=asia-southeast1",
+    "--update-env-vars=LAB_PUBLIC_HOST=mekoniq-lab-runtime-ojykcqdkja-as.a.run.app",
+    "--quiet"
+  ]
+}

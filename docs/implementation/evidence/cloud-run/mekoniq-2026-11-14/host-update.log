@@ -1,0 +1,6 @@
+Deploying...
+Creating Revision.........................................................................................done
+Routing traffic.....done
+Done.
+Service [[1mmekoniq-lab-runtime[m] revision [[1mmekoniq-lab-runtime-00002-9lx[m] has been deployed and is serving [1m100[m percent of traffic.
+Service URL: [1mhttps://mekoniq-lab-runtime-628915389101.asia-southeast1.run.app[m

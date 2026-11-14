@@ -1,0 +1,34 @@
+[
+  {
+    "id": "dpl_A3VadMZb7srUMA1214qUcfdQVFXj",
+    "url": "mekoniq-6ghygf45y-henry-projects.vercel.app",
+    "readyState": "READY",
+    "target": "production",
+    "alias": [
+      "www.mekoniq.app",
+      "mekoniq.vercel.app",
+      "mekoniq.app"
+    ],
+    "aliasAssigned": true,
+    "createdAt": 1794619513808,
+    "ready": 1794619565893,
+    "commit": "d1a2522a89f17d0f9d8d2c444975778844f74425",
+    "repo": "source"
+  },
+  {
+    "id": "dpl_Byj9yhHsjE8MwWfCqmpE4qccvBth",
+    "url": "mekoniq-dsao65a3z-henry-projects.vercel.app",
+    "readyState": "READY",
+    "target": "production",
+    "alias": [
+      "mekoniq-lab.vercel.app",
+      "mekoniq-lab-henry-projects.vercel.app",
+      "mekoniq-lab-git-main-henry-projects.vercel.app"
+    ],
+    "aliasAssigned": true,
+    "createdAt": 1794619497544,
+    "ready": 1794619523252,
+    "commit": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+    "repo": "lab"
+  }
+]

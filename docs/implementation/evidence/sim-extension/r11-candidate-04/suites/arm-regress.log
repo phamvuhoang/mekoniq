@@ -1,0 +1,16 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/security/webots-authority.test.ts (3 tests) 7093ms
+   ✓ Webots runs: server-locked projections, no caller home/port/world/code, bundle and run ownership, no cross-set scenarios  4925ms
+   ✓ the arm set answers readiness for a project without an engineering ref (grip is an event, not a provider); a bundle set still refuses without one  2121ms
+ ✓ tests/unit/bv01-mock-golden.test.ts (1 test) 2635ms
+   ✓ mock-default BV01 (seed 42) keeps its outcome digest and arm trace  2634ms
+ ✓ tests/integration/lab-v2-arm.test.ts (12 tests) 273ms
+
+ Test Files  3 passed (3)
+      Tests  16 passed (16)
+   Start at  07:30:52
+   Duration  12.18s (transform 686ms, setup 0ms, import 1.93s, tests 10.00s, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r11-candidate-04/suites/arm-regress.json

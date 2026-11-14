@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "name": "mekoniq-lab-runtime-00002-9lx"
+  },
+  "spec": {
+    "serviceAccountName": "mekoniq-lab-runtime@mekoniq.iam.gserviceaccount.com"
+  },
+  "status": {
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-11-14T00:26:09.326682Z",
+        "message": "Deploying revision succeeded in 6.84s.",
+        "status": "True",
+        "type": "Ready"
+      },
+      {
+        "lastTransitionTime": "2026-11-14T00:26:09.459403Z",
+        "severity": "Info",
+        "status": "True",
+        "type": "Active"
+      },
+      {
+        "lastTransitionTime": "2026-11-14T00:26:09.264526Z",
+        "message": "Containers became healthy in 4s.",
+        "status": "True",
+        "type": "ContainerHealthy"
+      },
+      {
+        "lastTransitionTime": "2026-11-14T00:26:03.171932Z",
+        "message": "Container image import completed.",
+        "status": "True",
+        "type": "ContainerReady"
+      },
+      {
+        "lastTransitionTime": "2026-11-14T00:26:04.878704Z",
+        "message": "Provisioning imported containers completed in 1.71s. Checking container health. This will wait for up to 4m for the configured startup probe, including an initial delay of 0s.",
+        "status": "True",
+        "type": "ResourcesAvailable"
+      }
+    ],
+    "imageDigest": "asia-southeast1-docker.pkg.dev/mekoniq/lab/mekoniq-lab-runtime@sha256:fbdf4bb5c1af4ffd15c01550b4508b6df0ad3b4d69e444e5469cfe2b52e4b009"
+  }
+}

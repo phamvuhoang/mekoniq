@@ -1,0 +1,103 @@
+{
+ "id": "020-IR-FD07-serve-fleet-v1-s31-r2",
+ "index": 13,
+ "scenarioId": "IR-FD07",
+ "fixtureId": "serve-fleet-v1",
+ "seed": 31,
+ "repeat": 2,
+ "expectedAssertions": [
+  "EVIDENCE_COMPLETE",
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "NO_PHYSICAL_CONTACT",
+  "ACTOR_SCHEDULE_APPLIED",
+  "NO_ACTOR_CONTACT",
+  "BOTH_ROBOTS_MOVED",
+  "ROBOT_MAPPING",
+  "ZONE_SINGLE_OWNER",
+  "ZONE_RELEASE_AFTER_EXIT",
+  "MIN_SEPARATION_AVAILABLE",
+  "WITHIN_TICKS",
+  "REPEATABLE"
+ ],
+ "kind": "scenario",
+ "label": "IR-FD07 (source-driven): two robots serialized by the venue-movement reservation; aisle zone reserved/released per leg, never contended; customer away from the routes",
+ "stepTicks": 25,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "completed",
+  "served": "2",
+  "tick": 5920,
+  "simTimeNs": "118400000000"
+ },
+ "horizon": 5920,
+ "evidenceComplete": true,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "9c3c710710cad78423147a3d6bb6931cabd45906425e9239dc2d0b501114692b",
+  "sensorDigest": "f47761a3ca4a7ba81532d25f2063b4325b9ea686157938c6545f09cb1b02decd",
+  "assertionDigest": "0d07ffc73455bfc5d1d9f5fa42c19fdff1f1d6eabadc8cb8a884b74a70102352",
+  "outcomeDigest": "6947f215f26b0ca5f5822383d40b22357bf68da573d0b61570dca4db7ee1b029"
+ },
+ "assertions": [
+  {
+   "id": "EVIDENCE_COMPLETE",
+   "result": "pass"
+  },
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "NO_PHYSICAL_CONTACT",
+   "result": "pass"
+  },
+  {
+   "id": "ACTOR_SCHEDULE_APPLIED",
+   "result": "pass"
+  },
+  {
+   "id": "NO_ACTOR_CONTACT",
+   "result": "pass"
+  },
+  {
+   "id": "BOTH_ROBOTS_MOVED",
+   "result": "pass"
+  },
+  {
+   "id": "ROBOT_MAPPING",
+   "result": "pass"
+  },
+  {
+   "id": "ZONE_SINGLE_OWNER",
+   "result": "pass"
+  },
+  {
+   "id": "ZONE_RELEASE_AFTER_EXIT",
+   "result": "pass"
+  },
+  {
+   "id": "MIN_SEPARATION_AVAILABLE",
+   "result": "pass"
+  },
+  {
+   "id": "WITHIN_TICKS",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 38476,
+ "provider": {
+  "id": "irsim_2d",
+  "kind": "irsim_worker"
+ }
+}

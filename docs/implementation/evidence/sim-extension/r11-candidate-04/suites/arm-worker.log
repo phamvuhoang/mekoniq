@@ -1,0 +1,16 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/webots-arm-worker.test.ts (5 tests) 9217ms
+     ✓ WA03 clock and hold: 50 ticks at home stay within reachTolRad, simTimeNs is tick x 20 ms, and nothing collides  1774ms
+     ✓ WA02 readback: link masses, hinge axes and joint limits are the fixture's  1692ms
+     ✓ a target past a joint limit is refused by the worker, the run goes on, and the engine never saw it  1599ms
+     ✓ a static box on the flange is named in collisionIds, and only then  1635ms
+     ✓ D31: after close no Webots, controller or Webots state directory is left, and no bytecode appears under the tool root  2514ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  07:27:44
+   Duration  9.75s (transform 93ms, setup 0ms, import 427ms, tests 9.22s, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r11-candidate-04/suites/arm-worker.json

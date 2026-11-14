@@ -1,0 +1,37 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+stdout | tests/integration/mujoco-arm-bv01.test.ts > MJ-BV01 on the MuJoCo arm > completes with both cups at the table, contact grip on every transfer, ARM03 pass on the actual joints and honest labels; a second run of the same seed repeats within repeatJointRad
+MJ-BV01 {"finalTicks":[4800,4800],"wallMs":[10321,8755],"maxActualDiffRad":0,"maxCommandedDiffRad":0,"maxCupDiffM":0,"repeatJointRad":1e-9,"peakRad":[[0.017592792047886607,0.024709623616788523,0.010072706305679496,0.0003057884032067193,0.009864987730142771,0.00006695497403136817],[0.017592792047886607,0.024709623616788523,0.010072706305679496,0.0003057884032067193,0.009864987730142771,0.00006695497403136817]],"rmsRad":[[0.005269144339674265,0.009271881343826067,0.0030278816718936935,0.00009375543661754176,0.003892199425685028,0.000043152390458541445],[0.005269144339674265,0.009271881343826067,0.0030278816718936935,0.00009375543661754176,0.003892199425685028,0.000043152390458541445]],"transfers":[[{"cupId":"cup-1","liftM":0.1514042608237146,"transfers":[{"to":"arm","grip":"contact","maxSlipM":0.002808925358901592,"liftPoseReached":true},{"to":"robot","grip":"contact","maxSlipM":0.002808925358901592,"released":true}]},{"cupId":"cup-2","liftM":0.1514045345302557,"transfers":[{"to":"arm","grip":"contact","maxSlipM":0.0028089298563242758,"liftPoseReached":true},{"to":"robot","grip":"contact","maxSlipM":0.0028089298563242758,"released":true}]}],[{"cupId":"cup-1","liftM":0.1514042608237146,"transfers":[{"to":"arm","grip":"contact","maxSlipM":0.002808925358901592,"liftPoseReached":true},{"to":"robot","grip":"contact","maxSlipM":0.002808925358901592,"released":true}]},{"cupId":"cup-2","liftM":0.1514045345302557,"transfers":[{"to":"arm","grip":"contact","maxSlipM":0.0028089298563242758,"liftPoseReached":true},{"to":"robot","grip":"contact","maxSlipM":0.0028089298563242758,"released":true}]}]],"coverage":[{"intervals":2690,"evaluations":18306,"uncertain":0,"allowedContactsApplied":412},{"intervals":2690,"evaluations":18306,"uncertain":0,"allowedContactsApplied":412}],"samples":[976,976]}
+
+ ✓ tests/integration/mujoco-arm-bv01.test.ts (2 tests) 30387ms
+     ✓ completes with both cups at the table, contact grip on every transfer, ARM03 pass on the actual joints and honest labels; a second run of the same seed repeats within repeatJointRad  20506ms
+     ✓ the trace files are the evidence: a changed hash is caught for the joints and for the cups  9881ms
+stdout | tests/integration/mujoco-arm-gateway.test.ts > MJ-BV01 over HTTP on the real engine > created with a session through POST /runs, stepped with step actions to completed, the report fetched over HTTP carries the evidence
+MJ-BV01 http {"tick":4800,"status":"completed","coverage":{"businessSimulation":true,"kinematicModel":true,"dynamics":false,"nativeExecution":false,"physicalStop":false,"sensorEvidence":false,"eventStream":true,"coffeeProcessModel":true,"armKinematics":true,"armTorque":false,"physicalGrip":false,"fluidModel":false,"armCollisionChecker":true,"armSceneCollision":true,"armCollisionTraceComplete":true},"scene":{"intervals":2690,"evaluations":18306,"uncertain":0,"allowedContactsApplied":412},"robotAsset":{"contentHash":"bf15015afcc0e719c79ff76eff955ba9c83f72c82968156fa25743f7d8e15c79","id":"service-robot-asset","revision":1,"resolved":true}}
+
+stdout | tests/integration/mujoco-arm-gateway.test.ts > a lost worker says why (worker double) > unstable: the stop is PLANT_UNSTABLE with the cause in its detail, the outcome unknown, readable in the run report
+M07b loss unstable {"tick":1450,"status":"needs_attention","stop":{"reason":"PLANT_UNSTABLE","detail":"the engine reported a bad state (fake) and reset itself"},"attention":["TRANSFER_UNKNOWN"]}
+
+stdout | tests/integration/mujoco-arm-gateway.test.ts > a lost worker says why (worker double) > quit: the stop is WORKER_LOST with the cause in its detail, the outcome unknown, readable in the run report
+M07b loss quit {"tick":1450,"status":"needs_attention","stop":{"reason":"WORKER_LOST","detail":"WORKER_EXITED: exit 0"},"attention":["TRANSFER_UNKNOWN"]}
+
+stdout | tests/integration/mujoco-arm-gateway.test.ts > a lost worker says why (worker double) > crash: the stop is WORKER_LOST with the cause in its detail, the outcome unknown, readable in the run report
+M07b loss crash {"tick":1450,"status":"needs_attention","stop":{"reason":"WORKER_LOST","detail":"WORKER_EXITED: exit 1"},"attention":["TRANSFER_UNKNOWN"]}
+
+stdout | tests/integration/mujoco-arm-gateway.test.ts > a lost worker says why (worker double) > boom: the stop is WORKER_FAILED with the cause in its detail, the outcome unknown, readable in the run report
+M07b loss boom {"tick":1450,"status":"needs_attention","stop":{"reason":"WORKER_FAILED"},"attention":["TRANSFER_UNKNOWN"]}
+
+ ✓ tests/integration/mujoco-arm-gateway.test.ts (13 tests) 22240ms
+     ✓ created with a session through POST /runs, stepped with step actions to completed, the report fetched over HTTP carries the evidence  10293ms
+     ✓ unstable: the stop is PLANT_UNSTABLE with the cause in its detail, the outcome unknown, readable in the run report  2898ms
+     ✓ quit: the stop is WORKER_LOST with the cause in its detail, the outcome unknown, readable in the run report  2864ms
+     ✓ crash: the stop is WORKER_LOST with the cause in its detail, the outcome unknown, readable in the run report  3045ms
+     ✓ boom: the stop is WORKER_FAILED with the cause in its detail, the outcome unknown, readable in the run report  2782ms
+
+ Test Files  2 passed (2)
+      Tests  15 passed (15)
+   Start at  07:32:09
+   Duration  54.59s (transform 648ms, setup 0ms, import 1.79s, tests 52.63s, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-bv01.json

@@ -1,0 +1,17 @@
+Mekoniq Robot Lab — MuJoCo arm twin (xArm 6 + G2 as a MuJoCo plant: manufacturer nominal masses and limits, every other parameter assumed, not_calibrated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm, mujoco_arm · journal <tmp>/mekoniq-irsim-e2e-tNdQnZ/runs
+Owned processes: runtime pid 46577, UI pid 46592
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 1422 ms. Press Ctrl-C to stop.
+Running mujoco-mesh-fallback.spec.ts through pnpm lab:mujoco (real MuJoCo worker) with a fresh journal.
+
+Running 1 test using 1 worker
+
+(node:46609) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/mujoco-mesh-fallback.spec.ts:9:1 › MJ-BV01 with the arm meshes unavailable: joint chain, one ARM_MESH_UNAVAILABLE note (not a problem), and the run completes (19.3s)
+
+  1 passed (20.3s)
+
+Stopping the runtime and UI this launcher started…

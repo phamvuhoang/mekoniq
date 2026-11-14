@@ -1,0 +1,2268 @@
+{
+  "protocolMajor": 2,
+  "protocolMajors": [
+    1,
+    2
+  ],
+  "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
+  "backends": [
+    {
+      "id": "mock_amr",
+      "modes": [
+        "mock",
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": true,
+      "compatible": true,
+      "reachable": true,
+      "commissioned": true,
+      "enabled": true
+    },
+    {
+      "id": "mock_coffee",
+      "modes": [
+        "mock",
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": true,
+      "compatible": true,
+      "reachable": true,
+      "commissioned": true,
+      "enabled": true
+    },
+    {
+      "id": "mock_arm",
+      "modes": [
+        "mock"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": true,
+      "compatible": true,
+      "reachable": true,
+      "commissioned": true,
+      "enabled": true
+    },
+    {
+      "id": "gazebo_nav2",
+      "modes": [
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": false,
+      "compatible": false,
+      "reachable": false,
+      "commissioned": true,
+      "enabled": false,
+      "reason": "Simulation provider package is not installed on this host"
+    },
+    {
+      "id": "linuxcnc_sim",
+      "modes": [
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": false,
+      "compatible": false,
+      "reachable": false,
+      "commissioned": true,
+      "enabled": false,
+      "reason": "Simulation provider package is not installed on this host"
+    },
+    {
+      "id": "coffee_io_sim",
+      "modes": [
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": false,
+      "compatible": false,
+      "reachable": false,
+      "commissioned": true,
+      "enabled": false,
+      "reason": "Simulation provider package is not installed on this host"
+    },
+    {
+      "id": "moveit_gazebo_arm",
+      "modes": [
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": false,
+      "compatible": false,
+      "reachable": false,
+      "commissioned": true,
+      "enabled": false,
+      "reason": "Provider not implemented yet (engineering plan C01/C03)"
+    },
+    {
+      "id": "engineering_coffee_process",
+      "modes": [
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": false,
+      "compatible": false,
+      "reachable": false,
+      "commissioned": true,
+      "enabled": false,
+      "reason": "Provider not implemented yet (engineering plan C01/C03)"
+    },
+    {
+      "id": "valetudo_native",
+      "modes": [
+        "hardware"
+      ],
+      "accesses": [
+        "shadow",
+        "hil",
+        "live"
+      ],
+      "installed": false,
+      "compatible": false,
+      "reachable": false,
+      "commissioned": false,
+      "enabled": false,
+      "reason": "Native provisioning is outside the local Lab runtime"
+    },
+    {
+      "id": "cell_native",
+      "modes": [
+        "hardware"
+      ],
+      "accesses": [
+        "hil",
+        "live"
+      ],
+      "installed": false,
+      "compatible": false,
+      "reachable": false,
+      "commissioned": false,
+      "enabled": false,
+      "reason": "Native provisioning is outside the local Lab runtime"
+    },
+    {
+      "id": "irsim_2d",
+      "modes": [
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": false,
+      "compatible": false,
+      "reachable": false,
+      "commissioned": true,
+      "enabled": false,
+      "reason": "IRSIM_DISABLED: the portable IR-SIM provider is not enabled (MEKONIQ_LAB_IRSIM=1)"
+    },
+    {
+      "id": "webots_3d",
+      "modes": [
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": false,
+      "compatible": false,
+      "reachable": false,
+      "commissioned": true,
+      "enabled": false,
+      "reason": "WEBOTS_DISABLED: the Webots 3D provider is not configured on this runtime (MEKONIQ_LAB_WEBOTS=1)"
+    },
+    {
+      "id": "webots_arm",
+      "modes": [
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": false,
+      "compatible": false,
+      "reachable": false,
+      "commissioned": true,
+      "enabled": false,
+      "reason": "WEBOTS_DISABLED: the Webots arm provider is not configured on this runtime (MEKONIQ_LAB_WEBOTS=1)"
+    },
+    {
+      "id": "mujoco_arm",
+      "modes": [
+        "simulation"
+      ],
+      "accesses": [
+        "simulated"
+      ],
+      "installed": true,
+      "compatible": true,
+      "reachable": true,
+      "commissioned": true,
+      "enabled": true
+    }
+  ],
+  "backendSets": [
+    {
+      "id": "mock-default",
+      "mode": "mock",
+      "access": "simulated",
+      "backends": [
+        "mock_amr",
+        "mock_coffee",
+        "mock_arm"
+      ]
+    },
+    {
+      "id": "mock-amr",
+      "mode": "mock",
+      "access": "simulated",
+      "backends": [
+        "mock_amr"
+      ]
+    },
+    {
+      "id": "simulation-default",
+      "mode": "simulation",
+      "access": "simulated",
+      "backends": [
+        "gazebo_nav2",
+        "linuxcnc_sim",
+        "coffee_io_sim"
+      ]
+    },
+    {
+      "id": "coffee-simulation",
+      "mode": "simulation",
+      "access": "simulated",
+      "backends": [
+        "gazebo_nav2",
+        "linuxcnc_sim",
+        "coffee_io_sim"
+      ]
+    },
+    {
+      "id": "engineering-rigid-v1",
+      "mode": "simulation",
+      "access": "simulated",
+      "backends": [
+        "gazebo_nav2"
+      ]
+    },
+    {
+      "id": "engineering-contact-v1",
+      "mode": "simulation",
+      "access": "simulated",
+      "backends": [
+        "gazebo_nav2",
+        "moveit_gazebo_arm",
+        "engineering_coffee_process"
+      ]
+    },
+    {
+      "id": "engineering-irsim-2d-v1",
+      "mode": "simulation",
+      "access": "simulated",
+      "backends": [
+        "irsim_2d"
+      ],
+      "execution": {
+        "host": "portable_python",
+        "clock": "source_fixed_step",
+        "manualStep": false,
+        "speedMultipliers": [
+          1,
+          4,
+          16,
+          64
+        ]
+      }
+    },
+    {
+      "id": "engineering-webots-3d-v1",
+      "mode": "simulation",
+      "access": "simulated",
+      "backends": [
+        "webots_3d"
+      ],
+      "execution": {
+        "host": "portable_python",
+        "clock": "source_fixed_step",
+        "manualStep": false,
+        "speedMultipliers": [
+          1,
+          4,
+          16,
+          64
+        ]
+      }
+    },
+    {
+      "id": "engineering-webots-arm-v1",
+      "mode": "simulation",
+      "access": "simulated",
+      "backends": [
+        "mock_amr",
+        "webots_arm",
+        "mock_coffee"
+      ],
+      "execution": {
+        "host": "portable_python",
+        "clock": "source_fixed_step",
+        "manualStep": false,
+        "speedMultipliers": [
+          1,
+          4,
+          16,
+          64
+        ]
+      }
+    },
+    {
+      "id": "engineering-mujoco-arm-v1",
+      "mode": "simulation",
+      "access": "simulated",
+      "backends": [
+        "mock_amr",
+        "mujoco_arm",
+        "mock_coffee"
+      ],
+      "execution": {
+        "host": "portable_python",
+        "clock": "source_fixed_step",
+        "manualStep": false,
+        "speedMultipliers": [
+          1,
+          4,
+          16,
+          64
+        ]
+      }
+    },
+    {
+      "id": "hardware-shadow",
+      "mode": "hardware",
+      "access": "shadow",
+      "backends": [
+        "valetudo_native"
+      ]
+    },
+    {
+      "id": "hardware-hil",
+      "mode": "hardware",
+      "access": "hil",
+      "backends": [
+        "valetudo_native",
+        "cell_native"
+      ]
+    },
+    {
+      "id": "hardware-live",
+      "mode": "hardware",
+      "access": "live",
+      "backends": [
+        "valetudo_native",
+        "cell_native"
+      ]
+    }
+  ],
+  "scenarioIds": [
+    "FD01",
+    "FD07",
+    "FD02",
+    "FD03",
+    "FD04",
+    "FD04-blocked",
+    "FD04-reopen",
+    "FD05-payload",
+    "FD05-battery",
+    "FD05-capability",
+    "FD05-binding",
+    "BV01",
+    "FD02-cups",
+    "CAMPAIGN-FD02-FD07-BV01-BV03",
+    "IR-FD01",
+    "IR-FD03",
+    "IR-FD04",
+    "IR-FD04-blocked",
+    "IR-FD07",
+    "WB-FD01",
+    "WB-FD07",
+    "WB-BV01",
+    "MJ-BV01"
+  ],
+  "scenarioRequirements": {
+    "FD01": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "FD07": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "FD02": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "FD03": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "FD04": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "FD04-blocked": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "FD04-reopen": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "FD05-payload": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "FD05-battery": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "FD05-capability": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "FD05-binding": {
+      "mock": [
+        "mock_amr"
+      ],
+      "simulation": [
+        "gazebo_nav2"
+      ]
+    },
+    "BV01": {
+      "mock": [
+        "mock_amr",
+        "mock_coffee",
+        "mock_arm"
+      ],
+      "simulation": [
+        "gazebo_nav2",
+        "linuxcnc_sim",
+        "coffee_io_sim"
+      ]
+    },
+    "FD02-cups": {
+      "mock": [
+        "mock_amr",
+        "mock_coffee",
+        "mock_arm"
+      ],
+      "simulation": [
+        "gazebo_nav2",
+        "linuxcnc_sim",
+        "coffee_io_sim"
+      ]
+    },
+    "CAMPAIGN-FD02-FD07-BV01-BV03": {
+      "mock": [
+        "mock_amr",
+        "mock_coffee",
+        "mock_arm"
+      ],
+      "simulation": [
+        "gazebo_nav2",
+        "linuxcnc_sim",
+        "coffee_io_sim"
+      ]
+    },
+    "IR-FD01": {
+      "mock": [],
+      "simulation": []
+    },
+    "IR-FD03": {
+      "mock": [],
+      "simulation": []
+    },
+    "IR-FD04": {
+      "mock": [],
+      "simulation": []
+    },
+    "IR-FD04-blocked": {
+      "mock": [],
+      "simulation": []
+    },
+    "IR-FD07": {
+      "mock": [],
+      "simulation": []
+    },
+    "WB-FD01": {
+      "mock": [],
+      "simulation": []
+    },
+    "WB-FD07": {
+      "mock": [],
+      "simulation": []
+    },
+    "WB-BV01": {
+      "mock": [],
+      "simulation": []
+    },
+    "MJ-BV01": {
+      "mock": [],
+      "simulation": []
+    }
+  },
+  "scenarioRequirementsByBackendSet": {
+    "FD01": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD07": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD02": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD03": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD04": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD04-blocked": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD04-reopen": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD05-payload": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD05-battery": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD05-capability": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD05-binding": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "BV01": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr",
+          "mock_coffee",
+          "mock_arm"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr",
+          "mock_coffee",
+          "mock_arm"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2",
+          "linuxcnc_sim",
+          "coffee_io_sim"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2",
+          "linuxcnc_sim",
+          "coffee_io_sim"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "FD02-cups": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr",
+          "mock_coffee",
+          "mock_arm"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr",
+          "mock_coffee",
+          "mock_arm"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2",
+          "linuxcnc_sim",
+          "coffee_io_sim"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2",
+          "linuxcnc_sim",
+          "coffee_io_sim"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "CAMPAIGN-FD02-FD07-BV01-BV03": {
+      "mock-default": {
+        "supported": true,
+        "required": [
+          "mock_amr",
+          "mock_coffee",
+          "mock_arm"
+        ],
+        "reasonCodes": []
+      },
+      "mock-amr": {
+        "supported": true,
+        "required": [
+          "mock_amr",
+          "mock_coffee",
+          "mock_arm"
+        ],
+        "reasonCodes": []
+      },
+      "simulation-default": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2",
+          "linuxcnc_sim",
+          "coffee_io_sim"
+        ],
+        "reasonCodes": []
+      },
+      "coffee-simulation": {
+        "supported": true,
+        "required": [
+          "gazebo_nav2",
+          "linuxcnc_sim",
+          "coffee_io_sim"
+        ],
+        "reasonCodes": []
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "IR-FD01": {
+      "mock-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "mock-amr": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "simulation-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "coffee-simulation": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "IR-FD03": {
+      "mock-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "mock-amr": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "simulation-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "coffee-simulation": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "IR-FD04": {
+      "mock-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "mock-amr": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "simulation-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "coffee-simulation": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "IR-FD04-blocked": {
+      "mock-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "mock-amr": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "simulation-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "coffee-simulation": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "IR-FD07": {
+      "mock-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "mock-amr": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "simulation-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "coffee-simulation": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "WB-FD01": {
+      "mock-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "mock-amr": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "simulation-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "coffee-simulation": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "WB-FD07": {
+      "mock-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "mock-amr": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "simulation-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "coffee-simulation": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "WB-BV01": {
+      "mock-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "mock-amr": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "simulation-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "coffee-simulation": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    },
+    "MJ-BV01": {
+      "mock-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "mock-amr": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "simulation-default": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "coffee-simulation": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "SCENARIO_UNSUPPORTED_BY_SET"
+        ]
+      },
+      "engineering-rigid-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-contact-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-irsim-2d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-3d-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-webots-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      },
+      "engineering-mujoco-arm-v1": {
+        "supported": false,
+        "required": [],
+        "reasonCodes": [
+          "ENGINEERING_CAPABILITY_REQUIRED"
+        ]
+      }
+    }
+  },
+  "features": {
+    "polling": true,
+    "sse": true,
+    "readiness": true,
+    "bearer": true,
+    "pacedStep": true
+  },
+  "deployment": {
+    "bind": "public"
+  },
+  "capabilities": [
+    "sim3d_arm_contact_v1"
+  ]
+}

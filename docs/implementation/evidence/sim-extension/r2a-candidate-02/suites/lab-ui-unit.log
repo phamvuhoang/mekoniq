@@ -1,0 +1,20 @@
+
+ RUN  v4.1.12 <workspace>/lab
+
+ ✓ tests/unit/sample-buffer.test.ts (6 tests) 8ms
+ ✓ tests/unit/live-playback.test.ts (7 tests) 4ms
+ ✓ tests/unit/playwright-config.test.ts (1 test) 4ms
+ ✓ tests/unit/twin-shell.test.ts (12 tests) 6ms
+ ✓ tests/unit/twin-notes.test.ts (8 tests) 4ms
+ ✓ tests/unit/twin-problems.test.ts (14 tests) 9ms
+ ✓ tests/unit/twin3d-structure.test.ts (6 tests) 5ms
+ ✓ tests/unit/twin-keys.test.ts (6 tests) 12ms
+ ✓ tests/unit/twin-workspace.test.ts (10 tests) 9ms
+ ✓ tests/unit/workspace-conditional-items.test.ts (5 tests) 98ms
+
+ Test Files  10 passed (10)
+      Tests  75 passed (75)
+   Start at  07:36:25
+   Duration  741ms (transform 1.35s, setup 0ms, import 2.73s, tests 160ms, environment 1ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-ui-unit.json

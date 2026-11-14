@@ -1,0 +1,659 @@
+{
+  "config": {
+    "argv": [
+      "<home>/.nvm/versions/node/v24.22.2/bin/node",
+      "<workspace>/lab/node_modules/@playwright/test/cli.js",
+      "test",
+      "twin-polish.spec.ts"
+    ],
+    "configFile": "<workspace>/lab/playwright.config.ts",
+    "rootDir": "<workspace>/lab/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "<workspace>/lab/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "<workspace>/lab/tests/e2e",
+        "testIgnore": [
+          "**/native-run-report.spec.ts",
+          "**/irsim-*.spec.ts",
+          "**/webots-*.spec.ts",
+          "**/mujoco-*.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "<workspace>/lab/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "<workspace>/lab/tests/e2e",
+        "snapshotDir": "<workspace>/lab/tests/e2e",
+        "testIgnore": [
+          "**/native-run-report.spec.ts",
+          "**/irsim-*.spec.ts",
+          "**/webots-*.spec.ts",
+          "**/mujoco-*.spec.ts"
+        ],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4175",
+          "headless": true,
+          "launchOptions": {
+            "executablePath": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+          },
+          "screenshot": "only-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-twin-polish-twin-polish.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 5,
+    "webServer": {
+      "command": "pnpm dev",
+      "url": "http://127.0.0.1:4175",
+      "reuseExistingServer": true,
+      "timeout": 30000
+    }
+  },
+  "suites": [
+    {
+      "title": "twin-polish.spec.ts",
+      "file": "twin-polish.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "twin page polish",
+          "file": "twin-polish.spec.ts",
+          "line": 19,
+          "column": 15,
+          "specs": [
+            {
+              "title": "a notice is shown in the banner, not counted; an emptied problems box does not reopen by itself",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                        "line": 19,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 501,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:17.204Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                            "line": 19,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6a7e79c84ff972c6f2b-b822ff23eb0c489263a6",
+              "file": "twin-polish.spec.ts",
+              "line": 26,
+              "column": 2
+            },
+            {
+              "title": "running: a plain runtime word on the bar, the telemetry detail in the Engineering tab and the runtime box, repainted live",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                        "line": 19,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1522,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:18.299Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                            "line": 19,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6a7e79c84ff972c6f2b-72d4ccf3c92afa90a99f",
+              "file": "twin-polish.spec.ts",
+              "line": 42,
+              "column": 2
+            },
+            {
+              "title": "Engineering tab with the arm selected: one block per quantity, nothing wider than the panel",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                        "line": 19,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 190,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:19.830Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                            "line": 19,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6a7e79c84ff972c6f2b-7a253dbcb47bf5867a64",
+              "file": "twin-polish.spec.ts",
+              "line": 58,
+              "column": 2
+            },
+            {
+              "title": "Objects tab: the current cup line keeps its distance from the job cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                        "line": 19,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 42,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:20.027Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                            "line": 19,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6a7e79c84ff972c6f2b-75117da603bfb2f0f147",
+              "file": "twin-polish.spec.ts",
+              "line": 70,
+              "column": 2
+            },
+            {
+              "title": "one attention problem: one card holding its chain, object buttons by name; the box stays closed; the scenario name is not cut",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                        "line": 19,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 356,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:20.081Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                            "line": 19,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6a7e79c84ff972c6f2b-bef5c73619d4881dbe15",
+              "file": "twin-polish.spec.ts",
+              "line": 76,
+              "column": 2
+            },
+            {
+              "title": "the runtime box repeats the telemetry detail, repainted live",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                        "line": 19,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 181,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:20.446Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                            "line": 19,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6a7e79c84ff972c6f2b-db84be303ea1a7e4ff6d",
+              "file": "twin-polish.spec.ts",
+              "line": 103,
+              "column": 2
+            },
+            {
+              "title": "scenario picker: a preset that cannot run gives one reason per backend",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                        "line": 19,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 77,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:20.645Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                            "line": 19,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6a7e79c84ff972c6f2b-14bfa7ac593dd65fa21a",
+              "file": "twin-polish.spec.ts",
+              "line": 113,
+              "column": 2
+            },
+            {
+              "title": "toolbar buttons expose their state; ? moves focus into the key list and back; one twin-help button; the label explains itself in watch mode",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                        "line": 19,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 478,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:20.728Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                            "line": 19,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6a7e79c84ff972c6f2b-cca51897a0e7b1b8a156",
+              "file": "twin-polish.spec.ts",
+              "line": 122,
+              "column": 2
+            },
+            {
+              "title": "replay: no live action on the run bar, a recorded tag, no run speed; Space on the scrubber plays, a held Space toggles once",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                        "line": 19,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 579,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:21.213Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                            "line": 19,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6a7e79c84ff972c6f2b-518a7e8a68e79e336339",
+              "file": "twin-polish.spec.ts",
+              "line": 147,
+              "column": 2
+            },
+            {
+              "title": "1024 × 700: no vertical scroll and the run bar keeps its one row",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                        "line": 19,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 117,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:21.799Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+                            "line": 19,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6a7e79c84ff972c6f2b-8f8844efa5f4a818f435",
+              "file": "twin-polish.spec.ts",
+              "line": 173,
+              "column": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-14T00:37:16.958Z",
+    "duration": 5232.473,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

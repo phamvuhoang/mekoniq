@@ -1,0 +1,8 @@
+Deploying container to Cloud Run service [[1mmekoniq-lab-runtime[m] in project [[1mmekoniq[m] region [[1masia-southeast1[m]
+Deploying new service...
+Setting IAM Policy................done
+Creating Revision........................................................................................................................................................................................done
+Routing traffic.....done
+Done.
+Service [[1mmekoniq-lab-runtime[m] revision [[1mmekoniq-lab-runtime-00001-nb5[m] has been deployed and is serving [1m100[m percent of traffic.
+Service URL: [1mhttps://mekoniq-lab-runtime-628915389101.asia-southeast1.run.app[m

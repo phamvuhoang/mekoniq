@@ -1,0 +1,468 @@
+{
+  "config": {
+    "argv": [
+      "<home>/.nvm/versions/node/v24.22.2/bin/node",
+      "<workspace>/lab/node_modules/@playwright/test/cli.js",
+      "test",
+      "twin-transport.spec.ts"
+    ],
+    "configFile": "<workspace>/lab/playwright.config.ts",
+    "rootDir": "<workspace>/lab/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "<workspace>/lab/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "<workspace>/lab/tests/e2e",
+        "testIgnore": [
+          "**/native-run-report.spec.ts",
+          "**/irsim-*.spec.ts",
+          "**/webots-*.spec.ts",
+          "**/mujoco-*.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "<workspace>/lab/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "<workspace>/lab/tests/e2e",
+        "snapshotDir": "<workspace>/lab/tests/e2e",
+        "testIgnore": [
+          "**/native-run-report.spec.ts",
+          "**/irsim-*.spec.ts",
+          "**/webots-*.spec.ts",
+          "**/mujoco-*.spec.ts"
+        ],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4175",
+          "headless": true,
+          "launchOptions": {
+            "executablePath": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+          },
+          "screenshot": "only-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-twin-transport-twin-transport.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 5,
+    "webServer": {
+      "command": "pnpm dev",
+      "url": "http://127.0.0.1:4175",
+      "reuseExistingServer": true,
+      "timeout": 30000
+    }
+  },
+  "suites": [
+    {
+      "title": "twin-transport.spec.ts",
+      "file": "twin-transport.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "watch mode can be exited by touch at 390px without a keyboard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 605,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-14T00:37:23.724Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "199bf011dc96cb789d0b-bc6e3ac60bcb3327094f",
+          "file": "twin-transport.spec.ts",
+          "line": 19,
+          "column": 72
+        },
+        {
+          "title": "watch mode can be exited by touch at 1024px without a keyboard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 602,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-14T00:37:24.685Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "199bf011dc96cb789d0b-8cb70c6e80313eb40e50",
+          "file": "twin-transport.spec.ts",
+          "line": 19,
+          "column": 72
+        }
+      ],
+      "suites": [
+        {
+          "title": "transport bar, keys and watch mode",
+          "file": "twin-transport.spec.ts",
+          "line": 37,
+          "column": 15,
+          "specs": [
+            {
+              "title": "no run: keys typed in the pairing code stay there; disabled buttons look disabled",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+                        "line": 37,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1276,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:25.293Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+                            "line": 37,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "199bf011dc96cb789d0b-cd05d10538347e78243f",
+              "file": "twin-transport.spec.ts",
+              "line": 44,
+              "column": 2
+            },
+            {
+              "title": "live run: → steps, Space starts and stops auto-run, ? lists the keys",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+                        "line": 37,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 428,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:26.684Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+                            "line": 37,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "199bf011dc96cb789d0b-9a0be808afbfaaa5d506",
+              "file": "twin-transport.spec.ts",
+              "line": 63,
+              "column": 2
+            },
+            {
+              "title": "watch mode: only the viewport, three labels and the transport; Escape gives everything back one step at a time",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+                        "line": 37,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 621,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:27.119Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+                            "line": 37,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "199bf011dc96cb789d0b-3d897da3ed9b340602af",
+              "file": "twin-transport.spec.ts",
+              "line": 80,
+              "column": 2
+            },
+            {
+              "title": "replay: the transport turns into a scrubber with marks; dragging moves the time, Space plays and stops",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+                        "line": 37,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7836,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:27.745Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+                            "line": 37,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "199bf011dc96cb789d0b-bad396fc1f0b96aa463f",
+              "file": "twin-transport.spec.ts",
+              "line": 110,
+              "column": 2
+            },
+            {
+              "title": "Escape closes the modal confirm dialog (its native cancel), and the dialog opens again",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+                        "line": 37,
+                        "column": 15
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1491,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T00:37:35.586Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+                            "line": 37,
+                            "column": 15
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "199bf011dc96cb789d0b-44ffa5666cba55b3c19a",
+              "file": "twin-transport.spec.ts",
+              "line": 146,
+              "column": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-14T00:37:23.466Z",
+    "duration": 13918.131,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

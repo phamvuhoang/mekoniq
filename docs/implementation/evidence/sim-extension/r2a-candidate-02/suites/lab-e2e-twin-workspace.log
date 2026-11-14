@@ -1,0 +1,21 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>/mekoniq-mock-e2e-XpvNTK/runs-twin-workspace.spec.ts
+Owned processes: runtime pid 45875, UI pid 45876
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 659 ms. Press Ctrl-C to stop.
+Running twin-workspace.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 5 tests using 1 worker
+
+(node:45894) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/twin-workspace.spec.ts:10:1 › WebGL disabled and reduced motion fall back to a 2D twin with the same controls (902ms)
+  ✓  2 tests/e2e/twin-workspace.spec.ts:43:3 › paired source runtime › coffee preset runs on the mock backend with a locked, visible identity (1.4s)
+  ✓  3 tests/e2e/twin-workspace.spec.ts:65:3 › paired source runtime › layers, legend and one shared selection survive a 3D to 2D switch (522ms)
+  ✓  4 tests/e2e/twin-workspace.spec.ts:104:3 › paired source runtime › engineering panel shows units, observed versus commanded and data age (3.1s)
+  ✓  5 tests/e2e/twin-workspace.spec.ts:139:3 › paired source runtime › mobile layout is operable with the keyboard only (629ms)
+
+  5 passed (7.7s)
+
+Stopping the runtime and UI this launcher started…

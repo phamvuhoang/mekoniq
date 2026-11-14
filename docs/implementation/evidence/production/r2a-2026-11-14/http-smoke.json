@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-11-14T01:29:09.640714+00:00",
+  "checks": [
+    {
+      "url": "https://www.mekoniq.app/health/live",
+      "status": 200,
+      "finalUrl": "https://www.mekoniq.app/health/live",
+      "contentType": "application/json",
+      "bytes": 13,
+      "body": {
+        "live": true
+      }
+    },
+    {
+      "url": "https://www.mekoniq.app/health/ready",
+      "status": 200,
+      "finalUrl": "https://www.mekoniq.app/health/ready",
+      "contentType": "application/json",
+      "bytes": 14,
+      "body": {
+        "ready": true
+      }
+    },
+    {
+      "url": "https://www.mekoniq.app/",
+      "status": 200,
+      "finalUrl": "https://www.mekoniq.app/",
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 6232
+    },
+    {
+      "url": "https://mekoniq-lab.vercel.app/",
+      "status": 200,
+      "finalUrl": "https://mekoniq-lab.vercel.app/",
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 838
+    }
+  ]
+}

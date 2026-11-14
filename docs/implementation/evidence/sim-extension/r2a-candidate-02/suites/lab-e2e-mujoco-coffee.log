@@ -1,0 +1,18 @@
+Mekoniq Robot Lab — MuJoCo arm twin (xArm 6 + G2 as a MuJoCo plant: manufacturer nominal masses and limits, every other parameter assumed, not_calibrated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm, mujoco_arm · journal <tmp>/mekoniq-irsim-e2e-AYrBIh/runs
+Owned processes: runtime pid 46222, UI pid 46226
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 1527 ms. Press Ctrl-C to stop.
+Running mujoco-coffee.spec.ts through pnpm lab:mujoco (real MuJoCo worker) with a fresh journal.
+
+Running 1 test using 1 worker
+
+(node:46243) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+MJ-BV01 {"measured1x":1,"simS":[5,15],"wallS":10.003,"totalWallS":41.8,"finalTick":4810,"steps":228,"maxStepMs":{"1":440,"16":209},"late":0,"late1x":0,"late16x":0,"maxLatenessMs":184,"rebuilds":["1","1","2","2"],"armFrac":0.378,"armFracFresh":0.378,"redraws":["0","4"],"cupsWhileHolding":{"cup-1":[3.1402,0.65,0.85]}}
+  ✓  1 tests/e2e/mujoco-coffee.spec.ts:14:1 › MJ-BV01 from the Lab UI: runtime box, mujoco-coffee at 1× then 16× to completed, the mesh arm and cups, both joint columns and the plant report (51.6s)
+
+  1 passed (52.6s)
+
+Stopping the runtime and UI this launcher started…

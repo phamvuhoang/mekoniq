@@ -1,0 +1,15 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/unit/xarm6-fixture.test.ts (8 tests) 208ms
+ ✓ tests/unit/xarm6-cell-dock.test.ts (5 tests) 195ms
+ ✓ tests/unit/arm-cell-scene.test.ts (10 tests) 95ms
+ ✓ tests/contracts/sim3d-mujoco-schema.test.ts (8 tests) 14ms
+ ✓ tests/unit/capabilities-mujoco-arm.test.ts (5 tests) 4ms
+
+ Test Files  5 passed (5)
+      Tests  36 passed (36)
+   Start at  07:31:44
+   Duration  2.73s (transform 620ms, setup 0ms, import 1.82s, tests 517ms, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-static.json

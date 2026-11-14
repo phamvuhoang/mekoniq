@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-11-14T01:35:48.904151+00:00",
+  "project": "mekoniq",
+  "region": "asia-southeast1",
+  "service": "mekoniq-lab-runtime",
+  "url": "https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app",
+  "latestReadyRevisionName": "mekoniq-lab-runtime-00002-9lx",
+  "traffic": [
+    {
+      "latestRevision": true,
+      "percent": 100,
+      "revisionName": "mekoniq-lab-runtime-00002-9lx"
+    }
+  ],
+  "image": "asia-southeast1-docker.pkg.dev/mekoniq/lab/mekoniq-lab-runtime@sha256:fbdf4bb5c1af4ffd15c01550b4508b6df0ad3b4d69e444e5469cfe2b52e4b009"
+}

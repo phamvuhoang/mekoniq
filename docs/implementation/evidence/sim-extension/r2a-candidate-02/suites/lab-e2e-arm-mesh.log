@@ -1,0 +1,25 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>/mekoniq-mock-e2e-KFjzL7/runs-arm-mesh.spec.ts
+Owned processes: runtime pid 46021, UI pid 46022
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 658 ms. Press Ctrl-C to stop.
+Running arm-mesh.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 7 tests using 1 worker
+
+(node:46039) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+meshes loaded in 56 ms
+  ✓  1 tests/e2e/arm-mesh.spec.ts:49:1 › the xArm is drawn from its meshes once loaded, swapped in place; the fingers follow the opening; the cup is at the plant's pose (891ms)
+  ✓  2 tests/e2e/arm-mesh.spec.ts:80:49 › meshes blocked: the joint chain stays, ARM_MESH_UNAVAILABLE in the problems list, the view keeps drawing (712ms)
+  ✓  3 tests/e2e/arm-mesh.spec.ts:80:49 › meshes altered: the joint chain stays, ARM_MESH_UNAVAILABLE in the problems list, the view keeps drawing (2.2s)
+per mount: 14 cached geometries with 1 dispose listener each, renderer info.memory.geometries 26; after dispose: 0 listeners
+  ✓  4 tests/e2e/arm-mesh.spec.ts:109:1 › disposing the view releases the shared mesh geometry: mount and dispose again and again, nothing accumulates (772ms)
+  ✓  5 tests/e2e/arm-mesh.spec.ts:125:1 › a mesh set that cannot be dressed: the arm keeps its joint chain and the ARM_MESH_UNAVAILABLE note, never neither drawing (641ms)
+  ✓  6 tests/e2e/arm-mesh.spec.ts:132:1 › a plant cup the view does not list is counted in dataset.plantCupsDropped (616ms)
+  ✓  7 tests/e2e/arm-mesh.spec.ts:137:1 › run bar: notes only is a neutral button labelled as notes that opens the same panel; with a problem the count is the problems (834ms)
+
+  7 passed (7.6s)
+
+Stopping the runtime and UI this launcher started…

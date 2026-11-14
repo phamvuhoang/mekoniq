@@ -1,0 +1,7 @@
+Updated IAM policy for secret [lab-access-key].
+bindings:
+- members:
+  - serviceAccount:mekoniq-lab-runtime@mekoniq.iam.gserviceaccount.com
+  role: roles/secretmanager.secretAccessor
+etag: BwZgMZAXFtU=
+version: 1

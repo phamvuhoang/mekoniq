@@ -1,0 +1,13 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/contracts/sim-extension-contracts.test.ts (12 tests) 340ms
+ ✓ tests/unit/sim3d-fixtures.test.ts (6 tests) 195ms
+ ✓ tests/unit/sim3d-lidar-oracle.test.ts (7 tests) 6ms
+
+ Test Files  3 passed (3)
+      Tests  25 passed (25)
+   Start at  07:20:09
+   Duration  1.60s (transform 188ms, setup 0ms, import 816ms, tests 541ms, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r1-candidate-07/suites/wb-static.json

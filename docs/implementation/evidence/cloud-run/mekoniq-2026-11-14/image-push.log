@@ -1,0 +1,30 @@
+The push refers to repository [asia-southeast1-docker.pkg.dev/mekoniq/lab/mekoniq-lab-runtime]
+acd28472d735: Preparing
+8a895582ccec: Preparing
+366f0bae9a92: Preparing
+890e5879d606: Preparing
+4ed49f4f5129: Preparing
+bf9d77d56e23: Preparing
+ed69dff2fef5: Preparing
+5629b0a98f65: Preparing
+726b606e916f: Preparing
+35ba73637985: Preparing
+1d7b9dd8778e: Preparing
+5629b0a98f65: Waiting
+726b606e916f: Waiting
+35ba73637985: Waiting
+1d7b9dd8778e: Waiting
+bf9d77d56e23: Waiting
+ed69dff2fef5: Waiting
+366f0bae9a92: Pushed
+890e5879d606: Pushed
+8a895582ccec: Pushed
+acd28472d735: Pushed
+ed69dff2fef5: Pushed
+5629b0a98f65: Pushed
+35ba73637985: Pushed
+bf9d77d56e23: Pushed
+1d7b9dd8778e: Pushed
+726b606e916f: Pushed
+4ed49f4f5129: Pushed
+4f893ac: digest: sha256:fbdf4bb5c1af4ffd15c01550b4508b6df0ad3b4d69e444e5469cfe2b52e4b009 size: 2631

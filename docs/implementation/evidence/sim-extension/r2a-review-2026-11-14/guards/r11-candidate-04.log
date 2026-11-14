@@ -1,0 +1,14 @@
+
+> mekoniq-platform@ test:acceptance /Users/hoangpham/source/prv/robot/source
+> node scripts/test-runner.mjs acceptance -- sim-extension
+
+
+ RUN  v4.1.12 /Users/hoangpham/source/prv/robot/source
+
+ ✓ tests/acceptance/sim-extension.acceptance.test.ts (12 tests) 14ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  08:01:58
+   Duration  138ms (transform 33ms, setup 0ms, import 46ms, tests 14ms, environment 0ms)
+

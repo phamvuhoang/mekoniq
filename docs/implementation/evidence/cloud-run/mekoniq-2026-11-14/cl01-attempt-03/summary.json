@@ -1,0 +1,33 @@
+{
+  "schema": "mekoniq-cloud-run-http-smoke/1",
+  "accepted": false,
+  "startedAt": "2026-11-14T00:55:53.990Z",
+  "service": "https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app",
+  "origin": "https://mekoniq-lab.vercel.app",
+  "expectedCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "cases": {
+    "health": "tested",
+    "pairing": "tested",
+    "streamReconnect": "tested",
+    "mock": "tested",
+    "mujoco": "tested"
+  },
+  "browser": "not_run",
+  "mujoco": {
+    "tick": 4800,
+    "status": "completed",
+    "wallMs": 71313
+  },
+  "status": "tested",
+  "cleanup": [
+    {
+      "runId": "7641637d-3931-4824-b1a7-bd62c41f6b6a",
+      "archived": true
+    },
+    {
+      "runId": "7da38fce-b1ac-44d2-a912-173bb8bb38b9",
+      "archived": true
+    }
+  ],
+  "finishedAt": "2026-11-14T00:57:13.606Z"
+}

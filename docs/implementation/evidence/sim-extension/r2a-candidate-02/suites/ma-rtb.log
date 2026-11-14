@@ -1,0 +1,12 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/xarm6-rtb.test.ts (1 test) 3104ms
+     ✓ rtb_fk equals forwardKinematics(XARM6_SI).flange within 1e-6 m and 1e-6 rad at the 20 golden poses  3103ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  07:31:47
+   Duration  3.29s (transform 50ms, setup 0ms, import 103ms, tests 3.10s, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-rtb.json

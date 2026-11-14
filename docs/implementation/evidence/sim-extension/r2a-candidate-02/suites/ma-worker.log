@@ -1,0 +1,14 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/mujoco-arm-worker.test.ts (3 tests) 1555ms
+     ✓ MA03 clock and hold: 50 ticks at home stay within reachTolRad, simTimeNs is tick x 20 ms, nothing collides; a target past a limit is refused without a tick  565ms
+     ✓ MA02 readback: link masses, hinge axes, limits and actuator force limits are the fixture's  475ms
+     ✓ after close no worker process is left and no bytecode appears under the tool root  514ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  07:31:57
+   Duration  2.08s (transform 119ms, setup 0ms, import 436ms, tests 1.55s, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-worker.json
