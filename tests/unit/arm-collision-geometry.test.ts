@@ -41,3 +41,11 @@ test('cupAxisInTool [1,0,0]: the held cup lies across the tool axis, centred on 
   expect(checkArmSweep(simple, q(0), q(0), { world: beside, heldCup: false, geometry }).ok).toBe(true);
   expect(() => checkArmSweep(simple, q(0), q(0), { world: ahead, geometry: { ...geometry, cupAxisInTool: [0, 0, 0] } })).toThrow('COLLISION_GEOMETRY_INVALID');
 });
+
+test('gripperBackM checks the palm behind an offset TCP and rejects invalid lengths', () => {
+  const model = { ...simple, toolM: [0, 0, 0.172] as [number, number, number] }, world = [sphere('palm-stop', [1, 0.045, 0.06])];
+  expect(checkArmSweep(model, q(0), q(0), { world }).ok).toBe(true);
+  const geometry = { ...DEFAULT_ARM_GEOMETRY, gripperBackM: 0.181, gripperRadiusM: 0.064 };
+  expect(checkArmSweep(model, q(0), q(0), { world, geometry })).toMatchObject({ ok: false, reason: 'COLLISION', pair: ['gripper', 'palm-stop'] });
+  for (const invalid of [0, -0.1, NaN, Infinity]) expect(() => checkArmSweep(model, q(0), q(0), { world, geometry: { ...geometry, gripperBackM: invalid } })).toThrow('COLLISION_GEOMETRY_INVALID');
+});

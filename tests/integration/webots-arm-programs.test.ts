@@ -1,3 +1,4 @@
+import { OwnedProcesses } from '../support/owned-processes';
 // X05 / WA04 (R1.1) on the real Webots R2025a: cup-pick and cup-place run through webotsArmPorts. Skipped, with the reason, where Webots or .venv-webots is missing.
 import { afterEach, describe, expect, test } from 'vitest';
 import { execFileSync } from 'node:child_process';
@@ -20,10 +21,11 @@ import { coffeeProject } from '../support/lab-v2';
 const HOME = process.env.MEKONIQ_WEBOTS_HOME ?? '/Applications/Webots.app', python = resolve('.venv-webots/bin/python'), workerRoot = resolve('robotics/simulation-3d');
 const exe = join(HOME, 'Contents', 'MacOS', 'webots');
 const webotsReady = existsSync(exe) && existsSync(python) && (() => { try { return execFileSync(exe, ['--version'], { encoding: 'utf8', timeout: 30_000 }).includes('R2025a'); } catch { return false; } })();
-const running = () => { try { return execFileSync('pgrep', ['-f', '^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller|arm_controller)\\.py'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
+const ownedProcesses = new OwnedProcesses();
+const running = () => ownedProcesses.processes().map(p => String(p.pid));
 
 const dirs: string[] = [], open: CoffeePlantPorts[] = [];
-afterEach(async () => { for (const p of open.splice(0)) await p.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+afterEach(async () => { ownedProcesses.capture(); for (const p of open.splice(0)) await p.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
 const command = (id: string, program: 'cup-pick' | 'cup-place'): CellCommand => ({ runId: 'run-a', commandId: id, deviceId: 'arm', controlEpoch: 1, expiresAt: '2026-11-06T00:00:00Z', recipeRevision: 1,
   programRef: { id: program, hash: 'a'.repeat(64) }, payloadHash: 'a'.repeat(64), capability: 'start_job', payload: { jobId: 'j' } });
 const state = (st: CoffeeState, id: string) => st.arm.programs.find((x) => x.commandId === id)?.state;
@@ -31,7 +33,7 @@ const state = (st: CoffeeState, id: string) => st.arm.programs.find((x) => x.com
 async function ports() {
   const runtime: WebotsRuntimeOptions = { python, workerRoot, schemaDir: resolve('packages/contracts/schemas'), lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), webotsHome: HOME,
     executableSha256: 'a'.repeat(64), basicTimeStepMs: 20, maxActiveRuns: 1 };
-  const directory = await mkdtemp(join(tmpdir(), 'arm-programs-')); dirs.push(directory);
+  const directory = await mkdtemp(join(tmpdir(), 'arm-programs-')); dirs.push(directory); ownedProcesses.addDirectory(directory);
   const st = { stationId: 'coffee-pickup', cellId: 'cell-1', armId: 'arm-1', registered: false, sessions: {}, workload: [], plant: MockCoffeePlant.initial('cell-1'), arm: MockArmPlant.initial('arm-1'), trays: {} } as unknown as CoffeeState;
   const ctx = { runId: 'run-a', nowMs: () => Date.parse('2026-11-05T00:00:00Z'), tick: () => 0, receiver: () => ({ robotId: 'amr-1', slot: 1 }) } as unknown as CoffeeContext;
   const p = await webotsArmPorts(runtime, { project: coffeeProject() as unknown as LabProjectV2, seed: 42 })(st, ctx, () => 'boot-1', directory);

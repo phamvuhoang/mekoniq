@@ -11,6 +11,7 @@ import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/c
 import type { LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
 import { checkArmSweep, type SweepResult } from '../../packages/lab-runtime/src/v2/models/arm-collision';
 import { XARM6_SI } from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
+import { composePose, type Pose, type Quat, type Vec3 } from '../../packages/lab-runtime/src/v2/frames';
 import { declareArmScene, materializeArmScene } from '../../packages/lab-runtime/src/v2/models/arm-scene';
 import { buildArmCellScene, readXArmFixture, XARM_FIXTURE_ID } from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
 import { cellSupports, mujocoProgramSet } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports';
@@ -53,4 +54,38 @@ test('negative control: an AMR body as high as the arm base plane (robotHeightM 
   const p = await project(); p.armCollisionProfile!.robotHeightM = 0.7;
   const bad = sweep(p).filter((x) => !x.r.ok);
   expect(bad.length).toBeGreaterThan(0); expect(bad[0]!.r).toMatchObject({ reason: 'COLLISION', pair: ['link-1', 'robot:amr-1'] });
+});
+
+test('the gripper palm beside the TCP cannot pass through a tall AMR body', async () => {
+  const p = await project(); p.armCollisionProfile!.robotHeightM = 0.9; p.world.obstacles = [];
+  const scene = buildArmCellScene(p, fixture, 1, { armId: 'arm-1', propIds: ['cup-1'] });
+  const robot = { id: 'amr-1', radiusM: RADIUS, pose: { x: 3.4469705149024925, y: 1.1019705149024928, yawRad: 0 } };
+  const declared = materializeArmScene(declareArmScene(p, { 'amr-1': RADIUS }, ['amr-1'], XARM6_SI), [robot], 0);
+  expect(declared.available).toBe(true);
+  const set = mujocoProgramSet(fixture, loadOracleProfile().profile.mujocoArm!, scene.allowedContacts), pick = set.waypoints.pick!;
+  const result = checkArmSweep(XARM6_SI, pick, pick, { world: [...declared.world, ...cellSupports(fixture.layout)], ...set.collision! });
+  expect(result).toMatchObject({ ok: false, reason: 'COLLISION', pair: ['gripper', 'robot:amr-1'] });
+});
+
+test('the proxy encloses the fixture palm and both moving pads from open to closed', () => {
+  const geometry = mujocoProgramSet(fixture, loadOracleProfile().profile.mujocoArm!, []).collision!.geometry!;
+  const { joints } = JSON.parse(fixture.componentText) as { joints: { id: string; parent: string; child: string; kind: string; axis: Vec3; origin: { xyzM: Vec3; quaternionXyzw: Quat } }[] };
+  const identity: Pose = { position: [0, 0, 0], quaternionXyzw: [0, 0, 0, 1] };
+  function pose(link: string, drive: number): Pose {
+    if (link === 'link6') return identity;
+    const joint = joints.find(j => j.child === link)!;
+    const ratio = joint.id === fixture.physics.gripper.driveJoint ? 1 : fixture.physics.gripper.mimic.find(m => m.joint === joint.id)?.multiplier ?? 0;
+    const angle = drive * ratio / 2, rotation: Quat = [...joint.axis.map(v => v * Math.sin(angle)), Math.cos(angle)] as Quat;
+    return composePose(composePose(pose(joint.parent, drive), { position: joint.origin.xyzM, quaternionXyzw: joint.origin.quaternionXyzw }), { ...identity, quaternionXyzw: rotation });
+  }
+  // Transform the independently declared plant boxes through the component's revolute joints, rather than reconstructing them from the proxy.
+  for (let step = 0; step <= 100; step++) for (const box of [fixture.physics.palm, ...fixture.physics.pads]) {
+    const transform = pose(box.link, fixture.physics.gripper.closedRad * step / 100);
+    for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) {
+      const corner = composePose(transform, { ...identity, position: box.centerM.map((v, i) => v + [x, y, z][i]! * box.sizeM[i]! / 2) as Vec3 }).position;
+      const axisStart = XARM6_SI.toolM[2] - geometry.gripperBackM!, axisEnd = XARM6_SI.toolM[2] + geometry.gripperLengthM;
+      const distance = Math.hypot(corner[0], corner[1], Math.max(axisStart - corner[2], 0, corner[2] - axisEnd));
+      expect(distance, `${box.link} at gripper step ${step}`).toBeLessThanOrEqual(geometry.gripperRadiusM + 1e-12);
+    }
+  }
 });

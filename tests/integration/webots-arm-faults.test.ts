@@ -59,11 +59,11 @@ describe.skipIf(!armWebotsAvailable)('Webots arm faults (WA06)', () => {
   }, 300_000);
 
   test('SIGKILL of the worker in the middle of cup-pick: the outcome is unknown, nothing is resent, no process is left', async () => {
-    const gw = await armGateway(), { run } = await openArmRun(gw);
+    const gw = await armGateway(), { run, directory } = await openArmRun(gw);
     const r = await outcome(run, async (run) => {
       await run.start();
       await stepUntil(run, (v) => v.coffee?.jobs.some((j) => j.status === 'transferring') ?? false, 5, 60_000);
-      expect(killProcesses('webots_worker.*--run-id').length).toBeGreaterThan(0);
+      expect(killProcesses(directory, 'worker').length).toBeGreaterThan(0);
       return toEnd(run);
     });
     expect(r.stop).toMatchObject({ latched: true, reason: 'WORKER_LOST' });
@@ -72,11 +72,11 @@ describe.skipIf(!armWebotsAvailable)('Webots arm faults (WA06)', () => {
   }, 300_000);
 
   test('SIGKILL of Webots in the middle of cup-place: unknown, the cup is still the arm\'s, no process is left', async () => {
-    const gw = await armGateway(), { run } = await openArmRun(gw);
+    const gw = await armGateway(), { run, directory } = await openArmRun(gw);
     const r = await outcome(run, async (run) => {
       await run.start();
       await stepUntil(run, heldByArm, 5, 60_000);
-      expect(killProcesses('^[^ ]*/Contents/MacOS/webots ').length).toBe(1);
+      expect(killProcesses(directory, 'engine').length).toBe(1);
       return toEnd(run);
     });
     expect(r.stop?.latched).toBe(true); expect(['ENGINE_LOST', 'ENGINE_TIMEOUT', 'WORKER_LOST', 'WORKER_FAILED']).toContain(r.stop!.reason);

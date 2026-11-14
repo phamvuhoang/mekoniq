@@ -1,3 +1,4 @@
+import { OwnedProcesses } from '../support/owned-processes';
 // M06 / MA04 on the real MuJoCo 3.17.0 (.venv-mujoco): cup-pick and cup-place run through mujocoArmPorts on the xArm coffee cell; the cup is gripped, lifted and released by contact.
 // Skipped, with the reason, where .venv-mujoco is missing (not_run, never a pass).
 import { afterEach, describe, expect, test } from 'vitest';
@@ -22,16 +23,17 @@ import type { MujocoRuntimeOptions } from '../../packages/lab-runtime/src/v2/sim
 
 const python = resolve('.venv-mujoco/bin/python'), workerRoot = resolve('robotics/simulation-mujoco'), FX = join(workerRoot, 'fixtures', XARM_FIXTURE_ID);
 const mujocoReady = existsSync(python) && (() => { try { return execFileSync(python, ['-I', '-B', '-c', 'import mujoco;print(mujoco.__version__)'], { encoding: 'utf8', timeout: 30_000 }).trim() === '3.17.0'; } catch { return false; } })();
-const running = () => { try { return execFileSync('pgrep', ['-f', 'mujoco_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
+const ownedProcesses = new OwnedProcesses();
+const running = () => ownedProcesses.processes().map(p => String(p.pid));
 const dirs: string[] = [], open: CoffeePlantPorts[] = [];
-afterEach(async () => { for (const p of open.splice(0)) await p.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+afterEach(async () => { ownedProcesses.capture(); for (const p of open.splice(0)) await p.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
 const command = (id: string, program: 'cup-pick' | 'cup-place'): CellCommand => ({ runId: 'run-a', commandId: id, deviceId: 'arm-1', controlEpoch: 1, expiresAt: '2026-11-06T00:00:00Z', recipeRevision: 1,
   programRef: { id: program, hash: 'a'.repeat(64) }, payloadHash: 'a'.repeat(64), capability: 'start_job', payload: { jobId: 'j' } });
 const state = (st: CoffeeState, id: string) => st.arm.programs.find((x) => x.commandId === id)?.state;
 
 async function ports() {
   const runtime: MujocoRuntimeOptions = { python, workerRoot, schemaDir: resolve('packages/contracts/schemas'), lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), engineVersion: '3.17.0', maxActiveRuns: 1 };
-  const directory = await mkdtemp(join(tmpdir(), 'mujoco-programs-')); dirs.push(directory);
+  const directory = await mkdtemp(join(tmpdir(), 'mujoco-programs-')); dirs.push(directory); ownedProcesses.addDirectory(directory);
   const st = { stationId: 'coffee-pickup', cellId: 'cell-1', armId: 'arm-1', registered: false, sessions: {}, workload: [{ cupId: 'cup-1' }], plant: MockCoffeePlant.initial('cell-1'), arm: MockArmPlant.initial('arm-1'), trays: {} } as unknown as CoffeeState;
   const ctx = { runId: 'run-a', nowMs: () => Date.parse('2026-11-05T00:00:00Z'), tick: () => 0, receiver: () => ({ robotId: 'amr-1', slot: 1 }) } as unknown as CoffeeContext;
   const project = JSON.parse(await readFile(join(FX, 'coffee-cell-project.json'), 'utf8')) as LabProjectV2;

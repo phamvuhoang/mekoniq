@@ -3,6 +3,9 @@
 // Worker double (skips without .venv-mujoco): a lost worker's stop names why.
 import { afterEach, describe, expect, test } from 'vitest';
 import { join, resolve } from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { mkdir } from 'node:fs/promises';
+import { createScenarioRun, type ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
 import { collectReadiness } from '../../packages/lab-runtime/src/v2/readiness';
 import { defaultCatalog } from '../../packages/lab-runtime/src/v2/capabilities';
 import { XARM6_SI } from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
@@ -19,6 +22,40 @@ const rows = (r: { checks: { id: string; status: string; reasonCodes: string[] }
 const PLACEHOLDER = (id: string) => [id, 'unknown', ['IRSIM_PROVIDER_UNAVAILABLE']];
 
 describe('readiness of the arm plant sets (no engine)', () => {
+  for (const cause of ['expiry', 'eviction'] as const) for (const method of ['GET', 'POST'] as const)
+    test(`${method} readiness releases the expired owner slot after ${cause}, including concurrent probes`, async () => {
+      let now = 1_000_000, active = 0, closed = 0;
+      const key = 'r'.repeat(40), context = { scenarioId: 'MJ-BV01', backendSetId: 'engineering-mujoco-arm-v1' };
+      const g = await startLabGateway({ port: 0, directory: await mujocoTemp('mj-expired-'), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), accessKey: key, nowMs: () => now,
+        v2: { catalog: installed('mujoco_arm'), enabledBackends: ['mock_amr', 'mock_coffee', 'mujoco_arm'],
+          simulationFactory: async (_input, providers) => {
+            await mkdir(providers.directory, { recursive: true }); active++; const id = randomUUID();
+            return { id, snapshot: async () => ({ run: { id, status: 'ready', runRevision: 0 }, tick: 0 }), close: async () => { await new Promise(r => setTimeout(r, 30)); active--; closed++; } } as unknown as ScenarioRun;
+          },
+          portableChecks: async () => ['model', 'clock', 'fixture', 'profile', 'runner'].map(id => ({ id, status: id === 'runner' && active ? 'blocked' as const : 'ready' as const, reasonCodes: id === 'runner' && active ? ['MUJOCO_CAPACITY'] : [], evidenceRef: 'capacity-double' })) } });
+      gateways.push(g);
+      const pair = async () => { const r = await fetch(g.url + '/lab/v2/sessions', { method: 'POST', headers: { origin: 'http://127.0.0.1:4175', 'content-type': 'application/json' }, body: JSON.stringify({ token: key }) }); expect(r.status).toBe(201); return (await r.json()).sessionToken as string; };
+      let token = await pair();
+      const call = async (path: string, method: string, body?: unknown) => { const r = await fetch(g.url + '/lab/v2' + path, { method, headers: { origin: 'http://127.0.0.1:4175', authorization: `Bearer ${token}`, 'content-type': 'application/json' }, ...body ? { body: JSON.stringify(body) } : {} }); return { status: r.status, body: await r.json() }; };
+      const create = () => call('/runs', 'POST', { ...context, project: xarmProject(), scenarioRevision: 1, seed: 42, mode: 'simulation', access: 'simulated', runtimeIdentity: { sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64) } });
+      const readiness = () => call(method === 'GET' ? `/readiness?${new URLSearchParams(context)}` : '/readiness', method, method === 'POST' ? { ...context, project: xarmProject() } : undefined);
+      expect((await create()).status).toBe(201);
+      expect((await readiness()).body.canStart).toBe(false); expect(closed).toBe(0); // live owners keep their slot
+      if (cause === 'expiry') { now += 3_600_001; token = await pair(); }
+      else for (let i = 0; i < 10; i++) token = await pair();
+      for (const r of await Promise.all([readiness(), readiness()])) {
+        expect(r.status).toBe(200);
+        expect(r.body.checks.find((c: { id: string }) => c.id === 'runner')).toMatchObject({ status: 'ready', reasonCodes: [] });
+        if (method === 'POST') expect(r.body.canStart).toBe(true);
+      }
+      expect(active).toBe(0); expect(closed).toBe(1);
+      expect((await create()).status).toBe(201); expect(active).toBe(1);
+    });
+  test('a MuJoCo arm-drop schedule is refused before the plant starts', async () => {
+    const project = xarmProject(); project.faultSchedule = [{ id: 'unsupported-drop', faultId: 'arm-drop', targetId: 'arm-1', trigger: { kind: 'phase', value: 'grasp' }, durationMs: 1000 }];
+    await expect(createScenarioRun({ project, scenarioId: 'MJ-BV01', scenarioRevision: 1, seed: 42, mode: 'simulation', access: 'simulated', backendSetId: 'engineering-mujoco-arm-v1', sourceCommit: 'test-commit' },
+      { directory: await mujocoTemp('mj-drop-'), catalog: installed('mujoco_arm'), enabledBackends: ['mock_amr', 'mock_coffee', 'mujoco_arm'], coffeePorts: async () => { throw new Error('PLANT_MUST_NOT_START'); } })).rejects.toThrow('FAULT_BACKEND_UNSUPPORTED');
+  });
   test('a MuJoCo capacity refusal is a 409 conflict and a failed create a 503 with its cause as the reason code (no leading space); the Webots codes keep their status', async () => {
     let thrown = '';
     const g = await startLabGateway({ port: 0, directory: await mujocoTemp('mj-status-'), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), v2: { catalog: installed('mujoco_arm'), enabledBackends: ['mock_amr', 'mock_coffee', 'mujoco_arm'], simulationFactory: async () => { throw new Error(thrown); },
@@ -63,6 +100,12 @@ describe.skipIf(!mujocoReady)('MJ-BV01 over HTTP on the real engine', () => {
     const url = `/runs/${created.body.run.id}`; let rev = created.body.run.runRevision as number, n = 0;
     const act = async (kind: string, payload: Record<string, unknown>) => { const r = await post(`${url}/actions`, { actionId: `a-${++n}`, expectedRevision: rev, kind, payload }); expect(r.status, JSON.stringify(r.body).slice(0, 300)).toBe(200); rev = r.body.run.runRevision; return r.body; };
     let view = await act('start', {});
+    const beforeFault = await (await fetch(g.url + '/lab/v2' + url + '/report', { headers: { cookie: h.cookie } })).json() as RunReport;
+    const refused = await post(`${url}/actions`, { actionId: 'unsupported-drop', expectedRevision: rev, kind: 'injectFault', payload: { faultId: 'arm-drop', entityId: 'arm-1' } });
+    expect(refused).toMatchObject({ status: 422, body: { error: 'INVALID_FAULT' } });
+    const afterFault = await (await fetch(g.url + '/lab/v2' + url + '/report', { headers: { cookie: h.cookie } })).json() as RunReport;
+    expect(afterFault.faults).toEqual(beforeFault.faults);
+    expect((await (await fetch(g.url + '/lab/v2' + url, { headers: { cookie: h.cookie } })).json()).run.runRevision).toBe(rev);
     while (['running', 'ready', 'paused'].includes(view.run.status)) { if (view.tick > 6000) throw new Error(`STEP_LIMIT at ${view.tick}`); view = await act('step', { ticks: 100 }); }
     const report = await (await fetch(g.url + '/lab/v2' + url + '/report', { headers: { cookie: h.cookie } })).json() as RunReport;
     console.log('MJ-BV01 http', JSON.stringify({ tick: view.tick, status: view.run.status, coverage: report.coverage, scene: report.arm?.collision.coverage, robotAsset: report.manifest.assets.find((a) => a.id === 'service-robot-asset')}));

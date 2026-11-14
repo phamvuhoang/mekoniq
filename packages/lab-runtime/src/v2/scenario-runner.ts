@@ -91,7 +91,7 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  if(scenario.coffee&&!(backends.backends.includes('mock_coffee')&&(backends.backends.includes('mock_arm')||backends.backends.includes('webots_arm')||backends.backends.includes(MUJOCO_ARM.id))))throw new Error('SCENARIO_BACKEND_MISSING');
  if(!Number.isSafeInteger(input.seed)||input.seed<0||input.seed>0xffffffff)throw new Error('INVALID_SEED');
  const roles=resolveRoles(scenario,project),catalog=[...(providers.assets??[]),...serverAssets],radius:Record<string,number|null>={},trays:Record<string,number>={};
- const faultSchedule=validateFaultSchedule(project.faultSchedule??[],activeFaultEntities(project,roles),'mock');
+ const faultSchedule=validateFaultSchedule(project.faultSchedule??[],activeFaultEntities(project,roles),'mock',runSet?.providers?.arm);
  const assets=project.entities.map(e=>{
   const supplied=catalog.find(a=>a.contentHash===e.assetRef.contentHash);
   if(supplied&&(!verifyAssetHash(supplied)||supplied.id!==e.assetRef.id||supplied.revision!==e.assetRef.revision))throw new Error('ASSET_HASH_MISMATCH');
@@ -398,7 +398,7 @@ class Run implements ScenarioRun {
   if(a.kind==='reconcile'&&status!=='needs_attention')throw new Error('INVALID_STATE');
   if(a.kind==='cancel'&&(c.cancelled||['completed','cancelled'].includes(status)))throw new Error('INVALID_STATE');
   const cellFault=COFFEE_FAULTS.includes(String(p.faultId))?c.coffee?.cellId:ARM_FAULTS.includes(String(p.faultId))?c.coffee?.armId:null;
-  if(a.kind==='injectFault'){try{validateFaultTarget(String(p.faultId),String(p.entityId??cellFault??c.roles.robots[0]!.id),activeFaultEntities(this.project,c.roles),'mock');}catch{throw new Error('INVALID_FAULT');}}
+  if(a.kind==='injectFault'){try{validateFaultTarget(String(p.faultId),String(p.entityId??cellFault??c.roles.robots[0]!.id),activeFaultEntities(this.project,c.roles),'mock',c.coffee?.arm.plantId);}catch{throw new Error('INVALID_FAULT');}}
   const pending=a.kind==='confirm'?Object.entries(c.confirmations).find(([k,x])=>x.due===null&&k.endsWith(`/${String(p.subjectId)}`)):undefined;
   if(a.kind==='confirm'&&!pending)throw new Error('CONFIRMATION_NOT_PENDING');
   if(pending&&pending[1].type!==p.confirmationType)throw new Error('CONFIRMATION_TYPE_MISMATCH');

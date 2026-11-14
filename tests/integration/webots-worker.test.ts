@@ -1,3 +1,4 @@
+import { OwnedProcesses } from '../support/owned-processes';
 // W06 on the real Webots R2025a: the plant worker through the TypeScript client. Skipped, with the reason, where Webots or the .venv-webots interpreter is missing.
 import { afterEach, describe, expect, test } from 'vitest';
 import { execFileSync } from 'node:child_process';
@@ -19,13 +20,14 @@ const webotsReady = existsSync(exe) && existsSync(python) && (() => { try { retu
 
 const dirs: string[] = [];
 const opened: { close(r: string): Promise<void> }[] = [];
-afterEach(async () => { for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+afterEach(async () => { ownedProcesses.capture(); for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
 // anchored at the start of the command line: only the Webots executable and the controller scripts started with the interpreter, never a shell that merely mentions them
-const running = () => { try { return execFileSync('pgrep', ['-f', '^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller)\\.py'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
+const ownedProcesses = new OwnedProcesses();
+const running = () => ownedProcesses.processes().map(p => String(p.pid));
 
 /** The single-robot scene as a bundle: the scene lists its physical model with the sha the worker checks. */
 async function bundle() {
-  const root = await mkdtemp(join(tmpdir(), 'webots-w-')); dirs.push(root);
+  const root = await mkdtemp(join(tmpdir(), 'webots-w-')); dirs.push(root); ownedProcesses.addDirectory(root);
   const scene = JSON.parse(await readFile(join(FX, 'navigation-scene.json'), 'utf8')) as NavigationSceneV1;
   const model = await readFile(join(FX, 'physical-model-amr-1.json'));
   await mkdir(join(root, 'bundle', 'physical-model'), { recursive: true });
@@ -111,10 +113,9 @@ describe.skipIf(!webotsReady)('Webots plant worker', () => {
     const t = await start();
     await t.create();
     await t.step(0, 0.1);
-    const pids = execFileSync('pgrep', ['-f', `Webots.app/Contents/MacOS/webots.*${t.root.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
-    expect(pids.length).toBe(1);
     const started = Date.now();
-    process.kill(Number(pids[0]), 'SIGKILL');
+    const targets = ownedProcesses.kill(t.root, /\/Contents\/MacOS\/webots(?: |$)/);
+    expect(targets).toHaveLength(1);
     const answer = await t.ask('step', { targetTick: 2, velocities: [{ robotId: 'amr-1', vMps: 0.1, omegaRadps: 0 }], actorUpdates: [] }, 1).catch((e: unknown) => e);
     expect(Date.now() - started).toBeLessThanOrEqual(5000);
     // the worker notices first and answers once with the engine fault, or the client loses the worker: either way the step is not an applied tick and nothing resends it

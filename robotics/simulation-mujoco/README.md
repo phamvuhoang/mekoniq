@@ -26,6 +26,9 @@ The plant of the `mujoco_arm` provider (R2a): UFACTORY xArm 6 + Gripper G2, a no
   cannot touch arm links; the rule is stated for any model). A MuJoCo bad-state warning (`BADQPOS`/`BADQVEL`/`BADQACC`, after which MuJoCo resets the
   state) is `PLANT_UNSTABLE`.
 - `physics.capsuleRadiusM`/`capsuleSegmentsM` are not used here: they are the TS capsule sweep's (ARM03), not the engine's collision.
+  ARM03 also uses a conservative gripper capsule extending behind the TCP to the palm's back face, with the palm's xy half-diagonal as its radius.
+  For the pinned fixture it encloses the palm and both pads from open to closed; the geometry remains assumed.
+- `arm-drop` is unsupported on this contact plant: both scheduled and immediate injections are refused before being recorded. Cup-loss tests use physical contact faults.
 
 Friction: MuJoCo combines two geoms of equal `priority` by taking the larger of each coefficient; a geom with a higher `priority` imposes its own. Pads have
 `priority 1`, so cup–pad contact uses the pad: `world3d.padFriction` (torsional and rolling from `physics.contact.padFriction`). Every other cup contact is
@@ -33,8 +36,9 @@ max(cup, other): the cup has `world3d.propFriction`, the stand, the tray, the fl
 these from `physics.contact.propFriction`). So cup–stand and cup–tray are governed by `max(propFriction, supportFriction)`: with the spike's 0.6 and 1.0 that is 1.0,
 the value the spike had in effect (its stand and tray carried MuJoCo's default 1.0).
 
-In the Lab, `pnpm lab:mujoco` (`lab/`) starts the pinned runtime with this worker (provider `mujoco_arm`, scenario `MJ-BV01`); the container image is `deploy/lab-runtime/`. Latest record:
-`docs/implementation/evidence/sim-extension/r2a-candidate-01/` (every gate `tested` except `G-CLOUD1`, `blocked_external`; not accepted).
+In the Lab, `pnpm lab:mujoco` (`lab/`) starts the pinned runtime with this worker (provider `mujoco_arm`, scenario `MJ-BV01`); the container image is `deploy/lab-runtime/`.
+The [implementation evidence index](../../docs/implementation/README.md) names the current qualification records and their gate and acceptance status. Keep candidate-specific updates in that index:
+this README belongs to the pinned portable tool closure, so editing it after a recording would invalidate the Lab's pin.
 
 The B02a mobile worker path takes `create.payload={sceneRef:'navigation-scene.json',seed:7}`; robot identity comes from the scene, with no new create-envelope fields.
 `compile_mobile.py` builds canonical primitive colliders, every link's mass/COM/full inertia, two wheel hinges, a free chassis and free payload cylinders.
@@ -50,7 +54,7 @@ contacts remain active. Chassis roll/pitch are unconstrained. Caster-floor frict
 
 `fixtures/serve-payload-v1/drive-contact-profile.json` freezes numerical inputs before measurement; its result is recorded separately, preventing a hash cycle.
 See `docs/research/2026-11-mujoco-mobility-spike.md` and `probe_mobile.py` for the bounded probe, raw records and observed slip/odometry differences. These are
-uncalibrated software measurements. Provider/runtime readiness, shared engine capacity and campaign evidence are subsequent slices; no mobile backend is advertised here.
+uncalibrated software measurements. B02a originally stopped at the Python worker boundary. The integrated Source mobile provider below now supplies runtime readiness and shared arm/mobile engine capacity; campaign and durable payload evidence remain subsequent work.
 
 ```sh
 node scripts/bootstrap-portable-simulation.mjs mujoco

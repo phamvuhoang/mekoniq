@@ -102,7 +102,7 @@ describe.skipIf(!mujocoReady)('MuJoCo arm faults (MA06)', () => {
     const r = await outcome(run, directory, async (run) => {
       await run.start();
       await stepUntil(run, (v) => v.coffee?.jobs.some((j) => j.status === 'transferring') ?? false, 5, 60_000);
-      expect(killMujocoWorkers().length).toBe(1);
+      expect(killMujocoWorkers(directory).length).toBe(1);
       return toEnd(run);
     });
     console.log('MA06 kill', JSON.stringify({ tick: r.view.tick, stopTick: firstStop(r), stop: r.stop, cups: r.cups, reasons: r.reasons, programs: r.arm.programs.map((p) => p.state) }));

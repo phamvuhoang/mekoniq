@@ -13,7 +13,7 @@ afterEach(async()=>{for(const d of dirs.splice(0))await rm(d,{recursive:true,for
 async function directory(){const d=await mkdtemp(join(tmpdir(),'sil-review-'));dirs.push(d);return d;}
 test('compiled handoff pose, yaw and map identity reach the production adapter unchanged',async()=>{
  const out=await directory(),bundle=join(out,'bundle'),fixture=resolve('tests/fixtures/digital-twin/restaurant-v2.json');
- execFileSync(resolve('.venv/bin/python'),['-m','compiler','--fixture',fixture,'--out',bundle,'--map-id','review-map'],{cwd:resolve('robotics/simulation')});
+ execFileSync(resolve('.venv/bin/python'),['-B','-m','compiler','--fixture',fixture,'--out',bundle,'--map-id','review-map'],{cwd:resolve('robotics/simulation')});
  const world=await readCompiledWorld(bundle),project=JSON.parse(await readFile(fixture,'utf8')).project;
  const compiled=JSON.parse(await readFile(join(bundle,'bindings.json'),'utf8')),targets:JsonObject[]=[];
  const result=await runSilScenario({scenarioId:'FD01',scenarioRevision:1,seed:17,project,sourceCommit:'test',outDir:out,world,backendSetId:'simulation-default',maxIterations:6000,paceMs:0,
@@ -108,7 +108,7 @@ test('actual Python SceneLoop telemetry passes the canonical validator and gatew
  const {createTelemetryIngest}=await import('../../packages/lab-runtime/src/v2/backends/telemetry-ingest');
  const {TelemetryRecorder}=await import('../../packages/lab-runtime/src/v2/telemetry');
  const runId='3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c';
- const events=JSON.parse(execFileSync(resolve('.venv/bin/python'),['-c',`
+ const events=JSON.parse(execFileSync(resolve('.venv/bin/python'),['-B','-c',`
 import json,time
 from types import SimpleNamespace
 from bridge.scene_loop import SceneLoop

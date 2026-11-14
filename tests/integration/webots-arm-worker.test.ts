@@ -1,3 +1,4 @@
+import { OwnedProcesses } from '../support/owned-processes';
 // X04 (R1.1) on the real Webots R2025a: the plant worker steps an arm by joint targets through the TypeScript client. Skipped, with the reason, where Webots or .venv-webots is missing.
 import { afterEach, describe, expect, test } from 'vitest';
 import { execFileSync } from 'node:child_process';
@@ -18,9 +19,10 @@ const HOME = [0, -0.6, 1.2, 0, 0.6, 0];
 
 const dirs: string[] = [];
 const opened: { close(r: string): Promise<void> }[] = [];
-afterEach(async () => { for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+afterEach(async () => { ownedProcesses.capture(); for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
 // anchored at the start of the command line: only the Webots executable and the controller scripts started with the interpreter, never a shell that merely mentions them
-const running = () => { try { return execFileSync('pgrep', ['-f', '^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller|arm_controller)\\.py'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
+const ownedProcesses = new OwnedProcesses();
+const running = () => ownedProcesses.processes().map(p => String(p.pid));
 const webotsStateDirs = () => { try { return readdirSync('/tmp/webots/default').sort(); } catch { return []; } };
 
 type Component = { links: { id: string; massKg: { value: number } }[]; joints: { id: string; origin: { xyzM: number[]; quaternionXyzw: [number, number, number, number] }; axis: number[]; limits: { lower: { value: number }; upper: { value: number } } }[] };
@@ -30,7 +32,7 @@ const golden = JSON.parse(await readFile(join(FX, 'fk-golden.json'), 'utf8')) as
 
 /** An arm bundle: the sealed arm scene and the component whose digest it names. */
 async function bundle(statics: ArmScene3DV1['statics'] = []) {
-  const root = await mkdtemp(join(tmpdir(), 'webots-arm-w-')); dirs.push(root);
+  const root = await mkdtemp(join(tmpdir(), 'webots-arm-w-')); dirs.push(root); ownedProcesses.addDirectory(root);
   const scene = sealDocument({ schemaVersion: 1, sceneDigest: '', arm: { armId: 'arm-1', modelId: 'arm-ref-3d-v1', modelRevision: manifest.componentDigest, baseInMap: { position: [2, 1, 0.75], quaternionXyzw: [0, 0, 0, 1] }, homeRad: HOME },
     statics, world3d: { floorFriction: 0.8, provenance: 'assumed' }, engine: { id: 'webots_3d', basicTimeStepMs: 20 }, engineSeed: 7 } as ArmScene3DV1, 'sceneDigest');
   expect(validateArmScene3D(scene).ok).toBe(true);

@@ -50,7 +50,7 @@ const labDir=own.lab==='none'?null:own.lab?resolve(own.lab):existsSync(join(root
 const imageTag=`mekoniq-lab-runtime:record-${process.pid}`,imagePlatform=`linux/${arch()==='x64'?'amd64':arch()}`;
 /** How a suite of the table is run: the same for the plan and the recording. */
 const suiteRun=(s,cwd,abs,env={})=>s.kind==='vitest'?{cmd:process.execPath,args:[join(cwd,'node_modules/vitest/vitest.mjs'),'run',...s.files,'--reporter=json',`--outputFile=${abs}`,'--reporter=default'],env}
- :s.kind==='pytest'?{cmd:join(root,s.python),args:['-m','pytest',...s.files,'-q',`--junitxml=${abs}`],env}:{cmd:process.execPath,args:s.command.map(a=>a.endsWith('.mjs')?join(cwd,a):a),env};
+ :s.kind==='pytest'?{cmd:join(root,s.python),args:['-m','pytest','-p','no:cacheprovider',...s.files,'-q',`--junitxml=${abs}`],env}:{cmd:process.execPath,args:s.command.map(a=>a.endsWith('.mjs')?join(cwd,a):a),env};
 const PLANNED=own.skipSuites?[]:SUITES_RUN;
 const probes={docker:()=>spawnSync('docker',['info'],{stdio:'ignore',timeout:30_000}).status===0,exists:(p)=>existsSync(join(root,p)),platform:platform(),
  screenLocked:()=>screenLockedFromIoreg(spawnSync('ioreg',['-n','Root','-d1','-a'],{encoding:'utf8',timeout:10_000}).stdout)};

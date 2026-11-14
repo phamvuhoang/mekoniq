@@ -1,3 +1,4 @@
+import { OwnedProcesses } from '../support/owned-processes';
 // M06 step 4: the MuJoCo arm provider's registration, readiness, dispatch and health capability. The flag, interpreter, worker and lock are operator options. The provider rows run
 // the real worker (.venv-mujoco): a describe at boot and a create smoke on the project's cell scene. Skipped, with the reason, where .venv-mujoco is missing (not_run, never a pass).
 import { afterEach, describe, expect, test, vi } from 'vitest';
@@ -17,10 +18,11 @@ import { coffeeProject } from '../support/lab-v2';
 
 const otherVenv = resolve('.venv-webots/bin/python'), root = resolve('robotics/simulation-mujoco'), lockPath = join(root, 'requirements.lock'), python = resolve('.venv-mujoco/bin/python');
 const mujocoReady = existsSync(python) && (() => { try { return execFileSync(python, ['-I', '-B', '-c', 'import mujoco;print(mujoco.__version__)'], { encoding: 'utf8', timeout: 30_000 }).trim() === '3.17.0'; } catch { return false; } })();
-const running = () => { try { return execFileSync('pgrep', ['-f', 'mujoco_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
+const ownedProcesses = new OwnedProcesses();
+const running = () => ownedProcesses.processes().map(p => String(p.pid));
 const dirs: string[] = [], gateways: LabGateway[] = [];
 afterEach(async () => { releaseSlot(MUJOCO_SLOT, 'other-run'); for (const g of gateways.splice(0)) await g.close(); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
-const temp = async () => { const d = await mkdtemp(join(tmpdir(), 'mujoco-ready-')); dirs.push(d); return d; };
+const temp = async () => { const d = await mkdtemp(join(tmpdir(), 'mujoco-ready-')); dirs.push(d); ownedProcesses.addDirectory(d); return d; };
 const opts = async (over: Partial<Parameters<typeof mujocoFromOptions>[0]> = {}) => ({ enabled: true, python, workerRoot: root, lockPath, directory: await temp(), ...over });
 const base = async () => ({ enabled: false, python: 'python3', workerRoot: resolve('robotics/navigation-2d'), lockPath: resolve('robotics/navigation-2d/requirements.lock'), directory: await temp() });
 const arm = (c: { backends: readonly { id: string }[] }) => c.backends.find((b) => b.id === 'mujoco_arm') as unknown as { installed: boolean; reason?: string };

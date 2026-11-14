@@ -2,9 +2,8 @@
 // unknown / needs_attention with the exact reason, nothing served, nothing resent, no second engine, no process left behind.
 import { afterAll, afterEach, beforeAll, expect, test } from 'vitest';
 import { rm } from 'node:fs/promises';
-import { execFileSync } from 'node:child_process';
 import type { ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
-import { act, openWebotsRun, removeBundles, stepUntil, temp, webotsAvailable, webotsBundle, webotsDouble, webotsProcesses } from '../support/webots-mission';
+import { act, openWebotsRun, removeBundles, stepUntil, temp, webotsAvailable, webotsBundle, webotsDouble, webotsProcesses, webotsProcessScope } from '../support/webots-mission';
 
 let bundle: Awaited<ReturnType<typeof webotsBundle>>;
 const runs: ScenarioRun[] = [], dirs: string[] = [];
@@ -73,9 +72,7 @@ test.skipIf(!webotsAvailable)('WB05 killing Webots on the real plant mid-run: th
   const { run, dir } = await open();
   await run.start();
   await stepUntil(run, async (x) => x.tick >= 200, 50, 3000);
-  const pids = execFileSync('pgrep', ['-f', `Webots.app/Contents/MacOS/webots.*${dir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
-  expect(pids).toHaveLength(1);
-  process.kill(Number(pids[0]), 'SIGKILL');
+  expect(webotsProcessScope.kill(dir, /\/Contents\/MacOS\/webots(?: |$)/)).toHaveLength(1);
   let v = await run.snapshot();
   for (let i = 0; i < 10 && v.run.status === 'running'; i++) v = await act(run, 'step', { ticks: 5 });
   expect(v.run.status).toBe('needs_attention');
@@ -88,12 +85,10 @@ test.skipIf(!webotsAvailable)('WB05 killing Webots on the real plant mid-run: th
 }, 300_000);
 
 test.skipIf(!webotsAvailable)('WB05 killing the WORKER on the real plant mid-run: the leg is unknown, nothing is resent, and Webots plus its controllers go with it', async () => {
-  const { run } = await open();
+  const { run, dir } = await open();
   await run.start();
   await stepUntil(run, async (x) => x.tick >= 200, 50, 3000);
-  const workers = execFileSync('pgrep', ['-f', ' -m webots_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
-  expect(workers.length).toBeGreaterThanOrEqual(1); // the venv launcher and the interpreter it re-execs into may both match
-  for (const pid of workers) process.kill(Number(pid), 'SIGKILL'); // the worker only: the parent must reap the engine and the controllers it left behind
+  expect(webotsProcessScope.kill(dir, / -m webots_worker(?: |$)/)).toHaveLength(1); // worker only: its captured engine/controllers must also be reaped
   let v = await run.snapshot();
   for (let i = 0; i < 10 && v.run.status === 'running'; i++) v = await act(run, 'step', { ticks: 5 }).catch(() => run.snapshot());
   expect(v.run.status).toBe('needs_attention');

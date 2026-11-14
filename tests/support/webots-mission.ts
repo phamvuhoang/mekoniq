@@ -1,5 +1,6 @@
 // WB-FD01 / WB-FD07 through the real source domain on a compiled Webots bundle. The bundle comes from the engineering service (the TypeScript Webots compiler); the plant is
 // the real Webots R2025a, or a double in tests/support/webots_doubles. Nothing here sets the production provider installed.
+import {OwnedProcesses} from './owned-processes';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {existsSync,readFileSync} from 'node:fs';
@@ -20,9 +21,10 @@ export const WEBOTS_HOME=process.env.MEKONIQ_WEBOTS_HOME??'/Applications/Webots.
 const exe=join(WEBOTS_HOME,'Contents','MacOS','webots');
 export const webotsAvailable=existsSync(exe)&&existsSync(webotsPython)&&(()=>{try{return execFileSync(exe,['--version'],{encoding:'utf8',timeout:30_000}).includes('R2025a');}catch{return false;}})();
 export const webotsDouble=(name:string)=>resolve('tests/support/webots_doubles',name);
-export const temp=(p:string)=>mkdtemp(join(tmpdir(),p));
-/** Webots processes started by a run: anchored at the start of the command line, so a shell that merely mentions them never matches. */
-export const webotsProcesses=()=>{try{return execFileSync('pgrep',['-f','^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller)\\.py'],{encoding:'utf8'}).trim().split('\n').filter(Boolean);}catch{return [];}};
+export const temp=async(p:string)=>{const d=await mkdtemp(join(tmpdir(),p));webotsProcessScope.addDirectory(d);return d;};
+/** Owned workers, engine and all controller descendants, including reparented ones. */
+export const webotsProcessScope=new OwnedProcesses();
+export const webotsProcesses=()=>webotsProcessScope.processes().map(p=>String(p.pid));
 
 const bundleDirs:string[]=[];
 export const removeBundles=()=>Promise.all(bundleDirs.splice(0).map(d=>rm(d,{recursive:true,force:true})));
@@ -44,7 +46,7 @@ export async function webotsProviders(directory:string,service:EngineeringServic
  const runtime:WebotsRuntimeOptions={python:webotsPython,workerRoot:webotsRoot,schemaDir,lockDigest:await lockDigestOf(join(webotsRoot,'requirements.lock')),webotsHome:WEBOTS_HOME,executableSha256:over.entry?'a'.repeat(64):executableSha(),basicTimeStepMs:20,maxActiveRuns:1,...over};
  return {directory,catalog:webotsCatalog(),enabledBackends:['webots_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant:webotsPlant(runtime),runtime};
 }
-export async function openWebotsRun(directory:string,b:Awaited<ReturnType<typeof webotsBundle>>,over:Parameters<typeof webotsProviders>[2]={},seed=5,scenarioId='WB-FD01'){return createFixedStepScenarioRun(webotsInput(b.locked,seed,scenarioId),await webotsProviders(directory,b.service,over));}
+export async function openWebotsRun(directory:string,b:Awaited<ReturnType<typeof webotsBundle>>,over:Parameters<typeof webotsProviders>[2]={},seed=5,scenarioId='WB-FD01'){webotsProcessScope.addDirectory(directory);return webotsProcessScope.observeRun(await createFixedStepScenarioRun(webotsInput(b.locked,seed,scenarioId),await webotsProviders(directory,b.service,over)));}
 let n=0;
 export async function act(run:ScenarioRun,kind:string,payload:Record<string,unknown>={}){const v=await run.snapshot();return run.action({actionId:`webots-${++n}`,expectedRevision:v.run.runRevision,kind,payload});}
 /** Step until the run leaves running/awaiting_confirmation or reaches `limit` ticks. A step that advances neither tick nor status is a stall and fails at once. */

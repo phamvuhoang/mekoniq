@@ -42,9 +42,12 @@ const errorDetail=(e:unknown)=>{const name=e instanceof Error?e.name.slice(0,64)
  * pick grasp frame) and the scene's allowed contacts as sweep pairs. No IK at run time. */
 export function mujocoProgramSet(fixture:Pick<XArmFixture,'programs'|'physics'|'layout'>,oracle:{gripSettleTicks:number;dropTicks:number;liftMinM:number},allowed:Readonly<ArmCellSceneV1['allowedContacts']>):ArmProgramSet{
  const {physics,layout}=fixture,axis=qrotate(qconj(layout.grasp.pick.quaternionXyzw),[0,0,1]);
+ // The palm starts behind the TCP: enclose its box with the xy half-diagonal radius and an axis beginning at its back face.
+ // For the pinned xarm6-g2-v1, this also encloses both pads from open to closed; keep the 25 mm forward reach beyond the TCP.
+ // This is a conservative, assumed proxy of the plant's collision shapes, not measured gripper geometry.
  return {...structuredClone(fixture.programs),
   contact:{openM:physics.gripper.openingMaxM,closedM:0,gripSettleTicks:oracle.gripSettleTicks,dropTicks:oracle.dropTicks,liftMinM:oracle.liftMinM,releaseTimeoutTicks:MUJOCO_ARM_RELEASE_TIMEOUT_TICKS},
-  collision:{geometry:{...DEFAULT_ARM_GEOMETRY,provenance:'assumed',linkRadiiM:[...physics.capsuleRadiusM],cupRadiusM:layout.cup.radiusM,cupHeightM:layout.cup.heightM,cupAxisInTool:[axis[0]!,axis[1]!,axis[2]!]},
+  collision:{geometry:{...DEFAULT_ARM_GEOMETRY,provenance:'assumed',linkRadiiM:[...physics.capsuleRadiusM],gripperBackM:XARM6_SI.toolM[2]-physics.palm.centerM[2]+physics.palm.sizeM[2]/2,gripperRadiusM:Math.hypot(physics.palm.sizeM[0]/2,physics.palm.sizeM[1]/2),cupRadiusM:layout.cup.radiusM,cupHeightM:layout.cup.heightM,cupAxisInTool:[axis[0]!,axis[1]!,axis[2]!]},
    allowedPairs:allowed.map(c=>[c.a==='held_prop'?'held-cup':c.a,c.b] as const)}};
 }
 /** The cell's two supports as ARM03 obstacles (arm base frame, the layout's boxes, ids as in the scene): the gripper and the held cup may touch them through the allowed pairs, nothing else may. */

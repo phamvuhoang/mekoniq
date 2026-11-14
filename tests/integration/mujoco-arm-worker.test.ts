@@ -1,3 +1,4 @@
+import { OwnedProcesses } from '../support/owned-processes';
 // M04 on the real MuJoCo 3.17.0 (.venv-mujoco): the arm cell worker through the TypeScript client. Skipped, with the reason, where .venv-mujoco is missing (not_run, never a pass).
 import { afterEach, describe, expect, test } from 'vitest';
 import { execFileSync } from 'node:child_process';
@@ -15,16 +16,17 @@ import type { LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
 
 const python = resolve('.venv-mujoco/bin/python'), workerRoot = resolve('robotics/simulation-mujoco'), XARM6_FX = join(workerRoot, 'fixtures', XARM_FIXTURE_ID);
 const mujocoReady = existsSync(python) && (() => { try { return execFileSync(python, ['-I', '-B', '-c', 'import mujoco;print(mujoco.__version__)'], { encoding: 'utf8', timeout: 30_000 }).trim() === '3.17.0'; } catch { return false; } })();
-const running = () => { try { return execFileSync('pgrep', ['-f', 'mujoco_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
+const ownedProcesses = new OwnedProcesses();
+const running = () => ownedProcesses.processes().map(p => String(p.pid));
 
 type Component = { links: { id: string; massKg: { value: number } }[]; joints: { id: string; kind: string; origin: { quaternionXyzw: [number, number, number, number] }; axis: number[]; limits: { lower: { value: number }; upper: { value: number }; effort: { value: number } } }[] };
 const component = JSON.parse(await readFile(join(XARM6_FX, 'component.json'), 'utf8')) as Component;
 const dirs: string[] = [];
 const opened: { close(r: string): Promise<void> }[] = [];
-afterEach(async () => { for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+afterEach(async () => { ownedProcesses.capture(); for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
 
 async function start() {
-  const root = await mkdtemp(join(tmpdir(), 'mujoco-arm-w-')); dirs.push(root);
+  const root = await mkdtemp(join(tmpdir(), 'mujoco-arm-w-')); dirs.push(root); ownedProcesses.addDirectory(root);
   const fixture = readXArmFixture(workerRoot), project = JSON.parse(await readFile(join(XARM6_FX, 'coffee-cell-project.json'), 'utf8')) as LabProjectV2;
   const scene = buildArmCellScene(project, fixture, 7, { armId: 'xarm-1', propIds: ['cup-1'] }); // the xArm coffee cell project: base at (2.65, 0.65, 0.7), the counter as a static
   await writeArmCellBundle(join(root, 'bundle'), scene, fixture);
