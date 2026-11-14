@@ -118,10 +118,11 @@ export class LabApp {
       );
     }
     this.render();
-    if (loopbackPage(location.hostname))
+    if (!location.hash.startsWith("#replay") && loopbackPage(location.hostname))
       void this.checkHealth();
   }
   private async checkHealth() {
+    if(location.hash.startsWith("#replay"))return;
     try {
       this.health = await runtime.getHealth();
       this.backendCompatible = Boolean(

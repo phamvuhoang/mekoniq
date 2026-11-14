@@ -44,7 +44,7 @@ test('truncated replay retains an independently stored first failure and marks m
  expect(c.evidence?.worlds.blocked).toEqual(collision.evidence!.firstFailure!.world);
  expect(c.checks).toBeNull();expect(c.evidence?.droppedIntervals).toBeNull();expect(c.evidence?.projection).toMatchObject({lastCheckTick:20,historyComplete:false,reason:'SOURCE_TRACE_TRUNCATED'});
  expect(r.coverage.armCollisionTraceComplete).toBe(false);expect(project(100).coffee!.armTrace.collision?.evidence?.droppedIntervals).toBe(90);
- expect(armRows(r,20).find(row=>row.key==='arm-trace')?.observed).toContain('incomplete');
+ expect(armRows(r,20).find(row=>row.key==='arm-trace')?.observed).toMatch(/incomplete|lịch sử lưu không đầy đủ|保存履歴が不完全/);
 });
 test('retained interval scene uses the immutable declaration and referenced historical geometry only',()=>{
  const {report,project}=fixture(),p=validateProjectV2(coffeeFixture.project);

@@ -1,5 +1,7 @@
 import {afterEach,expect,test,vi} from 'vitest';
 import {createServer,type IncomingMessage,type ServerResponse} from 'node:http';
+import {createHash} from 'node:crypto';
+import {gzipSync} from 'node:zlib';
 import type {AddressInfo} from 'node:net';
 import {httpTwinRuntime,TwinRuntimeError,type RunView,type TwinRuntime} from '../../src/scenarios/controls';
 import {openRunStreams,type LinkState} from '../../src/runtime/stream';
@@ -463,4 +465,11 @@ test('item 6: Assembly asks again on a new connection and on Compile; not reache
  up=true;calls.length=0;a.click('asm-compile');await vi.waitFor(()=>expect(calls).toEqual(['health','compile']));
  // another connection: the last answer no longer applies
  await vi.waitFor(()=>expect(a.busy).toBe(false));paired=false;a.html();expect(a.canCompile).toBeNull();
+});
+
+test('an export completing after retarget keeps the original run/auth/version through real reader IO and idempotent release',async()=>{
+ const local=memory(),session=memory(),oldBase='https://old.example/lab/v2',newBase='https://new.example/lab/v2';vi.stubGlobal('localStorage',local);vi.stubGlobal('sessionStorage',session);session.m.set('mekoniq-lab-session:'+oldBase,'original-owner');session.m.set('mekoniq-lab-session:'+newBase,'new-owner');
+ const plain=Buffer.from(JSON.stringify({manifest:{runId:'run-one'},outcome:{tick:7}})),bytes=gzipSync(plain),sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex'),manifest={schemaVersion:1,documentType:'web-replay-package',runId:'run-one',horizon:{tick:7,tickMs:20},provenance:{kind:'imported_integrity_only',accepted:false,calibration:'not_calibrated',scope:'display_only_not_requalification',reportTransform:'credential_redaction_v1',rawReportSha256:sha(plain)},coverage:{prefixCovered:false,streamFinalized:false,sampled:false,terminal:null,gaps:[],issues:['NO_STREAM']},assets:[{path:'report.json.gz',sha256:sha(bytes),decodedSha256:sha(plain),bytes:bytes.length,decodedBytes:plain.length,encoding:'gzip',role:'report',mediaType:'application/json'}],streams:[],licensing:[]};
+ let complete!:(r:Response)=>void;const calls:{url:string;init:RequestInit}[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string,init:RequestInit)=>{calls.push({url,init});if(url.endsWith('/replay'))return new Promise<Response>(r=>{complete=r;});if(url.endsWith('/assets/0'))return new Response(bytes);return new Response('{}',{status:200});}));
+ const rt=httpTwinRuntime({base:oldBase,kind:'remote'}),pending=rt.exportReplay!('run-one',new AbortController().signal);rt.retarget!({base:newBase,kind:'remote'});complete(new Response(JSON.stringify({exportId:'owned-version',manifest}),{status:200}));const capture=await pending;expect(capture.reader.manifest.runId).toBe('run-one');expect(Buffer.from(await capture.reader.readStoredAsset('report.json.gz'))).toEqual(bytes);capture.reader.close();await capture.release();await capture.release();const originalCalls=[...calls];expect(originalCalls.length).toBe(4);for(const c of originalCalls){expect(c.url).toMatch(/^https:\/\/old.example\/lab\/v2\/runs\/run-one\/replay/);expect(new Headers(c.init.headers).get('Authorization')).toBe('Bearer original-owner');expect(c.init.credentials).toBe('omit');}expect(originalCalls.filter(c=>c.init.method==='DELETE').map(c=>c.url)).toEqual([oldBase+'/runs/run-one/replay/owned-version']);await rt.health();expect(calls.at(-1)!.url).toBe(newBase+'/health');expect(new Headers(calls.at(-1)!.init.headers).get('Authorization')).toBe('Bearer new-owner');
 });

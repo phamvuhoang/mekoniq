@@ -1,3 +1,4 @@
+import {mapExtent,worldEntities,type WorldDrawing} from './world-view';
 import {payloadState,payloadMatches,type PayloadBundle,type PayloadState} from './payload';
 // renderTwin(snapshot, viewState): a read-only 2D plan of one run (or of the preset before a run). It draws what the runtime reported;
 // it never moves anything, decides arrival or authorises an action. The 3D view (viewer/twin3d) consumes the same frame and view state.
@@ -14,12 +15,12 @@ import type {NavigationSceneV1} from '../shared/navigation2d';
 import {footprintInMap,scanLayer,type ScanSample} from './lidar';
 import {layerProvenance} from './overlays';
 import {plantCupPose} from './arm/arm-telemetry';
-export interface TwinFrame {preset:TwinPreset;view:RunView|null;report:RunReport|null;seen?:Record<string,number>;/** latest telemetry per entity from the browser store (plan 03: arm joints) */samples?:Record<string,Held>;nowMs?:number;
+export interface TwinFrame {world?:WorldDrawing;extent?:{minM:number[];maxM:number[]};preset:TwinPreset;view:RunView|null;report:RunReport|null;seen?:Record<string,number>;/** latest telemetry per entity from the browser store (plan 03: arm joints) */samples?:Record<string,Held>;nowMs?:number;
  /** IR-SIM 2D runs: the run bundle's compiled navigation scene (footprints, sensors, obstacles) and, for imported evidence only, scans with their own-tick poses. */
  payloadBundle?:PayloadBundle|null;navigation?:NavigationSceneV1|null;scans?:{scans:ScanSample[]};
  /** Replay: entities with recorded samples but none drawn at the cursor (before their first one, or in a recorded gap); drawn as without telemetry. */unrecorded?:string[]}
 export interface ViewState {view:'2d'|'3d';layers:Layers;selected:string|null}
-export interface SceneEntity {id:string;kind:string;name:string;x:number;y:number;/** AMR only, from a 3D plant: base height, roll and pitch */pose3d?:{z:number;rollRad:number;pitchRad:number};yawRad?:number;source:'observed'|'modeled'|'derived'|'unknown';status?:string;
+export interface SceneEntity {cupGeometry?:{radiusM:number;heightM:number};id:string;kind:string;name:string;x:number;y:number;/** AMR only, from a 3D plant: base height, roll and pitch */pose3d?:{z:number;rollRad:number;pitchRad:number};yawRad?:number;source:'observed'|'modeled'|'derived'|'unknown';status?:string;
  /** Cup only: its pose in the map as the MuJoCo plant reports it (drawn there instead of at its custodian) */payload?:PayloadState;plant?:{positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}}
 /** Plant cup samples older than the plant's newest sample by more than this (sim time) have stopped: the cup left the cell and is drawn by custody again. */
 const PLANT_CUP_STOPPED_NS=1e9;
@@ -48,6 +49,8 @@ export function observedSegments(f:TwinFrame,entityId:string):[number,number][][
 }
 /** Everything selectable, with where it is drawn. Shared by the 2D plan, the 3D view and the entity list so selection means the same thing. */
 export function sceneEntities(f:TwinFrame):SceneEntity[] {
+ if(f.world)return worldEntities(f.world);
+ if(f.preset.id==='mujoco-cell')return [];
  const p=f.preset.project,l=cellLayout(p),v=f.view,out:SceneEntity[]=[];
  const parking=p.world.points.filter(x=>x.kind==='parking').sort((a,b)=>a.id<b.id?-1:1);
  p.entities.filter(e=>e.kind==='amr').forEach((e,i)=>{
@@ -70,7 +73,7 @@ export function sceneEntities(f:TwinFrame):SceneEntity[] {
 const kindLabel=(k:string)=>({amr:'AMR',arm:tr('Cánh tay','アーム','Arm'),coffee_machine:tr('Máy pha','コーヒーマシン','Coffee machine'),cup_station:tr('Trạm cốc','カップ置場','Cup station'),payload:tr('Tải mô phỏng','模擬荷物','Simulation load'),job:tr('Công việc','ジョブ','Job'),cup:tr('Cốc','カップ','Cup')})[k]??k;
 export {kindLabel};
 export function renderTwin(f:TwinFrame,vs:ViewState):string {
- const p=f.preset.project,w=p.world,v=f.view,X=(x:number)=>x*S,Y=(y:number)=>(w.height-y)*S,pt=(x:number,y:number)=>`${X(x).toFixed(1)},${Y(y).toFixed(1)}`;
+ const p=f.preset.project,w=p.world,v=f.view,extent=mapExtent(f),X=(x:number)=>x*S,Y=(y:number)=>(extent.maxM[1]-y)*S,pt=(x:number,y:number)=>`${X(x).toFixed(1)},${Y(y).toFixed(1)}`;
  const ents=sceneEntities(f),sel=vs.selected,L=vs.layers;
  const grid=Array.from({length:Math.floor(w.width)+1},(_,n)=>`<text x="${X(n)}" y="-8" text-anchor="middle" class="tw-axis">${n} m</text>`).join('');
  const obstacles=w.obstacles.map(o=>`<rect class="tw-obstacle" x="${X(o.x)}" y="${Y(o.y+o.height)}" width="${o.width*S}" height="${o.height*S}" rx="4"><title>${esc(o.id)} · ${tr('mô hình','モデル','modeled')}</title></rect>${L.contacts?`<rect class="tw-clearance" x="${X(o.x)-8}" y="${Y(o.y+o.height)-8}" width="${o.width*S+16}" height="${o.height*S+16}" rx="10"/>`:''}`).join('');
@@ -106,13 +109,13 @@ export function renderTwin(f:TwinFrame,vs:ViewState):string {
  const marks=ents.filter(e=>Number.isFinite(e.x)).map(e=>{
   const on=e.id===sel,label=`${kindLabel(e.kind)} ${e.name}${e.status?` · ${stateLabel(e.status)}`:''}`;
   const shape=e.kind==='amr'?`<circle r="17" class="tw-amr ${e.source}"/><path d="m-6 5 6-12 6 12" class="tw-amr-nose"/>`
-   :e.kind==='coffee_machine'?`<rect x="-22" y="-16" width="44" height="32" rx="5" class="tw-cell ${e.source}"/><text y="4" text-anchor="middle" class="tw-glyph">CM</text>`
-   :e.kind==='arm'?`<circle r="14" class="tw-cell ${e.source}"/><text y="4" text-anchor="middle" class="tw-glyph">A</text>`
+   :e.kind==='coffee_machine'?`<rect x="-22" y="-16" width="44" height="32" rx="5" class="tw-cell ${e.source}"/><text y="4" text-anchor="middle" class="tw-glyph" aria-hidden="true">CM</text>`
+   :e.kind==='arm'?`<circle r="14" class="tw-cell ${e.source}"/>`
    :e.kind==='cup_station'?`<rect x="-12" y="-12" width="24" height="24" rx="4" class="tw-cell ${e.source}"/>`
    :(e.kind==='cup'||e.kind==='payload')?`<circle r="8" class="tw-cup ${e.source}"/>`
-   :`<rect x="-13" y="-9" width="26" height="18" rx="4" class="tw-job ${e.status==='needs_attention'?'attention':''}"/><text y="4" text-anchor="middle" class="tw-glyph">${e.status==='needs_attention'?'!':esc(e.id.split('-').pop()!)}</text>`;
+   :`<rect x="-13" y="-9" width="26" height="18" rx="4" class="tw-job ${e.status==='needs_attention'?'attention':''}"/><text y="4" text-anchor="middle" class="tw-glyph" aria-hidden="true">${e.status==='needs_attention'?'!':esc(e.id.split('-').pop()!)}</text>`;
   const rot=e.kind==='amr'?` rotate(${-((v?.entities.find(r=>r.kind==='amr'&&r.id===e.id)?.pose.yawRad??0)*180/Math.PI-90)})`:'';
   return `<g class="tw-entity ${on?'selected':''}" data-action="twin-pick" data-value="${esc(e.id)}" data-entity="${esc(e.id)}" data-selected="${on}" data-source="${e.source}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${esc(label)}" transform="translate(${pt(e.x,e.y)})">${on?'<circle r="27" class="tw-ring"/>':''}<g transform="${rot.trim()||'rotate(0)'}">${shape}</g>${e.kind==='cup'||e.kind==='job'?'':`<text y="${e.kind==='amr'?-26:e.kind==='cup_station'?-18:30}" text-anchor="${e.kind==='cup_station'?'end':'middle'}" class="tw-name">${esc(e.name)}</text>`}<title>${esc(label)}</title></g>`;
  }).join('');
- return `<svg class="twin-plan" viewBox="-30 -30 ${w.width*S+60} ${w.height*S+60}" role="group" aria-label="${esc(tr(`Mặt bằng twin ${w.width} × ${w.height} m`,`ツイン平面図 ${w.width} × ${w.height} m`,`Twin plan ${w.width} × ${w.height} m`))}"><rect class="tw-floor" width="${w.width*S}" height="${w.height*S}"/>${grid}${obstacles}${points}${overlay}${marks}</svg>`;
+ return `<svg class="twin-plan" viewBox="${extent.minM[0]*S-30} -30 ${(extent.maxM[0]-extent.minM[0])*S+60} ${(extent.maxM[1]-extent.minM[1])*S+60}" role="group" aria-label="${esc(tr(`Mặt bằng twin ${w.width} × ${w.height} m`,`ツイン平面図 ${w.width} × ${w.height} m`,`Twin plan ${w.width} × ${w.height} m`))}"><rect class="tw-floor" x="${extent.minM[0]*S}" width="${(extent.maxM[0]-extent.minM[0])*S}" height="${(extent.maxM[1]-extent.minM[1])*S}"/>${grid}${obstacles}${points}${overlay}${marks}</svg>`;
 }

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "documentType": "payload-fixture-manifest",
+  "id": "serve-payload-v1",
+  "generator": "scripts/generate-payload-fixture.mjs",
+  "calibration": "not_calibrated",
+  "files": [
+    {
+      "path": "assumptions.json",
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "bytes": 869
+    },
+    {
+      "path": "cup-center.json",
+      "sha256": "d1b846f1d4f02cd9308a9b58cf503a1284d7f04dc3af61a0a8be48f99c41a0cf",
+      "bytes": 4188
+    },
+    {
+      "path": "cup-offset.json",
+      "sha256": "6633143ea5cd74f4bbdad5713505039fefcb7464af97057a2a55aa4350da9a14",
+      "bytes": 4191
+    },
+    {
+      "path": "dock-feasibility.json",
+      "sha256": "bf3fc0046af44719e8050c84a78cf9ad3b231d39b568486ccc3ce36d384de909",
+      "bytes": 5374
+    },
+    {
+      "path": "drive-contact-profile.json",
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "bytes": 3092
+    },
+    {
+      "path": "empty.json",
+      "sha256": "2118b79956c2015afb54d7adeadff5bd976f87eb9936043e1cda000590e4e5df",
+      "bytes": 1479
+    },
+    {
+      "path": "navigation-scene.json",
+      "sha256": "d69f62f6a6d978549f7ae87a37852817d18be9c526bdd6d5a3e16490f0670881",
+      "bytes": 14966
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "80aded154e782fa1260475402e6e7051545373f876b638c5ad1d4ae34c432196",
+      "bytes": 383
+    },
+    {
+      "path": "physical-model-amr-1.json",
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "bytes": 47385
+    },
+    {
+      "path": "README.md",
+      "sha256": "40fb11cc46e52fafc0d8e915b41682f56693c743cdd8d3a4bb26b78e32054732",
+      "bytes": 1677
+    },
+    {
+      "path": "serve-3d-components.json",
+      "sha256": "475a785832cb1a54d588781075c86bfda7a5e9d965365469f7e48fac47f53f2b",
+      "bytes": 61944
+    },
+    {
+      "path": "serve-3d-project.json",
+      "sha256": "f1c97e1bd6b6bd1258b08e82a9da3c565e398cfd7572d837d89c67d3a1340147",
+      "bytes": 12009
+    },
+    {
+      "path": "world3d.json",
+      "sha256": "68a6c28f4faf93da908c3c7f862e5d554fe605ddf91a84b96bdf6d34c0ec7808",
+      "bytes": 129
+    }
+  ]
+}

@@ -11,7 +11,7 @@ import {validModelValidationReport} from './model-validation';
 import {loadToken,requestInit,saveToken,type RuntimeTarget} from '../runtime/target';
 import {FetchEventSource} from '../runtime/fetch-event-source';
 import type {StreamDeps} from '../runtime/stream';
-export interface TwinHealth {scenarioRequirements?:Record<string,{mock:string[];simulation:string[]}>;
+export interface TwinHealth {worldExperiments?:{id:string;requiresNewRun:boolean;cause?:string}[];scenarioRequirements?:Record<string,{mock:string[];simulation:string[]}>;
  /** Server-advertised optional features, e.g. engineering_bundle_v1. Absent on runtimes that predate engineering. */
  capabilities?:string[];
  /** scenarioId -> backendSetId -> what that pairing needs; engineering clients must read this instead of scenarioRequirements. */
@@ -71,14 +71,14 @@ export interface RunReport {physicsEvidence?:PhysicsReportBlock;arm?:ArmPlantBlo
  reconciliations:{subjectId:string;commandId:string|null;nativeState:string;tick:number}[];coverage:Record<string,boolean>;limitations:string[];
  coffee?:{plantLog?:Record<string,unknown>[];jobs:{jobId:string;recipeId:string;recipeRevision:number;status:string;steps:JobStep[]}[];cups:{cupId:string;ownerKind:string;ownerId:string;movements:{transferId:string;provenance:string;observedBy:string;at:string}[]}[];
   armTrace:{collision?:ArmCollisionView|null;stop?:ArmStopView|null;tag:string;interpolation:string;modelRevision:string;limitsOk:boolean;samples:{tick:number;q:number[];tcp:[number,number,number]}[]}};}
-interface CreateRunBase {scenarioId:string;scenarioRevision:number;seed:number;mode:'mock'|'simulation';backendSetId:string;access:'simulated'}
+interface CreateRunBase {worldExperimentId?:import('../twin/cell').WorldExperiment;scenarioId:string;scenarioRevision:number;seed:number;mode:'mock'|'simulation';backendSetId:string;access:'simulated'}
 /** Legacy request: the project travels with it and there is no engineeringRef. */
 export interface LegacyCreateRun extends CreateRunBase {project:LabProjectV2;engineeringRef?:undefined}
 /** Engineering request: the server derives the project from the bundle; a project, if sent at all, must equal the locked projection. */
 export interface EngineeringCreateRun extends CreateRunBase {engineeringRef:EngineeringRef;project?:LabProjectV2}
 export type CreateRun=LegacyCreateRun|EngineeringCreateRun;
 export function requestForPreset(p:import('./catalog').TwinPreset):CreateRun{
- const base={scenarioId:p.scenarioId,scenarioRevision:p.scenarioRevision,seed:p.seed,mode:p.mode??'mock',backendSetId:p.backendSetId,access:'simulated'} as const;
+ const base={...p.worldExperimentId?{worldExperimentId:p.worldExperimentId}:{},scenarioId:p.scenarioId,scenarioRevision:p.scenarioRevision,seed:p.seed,mode:p.mode??'mock',backendSetId:p.backendSetId,access:'simulated'} as const;
  // engineering never falls back to the preset project: the receipt that matches this exact draft is the only way to a ref
  if (p.engineering) return {...base,engineeringRef:engineeringRefFor(p.engineering.project,p.engineering.receipt)};
  return {project:structuredClone(p.project),...base};
@@ -98,7 +98,11 @@ export function requestFromLocked(locked:LockedInput):CreateRun {
 }
 export type ActionKind='start'|'pause'|'resume'|'cancel'|'step'|'confirm'|'injectFault'|'reconcile'|'restoreCup';
 export interface EngineeringManifest {schemaVersion:1;projectDigest:string;assemblyDigest:string;sceneDigest:string;profile:string;compilerVersion:string;files:{path:string;sha256:string;sizeBytes:number}[]}
+export interface WorldDisplay {version:1;runId:string;revision:number;tick:number;simTimeNs:string;availability:'valid'|'stale'|'unknown';reason:string|null;snapshot:import('../shared/navigation2d').Sim3DSnapshotV1|null;control:Pick<import('../shared/navigation2d').WorldEvidenceRecord['command'] & {},'targetTick'|'worldControl'|'velocities'>|null;controlReason:string|null}
 export interface TwinRuntime {
+ exportReplay?(id:string,signal:AbortSignal):Promise<{reader:import('../reports/replay-package').ReplayReader;release():Promise<void>}>;
+ worldDisplay?(id:string,signal?:AbortSignal):Promise<WorldDisplay>;
+ worldDisplayScene?(id:string,signal?:AbortSignal):Promise<{runId:string;availability:string;reason:string|null;scene:import('../shared/navigation2d').LabWorldSceneV1|null}>;
  readiness?(scenarioId:string,backendSetId:string,project?:LabProjectV2,engineeringRef?:EngineeringRef):Promise<ReadinessSnapshot>;
  /** Present only against a runtime that advertises engineering_bundle_v1. */
  compileEngineering?(project:EngineeringProject):Promise<BundleReceipt>;
@@ -115,7 +119,7 @@ export interface TwinRuntime {
  /** `actionId`: resend a step whose response was lost with the same id; the runtime returns its stored receipt and does not act again. */
  action(view:RunView,kind:ActionKind,payload?:Record<string,unknown>,actionId?:string,signal?:AbortSignal):Promise<RunView>;
  readonly recoverableRunIds?:readonly string[];archive?(runId:string):Promise<void>;reclaim?(runId:string):Promise<RunView>;
- get(runId:string):Promise<RunView>;report(runId:string,signal?:AbortSignal):Promise<RunReport>;
+ get(runId:string,signal?:AbortSignal):Promise<RunView>;report(runId:string,signal?:AbortSignal):Promise<RunReport>;
  /** Where requests go (target.ts). Optional only so test doubles may omit it; httpTwinRuntime always has it. */
  readonly target?:RuntimeTarget;
  /** Point this client at another runtime: the old session (and its stored bearer) is dropped. */
@@ -202,7 +206,14 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
   reclaim:id=>{const proof=proofs[id];if(!proof)throw new TwinRuntimeError('RUN_PROOF_MISSING',[],403);return request<RunView>(`${run(id)}/reclaim`,{proof});},
   // expectedRevision comes from the last snapshot the UI rendered: a stale view is refused (REVISION_CONFLICT), never applied
   action:(v,kind,payload={},actionId=crypto.randomUUID(),signal)=>request<RunView>(`${run(v.run.id)}/actions`,{actionId,expectedRevision:v.run.runRevision,kind,payload},signal),
-  get:id=>request<RunView>(run(id)),
+  get:(id,signal)=>request<RunView>(run(id),undefined,signal),
+  async exportReplay(id,signal){
+   const exportTarget=target,exportAuth=auth(),exportCsrf=csrf;const version=await request<{exportId:string;manifest:unknown}>(`${run(id)}/replay`,{},signal),path=`${run(id)}/replay/${encodeURIComponent(version.exportId)}`;let released=false;
+   const release=async()=>{if(released)return;released=true;const a=exportAuth;const r=await send(exportTarget.base+path,{...a,method:'DELETE',headers:{...a.headers as Record<string,string>,...exportCsrf&&exportTarget.kind==='same_origin'?{'X-CSRF-Token':exportCsrf}:{}}},exportTarget);if(!r.ok)throw new TwinRuntimeError('REPLAY_DELETE_REFUSED',[],r.status);};
+   try{const {openLiveReplay}=await import('../reports/replay-transport'),reader=await openLiveReplay(exportTarget.base+path,new TextEncoder().encode(JSON.stringify(version.manifest)),exportAuth,signal);return {reader,release};}catch(e){await release().catch(()=>{});throw e;}
+  },
+  worldDisplay:(id,signal)=>request<WorldDisplay>(`${run(id)}/world-display`,undefined,signal),
+  worldDisplayScene:(id,signal)=>request(`${run(id)}/world-display/scene`,undefined,signal),
   report:(id,signal)=>request<RunReport>(`${run(id)}/report`,undefined,signal),
  };
 }

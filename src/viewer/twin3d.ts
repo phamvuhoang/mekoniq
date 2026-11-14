@@ -1,3 +1,5 @@
+import {tr} from '../i18n';
+import {mapExtent} from '../twin/world-view';
 import {payloadGeometry} from '../twin/payload';
 // Optional WebGL view of the same TwinFrame/ViewState the 2D plan draws. Read-only. The scene is kept: update() rebuilds it only when the scene itself
 // (sceneKey: project, world, navigation scene, layers, selection) changes; an object whose own drawing changes (objectKeys: it appears or goes, its source,
@@ -28,7 +30,7 @@ type Pose7={positionM:[number,number,number];quaternionXyzw:[number,number,numbe
  * measured gripper opening. `cups`: the cups drawn where the plant reports them (map frame, cup centre). */
 export interface TwinPoses {arms:Record<string,{jointsRad:number[];gripperOpeningM:number|null}>;bodies:Record<string,Pose7>;cups?:Record<string,Pose7>}
 export interface Twin3d {canvas:HTMLCanvasElement;/** Move into a re-rendered stage and size from it. */attach(host:HTMLElement):void;update(f:TwinFrame,vs:ViewState):void;pose(p:TwinPoses):void;
- /** Camera back to the preset's home framing: its arm cell (homeRegion), else the whole floor. */home():void;/** Frame one object, or the whole scene for null or an object not drawn. */fit(entityId:string|null):void;dispose():void}
+ /** Camera back to the preset's home framing: its arm cell (homeRegion), else the whole floor. */home():void;/** Frame one object, or the whole scene for null or an object not drawn. */fit(entityId:string|null):void;camera(mode:'overview'|'cell'|'amr'):void;dispose():void}
 const LIME=0xb4f375,NAVY=0x182a33;
 const COLOR:Record<string,number>={footprint:0x9dccff,safety:0xf0b45a,observed:0x5ad1c6};
 export interface OverlayShape {layer:'path'|'footprint'|'safety'|'observed';entityId:string;loop:boolean;z:number;points:[number,number][]}
@@ -55,11 +57,11 @@ function drawn(f:TwinFrame){
  const plant=f.report?.arm?.armPlant.engine;
  return sceneEntities(f).filter(e=>Number.isFinite(e.x)&&e.kind!=='job').map(e=>{
   if(e.kind!=='arm')return {e,arm:null};
-  const s=f.samples?.[e.id],v=s?armJointsView(s,f.nowMs??s.receivedAtMs):null,model=plant?(plant==='mujoco_3d'?XARM:'arm-ref-3d-v1'):armModelFor(s?.providerId??''),run=runRevision(f);
-  return {e,arm:{...displayJoints(null,v),gripperOpeningM:v?.gripperOpeningM??null,model,mesh:model===XARM&&(run===null||run===xarmManifest.modelRevision)}};
+  const s=f.samples?.[e.id],observed=f.world?.record.snapshot.arms?.find(a=>a.armId===e.id),v=s?armJointsView(s,f.nowMs??s.receivedAtMs):null,model=plant?(plant==='mujoco_3d'?XARM:'arm-ref-3d-v1'):armModelFor(s?.providerId??''),run=runRevision(f);
+  return {e,arm:{...displayJoints(null,v),...observed?{jointsRad:observed.positionsRad,source:f.world?.quality==='stale'?'unknown' as const:'observed' as const,frozen:f.world?.quality==='stale'}:{},gripperOpeningM:observed?.gripper?.openingM??v?.gripperOpeningM??null,model,mesh:model===XARM&&(f.world?f.world.scene.armCell.arm.modelId===XARM&&f.world.scene.inputs.armModelDigest===xarmManifest.modelRevision&&f.world.scene.armCell.arm.modelRevision===xarmManifest.modelRevision&&f.world.scene.models.armPhysics.sha256==='2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd'&&f.world.scene.models.armComponent.sha256==='0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a':run===null||run===xarmManifest.modelRevision)}};
  });
 }
-const armBase=(f:TwinFrame)=>f.preset.project.armCollisionProfile?.baseInMap;
+const armBase=(f:TwinFrame)=>f.world?.scene.armCell.arm.baseInMap??f.preset.project.armCollisionProfile?.baseInMap;
 /** The cell's supports (the fixture's cell layout, arm-base frame): the nozzle stand and the tray, the boxes the simulated cell holds. */
 const SUPPORTS=[['nozzle-stand',xarmLayout.nozzleStand],['tray',xarmLayout.tray]] as const;
 type MapBox={min:[number,number,number];max:[number,number,number]};
@@ -78,18 +80,20 @@ export const armCellDrawn=(f:TwinFrame)=>!!armBase(f)&&drawn(f).some(({arm})=>ar
 export function homeRegion(f:TwinFrame):MapBox[]|null{
  const base=armBase(f),b=base?.position;if(f.preset.view!=='arm_cell'||!base||!b)return null;
  const M=0.45,around=(x:number,y:number,z0:number,z1:number):MapBox=>({min:[x-M,y-M,z0],max:[x+M,y+M,z1]});
- return [around(b[0]!,b[1]!,Math.max(0,b[2]!-0.1),b[2]!+0.8),...SUPPORTS.map(([,s])=>baseBoxInMap(base,s.centerM,s.sizeM)),...f.preset.project.world.points.filter(p=>p.kind==='coffee_pickup').map(p=>around(p.x,p.y,0,0.6))];
+ const mobileTop=f.payloadBundle?Math.max(...payloadGeometry(f.payloadBundle.physical).map(shape=>{const g=shape.geometry,r=g.kind==='box'?Math.hypot(...g.sizeM)/2:g.kind==='cylinder'?Math.hypot(g.radiusM,g.lengthM/2):g.kind==='sphere'?g.radiusM:0;return shape.positionM[2]!+r;}))+.15:.6;
+ const supports=f.world?f.world.scene.armCell.supports.filter(s=>s.id!==f.world!.scene.supportMap.replacedStaticSupportId).map(s=>baseBoxInMap(base,s.centerM,s.sizeM)):SUPPORTS.map(([,s])=>baseBoxInMap(base,s.centerM,s.sizeM));
+ return [around(b[0]!,b[1]!,Math.max(0,b[2]!-.1),b[2]!+.8),...supports,...f.preset.project.world.points.filter(p=>p.kind==='coffee_pickup').map(p=>around(p.x,p.y,0,mobileTop))];
 }
 /** One mesh load per model per page: the parsed geometry is kept and shared by every drawing of it. A load whose fetch failed is tried again by the next
  * mount of a view (`mount`: the view that asked); a blob whose sha256 differs, or that does not parse, stays unusable for the page. */
 interface MeshLoad {set:ArmMeshSet|null;error:string|null;reason:MeshFailure|'render'|null;ms:number|null;mount:number;done:Promise<void>}
 const loads=new Map<string,MeshLoad>();let mounts=0;
-function meshLoad(mount:number):MeshLoad{
- let l=loads.get(XARM);if(l&&!(l.reason==='fetch'&&l.mount!==mount))return l;
+function meshLoad(mount:number,f:TwinFrame):MeshLoad{
+ const cacheKey=f.world?.meshKey??XARM;let l=loads.get(cacheKey);if(l&&!(l.reason==='fetch'&&l.mount!==mount))return l;
  const t0=performance.now(),x:MeshLoad={set:null,error:null,reason:null,ms:null,mount,done:Promise.resolve()};
- x.done=loadArmMeshes(xarmComponent,xarmPhysics,async sha=>{const r=await fetch(`${XARM_BLOBS}${sha}.stl`);if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.arrayBuffer();},new THREE.MeshStandardMaterial())
+ x.done=loadArmMeshes(xarmComponent,xarmPhysics,async sha=>{if(f.world){if(!f.world.readMesh)throw Error('REPLAY_MESH_UNAVAILABLE');return f.world.readMesh(sha);}const r=await fetch(`${XARM_BLOBS}${sha}.stl`);if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.arrayBuffer();},new THREE.MeshStandardMaterial())
   .then(s=>{x.set=s;},(e:unknown)=>{x.error=e instanceof Error?e.message:String(e);x.reason=(e as {reason?:MeshFailure}).reason??'fetch';}).finally(()=>{x.ms=performance.now()-t0;});
- loads.set(XARM,l=x);return l;
+ loads.set(cacheKey,l=x);return l;
 }
 /** The page's loaded mesh set (the parsed geometry every drawing shares), or null: read by the browser test that checks nothing accumulates on it. */
 export const cachedArmMeshes=():ArmMeshSet|null=>loads.get(XARM)?.set??null;
@@ -106,11 +110,11 @@ export function armMeshIssues(f:TwinFrame):ArmMeshIssue[]{
 }
 const heightOf=(e:SceneEntity)=>e.kind==='amr'?0.225:e.kind==='coffee_machine'?1.125:e.kind==='arm'?1.25:e.kind==='cup'?(e.status?.startsWith('robot')?0.52:e.status?.startsWith('customer')?0.8:1.0):1.05;
 /** What rebuilds the whole scene: the project and its world, the navigation scene, a layer, the selection. Pure. */
-export const sceneKey=(f:TwinFrame,vs:ViewState):string=>{const p=f.preset.project;return JSON.stringify([p.id,p.revision,p.world.width,p.world.height,f.navigation?.sceneDigest??null,vs.layers,vs.selected]);};
+export const sceneKey=(f:TwinFrame,vs:ViewState):string=>{const p=f.preset.project;return JSON.stringify([p.id,p.revision,p.world.width,p.world.height,f.navigation?.sceneDigest??null,f.world?.meshKey??null,mapExtent(f),vs.layers,vs.selected]);};
 /** How each drawn object looks (never its pose or joint angles): a changed entry redraws that object alone. Pure. */
 export function objectKeys(f:TwinFrame):Map<string,string>{
  const chain=!!armBase(f);
- return new Map(drawn(f).map(({e,arm})=>[e.id,JSON.stringify([e.kind,e.source,!!e.pose3d,!!e.plant,e.payload?.geometry,f.payloadBundle?.physicalSha256,arm&&[arm.source,arm.frozen,chain&&!!arm.jointsRad,arm.model,arm.mesh]])]));
+ return new Map(drawn(f).map(({e,arm})=>[e.id,JSON.stringify([e.kind,e.source,!!e.pose3d,!!e.plant,e.payload?.geometry,e.cupGeometry,f.payloadBundle?.physicalSha256,arm&&[arm.source,arm.frozen,chain&&!!arm.jointsRad,arm.model,arm.mesh]])]));
 }
 /** Changes when the scene or any object's drawing changes; never when only a pose or a joint angle does. Pure. */
 export const structureKey=(f:TwinFrame,vs:ViewState):string=>JSON.stringify([sceneKey(f,vs),[...objectKeys(f)]]);
@@ -118,7 +122,7 @@ export const structureKey=(f:TwinFrame,vs:ViewState):string=>JSON.stringify([sce
 export function posesOf(f:TwinFrame):TwinPoses{
  const out:Required<TwinPoses>={arms:{},bodies:{},cups:{}},chain=!!armBase(f);
  for(const {e,arm} of drawn(f)){
-  if(e.kind==='amr')out.bodies[e.id]={positionM:[e.x,e.y,e.pose3d?.z??0],quaternionXyzw:rosQuat(e.yawRad??0,e.pose3d?.pitchRad??0,e.pose3d?.rollRad??0)};
+  if(e.kind==='amr')out.bodies[e.id]=f.world?.record.snapshot.physics?.base.find(b=>b.robotId===e.id)?.poseMap as Pose7??{positionM:[e.x,e.y,e.pose3d?.z??0],quaternionXyzw:rosQuat(e.yawRad??0,e.pose3d?.pitchRad??0,e.pose3d?.rollRad??0)};
   else if(arm?.jointsRad&&chain)out.arms[e.id]={jointsRad:arm.jointsRad,gripperOpeningM:arm.gripperOpeningM};
   else if(e.plant)out.cups[e.id]=e.plant;
  }
@@ -141,11 +145,11 @@ const r6=(_k:string,v:unknown)=>typeof v==='number'?Math.round(v*1e6)/1e6:v;
 /** An arm as drawn: placed at its base (`at`), dressed as its joint chain or its meshes; `q`/`opening` are the last pose, for a swap. */
 interface ArmDraw {id:string;at:THREE.Group;joints:ArmJointDef[];look:{wire:boolean;emissive:boolean};wantMesh:boolean;chain?:THREE.Group;mesh?:ArmMeshSet;q:number[];opening:number|null}
 /** `onArmMesh`: the arm's drawing changed by itself (meshes ready or failed), so the page can update its problems list. */
-export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:()=>void,onArmMesh:()=>void=()=>{}):Twin3d|null {
+export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:()=>void,onArmMesh:()=>void=()=>{},onManualOrbit:()=>void=()=>{}):Twin3d|null {
  let renderer:THREE.WebGLRenderer;const mount=++mounts;
  try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch{return null;}
  renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
- const canvas=renderer.domElement;canvas.setAttribute('aria-label','3D twin view. Use the entity list to select objects.');canvas.dataset.rebuilds='0';canvas.dataset.redraws='0';canvas.dataset.overlayBuilds='0';
+ const canvas=renderer.domElement;canvas.setAttribute('aria-label',tr('Bản sao 3D. Chọn vật thể từ danh sách.','3Dツイン。物体リストから選択できます。','3D twin view. Use the entity list to select objects.'));canvas.dataset.rebuilds='0';canvas.dataset.redraws='0';canvas.dataset.overlayBuilds='0';
  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();queueMicrotask(onFail);});
  host.replaceChildren(canvas);
  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(40,1,0.1,200),controls=new OrbitControls(camera,canvas);
@@ -181,7 +185,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
   return {supports,mount,legs,cups};
  };
  Object.assign(canvas,{twinFraming:framing,twinDrawn:drawnCell});
- const render=()=>{renderer.render(scene,camera);put('camera',camera.position.toArray().map(v=>v.toFixed(3)).join(','));put('geometries',String(renderer.info.memory.geometries));};
+ let renderCount=0;const render=()=>{const measured=canvas.dataset.measureRender==='1',start=measured?performance.now():0;renderer.render(scene,camera);put('camera',camera.position.toArray().map(v=>v.toFixed(3)).join(','));put('geometries',String(renderer.info.memory.geometries));renderCount++;if(measured)canvas.dispatchEvent(new CustomEvent('twin-render',{detail:{atMs:performance.now(),durationMs:performance.now()-start,count:renderCount,drawCalls:renderer.info.render.calls,worldTick:lf?.world?.record.snapshot.tick??null,revision:lf?.world?.sourceRevision??null,quality:lf?.world?.quality??null}}));};
  // size from wherever the canvas lives now: the stage element is replaced on every workspace render
  // a new size re-applies the home framing (it depends on the viewport's shape) unless the user has moved the camera since: a fresh mount frames at its real size
  const resize=()=>{const p=canvas.parentElement,w=p?.clientWidth||640,h=p?.clientHeight||420;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(floor&&!userMoved)home();else render();};
@@ -189,7 +193,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
  // the user's own orbit, pan or zoom: from then on the camera is the user's until home is pressed or the floor or preset changes. Only an interaction
  // that moved the camera counts (OrbitControls starts one on any pointer-down or wheel: a plain click to select moves nothing)
  const cameraPose=()=>[...camera.position.toArray(),...controls.target.toArray()].map(v=>v.toFixed(6)).join(',');let atStart='';
- controls.addEventListener('start',()=>{atStart=cameraPose();});controls.addEventListener('end',()=>{if(cameraPose()!==atStart)userMoved=true;});
+ controls.addEventListener('start',()=>{atStart=cameraPose();});controls.addEventListener('end',()=>{if(cameraPose()!==atStart){userMoved=true;onManualOrbit();}});
  const pick=(e:PointerEvent)=>{const r=canvas.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),camera);
   const hit=ray.intersectObjects(world.children,true).find(h=>h.object.userData.entityId);if(hit)onSelect(String(hit.object.userData.entityId));};
  let down:[number,number]=[0,0];
@@ -228,7 +232,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
   const on=e.id===vs.selected;
   // an arm with joint telemetry and a base pose is drawn as its joint chain (what the runtime last reported, never extrapolated); otherwise the single cylinder below
   if(arm?.jointsRad&&base){
-   const a:ArmDraw={id:e.id,at:new THREE.Group(),joints:JOINTS[arm.model],look:{wire:arm.source!=='observed'||arm.frozen,emissive:on},wantMesh:arm.mesh,q:arm.jointsRad,opening:arm.gripperOpeningM};
+   const a:ArmDraw={id:e.id,at:new THREE.Group(),joints:JOINTS[arm.model],look:{wire:arm.source!=='observed'||arm.frozen||!!f.world&&!arm.mesh,emissive:on},wantMesh:arm.mesh,q:arm.jointsRad,opening:arm.gripperOpeningM};
    const [px,py,pz]=base.position as [number,number,number],[qx,qy,qz,qw]=base.quaternionXyzw as [number,number,number,number];
    a.at.quaternion.set(qx,qy,qz,qw);a.at.position.set(px,py,pz);
    const holder=new THREE.Group();holder.rotation.x=-Math.PI/2;holder.add(a.at); // ROS (z up) -> scene (y up): (x, y, z) -> (x, z, -y); the arm sits at the base pose in the ROS map
@@ -237,17 +241,17 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    // built with the arm, disposed with it, never picked
    if(arm.model===XARM){
     const cell=new THREE.Group();cell.quaternion.copy(a.at.quaternion);cell.position.copy(a.at.position);holder.add(cell);
-    for(const [id,b] of SUPPORTS){const m=new THREE.Mesh(new THREE.BoxGeometry(...b.sizeM as [number,number,number]),mat(0x7d8b8f));m.position.set(...b.centerM as [number,number,number]);m.userData.support=id;cell.add(m);}
+    for(const [id,b] of (f.world?f.world.scene.armCell.supports.map(s=>[s.id,s] as const):SUPPORTS)){if(id===f.world?.scene.supportMap.replacedStaticSupportId)continue;const m=new THREE.Mesh(new THREE.BoxGeometry(...b.sizeM as [number,number,number]),mat(0x7d8b8f));m.position.set(...b.centerM as [number,number,number]);m.userData.support=id;cell.add(m);}
     // illustrative, not simulated: the mount under the base and a leg under the nozzle stand, standing vertically in the map from the floor to the point under
     // them; the tray stands for the docked robot's tray (the receiver), so it gets no leg (one would pass through the robot)
     const props=new THREE.Group(),leg=(id:string,top:THREE.Vector3,r:number)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,top.z,12,1,true),mat(0x9fb3b8,{wire:true}));m.rotation.x=Math.PI/2;m.position.set(top.x,top.y,top.z/2);m.userData[id==='mount'?'mount':'leg']=id;props.add(m);};
     leg('mount',new THREE.Vector3(px,py,pz),0.08);
     for(const [id,b] of SUPPORTS)if(id!=='tray')leg(id,new THREE.Vector3(b.centerM[0],b.centerM[1],b.centerM[2]-b.sizeM[2]/2).applyQuaternion(a.at.quaternion).add(a.at.position),0.03);
     holder.add(props);
-    for(const g of [cell,props])g.traverse(o=>{o.raycast=()=>{};});holder.userData.supports=SUPPORTS.length;holder.userData.illustrative=props.children.length;
+    for(const g of [cell,props])g.traverse(o=>{o.raycast=()=>{};});holder.userData.supports=SUPPORTS.length-(f.world?1:0);holder.userData.illustrative=props.children.length;
    }
    // the meshes when they are loaded (once per page); the joint chain until then, and for good when they cannot be used
-   const l=a.wantMesh?meshLoad(mount):null;if(l?.set)dressMeshes(a,l);else dress(a,null);if(l&&!l.set&&!l.error)await_(l);
+   const l=a.wantMesh?meshLoad(mount,f):null;if(l?.set)dressMeshes(a,l);else dress(a,null);if(l&&!l.set&&!l.error)await_(l);
    return;
   }
   if(e.kind==='amr'&&f.preset.id==='mujoco-payload'&&!f.payloadBundle)return;// no generic body presented as admitted mobile geometry
@@ -263,7 +267,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    world.add(group);objs.set(e.id,{obj:group,c:0});return;
   }
   // a cup the plant reports: its own size (cell layout, assumed) at the plant's pose, set by pose(); any other cup: the schematic cup at its custodian
-  const cup=e.payload?.geometry??xarmLayout.cup,geo=e.kind==='amr'?new THREE.CylinderGeometry(0.3,0.3,0.45,24):e.kind==='coffee_machine'?new THREE.BoxGeometry(0.4,0.45,0.3):e.kind==='arm'?new THREE.CylinderGeometry(0.09,0.12,0.7,16):(e.kind==='cup'||e.kind==='payload')?e.plant?new THREE.CylinderGeometry(cup.radiusM,cup.radiusM,cup.heightM,20):new THREE.CylinderGeometry(0.05,0.04,0.12,16):new THREE.BoxGeometry(0.25,0.3,0.25);
+  const cup=e.cupGeometry??e.payload?.geometry??xarmLayout.cup,geo=e.kind==='amr'?new THREE.CylinderGeometry(0.3,0.3,0.45,24):e.kind==='coffee_machine'?new THREE.BoxGeometry(0.4,0.45,0.3):e.kind==='arm'?new THREE.CylinderGeometry(0.09,0.12,0.7,16):(e.kind==='cup'||e.kind==='payload')?e.plant?new THREE.CylinderGeometry(cup.radiusM,cup.radiusM,cup.heightM,20):new THREE.CylinderGeometry(0.05,0.04,0.12,16):new THREE.BoxGeometry(0.25,0.3,0.25);
   const mesh=new THREE.Mesh(geo,mat(e.kind==='amr'?0xd3dcd3:(e.kind==='cup'||e.kind==='payload')?0xf5f0e6:NAVY+0x101010,{wire:e.source==='unknown'||e.source==='derived',emissive:on}));
   // a 3D plant: the body centre sits above the base origin by its height less the wheel radius (the base origin's height when it stands level)
   const wheel=f.navigation?.robots.find(r=>r.robotId===e.id)?.model.kinematics.wheelRadiusM??0.09;
@@ -271,9 +275,9 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
  };
  const build=(f:TwinFrame,vs:ViewState)=>{
   free(world);objs.clear();
-  const w=f.preset.project.world,m=Math.max(w.width,w.height);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(w.width,w.height),mat(0x101e25));ground.rotation.x=-Math.PI/2;ground.position.copy(at(w.width/2,w.height/2));world.add(ground);
-  const grid=new THREE.GridHelper(m,m,0x4a626a,0x2c424b);grid.position.copy(at(m/2,m/2,0.001));world.add(grid);
+  const w=f.preset.project.world,bounds=mapExtent(f),cx=(bounds.minM[0]+bounds.maxM[0])/2,cy=(bounds.minM[1]+bounds.maxM[1])/2,m=Math.max(w.width,w.height);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(bounds.maxM[0]-bounds.minM[0],bounds.maxM[1]-bounds.minM[1]),mat(0x101e25));ground.rotation.x=-Math.PI/2;ground.position.copy(at(cx,cy));world.add(ground);
+  const grid=new THREE.GridHelper(m,m,0x4a626a,0x2c424b);grid.position.copy(at(cx,cy,0.001));world.add(grid);
   for(const o of w.obstacles){const b=new THREE.Mesh(new THREE.BoxGeometry(o.width,0.9,o.height),mat(0x29414b));b.position.copy(at(o.x+o.width/2,o.y+o.height/2,0.45));world.add(b);}
   for(const o of f.navigation?.world.obstacles??[])world.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(o.verticesM.map(v=>at(v[0]!,v[1]!,0.04))),new THREE.LineBasicMaterial({color:0xf0b45a})));
   // Tables are schematic context, not collision geometry; runtime obstacles and footprint overlays remain the model.
@@ -317,23 +321,24 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    if(a.mesh)poseArmMeshes(a.mesh,fr,a.opening);else if(a.chain)poseArmChain(a.chain,fr);// the fingers follow the measured opening only
   }
   for(const [id,c] of Object.entries(p.cups??{})){const o=objs.get(id);if(o?.obj.userData.plant){const pl=placeBody(c.positionM,c.quaternionXyzw,0);o.obj.position.set(...pl.position);o.obj.quaternion.set(...pl.quaternion);}}
-  put('payloadCount',String(Object.keys(p.cups??{}).filter(id=>id.startsWith('payload:')).length));put('payloadPoses',JSON.stringify(p.cups??{}));put('bodyPoses',JSON.stringify(p.bodies));put('payloadGeometry',lf?.payloadBundle?.physicalSha256??'');
+  put('armPoses',JSON.stringify(p.arms));put('payloadCount',String(Object.keys(p.cups??{}).filter(id=>id.startsWith('payload:')).length));put('payloadPoses',JSON.stringify(p.cups??{}));put('bodyPoses',JSON.stringify(p.bodies));put('payloadGeometry',lf?.payloadBundle?.physicalSha256??'');
   status();render();
  };
- const home=()=>{if(!lf)return;const w=lf.preset.project.world,m=Math.max(w.width,w.height);camera.position.set(w.width/2,m*0.9,w.height*0.4+m*0.6);controls.target.set(w.width/2,0,-w.height/2);
-  const r=homeRegion(lf);
+ let explicitCamera:'overview'|'cell'|'amr'|null=null;
+ const home=()=>{if(!lf)return;const w=lf.preset.project.world,b=mapExtent(lf),cx=(b.minM[0]+b.maxM[0])/2,cy=(b.minM[1]+b.maxM[1])/2,m=Math.max(b.maxM[0]-b.minM[0],b.maxM[1]-b.minM[1]);camera.position.set(cx,m*0.9,-cy+m*0.8);controls.target.set(cx,0,-cy);
+  const r=(explicitCamera==='overview'?null:homeRegion(explicitCamera==='cell'?{...lf,preset:{...lf.preset,view:'arm_cell'}}:lf))??(lf.world||lf.preset.id==='mujoco-payload'?[{min:[b.minM[0],b.minM[1],0] as [number,number,number],max:[b.maxM[0],b.maxM[1],1.2] as [number,number,number]}]:null);
   if(r){// the same viewing direction, moved in until every corner of the region's boxes just fits (98 % of the viewport)
    const corners=r.flatMap(q=>[0,1,2,3,4,5,6,7].map(i=>at(i&1?q.max[0]:q.min[0],i&2?q.max[1]:q.min[1],i&4?q.max[2]:q.min[2])));
    const box=new THREE.Box3().setFromPoints(corners),c=box.getCenter(new THREE.Vector3()),dir=camera.position.clone().sub(controls.target).normalize();
    const fits=(d:number)=>{camera.position.copy(c).addScaledVector(dir,d);camera.lookAt(c);camera.updateMatrixWorld();return corners.every(p=>{const q=p.clone().project(camera);return Math.abs(q.x)<=0.98&&Math.abs(q.y)<=0.98&&q.z<1;});};
-   let lo=0.5,hi=box.getBoundingSphere(new THREE.Sphere()).radius/Math.sin(THREE.MathUtils.degToRad(camera.fov)/2)*2;for(let i=0;i<30;i++){const mid=(lo+hi)/2;if(fits(mid))hi=mid;else lo=mid;}
+   let lo=0.5,hi=box.getBoundingSphere(new THREE.Sphere()).radius/Math.sin(THREE.MathUtils.degToRad(camera.fov)/2)*2/Math.min(1,camera.aspect);for(let i=0;i<30;i++){const mid=(lo+hi)/2;if(fits(mid))hi=mid;else lo=mid;}
    fits(hi);controls.target.copy(c);
   }
   userMoved=false;controls.update();render();};
  return {canvas,pose,home,
   attach(next){if(canvas.parentElement!==next)next.replaceChildren(canvas);ro.disconnect();ro.observe(next);resize();},
   update(f,vs){
-   lf=f;put('plantCupsDropped',String(droppedPlantCups(f).length));
+   lf=f;canvas.setAttribute('aria-label',tr('Bản sao 3D. Chọn vật thể từ danh sách.','3Dツイン。物体リストから選択できます。','3D twin view. Use the entity list to select objects.'));put('worldTick',f.world?String(f.world.record.snapshot.tick):'');put('worldQuality',f.world?.quality??(f.world?'valid':''));put('plantCupsDropped',String(droppedPlantCups(f).length));
    const k=sceneKey(f,vs),o=objectKeys(f);
    if(k!==key){key=k;okeys=o;build(f,vs);}
    else{// the scene stands: only an object whose drawing changed is redrawn (a cup entering the plant's report, a source going stale)
@@ -348,6 +353,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    for(const {e} of drawn(f)){const o=objs.get(e.id);if(o&&e.kind!=='amr'&&!o.arm&&!e.plant)o.obj.position.copy(at(e.x,e.y,heightOf(e)));}
    drawOverlays(f,vs);pose(posesOf(f));
   },
+  camera(mode){explicitCamera=mode;if(!lf)return;if(mode==='overview'){const original=lf;lf={...lf,preset:{...lf.preset,view:undefined}};home();lf=original;}else if(mode==='cell'){const original=lf;lf={...lf,preset:{...lf.preset,view:'arm_cell'}};home();lf=original;}else this.fit(lf.preset.project.entities.find(e=>e.kind==='amr')?.id??null);},
   fit(id){
    const o=id?objs.get(id)?.obj:undefined,box=new THREE.Box3().setFromObject(o??world);if(box.isEmpty())return;
    const s=box.getBoundingSphere(new THREE.Sphere()),d=Math.max(s.radius,0.3)/Math.sin(THREE.MathUtils.degToRad(camera.fov)/2),dir=camera.position.clone().sub(controls.target).normalize();

@@ -81,7 +81,7 @@ test('current cup follows the first unfinished job, then the last cup',()=>{
  expect(currentCup(view())!.cupId).toBe('cup-1');
  const done=view({coffee:{jobs:[{jobId:'coffee-job-1',status:'delivered',recipeId:'espresso',cupId:'cup-1',attentionReason:null},{jobId:'coffee-job-2',status:'delivered',recipeId:'iced-milk-coffee',cupId:'cup-2',attentionReason:null}],cups:[{cupId:'cup-1',ownerKind:'customer',ownerId:'table-1'},{cupId:'cup-2',ownerKind:'customer',ownerId:'table-1'}]}});
  expect(currentCup(done)!.cupId).toBe('cup-2');
- expect(presets.map(p=>p.backendSetId)).toEqual(['mock-default','mock-amr','mock-default','mock-default','coffee-simulation','engineering-irsim-2d-v1','engineering-irsim-2d-v1','engineering-webots-3d-v1','engineering-webots-3d-v1','engineering-webots-arm-v1','engineering-mujoco-arm-v1']);
+ expect(presets.map(p=>p.backendSetId)).toEqual(['mock-default','mock-amr','mock-default','mock-default','coffee-simulation','engineering-irsim-2d-v1','engineering-irsim-2d-v1','engineering-webots-3d-v1','engineering-webots-3d-v1','engineering-webots-arm-v1','engineering-mujoco-arm-v1','engineering-mujoco-3d-v1','engineering-mujoco-cell-v1']);
 });
 test('locked identity shows recipe and project revisions as the runtime reported them, never preset constants',()=>{
  const report={manifest:{clock:{tickMs:20},assets:[],backends:[{id:'mock_amr',version:'1',model:'m',dynamics:false}],project:{id:'runtime-project',revision:7,hash:'h'},world:{id:'w',revision:4,hash:'h'}},

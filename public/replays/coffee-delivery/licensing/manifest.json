@@ -1,0 +1,204 @@
+{
+  "blobs": [
+    {
+      "bytes": 150084,
+      "conversion": "copy",
+      "droppedTriangles": 0,
+      "link": "base",
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+      "sourceSha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "triangles": 3000
+    },
+    {
+      "bytes": 242684,
+      "conversion": "dae2stl",
+      "droppedTriangles": 0,
+      "link": "left_finger",
+      "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_finger_g2.dae",
+      "sourceSha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b",
+      "triangles": 4852
+    },
+    {
+      "bytes": 366284,
+      "conversion": "dae2stl",
+      "droppedTriangles": 0,
+      "link": "left_inner_knuckle",
+      "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
+      "sourceSha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86",
+      "triangles": 7324
+    },
+    {
+      "bytes": 22284,
+      "conversion": "dae2stl",
+      "droppedTriangles": 0,
+      "link": "left_outer_knuckle",
+      "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
+      "sourceSha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b",
+      "triangles": 444
+    },
+    {
+      "bytes": 290784,
+      "conversion": "copy",
+      "droppedTriangles": 0,
+      "link": "link1",
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link1.stl",
+      "sourceSha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "triangles": 5814
+    },
+    {
+      "bytes": 291584,
+      "conversion": "copy",
+      "droppedTriangles": 0,
+      "link": "link2",
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link2.stl",
+      "sourceSha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "triangles": 5830
+    },
+    {
+      "bytes": 340884,
+      "conversion": "copy",
+      "droppedTriangles": 0,
+      "link": "link3",
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link3.stl",
+      "sourceSha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "triangles": 6816
+    },
+    {
+      "bytes": 243084,
+      "conversion": "copy",
+      "droppedTriangles": 0,
+      "link": "link4",
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link4.stl",
+      "sourceSha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "triangles": 4860
+    },
+    {
+      "bytes": 563584,
+      "conversion": "copy",
+      "droppedTriangles": 0,
+      "link": "link5",
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link5.stl",
+      "sourceSha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "triangles": 11270
+    },
+    {
+      "bytes": 202384,
+      "conversion": "copy",
+      "droppedTriangles": 0,
+      "link": "link6",
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link6.stl",
+      "sourceSha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "triangles": 4046
+    },
+    {
+      "bytes": 242684,
+      "conversion": "dae2stl",
+      "droppedTriangles": 0,
+      "link": "right_finger",
+      "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_finger_g2.dae",
+      "sourceSha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36",
+      "triangles": 4852
+    },
+    {
+      "bytes": 366284,
+      "conversion": "dae2stl",
+      "droppedTriangles": 0,
+      "link": "right_inner_knuckle",
+      "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
+      "sourceSha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3",
+      "triangles": 7324
+    },
+    {
+      "bytes": 22284,
+      "conversion": "dae2stl",
+      "droppedTriangles": 0,
+      "link": "right_outer_knuckle",
+      "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
+      "sourceSha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55",
+      "triangles": 444
+    },
+    {
+      "bytes": 2505834,
+      "conversion": "dae2stl",
+      "droppedTriangles": 300,
+      "link": "xarm_gripper_base_link",
+      "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+      "sourceDocumentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/base_link_g2.dae",
+      "sourceSha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575",
+      "triangles": 50115
+    }
+  ],
+  "componentDigest": "6bd664570339aae1bd6451c32014000d28ea1f6dcc36966893dc78f43b466e27",
+  "documentType": "mujoco-arm-fixture-manifest",
+  "files": [
+    {
+      "bytes": 1840,
+      "path": "NOTICE",
+      "sha256": "7b06a81d2e13936d721ea6ab2d0e3fc00901600a4f4c2cd6aa2829698518303c"
+    },
+    {
+      "bytes": 5711,
+      "path": "README.md",
+      "sha256": "df05605c06720016a640746dc5ec4f09e2f91c3b315c059d283e8c30fe347316"
+    },
+    {
+      "bytes": 967,
+      "path": "cell-layout.json",
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1"
+    },
+    {
+      "bytes": 2917,
+      "path": "coffee-cell-project.json",
+      "sha256": "c22cc9d91c261e6b23d27c99472e5545c1a8fd9b564421fa86a4996f3f49ca7e"
+    },
+    {
+      "bytes": 69507,
+      "path": "component.json",
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a"
+    },
+    {
+      "bytes": 8008,
+      "path": "fk-golden.json",
+      "sha256": "87dc76938e7687fb9543046c0fc1c3c8b522bf78c0ec286d9cd6d88206137d90"
+    },
+    {
+      "bytes": 3930,
+      "path": "physics.json",
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd"
+    },
+    {
+      "bytes": 3914,
+      "path": "programs.json",
+      "sha256": "af99b362b9d22ca2bbb327deef6ab820ae6de9dc181643e6ffd61b85e1ce0e48"
+    },
+    {
+      "bytes": 12148,
+      "path": "vendor-manifest.json",
+      "sha256": "4c8e12ba58f748c0a5aefd879a5b349261fe0ea10d0255f2c3485cd1c5c2dbfe"
+    }
+  ],
+  "generator": "scripts/generate-xarm6-fixture.mjs",
+  "id": "xarm6-g2-v1",
+  "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+  "not_calibrated": true,
+  "note": "UFACTORY xArm 6 (1305) + Gripper G2 from xarm_ros2 at a pinned commit. Masses, inertia, joint origins, limits and meshes are manufacturer nominal; layout, gains, friction, contact and pads are spike M00 assumptions. Not calibrated.",
+  "schemaVersion": 1,
+  "vendor": {
+    "commit": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+    "license": "BSD-3-Clause",
+    "repository": "https://github.com/xArm-Developer/xarm_ros2"
+  }
+}

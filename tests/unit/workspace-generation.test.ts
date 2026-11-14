@@ -3,6 +3,7 @@
 import {afterEach,expect,test,vi} from 'vitest';
 vi.stubGlobal('localStorage',{getItem:()=>'en',setItem:()=>{},removeItem:()=>{}});
 vi.stubGlobal('innerWidth',600);
+vi.stubGlobal('matchMedia',()=>({matches:false}));
 vi.stubGlobal('document',{getElementById:()=>null,querySelector:()=>null,activeElement:null,addEventListener(){},removeEventListener(){}});
 vi.stubGlobal('location',{origin:'http://127.0.0.1:4175',hostname:'127.0.0.1'});
 import type {RunReport,RunView,TwinHealth,TwinRuntime,ReadinessSnapshot} from '../../src/scenarios/controls';
@@ -95,4 +96,41 @@ test('item 4: a finished run whose report fetch failed: the Report tab says so a
  expect(w.html()).toContain('data-testid="report-missing"');expect(w.html()).toContain('data-action="twin-report-reload"');
  w.click('twin-report-reload');await vi.waitFor(()=>expect(h.busy).toBe(false));
  expect(calls.filter(c=>c==='report run').length).toBeGreaterThan(0);void report;
+});
+
+test('known cell Pause ACK updates controls while its independent full-prefix report is still materializing',async()=>{
+ const {w,h}=setup(),internal=w as unknown as {rt:TwinRuntime;act(kind:'pause'):Promise<void>};h.view!.run.backendSetId='engineering-mujoco-cell-v1';const paused={...structuredClone(h.view!),run:{...h.view!.run,status:'paused' as const,runRevision:9}},gate=deferred<RunReport>();
+ internal.rt.action=async()=>paused;internal.rt.report=()=>gate.promise;let finished=false;const pause=internal.act('pause').then(()=>{finished=true;});
+ await settle();expect(h.view!.run.status).toBe('paused');expect(finished).toBe(true);gate.resolve({...h.report!,outcome:{...h.report!.outcome,status:'paused'}});await pause;
+});
+
+test('active cell uses current read-only observations; full report materializes on explicit/final request',async()=>{
+ const {w,h}=setup(),internal=w as unknown as {rt:TwinRuntime;playing:boolean;ui:{inspectorOpen:boolean;tab:string};refreshReport(final?:boolean):void};h.view!.run.backendSetId='engineering-mujoco-cell-v1';internal.playing=true;internal.ui={...internal.ui,inspectorOpen:false,tab:'objects'};const report=vi.fn(async()=>h.report!);internal.rt.report=report;
+ internal.refreshReport();await settle();expect(report).not.toHaveBeenCalled();internal.refreshReport(true);await settle();expect(report).toHaveBeenCalledTimes(1);
+});
+
+test('cell retains one matched Source view/world horizon through a later action; no telemetry joins that pair',async()=>{
+ const {w,h}=setup(),internal=w as unknown as {world:unknown;worldView:RunView;worldReceived:number;frame():import('../../src/twin/scene').TwinFrame;applyView(v:RunView):void};const {knownWorldDrawing}=await import('../../src/twin/cell'),scene=(await import('../../public/replays/coffee-delivery/bundle/lab-world-scene.json')).default;
+ h.view!.run.backendSetId='engineering-mujoco-cell-v1';h.view!.tick=7;h.view!.simTimeNs='140000000';internal.worldView=structuredClone(h.view!);internal.worldReceived=performance.now();internal.world={...knownWorldDrawing(scene as unknown as import('../../src/shared/navigation2d').LabWorldSceneV1),record:{snapshot:{runId:h.view!.run.id,tick:7,simTimeNs:'140000000',robots:[],arms:[],props:[]},command:null,interactions:[]}};
+ internal.applyView({...h.view!,tick:8,simTimeNs:'160000000',run:{...h.view!.run,runRevision:99}});const frame=internal.frame();expect(frame.view!.tick).toBe(7);expect(frame.world!.record.snapshot.tick).toBe(7);expect(h.view!.tick).toBe(8);internal.worldReceived-=1000;expect(internal.frame().world).toBeUndefined();expect(internal.frame().view!.tick).toBe(8);
+});
+
+test('explicit new cell trial preserves and retires the previous paused run before new-world admission',async()=>{
+ const {w,h}=setup(),internal=w as unknown as {rt:TwinRuntime;create(p:unknown):Promise<void>;settlePrevious():Promise<void>;pinBlock():null};h.view!.run.backendSetId='engineering-mujoco-cell-v1';h.view!.run.status='paused';const calls:string[]=[];internal.pinBlock=()=>null;internal.settlePrevious=async()=>{calls.push('preserve+archive');};internal.rt.readiness=async()=>{calls.push('readiness');throw Error('ADMISSION_REACHED');};
+ await expect(internal.create(presetById('mujoco-cell'))).rejects.toThrow('ADMISSION_REACHED');expect(calls).toEqual(['preserve+archive','readiness']);
+});
+
+test('registered world stress selection keeps base-composition readiness and never launches a competing smoke',()=>{
+ const {w,h}=setup(),internal=w as unknown as {preset:unknown;rt:TwinRuntime};h.health={...health,capabilities:['sim3d_world_experiments_v1'],worldExperiments:[{id:'world-cup-fall-v1',requiresNewRun:true}]};internal.preset=presetById('mujoco-cell');const readiness={checkedAt:'x',expiresAt:'2099-01-01',scenarioId:'MJ-CELL-BV01',backendSetId:'engineering-mujoco-cell-v1',checks:[],canStart:true};h.readiness=readiness;const probe=vi.fn();internal.rt.readiness=probe;
+ w.change('twin-world-experiment','world-cup-fall-v1');expect(h.readiness).toBe(readiness);expect(probe).not.toHaveBeenCalled();
+});
+
+test('failed/unknown physical authority immediately discards a retained current-valid frame',()=>{
+ const {w,h}=setup(),internal=w as unknown as {world:unknown;worldView:RunView|null;applyView(v:RunView):void};internal.world={record:{snapshot:{runId:h.view!.run.id,tick:h.view!.tick}}};internal.worldView=structuredClone(h.view!);internal.applyView({...h.view!,run:{...h.view!.run,status:'needs_attention'},attention:[{tick:h.view!.tick,reason:'WORLD_UNKNOWN'}]});expect(internal.world).toBeNull();expect(internal.worldView).toBeNull();
+});
+
+test('a newer owner-scoped world observation refreshes matching Source context and repaints its displayed horizon',async()=>{
+ const {w,h,renders}=setup(),internal=w as unknown as {rt:TwinRuntime;left:boolean;refreshWorld():Promise<void>};const scene=(await import('../../public/replays/coffee-delivery/bundle/lab-world-scene.json')).default as unknown as import('../../src/shared/navigation2d').LabWorldSceneV1;h.view!.run.backendSetId='engineering-mujoco-cell-v1';h.view!.tick=0;h.view!.simTimeNs='0';internal.left=false;const current={...structuredClone(h.view!),tick:7,simTimeNs:'140000000',run:{...h.view!.run,runRevision:h.view!.run.runRevision+1}};
+ internal.rt.worldDisplayScene=async()=>({runId:current.run.id,availability:'available',reason:null,scene});internal.rt.worldDisplay=async()=>({version:1,runId:current.run.id,tick:7,revision:current.run.runRevision,simTimeNs:current.simTimeNs,availability:'valid',reason:null,control:null,controlReason:'NOT_RECORDED_AT_TICK',snapshot:{runId:current.run.id,bootId:'one-boot',sceneDigest:scene.sceneDigest,tick:7,simTimeNs:current.simTimeNs,arms:[],robots:[],props:[]} as unknown as import('../../src/shared/navigation2d').Sim3DSnapshotV1});internal.rt.get=async()=>current;
+ const before=renders();await internal.refreshWorld();expect(h.view!.tick).toBe(7);expect(renders()).toBeGreaterThan(before);
 });
