@@ -2336,8 +2336,8 @@ main:has(>.twin-shell){display:flex;flex-direction:column;min-height:0;padding:8
 .twin-measured{color:var(--amber)}
 /* U03: disabled transport buttons look disabled in every state (the brand rules reset the global dimming) */
 .twin-transport .button:disabled,.twin-transport .button[aria-disabled="true"]{opacity:.45;cursor:default}
-/* watch mode (W): the viewport, the simulation label, run status, sim time and the transport; Escape gives the rest back */
-#app:has(.twin-shell.watch) .topbar,#app:has(.twin-shell.watch) .sidebar,.twin-shell.watch .twin-runbar-left>:not([data-testid="mode-badge"]),.twin-shell.watch .twin-runbar-right>:not([data-testid="run-status"],[data-testid="run-tick"],[data-testid="recorded-tag"]),.twin-shell.watch .twin-runbar>.twin-popover:not(.twin-caveat),.twin-shell.watch .twin-inspector,.twin-shell.watch .twin-viewport-tools{display:none}
+/* watch mode (W): keep the transport and a touch-accessible exit; Escape also gives the rest back */
+#app:has(.twin-shell.watch) .topbar,#app:has(.twin-shell.watch) .sidebar,.twin-shell.watch .twin-runbar-left>:not([data-testid="mode-badge"]),.twin-shell.watch .twin-runbar-right>:not([data-testid="run-status"],[data-testid="run-tick"],[data-testid="recorded-tag"]),.twin-shell.watch .twin-runbar>.twin-popover:not(.twin-caveat),.twin-shell.watch .twin-inspector,.twin-shell.watch .twin-viewport-tools>:not(.twin-tool-row),.twin-shell.watch .twin-tool-row>:not([data-action="twin-watch"]){display:none}
 #app:has(.twin-shell.watch)>.app-layout{grid-template-columns:minmax(0,1fr)}
 .twin-shell.watch .twin-main{grid-template-columns:minmax(0,1fr)}
 .twin-shortcuts{position:fixed;inset:0;z-index:20;margin:auto;width:min(440px,calc(100vw - 32px));height:fit-content;padding:16px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px #0008}

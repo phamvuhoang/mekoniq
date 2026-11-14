@@ -16,6 +16,24 @@ async function dimmed(page:Page){
 }
 const noVerticalScroll=(page:Page)=>page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight);
 
+for(const viewport of [{width:390,height:844},{width:1024,height:768}])test(`watch mode can be exited by touch at ${viewport.width}px without a keyboard`,async({browser})=>{
+ const context=await browser.newContext({viewport,hasTouch:true}),page=await context.newPage();
+ try{
+  await page.goto('/#twin');
+  if(await page.getByTestId('runtime-popover').isVisible())await page.getByTestId('runtime-chip').tap();
+  await page.getByRole('button',{name:'Chế độ xem',exact:true}).tap();
+  await expect(page.locator('.twin-shell')).toHaveClass(/watch/);
+  const exit=page.getByRole('button',{name:'Thoát chế độ xem',exact:true});
+  await expect(exit).toBeVisible();await expect(exit).toHaveAttribute('aria-pressed','true');
+  await expect.poll(()=>exit.evaluate(e=>{const r=e.getBoundingClientRect();return Math.min(r.width,r.height);})).toBeGreaterThanOrEqual(44);
+  await exit.tap();
+  await expect(page.locator('.twin-shell')).not.toHaveClass(/watch/);
+  await expect(page.locator('.topbar')).toBeVisible();
+  await expect(page.getByTestId('scenario-picker')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Chế độ xem',exact:true})).toHaveAttribute('aria-pressed','false');
+ }finally{await context.close();}
+});
+
 test.describe.serial('transport bar, keys and watch mode',()=>{
  test.skip(!token,'Run scripts/test-mock-e2e.mjs twin-transport.spec.ts: it starts the pinned source runtime and supplies its one-time token.');
  test.describe.configure({timeout:180000});
