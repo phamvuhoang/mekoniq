@@ -1,3 +1,5 @@
+import physicsSchema from '../shared/engineering-schemas/physics-evidence-v1.schema.json';
+import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
 // Import is a trust boundary. Validate every structural field consumed by replay/UI before persistence.
 // Domain state remains extensible, but known display fields cannot override these types.
 import Ajv from 'ajv';
@@ -31,7 +33,14 @@ const engineeringEvidence=closed(obj({status:{enum:['pass','fail','not_run']},re
 const episode=obj({pair:{...arr(str),minItems:2,maxItems:2},source:str,fromTick:integer,toTick:integer});
 const navigation=obj({horizon:nullable(integer),coverage:{enum:['complete','incomplete']},reasons:arr(str),distanceM:nullable(record(num)),driveDistanceM:nullable(record(num)),collisionEpisodes:nullable(integer),safetyEnvelopeEpisodes:nullable(integer),
  episodes:arr(episode),minClearanceM:nullable(num),minSeparationM:nullable(num),sensorPublications:obj({expected:integer,recorded:integer,complete:bool})},[]);
+const physicsMetric:S={oneOf:[closed(obj({available:{const:true},value:num,unit:str,samples:integer})),closed(obj({available:{const:false},value:{type:'null'},unit:str,reason:str}))]};
+const physicsKeys=['loadDisplacementM','maxTiltRad','tiltExceededDurationS','wheelPositionResidualM','wheelYawResidualRad','contactPeakN','contactImpulseNs','stopDistanceM'];
+const physicsEvidence=closed(obj({manifest:{$ref:'physics-evidence-v1.schema.json'},manifestSha256:digest,complete:bool,issues:arr(str),metrics:closed(obj(Object.fromEntries(physicsKeys.map(k=>[k,physicsMetric]))))}));
+physicsEvidence.allOf=[{if:{type:'object',properties:{complete:{const:true}},required:['complete']},
+ then:{type:'object',properties:{issues:{type:'array',maxItems:0},manifest:{type:'object',properties:{coverage:{type:'object',properties:{complete:{const:true}}},gaps:{type:'array',maxItems:0},terminalReason:{type:'null'}}}}},
+ else:{type:'object',properties:{metrics:{type:'object',properties:Object.fromEntries(physicsKeys.map(k=>[k,{type:'object',properties:{available:{const:false}}}]))}}}}];
 const shape=obj({
+ physicsEvidence,
  manifest:obj({engineering:closed(obj({bundleDigest:digest,projectDigest:digest})),runId:str,sourceCommit:str,mode:{enum:['mock','simulation']},access:str,backendSetId:str,backends:arr(obj({id:str,version:str,model:str,dynamics:bool})),clock:obj({tickMs:{...integer,minimum:1,maximum:3600000},native:obj({provider:{const:'gazebo_nav2'},originNs:decimal,businessEpochMs:integer})},['tickMs']),seed:integer,scenario:identity,project:identity,world:identity,assets:arr(obj({id:str,revision:integer,contentHash:str,resolved:bool})),models:arr(obj({id:str,revision:{type:['string','number']},hash:str,provenance:str})),recipes:arr(identity),profiles:arr(obj({id:str,revision:integer,hash:str,provenance:str})),armCollisionScene:obj({hash:str,profile:nullable(obj({revision:integer},['revision'])),profileHash:nullable(str),world:obj({}),worldHash:str,robotGeometry:arr(obj({id:str,radiusM:nullable(num)}))})},['runId','sourceCommit','mode','access','backendSetId','backends','clock','seed','scenario','project','world','assets']),
  engineeringEvidence,
  outcome:obj({status:str,served:decimal,tick:integer,simTimeNs:decimal}),
@@ -43,5 +52,5 @@ const shape=obj({
  reconciliations:arr(obj({subjectId:str,commandId:nullable(str),nativeState:str,tick:integer})),coverage:record(bool),limitations:arr(str),
  coffee:obj({plantLog:arr(obj({})),jobs:arr(job),cups:arr(cup),armTrace:obj({tag:str,interpolation:str,modelRevision:str,limitsOk:bool,samples:arr(obj({tick:integer,q:arr(num),tcp:vector(3)})),collision:nullable(collision),stop:nullable(obj({latched:bool,reconcileRequired:bool,reason:str,events:arr(obj({tick:integer,stage:{enum:['requested','acknowledged','observed','reset']},reason:str,provenance:{const:'modelled'}}))}))},['tag','interpolation','modelRevision','limitsOk','samples'])},['jobs','cups','armTrace'])
 },['manifest','outcome','metrics','businessEvents','effects','faults','reconciliations','coverage','limitations']);
-const ajv=new Ajv({strict:true,allowUnionTypes:true});addFormats(ajv);
+const ajv=new Ajv({strict:true,allowUnionTypes:true});addFormats(ajv);ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicsSchema,'physics-evidence-v1.schema.json');
 export const validReportShape=ajv.compile<RunReport>(shape);
