@@ -21,7 +21,7 @@ const webotsReady = existsSync(exe) && existsSync(python) && (() => { try { retu
 const dirs: string[] = [];
 const opened: { close(r: string): Promise<void> }[] = [];
 afterEach(async () => { ownedProcesses.capture(); for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
-// anchored at the start of the command line: only the Webots executable and the controller scripts started with the interpreter, never a shell that merely mentions them
+// Retain the complete owned worker/engine/controller family across shutdown and reparenting.
 const ownedProcesses = new OwnedProcesses();
 const running = () => ownedProcesses.processes().map(p => String(p.pid));
 

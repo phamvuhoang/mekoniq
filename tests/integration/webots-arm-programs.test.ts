@@ -22,7 +22,7 @@ const HOME = process.env.MEKONIQ_WEBOTS_HOME ?? '/Applications/Webots.app', pyth
 const exe = join(HOME, 'Contents', 'MacOS', 'webots');
 const webotsReady = existsSync(exe) && existsSync(python) && (() => { try { return execFileSync(exe, ['--version'], { encoding: 'utf8', timeout: 30_000 }).includes('R2025a'); } catch { return false; } })();
 const ownedProcesses = new OwnedProcesses();
-const running = () => ownedProcesses.processes().map(p => String(p.pid));
+const runningEngineAndControllers = () => ownedProcesses.processes().filter(p => /\/Contents\/MacOS\/webots(?: |$)|webots_worker\/(supervisor|robot_controller|arm_controller)\.py(?: |$)/.test(p.command)).map(p => String(p.pid));
 
 const dirs: string[] = [], open: CoffeePlantPorts[] = [];
 afterEach(async () => { ownedProcesses.capture(); for (const p of open.splice(0)) await p.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
@@ -77,9 +77,9 @@ describe.skipIf(!webotsReady)('Webots arm programs (WA04)', () => {
 
   test('close leaves no Webots, no controller and no held slot', async () => {
     const { p } = await ports();
-    expect(running().length).toBeGreaterThanOrEqual(3);
+    expect(runningEngineAndControllers().length).toBeGreaterThanOrEqual(3);
     await p.close();
     await new Promise((r) => setTimeout(r, 700));
-    expect(running()).toEqual([]);
+    expect(ownedProcesses.processes()).toEqual([]);
   }, 120_000);
 });

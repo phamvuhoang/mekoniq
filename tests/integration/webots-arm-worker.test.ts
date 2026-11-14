@@ -20,9 +20,9 @@ const HOME = [0, -0.6, 1.2, 0, 0.6, 0];
 const dirs: string[] = [];
 const opened: { close(r: string): Promise<void> }[] = [];
 afterEach(async () => { ownedProcesses.capture(); for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
-// anchored at the start of the command line: only the Webots executable and the controller scripts started with the interpreter, never a shell that merely mentions them
+// Count engine/controller rows only after ownership; post-close checks include the worker too.
 const ownedProcesses = new OwnedProcesses();
-const running = () => ownedProcesses.processes().map(p => String(p.pid));
+const runningEngineAndControllers = () => ownedProcesses.processes().filter(p => /\/Contents\/MacOS\/webots(?: |$)|webots_worker\/(supervisor|robot_controller|arm_controller)\.py(?: |$)/.test(p.command)).map(p => String(p.pid));
 const webotsStateDirs = () => { try { return readdirSync('/tmp/webots/default').sort(); } catch { return []; } };
 
 type Component = { links: { id: string; massKg: { value: number } }[]; joints: { id: string; origin: { xyzM: number[]; quaternionXyzw: [number, number, number, number] }; axis: number[]; limits: { lower: { value: number }; upper: { value: number } } }[] };
@@ -115,11 +115,11 @@ describe.skipIf(!webotsReady)('Webots arm worker', () => {
     const t = await start();
     await t.create();
     for (let k = 0; k < 5; k++) { const r = await t.step(k, HOME); expect(r.ok).toBe(true); }
-    expect(running().length).toBeGreaterThanOrEqual(3); // Webots, the supervisor and the arm controller
+    expect(runningEngineAndControllers().length).toBeGreaterThanOrEqual(3); // Webots, the supervisor and the arm controller
     expect(webotsStateDirs().length).toBeGreaterThan(before.length); // the state dir Webots makes is the one the worker probes
     await t.w.close('done');
     await new Promise((r) => setTimeout(r, 700));
-    expect(running()).toEqual([]);
+    expect(ownedProcesses.processes()).toEqual([]);
     expect(webotsStateDirs()).toEqual(before);
     expect(execFileSync('find', [workerRoot, '-name', '__pycache__', '-not', '-path', '*/node_modules/*'], { encoding: 'utf8' }).trim()).toBe('');
   }, 120_000);
