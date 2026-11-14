@@ -2,7 +2,7 @@
 // and the ARM03 record. ARM03 here is the swept capsule check the arm ran on its ACTUAL joints every tick (D28); the record is assembled from those per-tick results, not re-derived.
 import {createHash} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
-import {join} from 'node:path';
+import {join,resolve} from 'node:path';
 import {writeDurable} from '../navigation2d/evidence';
 import type {ArmPlantState,ArmPropSample} from '../../../../cell-adapters/src/mock-arm';
 import type {JsonObject} from '../../../../contracts/src/index';
@@ -58,9 +58,16 @@ const allowedOf=(results:readonly {allowed?:{pairs:[string,string][]}}[],fromTic
 };
 /** Writes the trace beside the run's other files and returns the block. The file is the evidence: its sha256 is in the report, `readArmTrace` re-checks it. */
 const sha=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
+// Deferred reports may materialize the same immutable file concurrently. Coalesce only its publication, outside the Source action queue.
+const evidencePublications=new Map<string,Promise<void>>();
+async function publishEvidence(directory:string,path:string,bytes:Buffer){
+ const key=resolve(directory,path);let pending=evidencePublications.get(key);
+ if(!pending){pending=writeDurable(directory,path,bytes);evidencePublications.set(key,pending);}
+ try{await pending;}finally{if(evidencePublications.get(key)===pending)evidencePublications.delete(key);}
+}
 async function writeEvidence(directory:string,path:string,file:ArmTraceFile|ArmPropsFile,contentAddressed=false):Promise<FileRef>{
  const bytes=Buffer.from(JSON.stringify(file)),digest=sha(bytes),storedPath=contentAddressed?path.replace(/\.json$/,`-${digest}.json`):path;
- if(contentAddressed){const existing=await readFile(join(directory,storedPath)).catch((e:NodeJS.ErrnoException)=>{if(e.code==='ENOENT')return null;throw e;});if(existing){if(sha(existing)!==digest)throw Error('ARM_EVIDENCE_HASH_CONFLICT');}else await writeDurable(directory,storedPath,bytes);}else await writeFile(join(directory,storedPath),bytes,{mode:0o600});
+ if(contentAddressed){const existing=await readFile(join(directory,storedPath)).catch((e:NodeJS.ErrnoException)=>{if(e.code==='ENOENT')return null;throw e;});if(existing){if(sha(existing)!==digest)throw Error('ARM_EVIDENCE_HASH_CONFLICT');}else await publishEvidence(directory,storedPath,bytes);}else await writeFile(join(directory,storedPath),bytes,{mode:0o600});
  return {path:storedPath,sha256:digest,samples:file.samples.length};
 }
 export interface ArmReportOptions {collision?:ArmCollisionEvidenceRecord;worldTrace?:WorldArmTraceScope;contentAddressed?:boolean}
