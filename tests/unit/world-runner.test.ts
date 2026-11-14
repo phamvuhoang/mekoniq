@@ -8,6 +8,7 @@ import {createScenarioRun,type RunManifestInput} from '../../packages/lab-runtim
 import {defaultCatalog,type CapabilityCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
 import {scenarioRegistry} from '../../packages/lab-runtime/src/v2/scenario-registry';
 import {MockPlant} from '../../packages/lab-runtime/src/v2/backends/mock-amr';
+import {SourceSession} from '../../packages/lab-runtime/src/v2/session';
 import {createMockCoffeePorts} from '../../packages/lab-runtime/src/v2/beverage/coffee-ports';
 import type {WorldPortsFactory,WorldFactoryInput} from '../../packages/lab-runtime/src/v2/simulation3d/world-ports';
 import type {RobotAdapter} from '../../packages/robot-adapters/src/contract';
@@ -103,4 +104,11 @@ test('explicit world reclaim never respawns and refuses a missing committed worl
  const reopened=await h.open(true);expect(h.opens()).toBe(1);expect((await reopened.snapshot()).tick).toBe(1);await reopened.close();
  const path=join(h.directory,'run.json'),cp=JSON.parse(await fs.readFile(path,'utf8'));delete cp.world;await fs.writeFile(path,JSON.stringify(cp));
  await expect(h.open(true)).rejects.toThrow('RECOVERY_CHECKPOINT_MISSING');expect(h.opens()).toBe(1);
+});
+for(const missing of ['snapshot','bootId','sceneDigest','runId','tick','coffee','arm'] as const)test(`explicit world reclaim refuses missing or mismatched ${missing} before resources and persistence`,async()=>{
+ const h=await setup(),run=await h.open();await run.start();await act(run,'step',{ticks:1});await run.close();
+ const path=join(h.directory,'run.json'),cp=JSON.parse(await fs.readFile(path,'utf8'));
+ if(missing==='snapshot')cp.world={};else if(missing==='coffee')delete cp.coffee;else if(missing==='arm')delete cp.coffee.arm;else if(missing==='tick')cp.world.snapshot.tick=0;else delete cp.world.snapshot[missing];
+ const bytes=JSON.stringify(cp);await fs.writeFile(path,bytes);const journal=await fs.readFile(join(h.directory,'journal.db')),files=await fs.readdir(h.directory),opening=vi.spyOn(SourceSession,'open');let unexpected:Awaited<ReturnType<typeof h.open>>|undefined;
+ try{await expect(h.open(true).then(value=>{unexpected=value;return 'RECOVERY_ACCEPTED';})).rejects.toThrow('RECOVERY_STATE_INVALID');expect(opening).not.toHaveBeenCalled();expect(h.opens()).toBe(1);expect(await fs.readFile(path,'utf8')).toBe(bytes);expect((await fs.readFile(join(h.directory,'journal.db'))).equals(journal)).toBe(true);expect(await fs.readdir(h.directory)).toEqual(files);}finally{opening.mockRestore();await unexpected?.close();}
 });

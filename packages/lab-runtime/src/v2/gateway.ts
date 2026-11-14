@@ -49,7 +49,7 @@ const UUID='[0-9a-f-]{36}';
 const PAIRING_FAILURES=5,PAIRING_WINDOW_MS=60000;
 const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
 // the MuJoCo slot is taken: a conflict, as IR-SIM's; the engine could not create the cell: unavailable, not a runtime failure (the Webots codes keep 500)
-const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
+const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$|^RECOVERY_(STATE_INVALID|CHECKPOINT_MISSING)$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
 export function createV2Gateway(deps:V2Deps){
  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
  const sessions=new Map<string,{publicId:string;csrf:string;expiresAt:number}>();
@@ -62,10 +62,13 @@ export function createV2Gateway(deps:V2Deps){
  /** Unknown residue has unknown size: refuse new exports, never follow/adopt/delete it. */
  const replayDiskOccupied=async()=>{const root=join(deps.directory,'replay-exports'),known=new Set([...replayPackages.keys(),...replayWork.keys()]),stat=await lstat(root).catch((e:NodeJS.ErrnoException)=>{if(e.code==='ENOENT')return null;throw Error('REPLAY_RECOVERY_REQUIRED');});if(!stat)return 0;if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('REPLAY_RECOVERY_REQUIRED');try{let count=0;for await(const entry of await opendir(root,{bufferSize:8})){if(entry.isSymbolicLink()||!entry.isDirectory()||!known.has(entry.name))throw Error('REPLAY_RECOVERY_REQUIRED');if(++count>=8)break;}return count;}catch{throw Error('REPLAY_RECOVERY_REQUIRED');}};
  const dropReplayRun=(runId:string)=>replaySerial(async()=>{for(const [key,p]of replayPackages)if(p.runId===runId){await rm(p.directory,{recursive:true,force:true});replayPackages.delete(key);}});
- type Entry={owner:string;readers:Set<string>;controlEpoch:number;queue:Promise<void>;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput};
+ type Entry={owner:string;readers:Set<string>;controlEpoch:number;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput};
  const runs=new Map<string,Entry>();let creating=0;
  const readable=(e:Entry,id:string)=>e.owner===id||e.readers.has(id);
- const serial=<T>(e:Entry,work:()=>Promise<T>)=>{const pending=e.queue.then(work);e.queue=pending.then(()=>undefined,()=>undefined);return pending;};
+ // Reserve the logical run before selecting an entry: cold reclaim and existing-entry work share one queue.
+ const runQueues=new Map<string,Promise<void>>();
+ const serialRun=<T>(id:string,work:()=>Promise<T>)=>{const pending=(runQueues.get(id)??Promise.resolve()).then(work),settled=pending.then(()=>undefined,()=>undefined);runQueues.set(id,settled);void settled.then(()=>{if(runQueues.get(id)===settled)runQueues.delete(id);});return pending;};
+ const serial=<T>(e:Entry,work:()=>Promise<T>)=>serialRun(e.run.id,work);
  const writerView=(e:Entry)=>({runId:e.run.id,sessionId:e.readOnly?null:sessions.get(e.owner)?.publicId??null,controlEpoch:e.controlEpoch});
  const authority=(e:Entry,id:string,epoch:string|undefined,allowReconcile=false)=>{
   const session=sessions.get(id);if(!session||deps.now()>=session.expiresAt)throw Error('SESSION_REQUIRED');
@@ -79,7 +82,7 @@ export function createV2Gateway(deps:V2Deps){
  // Readiness and creation share cleanup. Concurrent callers wait for the worker to close before probing its slot.
  let expiryCleanup=Promise.resolve();
  const closeExpiredRuns=()=>expiryCleanup=expiryCleanup.then(async()=>{
-  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){await serial(e,async()=>{const current=sessions.get(e.owner);if(current&&deps.now()<current.expiresAt)return;runs.delete(id);await e.run.close();await dropReplayRun(id);});}}
+  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){await serial(e,async()=>{const current=sessions.get(e.owner);if(runs.get(id)!==e||current&&deps.now()<current.expiresAt)return;runs.delete(id);await e.run.close();await dropReplayRun(id);});}}
  });
  const reclaiming=new Set<string>();
  let pairingFailures:number[]=[];
@@ -280,7 +283,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
     // the run → bundle association is durable before the client hears about the run
     if(engineering)await deps.engineering!.bindRun(run.id,engineering.ref);
-    const view=await run.snapshot();const entry:Entry={owner:sessionId,readers:new Set(),controlEpoch:0,queue:Promise.resolve(),run,directory,input};runs.set(run.id,entry);return send(response,201,{...view,reclaimToken,writer:writerView(entry)});
+    const view=await run.snapshot();const entry:Entry={owner:sessionId,readers:new Set(),controlEpoch:0,run,directory,input};runs.set(run.id,entry);return send(response,201,{...view,reclaimToken,writer:writerView(entry)});
    }catch(e){await run?.close().catch(()=>{});if(r.mode==='mock')await rm(directory,{recursive:true,force:true});return failed(response,e);}
    finally{creating--;}
   }
@@ -306,12 +309,13 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(kind==='reclaim'){
    const body=await deps.readBody(request),id=runRoute![1]!;
    if(Object.keys(body).some(k=>k!=='proof')||typeof body.proof!=='string'||body.proof.length>200)return deny(response,422,'INVALID_RECLAIM',[]);
-   const stored=await findReclaim(deps.directory,id);
-   if(!stored||!deps.same(proofHash(body.proof),stored.record.proofHash))return deny(response,404,'RUN_NOT_FOUND',[]);
+   const proof=body.proof;
+   return serialRun(id,async()=>{
+   const entry=runs.get(id),stored=await findReclaim(deps.directory,id);
+   if(!stored||!deps.same(proofHash(proof),stored.record.proofHash))return deny(response,404,'RUN_NOT_FOUND',[]);
    if(stored.record.schemaHash!==deps.schemaHash||stored.record.input.sourceCommit!==deps.sourceCommit)return deny(response,409,'CONTRACT_MISMATCH',['CONTRACT_MISMATCH']);
    if(reclaiming.has(id)||entry?.archiving)return deny(response,409,'RECLAIM_CONFLICT',[]);
    if(!entry&&runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
-   const reclaim=async()=>{
    if(sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,401,'SESSION_REQUIRED',[]);
    reclaiming.add(id);if(!entry)creating++;let reopened:ScenarioRun|undefined;
    try{
@@ -323,11 +327,11 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     const closure=locked&&deps.engineering?await deps.engineering.verifyClosure(locked.ref.bundleDigest):null;
     const view=await run.holdForReclaim();
     const epoch=Math.max(entry?.controlEpoch??0,stored.record.controlEpoch??0)+1;await saveControlEpoch(stored.directory,epoch);
-    if(entry){entry.owner=sessionId;entry.readOnly=true;entry.readers.clear();entry.controlEpoch=epoch;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,readers:new Set(),controlEpoch:epoch,queue:Promise.resolve(),run,directory:stored.directory,readOnly:true,input:stored.record.input});
+    if(entry){entry.owner=sessionId;entry.readOnly=true;entry.readers.clear();entry.controlEpoch=epoch;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,readers:new Set(),controlEpoch:epoch,run,directory:stored.directory,readOnly:true,input:stored.record.input});
     // Only the proof-protected record supplies reset/evidence inputs; the caller cannot substitute a project or seed.
     return send(response,200,{...view,writer:writerView(runs.get(id)!),controlAccess:'view_reconcile',lockedInput:structuredClone(stored.record.input),...closure?{engineeringClosure:{status:closure.length?'missing':'ok',problems:closure}}:{}});
    }catch(e){await reopened?.close().catch(()=>{});return failed(response,e);}finally{reclaiming.delete(id);if(!entry)creating--;}
-   };return entry?serial(entry,reclaim):reclaim();
+   });
   }
   if(kind==='actions'){
    const action=validateActionV2(await deps.readBody(request));

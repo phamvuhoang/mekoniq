@@ -1,4 +1,5 @@
-import {afterEach,expect,test} from 'vitest';
+import {afterEach,expect,test,vi} from 'vitest';
+import {SourceSession} from '../../packages/lab-runtime/src/v2/session';
 import {mkdtemp,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -70,6 +71,14 @@ test('actual Mac portable MuJoCo arm closes via public gateway, releases only it
 test('reclaim-only creation refuses an empty root rather than creating any simulated run',async()=>{
  const {createScenarioRun}=await import('../../packages/lab-runtime/src/v2/scenario-runner'),{manifestFor}=await import('../support/lab-v2');
  await expect(createScenarioRun(manifestFor('FD01',{seed:1}),{directory:await temp(),enabledBackends:['mock_amr'],reclaimOnly:true})).rejects.toThrow('RECOVERY_CHECKPOINT_MISSING');
+});
+for(const missing of ['coffee','arm','arm.q','arm.bootId','plant'] as const)test(`explicit arm reclaim refuses missing ${missing} before opening Source or changing retained bytes`,async()=>{
+ const {readFile,readdir}=await import('node:fs/promises'),{createScenarioRun}=await import('../../packages/lab-runtime/src/v2/scenario-runner'),{manifestFor,coffeeProject,amrAsset,COFFEE_BACKENDS}=await import('../support/lab-v2');
+ const directory=await temp(),input={...manifestFor('BV01',{seed:1,project:coffeeProject()}),backendSetId:'mock-default'},providers={directory,assets:[amrAsset],enabledBackends:COFFEE_BACKENDS};
+ const original=await createScenarioRun(input,providers);await original.close();const path=join(directory,'run.json'),cp=JSON.parse(await readFile(path,'utf8'));
+ if(missing==='coffee')delete cp.coffee;else if(missing==='arm.q')delete cp.coffee.arm.q;else if(missing==='arm.bootId')delete cp.coffee.arm.bootId;else delete cp.coffee[missing];
+ const bytes=JSON.stringify(cp);await writeFile(path,bytes);const journal=await readFile(join(directory,'journal.db')),files=await readdir(directory),opening=vi.spyOn(SourceSession,'open');let unexpected:Awaited<ReturnType<typeof createScenarioRun>>|undefined;
+ try{await expect(createScenarioRun(input,{...providers,reclaimOnly:true}).then(run=>{unexpected=run;return 'RECOVERY_ACCEPTED';})).rejects.toThrow('RECOVERY_STATE_INVALID');expect(opening).not.toHaveBeenCalled();expect(await readFile(path,'utf8')).toBe(bytes);expect((await readFile(join(directory,'journal.db'))).equals(journal)).toBe(true);expect(await readdir(directory)).toEqual(files);}finally{opening.mockRestore();await unexpected?.close();}
 });
 test('an unwritable or symlinked data root is refused before any provider setup',async()=>{
  const {chmod,symlink}=await import('node:fs/promises'),directory=await temp();let prepared=false;

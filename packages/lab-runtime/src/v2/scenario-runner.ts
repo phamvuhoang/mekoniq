@@ -1,6 +1,6 @@
 import {worldExperiment,type WorldExperimentId} from './simulation3d/world-disturbance';
 import type {RobotAdapter} from '../../../robot-adapters/src/contract';
-import type {Sim3DSnapshotV1} from './navigation2d/contracts';
+import {validateSim3DResponse,type Sim3DSnapshotV1} from './navigation2d/contracts';
 import type {WorldPlantBindings,WorldPortsFactory} from './simulation3d/world-ports';
 import type {WorldTickCommand} from './simulation3d/world-ports';
 import {retainedWorldArmReports} from './simulation3d/world-arm-report';
@@ -74,6 +74,23 @@ interface Checkpoint {
 }
 class SimulatedCrash extends Error {constructor(){super('SIMULATED_CRASH');}}
 const ID=/^[A-Za-z0-9_.:-]{1,200}$/;
+/** Recovery needs retained state, not fresh defaults. Optional trace/report coverage remains optional. */
+function validateRecoveryState(cp:Checkpoint,coffee:Roles['coffee']|undefined,singleWorld:boolean){
+ const object=(value:unknown)=>!!value&&typeof value==='object'&&!Array.isArray(value),integer=(value:unknown)=>Number.isSafeInteger(value)&&Number(value)>=0;
+ const fail=()=>{throw Error('RECOVERY_STATE_INVALID');};
+ if(cp.schemaVersion!==2||typeof cp.runId!=='string'||!ID.test(cp.runId)||cp.manifest?.runId!==cp.runId||!integer(cp.tick)||!object(cp.plant)||!Array.isArray(cp.plant.robots))fail();
+ if(coffee){
+  const c=cp.coffee,a=c?.arm,p=c?.plant;
+  if(!c||c.stationId!==coffee.stationId||c.cellId!==coffee.cellId||c.armId!==coffee.armId||!Array.isArray(c.workload)||!object(c.sessions)||!object(c.trays))fail();
+  if(!a||a.deviceId!==coffee.armId||typeof a.bootId!=='string'||!a.bootId||!integer(a.seq)||!integer(a.tick)||!Array.isArray(a.q)||a.q.length!==6||!a.q.every(Number.isFinite)||!['open','closed'].includes(a.gripper)||!Array.isArray(a.programs)||!Array.isArray(a.modifiers)||!Array.isArray(a.trace))fail();
+  if(!p||p.cellId!==coffee.cellId||!integer(p.tick)||!Array.isArray(p.devices)||!p.devices.length||!Array.isArray(p.cups)||!Array.isArray(p.commands)||!Array.isArray(p.modifiers)||!Array.isArray(p.log))fail();
+ }
+ if(singleWorld){
+  const s=cp.world?.snapshot;
+  if(!s||s.runId!==cp.runId||s.tick!==cp.tick||typeof s.bootId!=='string'||!s.bootId||typeof s.sceneDigest!=='string'||!/^[a-f0-9]{64}$/.test(s.sceneDigest))return fail();
+  if(!validateSim3DResponse({protocol:'mekoniq-sim3d/1',requestId:'retained-recovery',runId:s.runId,bootId:s.bootId,tick:s.tick,ok:true,result:s}).ok||!cp.roles.robots.every(r=>s.robots.some(robot=>robot.robotId===r.id))||!s.arms?.some(a=>a.armId===coffee?.armId))fail();
+ }
+}
 function activeFaultEntities(project:LabProjectV2,roles:Roles){const ids=new Set([...roles.robots.map(r=>r.id),...roles.coffee?[roles.coffee.cellId,roles.coffee.armId]:[]]);return project.entities.filter(e=>ids.has(e.id));}
 /** Runtime checks the JSON schema cannot express: unique ids, everything inside the world. */
 /** `armModel`: the arm model of the run's arm provider (the set's, never the project's); a profile for another model is ARM_COLLISION_MODEL_MISMATCH. */
@@ -125,10 +142,11 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
   models:[...singleWorld?[]:[{id:MOCK_AMR.id,revision:MOCK_AMR.version,hash:hashJson(MOCK_AMR_PARAMS),provenance:'illustrative'}],...scenario.coffee?[{id:'mock_coffee',revision:'1',hash:hashJson(MOCK_COFFEE_PARAMS),provenance:'illustrative'},{id:armModel.id,revision:armModel.revision,hash:hashJson(armProfile),provenance:armModel===XARM6_SI?'manufacturer_nominal':'illustrative_reference'}]:[]],
   profiles:[{id:'mock-runtime',revision:1,hash:configuration.hash,provenance:'illustrative'},...armCollisionScene?.profile?[{id:armCollisionScene.profile.id,revision:armCollisionScene.profile.revision,hash:armCollisionScene.profileHash!,provenance:armCollisionScene.profile.provenance}]:[]],calibration:{status:'not_calibrated',revision:null,hash:null,reason:'MOCK_ILLUSTRATIVE'},...armCollisionScene?{armCollisionScene}:{},...program?{armProgram:structuredClone(program)}:{}};
  const manifestHash=hashJson(manifest),dir=providers.directory;
- await mkdir(dir,{recursive:true,mode:0o700});await chmod(dir,0o700);
+ if(!providers.reclaimOnly){await mkdir(dir,{recursive:true,mode:0o700});await chmod(dir,0o700);}
  let cp=await readCheckpoint<Checkpoint>(dir);
  if(cp&&cp.manifestHash!==manifestHash)throw new Error('RUN_IDENTITY_MISMATCH');
  if(providers.reclaimOnly&&(!cp||singleWorld&&!cp.world))throw Error('RECOVERY_CHECKPOINT_MISSING');
+ if(providers.reclaimOnly)validateRecoveryState(cp!,scenario.coffee?roles.coffee:undefined,singleWorld===true);
  const fresh=!cp;
  if(fresh&&(await readdir(dir)).length)throw new Error('RECOVERY_CHECKPOINT_MISSING');
  if(!cp){

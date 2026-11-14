@@ -4,6 +4,9 @@ import {mkdtemp,mkdir,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {randomUUID} from 'node:crypto';
+import type {IncomingMessage,ServerResponse} from 'node:http';
+import {createV2Gateway} from '../../packages/lab-runtime/src/v2/gateway';
+import {saveReclaim,findReclaim,proofHash} from '../../packages/lab-runtime/src/v2/reclaim-store';
 import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
 import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
 import {TelemetryRecorder} from '../../packages/lab-runtime/src/v2/telemetry';
@@ -11,6 +14,37 @@ import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runne
 import {xarmProject} from '../support/mujoco-arm';
 const gateways:LabGateway[]=[],dirs:string[]=[];afterEach(async()=>{for(const g of gateways.splice(0))await g.close();for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
 const origin='http://127.0.0.1:4175';
+test('cold recovery state refusals retain stable public conflict codes and private proof checks',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'writer-refusal-'));dirs.push(directory);const runDirectory=join(directory,'run'),id=randomUUID();await mkdir(runDirectory);
+ await saveReclaim(runDirectory,{runId:id,proofHash:proofHash('proof'),schemaHash:'a'.repeat(64),input:{mode:'simulation',sourceCommit:'test'} as never});
+ let code='RECOVERY_STATE_INVALID',opens=0;const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{simulationFactory:async()=>{opens++;throw Error(code);}}});gateways.push(g);
+ const paired=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({token:g.pairingToken})}),token=(await paired.json()).sessionToken;
+ const reclaim=async(proof:string)=>fetch(g.url+`/lab/v2/runs/${id}/reclaim`,{method:'POST',headers:{origin,'content-type':'application/json',authorization:`Bearer ${token}`},body:JSON.stringify({proof})});
+ expect((await reclaim('wrong')).status).toBe(404);expect(opens).toBe(0);
+ for(code of ['RECOVERY_STATE_INVALID','RECOVERY_CHECKPOINT_MISSING']){const response=await reclaim('proof');expect(response.status).toBe(409);expect(await response.json()).toMatchObject({error:code});}
+ expect((await findReclaim(directory,id))!.record.controlEpoch??0).toBe(0);
+});
+test('delayed cold reclaim reuses the current runner, fences its previous owner and closes every opened resource',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'writer-cold-'));dirs.push(directory);const runDirectory=join(directory,'run'),id=randomUUID();await mkdir(runDirectory);
+ await saveReclaim(runDirectory,{runId:id,proofHash:proofHash('proof'),schemaHash:'schema',input:{mode:'simulation',sourceCommit:'test'} as never});
+ const gate=()=>{let release!:()=>void;return {promise:new Promise<void>(r=>release=r),release:()=>release()};},body=gate(),entered=gate(),action=gate(),actionEntered=gate();let opens=0,closes=0;
+ const requests=new WeakMap<IncomingMessage,Record<string,unknown>>(),responses=new WeakMap<ServerResponse,{status:number;body:Record<string,unknown>}>(),owned:ScenarioRun[]=[];
+ const g=createV2Gateway({directory,sourceCommit:'test',schemaHash:'schema',now:()=>0,pairingValid:()=>true,spendPairing(){},same:(a,b)=>a===b,readBody:async request=>{if(request.headers['x-delay']){entered.release();await body.promise;}return requests.get(request)!;},send:(response,status,value)=>{responses.set(response,{status,body:value as Record<string,unknown>});},simulationFactory:async()=>{
+  opens++;let closed=false;const view=()=>({run:{id,runRevision:0},tick:1});const run={id,holdForReclaim:async()=>view(),snapshot:async()=>view(),action:async(_a:unknown,before?:()=>Promise<void>)=>{actionEntered.release();await action.promise;await before?.();return view();},close:async()=>{if(!closed){closed=true;closes++;}}} as unknown as ScenarioRun;owned.push(run);return run;
+ }});
+ const call=async(path:string,value:Record<string,unknown>,token?:string,delay=false)=>{const request={method:'POST',headers:{...token?{authorization:`Bearer ${token}`}:{},...delay?{'x-delay':'1'}:{}}} as IncomingMessage,response={setHeader(){}} as unknown as ServerResponse;requests.set(request,value);await g(request,response,'/lab/v2'+path,origin);return responses.get(response)!;};
+ const pair=async()=>String((await call('/sessions',{token:'pair'})).body.sessionToken),path=`/runs/${id}`;
+ let pending:Promise<unknown>|undefined,acting:Promise<unknown>|undefined;
+ try{
+  const a=await pair(),b=await pair();pending=call(path+'/reclaim',{proof:'proof'},a,true);await entered.promise;
+  const first=await call(path+'/reclaim',{proof:'proof'},b);expect(first.status).toBe(200);expect(first.body.writer).toMatchObject({controlEpoch:1});
+  acting=call(path+'/actions',{actionId:'reconcile',expectedRevision:0,kind:'reconcile',payload:{subjectId:'arm-1'}},b);await actionEntered.promise;
+  body.release();let recovered=false;const done=pending.then(r=>{recovered=true;return r as Awaited<ReturnType<typeof call>>;});await new Promise<void>(r=>setImmediate(r));expect(recovered).toBe(false);
+  action.release();expect((await acting as Awaited<ReturnType<typeof call>>).status).toBe(200);const second=await done;expect(second.status).toBe(200);expect(second.body.writer).toMatchObject({controlEpoch:2});expect(opens).toBe(1);
+  expect((await findReclaim(directory,id))!.record.controlEpoch).toBe(2);expect((await call(path+'/actions',{actionId:'old-owner',expectedRevision:0,kind:'reconcile',payload:{subjectId:'arm-1'}},b)).status).toBe(404);
+  await g.close();expect(closes).toBe(opens);
+ }finally{body.release();action.release();await Promise.allSettled([pending,acting]);await g.close();for(const run of owned)await run.close();}
+});
 async function fixture(){
  const directory=await mkdtemp(join(tmpdir(),'writer-'));dirs.push(directory);let now=1000,steps=0,closed=0,revision=0;let hold:Promise<void>|undefined,closeHold:Promise<void>|undefined,journalHold:Promise<void>|undefined;const id=randomUUID(),view=()=>({run:{id,runRevision:revision,status:'running'},tick:steps});
  const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),nowMs:()=>now,v2:{catalog:{...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_arm'?{...b,installed:true,compatible:true,reachable:true,reason:undefined}:b)},enabledBackends:['mock_amr','mock_coffee','mujoco_arm'],portableChecks:async()=>['model','clock','fixture','profile','runner'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'protocol_double'})),simulationFactory:async(_i,p)=>{await mkdir(p.directory,{recursive:true});return {id,snapshot:async()=>view(),report:async()=>({manifest:{runId:id}}),holdForReclaim:async()=>view(),action:async(a:{kind:string},before?:()=>Promise<void>)=>{if(hold)await hold;await before?.();if(a.kind==='step')steps++;revision++;return view();},close:async()=>{closed++;if(closeHold)await closeHold;},pulse:()=>({tick:steps,paused:true,runRevision:revision}),journal:async()=>{if(journalHold)await journalHold;return [];},telemetry:new TelemetryRecorder()} as unknown as ScenarioRun;}}});gateways.push(g);
