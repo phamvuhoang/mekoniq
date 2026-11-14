@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-14T00:22:57Z",
+  "userInstruction": "cho phép",
+  "project": "mekoniq",
+  "region": "asia-southeast1",
+  "scope": [
+    "create runtime infrastructure",
+    "push runtime image to Artifact Registry",
+    "deploy Cloud Run",
+    "execute CL01"
+  ],
+  "doesNotAuthorize": [
+    "push source/main or lab/main",
+    "accept qualification records"
+  ]
+}

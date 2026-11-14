@@ -1,0 +1,18 @@
+
+ RUN  v4.1.12 <workspace>/lab
+
+stdout | tests/unit/arm-mesh.test.ts > at every golden pose the mesh flange is flangeChainM (≤ 1e-6 m): the component's joint chain, not the D-H table
+mesh flange vs flangeChainM: largest difference 1.349e-12 m over 20 poses
+
+ ✓ tests/integration/runtime-artifact.test.ts (5 tests) 142ms
+ ✓ tests/unit/arm-mesh.test.ts (13 tests) 178ms
+ ✓ tests/integration/mujoco-launcher.test.ts (5 tests) 294ms
+ ✓ tests/unit/mujoco-coffee.test.ts (9 tests) 5ms
+ ✓ tests/unit/runtime-popover.test.ts (16 tests) 142ms
+
+ Test Files  5 passed (5)
+      Tests  48 passed (48)
+   Start at  07:36:25
+   Duration  692ms (transform 694ms, setup 0ms, import 1.24s, tests 761ms, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-arm-unit.json

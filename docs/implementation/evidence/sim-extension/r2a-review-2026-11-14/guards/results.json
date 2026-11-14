@@ -1,0 +1,27 @@
+[
+  {
+    "guard": "irsim",
+    "exitCode": 0,
+    "log": "irsim.log"
+  },
+  {
+    "guard": "r1-candidate-07",
+    "exitCode": 0,
+    "log": "r1-candidate-07.log"
+  },
+  {
+    "guard": "r11-candidate-04",
+    "exitCode": 0,
+    "log": "r11-candidate-04.log"
+  },
+  {
+    "guard": "r2a-candidate-02",
+    "exitCode": 0,
+    "log": "r2a-candidate-02.log"
+  },
+  {
+    "guard": "cloud-run",
+    "exitCode": 0,
+    "log": "cloud-run.log"
+  }
+]

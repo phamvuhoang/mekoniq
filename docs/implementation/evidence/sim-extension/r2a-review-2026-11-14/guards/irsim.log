@@ -1,0 +1,15 @@
+
+> mekoniq-platform@ test:acceptance /Users/hoangpham/source/prv/robot/source
+> node scripts/test-runner.mjs acceptance -- linkforge-irsim
+
+
+ RUN  v4.1.12 /Users/hoangpham/source/prv/robot/source
+
+ ✓ tests/acceptance/linkforge-irsim.acceptance.test.ts (6 tests) 468ms
+   ✓ the record is complete and consistent with every file beside it (fail-closed check shared with the recorder)  401ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  08:01:55
+   Duration  591ms (transform 24ms, setup 0ms, import 34ms, tests 468ms, environment 0ms)
+

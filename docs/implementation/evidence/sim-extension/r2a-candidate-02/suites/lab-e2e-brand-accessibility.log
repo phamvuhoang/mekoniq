@@ -1,0 +1,25 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>/mekoniq-mock-e2e-8D0p4d/runs-brand-accessibility.spec.ts
+Owned processes: runtime pid 45937, UI pid 45938
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 703 ms. Press Ctrl-C to stop.
+Running brand-accessibility.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 9 tests using 1 worker
+
+(node:45955) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/brand-accessibility.spec.ts:7:86 › accessible brand surface: design (806ms)
+  ✓  2 tests/e2e/brand-accessibility.spec.ts:7:86 › accessible brand surface: restaurant (538ms)
+  ✓  3 tests/e2e/brand-accessibility.spec.ts:7:86 › accessible brand surface: scenarios (545ms)
+  ✓  4 tests/e2e/brand-accessibility.spec.ts:7:86 › accessible brand surface: twin (580ms)
+  ✓  5 tests/e2e/brand-accessibility.spec.ts:7:86 › accessible brand surface: results (491ms)
+  ✓  6 tests/e2e/brand-accessibility.spec.ts:7:86 › accessible brand surface: deployment (535ms)
+  ✓  7 tests/e2e/brand-accessibility.spec.ts:11:1 › accessible twin page: each details tab open, then the Display menu open (with the viewport tool buttons) (982ms)
+  ✓  8 tests/e2e/brand-accessibility.spec.ts:18:1 › compact heading controls retain touch targets (429ms)
+  ✓  9 tests/e2e/brand-accessibility.spec.ts:27:1 › print captions and highlighted values use dark ink (437ms)
+
+  9 passed (6.3s)
+
+Stopping the runtime and UI this launcher started…

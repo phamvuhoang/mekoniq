@@ -1,0 +1,26 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>/mekoniq-mock-e2e-3layMO/runs-twin-polish.spec.ts
+Owned processes: runtime pid 45716, UI pid 45717
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 656 ms. Press Ctrl-C to stop.
+Running twin-polish.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 10 tests using 1 worker
+
+(node:45738) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/e2e/twin-polish.spec.ts:26:2 › twin page polish › a notice is shown in the banner, not counted; an emptied problems box does not reopen by itself (501ms)
+  ✓   2 tests/e2e/twin-polish.spec.ts:42:2 › twin page polish › running: a plain runtime word on the bar, the telemetry detail in the Engineering tab and the runtime box, repainted live (1.5s)
+  ✓   3 tests/e2e/twin-polish.spec.ts:58:2 › twin page polish › Engineering tab with the arm selected: one block per quantity, nothing wider than the panel (190ms)
+  ✓   4 tests/e2e/twin-polish.spec.ts:70:2 › twin page polish › Objects tab: the current cup line keeps its distance from the job cards (42ms)
+  ✓   5 tests/e2e/twin-polish.spec.ts:76:2 › twin page polish › one attention problem: one card holding its chain, object buttons by name; the box stays closed; the scenario name is not cut (356ms)
+  ✓   6 tests/e2e/twin-polish.spec.ts:103:2 › twin page polish › the runtime box repeats the telemetry detail, repainted live (181ms)
+  ✓   7 tests/e2e/twin-polish.spec.ts:113:2 › twin page polish › scenario picker: a preset that cannot run gives one reason per backend (77ms)
+  ✓   8 tests/e2e/twin-polish.spec.ts:122:2 › twin page polish › toolbar buttons expose their state; ? moves focus into the key list and back; one twin-help button; the label explains itself in watch mode (478ms)
+  ✓   9 tests/e2e/twin-polish.spec.ts:147:2 › twin page polish › replay: no live action on the run bar, a recorded tag, no run speed; Space on the scrubber plays, a held Space toggles once (579ms)
+  ✓  10 tests/e2e/twin-polish.spec.ts:173:2 › twin page polish › 1024 × 700: no vertical scroll and the run bar keeps its one row (117ms)
+
+  10 passed (5.2s)
+
+Stopping the runtime and UI this launcher started…

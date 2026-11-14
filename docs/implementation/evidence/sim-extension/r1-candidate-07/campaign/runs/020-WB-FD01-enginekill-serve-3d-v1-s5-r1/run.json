@@ -1,0 +1,67 @@
+{
+ "id": "020-WB-FD01-enginekill-serve-3d-v1-s5-r1",
+ "index": 15,
+ "scenarioId": "WB-FD01-enginekill",
+ "fixtureId": "serve-3d-v1",
+ "seed": 5,
+ "repeat": 1,
+ "expectedAssertions": [
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "EVIDENCE_GAP_AS_DECLARED",
+  "CARGO_KEPT",
+  "NO_SECOND_WORKER"
+ ],
+ "kind": "operator_fault",
+ "label": "WB05: the Webots process is killed between steps on the table leg; leg unknown, no resend, no second engine, cargo kept, the unknown tick a recorded gap",
+ "stepTicks": 500,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "needs_attention",
+  "served": "0",
+  "tick": 1600,
+  "simTimeNs": "32000000000"
+ },
+ "horizon": 1600,
+ "evidenceComplete": false,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "6ef6f0a5e70117d9657e9e061e6f2e8273aaacea971392e2bfe6de34e93e3460",
+  "sensorDigest": "b513b7377b2408dd16ad2850c951040cd62b6463e68e46b615628d24a0695e05",
+  "assertionDigest": "38e5f9eb5d1f28f56a8c75dad3edfcc6ec8362f1cd8bdde642f4e3f4164351c0",
+  "outcomeDigest": "5edbe8fded52eac1a4b5146ed225efa745b56f87a0ae57b57f8fb791a2535e2a"
+ },
+ "assertions": [
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "EVIDENCE_GAP_AS_DECLARED",
+   "result": "pass"
+  },
+  {
+   "id": "CARGO_KEPT",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SECOND_WORKER",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 11826,
+ "provider": {
+  "id": "webots_3d",
+  "kind": "webots_engine"
+ }
+}

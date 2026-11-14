@@ -1,0 +1,14 @@
+{
+ "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+ "toolClosures": {
+  "before": {
+   "portable": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+   "native": "982b7498a5ee1a67e8a9d07468533f3571e68a9d732c76abe7769dc4749835a4"
+  },
+  "after": {
+   "portable": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+   "native": "982b7498a5ee1a67e8a9d07468533f3571e68a9d732c76abe7769dc4749835a4"
+  }
+ },
+ "stable": true
+}

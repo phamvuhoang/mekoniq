@@ -1,0 +1,23 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>/mekoniq-mock-e2e-1r3LCh/runs-twin-transport.spec.ts
+Owned processes: runtime pid 45759, UI pid 45760
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 652 ms. Press Ctrl-C to stop.
+Running twin-transport.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 7 tests using 1 worker
+
+(node:45777) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/twin-transport.spec.ts:19:72 › watch mode can be exited by touch at 390px without a keyboard (605ms)
+  ✓  2 tests/e2e/twin-transport.spec.ts:19:72 › watch mode can be exited by touch at 1024px without a keyboard (602ms)
+  ✓  3 tests/e2e/twin-transport.spec.ts:44:2 › transport bar, keys and watch mode › no run: keys typed in the pairing code stay there; disabled buttons look disabled (1.3s)
+  ✓  4 tests/e2e/twin-transport.spec.ts:63:2 › transport bar, keys and watch mode › live run: → steps, Space starts and stops auto-run, ? lists the keys (428ms)
+  ✓  5 tests/e2e/twin-transport.spec.ts:80:2 › transport bar, keys and watch mode › watch mode: only the viewport, three labels and the transport; Escape gives everything back one step at a time (621ms)
+  ✓  6 tests/e2e/twin-transport.spec.ts:110:2 › transport bar, keys and watch mode › replay: the transport turns into a scrubber with marks; dragging moves the time, Space plays and stops (7.8s)
+  ✓  7 tests/e2e/twin-transport.spec.ts:146:2 › transport bar, keys and watch mode › Escape closes the modal confirm dialog (its native cancel), and the dialog opens again (1.5s)
+
+  7 passed (13.9s)
+
+Stopping the runtime and UI this launcher started…

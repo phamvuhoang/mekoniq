@@ -1,0 +1,67 @@
+{
+ "id": "017-IR-FD04-serve-enclosed-v1-s22-r1",
+ "index": 11,
+ "scenarioId": "IR-FD04",
+ "fixtureId": "serve-enclosed-v1",
+ "seed": 22,
+ "repeat": 1,
+ "expectedAssertions": [
+  "EVIDENCE_COMPLETE",
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "NO_PATH_NOT_BLOCKED",
+  "NO_PHYSICAL_CONTACT"
+ ],
+ "kind": "scenario",
+ "label": "IR03: the T01 handoff is walled in: no_path before driving",
+ "stepTicks": 500,
+ "result": "pass",
+ "reasons": [],
+ "outcome": {
+  "status": "needs_attention",
+  "served": "0",
+  "tick": 876,
+  "simTimeNs": "17520000000"
+ },
+ "horizon": 876,
+ "evidenceComplete": true,
+ "evidenceAsExpected": true,
+ "digests": {
+  "trajectoryDigest": "9f102036814e8843563f287d29383939f16e9c48189a239b9fbc186558f0f54d",
+  "sensorDigest": "2e256d92a70b7503bbea9d5eab7940d7425e7d71766d930d8dc04fd7fc1c8654",
+  "assertionDigest": "8f8fbfa3ad94218c043502ca67ce26290db2bd678cea31c235caebfa0dfdffee",
+  "outcomeDigest": "55b4d33410612db595567c1dbb30033513b96230ab99c166827dfc37fd99d0c9"
+ },
+ "assertions": [
+  {
+   "id": "EVIDENCE_COMPLETE",
+   "result": "pass"
+  },
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass"
+  },
+  {
+   "id": "NO_PATH_NOT_BLOCKED",
+   "result": "pass"
+  },
+  {
+   "id": "NO_PHYSICAL_CONTACT",
+   "result": "pass"
+  }
+ ],
+ "wallMs": 5681,
+ "provider": {
+  "id": "irsim_2d",
+  "kind": "irsim_worker"
+ }
+}

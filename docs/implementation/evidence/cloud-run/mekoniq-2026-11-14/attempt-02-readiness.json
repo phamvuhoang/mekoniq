@@ -1,0 +1,92 @@
+{
+  "status": 200,
+  "data": {
+    "checkedAt": "2026-11-14T00:52:15.569Z",
+    "expiresAt": "2026-11-14T00:52:45.569Z",
+    "scenarioId": "MJ-BV01",
+    "backendSetId": "engineering-mujoco-arm-v1",
+    "checks": [
+      {
+        "id": "scenario",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": null
+      },
+      {
+        "id": "backend-set",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": null
+      },
+      {
+        "id": "host",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": "linux/x64/node-24.22.2"
+      },
+      {
+        "id": "protocol",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": "protocol-major:2"
+      },
+      {
+        "id": "model",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": "arm-scene:88cebdf9c92300e39099b098485353d8f456080fce6788ec61d966853d4bec50"
+      },
+      {
+        "id": "clock",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": "source_fixed_step:tick-ms-20"
+      },
+      {
+        "id": "fixture",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": "arm-fixture:xarm6-g2-v1:e60fd6ca4431e6b1"
+      },
+      {
+        "id": "profile",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": "mujoco:3.17.0/python-3.11.2/lock:a3c78091c9042b3a"
+      },
+      {
+        "id": "world",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": "world:coffee-cell-world:r1:54f273f5c0393e66298fadc2dd3d921133a2706459fba91dbf1916dc542ad532"
+      },
+      {
+        "id": "backend:mock_amr",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": null
+      },
+      {
+        "id": "backend:mujoco_arm",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": null
+      },
+      {
+        "id": "backend:mock_coffee",
+        "status": "ready",
+        "reasonCodes": [],
+        "evidenceRef": null
+      },
+      {
+        "id": "runner",
+        "status": "blocked",
+        "reasonCodes": [
+          "MUJOCO_CAPACITY"
+        ],
+        "evidenceRef": "mujoco-arm-smoke:88cebdf9c92300e39099b098485353d8f456080fce6788ec61d966853d4bec50"
+      }
+    ],
+    "canStart": false
+  }
+}

@@ -1,0 +1,13 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/lab-runtime-remote.test.ts (15 tests) 5178ms
+   ✓ CLI: PORT and the key come from the environment, neither the key nor a pairing code is printed; bad flags refuse to start  2918ms
+   ✓ CLI: PORT is read only when --port is absent; the access key is removed from the environment before anything can inherit it  1973ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  07:34:02
+   Duration  6.14s (transform 522ms, setup 0ms, import 884ms, tests 5.18s, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/rt-remote.json

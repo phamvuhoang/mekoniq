@@ -1,0 +1,91 @@
+{
+ "runId": "db5f7f79-ff4c-4ec1-ad6f-ea8191d81f2f",
+ "scenarioId": "IR-FD01",
+ "kind": "scenario",
+ "label": "IR01: one order, one robot, kitchen -> table -> parking",
+ "fixtureId": "serve-demo-v1",
+ "seed": 12,
+ "stepTicks": 500,
+ "operator": {},
+ "expected": [
+  "EVIDENCE_COMPLETE",
+  "IDENTITY_BOUND",
+  "NO_SERVED_BEFORE_HANDOFF",
+  "BUSINESS_OUTCOME",
+  "NO_PHYSICAL_CONTACT"
+ ],
+ "oracles": [
+  {
+   "id": "EVIDENCE_COMPLETE",
+   "result": "pass",
+   "expected": "durable evidence complete 0..outcome tick: integrity, coverage and limits pass",
+   "actual": "completeness complete (no reasons); read complete horizon 2945",
+   "oracle": "readNavigationEvidence over the stored chunks + evidence assertions"
+  },
+  {
+   "id": "IDENTITY_BOUND",
+   "result": "pass",
+   "expected": "report, evidence and trace bound to one run: runId, scene digest, seed, per-robot model digests by robotId, horizon = outcome tick",
+   "actual": "evidence run same, scene same, seed 12/12, trace robots amr-1, horizon 2945/2945",
+   "oracle": "manifest x evidence x trace cross-check"
+  },
+  {
+   "id": "NO_SERVED_BEFORE_HANDOFF",
+   "result": "pass",
+   "expected": "served only after DeliveryHandedOff; CargoLoaded before any handoff",
+   "actual": "1 handoff(s), 1 load(s), in order",
+   "oracle": "journal event order"
+  },
+  {
+   "id": "BUSINESS_OUTCOME",
+   "result": "pass",
+   "expected": "completed, served 1, no attention",
+   "actual": "completed, served 1, attention none",
+   "oracle": "journal outcome (served from fulfillment state)"
+  },
+  {
+   "id": "NO_PHYSICAL_CONTACT",
+   "result": "pass",
+   "expected": "0 engine_discrete/swept_oracle episodes (robots, solids, actors)",
+   "actual": "0 episode(s): none",
+   "oracle": "independent oracle over the durable trajectory"
+  }
+ ],
+ "evidence": [
+  {
+   "id": "evidence:EVIDENCE_INTEGRITY",
+   "result": "pass",
+   "detail": "every listed chunk matched its size and SHA-256, decoded in order and agreed with the other streams"
+  },
+  {
+   "id": "evidence:EVIDENCE_COVERAGE",
+   "result": "pass",
+   "detail": "ticks 0..2945 recorded without a gap"
+  },
+  {
+   "id": "evidence:EVIDENCE_LIMITS",
+   "result": "pass",
+   "detail": "within 30000 ticks and the stored-bytes quota"
+  },
+  {
+   "id": "evidence:NO_PHYSICAL_CONTACT",
+   "result": "pass",
+   "detail": "0 contact episode(s) from engine_discrete/swept_oracle; 0 safety-envelope breach episode(s)"
+  },
+  {
+   "id": "evidence:SENSOR_PUBLICATIONS",
+   "result": "pass",
+   "detail": "590 of 590 LiDAR publications recorded and verified"
+  },
+  {
+   "id": "evidence:REPEATABILITY_SAME_PLATFORM",
+   "result": "not_run",
+   "detail": "needs a rerun with the same lock, platform and seed; compare the normalized digests"
+  },
+  {
+   "id": "evidence:REPEATABILITY_CROSS_PLATFORM",
+   "result": "not_run",
+   "detail": "no second platform is qualified; only declared tolerances could be compared"
+  }
+ ]
+}

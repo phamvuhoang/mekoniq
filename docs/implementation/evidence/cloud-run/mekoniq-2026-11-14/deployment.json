@@ -1,0 +1,65 @@
+{
+  "schema": "mekoniq-cloud-run-deployment/1",
+  "accepted": false,
+  "recordedAt": "2026-11-14T00:30:16.720787+00:00",
+  "project": "mekoniq",
+  "region": "asia-southeast1",
+  "service": "mekoniq-lab-runtime",
+  "url": "https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app",
+  "revision": "mekoniq-lab-runtime-00002-9lx",
+  "traffic": [
+    {
+      "latestRevision": true,
+      "percent": 100,
+      "revisionName": "mekoniq-lab-runtime-00002-9lx"
+    }
+  ],
+  "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+  "platform": "linux/amd64",
+  "image": "asia-southeast1-docker.pkg.dev/mekoniq/lab/mekoniq-lab-runtime@sha256:fbdf4bb5c1af4ffd15c01550b4508b6df0ad3b4d69e444e5469cfe2b52e4b009",
+  "localImageId": "sha256:f650a2576cf7d44e8f9bf40934d862d8120170dd701e7da502a6ee032d12bd05",
+  "artifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+  "serviceAccount": "mekoniq-lab-runtime@mekoniq.iam.gserviceaccount.com",
+  "resources": {
+    "limits": {
+      "cpu": "1",
+      "memory": "2Gi"
+    }
+  },
+  "timeoutSeconds": 3600,
+  "containerConcurrency": 20,
+  "revisionAnnotations": {
+    "autoscaling.knative.dev/maxScale": "1",
+    "run.googleapis.com/client-name": "gcloud",
+    "run.googleapis.com/client-version": "587.0.0",
+    "run.googleapis.com/execution-environment": "gen2",
+    "run.googleapis.com/startup-cpu-boost": "true"
+  },
+  "environment": [
+    {
+      "name": "LAB_ALLOW_ORIGIN",
+      "value": "https://mekoniq-lab.vercel.app"
+    },
+    {
+      "name": "LAB_PUBLIC_HOST",
+      "value": "mekoniq-lab-runtime-ojykcqdkja-as.a.run.app"
+    },
+    {
+      "name": "MEKONIQ_LAB_ACCESS_KEY",
+      "valueFrom": {
+        "secretKeyRef": {
+          "key": "latest",
+          "name": "lab-access-key"
+        }
+      }
+    }
+  ],
+  "cl01": "cl01-attempt-03/summary.json",
+  "qualificationIntegration": "G-CLOUD1 is checked by the cloud-run acceptance guard as a supplement bound to the exact R2a bytes. The original qualification is unchanged.",
+  "qualification": {
+    "candidateId": "r2a-candidate-02",
+    "sha256": "5db76df9886b96df37e1a335d285b42b3e9f8dd5d21ef2df542a1a5fa82a84ad"
+  },
+  "qualificationLinkedAt": "2026-11-14T00:58:51.934040+00:00"
+}

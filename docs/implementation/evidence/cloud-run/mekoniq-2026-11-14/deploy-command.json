@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-14T00:25:10.027149+00:00",
+  "command": [
+    "gcloud",
+    "run",
+    "deploy",
+    "mekoniq-lab-runtime",
+    "--project=mekoniq",
+    "--region=asia-southeast1",
+    "--image=asia-southeast1-docker.pkg.dev/mekoniq/lab/mekoniq-lab-runtime@sha256:fbdf4bb5c1af4ffd15c01550b4508b6df0ad3b4d69e444e5469cfe2b52e4b009",
+    "--service-account=mekoniq-lab-runtime@mekoniq.iam.gserviceaccount.com",
+    "--execution-environment=gen2",
+    "--max-instances=1",
+    "--min-instances=0",
+    "--concurrency=20",
+    "--timeout=3600",
+    "--cpu=1",
+    "--memory=2Gi",
+    "--allow-unauthenticated",
+    "--set-secrets=MEKONIQ_LAB_ACCESS_KEY=lab-access-key:latest",
+    "--set-env-vars=LAB_ALLOW_ORIGIN=https://mekoniq-lab.vercel.app,LAB_PUBLIC_HOST=pending.invalid",
+    "--quiet"
+  ]
+}

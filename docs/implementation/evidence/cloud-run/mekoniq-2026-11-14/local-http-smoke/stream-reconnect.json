@@ -1,0 +1,1352 @@
+{
+  "after": "6",
+  "first": [
+    {
+      "event": "business",
+      "id": "1",
+      "data": {
+        "sequence": "1",
+        "at": "2026-11-01T00:00:02.180Z",
+        "events": [
+          {
+            "type": "SessionOpened",
+            "kind": "session",
+            "id": "lab-session-1",
+            "state": {
+              "tableId": "table-1",
+              "status": "open",
+              "orderIds": [],
+              "revision": 0,
+              "openedBy": "lab-guest",
+              "openedAt": "2026-11-01T00:00:02.180Z",
+              "version": 1
+            }
+          },
+          {
+            "type": "TableOccupied",
+            "kind": "table",
+            "id": "table-1",
+            "state": {
+              "id": "table-1",
+              "name": "T01",
+              "activeSessionId": "lab-session-1",
+              "version": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "business",
+      "id": "2",
+      "data": {
+        "sequence": "2",
+        "at": "2026-11-01T00:00:02.180Z",
+        "events": [
+          {
+            "type": "OrderAccepted",
+            "kind": "order",
+            "id": "order-3ba3fbe0d3d838acbe4b774942649a03",
+            "state": {
+              "sessionId": "lab-session-1",
+              "tableId": "table-1",
+              "menuVersion": 1,
+              "currency": "VND",
+              "lines": [
+                {
+                  "itemId": "meal-kitchen",
+                  "quantity": "1",
+                  "name": "Simulated meal (kitchen)",
+                  "stationId": "kitchen",
+                  "unitMinor": "50000",
+                  "modifiers": [],
+                  "charges": [
+                    {
+                      "kind": "base",
+                      "minor": "50000",
+                      "effect": "add"
+                    }
+                  ],
+                  "subtotalMinor": "50000",
+                  "discountMinor": "0",
+                  "serviceMinor": "0",
+                  "taxMinor": "0",
+                  "taxIncludedMinor": "0",
+                  "totalMinor": "50000",
+                  "pricing": {
+                    "profileRevision": 1,
+                    "policyRevision": 1,
+                    "steps": [
+                      "base",
+                      "modifier",
+                      "discount",
+                      "service",
+                      "tax"
+                    ],
+                    "discountOrder": "before_tax",
+                    "tax": null,
+                    "service": null,
+                    "discountIds": []
+                  },
+                  "menuVersion": 1,
+                  "index": 0,
+                  "id": "line-61440fdffc407407474fe557b2d34062",
+                  "orderId": "order-3ba3fbe0d3d838acbe4b774942649a03",
+                  "sessionId": "lab-session-1",
+                  "course": 1
+                }
+              ],
+              "totalMinor": "50000",
+              "summary": {
+                "subtotalMinor": "50000",
+                "discountMinor": "0",
+                "serviceMinor": "0",
+                "taxMinor": "0",
+                "taxIncludedMinor": "0",
+                "totalMinor": "50000"
+              },
+              "status": "open",
+              "policyRevision": 1,
+              "occurredAt": "2026-11-01T00:00:02.180Z",
+              "version": 1
+            }
+          },
+          {
+            "type": "SessionOrderAdded",
+            "kind": "session",
+            "id": "lab-session-1",
+            "state": {
+              "tableId": "table-1",
+              "status": "open",
+              "orderIds": [
+                "order-3ba3fbe0d3d838acbe4b774942649a03"
+              ],
+              "revision": 0,
+              "openedBy": "lab-guest",
+              "openedAt": "2026-11-01T00:00:02.180Z",
+              "version": 2
+            }
+          },
+          {
+            "type": "KitchenTicketCreated",
+            "kind": "kitchen-ticket",
+            "id": "line-61440fdffc407407474fe557b2d34062",
+            "state": {
+              "lineId": "line-61440fdffc407407474fe557b2d34062",
+              "orderId": "order-3ba3fbe0d3d838acbe4b774942649a03",
+              "sessionId": "lab-session-1",
+              "itemId": "meal-kitchen",
+              "stationId": "kitchen",
+              "name": "Simulated meal (kitchen)",
+              "quantity": "1",
+              "prepared": "0",
+              "course": 1,
+              "status": "queued",
+              "version": 1
+            }
+          },
+          {
+            "type": "FulfillmentLineCreated",
+            "kind": "fulfillment",
+            "id": "line-61440fdffc407407474fe557b2d34062",
+            "state": {
+              "lineId": "line-61440fdffc407407474fe557b2d34062",
+              "orderId": "order-3ba3fbe0d3d838acbe4b774942649a03",
+              "sessionId": "lab-session-1",
+              "stationId": "kitchen",
+              "quantity": "1",
+              "ready": "0",
+              "allocated": "0",
+              "served": "0",
+              "status": "open",
+              "version": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "business",
+      "id": "3",
+      "data": {
+        "sequence": "3",
+        "at": "2026-11-01T00:00:02.180Z",
+        "events": [
+          {
+            "type": "KitchenPortionsReady",
+            "kind": "kitchen-ticket",
+            "id": "line-61440fdffc407407474fe557b2d34062",
+            "state": {
+              "lineId": "line-61440fdffc407407474fe557b2d34062",
+              "orderId": "order-3ba3fbe0d3d838acbe4b774942649a03",
+              "sessionId": "lab-session-1",
+              "itemId": "meal-kitchen",
+              "stationId": "kitchen",
+              "name": "Simulated meal (kitchen)",
+              "quantity": "1",
+              "prepared": "1",
+              "course": 1,
+              "status": "ready",
+              "version": 2
+            }
+          },
+          {
+            "type": "ReadyQuantityAdded",
+            "kind": "fulfillment",
+            "id": "line-61440fdffc407407474fe557b2d34062",
+            "state": {
+              "lineId": "line-61440fdffc407407474fe557b2d34062",
+              "orderId": "order-3ba3fbe0d3d838acbe4b774942649a03",
+              "sessionId": "lab-session-1",
+              "stationId": "kitchen",
+              "quantity": "1",
+              "ready": "1",
+              "allocated": "0",
+              "served": "0",
+              "status": "open",
+              "version": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "business",
+      "id": "4",
+      "data": {
+        "sequence": "4",
+        "at": "2026-11-01T00:00:02.180Z",
+        "events": [
+          {
+            "type": "PortionAllocated",
+            "kind": "fulfillment",
+            "id": "line-61440fdffc407407474fe557b2d34062",
+            "state": {
+              "lineId": "line-61440fdffc407407474fe557b2d34062",
+              "orderId": "order-3ba3fbe0d3d838acbe4b774942649a03",
+              "sessionId": "lab-session-1",
+              "stationId": "kitchen",
+              "quantity": "1",
+              "ready": "1",
+              "allocated": "1",
+              "served": "0",
+              "status": "open",
+              "version": 3
+            }
+          },
+          {
+            "type": "AllocationCreated",
+            "kind": "allocation",
+            "id": "allocation-e91fcd86e3c5d2281df9cf5a7b02546f",
+            "state": {
+              "lineId": "line-61440fdffc407407474fe557b2d34062",
+              "quantity": "1",
+              "status": "reserved",
+              "stationId": "kitchen",
+              "sessionId": "lab-session-1",
+              "method": "robot",
+              "version": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "business",
+      "id": "5",
+      "data": {
+        "sequence": "5",
+        "at": "2026-11-01T00:00:02.180Z",
+        "events": [
+          {
+            "type": "MissionCreated",
+            "kind": "mission",
+            "id": "mission-e791768cf034226a1203a7f948a63c0c",
+            "state": {
+              "kind": "delivery",
+              "status": "assigned",
+              "robotId": "amr-1",
+              "source": "kitchen",
+              "loaded": false,
+              "stops": [
+                {
+                  "id": "stop-1fe06de7692ea4e9d6d54708293649b9",
+                  "action": "load",
+                  "targetId": "kitchen",
+                  "status": "travelling",
+                  "allocationIds": [
+                    "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+                  ]
+                },
+                {
+                  "id": "stop-33317d6171432102d2cc234936df5b81",
+                  "action": "handoff",
+                  "targetId": "table-1",
+                  "status": "pending",
+                  "allocationIds": [
+                    "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+                  ]
+                }
+              ],
+              "currentStopId": "stop-1fe06de7692ea4e9d6d54708293649b9",
+              "revision": 1,
+              "commandRevision": 1,
+              "commandId": "robot-command-b89f9563bb8198e188c22d7861f22993",
+              "allocationIds": [
+                "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+              ],
+              "controlEpoch": 1,
+              "version": 1
+            }
+          },
+          {
+            "type": "RobotAssigned",
+            "kind": "robot",
+            "id": "amr-1",
+            "state": {
+              "id": "amr-1",
+              "driver": "simulator",
+              "validation": "simulated",
+              "capabilities": [
+                "delivery"
+              ],
+              "speedControl": true,
+              "trays": 3,
+              "maxLoadMinor": "10000",
+              "battery": 100,
+              "minBattery": 20,
+              "availability": "busy",
+              "goalState": "pending",
+              "controlEpoch": 1,
+              "ownerDeviceId": "lab-coordinator",
+              "mapId": "lab-world",
+              "mapRevision": "2",
+              "bindingRevision": "2",
+              "parkingPoint": "parking",
+              "position": "parking",
+              "offlineExecution": true,
+              "bindings": {
+                "table-1": {
+                  "waypointId": "table-1",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 3,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-2": {
+                  "waypointId": "table-2",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 6,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-3": {
+                  "waypointId": "table-3",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 9,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-4": {
+                  "waypointId": "table-4",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 3,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "table-5": {
+                  "waypointId": "table-5",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 6,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "table-6": {
+                  "waypointId": "table-6",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 9,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "kitchen": {
+                  "waypointId": "kitchen",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 1,
+                  "y": 6.8,
+                  "yaw": 0
+                },
+                "parking": {
+                  "waypointId": "parking",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 1,
+                  "y": 1,
+                  "yaw": 0
+                },
+                "dock": {
+                  "waypointId": "dock",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 11,
+                  "y": 7,
+                  "yaw": 0
+                }
+              },
+              "safetyState": "clear",
+              "observerId": "simulator:amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "version": 2
+            }
+          },
+          {
+            "type": "AllocationAssigned",
+            "kind": "allocation",
+            "id": "allocation-e91fcd86e3c5d2281df9cf5a7b02546f",
+            "state": {
+              "lineId": "line-61440fdffc407407474fe557b2d34062",
+              "quantity": "1",
+              "status": "reserved",
+              "stationId": "kitchen",
+              "sessionId": "lab-session-1",
+              "method": "robot",
+              "version": 2,
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c"
+            }
+          },
+          {
+            "type": "RobotCommandIssued",
+            "kind": "robot-command",
+            "id": "robot-command-b89f9563bb8198e188c22d7861f22993",
+            "state": {
+              "schemaVersion": 1,
+              "commandId": "robot-command-b89f9563bb8198e188c22d7861f22993",
+              "operationId": "op-5",
+              "organizationId": "lab-594fc2ab-91e0-4dca-933c-ce8b87af293a",
+              "venueId": "simulation",
+              "robotId": "amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "stopId": "stop-1fe06de7692ea4e9d6d54708293649b9",
+              "missionRevision": 1,
+              "controlEpoch": 1,
+              "issuerDeviceId": "lab-coordinator",
+              "issuedAt": "2026-11-01T00:00:02.180Z",
+              "expiresAt": "2026-11-01T00:01:02.180Z",
+              "target": {
+                "waypointId": "kitchen",
+                "mapId": "lab-world",
+                "mapRevision": "2",
+                "frame": "map",
+                "x": 1,
+                "y": 6.8,
+                "yaw": 0
+              },
+              "limits": {
+                "trays": 3,
+                "maxLoadMinor": "10000"
+              },
+              "status": "pending",
+              "version": 1
+            }
+          },
+          {
+            "type": "ZoneReservationGranted",
+            "kind": "reservation",
+            "id": "__venue_movement__@amr-1",
+            "state": {
+              "zoneId": "__venue_movement__",
+              "robotId": "amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "status": "granted",
+              "reason": null,
+              "ttlMs": 60000,
+              "expiresAtMs": 1793491262180,
+              "rank": 1,
+              "requestedAt": "2026-11-01T00:00:02.180Z",
+              "releaseReason": null,
+              "evidence": null,
+              "version": 1
+            }
+          },
+          {
+            "type": "TrafficZoneChecked",
+            "kind": "traffic-zone",
+            "id": "__venue_movement__",
+            "state": {
+              "operationId": "op-5",
+              "version": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "business",
+      "id": "6",
+      "data": {
+        "sequence": "6",
+        "at": "2026-11-01T00:00:02.180Z",
+        "events": [
+          {
+            "type": "RobotCommandObserved",
+            "kind": "robot-command",
+            "id": "robot-command-b89f9563bb8198e188c22d7861f22993",
+            "state": {
+              "schemaVersion": 1,
+              "commandId": "robot-command-b89f9563bb8198e188c22d7861f22993",
+              "operationId": "op-5",
+              "organizationId": "lab-594fc2ab-91e0-4dca-933c-ce8b87af293a",
+              "venueId": "simulation",
+              "robotId": "amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "stopId": "stop-1fe06de7692ea4e9d6d54708293649b9",
+              "missionRevision": 1,
+              "controlEpoch": 1,
+              "issuerDeviceId": "lab-coordinator",
+              "issuedAt": "2026-11-01T00:00:02.180Z",
+              "expiresAt": "2026-11-01T00:01:02.180Z",
+              "target": {
+                "waypointId": "kitchen",
+                "mapId": "lab-world",
+                "mapRevision": "2",
+                "frame": "map",
+                "x": 1,
+                "y": 6.8,
+                "yaw": 0
+              },
+              "limits": {
+                "trays": 3,
+                "maxLoadMinor": "10000"
+              },
+              "status": "accepted",
+              "version": 2,
+              "observedAt": "2026-11-01T00:00:02.180Z"
+            }
+          },
+          {
+            "type": "MissionExecuting",
+            "kind": "mission",
+            "id": "mission-e791768cf034226a1203a7f948a63c0c",
+            "state": {
+              "kind": "delivery",
+              "status": "executing",
+              "robotId": "amr-1",
+              "source": "kitchen",
+              "loaded": false,
+              "stops": [
+                {
+                  "id": "stop-1fe06de7692ea4e9d6d54708293649b9",
+                  "action": "load",
+                  "targetId": "kitchen",
+                  "status": "travelling",
+                  "allocationIds": [
+                    "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+                  ]
+                },
+                {
+                  "id": "stop-33317d6171432102d2cc234936df5b81",
+                  "action": "handoff",
+                  "targetId": "table-1",
+                  "status": "pending",
+                  "allocationIds": [
+                    "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+                  ]
+                }
+              ],
+              "currentStopId": "stop-1fe06de7692ea4e9d6d54708293649b9",
+              "revision": 1,
+              "commandRevision": 1,
+              "commandId": "robot-command-b89f9563bb8198e188c22d7861f22993",
+              "allocationIds": [
+                "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+              ],
+              "controlEpoch": 1,
+              "version": 2
+            }
+          },
+          {
+            "type": "RobotGoalAccepted",
+            "kind": "robot",
+            "id": "amr-1",
+            "state": {
+              "id": "amr-1",
+              "driver": "simulator",
+              "validation": "simulated",
+              "capabilities": [
+                "delivery"
+              ],
+              "speedControl": true,
+              "trays": 3,
+              "maxLoadMinor": "10000",
+              "battery": 100,
+              "minBattery": 20,
+              "availability": "busy",
+              "goalState": "executing",
+              "controlEpoch": 1,
+              "ownerDeviceId": "lab-coordinator",
+              "mapId": "lab-world",
+              "mapRevision": "2",
+              "bindingRevision": "2",
+              "parkingPoint": "parking",
+              "position": "parking",
+              "offlineExecution": true,
+              "bindings": {
+                "table-1": {
+                  "waypointId": "table-1",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 3,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-2": {
+                  "waypointId": "table-2",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 6,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-3": {
+                  "waypointId": "table-3",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 9,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-4": {
+                  "waypointId": "table-4",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 3,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "table-5": {
+                  "waypointId": "table-5",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 6,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "table-6": {
+                  "waypointId": "table-6",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 9,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "kitchen": {
+                  "waypointId": "kitchen",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 1,
+                  "y": 6.8,
+                  "yaw": 0
+                },
+                "parking": {
+                  "waypointId": "parking",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 1,
+                  "y": 1,
+                  "yaw": 0
+                },
+                "dock": {
+                  "waypointId": "dock",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 11,
+                  "y": 7,
+                  "yaw": 0
+                }
+              },
+              "safetyState": "clear",
+              "observerId": "simulator:amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "version": 3
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "resumed": [
+    {
+      "event": "business",
+      "id": "7",
+      "data": {
+        "sequence": "7",
+        "at": "2026-11-01T00:00:13.820Z",
+        "events": [
+          {
+            "type": "RobotCommandObserved",
+            "kind": "robot-command",
+            "id": "robot-command-b89f9563bb8198e188c22d7861f22993",
+            "state": {
+              "schemaVersion": 1,
+              "commandId": "robot-command-b89f9563bb8198e188c22d7861f22993",
+              "operationId": "op-5",
+              "organizationId": "lab-594fc2ab-91e0-4dca-933c-ce8b87af293a",
+              "venueId": "simulation",
+              "robotId": "amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "stopId": "stop-1fe06de7692ea4e9d6d54708293649b9",
+              "missionRevision": 1,
+              "controlEpoch": 1,
+              "issuerDeviceId": "lab-coordinator",
+              "issuedAt": "2026-11-01T00:00:02.180Z",
+              "expiresAt": "2026-11-01T00:01:02.180Z",
+              "target": {
+                "waypointId": "kitchen",
+                "mapId": "lab-world",
+                "mapRevision": "2",
+                "frame": "map",
+                "x": 1,
+                "y": 6.8,
+                "yaw": 0
+              },
+              "limits": {
+                "trays": 3,
+                "maxLoadMinor": "10000"
+              },
+              "status": "completed",
+              "version": 3,
+              "observedAt": "2026-11-01T00:00:13.820Z"
+            }
+          },
+          {
+            "type": "MissionArrived",
+            "kind": "mission",
+            "id": "mission-e791768cf034226a1203a7f948a63c0c",
+            "state": {
+              "kind": "delivery",
+              "status": "executing",
+              "robotId": "amr-1",
+              "source": "kitchen",
+              "loaded": false,
+              "stops": [
+                {
+                  "id": "stop-1fe06de7692ea4e9d6d54708293649b9",
+                  "action": "load",
+                  "targetId": "kitchen",
+                  "status": "awaiting_action",
+                  "allocationIds": [
+                    "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+                  ]
+                },
+                {
+                  "id": "stop-33317d6171432102d2cc234936df5b81",
+                  "action": "handoff",
+                  "targetId": "table-1",
+                  "status": "pending",
+                  "allocationIds": [
+                    "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+                  ]
+                }
+              ],
+              "currentStopId": "stop-1fe06de7692ea4e9d6d54708293649b9",
+              "revision": 1,
+              "commandRevision": 1,
+              "commandId": "robot-command-b89f9563bb8198e188c22d7861f22993",
+              "allocationIds": [
+                "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+              ],
+              "controlEpoch": 1,
+              "version": 3
+            }
+          },
+          {
+            "type": "RobotGoalCompleted",
+            "kind": "robot",
+            "id": "amr-1",
+            "state": {
+              "id": "amr-1",
+              "driver": "simulator",
+              "validation": "simulated",
+              "capabilities": [
+                "delivery"
+              ],
+              "speedControl": true,
+              "trays": 3,
+              "maxLoadMinor": "10000",
+              "battery": 100,
+              "minBattery": 20,
+              "availability": "busy",
+              "goalState": "completed",
+              "controlEpoch": 1,
+              "ownerDeviceId": "lab-coordinator",
+              "mapId": "lab-world",
+              "mapRevision": "2",
+              "bindingRevision": "2",
+              "parkingPoint": "parking",
+              "position": "kitchen",
+              "offlineExecution": true,
+              "bindings": {
+                "table-1": {
+                  "waypointId": "table-1",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 3,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-2": {
+                  "waypointId": "table-2",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 6,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-3": {
+                  "waypointId": "table-3",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 9,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-4": {
+                  "waypointId": "table-4",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 3,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "table-5": {
+                  "waypointId": "table-5",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 6,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "table-6": {
+                  "waypointId": "table-6",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 9,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "kitchen": {
+                  "waypointId": "kitchen",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 1,
+                  "y": 6.8,
+                  "yaw": 0
+                },
+                "parking": {
+                  "waypointId": "parking",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 1,
+                  "y": 1,
+                  "yaw": 0
+                },
+                "dock": {
+                  "waypointId": "dock",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 11,
+                  "y": 7,
+                  "yaw": 0
+                }
+              },
+              "safetyState": "clear",
+              "observerId": "simulator:amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "version": 4
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "business",
+      "id": "8",
+      "data": {
+        "sequence": "8",
+        "at": "2026-11-01T00:00:14.820Z",
+        "events": [
+          {
+            "type": "CargoLoaded",
+            "kind": "allocation",
+            "id": "allocation-e91fcd86e3c5d2281df9cf5a7b02546f",
+            "state": {
+              "lineId": "line-61440fdffc407407474fe557b2d34062",
+              "quantity": "1",
+              "status": "loaded",
+              "stationId": "kitchen",
+              "sessionId": "lab-session-1",
+              "method": "robot",
+              "version": 3,
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "updatedAt": "2026-11-01T00:00:14.820Z"
+            }
+          },
+          {
+            "type": "MissionStopAdvanced",
+            "kind": "mission",
+            "id": "mission-e791768cf034226a1203a7f948a63c0c",
+            "state": {
+              "kind": "delivery",
+              "status": "executing",
+              "robotId": "amr-1",
+              "source": "kitchen",
+              "loaded": true,
+              "stops": [
+                {
+                  "id": "stop-1fe06de7692ea4e9d6d54708293649b9",
+                  "action": "load",
+                  "targetId": "kitchen",
+                  "status": "completed",
+                  "allocationIds": [
+                    "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+                  ]
+                },
+                {
+                  "id": "stop-33317d6171432102d2cc234936df5b81",
+                  "action": "handoff",
+                  "targetId": "table-1",
+                  "status": "travelling",
+                  "allocationIds": [
+                    "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+                  ]
+                }
+              ],
+              "currentStopId": "stop-33317d6171432102d2cc234936df5b81",
+              "revision": 2,
+              "commandRevision": 2,
+              "commandId": "robot-command-00dfbcde01ecf49077c58774771ce767",
+              "allocationIds": [
+                "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+              ],
+              "controlEpoch": 1,
+              "version": 4
+            }
+          },
+          {
+            "type": "RobotGoalAssigned",
+            "kind": "robot",
+            "id": "amr-1",
+            "state": {
+              "id": "amr-1",
+              "driver": "simulator",
+              "validation": "simulated",
+              "capabilities": [
+                "delivery"
+              ],
+              "speedControl": true,
+              "trays": 3,
+              "maxLoadMinor": "10000",
+              "battery": 100,
+              "minBattery": 20,
+              "availability": "busy",
+              "goalState": "pending",
+              "controlEpoch": 1,
+              "ownerDeviceId": "lab-coordinator",
+              "mapId": "lab-world",
+              "mapRevision": "2",
+              "bindingRevision": "2",
+              "parkingPoint": "parking",
+              "position": "kitchen",
+              "offlineExecution": true,
+              "bindings": {
+                "table-1": {
+                  "waypointId": "table-1",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 3,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-2": {
+                  "waypointId": "table-2",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 6,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-3": {
+                  "waypointId": "table-3",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 9,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-4": {
+                  "waypointId": "table-4",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 3,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "table-5": {
+                  "waypointId": "table-5",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 6,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "table-6": {
+                  "waypointId": "table-6",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 9,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "kitchen": {
+                  "waypointId": "kitchen",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 1,
+                  "y": 6.8,
+                  "yaw": 0
+                },
+                "parking": {
+                  "waypointId": "parking",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 1,
+                  "y": 1,
+                  "yaw": 0
+                },
+                "dock": {
+                  "waypointId": "dock",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 11,
+                  "y": 7,
+                  "yaw": 0
+                }
+              },
+              "safetyState": "clear",
+              "observerId": "simulator:amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "version": 5
+            }
+          },
+          {
+            "type": "RobotCommandIssued",
+            "kind": "robot-command",
+            "id": "robot-command-00dfbcde01ecf49077c58774771ce767",
+            "state": {
+              "schemaVersion": 1,
+              "commandId": "robot-command-00dfbcde01ecf49077c58774771ce767",
+              "operationId": "op-8",
+              "organizationId": "lab-594fc2ab-91e0-4dca-933c-ce8b87af293a",
+              "venueId": "simulation",
+              "robotId": "amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "stopId": "stop-33317d6171432102d2cc234936df5b81",
+              "missionRevision": 2,
+              "controlEpoch": 1,
+              "issuerDeviceId": "lab-coordinator",
+              "issuedAt": "2026-11-01T00:00:14.820Z",
+              "expiresAt": "2026-11-01T00:01:14.820Z",
+              "target": {
+                "waypointId": "table-1",
+                "mapId": "lab-world",
+                "mapRevision": "2",
+                "frame": "map",
+                "x": 3,
+                "y": 1.1,
+                "yaw": 0
+              },
+              "limits": {
+                "trays": 3,
+                "maxLoadMinor": "10000"
+              },
+              "status": "pending",
+              "version": 1
+            }
+          },
+          {
+            "type": "ZoneReservationRenewed",
+            "kind": "reservation",
+            "id": "__venue_movement__@amr-1",
+            "state": {
+              "zoneId": "__venue_movement__",
+              "robotId": "amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "status": "granted",
+              "reason": null,
+              "ttlMs": 60000,
+              "expiresAtMs": 1793491274820,
+              "rank": 1,
+              "requestedAt": "2026-11-01T00:00:02.180Z",
+              "releaseReason": null,
+              "evidence": null,
+              "version": 2
+            }
+          },
+          {
+            "type": "TrafficZoneChecked",
+            "kind": "traffic-zone",
+            "id": "__venue_movement__",
+            "state": {
+              "operationId": "op-8",
+              "version": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "business",
+      "id": "9",
+      "data": {
+        "sequence": "9",
+        "at": "2026-11-01T00:00:14.820Z",
+        "events": [
+          {
+            "type": "RobotCommandObserved",
+            "kind": "robot-command",
+            "id": "robot-command-00dfbcde01ecf49077c58774771ce767",
+            "state": {
+              "schemaVersion": 1,
+              "commandId": "robot-command-00dfbcde01ecf49077c58774771ce767",
+              "operationId": "op-8",
+              "organizationId": "lab-594fc2ab-91e0-4dca-933c-ce8b87af293a",
+              "venueId": "simulation",
+              "robotId": "amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "stopId": "stop-33317d6171432102d2cc234936df5b81",
+              "missionRevision": 2,
+              "controlEpoch": 1,
+              "issuerDeviceId": "lab-coordinator",
+              "issuedAt": "2026-11-01T00:00:14.820Z",
+              "expiresAt": "2026-11-01T00:01:14.820Z",
+              "target": {
+                "waypointId": "table-1",
+                "mapId": "lab-world",
+                "mapRevision": "2",
+                "frame": "map",
+                "x": 3,
+                "y": 1.1,
+                "yaw": 0
+              },
+              "limits": {
+                "trays": 3,
+                "maxLoadMinor": "10000"
+              },
+              "status": "accepted",
+              "version": 2,
+              "observedAt": "2026-11-01T00:00:14.820Z"
+            }
+          },
+          {
+            "type": "MissionExecuting",
+            "kind": "mission",
+            "id": "mission-e791768cf034226a1203a7f948a63c0c",
+            "state": {
+              "kind": "delivery",
+              "status": "executing",
+              "robotId": "amr-1",
+              "source": "kitchen",
+              "loaded": true,
+              "stops": [
+                {
+                  "id": "stop-1fe06de7692ea4e9d6d54708293649b9",
+                  "action": "load",
+                  "targetId": "kitchen",
+                  "status": "completed",
+                  "allocationIds": [
+                    "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+                  ]
+                },
+                {
+                  "id": "stop-33317d6171432102d2cc234936df5b81",
+                  "action": "handoff",
+                  "targetId": "table-1",
+                  "status": "travelling",
+                  "allocationIds": [
+                    "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+                  ]
+                }
+              ],
+              "currentStopId": "stop-33317d6171432102d2cc234936df5b81",
+              "revision": 2,
+              "commandRevision": 2,
+              "commandId": "robot-command-00dfbcde01ecf49077c58774771ce767",
+              "allocationIds": [
+                "allocation-e91fcd86e3c5d2281df9cf5a7b02546f"
+              ],
+              "controlEpoch": 1,
+              "version": 5
+            }
+          },
+          {
+            "type": "RobotGoalAccepted",
+            "kind": "robot",
+            "id": "amr-1",
+            "state": {
+              "id": "amr-1",
+              "driver": "simulator",
+              "validation": "simulated",
+              "capabilities": [
+                "delivery"
+              ],
+              "speedControl": true,
+              "trays": 3,
+              "maxLoadMinor": "10000",
+              "battery": 100,
+              "minBattery": 20,
+              "availability": "busy",
+              "goalState": "executing",
+              "controlEpoch": 1,
+              "ownerDeviceId": "lab-coordinator",
+              "mapId": "lab-world",
+              "mapRevision": "2",
+              "bindingRevision": "2",
+              "parkingPoint": "parking",
+              "position": "kitchen",
+              "offlineExecution": true,
+              "bindings": {
+                "table-1": {
+                  "waypointId": "table-1",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 3,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-2": {
+                  "waypointId": "table-2",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 6,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-3": {
+                  "waypointId": "table-3",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 9,
+                  "y": 1.1,
+                  "yaw": 0
+                },
+                "table-4": {
+                  "waypointId": "table-4",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 3,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "table-5": {
+                  "waypointId": "table-5",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 6,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "table-6": {
+                  "waypointId": "table-6",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 9,
+                  "y": 4.1,
+                  "yaw": 0
+                },
+                "kitchen": {
+                  "waypointId": "kitchen",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 1,
+                  "y": 6.8,
+                  "yaw": 0
+                },
+                "parking": {
+                  "waypointId": "parking",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 1,
+                  "y": 1,
+                  "yaw": 0
+                },
+                "dock": {
+                  "waypointId": "dock",
+                  "mapId": "lab-world",
+                  "mapRevision": "2",
+                  "frame": "map",
+                  "x": 11,
+                  "y": 7,
+                  "yaw": 0
+                }
+              },
+              "safetyState": "clear",
+              "observerId": "simulator:amr-1",
+              "missionId": "mission-e791768cf034226a1203a7f948a63c0c",
+              "version": 6
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

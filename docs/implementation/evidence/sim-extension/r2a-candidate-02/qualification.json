@@ -1,0 +1,1744 @@
+{
+ "schemaVersion": 1,
+ "documentType": "sim-extension-qualification",
+ "release": "r2a",
+ "candidateId": "r2a-candidate-02",
+ "accepted": false,
+ "acceptedBy": null,
+ "acceptedAt": null,
+ "note": "evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; the MuJoCo arm is a plant with manufacturer-nominal and assumed parameters (not_calibrated) that grips by contact; a container run is not evidence for G-MA1/G-MA2 (D50); G-CLOUD1 is blocked_external until CL01 runs on a deployed service; no real arm, real amd64 machine, Cloud Run or hardware gate is in its scope",
+ "identity": {
+  "before": {
+   "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+   "dirty": false,
+   "dirtyReasons": [],
+   "toolClosures": {
+    "portable": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+    "native": "982b7498a5ee1a67e8a9d07468533f3571e68a9d732c76abe7769dc4749835a4"
+   },
+   "node": "v24.22.2",
+   "os": "darwin 25.5.0",
+   "arch": "arm64",
+   "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+   "locks": {
+    "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+    "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+    "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+    "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+    "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+   },
+   "webots": {
+    "version": "Webots version: R2025a",
+    "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+   },
+   "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+   "at": "2026-11-14T00:31:31.769Z"
+  },
+  "after": {
+   "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+   "dirty": false,
+   "dirtyReasons": [],
+   "toolClosures": {
+    "portable": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+    "native": "982b7498a5ee1a67e8a9d07468533f3571e68a9d732c76abe7769dc4749835a4"
+   },
+   "node": "v24.22.2",
+   "os": "darwin 25.5.0",
+   "arch": "arm64",
+   "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+   "locks": {
+    "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+    "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+    "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+    "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+    "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+   },
+   "webots": {
+    "version": "Webots version: R2025a",
+    "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+   },
+   "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+   "at": "2026-11-14T00:40:24.684Z"
+  },
+  "identityStable": true
+ },
+ "lab": {
+  "commit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+  "dirty": false,
+  "pin": {
+   "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+   "artifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+   "portableToolsDigest": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+   "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4"
+  }
+ },
+ "campaign": null,
+ "algorithm": null,
+ "r1Record": {
+  "file": "r1-record.json",
+  "sha256": "9173d31fe1048efbce8d76d8db1f69c7cdb4ab42fdd3811f8c3873d65afd8f77",
+  "candidate": "r1-candidate-07",
+  "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734"
+ },
+ "r11Record": {
+  "file": "r11-record.json",
+  "sha256": "30a1159654e5a03c7cb2ac9b32ab6da0c06c6a7be01621783e99ce2136de3b05",
+  "candidate": "r11-candidate-04",
+  "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734"
+ },
+ "image": {
+  "tag": "mekoniq-lab-runtime:record-38943",
+  "platform": "linux/arm64",
+  "id": "sha256:9b1b549034bdcbbd3a8fd9cbd94f71c0082bef174f1b6d5c42751db7091d6e58",
+  "revision": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "built": true,
+  "revisionIsRecordedCommit": true
+ },
+ "irsimRecord": {
+  "file": "irsim-record.json",
+  "sha256": "5f3a999663c29daacb61b2953c7784aa87cd3f689f278f2894e4fc31c6006aa6",
+  "candidate": "candidate-09",
+  "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734"
+ },
+ "mockRegression": {
+  "file": "mock-regression.json",
+  "sha256": "821658f1704ef1dd24ab75398afc106471aeee6f6d59a5a64dbee985aafc2adf",
+  "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+  "source": "(outside the repositories)"
+ },
+ "suites": [
+  {
+   "id": "ma-static",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/xarm6-fixture.test.ts tests/unit/capabilities-mujoco-arm.test.ts tests/unit/arm-cell-scene.test.ts tests/unit/xarm6-cell-dock.test.ts tests/contracts/sim3d-mujoco-schema.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-static.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:31:44.457Z",
+   "finishedAt": "2026-11-14T00:31:47.477Z",
+   "exitCode": 0,
+   "log": "suites/ma-static.log",
+   "logSha256": "fb747662ce94165add6ff3aa2773d6e00e016c724b1e70ac6c247f3e375a68fe",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-static.json",
+    "sha256": "730a12083b7a2786bb83e229e4cce5e7ae67b4e446a388e0e4d9b5dcb30f3f45",
+    "summary": {
+     "passed": 36,
+     "failed": 0,
+     "skipped": 0,
+     "total": 36
+    }
+   }
+  },
+  {
+   "id": "ma-rtb",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/xarm6-rtb.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-rtb.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:31:47.478Z",
+   "finishedAt": "2026-11-14T00:31:50.939Z",
+   "exitCode": 0,
+   "log": "suites/ma-rtb.log",
+   "logSha256": "44d53c6faa229abd5e3ba0eeba09a9be64c8f0c2f99194b1489f75beaddab3f3",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-rtb.json",
+    "sha256": "006dddd94796421696629baad82bb73727bf5997efecb5b820118e9b3b33cfac",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "ma-py",
+   "command": "PYTHONPATH=<workspace>/source/robotics/simulation-mujoco PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=<tmp>/mekoniq-pycache-38943 PYTHONNOUSERSITE=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <workspace>/source/.venv-mujoco/bin/python -m pytest -p no:cacheprovider robotics/simulation-mujoco/tests -q --junitxml=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-py.xml",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:31:50.940Z",
+   "finishedAt": "2026-11-14T00:31:57.650Z",
+   "exitCode": 0,
+   "log": "suites/ma-py.log",
+   "logSha256": "3b2a99851dd45b3b6580030dad29153de1ff5df8b3864f63e93c003cfcf940aa",
+   "repo": "source",
+   "kind": "pytest",
+   "result": {
+    "file": "suites/ma-py.xml",
+    "sha256": "a2ec119481d2a31430aecb991a6d24e5eb633938c0106a8a6b4c2e16fcc11ee1",
+    "summary": {
+     "passed": 43,
+     "failed": 0,
+     "skipped": 0,
+     "total": 43
+    }
+   }
+  },
+  {
+   "id": "ma-worker",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/mujoco-arm-worker.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-worker.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:31:57.651Z",
+   "finishedAt": "2026-11-14T00:31:59.936Z",
+   "exitCode": 0,
+   "log": "suites/ma-worker.log",
+   "logSha256": "5c59c549b6f59939f670cfbdf73205c69355e490c729dcedf5ecd88b45ae719c",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-worker.json",
+    "sha256": "9cbd6702b16b220ff3d846e7ba97bd5e3eef4d0107a0cb42a7ac604fd2b6952f",
+    "summary": {
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0,
+     "total": 3
+    }
+   }
+  },
+  {
+   "id": "ma-ports",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/mujoco-arm-ports.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-ports.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:31:59.936Z",
+   "finishedAt": "2026-11-14T00:32:05.636Z",
+   "exitCode": 0,
+   "log": "suites/ma-ports.log",
+   "logSha256": "7e291d5a9ae5225c57c12d9c64d062f6e2938f3490745d77d38496e4d27e3c38",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-ports.json",
+    "sha256": "f633c9ad82acb898e1b2e78de3b00ad200e7b220d40b8ea674fb1d89fcc5632e",
+    "summary": {
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0,
+     "total": 15
+    }
+   }
+  },
+  {
+   "id": "ma-programs",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/mujoco-arm-programs.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-programs.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:32:05.636Z",
+   "finishedAt": "2026-11-14T00:32:08.487Z",
+   "exitCode": 0,
+   "log": "suites/ma-programs.log",
+   "logSha256": "cd4bb511beaa3b76cf349e566d36774b955e6ecba1447ec3926590467aff9395",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-programs.json",
+    "sha256": "d2c7cff228e2d9d4830bd9b98c61b937d48f42fcd715eb778715c49dae2b2d89",
+    "summary": {
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0,
+     "total": 2
+    }
+   }
+  },
+  {
+   "id": "ma-contact",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/mock-arm-contact.test.ts tests/unit/arm-motion.test.ts tests/unit/arm-collision-geometry.test.ts tests/unit/arm-plant-report.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-contact.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:32:08.487Z",
+   "finishedAt": "2026-11-14T00:32:09.830Z",
+   "exitCode": 0,
+   "log": "suites/ma-contact.log",
+   "logSha256": "77ff64556984ca9605368037733defc30f478fa4341e422074a7d5cf41547b5c",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-contact.json",
+    "sha256": "09889efb85fa13a87812471de6c07269c94c268f66aafe92420f89b8acc1f7a9",
+    "summary": {
+     "passed": 44,
+     "failed": 0,
+     "skipped": 0,
+     "total": 44
+    }
+   }
+  },
+  {
+   "id": "ma-bv01",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/mujoco-arm-bv01.test.ts tests/integration/mujoco-arm-gateway.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-bv01.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:32:09.830Z",
+   "finishedAt": "2026-11-14T00:33:04.636Z",
+   "exitCode": 0,
+   "log": "suites/ma-bv01.log",
+   "logSha256": "c9ee2a44c5f98a3f6f3b74035befe2e1d4c8ab6424151d90b1906e1aabbaa16f",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-bv01.json",
+    "sha256": "0f7632d5d45ffa98bd3d41f13f64fa066a99bcf7b16f5d8f879784e320d67925",
+    "summary": {
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0,
+     "total": 15
+    }
+   }
+  },
+  {
+   "id": "ma-faults",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/mujoco-arm-faults.test.ts tests/integration/mujoco-arm-readiness.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/ma-faults.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:33:04.637Z",
+   "finishedAt": "2026-11-14T00:34:02.561Z",
+   "exitCode": 0,
+   "log": "suites/ma-faults.log",
+   "logSha256": "e497a1b715940ac061ccb24b8c9417ad9aca7c3894e3f0cff8c16a862b8b50b8",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/ma-faults.json",
+    "sha256": "798d5d1c99d6125b3ddc8e86fa0b0cfd78ef046ea03d0740b1a45df2f32f0cf5",
+    "summary": {
+     "passed": 17,
+     "failed": 0,
+     "skipped": 0,
+     "total": 17
+    }
+   }
+  },
+  {
+   "id": "rt-remote",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/lab-runtime-remote.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/rt-remote.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:34:02.562Z",
+   "finishedAt": "2026-11-14T00:34:08.906Z",
+   "exitCode": 0,
+   "log": "suites/rt-remote.log",
+   "logSha256": "c6961e2feea3e43c6381c01bba76a42f2bc8b2b0933646b1e192676e6b33f4c5",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/rt-remote.json",
+    "sha256": "306d324ac07f80dcd52aaff657755ef0fb6c43047dfd0f66ff1780df31d0b0b1",
+    "summary": {
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0,
+     "total": 15
+    }
+   }
+  },
+  {
+   "id": "rt-paced",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/paced-step.test.ts tests/integration/lab-v2-paced-step.test.ts tests/integration/irsim-plant-port.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/rt-paced.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:34:08.907Z",
+   "finishedAt": "2026-11-14T00:35:53.401Z",
+   "exitCode": 0,
+   "log": "suites/rt-paced.log",
+   "logSha256": "fd046cc32ac5664795718f1e7019d4553027aa9e2f4a3fa2db1e97dce871b926",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/rt-paced.json",
+    "sha256": "5c946aac1e2486bbe5526cd9f5b445db171cc2bf11fd4ad2ed3588105279a657",
+    "summary": {
+     "passed": 14,
+     "failed": 0,
+     "skipped": 0,
+     "total": 14
+    }
+   }
+  },
+  {
+   "id": "rt-container",
+   "command": "LAB_V2_CLEAN_EXPORT=1 LAB_CONTAINER_IMAGE=mekoniq-lab-runtime:record-38943 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/integration/lab-runtime-container.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/rt-container.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:35:53.402Z",
+   "finishedAt": "2026-11-14T00:36:09.326Z",
+   "exitCode": 0,
+   "log": "suites/rt-container.log",
+   "logSha256": "f3d7d3c5fde9b522d5f5ccead517683115833b11769b353e7a64038e35b1bb1e",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/rt-container.json",
+    "sha256": "125fd67b9b349d1c9fa115291b8a3dc2e1dc5ffd0b5ab96916f1f993915edc91",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "regress",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/source/node_modules/vitest/vitest.mjs run tests/unit/bv01-mock-golden.test.ts tests/integration/portable-tool-closure.test.ts tests/integration/lab-runtime-artifact.test.ts tests/unit/sim-extension-qualification.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/regress.json --reporter=default",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:36:09.327Z",
+   "finishedAt": "2026-11-14T00:36:18.933Z",
+   "exitCode": 0,
+   "log": "suites/regress.log",
+   "logSha256": "cf6001123e7198aefbed53be1e59a43e7fe304a6fcc4eebc925365bbc5ddc236",
+   "repo": "source",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/regress.json",
+    "sha256": "0961ad10b9d27b8b0ca4d7b9c59e25e9cb20d41c61e708eafe4a73256e574ab5",
+    "summary": {
+     "passed": 35,
+     "failed": 0,
+     "skipped": 0,
+     "total": 35
+    }
+   }
+  },
+  {
+   "id": "lab-rt-unit",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/node_modules/vitest/vitest.mjs run tests/unit/fetch-event-source.test.ts tests/unit/twin-runtime-remote.test.ts tests/unit/runtime-target.test.ts tests/unit/runtime-stream.test.ts tests/unit/runtime-compatibility.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-rt-unit.json --reporter=default",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:36:18.934Z",
+   "finishedAt": "2026-11-14T00:36:24.864Z",
+   "exitCode": 0,
+   "log": "suites/lab-rt-unit.log",
+   "logSha256": "ea9969848bd4ed51efc8e22c91667d7332246eb8abf364fa9fb7bd8664d4bc7a",
+   "repo": "lab",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/lab-rt-unit.json",
+    "sha256": "e8ca439ef73cad0dd04a469ec8c89db0cbf716c93609e036f2e7e8f2fff41837",
+    "summary": {
+     "passed": 51,
+     "failed": 0,
+     "skipped": 0,
+     "total": 51
+    }
+   }
+  },
+  {
+   "id": "lab-ui-unit",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/node_modules/vitest/vitest.mjs run tests/unit/twin-shell.test.ts tests/unit/twin-problems.test.ts tests/unit/twin-keys.test.ts tests/unit/twin-notes.test.ts tests/unit/sample-buffer.test.ts tests/unit/live-playback.test.ts tests/unit/twin3d-structure.test.ts tests/unit/workspace-conditional-items.test.ts tests/unit/twin-workspace.test.ts tests/unit/playwright-config.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-ui-unit.json --reporter=default",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:36:24.866Z",
+   "finishedAt": "2026-11-14T00:36:25.820Z",
+   "exitCode": 0,
+   "log": "suites/lab-ui-unit.log",
+   "logSha256": "f25d40bb0620b33f8f6b6fb1f02f6cfbf7823ade22738eec1053d2f12ef2a6ac",
+   "repo": "lab",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/lab-ui-unit.json",
+    "sha256": "54fdac4a60c2e556d960d99c825f5cedca44c7bad274802746cc6deaa4869097",
+    "summary": {
+     "passed": 75,
+     "failed": 0,
+     "skipped": 0,
+     "total": 75
+    }
+   }
+  },
+  {
+   "id": "lab-arm-unit",
+   "command": "LAB_V2_CLEAN_EXPORT=1 MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/node_modules/vitest/vitest.mjs run tests/unit/arm-mesh.test.ts tests/unit/mujoco-coffee.test.ts tests/unit/runtime-popover.test.ts tests/integration/mujoco-launcher.test.ts tests/integration/runtime-artifact.test.ts --reporter=json --outputFile=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-arm-unit.json --reporter=default",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:36:25.820Z",
+   "finishedAt": "2026-11-14T00:36:26.711Z",
+   "exitCode": 0,
+   "log": "suites/lab-arm-unit.log",
+   "logSha256": "f055dbde7c0a309968f4334845897f68dedbb8505279b004889da719f566a477",
+   "repo": "lab",
+   "kind": "vitest",
+   "result": {
+    "file": "suites/lab-arm-unit.json",
+    "sha256": "d76741a00f43be598cad83fe2526cff4981c59dde940d23dc2b1c93bee9cd1d0",
+    "summary": {
+     "passed": 48,
+     "failed": 0,
+     "skipped": 0,
+     "total": 48
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-remote-origin",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-remote-origin.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-remote-origin LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-remote-origin MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs remote-origin.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:36:26.712Z",
+   "finishedAt": "2026-11-14T00:36:53.626Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-remote-origin.log",
+   "logSha256": "0e190efa67dd117e00883e7aa0585aa5ac89e46e82dabf0aa86e67bea7f9d63b",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-remote-origin.json",
+    "sha256": "8d8399580b6fb7586f494bd9a7ab18702e6cfcecfa1dab968aa041570b88cb51",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-twin-layout",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-twin-layout.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-twin-layout LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-twin-layout MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs twin-layout.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:36:53.628Z",
+   "finishedAt": "2026-11-14T00:37:15.743Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-twin-layout.log",
+   "logSha256": "991b5c073575cd9cedc51e008974fcb12592d561d86971183305a1487130bcd8",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-twin-layout.json",
+    "sha256": "4cb64a5ac861df12247e26926eb6e68f172d40be6b91e0e727a0a114a86d640f",
+    "summary": {
+     "passed": 9,
+     "failed": 0,
+     "skipped": 0,
+     "total": 9
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-twin-polish",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-twin-polish.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-twin-polish LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-twin-polish MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs twin-polish.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:37:15.744Z",
+   "finishedAt": "2026-11-14T00:37:22.277Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-twin-polish.log",
+   "logSha256": "49e3e74b4395c2527ad5d810a1295dcb1cb28ea5f00727445e18b0a3ad179eea",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-twin-polish.json",
+    "sha256": "65fc6c53ca0ac42299fdbbb57cc0163300ca6bf9a363eecf594520493c1e52ee",
+    "summary": {
+     "passed": 10,
+     "failed": 0,
+     "skipped": 0,
+     "total": 10
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-twin-transport",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-twin-transport.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-twin-transport LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-twin-transport MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs twin-transport.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:37:22.278Z",
+   "finishedAt": "2026-11-14T00:37:37.472Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-twin-transport.log",
+   "logSha256": "c789ca8b001549a8880e7a3284b5f77c0a2b343636f651b959e92dac34198d37",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-twin-transport.json",
+    "sha256": "8b8775048ce906406d39fe8ad36492d7b088dfbc0fe1570388dbfc8bf9f510da",
+    "summary": {
+     "passed": 7,
+     "failed": 0,
+     "skipped": 0,
+     "total": 7
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-twin-workspace",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-twin-workspace.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-twin-workspace LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-twin-workspace MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs twin-workspace.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:37:37.474Z",
+   "finishedAt": "2026-11-14T00:37:46.470Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-twin-workspace.log",
+   "logSha256": "df1ca7928846760423038535f9926b4eadf5be6f2e8acc9ffacf4f3b3db74237",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-twin-workspace.json",
+    "sha256": "a38713f01c6d01a812f8917376958df39b9a0d1ebc53696479acf1a8a63a93b5",
+    "summary": {
+     "passed": 5,
+     "failed": 0,
+     "skipped": 0,
+     "total": 5
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-brand-accessibility",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-brand-accessibility.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-brand-accessibility LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-brand-accessibility MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs brand-accessibility.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:37:46.478Z",
+   "finishedAt": "2026-11-14T00:37:54.098Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-brand-accessibility.log",
+   "logSha256": "c74a9f18c7e7c1ca519c3c04cf0cc31c1252b27bac634455f15bb565398f8aee",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-brand-accessibility.json",
+    "sha256": "f621e08a4082dc1f189dfdd7abb4b5ba51c266c5e5e9a2679cc0b755b68bc485",
+    "summary": {
+     "passed": 9,
+     "failed": 0,
+     "skipped": 0,
+     "total": 9
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-arm-mesh",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-arm-mesh.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-arm-mesh LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-arm-mesh MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs arm-mesh.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:37:54.099Z",
+   "finishedAt": "2026-11-14T00:38:02.950Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-arm-mesh.log",
+   "logSha256": "79a8273f3b93443344ced845fba9d26e59023216c57c3f373797127ea5072336",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-arm-mesh.json",
+    "sha256": "c1929225e14feb0bcf92893c9c1d6d24ee28b16f1b787cd13ac4064ccd892356",
+    "summary": {
+     "passed": 7,
+     "failed": 0,
+     "skipped": 0,
+     "total": 7
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-arm-cell",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-arm-cell.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-arm-cell LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-arm-cell MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-mock-e2e.mjs arm-cell.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:38:02.951Z",
+   "finishedAt": "2026-11-14T00:38:11.273Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-arm-cell.log",
+   "logSha256": "27907a351613c097f1c572dcaa020ed2425ed71330118c22745b5c54f17a5309",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-arm-cell.json",
+    "sha256": "60e7f4940f29d8c34d165ebb2ae8d39096a0df923a04561ffe8b3cf283ac82aa",
+    "summary": {
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0,
+     "total": 6
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-mujoco-coffee",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-mujoco-coffee.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-mujoco-coffee LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-mujoco-coffee MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-irsim-e2e.mjs --provider mujoco mujoco-coffee.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:38:11.274Z",
+   "finishedAt": "2026-11-14T00:39:06.132Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-mujoco-coffee.log",
+   "logSha256": "7d50a0a05c4ba429330c74ec7490594080d079e578c65ec0500e7421b1525f86",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-mujoco-coffee.json",
+    "sha256": "386faecedfa66188af3689b58894574be55e76c35f02290cabe880264001c66d",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-mujoco-mesh-fallback",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-mujoco-mesh-fallback.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-mujoco-mesh-fallback LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-mujoco-mesh-fallback MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-irsim-e2e.mjs --provider mujoco mujoco-mesh-fallback.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:39:06.133Z",
+   "finishedAt": "2026-11-14T00:39:28.499Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-mujoco-mesh-fallback.log",
+   "logSha256": "d212740bdbd03f2586a74fbe62fbd6d0e02e169abfa31c946a2e5a239e2aaa7d",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-mujoco-mesh-fallback.json",
+    "sha256": "61e799dd29a550e25f1710a489e491e7586058c1e555aaba2007a5dcaa0be068",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-irsim-journey",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-irsim-journey.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-irsim-journey LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-irsim-journey MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-irsim-e2e.mjs irsim-journey.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:39:28.500Z",
+   "finishedAt": "2026-11-14T00:39:55.847Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-irsim-journey.log",
+   "logSha256": "eab91d4a5c12a80d0a6030dcd964843bfa7499543617e22d37cfe9ec9d76dbc7",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-irsim-journey.json",
+    "sha256": "71a3ca28c77225546777572247cbc284028c26141f0c5ed10fb29d1847ff85ac",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  },
+  {
+   "id": "lab-e2e-webots-coffee",
+   "command": "LAB_PW_JSON=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/lab-e2e-webots-coffee.json LAB_IRSIM_SCREENSHOTS=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-webots-coffee LAB_EVIDENCE_DIR=<workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/screens/lab-e2e-webots-coffee MEKONIQ_WEBOTS_HOME=/Applications/Webots.app <home>/.nvm/versions/node/v24.22.2/bin/node <workspace>/lab/scripts/test-irsim-e2e.mjs --provider webots webots-coffee.spec.ts",
+   "cwd": "../lab",
+   "startedAt": "2026-11-14T00:39:55.848Z",
+   "finishedAt": "2026-11-14T00:40:23.908Z",
+   "exitCode": 0,
+   "log": "suites/lab-e2e-webots-coffee.log",
+   "logSha256": "b0d6f8efe2c0e740d4e36d461f4b9b76374b7403b0724e9e9a1cfc1a61d3cf2e",
+   "repo": "lab",
+   "kind": "playwright",
+   "result": {
+    "file": "suites/lab-e2e-webots-coffee.json",
+    "sha256": "bf2b0d8c72047b663c982a6f4c00d84e317789eb32c2cfb018f63b670949b9a5",
+    "summary": {
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "total": 1
+    }
+   }
+  }
+ ],
+ "commands": [
+  {
+   "id": "rt-image",
+   "command": "sh deploy/lab-runtime/build.sh mekoniq-lab-runtime:record-38943 --platform linux/arm64",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:31:32.066Z",
+   "finishedAt": "2026-11-14T00:31:44.453Z",
+   "exitCode": 0,
+   "log": "suites/rt-image.log",
+   "logSha256": "d64280a868c56ec28a8391ebf31cfe7f461cfb92b514139251aca0c5a0322312"
+  },
+  {
+   "id": "licenses",
+   "command": "<home>/.nvm/versions/node/v24.22.2/bin/node scripts/portable-licenses.mjs --check",
+   "cwd": "source",
+   "startedAt": "2026-11-14T00:40:23.909Z",
+   "finishedAt": "2026-11-14T00:40:24.316Z",
+   "exitCode": 0,
+   "log": "suites/licenses.log",
+   "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+ ],
+ "performance": null,
+ "cases": {
+  "MA01": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-static",
+    "suite:ma-rtb",
+    "suite:ma-py"
+   ]
+  },
+  "MA02": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-worker",
+    "suite:ma-py"
+   ]
+  },
+  "MA03": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-py",
+    "suite:ma-ports",
+    "suite:ma-worker"
+   ]
+  },
+  "MA04": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-programs",
+    "suite:ma-contact"
+   ]
+  },
+  "MA05": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-bv01"
+   ]
+  },
+  "MA06": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-faults"
+   ],
+   "note": "ruled 2026-11-13: with the pads' friction lowered the cup slips during the lift, so the transfer is refused at the lift check (TRANSFER_REJECTED, run needs_attention) and CUP_DROPPED latches when the cup leaves the pads; the case is an explicit failure at the lift check and/or CUP_DROPPED, never completed, the gripper never commanded open. The weakened-joint fault runs on a temporary copy of the worker root; the occupied-stand run ends in ARM_COLLISION before the worker's occupied refusal, which is proven at worker and ports level"
+  },
+  "MA07": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-bv01"
+   ]
+  },
+  "MA08": {
+   "status": "tested",
+   "evidence": [
+    "suite:ma-bv01",
+    "suite:ma-contact"
+   ]
+  },
+  "RT01": {
+   "status": "tested",
+   "evidence": [
+    "suite:rt-remote"
+   ]
+  },
+  "RT02": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-rt-unit"
+   ]
+  },
+  "RT03": {
+   "status": "tested",
+   "evidence": [
+    "suite:rt-paced"
+   ],
+   "note": "ruled 2026-11-13: on the fixed-step runner, paced and unpaced evidence are identical for the same action sequence and the unpaced golden is unchanged with no wall-clock call; a paced run cannot reproduce the 500-tick golden (a paced step carries at most 50 ticks)"
+  },
+  "RT04": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-e2e-remote-origin"
+   ]
+  },
+  "RT05": {
+   "status": "tested",
+   "evidence": [
+    "suite:rt-container"
+   ],
+   "note": "the image is built by the recorder for this machine's architecture from the recorded commit; a container run is never evidence for G-MA1/G-MA2 (D50); linux/amd64 has only run under emulation, where MJ-BV01 stops with PLANT_UNSTABLE (cause unknown), and real amd64 hardware is untested"
+  },
+  "CL01": {
+   "status": "not_run",
+   "evidence": [],
+   "reason": "blocked_external: no Cloud Run deployment has been ordered (D60); CL01 runs on a deployed service only, and its producer and record format belong to that deployment work"
+  },
+  "UI01": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-ui-unit",
+    "suite:lab-e2e-twin-layout"
+   ]
+  },
+  "UI02": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-ui-unit",
+    "suite:lab-e2e-twin-layout",
+    "suite:lab-e2e-twin-polish"
+   ]
+  },
+  "UI03": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-ui-unit",
+    "suite:lab-e2e-twin-transport",
+    "suite:lab-e2e-twin-polish"
+   ]
+  },
+  "UI04": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-ui-unit",
+    "suite:lab-e2e-brand-accessibility",
+    "suite:lab-e2e-twin-layout",
+    "suite:lab-e2e-twin-workspace"
+   ]
+  },
+  "UI05": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-arm-unit",
+    "suite:lab-e2e-arm-mesh",
+    "suite:lab-e2e-arm-cell",
+    "suite:lab-e2e-mujoco-mesh-fallback"
+   ],
+   "note": "ruled 2026-11-13: the launcher-level check is the MuJoCo launcher spec (mujoco-mesh-fallback); the plan's mock-launcher e2e was replaced by UI-only browser specs (arm-mesh, arm-cell). The 3D view also draws the cell's two supports (assumed geometry of the simulated cell) and an illustrative mount and legs that are not simulated"
+  },
+  "INT15": {
+   "status": "tested",
+   "evidence": [
+    "suite:lab-e2e-mujoco-coffee",
+    "suite:lab-arm-unit"
+   ]
+  },
+  "INT16": {
+   "status": "tested",
+   "evidence": [
+    "suite:regress",
+    "suite:ma-faults",
+    "suite:lab-e2e-irsim-journey",
+    "suite:lab-e2e-webots-coffee",
+    "record:mock-regression"
+   ],
+   "note": "the mock e2e on the new UI is the R-MOCK regression of the same commit (mock-regression.json)"
+  },
+  "REG03": {
+   "status": "tested",
+   "evidence": [
+    "record:linkforge-irsim",
+    "record:mock-regression",
+    "record:r1",
+    "record:r1.1"
+   ]
+  }
+ },
+ "gates": {
+  "G-MA1": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "MA01",
+    "MA02",
+    "MA03"
+   ]
+  },
+  "G-MA2": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "MA04",
+    "MA05",
+    "MA06",
+    "MA07",
+    "MA08"
+   ]
+  },
+  "G-RT1": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "RT01",
+    "RT02",
+    "RT03",
+    "RT04"
+   ]
+  },
+  "G-RT2": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "RT05"
+   ]
+  },
+  "G-UI1": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "UI01",
+    "UI02",
+    "UI03",
+    "UI04"
+   ]
+  },
+  "G-INT4": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "UI05",
+    "INT15",
+    "INT16"
+   ]
+  },
+  "G-REG3": {
+   "status": "tested",
+   "accepted": false,
+   "cases": [
+    "REG03"
+   ]
+  },
+  "G-CLOUD1": {
+   "status": "blocked_external",
+   "accepted": false,
+   "cases": [
+    "CL01"
+   ]
+  }
+ },
+ "notRun": [
+  {
+   "id": "CL01",
+   "reason": "blocked_external: no Cloud Run deployment has been ordered (D60); CL01 runs on a deployed service only, and its producer and record format belong to that deployment work"
+  }
+ ],
+ "artifacts": [
+  {
+   "file": "irsim-record.json",
+   "sha256": "5f3a999663c29daacb61b2953c7784aa87cd3f689f278f2894e4fc31c6006aa6",
+   "bytes": 358170
+  },
+  {
+   "file": "mock-regression.json",
+   "sha256": "821658f1704ef1dd24ab75398afc106471aeee6f6d59a5a64dbee985aafc2adf",
+   "bytes": 59992
+  },
+  {
+   "file": "r1-record.json",
+   "sha256": "9173d31fe1048efbce8d76d8db1f69c7cdb4ab42fdd3811f8c3873d65afd8f77",
+   "bytes": 578105
+  },
+  {
+   "file": "r11-record.json",
+   "sha256": "30a1159654e5a03c7cb2ac9b32ab6da0c06c6a7be01621783e99ce2136de3b05",
+   "bytes": 18337
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-fallback-problems.png",
+   "sha256": "7ed35ad131e8d88ace88b9b9ea736cddb3b76618047b1d5b392ef121d27125fa",
+   "bytes": 93043
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-mesh-home.png",
+   "sha256": "c8978fb7d21be4e4a90ac1b4a0c7ce34cdf52d6dcd977945bfabcff6db83bd75",
+   "bytes": 98213
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-mesh-pick-closed.png",
+   "sha256": "714e0a852958a696f22638c94341be4a29df94234d96ff1a8100557250dcaf18",
+   "bytes": 96473
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-runbar-notes-only.png",
+   "sha256": "55e3ee3c88e9a29cd0f27982ce18fb5b2594cf62ff5393f18f8c6aae84df53f3",
+   "bytes": 16450
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-runbar-notes-panel.png",
+   "sha256": "6f9e581360dad602040049f0ea74bc764f465da2e13f55d72656617284ef78e8",
+   "bytes": 45630
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-runbar-problem-and-note-panel.png",
+   "sha256": "ad82935e40d5c096cde5fdb205a8fdde802230bcda0d0936e6d0ddac6ae5d661",
+   "bytes": 52341
+  },
+  {
+   "file": "screens/lab-e2e-arm-mesh/U05-runbar-problem-and-note.png",
+   "sha256": "ea55d0eee5275386f4df19654b020049091534c51351e5edc2583d2c5ca2f3fa",
+   "bytes": 16514
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-en.png",
+   "sha256": "b2564279ef5ffb5acf73786ee6ffc19db1892997a49fe4365d5384c62a072260",
+   "bytes": 763505
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-ja.png",
+   "sha256": "ca9eb53ef5e1122ec424a92d47bb193f1e0fcd5bd964804899f9289a4b38a770",
+   "bytes": 807832
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-vi.png",
+   "sha256": "de2d7a6b6372cef821e523ce5c16460a4f24fe4801ae3ea0eb9a7a90cd144fe5",
+   "bytes": 789523
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-en.png",
+   "sha256": "1f5d12dac1934fa14e73f21617e23b05e37e29244a34a044eb37c3ef886dc734",
+   "bytes": 744545
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-ja.png",
+   "sha256": "8c53009b8c9585c646665c10f970bb88d95ef37d2bfd0788ac4657fa7086377f",
+   "bytes": 783523
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-vi.png",
+   "sha256": "8e4051bc97d29f053c6a50fc01d0ce49f122948e1fd60f45ca1cca5825d08561",
+   "bytes": 779118
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-en.png",
+   "sha256": "c1e21ff1c97e9852dbe6736121eb837517b138e831bdfc4a325ece74844444f4",
+   "bytes": 141047
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-ja.png",
+   "sha256": "6b4314133162e692c9fedf558937d4b6528b61169d6f5b7198018d1936065b39",
+   "bytes": 148638
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-vi.png",
+   "sha256": "f9ade46b7b48658fb7455eee67aa5335fb546b3083216efed5adcd719ee25073",
+   "bytes": 147350
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-en.png",
+   "sha256": "d8c18e43028f3b2c6b1a508d63a410fbe0dbf62f89dbd2e05e65f4a7017bbbd1",
+   "bytes": 112572
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-ja.png",
+   "sha256": "25f592ab27d3729737511291cd59cf1dd76f3806203280bd913449515e4f6cff",
+   "bytes": 117692
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-vi.png",
+   "sha256": "c63009d0e488500ec08084468c6d4849435a8a97b1f2b279de0fe82c6b0d18e7",
+   "bytes": 114553
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-en.png",
+   "sha256": "417c1de8af9c2d7a9ba7c5aef6ec0b7ea5c936342c903ee34d8a58f2c35f72ef",
+   "bytes": 128810
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-ja.png",
+   "sha256": "88eb5eaba33a2cc75aa7af3881c540a114d4b2ba0fe3e9f263e9a248010ccb68",
+   "bytes": 133960
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-vi.png",
+   "sha256": "93e1c0dbefe97339348afd1bf17cdaef4f23d27996ee3e21200b950f8675a8a5",
+   "bytes": 136129
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-en.png",
+   "sha256": "b867e5e74ba326a4f4a3dfa08ff6237362675b051c54edadb9cbf0641d5c86fc",
+   "bytes": 122213
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-ja.png",
+   "sha256": "15d38459cf098246c5986868f389da15df6da4b7ce7443b7a8cc040e055feb07",
+   "bytes": 128069
+  },
+  {
+   "file": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-vi.png",
+   "sha256": "517c58f6577eca483155f179471a90adece6f74efe2297851d0466acdb3823c3",
+   "bytes": 127515
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-box-loopback-blocked.png",
+   "sha256": "f289e9999828203682d86dafe45b32f5d99a3393a23949b81f0018f679886b02",
+   "bytes": 158018
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-box-pin-mismatch.png",
+   "sha256": "1847515e9d92dd0e6f4bdb3c63d99d39b620d0f9d5ecf88d0a01226aeb2f6310",
+   "bytes": 126837
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-box-this-machine.png",
+   "sha256": "c5ea73362b6a0ccf794eac61a2874b10ccd990696f06f08e543cff076279361c",
+   "bytes": 122603
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-box-web-page-initial.png",
+   "sha256": "c8a7ff53ecba2c2641c847fe68c69080e920bd18ad32c55da1a1c14a0ee45d37",
+   "bytes": 131210
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-cell-fresh-mount.png",
+   "sha256": "9cb420b32c717325740acb2f4d04c7d91b6ca3a99391391c4d9a525556fcd71a",
+   "bytes": 217258
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-cell-robot-left.png",
+   "sha256": "6c14c80e4937b86e38a8f8eac89449fc66e91776433be690b162299adcccf264",
+   "bytes": 214122
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-cell-start.png",
+   "sha256": "783683bad5b01e0fd5f947c7dea6d9a573a199db699b2dae1ac65c7906c0babe",
+   "bytes": 217718
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-cup-on-tray-robot-docked.png",
+   "sha256": "eb4334fcc15b425defde6b13a50f1cf4c006cef64773b705acfcbd28f0ac89bb",
+   "bytes": 218622
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-engineering-identity.png",
+   "sha256": "c81432f6b50701bd3be3f9d8d1f9265053a89df9fc6edbf267bc2d64be12c7cc",
+   "bytes": 253812
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-engineering-joints.png",
+   "sha256": "e921c33089182f6cdb3d429258a189c4531ffc2d9a71a043d454216dc9d7a1e7",
+   "bytes": 282890
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding-fit.png",
+   "sha256": "f48615ce74dc593fab106c541a7661385dbe16a846aa580254a6ab9cc9708e44",
+   "bytes": 103678
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding.png",
+   "sha256": "079de9679ba1dafc5278e3f7988f9f12bb981a395d8b35ef0fb24671a6488750",
+   "bytes": 215106
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/U06-report-plant.png",
+   "sha256": "f1f59a8b49443e5426abf8f68cc487f5fd849250ff39c5edaf2739d8dac84ee0",
+   "bytes": 287104
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/final-I6-replay-mid-pick.png",
+   "sha256": "e1b05b736f23a52e5141693853b3bea52cca752c6b119ff82800fdfe3b998188",
+   "bytes": 213979
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/final-I6-saved-report-mid-pick.png",
+   "sha256": "ac4b4ec92ffa9be22861d033731adb78975eaab8e62598cf56dfbb5157a1eb9c",
+   "bytes": 213983
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-coffee/screens/mujoco-coffee.png",
+   "sha256": "d8463269c03fd2d03c93bdce2bf613223e85d51bbab5f96a81285b14ef87e07f",
+   "bytes": 213648
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-mesh-fallback/U06-mesh-fallback-notes.png",
+   "sha256": "d85098f950c017e793d24befc50616fbdc53d43f7247221ec29e9519ea416cb8",
+   "bytes": 220091
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1024x700.png",
+   "sha256": "a61c408dc4ebc2ccc1ebbbaf0fe51175f7d3cd00c38e836d620a0d236936c748",
+   "bytes": 149591
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1280x800.png",
+   "sha256": "9a1655450ecbc231ada2028a4b965fb75facf3c51b07b7190fab1bccf05d3b36",
+   "bytes": 193954
+  },
+  {
+   "file": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1440x900.png",
+   "sha256": "2ced3d28af3e582f23432a255e17165821c6b899764b60c496862db2891af32e",
+   "bytes": 220636
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-address-corrected.png",
+   "sha256": "97535aeabb52105f2688b7cccb69c37dd63dd09402a8f7c4039db49ccf841680",
+   "bytes": 132208
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-address-error.png",
+   "sha256": "4a82ee725265a668f2b736a5c413a9786aaa52355f1af9732e7343ee096ce3b6",
+   "bytes": 140054
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-before-connect.png",
+   "sha256": "135208805d4455c001c2ffd5f59e79845e6ab1157ac790b4900f0f4d57df2a27",
+   "bytes": 141632
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-completed.png",
+   "sha256": "d4b828d8e3208cb701b3e594c2458c692df1158462ece7da8ce36b0f009a4b15",
+   "bytes": 168444
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-connected-run-bar.png",
+   "sha256": "56b432972e0e311383848de5076c32b16345add82a026d7e3aade2315cc7a537",
+   "bytes": 117709
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-paced-1x.png",
+   "sha256": "888c4119b20ef855c2063fc06965ab4ca0c8ecb8015016e5ce524b2809ed4c1b",
+   "bytes": 144325
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-paced-2d-click.png",
+   "sha256": "4c5730463cd1fdd1a5ea5ce7ddd0a7ae340e310931c8d5c1458a72f9275b1c6e",
+   "bytes": 148726
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-pair-form-filled.png",
+   "sha256": "b72166bcf607edeb234169096f3e4ca6d292ce0d1d6d339c9877f9fe24cb8cdc",
+   "bytes": 132392
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-paused.png",
+   "sha256": "46d6be2885f304e0f9b309c90316b0cb5fe16fa2387c403fcbd6fc71f122b08a",
+   "bytes": 152688
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/N03-pausing.png",
+   "sha256": "b59723993287c421641778ebe7dc4ccb488d739d319dd28ad4620c8a27819d02",
+   "bytes": 149757
+  },
+  {
+   "file": "screens/lab-e2e-remote-origin/final-I5-chip-not-connected.png",
+   "sha256": "c741d7c700b22ccf679ed724e58ba1a48a6830398b28dd3bae5e3d473734c6c2",
+   "bytes": 128858
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-caveat-desktop-vi.png",
+   "sha256": "f711e52cbf08a5137def4228fef5aab5e363beb5656e15f6cc20b3722e34e164",
+   "bytes": 281527
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-completed-engineering-desktop-vi.png",
+   "sha256": "468de000d2beb75613e92b018d5a9d3508fa29c38c69168310a1891be3d08c7e",
+   "bytes": 198491
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-completed-objects-desktop-vi.png",
+   "sha256": "3f7a4938a4034c7dec8723b6b3f736c3d182700cacaf50892dd9dc27f2c145ca",
+   "bytes": 178787
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-completed-report-desktop-vi.png",
+   "sha256": "0da31bac151d7883e1fac0e2e8dd0dd7feed40f8c2bcb0e38669e2730f84545b",
+   "bytes": 181136
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-completed-setup-desktop-vi.png",
+   "sha256": "fdaa847789c72548aa07295f188361451241c7168948da1fc74a0533f6839b4d",
+   "bytes": 157828
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-display-desktop-vi.png",
+   "sha256": "22569304202f9d75a3898690712afb4fe4dabd8f25c524de544d336871e69182",
+   "bytes": 175627
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-engineering-desktop-vi.png",
+   "sha256": "fba92f303a8c451bed622c4c97fda5684b7fccd2a78591bf4ad93506dd633dfc",
+   "bytes": 163720
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-first-open-desktop-vi.png",
+   "sha256": "467ce460bda3faaf774207b52613aff41a35958525e26a406e0494457f632a6d",
+   "bytes": 130783
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-low-screen.png",
+   "sha256": "47a117ac7252dcbdad8773fdc9d09e843f32dd93dbca3652063dee96ca271a7b",
+   "bytes": 89084
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-objects-desktop-vi.png",
+   "sha256": "a99e4da6f2b64ddc53040b3a1c9fa53ea4906b4d62addf397744f6c45e0d47e9",
+   "bytes": 155172
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-objects-phone-vi.png",
+   "sha256": "e089ccb63fc5c78d69bc0860466c9fe1e7460ac4effbd57c2e2602997936f2bf",
+   "bytes": 41545
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-picker-desktop-vi.png",
+   "sha256": "a5264b1222398bf0e2548913a26bd793a395859529ab7949eea742001aa814a1",
+   "bytes": 277376
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-problems-desktop-vi.png",
+   "sha256": "298b105c27124bd2607f4e76a233f6f86dc8f59847ab104f1082e61a2406b172",
+   "bytes": 215935
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-report-desktop-vi.png",
+   "sha256": "dfecbad88fdaa0ddc921e527da850e9fd450e4f45181c4c60c21a7cb953609ba",
+   "bytes": 169361
+  },
+  {
+   "file": "screens/lab-e2e-twin-layout/U01-setup-desktop-vi.png",
+   "sha256": "d4f92ab620f79d40dd82f24a8cdbcf3804935e61b7f6e73104b6b7c8353e3562",
+   "bytes": 155847
+  },
+  {
+   "file": "screens/lab-e2e-twin-polish/U07-1024x700-vi.png",
+   "sha256": "61cf04a41feed152e1880b182265d0b41c678cd8f26f8c76509c2fe634fb0f05",
+   "bytes": 97844
+  },
+  {
+   "file": "screens/lab-e2e-twin-polish/U07-engineering-arm-desktop-vi.png",
+   "sha256": "6df46883d6e5a202e47f4d35a67fb795ea520bf9b647213364afd6323e1bdd2a",
+   "bytes": 186388
+  },
+  {
+   "file": "screens/lab-e2e-twin-polish/U07-problems-desktop-vi.png",
+   "sha256": "b19f06be30d89516dbb2fa6f41293683e1ae78e9f8518cf1ea619951ffe7fcbd",
+   "bytes": 162144
+  },
+  {
+   "file": "screens/lab-e2e-twin-polish/U07-replay-desktop-vi.png",
+   "sha256": "63c4d437a40ba6699360af9205b43ec8b93aa4268ccb12b82cb52b5d5ab32174",
+   "bytes": 184031
+  },
+  {
+   "file": "screens/lab-e2e-twin-polish/U07-run-bar-problem-desktop-vi.png",
+   "sha256": "b76f5f0106931d944a7049dbf98c29bf4279e3b394915f305e9f41d6340942d3",
+   "bytes": 118361
+  },
+  {
+   "file": "screens/lab-e2e-twin-transport/U03-replay-desktop-vi.png",
+   "sha256": "3537e978cd72f565438bea65e9e13e36e46f8c87b56306ea93de4bbeb0b080cf",
+   "bytes": 178560
+  },
+  {
+   "file": "screens/lab-e2e-twin-transport/U03-shortcuts-desktop-vi.png",
+   "sha256": "df15edf6095187b20316e45e5fc32d641f8f8eae65220973c83aea8e8f735d84",
+   "bytes": 122142
+  },
+  {
+   "file": "screens/lab-e2e-twin-transport/U03-watch-desktop.png",
+   "sha256": "cd9368dad6c2a863b30a94d09ff04e5289f210f003bff5378447ca5d2f3886ff",
+   "bytes": 63335
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-coffee-run-desktop-vi.png",
+   "sha256": "902633357b129508aef079aa238f60c458bfb1ea61731f8b65e88a7f2535e5d0",
+   "bytes": 117984
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-en.png",
+   "sha256": "49506f297c87c5bd689f7dd24d8ab374851678c8edb7c31ccc51fd3d0a1a2cf1",
+   "bytes": 74922
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-ja.png",
+   "sha256": "e6fb78a772a78f7ab0bc0baba47bb2d8d5d9021ea9b44daa93b75f59ce5a1430",
+   "bytes": 71147
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-vi.png",
+   "sha256": "7c71565de3e5720f256f381121c8b03153615fff90f5b289adc261fc58ffef8b",
+   "bytes": 74324
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-en.png",
+   "sha256": "369e13ec810a7577734ea6d8c692722834cc3289b1ed1ff65490ef014d5d8996",
+   "bytes": 170861
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-ja.png",
+   "sha256": "74aceac84351448dd850f9722013cedd226d26f17345dd29a72b3acd6ba57f3e",
+   "bytes": 169256
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-vi.png",
+   "sha256": "c9d57833098484ee3b05cc014c059e147329ef1ffd1c8d2895cad6673f942470",
+   "bytes": 174991
+  },
+  {
+   "file": "screens/lab-e2e-twin-workspace/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+   "sha256": "0910a95804938070a250cc7e3ce21e076fab37442be1025b3837922f3189af88",
+   "bytes": 147916
+  },
+  {
+   "file": "screens/lab-e2e-webots-coffee/webots-coffee.png",
+   "sha256": "36a4467805a940eab57887eab27467344765e0b10c98b1cf90cd0fab62b3fcf6",
+   "bytes": 174758
+  },
+  {
+   "file": "suites/lab-arm-unit.json",
+   "sha256": "d76741a00f43be598cad83fe2526cff4981c59dde940d23dc2b1c93bee9cd1d0",
+   "bytes": 17651
+  },
+  {
+   "file": "suites/lab-arm-unit.log",
+   "sha256": "f055dbde7c0a309968f4334845897f68dedbb8505279b004889da719f566a477",
+   "bytes": 836
+  },
+  {
+   "file": "suites/lab-e2e-arm-cell.json",
+   "sha256": "60e7f4940f29d8c34d165ebb2ae8d39096a0df923a04561ffe8b3cf283ac82aa",
+   "bytes": 9674
+  },
+  {
+   "file": "suites/lab-e2e-arm-cell.log",
+   "sha256": "27907a351613c097f1c572dcaa020ed2425ed71330118c22745b5c54f17a5309",
+   "bytes": 1709
+  },
+  {
+   "file": "suites/lab-e2e-arm-mesh.json",
+   "sha256": "c1929225e14feb0bcf92893c9c1d6d24ee28b16f1b787cd13ac4064ccd892356",
+   "bytes": 11171
+  },
+  {
+   "file": "suites/lab-e2e-arm-mesh.log",
+   "sha256": "79a8273f3b93443344ced845fba9d26e59023216c57c3f373797127ea5072336",
+   "bytes": 2075
+  },
+  {
+   "file": "suites/lab-e2e-brand-accessibility.json",
+   "sha256": "f621e08a4082dc1f189dfdd7abb4b5ba51c266c5e5e9a2679cc0b755b68bc485",
+   "bytes": 12573
+  },
+  {
+   "file": "suites/lab-e2e-brand-accessibility.log",
+   "sha256": "c74a9f18c7e7c1ca519c3c04cf0cc31c1252b27bac634455f15bb565398f8aee",
+   "bytes": 1790
+  },
+  {
+   "file": "suites/lab-e2e-irsim-journey.json",
+   "sha256": "71a3ca28c77225546777572247cbc284028c26141f0c5ed10fb29d1847ff85ac",
+   "bytes": 4044
+  },
+  {
+   "file": "suites/lab-e2e-irsim-journey.log",
+   "sha256": "eab91d4a5c12a80d0a6030dcd964843bfa7499543617e22d37cfe9ec9d76dbc7",
+   "bytes": 1037
+  },
+  {
+   "file": "suites/lab-e2e-mujoco-coffee.json",
+   "sha256": "386faecedfa66188af3689b58894574be55e76c35f02290cabe880264001c66d",
+   "bytes": 4530
+  },
+  {
+   "file": "suites/lab-e2e-mujoco-coffee.log",
+   "sha256": "7d50a0a05c4ba429330c74ec7490594080d079e578c65ec0500e7421b1525f86",
+   "bytes": 1442
+  },
+  {
+   "file": "suites/lab-e2e-mujoco-mesh-fallback.json",
+   "sha256": "61e799dd29a550e25f1710a489e491e7586058c1e555aaba2007a5dcaa0be068",
+   "bytes": 4066
+  },
+  {
+   "file": "suites/lab-e2e-mujoco-mesh-fallback.log",
+   "sha256": "d212740bdbd03f2586a74fbe62fbd6d0e02e169abfa31c946a2e5a239e2aaa7d",
+   "bytes": 1114
+  },
+  {
+   "file": "suites/lab-e2e-remote-origin.json",
+   "sha256": "8d8399580b6fb7586f494bd9a7ab18702e6cfcecfa1dab968aa041570b88cb51",
+   "bytes": 4303
+  },
+  {
+   "file": "suites/lab-e2e-remote-origin.log",
+   "sha256": "0e190efa67dd117e00883e7aa0585aa5ac89e46e82dabf0aa86e67bea7f9d63b",
+   "bytes": 1122
+  },
+  {
+   "file": "suites/lab-e2e-twin-layout.json",
+   "sha256": "4cb64a5ac861df12247e26926eb6e68f172d40be6b91e0e727a0a114a86d640f",
+   "bytes": 20266
+  },
+  {
+   "file": "suites/lab-e2e-twin-layout.log",
+   "sha256": "991b5c073575cd9cedc51e008974fcb12592d561d86971183305a1487130bcd8",
+   "bytes": 2305
+  },
+  {
+   "file": "suites/lab-e2e-twin-polish.json",
+   "sha256": "65fc6c53ca0ac42299fdbbb57cc0163300ca6bf9a363eecf594520493c1e52ee",
+   "bytes": 22282
+  },
+  {
+   "file": "suites/lab-e2e-twin-polish.log",
+   "sha256": "49e3e74b4395c2527ad5d810a1295dcb1cb28ea5f00727445e18b0a3ad179eea",
+   "bytes": 2542
+  },
+  {
+   "file": "suites/lab-e2e-twin-transport.json",
+   "sha256": "8b8775048ce906406d39fe8ad36492d7b088dfbc0fe1570388dbfc8bf9f510da",
+   "bytes": 14994
+  },
+  {
+   "file": "suites/lab-e2e-twin-transport.log",
+   "sha256": "c789ca8b001549a8880e7a3284b5f77c0a2b343636f651b959e92dac34198d37",
+   "bytes": 1983
+  },
+  {
+   "file": "suites/lab-e2e-twin-workspace.json",
+   "sha256": "a38713f01c6d01a812f8917376958df39b9a0d1ebc53696479acf1a8a63a93b5",
+   "bytes": 11952
+  },
+  {
+   "file": "suites/lab-e2e-twin-workspace.log",
+   "sha256": "df1ca7928846760423038535f9926b4eadf5be6f2e8acc9ffacf4f3b3db74237",
+   "bytes": 1529
+  },
+  {
+   "file": "suites/lab-e2e-webots-coffee.json",
+   "sha256": "bf2b0d8c72047b663c982a6f4c00d84e317789eb32c2cfb018f63b670949b9a5",
+   "bytes": 4045
+  },
+  {
+   "file": "suites/lab-e2e-webots-coffee.log",
+   "sha256": "b0d6f8efe2c0e740d4e36d461f4b9b76374b7403b0724e9e9a1cfc1a61d3cf2e",
+   "bytes": 1095
+  },
+  {
+   "file": "suites/lab-rt-unit.json",
+   "sha256": "e8ca439ef73cad0dd04a469ec8c89db0cbf716c93609e036f2e7e8f2fff41837",
+   "bytes": 18493
+  },
+  {
+   "file": "suites/lab-rt-unit.log",
+   "sha256": "ea9969848bd4ed51efc8e22c91667d7332246eb8abf364fa9fb7bd8664d4bc7a",
+   "bytes": 1428
+  },
+  {
+   "file": "suites/lab-ui-unit.json",
+   "sha256": "54fdac4a60c2e556d960d99c825f5cedca44c7bad274802746cc6deaa4869097",
+   "bytes": 25115
+  },
+  {
+   "file": "suites/lab-ui-unit.log",
+   "sha256": "f25d40bb0620b33f8f6b6fb1f02f6cfbf7823ade22738eec1053d2f12ef2a6ac",
+   "bytes": 859
+  },
+  {
+   "file": "suites/licenses.log",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "bytes": 0
+  },
+  {
+   "file": "suites/ma-bv01.json",
+   "sha256": "0f7632d5d45ffa98bd3d41f13f64fa066a99bcf7b16f5d8f879784e320d67925",
+   "bytes": 7246
+  },
+  {
+   "file": "suites/ma-bv01.log",
+   "sha256": "c9ee2a44c5f98a3f6f3b74035befe2e1d4c8ab6424151d90b1906e1aabbaa16f",
+   "bytes": 5832
+  },
+  {
+   "file": "suites/ma-contact.json",
+   "sha256": "09889efb85fa13a87812471de6c07269c94c268f66aafe92420f89b8acc1f7a9",
+   "bytes": 16376
+  },
+  {
+   "file": "suites/ma-contact.log",
+   "sha256": "77ff64556984ca9605368037733defc30f478fa4341e422074a7d5cf41547b5c",
+   "bytes": 546
+  },
+  {
+   "file": "suites/ma-faults.json",
+   "sha256": "798d5d1c99d6125b3ddc8e86fa0b0cfd78ef046ea03d0740b1a45df2f32f0cf5",
+   "bytes": 8475
+  },
+  {
+   "file": "suites/ma-faults.log",
+   "sha256": "e497a1b715940ac061ccb24b8c9417ad9aca7c3894e3f0cff8c16a862b8b50b8",
+   "bytes": 6286
+  },
+  {
+   "file": "suites/ma-ports.json",
+   "sha256": "f633c9ad82acb898e1b2e78de3b00ad200e7b220d40b8ea674fb1d89fcc5632e",
+   "bytes": 7119
+  },
+  {
+   "file": "suites/ma-ports.log",
+   "sha256": "7e291d5a9ae5225c57c12d9c64d062f6e2938f3490745d77d38496e4d27e3c38",
+   "bytes": 1096
+  },
+  {
+   "file": "suites/ma-programs.json",
+   "sha256": "d2c7cff228e2d9d4830bd9b98c61b937d48f42fcd715eb778715c49dae2b2d89",
+   "bytes": 1491
+  },
+  {
+   "file": "suites/ma-programs.log",
+   "sha256": "cd4bb511beaa3b76cf349e566d36774b955e6ecba1447ec3926590467aff9395",
+   "bytes": 6756
+  },
+  {
+   "file": "suites/ma-py.log",
+   "sha256": "3b2a99851dd45b3b6580030dad29153de1ff5df8b3864f63e93c003cfcf940aa",
+   "bytes": 99
+  },
+  {
+   "file": "suites/ma-py.xml",
+   "sha256": "a2ec119481d2a31430aecb991a6d24e5eb633938c0106a8a6b4c2e16fcc11ee1",
+   "bytes": 5624
+  },
+  {
+   "file": "suites/ma-rtb.json",
+   "sha256": "006dddd94796421696629baad82bb73727bf5997efecb5b820118e9b3b33cfac",
+   "bytes": 1037
+  },
+  {
+   "file": "suites/ma-rtb.log",
+   "sha256": "44d53c6faa229abd5e3ba0eeba09a9be64c8f0c2f99194b1489f75beaddab3f3",
+   "bytes": 489
+  },
+  {
+   "file": "suites/ma-static.json",
+   "sha256": "730a12083b7a2786bb83e229e4cce5e7ae67b4e446a388e0e4d9b5dcb30f3f45",
+   "bytes": 13398
+  },
+  {
+   "file": "suites/ma-static.log",
+   "sha256": "fb747662ce94165add6ff3aa2773d6e00e016c724b1e70ac6c247f3e375a68fe",
+   "bytes": 613
+  },
+  {
+   "file": "suites/ma-worker.json",
+   "sha256": "9cbd6702b16b220ff3d846e7ba97bd5e3eef4d0107a0cb42a7ac604fd2b6952f",
+   "bytes": 1823
+  },
+  {
+   "file": "suites/ma-worker.log",
+   "sha256": "5c59c549b6f59939f670cfbdf73205c69355e490c729dcedf5ecd88b45ae719c",
+   "bytes": 763
+  },
+  {
+   "file": "suites/regress.json",
+   "sha256": "0961ad10b9d27b8b0ca4d7b9c59e25e9cb20d41c61e708eafe4a73256e574ab5",
+   "bytes": 14655
+  },
+  {
+   "file": "suites/regress.log",
+   "sha256": "cf6001123e7198aefbed53be1e59a43e7fe304a6fcc4eebc925365bbc5ddc236",
+   "bytes": 1436
+  },
+  {
+   "file": "suites/rt-container.json",
+   "sha256": "125fd67b9b349d1c9fa115291b8a3dc2e1dc5ffd0b5ab96916f1f993915edc91",
+   "bytes": 987
+  },
+  {
+   "file": "suites/rt-container.log",
+   "sha256": "f3d7d3c5fde9b522d5f5ccead517683115833b11769b353e7a64038e35b1bb1e",
+   "bytes": 999
+  },
+  {
+   "file": "suites/rt-image.log",
+   "sha256": "d64280a868c56ec28a8391ebf31cfe7f461cfb92b514139251aca0c5a0322312",
+   "bytes": 14296
+  },
+  {
+   "file": "suites/rt-paced.json",
+   "sha256": "5c946aac1e2486bbe5526cd9f5b445db171cc2bf11fd4ad2ed3588105279a657",
+   "bytes": 5592
+  },
+  {
+   "file": "suites/rt-paced.log",
+   "sha256": "fd046cc32ac5664795718f1e7019d4553027aa9e2f4a3fa2db1e97dce871b926",
+   "bytes": 1845
+  },
+  {
+   "file": "suites/rt-remote.json",
+   "sha256": "306d324ac07f80dcd52aaff657755ef0fb6c43047dfd0f66ff1780df31d0b0b1",
+   "bytes": 5960
+  },
+  {
+   "file": "suites/rt-remote.log",
+   "sha256": "c6961e2feea3e43c6381c01bba76a42f2bc8b2b0933646b1e192676e6b33f4c5",
+   "bytes": 666
+  }
+ ]
+}

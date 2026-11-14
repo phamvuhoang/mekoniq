@@ -1,0 +1,16 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+stdout | tests/integration/webots-evidence.test.ts > WB06 repeatability: three runs with the same seed give the same trajectory within the profile tolerance
+WB06 worst pose difference over all ticks: 1.0382805726294464e-12
+
+ ✓ tests/integration/webots-evidence.test.ts (2 tests) 73355ms
+   ✓ WB07 evidence: every tick of the four streams is stored, every trajectory record has its 3D pose, and a missing chunk makes the read fail  18775ms
+   ✓ WB06 repeatability: three runs with the same seed give the same trajectory within the profile tolerance  54448ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  07:22:13
+   Duration  74.56s (transform 592ms, setup 0ms, import 1.12s, tests 73.36s, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r1-candidate-07/suites/wb-evidence.json

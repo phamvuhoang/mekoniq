@@ -1,38 +1,42 @@
 # Lab runtime trên Google Cloud Run
 
-**Trạng thái: đã chuẩn bị, chưa từng chạy.** Không có project, image, secret hay dịch vụ nào được tạo; `deploy/lab-runtime/cloud-run.sh` mặc định chỉ in lệnh. Chỉ deploy khi người dùng ra lệnh và cho project (D60). Trước đó `G-CLOUD1` là `blocked_external` và không được đổi.
+**Trạng thái ngày 2026-11-14: đã deploy vào `mekoniq / asia-southeast1`; CL01 qua HTTP đạt.** Người dùng đã cho phép triển khai theo D60. Dịch vụ `mekoniq-lab-runtime-00002-9lx` chạy image amd64 của source `4f893ac`, cùng pin Lab. URL chuẩn: `https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app`. [Bản ghi CL01](../implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md) giữ lệnh, digest, health và kết quả gốc; chưa được người duyệt chấp nhận. Qualification R2a gốc giữ `G-CLOUD1=blocked_external`; guard `cloud-run` mới xác nhận G-CLOUD1 `tested` bằng bản bổ sung gắn với đúng SHA-256 của qualification, không sửa dữ liệu gốc.
 
-Runtime là tiến trình mà Lab (giao diện web) điều khiển qua HTTP. Image (`deploy/lab-runtime/`, D59) có các backend mock và cánh tay MuJoCo; không có Webots, IR-SIM, LinkForge hay công cụ thuật toán. Ví dụ dưới đây dùng `my-project`, `lab.example.com`, `lab-access-key`: thay bằng giá trị thật, và không dán khóa truy cập vào bất cứ đâu ngoài Secret Manager và trình quản lý mật khẩu.
+Runtime là tiến trình mà Lab (giao diện web) điều khiển qua HTTP. Image (`deploy/lab-runtime/`, D59) có các backend mock và cánh tay MuJoCo; không có Webots, IR-SIM, LinkForge hay công cụ thuật toán. Các lệnh bên dưới dùng project `mekoniq`, origin `https://mekoniq-lab.vercel.app` và tên secret `lab-access-key`. Cấu hình không chứa bí mật nằm trong `deploy/lab-runtime/mekoniq.env.example`; giá trị khóa chỉ lưu trong Secret Manager và trình quản lý mật khẩu.
 
-## Chưa chứng minh: MuJoCo trên linux/amd64 thật
+## MuJoCo trên x86-64 thật và dưới giả lập
 
-Cloud Run chạy linux/amd64. Cánh tay MuJoCo **chưa từng chạy trên phần cứng amd64 thật**. Trong image amd64 chạy giả lập trên máy phát triển (Mac arm64), kịch bản `MJ-BV01` dừng ở lần gắp cốc đầu tiên: engine báo trạng thái không ổn định (`PLANT_UNSTABLE`, gia tốc khớp sai, `BADQACC`), run kết thúc `needs_attention`, phục vụ 0. Nguyên nhân chưa biết: có thể do giả lập, có thể do engine trên x86-64. Các bài test Python của chính công cụ (39 test) vẫn qua trong image đó. Trên arm64 gốc, `MJ-BV01` hoàn tất (phục vụ 2).
+Trên Cloud Run Linux x86-64, `MJ-BV01` đã hoàn tất ở tick 4800, phục vụ 2 và giữ `not_calibrated`. Vòng gửi bước HTTP mất 71 313 ms (khoảng 71,3 giây); số này gồm mạng và xử lý, không phải thời gian CPU riêng mỗi tick hay phép đo nhịp 1×. Health, khóa sai/đúng, mock FD01 và SSE nối lại đều đạt trong cùng lần kiểm.
 
-Vì vậy: **việc đầu tiên sau khi deploy là chạy smoke `MJ-BV01` (ca CL01, mục "Kiểm tra sau deploy"). Cho đến khi nó qua trên chính dịch vụ đã deploy, runtime trên cloud chỉ được chứng minh cho các backend mock.** Các backend mock không dùng engine nên không bị ảnh hưởng. Nếu CL01 thất bại với `PLANT_UNSTABLE`, ghi lại nguyên văn kết quả, không sửa tham số để cho qua, và `G-CLOUD1` vẫn `blocked_external`.
+Cùng image amd64 dưới giả lập trên Mac arm64 vẫn gặp `PLANT_UNSTABLE`/`BADQACC` ở tick 1585, kết thúc `needs_attention`, phục vụ 0. Kết quả này được giữ nguyên bên cạnh kết quả Cloud Run; chưa xác định nguyên nhân khác biệt. Các test Python trong image không thay cho smoke đầy đủ của scenario.
 
-## Chưa kiểm chứng: hành vi của Cloud Run
+Kiểm tay UI trên bản Lab HTTPS mới vẫn `not_run`: chưa push hai nhánh main. Muốn Lab nối dịch vụ này, build Lab phải ghim đúng commit runtime; một build cũ bị từ chối bằng `RUNTIME_PIN_MISMATCH`.
 
-Các điều sau về Cloud Run **chưa được kiểm chứng ở đây** (chưa deploy lần nào); mỗi điều chỉ là điều tài liệu của Cloud Run được cho là nói, phải đối chiếu với trang tài liệu hiện hành khi deploy. **Các URL tài liệu trong mục này không được mở khi viết runbook** (riêng trang giá được tải một lần và chỉ trả về tiêu đề, xem mục 8): cả nội dung lẫn địa chỉ đều chưa được đối chiếu.
+## Hành vi nền tảng đã đối chiếu tài liệu, chưa kiểm trên dịch vụ
 
-- Khi không đặt thăm dò khởi động, Cloud Run dùng thăm dò TCP mặc định trên cổng container (https://cloud.google.com/run/docs/configuring/healthchecks).
-- Một secret tham chiếu bằng `:latest` được phân giải khi instance khởi động, không theo thời gian thực (https://cloud.google.com/run/docs/configuring/services/secrets).
-- Cloud Run cắt yêu cầu sau `--timeout`, tối đa 60 phút (https://cloud.google.com/run/docs/configuring/request-timeout); khi tắt instance nó gửi `SIGTERM` rồi chờ một thời gian có hạn (https://cloud.google.com/run/docs/container-contract).
-- Cách tính tiền: theo thời gian xử lý yêu cầu khi `min-instances=0` và CPU chỉ cấp lúc có yêu cầu; độ chia nhỏ khi làm tròn; thời gian khởi động và tắt instance có thể cũng bị tính; một stream dài tính như yêu cầu đang hoạt động (https://cloud.google.com/run/pricing).
-- Một dịch vụ có thể có nhiều hơn một dạng URL (https://cloud.google.com/run/docs/triggering/https-request). `LAB_PUBLIC_HOST` chỉ chứa một host, nên Lab phải dùng đúng URL mà script in ra (giá trị `status.url`); dạng URL khác nhận `HOST_FORBIDDEN`.
-- Chính sách tổ chức có thể cấm `--allow-unauthenticated`, khi đó lệnh deploy bị từ chối (https://cloud.google.com/run/docs/authenticating/public). Script không đổi chính sách.
+Đã đọc tài liệu Google ngày 2026-11-14. CL01 đã kiểm health, xác thực, mock, MuJoCo và stream nối lại; các hành vi lifecycle, xoay khóa và timeout dài bên dưới chưa được thử riêng:
+
+- Cloud Run hỗ trợ Linux x86_64; image nhiều kiến trúc phải có `linux/amd64`. Trước khi dừng instance, nền tảng gửi SIGTERM rồi cho 10 giây trước SIGKILL. Dữ liệu filesystem không tồn tại sau khi instance dừng. [Container contract](https://docs.cloud.google.com/run/docs/container-contract).
+- Dịch vụ mới chưa cấu hình startup probe dùng TCP probe mặc định. [Health checks](https://docs.cloud.google.com/run/docs/configuring/healthchecks).
+- Secret qua biến môi trường được đọc lúc instance khởi động. Google khuyên ghim phiên bản; script hiện dùng `latest` theo D60, nên phải kiểm khóa mới sau khi xoay. [Secrets](https://docs.cloud.google.com/run/docs/configuring/services/secrets).
+- Timeout tối đa 3600 giây; timeout đóng kết nối nhưng không tự dừng xử lý trong container. Client cần nối lại và không được giả định vẫn gặp instance cũ. [Request timeout](https://docs.cloud.google.com/run/docs/configuring/request-timeout).
+- Script dùng `--allow-unauthenticated`; chính sách tổ chức có thể hạn chế việc cấp quyền cho `allUsers`. Google cũng có cơ chế tắt kiểm IAM invoker; script này chưa dùng cơ chế đó và không tự đổi chính sách tổ chức. [Public access](https://docs.cloud.google.com/run/docs/authenticating/public).
+- Dùng đúng URL từ `status.url`, vì `LAB_PUBLIC_HOST` chỉ chấp nhận host đã cấu hình. Các URL khác bị runtime từ chối bằng `HOST_FORBIDDEN`.
 
 ## 1. Điều kiện trước
+
+Project `mekoniq` hiện đã có API, kho `lab`, secret `lab-access-key` và dịch vụ; các lệnh tạo bên dưới phục vụ lần thiết lập mới, không cần chạy lại trên tài nguyên đã có.
 
 - Một Google Cloud project có bật thanh toán (billing). Chấp nhận chi phí (mục 8) và vùng `GCP_REGION` (mặc định `asia-southeast1`).
 - Đã đăng nhập `gcloud` với quyền tạo dịch vụ Cloud Run, secret, kho Artifact Registry và chạy Cloud Build.
 - Bật API (một lần):
 
 ```sh
-gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com --project=my-project
-gcloud artifacts repositories create lab --repository-format=docker --location=asia-southeast1 --project=my-project
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com --project=mekoniq
+gcloud artifacts repositories create lab --repository-format=docker --location=asia-southeast1 --project=mekoniq
 ```
 
-- Origin của Lab: `LAB_ORIGIN`, chính xác dạng `scheme://host[:port]`, chữ thường, không đường dẫn, không dấu `*`, không dấu `/` cuối. `https` (hoặc `http` chỉ cho host loopback). Ví dụ `https://lab.example.com`. Script thoát mã 2 và nêu tên biến nếu sai.
+- Origin của Lab: `LAB_ORIGIN`, chính xác dạng `scheme://host[:port]`, chữ thường, không đường dẫn, không dấu `*`, không dấu `/` cuối. `https` (hoặc `http` chỉ cho host loopback). Ví dụ `https://mekoniq-lab.vercel.app`. Script thoát mã 2 và nêu tên biến nếu sai.
 - Khóa truy cập là secret trong Secret Manager, tạo bằng tay (mục 2). Script chỉ nhận **tên** secret.
 
 ## 2. Secret khóa truy cập (tạo tay)
@@ -42,16 +46,16 @@ Khóa ≥ 32 ký tự (runtime từ chối khởi động với `ACCESS_KEY_REQU
 ```sh
 umask 077
 openssl rand -base64 48 | tr -d '\n' > lab-access-key.txt           # 64 ký tự
-gcloud secrets create lab-access-key --replication-policy=automatic --data-file=lab-access-key.txt --project=my-project
+gcloud secrets create lab-access-key --replication-policy=automatic --data-file=lab-access-key.txt --project=mekoniq
 # cất khóa vào trình quản lý mật khẩu, rồi xóa tệp:
 rm -P lab-access-key.txt 2>/dev/null || shred -u lab-access-key.txt
 # tài khoản dịch vụ chạy Cloud Run (mặc định PROJECT_NUMBER-compute@developer.gserviceaccount.com) phải đọc được secret:
-gcloud secrets add-iam-policy-binding lab-access-key --member=serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com --role=roles/secretmanager.secretAccessor --project=my-project
+gcloud secrets add-iam-policy-binding lab-access-key --member=serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com --role=roles/secretmanager.secretAccessor --project=mekoniq
 ```
 
-Có thể thay tệp bằng đường ống để không tạo tệp: `openssl rand -base64 48 | tr -d '\n' | gcloud secrets create lab-access-key --replication-policy=automatic --data-file=- --project=my-project`. **Không để ký tự xuống dòng ở cuối** (giữ `tr -d '\n'`; dùng `printf '%s'`, không dùng `echo`): một dòng mới lưu vào secret trở thành một phần của khóa và Lab sẽ ghép nối sai. Khi đó khóa chỉ còn trong secret; lấy ra bằng `gcloud secrets versions access latest --secret=lab-access-key --project=my-project` và cất vào trình quản lý mật khẩu.
+Có thể thay tệp bằng đường ống để không tạo tệp: `openssl rand -base64 48 | tr -d '\n' | gcloud secrets create lab-access-key --replication-policy=automatic --data-file=- --project=mekoniq`. **Không để ký tự xuống dòng ở cuối** (giữ `tr -d '\n'`; dùng `printf '%s'`, không dùng `echo`): một dòng mới lưu vào secret trở thành một phần của khóa và Lab sẽ ghép nối sai. Khi đó khóa chỉ còn trong secret; lấy ra bằng `gcloud secrets versions access latest --secret=lab-access-key --project=mekoniq` và cất vào trình quản lý mật khẩu.
 
-**Xoay khóa:** thêm phiên bản mới (`gcloud secrets versions add lab-access-key --data-file=lab-access-key-moi.txt --project=my-project`), rồi chạy lại script với `--execute`. Chạy lại là an toàn: dịch vụ đã tồn tại nên script giữ nguyên host đang dùng và chỉ deploy một lần (mục 4). Cần revision mới vì (theo tài liệu Cloud Run, cần kiểm tra khi deploy) `:latest` chỉ được phân giải khi instance khởi động. **Giả định chưa kiểm, phải kiểm khi deploy:** chạy lại `gcloud run deploy` với cấu hình không đổi tạo ra một revision mới, và revision đó đọc phiên bản secret mới. Nếu không có revision mới, khóa cũ vẫn là khóa đang dùng; vì vậy đừng vô hiệu hóa phiên bản cũ trước khi khóa mới ghép nối được. **Một instance đang chạy giữ khóa cũ cho đến khi nó bị thay, nên khóa cũ vẫn dùng được cho đến khi revision mới thực sự phục vụ.** Sau đó kiểm tra khóa mới ghép nối được, rồi vô hiệu hóa phiên bản cũ (`gcloud secrets versions disable N --secret=lab-access-key --project=my-project`). Instance bị thay nên run mất và các phiên có thể phải ghép nối lại bằng khóa mới.
+**Xoay khóa:** thêm phiên bản mới (`gcloud secrets versions add lab-access-key --data-file=lab-access-key-moi.txt --project=mekoniq`), rồi chạy lại script với `--execute`. Chạy lại là an toàn: dịch vụ đã tồn tại nên script giữ nguyên host đang dùng và chỉ deploy một lần (mục 4). Cần revision mới vì (theo tài liệu Google đã đối chiếu; vẫn kiểm revision thực tế khi deploy) `:latest` chỉ được phân giải khi instance khởi động. **Giả định chưa kiểm, phải kiểm khi deploy:** chạy lại `gcloud run deploy` với cấu hình không đổi tạo ra một revision mới, và revision đó đọc phiên bản secret mới. Nếu không có revision mới, khóa cũ vẫn là khóa đang dùng; vì vậy đừng vô hiệu hóa phiên bản cũ trước khi khóa mới ghép nối được. **Một instance đang chạy giữ khóa cũ cho đến khi nó bị thay, nên khóa cũ vẫn dùng được cho đến khi revision mới thực sự phục vụ.** Sau đó kiểm tra khóa mới ghép nối được, rồi vô hiệu hóa phiên bản cũ (`gcloud secrets versions disable N --secret=lab-access-key --project=mekoniq`). Instance bị thay nên run mất và các phiên có thể phải ghép nối lại bằng khóa mới.
 
 ## 3. Dựng và đẩy image
 
@@ -63,7 +67,7 @@ COMMIT=<giá trị sourceCommit trong lab/config/source-runtime.lock.json>
 git clone <địa chỉ repo source> lab-runtime-src && cd lab-runtime-src
 git checkout "$COMMIT" && test "$(git rev-parse HEAD)" = "$COMMIT"
 pnpm install --frozen-lockfile
-IMAGE=asia-southeast1-docker.pkg.dev/my-project/lab/mekoniq-lab-runtime:${COMMIT:0:7}
+IMAGE=asia-southeast1-docker.pkg.dev/mekoniq/lab/mekoniq-lab-runtime:${COMMIT:0:7}
 ```
 
 **Cách A: dựng tại máy rồi đẩy.** `build.sh` chạy trong bản clone mới này (cây sạch, vừa cài đóng băng) nên là bản dựng từ đầu. Nó đóng gói `runtime.mjs` bằng bộ xuất `scripts/export-lab-runtime.mjs` và thư mục công cụ MuJoCo từ `git archive HEAD`:
@@ -89,15 +93,17 @@ steps:
   args: ['build', '--build-arg', 'SOURCE_COMMIT=${_COMMIT}', '-t', '${_IMAGE}', '.']
 images: ['${_IMAGE}']
 YAML
-gcloud builds submit "$CTX" --config="$CTX/cloudbuild.yaml" --substitutions=_COMMIT="$COMMIT",_IMAGE="$IMAGE" --project=my-project
+gcloud builds submit "$CTX" --config="$CTX/cloudbuild.yaml" --substitutions=_COMMIT="$COMMIT",_IMAGE="$IMAGE" --project=mekoniq
 ```
 
 **Kiểm tra image đã dựng** (cả hai cách): nhãn `org.opencontainers.image.revision` phải bằng `$COMMIT`. Cách A: `docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$IMAGE"`. Cách B: kéo image về (`docker pull "$IMAGE"`) và chạy lệnh trên. Sau khi deploy, `sourceCommit` của route health (mục 5) phải bằng `$COMMIT`; khác nhau thì Lab sẽ từ chối bằng `RUNTIME_PIN_MISMATCH`, và image phải dựng lại. Script `cloud-run.sh` không dựng và không đẩy gì.
 
 ## 4. Deploy
 
+Lần triển khai đã ghi dùng digest cố định và tài khoản riêng `mekoniq-lab-runtime@mekoniq.iam.gserviceaccount.com`, chỉ được đọc secret `lab-access-key`. Project mới chưa có tài khoản Compute mặc định nên dùng trực tiếp lệnh `gcloud run deploy` với các cờ của script và thêm `--service-account=…`; xem `deploy-command.json` trong bản ghi CL01. Script chưa có tham số chọn service account. Khi triển khai lại, giữ nguyên và kiểm tra `serviceAccountName` này; khi tạo một dịch vụ mới cần chỉ rõ tài khoản phù hợp.
+
 ```sh
-export GCP_PROJECT=my-project GCP_REGION=asia-southeast1 LAB_ORIGIN=https://lab.example.com ACCESS_KEY_SECRET=lab-access-key IMAGE   # IMAGE như mục 3; SERVICE tùy chọn, mặc định mekoniq-lab-runtime
+export GCP_PROJECT=mekoniq GCP_REGION=asia-southeast1 LAB_ORIGIN=https://mekoniq-lab.vercel.app ACCESS_KEY_SECRET=lab-access-key IMAGE   # IMAGE như mục 3; SERVICE tùy chọn, mặc định mekoniq-lab-runtime
 deploy/lab-runtime/cloud-run.sh              # chạy thử: chỉ in lệnh, không gọi gcloud
 deploy/lab-runtime/cloud-run.sh --execute    # chạy thật, theo lệnh của người dùng
 ```
@@ -112,9 +118,9 @@ Không có `--execute` script chỉ in, thoát 0, không gọi `gcloud` (kể c�
 2. Đọc lại URL dịch vụ.
 3. `gcloud run services update --update-env-vars=LAB_PUBLIC_HOST=<host của URL>`.
 
-Host dịch vụ chỉ biết sau lần deploy đầu, nên dịch vụ mới chạy với host giữ chỗ `pending.invalid` và từ chối mọi yêu cầu bằng `HOST_FORBIDDEN` cho đến bước 3: đó là một khoảng thời gian đóng-khi-lỗi (không phục vụ ai, không mở nhầm). Vì vậy script không đặt thăm dò khởi động HTTP trên `/lab/v2/health` (nó sẽ không qua trong khoảng đó); xem mục "Chưa kiểm chứng" về thăm dò mặc định. Bước 3 tạo revision mới. Dùng `--update-env-vars` chứ không `--set-env-vars` để không xóa `LAB_ALLOW_ORIGIN`.
+Host dịch vụ chỉ biết sau lần deploy đầu, nên dịch vụ mới chạy với host giữ chỗ `pending.invalid` và từ chối mọi yêu cầu bằng `HOST_FORBIDDEN` cho đến bước 3: đó là một khoảng thời gian đóng-khi-lỗi (không phục vụ ai, không mở nhầm). Vì vậy script không đặt thăm dò khởi động HTTP trên `/lab/v2/health` (nó sẽ không qua trong khoảng đó); xem mục "Hành vi nền tảng đã đối chiếu tài liệu, chưa kiểm trên dịch vụ" về thăm dò mặc định. Bước 3 tạo revision mới. Dùng `--update-env-vars` chứ không `--set-env-vars` để không xóa `LAB_ALLOW_ORIGIN`.
 
-**Nếu bước 3 thất bại** (hoặc bước 2 không trả URL https hợp lệ, kể cả khi lệnh đọc URL lỗi): script thoát khác 0 (mã 4 khi lệnh cập nhật lỗi, mã 1 khi URL không hợp lệ) và in ra đúng lệnh cần chạy tay, đã điền sẵn project, vùng, tên dịch vụ và host. Dịch vụ vẫn ở host giữ chỗ (đóng-khi-lỗi) cho đến khi lệnh đó chạy xong. Cũng có thể chạy lại script với `--execute`: lúc này dịch vụ đã tồn tại nên script đi theo trường hợp A và giữ host đang có; nếu host đó vẫn là giữ chỗ, chạy lệnh cập nhật bằng tay.
+**Nếu bước 3 thất bại** (hoặc bước 2 không trả URL https hợp lệ, kể cả khi lệnh đọc URL lỗi): script thoát khác 0 (mã 4 khi lệnh cập nhật lỗi, mã 1 khi URL không hợp lệ) và in ra đúng lệnh cần chạy tay, đã điền sẵn project, vùng, tên dịch vụ và host. Dịch vụ vẫn ở host giữ chỗ (đóng-khi-lỗi) cho đến khi lệnh đó chạy xong. Cũng có thể chạy lại script với `--execute`: dịch vụ đã tồn tại nên script đi theo trường hợp A, lấy host thật từ `status.url` và đưa vào lệnh deploy. Một lần chạy lại thành công sẽ sửa host giữ chỗ; lệnh cập nhật bằng tay là lựa chọn khác.
 
 Script không chứa, không in, không truyền khóa: nó chỉ tham chiếu secret theo tên bằng `--set-secrets`, và bỏ `MEKONIQ_LAB_ACCESS_KEY` khỏi môi trường trước khi gọi `gcloud`. Đừng đặt giá trị khóa vào `ACCESS_KEY_SECRET` (đó là tên, và tên được in ra).
 
@@ -131,14 +137,14 @@ Phải thấy `sourceCommit` bằng commit Lab đã ghim, `schemaHash`, `feature
 2. **Ghép nối bằng khóa**, khóa không đi qua tham số dòng lệnh:
 
 ```sh
-read -rs KEY; printf '{"token":"%s"}' "$KEY" | curl -s -X POST -H 'Origin: https://lab.example.com' -H 'Content-Type: application/json' --data-binary @- https://SERVICE_HOST/lab/v2/sessions -o /dev/null -w '%{http_code}\n'; unset KEY
+read -rs KEY; printf '{"token":"%s"}' "$KEY" | curl -s -X POST -H 'Origin: https://mekoniq-lab.vercel.app' -H 'Content-Type: application/json' --data-binary @- https://SERVICE_HOST/lab/v2/sessions -o /dev/null -w '%{http_code}\n'; unset KEY
 ```
 
 Mong đợi `201` (thân trả `sessionToken`; lệnh trên chỉ in mã trạng thái, đừng dán token vào nhật ký). Khóa sai: `401 PAIRING_INVALID`; quá 5 lần sai trong một phút: `429 PAIRING_RATE_LIMITED`. Sau đó mở Lab (origin `LAB_ORIGIN`), nối tới URL dịch vụ bằng khóa truy cập.
 
 3. **Smoke `MJ-BV01`** từ Lab với backend `mujoco_arm`. Đạt khi run hoàn tất (hoàn tất ở tick 4800 trong image arm64) và phục vụ 2, các tham số nhà máy vẫn `not_calibrated`. Một run trong container không bao giờ là bằng chứng cho `G-MA1`/`G-MA2` (D50). Kiểm tra cả backend mock chạy được.
 4. **Stream nối lại:** ngắt mạng của tab một lúc trong khi run đang chạy; Lab phải nối lại stream từ con trỏ (`Last-Event-ID`, `?after=N`) mà không mất sự kiện.
-5. Ghi kết quả (đạt, hoặc nguyên văn lỗi) vào README của bản ghi; `G-CLOUD1` chỉ đổi khi người duyệt làm. Nếu bước 3 không qua, nói rõ rằng cloud chỉ được chứng minh cho backend mock.
+5. Lưu một bản ghi CL01 riêng gồm định danh dịch vụ, image, health và kết quả từng bước (đạt, hoặc nguyên văn lỗi). Recorder/guard R2a hiện cố định `G-CLOUD1=blocked_external`; không sửa tay `qualification.json` để đổi gate. Dùng guard `cloud-run` với `LAB_CLOUD_EVIDENCE_DIR` trỏ tới bản bổ sung và `LAB_SIMEXT_EVIDENCE_DIR` trỏ tới R2a gốc; guard kiểm các artifact, pin, revision, kết quả và con trỏ stream kết thúc. Trạng thái `tested` và sự chấp nhận của người duyệt là hai việc riêng. Nếu bước 3 không qua, chỉ backend mock có bằng chứng chạy trên dịch vụ.
 
 ## 6. Giới hạn bảo mật
 
@@ -152,44 +158,37 @@ Mong đợi `201` (thân trả `sessionToken`; lệnh trên chỉ in mã trạng
 ## 7. Giới hạn vận hành
 
 - **Một instance** (`max-instances=1`). Run nằm trong bộ nhớ và `/tmp` (D60): mất khi instance dừng hoặc bị thay (deploy mới, xoay khóa, cập nhật biến, thu về 0 khi không có yêu cầu).
-- Với `--timeout=3600` (theo tài liệu Cloud Run, cần kiểm tra khi deploy: mục "Chưa kiểm chứng"), một yêu cầu bị cắt sau thời hạn đó, nên stream sự kiện kết thúc **tối đa mỗi 60 phút**; Lab nối lại từ con trỏ.
+- Với `--timeout=3600` (theo tài liệu Cloud Run, cần kiểm tra khi deploy: mục "Hành vi nền tảng đã đối chiếu tài liệu, chưa kiểm trên dịch vụ"), một yêu cầu bị cắt sau thời hạn đó, nên stream sự kiện kết thúc **tối đa mỗi 60 phút**; Lab nối lại từ con trỏ.
+- Một run tay máy hoàn tất vẫn có thể giữ slot MuJoCo cho tới khi được archive/đóng. Producer CL01 tự archive run do nó tạo trong `finally`; trong UI, “Chạy lại cùng đầu vào” tự lưu báo cáo và archive run cũ trước khi tạo run mới. Ngắt kết nối chỉ quên thông tin đăng nhập ở tab, không archive run. `MUJOCO_CAPACITY` là hết slot, không phải lỗi vật lý.
 - Run chỉ tiến khi Lab gửi bước: đóng tab thì run đứng yên, và instance có thể co về 0 rồi mất run.
-- Khi tắt, nền tảng được cho là gửi `SIGTERM` (cần kiểm tra khi deploy); Node là PID 1 và đóng gateway rồi thoát mã 0. Một bước có nhịp đang chạy hoàn tất các tick của nó trước (tối đa khoảng một giây). Run đang có vẫn mất.
-- Phiên sống 1 giờ; tối đa 10 phiên cùng lúc. Khi có khóa, một lần ghép nối đúng khóa lúc đã đủ 10 phiên sẽ kết thúc phiên cũ nhất (run của phiên đó được xử lý như run của phiên hết hạn: lần tạo run kế tiếp đóng nó, và có thể lấy lại bằng bằng chứng reclaim); ghép nối sai không kết thúc phiên nào.
+- Khi tắt, nền tảng được cho là gửi `SIGTERM` (chưa kiểm trên dịch vụ thực tế); Node là PID 1 và đóng gateway rồi thoát mã 0. Một bước có nhịp đang chạy hoàn tất các tick của nó trước (tối đa khoảng một giây). Run đang có vẫn mất.
+- Phiên sống 1 giờ; tối đa 10 phiên cùng lúc. Khi có khóa, một lần ghép nối đúng khóa lúc đã đủ 10 phiên sẽ kết thúc phiên cũ nhất (run của phiên đó được xử lý như run của phiên hết hạn: lần kiểm readiness hoặc tạo run kế tiếp đóng nó và chờ worker dừng, và có thể lấy lại bằng bằng chứng reclaim); ghép nối sai không kết thúc phiên nào.
 
 ## 8. Chi phí
 
-**Không có giá nào ở đây:** ngày 2026-11-13 trang giá của Google không đọc được (tải `https://cloud.google.com/run/pricing` chỉ trả tiêu đề, bảng giá được dựng bằng JavaScript), nên không trích số. Người vận hành điền giá hiện hành từ trang đó, đúng nhóm vùng của `asia-southeast1`; giá Secret Manager, Artifact Registry và Cloud Build nằm ở các trang giá riêng của chúng.
+Giá tham khảo ngày 2026-11-14: Singapore `asia-southeast1` thuộc [Tier 2](https://docs.cloud.google.com/run/docs/locations). Theo [bảng giá Cloud Run](https://cloud.google.com/run/pricing), tính theo request: 0,0000336 USD/vCPU-giây, 0,0000035 USD/GiB-giây và 0,40 USD/triệu request. Với 1 vCPU và 2 GiB, một giờ instance hoạt động tốn `3600 × (0,0000336 + 2 × 0,0000035) = 0,14616 USD`, trước miễn phí và chiết khấu.
 
-Theo tài liệu giá của Cloud Run (cần kiểm tra khi deploy, xem mục "Chưa kiểm chứng"), với `min-instances=0` và CPU chỉ cấp khi có yêu cầu, tiền tính theo thời gian xử lý yêu cầu chứ không theo thời gian chờ; độ chia nhỏ khi làm tròn và việc thời gian khởi động hoặc tắt instance có bị tính hay không phải đọc ở trang giá. **Một stream sự kiện dài được coi là một yêu cầu đang hoạt động**, nên mở Lab với một run đang theo dõi có thể tính tiền suốt thời gian đó, tới 60 phút mỗi stream. Với script (1 vCPU, 2 GiB):
-
-```
-chi phí một giờ hoạt động của một instance
-  = 3600 x (1 x giá_vCPU_giây + 2 x giá_GiB_giây)  +  số_yêu_cầu / 1.000.000 x giá_mỗi_triệu_yêu_cầu
-(trừ phần miễn phí hằng tháng của Google; chưa gồm Secret Manager, Artifact Registry, Cloud Build, băng thông ra)
-```
-
-Lượng dùng cho một giờ: 3600 vCPU-giây, 7200 GiB-giây, cùng số yêu cầu (mỗi lần Lab gửi bước là một yêu cầu). Nhân với giá hiện hành để có con số. Đặt cảnh báo ngân sách (budget alert) trong project và xóa dịch vụ khi không dùng (mục 9).
+Cloud Run tính cả khởi động, tắt có xử lý SIGTERM và thời gian có ít nhất một request đang xử lý; làm tròn 100 ms. Vì stream SSE là một request đang mở, giữ tab theo dõi có thể tiếp tục phát sinh chi phí dù không gửi bước. `min-instances=0` không làm thời gian đó miễn phí. Chưa gồm Artifact Registry, Secret Manager, Cloud Build nếu dùng và lưu lượng ra; đây không phải hóa đơn dự báo tổng. Free tier được cộng theo billing account. Xem lại giá và đặt ngân sách phù hợp trước khi vận hành lâu dài.
 
 ## 9. Tắt dịch vụ
 
 ```sh
 SERVICE=${SERVICE:-mekoniq-lab-runtime}                                    # cùng tên đã dùng với script
-gcloud run services delete "$SERVICE" --region=asia-southeast1 --project=my-project
-gcloud secrets delete lab-access-key --project=my-project
-gcloud artifacts docker images delete "$IMAGE" --delete-tags --project=my-project   # hoặc xóa cả kho: gcloud artifacts repositories delete lab --location=asia-southeast1 --project=my-project
+gcloud run services delete "$SERVICE" --region=asia-southeast1 --project=mekoniq
+gcloud secrets delete lab-access-key --project=mekoniq
+gcloud artifacts docker images delete "$IMAGE" --delete-tags --project=mekoniq   # hoặc xóa cả kho: gcloud artifacts repositories delete lab --location=asia-southeast1 --project=mekoniq
 ```
 
 Cũng xem lại: nguồn do Cloud Build tải lên (bucket của Cloud Build trong project), khóa nằm trong trình quản lý mật khẩu, tệp khóa tạm còn sót, và ràng buộc IAM đã thêm cho secret (mất theo secret). Xóa dịch vụ làm mất mọi run đang có.
 
 ## 10. Không được suy ra
 
-- Từ việc image chạy `MJ-BV01` trên arm64 hay test Python trong image amd64 qua, **không** suy ra cánh tay MuJoCo hoàn tất trên Cloud Run. Chỉ smoke CL01 trên dịch vụ đã deploy mới nói được điều đó; trước đó cloud chỉ được chứng minh cho backend mock.
+- Từ một lần CL01 đạt không suy ra độ ổn định dài hạn, lifecycle, nhiều người dùng hay mọi cấu hình x86-64 đều đạt. Kết quả áp dụng cho image và revision đã ghi; image amd64 dưới giả lập vẫn thất bại như mô tả ở trên.
 - Một run trong container hay trên cloud không phải bằng chứng cho `G-MA1`/`G-MA2` (D50); mọi tham số plant vẫn `not_calibrated`.
-- Script chạy thử đúng (test dùng `gcloud` giả) không có nghĩa là deploy thật đã thử: chưa lệnh `gcloud` thật nào được chạy, chưa cờ nào được Cloud Run xác nhận. Cách B của mục 3 (Cloud Build) cũng chưa từng chạy; cách A chỉ đã được chạy nguyên văn với `build.sh` trên cây làm việc, chưa trên bản clone mới theo mục 3.
+- Cách A đã chạy từ clone sạch tại `4f893ac`, frozen lockfile; runtime trong image khớp byte-for-byte với artifact Lab ghim. Các cờ triển khai đã được Cloud Run chấp nhận trong lệnh trực tiếp có thêm service account. Cách B (Cloud Build), gọi toàn bộ script `--execute`, xoay secret và nhánh triển khai lại vẫn chưa được thử thực tế.
 - "Công khai + một khóa chung" không phải là kiểm soát truy cập cho nhiều người; nó cũng không ngăn người ngoài làm khóa ghép nối trong một phút.
-- Đừng suy ra giá từ tài liệu này (mục 8), cũng không suy ra độ trễ hay thông lượng: chưa đo gì trên Cloud Run.
-- `G-CLOUD1` giữ `blocked_external` cho tới khi người dùng ra lệnh deploy, CL01 được chạy và ghi lại, và người duyệt chấp nhận. Không ghi `accepted:true` ở đâu cả.
+- Mục 8 là ước tính tài nguyên theo giá đã đọc, không phải tổng hóa đơn; chưa đo độ trễ hay thông lượng trên Cloud Run.
+- Qualification R2a hiện giữ `G-CLOUD1=blocked_external` theo ruling ngày 2026-11-13; guard qualification gốc chưa nhận CL01. Guard `cloud-run` riêng kiểm bản bổ sung và xác nhận G-CLOUD1 `tested` khi toàn bộ điều kiện đạt; không sửa bản ghi R2a đã tạo. Chỉ người duyệt có quyền chấp nhận bằng sidecar; không ghi `accepted:true` trong qualification.
 
 ## 11. Tham chiếu
 

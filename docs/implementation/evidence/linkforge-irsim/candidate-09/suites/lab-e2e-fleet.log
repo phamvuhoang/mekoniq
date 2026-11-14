@@ -1,0 +1,17 @@
+Mekoniq Robot Lab — IR-SIM 2D twin (portable simulation; no robot hardware, not a native/Gazebo run)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm, irsim_2d · journal <tmp>/mekoniq-irsim-e2e-SylseM/runs
+Owned processes: runtime pid 25872, UI pid 25878
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 1840 ms. Press Ctrl-C to stop.
+Running irsim-fleet.spec.ts through pnpm lab:irsim (real IR-SIM worker) with a fresh journal.
+
+Running 1 test using 1 worker
+
+(node:25906) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/irsim-fleet.spec.ts:15:1 › Two Serve robots on IR-SIM 2D: compile the fleet, run IR-FD07 to completion, and read trace-derived metrics for both robots (38.3s)
+
+  1 passed (39.2s)
+
+Stopping the runtime and UI this launcher started…

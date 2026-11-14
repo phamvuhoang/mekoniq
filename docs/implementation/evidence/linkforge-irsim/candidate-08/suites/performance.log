@@ -1,1 +1,0 @@
-{"ticks":3000,"status":"running","batches":60,"perTickMs":{"p50":5.0134325,"p95":9.7545875,"max":11.83577834},"realtimeFactor":3.1588138893388917,"wallSeconds":18.994471375,"workerRssMiB":{"max":121.125,"samples":60},"evidenceBytes":1522443,"meetsTargets":{"realtimeFactor":true,"stepP95":true,"workerRss":true}}

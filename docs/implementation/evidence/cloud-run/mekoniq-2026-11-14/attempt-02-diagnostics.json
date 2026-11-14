@@ -1,0 +1,66 @@
+[
+  {
+    "severity": "WARNING",
+    "timestamp": "2026-11-14T00:50:07.083797Z"
+  },
+  {
+    "severity": "WARNING",
+    "timestamp": "2026-11-14T00:50:06.002797Z"
+  },
+  {
+    "severity": "WARNING",
+    "timestamp": "2026-11-14T00:26:31.064498Z"
+  },
+  {
+    "textPayload": "Source: 4f893ac6fb75dff414a3ee42a726defb7935c734",
+    "timestamp": "2026-11-14T00:26:09.250658Z"
+  },
+  {
+    "textPayload": "Access key: from MEKONIQ_LAB_ACCESS_KEY (no pairing code printed)",
+    "timestamp": "2026-11-14T00:26:09.250657Z"
+  },
+  {
+    "textPayload": "Gateway: http://127.0.0.1:8080",
+    "timestamp": "2026-11-14T00:26:09.250655Z"
+  },
+  {
+    "textPayload": "Mekoniq Robot Lab business_sim",
+    "timestamp": "2026-11-14T00:26:09.250649Z"
+  },
+  {
+    "severity": "INFO",
+    "textPayload": "Default STARTUP TCP probe succeeded after 1 attempt for container \"mekoniq-lab-runtime-1\" on port 8080.",
+    "timestamp": "2026-11-14T00:26:09.249206Z"
+  },
+  {
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: DEPLOYMENT_ROLLOUT - Instance started due to traffic shifting between revisions due to deployment, traffic split adjustment, or deployment health check.",
+    "timestamp": "2026-11-14T00:26:04.977015Z"
+  },
+  {
+    "textPayload": "Source: 4f893ac6fb75dff414a3ee42a726defb7935c734",
+    "timestamp": "2026-11-14T00:25:31.188076Z"
+  },
+  {
+    "textPayload": "Access key: from MEKONIQ_LAB_ACCESS_KEY (no pairing code printed)",
+    "timestamp": "2026-11-14T00:25:31.188074Z"
+  },
+  {
+    "textPayload": "Gateway: http://127.0.0.1:8080",
+    "timestamp": "2026-11-14T00:25:31.188071Z"
+  },
+  {
+    "textPayload": "Mekoniq Robot Lab business_sim",
+    "timestamp": "2026-11-14T00:25:31.188064Z"
+  },
+  {
+    "severity": "INFO",
+    "textPayload": "Default STARTUP TCP probe succeeded after 1 attempt for container \"mekoniq-lab-runtime-1\" on port 8080.",
+    "timestamp": "2026-11-14T00:25:31.187828Z"
+  },
+  {
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: DEPLOYMENT_ROLLOUT - Instance started due to traffic shifting between revisions due to deployment, traffic split adjustment, or deployment health check.",
+    "timestamp": "2026-11-14T00:25:26.207643Z"
+  }
+]

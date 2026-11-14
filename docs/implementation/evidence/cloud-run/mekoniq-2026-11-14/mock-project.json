@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 2,
+  "id": "mekoniq-service-lab",
+  "name": "MEKONIQ \u00b7 Service Lab",
+  "revision": 2,
+  "updatedAt": "2026-11-05T00:00:00.000Z",
+  "entities": [
+    {
+      "id": "amr-1",
+      "kind": "amr",
+      "assetRef": {
+        "id": "service-robot-asset",
+        "revision": 1,
+        "contentHash": "bf15015afcc0e719c79ff76eff955ba9c83f72c82968156fa25743f7d8e15c79"
+      }
+    }
+  ],
+  "world": {
+    "id": "restaurant-six-tables",
+    "revision": 2,
+    "width": 12,
+    "height": 8,
+    "points": [
+      {
+        "id": "table-1",
+        "name": "T01",
+        "kind": "table",
+        "x": 3,
+        "y": 1.1
+      },
+      {
+        "id": "table-2",
+        "name": "T02",
+        "kind": "table",
+        "x": 6,
+        "y": 1.1
+      },
+      {
+        "id": "table-3",
+        "name": "T03",
+        "kind": "table",
+        "x": 9,
+        "y": 1.1
+      },
+      {
+        "id": "table-4",
+        "name": "T04",
+        "kind": "table",
+        "x": 3,
+        "y": 4.1
+      },
+      {
+        "id": "table-5",
+        "name": "T05",
+        "kind": "table",
+        "x": 6,
+        "y": 4.1
+      },
+      {
+        "id": "table-6",
+        "name": "T06",
+        "kind": "table",
+        "x": 9,
+        "y": 4.1
+      },
+      {
+        "id": "kitchen",
+        "name": "Kitchen",
+        "kind": "kitchen",
+        "x": 1,
+        "y": 6.8
+      },
+      {
+        "id": "parking",
+        "name": "Parking",
+        "kind": "parking",
+        "x": 1,
+        "y": 1
+      },
+      {
+        "id": "dock",
+        "name": "Dock",
+        "kind": "dock",
+        "x": 11,
+        "y": 7
+      }
+    ],
+    "obstacles": [
+      {
+        "id": "furniture-1",
+        "x": 2.4,
+        "y": 1.55,
+        "width": 1.2,
+        "height": 0.9
+      },
+      {
+        "id": "furniture-2",
+        "x": 5.4,
+        "y": 1.55,
+        "width": 1.2,
+        "height": 0.9
+      },
+      {
+        "id": "furniture-3",
+        "x": 8.4,
+        "y": 1.55,
+        "width": 1.2,
+        "height": 0.9
+      },
+      {
+        "id": "furniture-4",
+        "x": 2.4,
+        "y": 4.55,
+        "width": 1.2,
+        "height": 0.9
+      },
+      {
+        "id": "furniture-5",
+        "x": 5.4,
+        "y": 4.55,
+        "width": 1.2,
+        "height": 0.9
+      },
+      {
+        "id": "furniture-6",
+        "x": 8.4,
+        "y": 4.55,
+        "width": 1.2,
+        "height": 0.9
+      }
+    ],
+    "handoffPoints": [
+      {
+        "id": "table-1",
+        "name": "T01",
+        "kind": "table",
+        "position": [
+          3,
+          1.1,
+          0
+        ],
+        "yawRad": null
+      },
+      {
+        "id": "table-2",
+        "name": "T02",
+        "kind": "table",
+        "position": [
+          6,
+          1.1,
+          0
+        ],
+        "yawRad": null
+      },
+      {
+        "id": "table-3",
+        "name": "T03",
+        "kind": "table",
+        "position": [
+          9,
+          1.1,
+          0
+        ],
+        "yawRad": null
+      },
+      {
+        "id": "table-4",
+        "name": "T04",
+        "kind": "table",
+        "position": [
+          3,
+          4.1,
+          0
+        ],
+        "yawRad": null
+      },
+      {
+        "id": "table-5",
+        "name": "T05",
+        "kind": "table",
+        "position": [
+          6,
+          4.1,
+          0
+        ],
+        "yawRad": null
+      },
+      {
+        "id": "table-6",
+        "name": "T06",
+        "kind": "table",
+        "position": [
+          9,
+          4.1,
+          0
+        ],
+        "yawRad": null
+      },
+      {
+        "id": "kitchen",
+        "name": "Kitchen",
+        "kind": "kitchen",
+        "position": [
+          1,
+          6.8,
+          0
+        ],
+        "yawRad": null
+      },
+      {
+        "id": "parking",
+        "name": "Parking",
+        "kind": "parking",
+        "position": [
+          1,
+          1,
+          0
+        ],
+        "yawRad": null
+      },
+      {
+        "id": "dock",
+        "name": "Dock",
+        "kind": "dock",
+        "position": [
+          11,
+          7,
+          0
+        ],
+        "yawRad": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+# DRY RUN: nothing is run, gcloud is not called. Add --execute to run these commands.
+# --execute first reads whether the service exists (a failed read means it does not), then follows case A or B.
+# Case A: the service exists (a re-run): its live host is kept, there is no update step
++ gcloud run services describe mekoniq-lab-runtime --project=mekoniq --region=asia-southeast1 --format=value\(status.url\)
++ gcloud run deploy mekoniq-lab-runtime --project=mekoniq --region=asia-southeast1 --image=asia-southeast1-docker.pkg.dev/mekoniq/lab/mekoniq-lab-runtime:4f893ac --execution-environment=gen2 --max-instances=1 --min-instances=0 --concurrency=20 --timeout=3600 --cpu=1 --memory=2Gi --allow-unauthenticated --set-secrets=MEKONIQ_LAB_ACCESS_KEY=lab-access-key:latest --set-env-vars=LAB_ALLOW_ORIGIN=https://mekoniq-lab.vercel.app,LAB_PUBLIC_HOST=HOST_OF_THE_EXISTING_SERVICE_URL
+# Case B: a new service: deploy with the placeholder host, read the URL, set LAB_PUBLIC_HOST to that host (https:// and any trailing / removed)
++ gcloud run deploy mekoniq-lab-runtime --project=mekoniq --region=asia-southeast1 --image=asia-southeast1-docker.pkg.dev/mekoniq/lab/mekoniq-lab-runtime:4f893ac --execution-environment=gen2 --max-instances=1 --min-instances=0 --concurrency=20 --timeout=3600 --cpu=1 --memory=2Gi --allow-unauthenticated --set-secrets=MEKONIQ_LAB_ACCESS_KEY=lab-access-key:latest --set-env-vars=LAB_ALLOW_ORIGIN=https://mekoniq-lab.vercel.app,LAB_PUBLIC_HOST=pending.invalid
++ gcloud run services describe mekoniq-lab-runtime --project=mekoniq --region=asia-southeast1 --format=value\(status.url\)
++ gcloud run services update mekoniq-lab-runtime --project=mekoniq --region=asia-southeast1 --update-env-vars=LAB_PUBLIC_HOST=HOST_OF_THE_SERVICE_URL

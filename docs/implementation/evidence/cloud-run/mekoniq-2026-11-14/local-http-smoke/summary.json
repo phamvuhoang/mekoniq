@@ -1,0 +1,23 @@
+{
+  "schema": "mekoniq-cloud-run-http-smoke/1",
+  "accepted": false,
+  "startedAt": "2026-11-13T23:29:28.985Z",
+  "service": "http://127.0.0.1:59259",
+  "origin": "https://mekoniq-lab.vercel.app",
+  "expectedCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "cases": {
+    "health": "tested",
+    "pairing": "tested",
+    "streamReconnect": "tested",
+    "mock": "tested"
+  },
+  "browser": "not_run",
+  "mujoco": {
+    "tick": 1600,
+    "status": "needs_attention",
+    "wallMs": 5971
+  },
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'needs_attention'\n- 'completed'\n",
+  "finishedAt": "2026-11-13T23:29:38.551Z"
+}

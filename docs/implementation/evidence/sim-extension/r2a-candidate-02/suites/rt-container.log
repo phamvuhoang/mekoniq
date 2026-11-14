@@ -1,0 +1,18 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+stdout | tests/integration/lab-runtime-container.test.ts > lab runtime container > pairs with the access key and runs MJ-BV01 to completion inside the image
+MJ-BV01 container {"image":"mekoniq-lab-runtime:record-38943","platform":"linux/arm64","finalTick":4800,"wallMs":9463,"msPerTick":1.971,"status":"completed"}
+
+stdout | tests/integration/lab-runtime-container.test.ts > lab runtime container > pairs with the access key and runs MJ-BV01 to completion inside the image
+MJ-BV01 container stop {"stopMs":269}
+
+ ✓ tests/integration/lab-runtime-container.test.ts (1 test) 14261ms
+     ✓ pairs with the access key and runs MJ-BV01 to completion inside the image  14236ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  07:35:53
+   Duration  15.71s (transform 563ms, setup 0ms, import 1.37s, tests 14.26s, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/rt-container.json

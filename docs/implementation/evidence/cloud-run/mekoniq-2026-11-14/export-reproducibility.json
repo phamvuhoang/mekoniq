@@ -1,0 +1,8 @@
+{
+  "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "artifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+  "manifestEqual": true,
+  "runtimeBytesEqual": true,
+  "workingCheckoutHasPythonMetadata": true,
+  "freshCloneHasPythonMetadata": false
+}

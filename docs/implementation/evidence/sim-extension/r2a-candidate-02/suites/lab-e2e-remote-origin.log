@@ -1,0 +1,18 @@
+Mekoniq Robot Lab — mock twin (simulated; no robot hardware)
+Source 4f893ac6fb75dff414a3ee42a726defb7935c734 · artifact 55dd3585fb38 · protocol 1/2
+Backends: mock_amr, mock_coffee, mock_arm · journal <tmp>/mekoniq-mock-e2e-CjPs08/runs-remote-origin.spec.ts
+Owned processes: runtime pid 45354, UI pid 45357
+Also serving the Lab at http://localhost:4177 (no /lab there: enter the runtime address http://127.0.0.1:4176; runtime allows http://localhost:4177)
+Open http://127.0.0.1:4175 and enter this one-use pairing code (expires in 5 minutes): <redacted>
+Ready in 651 ms. Press Ctrl-C to stop.
+Running remote-origin.spec.ts through pnpm lab:mock with a fresh journal.
+
+Running 1 test using 1 worker
+
+(node:45374) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/remote-origin.spec.ts:11:1 › a Lab on another origin sends nothing to the runtime before the click, then pairs with a bearer and runs BV01 to completed (23.9s)
+
+  1 passed (25.6s)
+
+Stopping the runtime and UI this launcher started…

@@ -1,0 +1,29 @@
+
+ RUN  v4.1.12 <workspace>/source
+
+ ✓ tests/integration/irsim-plant-port.test.ts (5 tests) 52350ms
+   ✓ IR-FD01 and IR-FD07 write the same evidence chunks as before the plant-port split  40297ms
+   ✓ a paced step sleeps each tick to its slot; without pace the wall is never touched and the chunks keep the golden  11497ms
+stdout | tests/integration/lab-v2-paced-step.test.ts > 75 paced steps of 20 ticks (30 s simulated) take 30 s at 1x and 7.5 s at 4x, within 3 %
+N02 measured wall ms factor1=29989
+
+stdout | tests/integration/lab-v2-paced-step.test.ts > 75 paced steps of 20 ticks (30 s simulated) take 30 s at 1x and 7.5 s at 4x, within 3 %
+N02 measured wall ms factor4=7517
+
+stdout | tests/integration/lab-v2-paced-step.test.ts > a pause sent while a paced step runs is answered within 500 ms
+N02 measured wall ms pause=287
+
+ ✓ tests/integration/lab-v2-paced-step.test.ts (5 tests) 43285ms
+   ✓ 75 paced steps of 20 ticks (30 s simulated) take 30 s at 1x and 7.5 s at 4x, within 3 %  37571ms
+   ✓ ticks above 50 with pace and a factor outside 1, 4, 16, 64 are INVALID_ACTION; a step without pace never touches the wall clock  2231ms
+   ✓ a paced step whose client goes away completes exactly its ticks, then the run stands still; the same actionId returns the stored receipt  3045ms
+   ✓ a pause sent while a paced step runs is answered within 500 ms  417ms
+ ✓ tests/unit/paced-step.test.ts (4 tests) 5993ms
+   ✓ mock BV01 driven only by paced steps ends with the golden outcome digest and the final tick of 500-tick steps  5822ms
+
+ Test Files  3 passed (3)
+      Tests  14 passed (14)
+   Start at  07:34:09
+   Duration  104.27s (transform 677ms, setup 0ms, import 2.37s, tests 101.63s, environment 0ms)
+
+JSON report written to <workspace>/.qualification/r2a-final-20261114-xqub7yqk/r2a-candidate-02/suites/rt-paced.json
