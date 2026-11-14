@@ -25,6 +25,7 @@ export interface WorldPlantPorts {
 export interface WorldFailure {targetTick:number;lastCommittedTick:number;ackTick:number|null;reason:string}
 export interface WorldEvidence {append(snapshot:Sim3DSnapshotV1):Promise<void>;fail(failure:WorldFailure):Promise<void>;finish():Promise<void>}
 export interface WorldPlantBindings {
+ displayScene?():import('../navigation2d/contracts').LabWorldSceneV1;
  navigation?:import('../session').SourceFixture['navigation'];
  metadata?:Pick<import('../report').RunReport['manifest'],'models'|'profiles'|'armProgram'|'worldExtent'|'clock'>;
  evidence:WorldEvidence;

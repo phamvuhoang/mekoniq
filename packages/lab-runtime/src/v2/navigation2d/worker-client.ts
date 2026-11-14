@@ -28,6 +28,8 @@ export interface IRSimWorkerClient{
  readonly stderrTail:string;
 }
 export interface SpawnOptions{
+ /** Operator-owned bounded timing observer; never supplied by a browser or persisted. Observer errors do not affect the worker. */
+ onRequestTiming?:(sample:{runId:string;requestId:string;op:string;targetTick:number;elapsedMs:number;ok:boolean})=>void;
  python:string;workerRoot:string;runId:string;bundleRoot:string;runDirectory:string;lockDigest:string;
  /** Directory with the contract schemas the worker validates against (the same irsim-worker-v1 file this process uses). */
  schemaDir:string;sceneDigest?:string;
@@ -42,7 +44,7 @@ export interface SpawnOptions{
  /** Server-owned campaign fault selector, never read from a browser request. */
  payloadPerturbationId?:'payload-cup-forward-impulse-v1';
 }
-interface Pending{request:WireRequest;resolve:(r:IRSimResponseV1)=>void;reject:(e:Error)=>void}
+interface Pending{sentNs?:bigint;request:WireRequest;resolve:(r:IRSimResponseV1)=>void;reject:(e:Error)=>void}
 
 /** Starts one worker process for one run. There is never a second process for the same run: after a failure the client is terminal and recovery is a new run with locked inputs. */
 export const IRSIM_WIRE:WireSpec={protocol:'mekoniq-irsim/1',module:'irsim_worker',extraArgs:o=>o.fixtureSha256?['--fixture-sha256',o.fixtureSha256]:[],validateRequest:validateIRSimRequest,validateResponse:validateIRSimResponse,fatalCodes:['INVALID_JSON','INVALID_REQUEST','REQUEST_TOO_LARGE','WORKER_FAILED','CLOCK_DRIFT','SENSOR_INCONSISTENT']};
@@ -82,7 +84,7 @@ export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWor
   if(!next)return;
   inFlight=next;
   timer=setTimeout(()=>fail('WORKER_TIMEOUT',`no ACK for ${next.request.op} within ${deadlines[next.request.op]} ms`),deadlines[next.request.op]??5000);
-  child.stdin.write(JSON.stringify(next.request)+'\n');
+  next.sentNs=process.hrtime.bigint();child.stdin.write(JSON.stringify(next.request)+'\n');
  };
  const onLine=(line:string)=>{
   let parsed:unknown;
@@ -114,6 +116,7 @@ export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWor
    }
   }
   lastTick=r.tick;clearTimeout(timer);inFlight=undefined;
+  if(o.onRequestTiming&&current.sentNs!==undefined){try{o.onRequestTiming({runId:o.runId,requestId:current.request.requestId,op:current.request.op,targetTick:r.tick,elapsedMs:Number(process.hrtime.bigint()-current.sentNs)/1e6,ok:r.ok});}catch{/* diagnostics never alter authority */}}
   current.resolve(r);
   if(!r.ok&&wire.fatalCodes.includes((r as {error:{code:string}}).error.code))fail('WORKER_FATAL',(r as {error:{code:string}}).error.code);
   else pump();

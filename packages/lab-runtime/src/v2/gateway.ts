@@ -171,6 +171,13 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    await closeExpiredRuns();
    return send(response,200,await collectReadiness(context,readinessOptions()));
   }
+  const displayRoute=new RegExp(`^/runs/(${UUID})/world-display(/scene)?$`).exec(sub);
+  if(displayRoute){
+   const entry=runs.get(displayRoute[1]!);if(!entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);
+   if(method!=='GET'||request.url?.includes('?'))return deny(response,422,'INVALID_WORLD_DISPLAY',[]);
+   const read=displayRoute[2]?entry.run.worldDisplayScene:entry.run.worldDisplay;if(!read)return deny(response,422,'WORLD_DISPLAY_UNSUPPORTED',[]);
+   try{const value=displayRoute[2]?await entry.run.worldDisplayScene!():await entry.run.worldDisplay!();if(runs.get(displayRoute[1]!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return (e as Error).message==='WORLD_DISPLAY_UNSUPPORTED'?deny(response,422,'WORLD_DISPLAY_UNSUPPORTED',[]):failed(response,e);}
+  }
   const replayRoute=new RegExp(`^/runs/(${UUID})/replay(?:/([a-f0-9-]{36})(?:/assets/(0|[1-9][0-9]{0,2}))?)?$`).exec(sub);
   if(replayRoute){
    const [,runId,exportId,index]=replayRoute,entry=runs.get(runId!);

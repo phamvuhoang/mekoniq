@@ -48,7 +48,7 @@ export interface RunProviders {directory:string;worldPorts?:import('./simulation
  /** A plant arm whose program comes from its fixture (MuJoCo): what its ports run, for the manifest. Ignored unless the set's arm is a plant. */armProgram?:ArmProgramRecord;
  /** Wall clock of paced steps (tests inject a fake); consulted only by a step that carries `pace`. */wall?:WallClock}
 export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'}
-export interface ScenarioRun {captureReplay?(options?:{signal?:AbortSignal}):Promise<import('./replay/export').CapturedReplay>;readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
+export interface ScenarioRun {worldDisplay?():Promise<import('./simulation3d/world-display').WorldDisplay>;worldDisplayScene?():Promise<import('./simulation3d/world-display').WorldDisplayScene>;captureReplay?(options?:{signal?:AbortSignal}):Promise<import('./replay/export').CapturedReplay>;readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
  /** Cheap, synchronous liveness for stream heartbeats: never reads the journal. `paused` is the acknowledged pause of the virtual clock. */
  pulse():{tick:number;paused:boolean;runRevision:number};
  /** Durable business events in journal order (queued behind actions, so a reader sees committed state). */
@@ -69,7 +69,7 @@ interface Checkpoint {
  recoveredOps:RunReport['recoveredOps'];confirmationLog:RunReport['confirmations'];faults:RunReport['faults'];
  pendingOps:{ordinal:number;operationId:string;type:string;payloadHash:string}[];inFlight:boolean;crashArmed:boolean;
  faultFires?:FaultFireRecord[];
- world?:{navigation?:import('./session').SourceFixture['navigation'];snapshot?:Sim3DSnapshotV1;terminal?:string;pending?:{targetTick:number;stage:string;ackTick:number|null;command?:WorldTickCommand}};
+ world?:{committedDisplay?:{command:import('./simulation3d/world-display').CommittedWorldDisplayCommand};navigation?:import('./session').SourceFixture['navigation'];snapshot?:Sim3DSnapshotV1;terminal?:string;pending?:{targetTick:number;stage:string;ackTick:number|null;command?:WorldTickCommand}};
  coffee?:CoffeeState;
 }
 class SimulatedCrash extends Error {constructor(){super('SIMULATED_CRASH');}}
@@ -358,7 +358,7 @@ class Run implements ScenarioRun {
      step:async command=>{c.world!.pending!.command=structuredClone(command);c.world!.pending!.stage='sent';await writeCheckpoint(this.dir,c,{sync:true});const s=await w.world.step(command);c.world!.pending!.ackTick=s.tick;c.world!.pending!.stage='acked';return s;},
      commit:async s=>{this.observationTick=s.tick;try{await w.world.commit(s);await this.coffee?.advance();}finally{this.observationTick=undefined;}}
     },c.tick,async s=>{await w.evidence.append(s);c.world!.pending!.stage='durable';await writeCheckpoint(this.dir,c,{sync:true});});
-    this.clock.advance(1);c.tick=this.clock.tick;c.world!.snapshot=structuredClone(snapshot);this.applyWorldView(snapshot);delete c.world!.pending;
+    this.clock.advance(1);c.tick=this.clock.tick;const committedCommand=c.world!.pending!.command!;c.world!.committedDisplay={command:structuredClone({targetTick:committedCommand.targetTick,worldControl:committedCommand.worldControl,velocities:committedCommand.velocities})};c.world!.snapshot=structuredClone(snapshot);this.applyWorldView(snapshot);delete c.world!.pending;
    }catch(e){
     this.observationTick=undefined;this.observations=[];
     if(previous&&c.coffee){for(const k of Object.keys(c.coffee))delete (c.coffee as unknown as Record<string,unknown>)[k];Object.assign(c.coffee,previous);}
@@ -417,6 +417,12 @@ class Run implements ScenarioRun {
    else if(!on&&i>=0){injected.splice(i,1);c.faults.push({tick:c.tick,faultId:`obstacle:${o.id}:off`,entityId:null});}
   }
  }
+ worldDisplay(){return this.queue.then(()=>{
+  if(this.closed)throw Error('RUN_CLOSED');if(!this.worldConfig)throw Error('WORLD_DISPLAY_UNSUPPORTED');const c=this.cp,s=c.world?.snapshot,command=c.world?.committedDisplay?.command;
+  const matched=!!s&&s.runId===c.runId&&s.tick===c.tick&&s.simTimeNs===this.clock.simTimeNs();
+  return {version:1 as const,runId:c.runId,revision:c.revision,tick:c.tick,simTimeNs:this.clock.simTimeNs(),availability:!matched?'unknown' as const:c.world?.terminal?'stale' as const:'valid' as const,reason:!matched?'WORLD_DISPLAY_UNAVAILABLE':c.world?.terminal??null,snapshot:matched?structuredClone(s!):null,control:matched&&command?.targetTick===c.tick?structuredClone(command):null,controlReason:matched&&command?.targetTick===c.tick?null:'NOT_RECORDED_AT_TICK'};
+ });}
+ worldDisplayScene(){return this.queue.then(()=>{if(this.closed)throw Error('RUN_CLOSED');if(!this.worldConfig)throw Error('WORLD_DISPLAY_UNSUPPORTED');const scene=this.world?.displayScene?.();return {version:1 as const,runId:this.cp.runId,availability:scene?'available' as const:'unavailable' as const,reason:scene?null:'WORLD_SCENE_UNAVAILABLE_AFTER_REOPEN',scene:scene??null};});}
  snapshot(){return this.queue.then(()=>{if(this.closed)throw new Error('RUN_CLOSED');return this.view();});}
  holdForReclaim(){
   const p=this.queue.then(async()=>{

@@ -21,13 +21,13 @@ import {spawnMujocoWorker} from './worker-client';
 
 /** One MuJoCo world across arm/mobile/future cell: the run's world is one engine in one worker. */
 export const MUJOCO_MAX_ACTIVE_RUNS=1,MUJOCO_SLOT='mujoco_engine';
-export interface MujocoRuntimeOptions extends IRSimRuntimeOptions {engineVersion:string;maxActiveRuns?:number;
+export interface MujocoRuntimeOptions extends IRSimRuntimeOptions {onRequestTiming?:import('../navigation2d/worker-client').SpawnOptions['onRequestTiming'];engineVersion:string;maxActiveRuns?:number;
  /** Source-only registered shared-world campaign disturbance; never a browser force request. */cellDisturbance?:import('./world-disturbance').CellDisturbanceOption;
  /** Test/fault option: obstacles (arm base frame) that exist in the MuJoCo cell only; the TS capsule check never sees them. Never exposed through a request. */armExtraStatics?:readonly ArmObstacle[];
  /** Test/fault option: physics.json fields replaced for the worker (e.g. weaker gains). Never exposed through a request. */physicsOverride?:Partial<XArmPhysics>;
  /** Test/fault option: the pad friction of the cell scene (e.g. a slippery grip). Never exposed through a request. */padFrictionOverride?:number}
 /** Operator options only (CLI flags/env), never request fields. */
-export interface MujocoOptions {enabled:boolean;python:string;workerRoot:string;lockPath:string;directory:string;schemaDir?:string;bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>}
+export interface MujocoOptions {onRequestTiming?:import('../navigation2d/worker-client').SpawnOptions['onRequestTiming'];enabled:boolean;python:string;workerRoot:string;lockPath:string;directory:string;schemaDir?:string;bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>}
 const cap=(reason?:string):BackendCapability=>({id:MUJOCO_ARM.id,modes:['simulation'],accesses:['simulated'],installed:!reason,compatible:!reason,reachable:!reason,commissioned:true,...reason?{reason}:{}});
 const run=promisify(execFile);
 // every distribution the interpreter sees, as normalized name -> version (PEP 503 names), from the standard library only
@@ -68,7 +68,7 @@ export async function mujocoFromOptions(o:MujocoOptions):Promise<MujocoProviderL
  }catch(e){return off('MUJOCO_WORKER_UNAVAILABLE',e instanceof WorkerLostError?e.code:(e as Error).message);}
  if(!describe.pythonVersion.startsWith('3.11.'))return off('PYTHON_311_REQUIRED',describe.pythonVersion);
  if(describe.lockDigest!==lockDigest)return off('MUJOCO_LOCK_MISMATCH','the worker reported another lock');
- const runtime:MujocoRuntimeOptions={python:o.python,workerRoot,schemaDir,lockDigest,engineVersion:describe.engineVersion,maxActiveRuns:MUJOCO_MAX_ACTIVE_RUNS};
+ const runtime:MujocoRuntimeOptions={python:o.python,workerRoot,schemaDir,lockDigest,engineVersion:describe.engineVersion,maxActiveRuns:MUJOCO_MAX_ACTIVE_RUNS,...o.onRequestTiming?{onRequestTiming:o.onRequestTiming}:{}};
  const gate={busy:false};
  // A probe owns the same engine slot as a run, from immediately before spawn through process close.
  const engineSmoke=async(runSmoke:()=>Promise<string[]>)=>{
