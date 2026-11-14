@@ -2247,3 +2247,105 @@ export interface WebReplayPackageV1 {
     matchedAssets: string[];
   }[];
 }
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "SemanticStudyV1".
+ */
+export interface SemanticStudyV1 {
+  schemaVersion: 1;
+  documentType: 'semantic-study';
+  accepted: false;
+  status: 'complete' | 'incomparable' | 'failed';
+  /**
+   * @maxItems 100
+   */
+  reasonCodes: string[];
+  equivalence: {
+    model: {
+      id: string;
+      sha256: string;
+    };
+    world: {
+      id: string;
+      sha256: string;
+    };
+    task: {
+      id: string;
+      sha256: string;
+    };
+    commonProjection: {
+      id: string;
+      sha256: string;
+    };
+  };
+  invariantPolicy: {
+    id: 'fd01-source-causal-v1';
+    revision: 1;
+  };
+  /**
+   * @maxItems 3
+   */
+  runs: {
+    runId: string;
+    engine: 'irsim_2d' | 'webots_3d' | 'mujoco_3d';
+    reportRef: {
+      path: string;
+      sha256: string;
+      bytes: number;
+    };
+    /**
+     * @maxItems 4000
+     */
+    artifactRefs: {
+      path: string;
+      sha256: string;
+      bytes: number;
+    }[];
+    sceneDigest: string;
+    modelDigest: string;
+    firstTick: number;
+    lastTick: number;
+    replay: {
+      runId: string;
+      tick: number;
+    };
+  }[];
+  /**
+   * @maxItems 30
+   */
+  invariants: {
+    runId: string;
+    id: string;
+    status: 'pass' | 'fail' | 'not_run';
+    /**
+     * @maxItems 50
+     */
+    reasonCodes: string[];
+    tick: number | null;
+  }[];
+  /**
+   * @maxItems 30
+   */
+  differences: {
+    runId: string;
+    dimension: string;
+    value: number | null;
+    unit: string;
+    status: 'observed' | 'unavailable';
+    reason: string | null;
+  }[];
+  /**
+   * @maxItems 9
+   */
+  unsupportedDimensions: {
+    engine: 'irsim_2d' | 'webots_3d' | 'mujoco_3d';
+    dimension: 'contact' | 'slip' | 'tipping';
+    status: 'unsupported';
+    reason: string;
+  }[];
+  percentiles: null;
+  /**
+   * @maxItems 20
+   */
+  limitations: string[];
+}

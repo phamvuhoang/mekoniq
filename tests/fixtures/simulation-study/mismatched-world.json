@@ -1,0 +1,5 @@
+{
+ "equivalence":{"model":{"id":"serve-empty","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"world":{"id":"world-a","sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},"task":{"id":"FD01","sha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},"commonProjection":{"id":"serve-empty-v1","sha256":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}},
+ "runs":[{"report":{"ref":{"path":"irsim/report.json","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","bytes":2},"content":"{}"},"artifacts":[],"commonProjection":{"id":"serve-empty-v1","sha256":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}},{"report":{"ref":{"path":"mujoco/report.json","sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","bytes":2},"content":"{}"},"artifacts":[],"commonProjection":{"id":"serve-empty-v1","sha256":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}}],
+ "invariantPolicy":{"id":"fd01-source-causal-v1","revision":1}
+}
