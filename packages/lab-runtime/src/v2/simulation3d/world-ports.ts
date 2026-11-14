@@ -3,13 +3,16 @@ import type {RobotAdapter} from '../../../../robot-adapters/src/contract';
 import type {CoffeePlantPorts} from '../beverage/coffee-ports';
 import type {CoffeeState,CoffeeContext} from '../scenarios/coffee';
 import type {RunManifestInput} from '../scenario-runner';
+export type WorldControl=import('../../../../contracts/generated/navigation2d').WorldControlV1;
 export interface WorldTickCommand {
+ worldControl?:WorldControl;
  targetTick:number;
  velocities:{robotId:string;vMps:number;omegaRadps:number}[];
  actorUpdates:{actorId:string;poseMap:[number,number,number]}[];
  jointTargets:{armId:string;positionsRad:number[]}[];
  gripperTargets:{armId:string;openingM:number}[];
  worldInteractions?:{eventId:string;cupId:string;propId:string;kind:'birth'|'remove';targetTick:number}[];
+ worldPerturbations?:{eventId:string;presetId:'world-dock-drift-v1'|'world-cup-fall-v1';revision:1;targetId:string;targetTick:number}[];
  propPlacements:{propId:string;pose:{position:[number,number,number];quaternionXyzw:[number,number,number,number]}|null}[];
 }
 /** Preparation cannot publish observations. The shared engine advances only in step; commit consumes a validated, durably recorded ACK. */
@@ -23,7 +26,7 @@ export interface WorldFailure {targetTick:number;lastCommittedTick:number;ackTic
 export interface WorldEvidence {append(snapshot:Sim3DSnapshotV1):Promise<void>;fail(failure:WorldFailure):Promise<void>;finish():Promise<void>}
 export interface WorldPlantBindings {
  navigation?:import('../session').SourceFixture['navigation'];
- metadata?:Pick<import('../report').RunReport['manifest'],'models'|'profiles'|'armProgram'>;
+ metadata?:Pick<import('../report').RunReport['manifest'],'models'|'profiles'|'armProgram'|'worldExtent'|'clock'>;
  evidence:WorldEvidence;
  world:WorldPlantPorts;
  robots:ReadonlyMap<string,RobotAdapter>;

@@ -72,6 +72,7 @@ class WorkerSession:
         self.mobile = False
         self.world = False
         self.world_events, self.world_born = set(), set()
+        self.world_disturbance_consumed=False
         self.schema_dir = Path(schema_dir) if schema_dir else Path(__file__).resolve().parents[3] / "packages" / "contracts" / "schemas"
 
     # ---- plumbing (as the Webots worker) ----
@@ -128,6 +129,7 @@ class WorkerSession:
             raise WorkerError("INVALID_STATE", f"{op} on a {self.state} run")
         if request["expectedTick"] != self.tick:
             raise WorkerError("TICK_MISMATCH", f"expectedTick {request['expectedTick']} but the run is at tick {self.tick}")
+        self.current_request_id=request["requestId"]
         return getattr(self, "_op_" + op.lower())(payload)
 
     # ---- operations ----
@@ -217,7 +219,7 @@ class WorkerSession:
             return json.loads(files[ref["path"]][1])
         docs = {k: document(ref) for k,ref in scene["models"].items()}
         self.world_policy = document(scene["handoffPolicyRef"])
-        document(scene["programsRef"])
+        self.world_programs=document(scene["programsRef"])["programs"]
         self._validate_document(docs["emptyLoad"], "load-profile-v1.schema.json")
         self._validate_document(docs["mobilePhysical"], "robot-physical-model-v1.schema.json")
         self._check_physics_profile(docs["mobilePhysics"]) # component drive policy only; world numerics override explicitly
@@ -229,6 +231,11 @@ class WorkerSession:
         ids = [rid, arm["arm"]["armId"], *[b["propId"] for b in bindings]]
         if actual != model["modelDigest"] or actual != nav["robots"][0]["model"]["physicalModelDigest"] or model["robotId"] != rid or len(set(ids)) != len(ids) or len(set(b["cupId"] for b in bindings)) != len(bindings) or set(b["propId"] for b in bindings) != set(c["propId"] for c in arm["props"]):
             raise WorkerError("WORLD_IDENTITY_INVALID", "world model or prop binding mismatch")
+        disturbance=scene.get('disturbance')
+        if disturbance:
+            binding=next((b for b in bindings if b['cupId']==disturbance['cupId']),None)
+            valid=binding and ((disturbance['presetId']=='world-dock-drift-v1' and disturbance['targetId']==rid and disturbance['trigger']=='before_release') or (disturbance['presetId']=='world-cup-fall-v1' and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='transport'))
+            if not valid:raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','admitted target binding')
         try:
             self.engine = WorldEngine(scene,docs["armComponent"],docs["armPhysics"],{rid:model},docs["emptyLoad"],docs["mobilePhysics"],str(confined(self.bundle_root,"blobs",directory=True)))
         except CompileError as e:
@@ -237,8 +244,8 @@ class WorkerSession:
         self.cups = {c["propId"]:(c["radiusM"],c["heightM"]) for c in arm["props"]}
         return self._advance_world(arm["arm"]["homeRad"],self.engine.opening_max_m,[],0,0,0)
 
-    def _advance_world(self,q,opening,placements,v,w,tick):
-        reading = self.engine.step(q,opening,placements,v,w)
+    def _advance_world(self,q,opening,placements,v,w,tick,disturbance=None):
+        reading = self.engine.step(q,opening,placements,v,w,disturbance)
         self.substeps += 10
         if abs(reading["time"]-self.substeps*.002)>CLOCK_TOLERANCE_S:
             raise WorkerError("CLOCK_DRIFT","world clock mismatch",fatal=True)
@@ -268,8 +275,39 @@ class WorkerSession:
         if len(velocities)!=1 or velocities[0]["robotId"]!=nav["robots"][0]["robotId"]:raise WorkerError("ROBOT_UNKNOWN","world needs one AMR target")
         v,w=velocities[0]["vMps"],velocities[0]["omegaRadps"];kin=nav["robots"][0]["model"]["kinematics"]
         if not snapshot._finite([v,w]) or abs(v)>kin["maxLinearMps"] or abs(w)>kin["maxAngularRadps"]:raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE","world target exceeds navigation limits")
+        control=p.get('worldControl')
+        if self.scene.get('controlContextVersion')==1:
+            if not control or control.get('version')!=1:raise WorkerError('WORLD_CONTROL_INVALID','required world context')
+            program=control.get('program');proxy=control.get('attachmentProxyPropId')
+            if proxy is not None and proxy not in self.present:raise WorkerError('WORLD_CONTROL_INVALID','inactive attachment proxy')
+            if program:
+                stages=self.world_programs['choreography'].get(program.get('programId'),[]);stage=program.get('stage',-1)
+                if not isinstance(stage,int) or stage<0 or stage>=len(stages) or stages[stage]['waypoint']!=program.get('waypoint') or not any(b['cupId']==program.get('cupId') for b in self.scene['propBindings']):raise WorkerError('WORLD_CONTROL_INVALID','unadmitted program/stage/cup')
+            if control.get('movementInterlocked')!=bool(program or proxy or control.get('stopLatched')) or control.get('movementInterlocked') and (v!=0 or w!=0):raise WorkerError('WORLD_CONTROL_INVALID','movement interlock')
+        elif control is not None:raise WorkerError('WORLD_CONTROL_INVALID','unadmitted control context')
         q,opening,checked=self._check_step({**p,"velocities":[],"actorUpdates":[]})
-        result=self._advance_world(q,opening,checked,v,w,self.tick+1)
+        disturbances=p.get('worldPerturbations') or []
+        disturbance=disturbances[0] if len(disturbances)==1 else None
+        admitted=self.scene.get('disturbance')
+        if disturbances:
+            if not admitted or len(disturbances)!=1 or self.world_disturbance_consumed or any(disturbance.get(k)!=admitted[k] for k in ('presetId','revision','targetId')) or disturbance.get('targetTick')!=self.tick+1 or not disturbance.get('eventId'):
+                raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','one admitted one-shot preset')
+            target=disturbance['targetId'];arm=self.snapshot['arms'][0]
+            if admitted['presetId']=='world-dock-drift-v1':
+                valid=target==nav['robots'][0]['robotId'] and admitted['trigger']=='before_release' and any(b['cupId']==admitted['cupId'] and b['propId'] in arm['gripper']['heldPropIds'] for b in self.scene['propBindings']) and opening is not None and opening<=.001
+            else:
+                prop=next((x for x in self.snapshot['props'] if x['propId']==target),None)
+                valid=admitted['trigger']=='transport' and prop and prop['restingOn']==self.scene['supportMap']['mobileSupportId'] and target not in arm['gripper']['heldPropIds'] and abs(self.snapshot['robots'][0]['bodyVelocity'][0])>.01
+            if not valid:raise WorkerError('WORLD_PERTURBATION_PHASE_INVALID','actual pre-release or supported transport observation required')
+            before=(self.snapshot['physics']['base'][0]['poseMap']['positionM'] if target==nav['robots'][0]['robotId'] else next(x['position'] for x in self.snapshot['props'] if x['propId']==target))
+            self.world_disturbance_consumed=True # before the first external force; never retry an uncertain application
+        result=self._advance_world(q,opening,checked,v,w,self.tick+1,disturbance)
+        if disturbance:
+            from .world_engine import WORLD_DISTURBANCES
+            target=disturbance['targetId'];preset=WORLD_DISTURBANCES[disturbance['presetId']]
+            after=(result['physics']['base'][0]['poseMap']['positionM'] if target==nav['robots'][0]['robotId'] else next(x['position'] for x in result['props'] if x['propId']==target))
+            result['worldStep']['disturbances']=[{**disturbance,'runId':self.run_id,'bootId':self.boot_id,'sceneDigest':self.scene['sceneDigest'],'requestId':self.current_request_id,'requestDigest':hashlib.sha256(rfc8785.dumps(p)).hexdigest(),'frame':'map','forceMapN':preset['forceMapN'],'durationSubsteps':10,'beforePositionM':list(before),'afterPositionM':list(after)}]
+
         self.world_events.update(seen)
         self.world_born.update(i["propId"] for i in intents if i["kind"]=="birth")
         return result
@@ -470,7 +508,7 @@ class WorkerSession:
             raise WorkerError("INVALID_STATE", f"step{' (singleStep)' if single else ''} on a {self.state} run")
         if p["targetTick"] != self.tick + 1:
             raise WorkerError("TICK_MISMATCH", f"targetTick {p['targetTick']} must be {self.tick + 1}")
-        if not self.world and p.get("worldInteractions"):
+        if not self.world and (p.get("worldInteractions") or p.get("worldPerturbations") or p.get("worldControl")):
             raise WorkerError("INVALID_REQUEST", "world interactions require a shared world")
         snap = self._step_world(p) if self.world else (self._advance_mobile(*self._check_mobile_step(p), tick=self.tick + 1) if self.mobile else self._advance(*self._check_step(p), tick=self.tick + 1))
         self.tick += 1

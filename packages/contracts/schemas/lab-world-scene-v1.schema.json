@@ -356,6 +356,321 @@
           "regionId"
         ]
       }
+    },
+    "controllerPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "enum": [
+            "grid-diff-world-v1",
+            "grid-diff-world-v2",
+            "grid-diff-world-v3",
+            "grid-diff-world-v4"
+          ]
+        },
+        "version": {
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "provenance": {
+          "const": "assumed"
+        },
+        "bounds": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minM": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number",
+                "minimum": -10,
+                "maximum": 0
+              }
+            },
+            "maxM": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          },
+          "required": [
+            "minM",
+            "maxM"
+          ]
+        },
+        "justification": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "tolerances": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "legM": {
+              "const": 0.004
+            },
+            "positionM": {
+              "const": 0.008
+            },
+            "yawRad": {
+              "const": 0.016
+            },
+            "translationScope": {
+              "const": "every_translation"
+            }
+          },
+          "required": [
+            "legM",
+            "positionM",
+            "yawRad",
+            "translationScope"
+          ]
+        },
+        "braking": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "designBrakingDecelerationMps2": {
+              "const": 0.25
+            },
+            "settleBeforeTranslationAdvance": {
+              "const": true
+            }
+          },
+          "required": [
+            "designBrakingDecelerationMps2",
+            "settleBeforeTranslationAdvance"
+          ]
+        },
+        "terminalApproachDistanceM": {
+          "const": 0.2
+        },
+        "terminalApproachDirection": {
+          "const": "reverse"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "provenance",
+        "bounds",
+        "justification",
+        "tolerances"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "id": {
+                "const": "grid-diff-world-v1"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "then": {
+            "properties": {
+              "version": {
+                "const": "1"
+              }
+            },
+            "required": [],
+            "not": {
+              "required": [
+                "braking"
+              ],
+              "properties": {
+                "braking": {}
+              }
+            },
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "terminalApproachDistanceM"
+                  ],
+                  "properties": {
+                    "terminalApproachDistanceM": {}
+                  }
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "terminalApproachDirection"
+                  ],
+                  "properties": {
+                    "terminalApproachDirection": {}
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "id": {
+                "const": "grid-diff-world-v2"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "then": {
+            "properties": {
+              "version": {
+                "const": "2"
+              },
+              "braking": {}
+            },
+            "required": [
+              "braking"
+            ],
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "terminalApproachDistanceM"
+                  ],
+                  "properties": {
+                    "terminalApproachDistanceM": {}
+                  }
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "terminalApproachDirection"
+                  ],
+                  "properties": {
+                    "terminalApproachDirection": {}
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "id": {
+                "const": "grid-diff-world-v3"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "then": {
+            "properties": {
+              "version": {
+                "const": "3"
+              },
+              "braking": {},
+              "terminalApproachDistanceM": {}
+            },
+            "required": [
+              "braking",
+              "terminalApproachDistanceM"
+            ],
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "terminalApproachDirection"
+                  ],
+                  "properties": {
+                    "terminalApproachDirection": {}
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "id": {
+                "const": "grid-diff-world-v4"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "then": {
+            "properties": {
+              "version": {
+                "const": "4"
+              },
+              "braking": {},
+              "terminalApproachDistanceM": {},
+              "terminalApproachDirection": {}
+            },
+            "required": [
+              "braking",
+              "terminalApproachDistanceM",
+              "terminalApproachDirection"
+            ]
+          }
+        }
+      ]
+    },
+    "disturbance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "presetId": {
+          "enum": [
+            "world-dock-drift-v1",
+            "world-cup-fall-v1"
+          ]
+        },
+        "revision": {
+          "const": 1
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "trigger": {
+          "enum": [
+            "before_release",
+            "transport"
+          ]
+        },
+        "cupId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "presetId",
+        "revision",
+        "targetId",
+        "trigger",
+        "cupId"
+      ]
+    },
+    "controlContextVersion": {
+      "const": 1
     }
   },
   "required": [

@@ -10,6 +10,7 @@ export function validateWorldScene(input:unknown):asserts input is LabWorldScene
  if(!validateWorldSceneShape(input))throw new Error('WORLD_SCENE_INVALID');
  const s=input as LabWorldSceneV1;
  if(documentDigest(s,'sceneDigest')!==s.sceneDigest||documentDigest(s.navigation,'sceneDigest')!==s.navigation.sceneDigest||documentDigest(s.armCell,'sceneDigest')!==s.armCell.sceneDigest)throw new Error('WORLD_SCENE_DIGEST_MISMATCH');
+ if(s.controllerPolicy){const b=s.controllerPolicy.bounds;if(b.minM.some((v,i)=>v>0||v< -10||b.maxM[i]!<=v)||b.maxM[0]!==s.navigation.world.widthM||b.maxM[1]!==s.navigation.world.heightM||s.navigation.world.boundaries.length)throw Error('WORLD_CONTROLLER_POLICY_INVALID');}
  const ids=[s.navigation.robots[0]?.robotId,s.armCell.arm.armId,...s.propBindings.map(p=>p.propId)];
  if(s.armCell.arm.modelId!=='xarm6-g2-v1'||s.navigation.robots.length!==1||s.armCell.arm.homeRad.length!==6||s.armCell.arm.modelRevision!==XARM6_SI.revision||new Set(ids).size!==ids.length||new Set(s.propBindings.map(p=>p.cupId)).size!==s.propBindings.length||s.propBindings.length!==s.armCell.props.length||s.armCell.props.some(p=>!s.propBindings.some(b=>b.propId===p.propId))||s.navigation.engine.id!=='mujoco_3d')throw new Error('WORLD_IDENTITY_INVALID');
  if(s.navigation.engine.timestepMs!==2||s.navigation.engine.substeps!==10||s.navigation.clock.tickMs!==20||s.armCell.engine.timestepMs!==2||s.armCell.engine.substeps!==10)throw new Error('WORLD_CLOCK_INVALID');
@@ -38,8 +39,8 @@ export function validateWorldObservation(input:unknown,scene:LabWorldSceneV1,int
  if(!s.worldStep||s.worldStep.physicsSubsteps!==(s.tick+1)*10||s.worldStep.nq!==21+7*scene.propBindings.length||s.worldStep.nv!==20+6*scene.propBindings.length||!finite(s)||s.sceneDigest!==scene.sceneDigest||s.robots.length!==1||s.robots[0]!.robotId!==scene.navigation.robots[0]!.robotId||s.arms?.length!==1||arm?.armId!==scene.armCell.arm.armId||arm.positionsRad.length!==6||arm.positionsRad.some((q,i)=>q<XARM6_SI.limits[i]!.min-1e-3||q>XARM6_SI.limits[i]!.max+1e-3)||arm.velocitiesRadS.length!==6||!arm.gripper||new Set(arm.gripper.heldPropIds).size!==arm.gripper.heldPropIds.length||s.props?.length!==expected.length||new Set(s.props?.map(p=>p.propId)).size!==expected.length||s.props?.some(p=>!expected.includes(p.propId)||Math.abs(Math.hypot(...p.quaternionXyzw)-1)>1e-6)||arm.gripper.heldPropIds.some(p=>!expected.includes(p))||s.simTimeNs!==String(BigInt(s.tick)*20_000_000n))fail();
 }
 /** Fixture files and vendor mesh closure are independently hash-checked before an engine sees them. */
-export async function readWorldFixture(workerRoot:string){
- const dir=join(workerRoot,'fixtures','coffee-delivery-world-v1');
+export async function readWorldFixture(workerRoot:string,fixtureId='coffee-delivery-world-v1'){
+ const dir=join(workerRoot,'fixtures',fixtureId);
  const scene:unknown=JSON.parse(await readFile(join(dir,'lab-world-scene.json'),'utf8'));validateWorldScene(scene);
  const files=new Map<string,Uint8Array>();
  for(const f of scene.files){const path=f.path.startsWith('blobs/')?join(workerRoot,'fixtures','xarm6-g2-v1',f.path):join(dir,f.path),b=await readFile(path);if(b.length!==f.bytes||createHash('sha256').update(b).digest('hex')!==f.sha256)throw new Error('WORLD_CLOSURE_INVALID');files.set(f.path,b);}

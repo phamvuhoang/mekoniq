@@ -17,20 +17,23 @@ export interface AmrEntityView {id:string;kind:'amr';pose:{x:number;y:number;yaw
 /** Renderable observed free payload; AMR travel distance is unavailable; moving derives from actual payload twist and admitted stopped thresholds. */
 export interface PayloadEntityView {id:string;kind:'payload';plant:import('../../../contracts/generated/lab-v2').TwinPayloadState;pose:{x:number;y:number;yawRad:number};quality:'valid'|'stale';moving:boolean;hold:null;goal:null;path:[];distanceM:null}
 export type EntityView=AmrEntityView|PayloadEntityView;
-export interface CoffeeView {jobs:{jobId:string;status:string;recipeId:string;cupId:string;attentionReason:string|null;waitingReason?:string|null;canRestoreCup?:boolean}[];cups:{cupId:string;ownerKind:string;ownerId:string}[]}
+export interface CoffeeView {physicalCustody?:readonly import('../../../contracts/generated/lab-v2').CupPhysicalState[];jobs:{jobId:string;status:string;recipeId:string;cupId:string;attentionReason:string|null;waitingReason?:string|null;canRestoreCup?:boolean}[];cups:{cupId:string;ownerKind:string;ownerId:string}[]}
 export interface CupMovementView {transferId:string;from:{kind:string;id:string};to:{kind:string;id:string;slot?:number};provenance:string;observedBy:string;at:string;reason?:string;evidence?:JsonObject}
 export interface CoffeeReport {
+ physicalCustody?:readonly import('../../../contracts/generated/lab-v2').CupPhysicalState[];
  jobs:JsonObject[];cups:{cupId:string;ownerKind:string;ownerId:string;movements:CupMovementView[];[k:string]:unknown}[];
  cellEffects:{id:string;type:string;status:string;attempts:number;payload:JsonObject}[];
  armTrace:{tag:string;interpolation:string;modelRevision:string;limitsOk:boolean;samples:{tick:number;q:number[];tcp:[number,number,number]}[];collision:ArmPlantState['collision']|null;stop:ArmPlantState['stop']|null};plantLog:JsonObject[];
 }
 export interface RunReport {
  schemaVersion:2;
+ /** Independent finalized world review; legacy ARM03 retains its own truncation status. */
+ worldSweep?:import('./simulation3d/world-sweep').WorldSweepResult;
  /** Optional independent read-back physics evidence; deliberately excluded from canonicalOutcome. */
  physicsEvidence?:{manifest:import('../../../contracts/generated/navigation2d').PhysicsEvidenceV1;manifestSha256:string;complete:boolean;issues:string[];metrics:import('./simulation3d/physics-metrics').PhysicsMetrics};
  faultScheduleFires?:FaultFireRecord[];
  manifest:{completionObservation?:import('./navigation2d/plant').CompletionObservation;simulationPerturbation?:import('./navigation2d/plant').SimulationPerturbation;faultSchedule?:{entries:FaultScheduleEntry[];hash:string};engineering?:{bundleDigest:string;projectDigest:string};runId:string;sourceCommit:string;mode:'mock'|'simulation';access:'simulated';backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];prng:{algorithm:string;seeding:string;version:number};clock:{tickMs:number;businessEpochMs?:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
-  scenario:{id:string;revision:number;hash:string;basedOn?:{id:string;revision:number}};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[];
+  scenario:{id:string;revision:number;hash:string;basedOn?:{id:string;revision:number}};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};worldExtent?:{minM:number[];maxM:number[];controller:{id:string;version:string;hash:string}};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[];
   hashAlgorithm:'sha256-canonical-json-v1';designHash:string;adapterHash:string;configuration:{revision:number;hash:string};recipes:{id:string;revision:number;hash:string}[];
   models:{id:string;revision:string;hash:string;provenance:string}[];profiles:{id:string;revision:number;hash:string;provenance:string}[];calibration:{status:'not_calibrated';revision:null;hash:null;reason:string};armCollisionScene?:ArmSceneDeclaration;/** Only a run whose arm provider supplies its program (MuJoCo arm). */armProgram?:ArmProgramRecord};
  outcome:{status:string;served:string;tick:number;simTimeNs:string};

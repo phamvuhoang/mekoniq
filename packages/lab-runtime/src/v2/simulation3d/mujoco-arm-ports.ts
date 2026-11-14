@@ -78,6 +78,7 @@ export function mujocoArmProgram(runtime:Pick<MujocoRuntimeOptions,'workerRoot'|
  return {fixture:{id:fixture.id,revision:fixture.revision},physicsDigest:hashJson(physics as never),programs:structuredClone(programs),programsDigest:hashJson(programs as never),waypointsDigest:fixture.waypoints.digest};
 }
 export function mujocoArmPorts(runtime:MujocoRuntimeOptions,run:{project:LabProjectV2;seed:number}):NonNullable<RunProviders['coffeePorts']>{
+ if(runtime.cellDisturbance)throw Error('WORLD_PERTURBATION_SCOPE_INVALID');
  return async(st,ctx,newBootId,directory)=>{
   if(!irsimCapacity(runtime.maxActiveRuns??MUJOCO_MAX_ACTIVE_RUNS,ctx.runId,MUJOCO_SLOT))throw new Error('MUJOCO_CAPACITY');
   holdSlot(MUJOCO_SLOT,ctx.runId); // from here to close (or a failed open) this run owns the host's MuJoCo slot

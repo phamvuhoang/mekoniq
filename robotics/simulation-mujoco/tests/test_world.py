@@ -117,3 +117,56 @@ def test_world_refuses_outside_nozzle_placement_without_stepping(session):
  r=session.handle(world_step(session,placements=[{'propId':'cup-1','pose':{'position':[10,10,.151],'quaternionXyzw':[0,0,0,1]}}],intents=[intent]))
  assert not r['ok'] and r['error']['code']=='WORLD_INTERACTION_INVALID'
  assert session.engine.total_substeps==10
+
+
+def test_world_rejects_unadmitted_disturbance_before_physics(session):
+ start_world(session)
+ r=world_step(session);r['payload']['worldPerturbations']=[{'eventId':'fault-1','presetId':'world-dock-drift-v1','revision':1,'targetId':'amr-1','targetTick':1}]
+ result=session.handle(r)
+ assert not result['ok'] and result['error']['code']=='WORLD_PERTURBATION_NOT_ADMITTED'
+ assert session.engine.total_substeps==10 and session.tick==0
+
+
+def test_registered_force_is_real_dynamics_and_always_cleared():
+ e=WorldEngine(*inputs());home=load('programs.json')['programs']['waypoints']['home']
+ e.step(home,.0889,[('cup-1',{'position':[.49,0,.151],'quaternionXyzw':[0,0,0,1]})],0,0)
+ r=e.step(home,.0889,[],0,0,{'presetId':'world-cup-fall-v1','targetId':'cup-1'})
+ assert r['world']['physics']['loads'][0]['linearVelocityMapMps'][0]>.5
+ assert np.count_nonzero(e.data.xfrc_applied)==0 and e.total_substeps==20
+ e.close()
+
+def _admit_disturbance(s,preset,target,trigger):
+ from mujoco_worker.session import scene_digest_of
+ path=s.bundle_root/'lab-world-scene.json';scene=json.loads(path.read_text())
+ scene['disturbance']={'presetId':preset,'revision':1,'targetId':target,'trigger':trigger,'cupId':'cup-1'}
+ scene['sceneDigest']=scene_digest_of(scene);path.write_text(json.dumps(scene));s.expected_scene_digest=scene['sceneDigest']
+
+
+def test_admitted_disturbance_requires_bound_target_and_actual_phase_before_mutation(session):
+ _admit_disturbance(session,'world-cup-fall-v1','cup-1','transport');start_world(session)
+ req=world_step(session);req['payload']['worldPerturbations']=[{'eventId':'fault-1','presetId':'world-cup-fall-v1','revision':1,'targetId':'cup-1','targetTick':1}]
+ r=session.handle(req);assert not r['ok'] and r['error']['code']=='WORLD_PERTURBATION_PHASE_INVALID'
+ assert session.engine.total_substeps==10 and not session.world_disturbance_consumed
+ session.world_disturbance_consumed=True;req['requestId']='duplicate-preset'
+ r=session.handle(req);assert not r['ok'] and r['error']['code']=='WORLD_PERTURBATION_NOT_ADMITTED'
+ assert session.engine.total_substeps==10
+
+
+def test_unknown_disturbance_target_is_refused_before_model_creation(session):
+ _admit_disturbance(session,'world-cup-fall-v1','unknown','transport')
+ r=session.handle(request('create',{'sceneRef':'lab-world-scene.json','seed':7}))
+ assert not r['ok'] and r['error']['code']=='WORLD_PERTURBATION_NOT_ADMITTED' and session.engine is None
+
+
+def test_registered_force_clears_on_native_step_exception(monkeypatch):
+ e=WorldEngine(*inputs());home=load('programs.json')['programs']['waypoints']['home']
+ e.step(home,.0889,[('cup-1',{'position':[.49,0,.151],'quaternionXyzw':[0,0,0,1]})],0,0)
+ def fail(*_args):raise RuntimeError('injected native boundary')
+ monkeypatch.setattr(mujoco,'mj_step',fail)
+ with pytest.raises(RuntimeError,match='injected native boundary'):e.step(home,.0889,[],0,0,{'presetId':'world-cup-fall-v1','targetId':'cup-1'})
+ assert np.count_nonzero(e.data.xfrc_applied)==0
+ e.close()
+
+def test_world_control_context_is_opt_in_and_missing_or_changed_stage_refuses_before_mutation(session):
+ start_world(session);req=world_step(session);req['payload']['worldControl']={'version':1,'program':None,'attachmentProxyPropId':None,'movementInterlocked':False,'stopLatched':False}
+ r=session.handle(req);assert not r['ok'] and r['error']['code']=='WORLD_CONTROL_INVALID' and session.engine.total_substeps==10

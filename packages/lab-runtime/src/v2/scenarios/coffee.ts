@@ -8,8 +8,8 @@ import {recipeHash,type CoffeeRecipe} from '../../../../domain/src/beverage/reci
 import type {CommandResult} from '../../../../contracts/src/index';
 import {MockCoffeePlant,type CoffeePlantState,type CoffeeFault} from '../../../../cell-adapters/src/mock-coffee';
 import {MockArmPlant,type ArmPlantState,type ArmFault} from '../../../../cell-adapters/src/mock-arm';
-import {createMockCoffeePorts,type CoffeePlantPorts} from '../beverage/coffee-ports';
-import {buildArmReport,type ArmReportBlock} from '../beverage/arm-plant-report';
+import {createMockCoffeePorts,type CoffeePlantPorts,type WorldReportSource} from '../beverage/coffee-ports';
+import {buildArmReport,armCollisionRecord,type ArmReportBlock} from '../beverage/arm-plant-report';
 import type {ArmCollisionEvidenceRecord} from '../arm/session';
 import {dispatchCellEffects,cellReportPayload} from '../../../../cell-adapters/src/dispatch';
 import type {CellReport} from '../../../../cell-adapters/src/contract';
@@ -75,7 +75,7 @@ export class CoffeeDriver {
   this.plant=this.ports.coffeePlant??new MockCoffeePlant(this.ports.snapshot().coffee,ctx.nowMs,newBootId);
   this.arm=this.ports.snapshot().arm===null?null:this.ports.mockArm??null;
   st.plant=this.plant.state;
-  if(this.ports.snapshot().arm===null){
+  if(this.ports.custodyEvidence==='correlated'||this.ports.snapshot().arm===null){
    if(!ctx.directory||!this.ports.bindLedger)throw new Error('NATIVE_CUP_JOURNAL_REQUIRED');
    this.ledger=createCupLedger({path:join(ctx.directory,'cup-ledger.sqlite'),runId:ctx.runId,nowMonotonicNs:()=>process.hrtime.bigint(),freshnessNs:500000000n,dockToleranceM:DOCK_TOLERANCE_M,
     domain:cupId=>this.domainCup(cupId),confirm:(e,p)=>this.confirmPhysical(e,p),
@@ -96,7 +96,7 @@ export class CoffeeDriver {
    if(!current)return;
    const prior=side?current[side] as JsonObject|undefined:undefined;
    if(prior?.bootId===observation.bootId&&prior?.seq===observation.seq)continue;
-   const payload:JsonObject={stationId:this.st.stationId,transferId:p.transferId,cupId:p.cupId,provenance:'sensor',...side?{side}:{},evidence:{commandId:p.commandId,transferId:p.transferId,bootId:observation.bootId,seq:observation.seq,observedAt:new Date(this.ctx.nowMs()).toISOString(),producer:observation.producer,fidelity:observation.fidelity,
+   const payload:JsonObject={stationId:this.st.stationId,transferId:p.transferId,cupId:p.cupId,provenance:'sensor',...side?{side}:{},evidence:{commandId:p.commandId,transferId:p.transferId,bootId:observation.bootId,seq:observation.seq,observedAt:new Date(this.ctx.nowMs()).toISOString(),producer:observation.producer,fidelity:observation.fidelity,...observation.world?{world:observation.world as unknown as JsonObject,clockDomain:observation.clockDomain}:{},
     ...paired?side==='giver'?{released:true}:{receiverPresent:true,dockInTolerance:true,poseErrorM:value.dock.errorM}:{gripperClosed:observation.grip!.closed,objectPresent:observation.grip!.objectPresent,liftPoseReached:observation.liftPoseReached===true}}};
    const result=await this.ctx.source.submit('Cup.ConfirmTransfer',payload,`cup-proof:${hashJson({id:observation.observationId,side:side??'grasp'})}`,observation.deviceId);
    if(result.status!=='accepted')throw new Error(`TRANSFER_REJECTED:${String(result.code)}`);
@@ -173,6 +173,7 @@ export class CoffeeDriver {
     if(!w.missionId){const missionId=await ctx.createMission(w.allocationId);if(!missionId)continue;w.missionId=missionId;w.allocated=true;}
     const machine=this.st.plant.devices.find(d=>d.role==='machine'),cup=this.st.plant.cups.find(c=>c.cupId===w.cupId);
     if(machine?.status!=='ready'||!cup||cup.at!=='nozzle'||steps.some(s=>s.status!=='completed')){await this.hold(w,machine?.status==='fault'?'MACHINE_FAULT':machine?.status!=='ready'?'MACHINE_NOT_READY':!cup||cup.at!=='nozzle'?'CUP_ABSENT':'BREW_NOT_COMPLETE');continue;}
+    if(this.ports.canPickCup&&!await this.ports.canPickCup(w.missionId))continue;
     await ctx.submit('Cup.RequestTransfer',{stationId:station,transferId:`${w.jobId}:pick`,cupId:w.cupId,jobId:w.jobId,to:{kind:'arm',id:st.armId}});
    }
    else if(status==='transferring'){
@@ -210,10 +211,12 @@ export class CoffeeDriver {
    }
    const transferObservation=r.evidence?.transferObservation as TransferObservation|undefined;
    const replay=transferObservation&&this.ledger?.observations().some(o=>o.observationId===transferObservation.observationId);
-   if(!(this.ledger&&(r.observation?.result==='accepted'||transferObservation?.phase==='receive'||replay))){
+   let settledCompletion=false;if(this.ports.custodyEvidence==='correlated'&&r.observation?.result==='completed'&&!r.status&&!r.measurement&&typeof r.evidence?.cupId==='string'){const cup=(await ctx.source.read('cup',r.evidence.cupId)).state;settledCompletion=!cup.pendingTransfer&&((cup.movements??[]) as JsonObject[]).some(m=>(m.to as JsonObject)?.kind==='robot'&&((m.evidence as JsonObject)?.giver as JsonObject)?.commandId===r.observation!.commandId);}
+   if(!(this.ledger&&(settledCompletion||r.observation?.result==='accepted'||transferObservation?.phase==='receive'||replay||this.ports.custodyEvidence==='correlated'&&!!transferObservation))){
    const res=await ctx.submit('Coffee.ObserveDevice',cellReportPayload(r,st.stationId),r.deviceId);
    if(res.status!=='accepted')ctx.rejected({eventId:id,commandId:r.observation?.commandId??'',type:r.observation?.result??'status',code:String(res.code)});
    }
+   if(this.ports.custodyEvidence==='correlated'&&r.observation?.reasonCodes.includes('DOCK_OUT_OF_TOLERANCE'))this.recoveryAttention('DOCK_OUT_OF_TOLERANCE',r.observation.commandId);
    if(this.ledger&&r.observation)for(const reason of r.observation.reasonCodes)if(['RECOVERY_UNKNOWN','COMPLETION_PROOF_RECOVERY_REQUIRED','COMPLETION_PROOF_MISSING'].includes(reason))this.recoveryAttention(reason,r.observation.commandId);
    if(this.ledger&&r.evidence?.transferObservation){
     const observation=r.evidence.transferObservation as TransferObservation;
@@ -246,6 +249,7 @@ export class CoffeeDriver {
  }
  /** Run cancel: cancel each open coffee mission (cargo gets a return stop) and job; the domain decides cancelled, returning or held. Never resends. */
  async cancel(){
+  this.ports.holdMotion?.('CELL_CANCELLED');
   const st=this.st,ctx=this.ctx,open=['reserved','cup_verified','started','dispensing','verifying','ready_for_pickup','transferring','loaded'];
   for(const w of st.workload){
    if(w.missionId){const m=await ctx.source.read('mission',w.missionId);if(!['completed','cancelled','failed','cancelling'].includes(String(m.state.status))){const r=await ctx.submit('Mission.Cancel',{missionId:w.missionId,expectedVersion:m.version});if(r.status!=='accepted')ctx.attention({reason:'CANCEL_REJECTED',subjectId:w.missionId,commandId:String(r.code)});}}
@@ -284,18 +288,24 @@ export class CoffeeDriver {
    jobs.push({jobId:w.jobId,status:String(j.state.status),recipeId:String(j.state.recipeId),cupId:w.cupId,attentionReason:(j.state.attentionReason??null) as string|null,waitingReason:w.waiting??null,canRestoreCup:this.canRestoreCup(w,j.state)});
    cups.push({cupId:w.cupId,ownerKind:String(c.ownerKind),ownerId:String(c.ownerId)});
   }
-  return {jobs,cups};
+  return {jobs,cups,...this.ports.custodyEvidence==='correlated'?{physicalCustody:this.ports.report().cupLedger}:{}};
  }
  /** The `arm` block of the run report when the arm is a plant (R1.1); null for the mock arm. Writes the trace file into `directory`. */
  async armEvidence(directory:string,world:ArmCollisionEvidenceRecord['worldRevision'],assetRef:JsonObject):Promise<ArmReportBlock|null>{
   const r=this.ports.report();
   return r.armPlant?buildArmReport(this.st.arm,r.armPlant,directory,world,assetRef,r.armCell):null;
  }
+ /** Capture under the Source action boundary; only immutable inputs are used after it releases. */
+ async captureArmEvidence(directory:string,world:ArmCollisionEvidenceRecord['worldRevision'],assetRef:JsonObject,source:WorldReportSource){
+  const r=structuredClone(this.ports.report());if(!r.armPlant)return null;const critical=structuredClone(this.st.arm),collision=armCollisionRecord(critical,world,assetRef),captured=await this.ports.armReportState?.(this.ctx.tick(),source);
+  return async()=>{const materialized=captured?await captured.materialize():null,legacy=structuredClone(collision);if(materialized&&!materialized.worldTrace.prefixCovered&&legacy.result==='pass'){legacy.result='not_run';legacy.reasonCodes=[...materialized.worldTrace.reasonCodes];}
+   const arm=await buildArmReport(materialized?.state??critical,r.armPlant!,directory,world,assetRef,r.armCell,{collision:legacy,...materialized?{worldTrace:materialized.worldTrace,contentAddressed:true}:{}});return {arm,...materialized?{worldSweep:materialized.worldSweep}:{}};};
+ }
  async close(){try{await this.ports.close();}finally{this.ledger?.close();this.ledger=undefined;}}
  async report():Promise<CoffeeReport>{
   const jobs:JsonObject[]=[],cups:CoffeeReport['cups']=[];
   for(const w of this.st.workload){const j=await this.ctx.source.read('coffee-job',w.jobId).catch(()=>null),cup=await this.ctx.source.read('cup',w.cupId);if(!j?.version||!cup.version)continue;jobs.push(j.state);cups.push(cup.state as unknown as CoffeeReport['cups'][number]);}
-  return {jobs,cups,cellEffects:(await this.ctx.source.effects()).filter(e=>e.type==='cell.execute').map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
+  return {jobs,cups,...this.ports.custodyEvidence==='correlated'?{physicalCustody:this.ports.report().cupLedger}:{},cellEffects:(await this.ctx.source.effects()).filter(e=>e.type==='cell.execute').map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
    armTrace:{...this.st.arm.plantId==='mujoco_arm'?{tag:'mujoco_position_actuator_tracked',interpolation:'quintic-sync-v1',modelRevision:XARM6_SI.revision}:{tag:MOCK_KINEMATIC,interpolation:'linear_joint_illustrative',modelRevision:PUMA560_SI.revision},limitsOk:this.arm?this.st.arm.limitsOk:false,samples:this.arm?structuredClone(this.st.arm.trace):[],collision:this.arm?structuredClone(this.st.arm.collision??null):null,stop:this.arm?structuredClone(this.st.arm.stop??null):null},plantLog:structuredClone(this.st.plant.log) as unknown as JsonObject[]};
  }
 }

@@ -15,11 +15,14 @@ import {armReadiness} from './readiness';
 import {activeRunCount,holdsSlot,holdSlot,releaseSlot} from '../navigation2d/runner';
 import {mujocoMobilePlant,prepareMobileStopMonitor} from './mujoco-mobile';
 import type {MujocoProviderLike} from '../navigation2d/readiness';
+import {mujocoWorldPorts} from './mujoco-world-ports';
+import {worldReadiness} from './world-readiness';
 import {spawnMujocoWorker} from './worker-client';
 
 /** One MuJoCo world across arm/mobile/future cell: the run's world is one engine in one worker. */
 export const MUJOCO_MAX_ACTIVE_RUNS=1,MUJOCO_SLOT='mujoco_engine';
 export interface MujocoRuntimeOptions extends IRSimRuntimeOptions {engineVersion:string;maxActiveRuns?:number;
+ /** Source-only registered shared-world campaign disturbance; never a browser force request. */cellDisturbance?:import('./world-disturbance').CellDisturbanceOption;
  /** Test/fault option: obstacles (arm base frame) that exist in the MuJoCo cell only; the TS capsule check never sees them. Never exposed through a request. */armExtraStatics?:readonly ArmObstacle[];
  /** Test/fault option: physics.json fields replaced for the worker (e.g. weaker gains). Never exposed through a request. */physicsOverride?:Partial<XArmPhysics>;
  /** Test/fault option: the pad friction of the cell scene (e.g. a slippery grip). Never exposed through a request. */padFrictionOverride?:number}
@@ -91,7 +94,8 @@ export async function mujocoFromOptions(o:MujocoOptions):Promise<MujocoProviderL
    catch(e){return [`MUJOCO_SMOKE_FAILED:${e instanceof WorkerLostError?e.code:'WORKER_FAILED'}`];}
    finally{detach();await w.close('smoke done');}
   });}})}:{capability:{...cap('ENGINEERING_REF_REQUIRED: mobile MuJoCo needs an engineering bundle service'),id:'mujoco_3d'}};
- return {arm:{runtime,capability:cap(),readinessChecks},mobile};
+ const world=mobile.plant&&mobile.capability.installed?{runtime,factory:mujocoWorldPorts(runtime),readinessChecks:worldReadiness(runtime,{lockPath:o.lockPath,probeDir,directory:o.directory,gate})}:undefined;
+ return {arm:{runtime,capability:cap(),readinessChecks},mobile,...world?{world}:{}};
 }
 /** A real worker on the real cell: create (compiles the MJCF, loads the meshes, runs the priming step), then close. */
 async function smoke(runtime:MujocoRuntimeOptions,scene:ArmCellSceneV1,bundleRoot:string,runDirectory:string,signal:AbortSignal):Promise<string[]>{

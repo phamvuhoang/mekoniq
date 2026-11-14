@@ -17,6 +17,13 @@ from .drive import wheel_targets,torque_limits
 from .protocol import WorkerError
 from . import snapshot
 
+# Registered development disturbances, map-frame force for one logical interval.
+# These are not natural-slip claims or arbitrary caller-provided force vectors.
+WORLD_DISTURBANCES={
+ 'world-dock-drift-v1':{'revision':1,'forceMapN':[2000.,0.,0.],'durationSubsteps':10},
+ 'world-cup-fall-v1':{'revision':1,'forceMapN':[30.,0.,30.],'durationSubsteps':10},
+}
+
 class WorldEngine:
     def __init__(self,scene,component,arm_physics,physical_models,load_profile,mobile_physics,blob_dir):
         if mujoco.__version__!='3.17.0':raise CompileError('ENGINE_VERSION_MISMATCH')
@@ -100,9 +107,20 @@ class WorldEngine:
         for c in d.contact[:d.ncon]:
             if c.dist < -1e-6:raise CompileError('INITIAL_PENETRATION',f'{v.tags[int(c.geom1)]}/{v.tags[int(c.geom2)]}: {c.dist}')
 
-    def step(self,targets,opening,placements,v_mps,omega_radps):
+    def step(self,targets,opening,placements,v_mps,omega_radps,disturbance=None):
         if self.failed:raise WorkerError('WORLD_TERMINAL','world may not retry',fatal=True)
         m,d,a,v=self.model,self.data,self.arm,self.mobile
+        force_body=None
+        if disturbance:
+            preset=WORLD_DISTURBANCES.get(disturbance['presetId'])
+            if not preset:raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','unknown preset')
+            target=disturbance['targetId']
+            if disturbance['presetId']=='world-dock-drift-v1':
+                if target!=v.rid:raise WorkerError('WORLD_PERTURBATION_TARGET_INVALID','AMR identity')
+                force_body=v.base
+            else:
+                if target not in a.in_scene:raise WorkerError('WORLD_PERTURBATION_TARGET_INVALID','inactive prop')
+                force_body=a.prop[target]['body']
         v.targets[:]=wheel_targets(v_mps,omega_radps,v.radius,v.separation)
         d.ctrl[a.arm_act]=targets;d.ctrl[v.acts]=v.targets
         if opening is not None:
@@ -114,20 +132,24 @@ class WorldEngine:
                 a._put(pid,[*at['position'],*(q/np.linalg.norm(q))]);a._set_contacts(pid,True);a.in_scene.add(pid)
         for pid in a.prop.keys()-a.in_scene:a._put(pid,a.prop[pid]['park'])
         aggregate=ContactAccumulator(.002,self.expected);seen=set();v.saturated=0
-        for _ in range(10):
-            old=d.qpos[v.wq].copy();saturated=False
-            for act,actual,target in zip(v.acts,d.qvel[v.wv],v.targets):
-                lo,hi=torque_limits(float(actual),float(target),v.physics);m.actuator_forcerange[act]=lo,hi
-                demand=v.physics['velocityGainNmsPerRad']*(target-actual);saturated|=demand<lo-1e-12 or demand>hi+1e-12
-            v.saturated+=int(saturated)
-            before={k:d.warning[w].number for k,w in BAD_STATE.items()}
-            mujoco.mj_step(m,d);self.total_substeps+=1
-            warnings=[k for k,w in BAD_STATE.items() if d.warning[w].number!=before[k]]
-            if warnings or not all(np.isfinite(x).all() for x in (d.qpos,d.qvel,d.qacc)):
-                self.failed=True;raise WorkerError('PLANT_UNSTABLE',','.join(warnings) or 'NONFINITE',fatal=True)
-            delta=(d.qpos[v.wq]-old)*v.radius;ds,da=float(sum(delta)/2),float((delta[1]-delta[0])/v.separation)
-            distance=ds*float(np.sinc(da/(2*math.pi)));v.odom[:2]+=distance*np.array([math.cos(v.odom[2]+da/2),math.sin(v.odom[2]+da/2)]);v.odom[2]+=da
-            aggregate.add(v._sample_contacts());seen.update(a.contacts())
+        if force_body is not None:d.xfrc_applied[force_body,:3]=preset['forceMapN']
+        try:
+            for _ in range(10):
+                old=d.qpos[v.wq].copy();saturated=False
+                for act,actual,target in zip(v.acts,d.qvel[v.wv],v.targets):
+                    lo,hi=torque_limits(float(actual),float(target),v.physics);m.actuator_forcerange[act]=lo,hi
+                    demand=v.physics['velocityGainNmsPerRad']*(target-actual);saturated|=demand<lo-1e-12 or demand>hi+1e-12
+                v.saturated+=int(saturated)
+                before={k:d.warning[w].number for k,w in BAD_STATE.items()}
+                mujoco.mj_step(m,d);self.total_substeps+=1
+                warnings=[k for k,w in BAD_STATE.items() if d.warning[w].number!=before[k]]
+                if warnings or not all(np.isfinite(x).all() for x in (d.qpos,d.qvel,d.qacc)):
+                    self.failed=True;raise WorkerError('PLANT_UNSTABLE',','.join(warnings) or 'NONFINITE',fatal=True)
+                delta=(d.qpos[v.wq]-old)*v.radius;ds,da=float(sum(delta)/2),float((delta[1]-delta[0])/v.separation)
+                distance=ds*float(np.sinc(da/(2*math.pi)));v.odom[:2]+=distance*np.array([math.cos(v.odom[2]+da/2),math.sin(v.odom[2]+da/2)]);v.odom[2]+=da
+                aggregate.add(v._sample_contacts());seen.update(a.contacts())
+        finally:
+            if force_body is not None:d.xfrc_applied[force_body,:]=0
         self.tick+=1;v.tick=self.tick;v.contacts=aggregate.finish();mujoco.mj_forward(m,d)
         if self.tick%v.entry['model']['sensors'][0]['publishEveryTicks']==0:v.scans=[v.scan(self.tick)]
         ar={**a.read(),'tickContacts':sorted(seen),'unstable':None};snapshot.check_stable(ar,a.arm_limits)

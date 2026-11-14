@@ -3,6 +3,7 @@
 import {createHash} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
+import {writeDurable} from '../navigation2d/evidence';
 import type {ArmPlantState,ArmPropSample} from '../../../../cell-adapters/src/mock-arm';
 import type {JsonObject} from '../../../../contracts/src/index';
 import {hashJson} from '../hash';
@@ -16,7 +17,8 @@ export interface ArmTraceFile {schemaVersion:1;note:string;samples:{tick:number;
 export interface ArmPropsFile {schemaVersion:1;note:string;frame:'map';samples:ArmPropSample[]}
 type FileRef={path:string;sha256:string;samples:number};
 /** A contact plant (MuJoCo, R2a) adds the cell's evidence: the solved waypoint table, the cup trace file, the allowed contacts, the assumed release timeout and the statements that qualify them. */
-export interface ArmReportBlock {trace:FileRef;tracking:ArmPlantReport['tracking'];armPlant:ArmPlantReport;collision:ArmCollisionEvidenceRecord;
+export interface WorldArmTraceScope {method:'world-committed-trace-v1';scope:'all_world_ticks'|'retained_cache_only';publicCommittedTick:number;prefixCovered:boolean;streamFinalized:boolean;trackingStatisticsScope:'active_program_ticks';trackingSamples:number;firstTick:number|null;lastTick:number|null;samples:number;reasonCodes:string[];publication?:import('../simulation3d/world-evidence').WorldPrefixRead['publication'];hotHistoryPolicy?:{mode:'world_durable_v1';limit:16}}
+export interface ArmReportBlock {worldTrace?:WorldArmTraceScope;trace:FileRef;tracking:ArmPlantReport['tracking'];armPlant:ArmPlantReport;collision:ArmCollisionEvidenceRecord;
  waypoints?:ArmCellEvidence['waypoints'];props?:FileRef;allowedContacts?:ArmCellEvidence['allowedContacts'];releaseTimeoutTicks?:number;notes?:string[];inputs?:ArmCellEvidence['inputs']}
 type WorldRevision=ArmCollisionEvidenceRecord['worldRevision'];
 
@@ -56,15 +58,21 @@ const allowedOf=(results:readonly {allowed?:{pairs:[string,string][]}}[],fromTic
 };
 /** Writes the trace beside the run's other files and returns the block. The file is the evidence: its sha256 is in the report, `readArmTrace` re-checks it. */
 const sha=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
-async function writeEvidence(directory:string,path:string,file:ArmTraceFile|ArmPropsFile):Promise<FileRef>{const bytes=Buffer.from(JSON.stringify(file));await writeFile(join(directory,path),bytes,{mode:0o600});return {path,sha256:sha(bytes),samples:file.samples.length};}
-export async function buildArmReport(arm:ArmPlantState,plant:ArmPlantReport,directory:string,worldRevision:WorldRevision,assetRef:JsonObject,cell?:ArmCellEvidence):Promise<ArmReportBlock>{
+async function writeEvidence(directory:string,path:string,file:ArmTraceFile|ArmPropsFile,contentAddressed=false):Promise<FileRef>{
+ const bytes=Buffer.from(JSON.stringify(file)),digest=sha(bytes),storedPath=contentAddressed?path.replace(/\.json$/,`-${digest}.json`):path;
+ if(contentAddressed){const existing=await readFile(join(directory,storedPath)).catch((e:NodeJS.ErrnoException)=>{if(e.code==='ENOENT')return null;throw e;});if(existing){if(sha(existing)!==digest)throw Error('ARM_EVIDENCE_HASH_CONFLICT');}else await writeDurable(directory,storedPath,bytes);}else await writeFile(join(directory,storedPath),bytes,{mode:0o600});
+ return {path:storedPath,sha256:digest,samples:file.samples.length};
+}
+export interface ArmReportOptions {collision?:ArmCollisionEvidenceRecord;worldTrace?:WorldArmTraceScope;contentAddressed?:boolean}
+export async function buildArmReport(arm:ArmPlantState,plant:ArmPlantReport,directory:string,worldRevision:WorldRevision,assetRef:JsonObject,cell?:ArmCellEvidence,options:ArmReportOptions={}):Promise<ArmReportBlock>{
  const mujoco=plant.engine==='mujoco_3d';
- const trace=await writeEvidence(directory,ARM_TRACE_FILE,{schemaVersion:1,note:mujoco?'Per tick of a running arm program: the joints the MuJoCo plant reported (actual), the joints the program commanded, and the gripper opening it commanded (m, from the first grip). Radians.'
-  :'Per tick of a running arm program: the joints the Webots plant reported (actual) and the joints the program commanded. Radians.',samples:arm.tracking?.trace??[]} satisfies ArmTraceFile);
- const block:ArmReportBlock={trace,tracking:plant.tracking,armPlant:plant,collision:armCollisionRecord(arm,worldRevision,assetRef)};
+ const trace=await writeEvidence(directory,ARM_TRACE_FILE,{schemaVersion:1,note:options.worldTrace?options.worldTrace.scope==='all_world_ticks'?'Every committed shared-world observation, including tick zero after priming and idle/stopped ticks. Actual/commanded joints are radians; gripper command is m. Tracking statistics separately cover active program ticks only.':'Retained hot-cache samples only; full world history unavailable. This is not a complete trace.':mujoco?'Per tick of a running arm program: the joints the MuJoCo plant reported (actual), the joints the program commanded, and the gripper opening it commanded (m, from the first grip). Radians.'
+  :'Per tick of a running arm program: the joints the Webots plant reported (actual) and the joints the program commanded. Radians.',samples:arm.tracking?.trace??[]} satisfies ArmTraceFile,options.contentAddressed);
+ const block:ArmReportBlock={trace,tracking:plant.tracking,armPlant:plant,collision:options.collision?structuredClone(options.collision):armCollisionRecord(arm,worldRevision,assetRef),...options.worldTrace?{worldTrace:structuredClone(options.worldTrace)}:{}};
  if(!cell)return block;
- const props=await writeEvidence(directory,ARM_PROPS_FILE,{schemaVersion:1,note:'The cups in the arm cell at each tick of the joint trace and at the tick the arm latched (if it did): position (m) and orientation in the map frame, the support they rest on, and whether the pads hold them; read at the end of the tick.',
-  frame:'map',samples:arm.tracking?.props??[]} satisfies ArmPropsFile);
+ if(cell.allowedContactPolicy==='phase_region_v1'){const allowed:AllowedContact[]=[],tails=new Map<string,AllowedContact>();for(const interval of arm.collision?.evidence?.intervals??[])for(const rule of cell.allowedContacts){if(!rule.sweepPair||!rule.phase||!interval.result.allowed?.pairs.some(p=>p[0]===rule.sweepPair![0]&&p[1]===rule.sweepPair![1]))continue;const key=rule.sweepPair.join('\u0000')+rule.phase,prior=tails.get(key);if(prior&&prior.toTick+1===interval.firstTick)prior.toTick=interval.lastTick;else{const row:AllowedContact={pair:[...rule.sweepPair],phase:rule.phase,fromTick:interval.firstTick,toTick:interval.lastTick,revision:worldRevision.revision};allowed.push(row);tails.set(key,row);}}block.collision={...block.collision,allowedContacts:allowed,allowedContactsNote:'World contacts apply only within the recorded program phase and its admitted support region. These ranges cover retained online intervals; the named full-world sweep result independently reports complete raw-observation coverage.'};}
+ const props=await writeEvidence(directory,ARM_PROPS_FILE,{schemaVersion:1,note:options.worldTrace?options.worldTrace.scope==='all_world_ticks'?'Every committed shared-world observation: actual active free-cup poses, support contact and held flags, including initial/idle/stopped ticks.':'Retained hot-cache cup samples only; full world history unavailable.':'The cups in the arm cell at each tick of the joint trace and at the tick the arm latched (if it did): position (m) and orientation in the map frame, the support they rest on, and whether the pads hold them; read at the end of the tick.',
+  frame:'map',samples:arm.tracking?.props??[]} satisfies ArmPropsFile,options.contentAddressed);
  return {...block,waypoints:structuredClone(cell.waypoints),props,allowedContacts:structuredClone(cell.allowedContacts),releaseTimeoutTicks:cell.releaseTimeoutTicks,notes:[...cell.notes,...block.collision.assetNote?[block.collision.assetNote]:[]],...cell.inputs?{inputs:{...cell.inputs}}:{}};
 }
 export async function readArmTrace(directory:string,block:ArmReportBlock):Promise<ArmTraceFile>{

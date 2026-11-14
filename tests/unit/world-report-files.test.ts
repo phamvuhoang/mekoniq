@@ -1,0 +1,13 @@
+import {afterEach,expect,test} from 'vitest';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {MockArmPlant} from '../../packages/cell-adapters/src/mock-arm';
+import {PUMA560_SI} from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
+import {armCollisionRecord,buildArmReport,readArmTrace} from '../../packages/lab-runtime/src/v2/beverage/arm-plant-report';
+const dirs:string[]=[];afterEach(async()=>{for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
+test('transient world traces preserve legacy not_run and retain stable content-addressed report references',async()=>{
+ const directory=await mkdtemp('/tmp/b06-report-files-');dirs.push(directory);const state=MockArmPlant.initial('arm-1'),arm=new MockArmPlant(state,()=>0,()=> 'b',{take:()=>null,put:()=>{}},()=>null,PUMA560_SI,{reachTolRad:.01,settleTicks:1,followTolRad:1,followTicks:1});arm.setCollisionScene({available:true,scope:'self_scene_robot',revision:'r',profileRevision:1,tick:1,world:[],robotPoses:[]});arm.advance();arm.observe(state.q,[]);
+ const world={id:'w',revision:1,hash:'0'.repeat(64)},legacy=armCollisionRecord(state,world,{});expect(legacy.result).toBe('not_run');const full=structuredClone(state);full.tracking!.trace=[{tick:0,actualRad:[...state.q],commandedRad:[...state.q]},{tick:1,actualRad:[...state.q],commandedRad:[...state.q]}];
+ const plant={engine:'webots_3d' as const,control:'position_servo' as const,grip:'event' as const,dynamics:'assumed' as const,calibration:'not_calibrated' as const,tracking:{samples:0,peakRad:Array(6).fill(0),rmsRad:Array(6).fill(0)}},scope={method:'world-committed-trace-v1' as const,scope:'all_world_ticks' as const,publicCommittedTick:1,prefixCovered:true,streamFinalized:false,trackingStatisticsScope:'active_program_ticks' as const,trackingSamples:0,firstTick:0,lastTick:1,samples:2,reasonCodes:[]};
+ const first=await buildArmReport(full,plant,directory,world,{},undefined,{collision:legacy,worldTrace:scope,contentAddressed:true});expect(first.collision).toEqual(legacy);expect(first.worldTrace).toEqual(scope);expect(first.trace.path).not.toBe('arm-trace.json');
+ full.tracking!.trace.push({tick:2,actualRad:[...state.q],commandedRad:[...state.q]});const second=await buildArmReport(full,plant,directory,world,{},undefined,{collision:legacy,worldTrace:{...scope,publicCommittedTick:2,lastTick:2,samples:3},contentAddressed:true});expect(second.trace.path).not.toBe(first.trace.path);expect((await readArmTrace(directory,first)).samples.map(s=>s.tick)).toEqual([0,1]);expect((await readArmTrace(directory,second)).samples.map(s=>s.tick)).toEqual([0,1,2]);
+});

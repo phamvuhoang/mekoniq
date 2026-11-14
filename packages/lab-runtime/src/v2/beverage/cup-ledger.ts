@@ -25,11 +25,14 @@ function shape<T>(v:unknown,validate:(v:unknown)=>v is T):v is T {try{assertJson
 export function validateTransferObservation(value:unknown,pending:PendingTransferIdentity,policy:TransferPolicy):TransferValidation<TransferObservation>{
  if(!shape(value,observationShape))return {ok:false,reasonCodes:['OBSERVATION_SHAPE_INVALID']};
  const o=value,codes:string[]=[];
+ const worldProducer=o.producer==='mujoco_world_arm'||o.producer==='mujoco_world_tray';
+ if(worldProducer){const w=o.world,arm=o.producer==='mujoco_world_arm';if(!w||o.clockDomain!==`world:${o.bootId}`||o.seq!==String(w.tick)||o.observedMonotonicNs!==String(w.tick*20_000_000)||w.physicsSubsteps!==(w.tick+1)*10||o.observerId!==`mujoco-world-${arm?'arm':'tray'}:${o.deviceId}`||(arm?!['grasp','release'].includes(o.phase):!['receive','lost'].includes(o.phase)))codes.push('WORLD_PROVENANCE_MISMATCH');}
+ else if(o.world)codes.push('WORLD_PROVENANCE_MISMATCH');
  for(const k of ['runId','cupId','transferId','commandId','payloadHash','controlEpoch'] as const)if(o[k]!==pending[k])codes.push(`CORRELATION_${k.toUpperCase()}`);
  if(!Number.isSafeInteger(pending.controlEpoch)||pending.controlEpoch<1)codes.push('PENDING_EPOCH_INVALID');
  if(pending.to.kind==='robot'&&(!Number.isSafeInteger(pending.to.slot)||pending.to.slot!<1))codes.push('PENDING_SLOT_INVALID');
  if(!fresh(o.receivedMonotonicNs,policy)||o.quality==='stale')codes.push('OBSERVATION_STALE_OR_FUTURE');
- const receiver=o.phase==='receive';
+ const receiver=o.phase==='receive'||o.phase==='lost'&&o.producer==='mujoco_world_tray';
  if(o.deviceId!==(receiver?pending.to.id:pending.deviceId))codes.push('DEVICE_MISMATCH');
  if(o.quality==='valid'&&o.phase!=='lost'){
   if(o.parent!==targetParent(pending))codes.push('PARENT_MISMATCH');
@@ -45,6 +48,10 @@ export function validateCorrelatedTransferEvidence(value:unknown,pending:Pending
  for(const o of [giver,receiver]){const r=validateTransferObservation(o,pending,policy);if(!r.ok)codes.push(...r.reasonCodes);}
  if(giver.phase!=='release'||receiver.phase!=='receive'||giver.quality!=='valid'||receiver.quality!=='valid')codes.push('TRANSFER_PHASE_INVALID');
  if(giver.observerId===receiver.observerId)codes.push('OBSERVER_NOT_INDEPENDENT');
+ if(giver.producer.startsWith('mujoco_world_')||receiver.producer.startsWith('mujoco_world_')){
+  if(giver.producer!=='mujoco_world_arm'||receiver.producer!=='mujoco_world_tray'||!giver.world||!receiver.world||giver.bootId!==receiver.bootId||giver.clockDomain!==receiver.clockDomain||giver.world.sceneDigest!==receiver.world.sceneDigest||giver.world.tick!==receiver.world.tick||giver.world.physicsSubsteps!==receiver.world.physicsSubsteps||giver.world.physicsSubsteps!==(giver.world.tick+1)*10||dock.bootId!==giver.bootId)codes.push('WORLD_PROVENANCE_MISMATCH');
+ }
+
  if(dock.robotId!==pending.to.id||dock.slot!==pending.to.slot)codes.push('DOCK_IDENTITY_MISMATCH');
  if(!fresh(dock.receivedMonotonicNs,policy))codes.push('DOCK_STALE_OR_FUTURE');
  if(!Number.isFinite(policy.dockToleranceM)||policy.dockToleranceM<0||!dock.stationary||!dock.localizationValid||dock.errorM>policy.dockToleranceM)codes.push('DOCK_OUT_OF_TOLERANCE');

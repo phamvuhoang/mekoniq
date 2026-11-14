@@ -138,6 +138,35 @@
     "liftPoseReached": {
       "type": "boolean",
       "description": "Optional actual/modeled lift observation. Grasp alone projects attachment; arm custody confirmation requires true."
+    },
+    "world": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "const": "mujoco_3d"
+        },
+        "sceneDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30000
+        },
+        "physicsSubsteps": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 300010
+        }
+      },
+      "required": [
+        "engine",
+        "sceneDigest",
+        "tick",
+        "physicsSubsteps"
+      ]
     }
   },
   "required": [
@@ -169,7 +198,9 @@
         "mock_arm",
         "mock_amr",
         "linuxcnc_virtual_grip",
-        "gazebo_tray"
+        "gazebo_tray",
+        "mujoco_world_arm",
+        "mujoco_world_tray"
       ]
     },
     "CorrelatedTransferEvidence": {
@@ -277,5 +308,27 @@
         "lastObservationId"
       ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "producer": {
+            "enum": [
+              "mujoco_world_arm",
+              "mujoco_world_tray"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "world"
+        ],
+        "properties": {
+          "world": {}
+        }
+      }
+    }
+  ]
 }

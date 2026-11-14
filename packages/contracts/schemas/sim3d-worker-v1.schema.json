@@ -366,6 +366,50 @@
                   "targetTick"
                 ]
               }
+            },
+            "worldPerturbations": {
+              "type": "array",
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "eventId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "presetId": {
+                    "enum": [
+                      "world-dock-drift-v1",
+                      "world-cup-fall-v1"
+                    ]
+                  },
+                  "revision": {
+                    "const": 1
+                  },
+                  "targetId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "targetTick": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30000
+                  }
+                },
+                "required": [
+                  "eventId",
+                  "presetId",
+                  "revision",
+                  "targetId",
+                  "targetTick"
+                ]
+              }
+            },
+            "worldControl": {
+              "$ref": "#/definitions/WorldControlV1"
             }
           },
           "required": [
@@ -862,6 +906,110 @@
               "type": "integer",
               "minimum": 1,
               "maximum": 100000
+            },
+            "disturbances": {
+              "type": "array",
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "eventId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "presetId": {
+                    "enum": [
+                      "world-dock-drift-v1",
+                      "world-cup-fall-v1"
+                    ]
+                  },
+                  "revision": {
+                    "const": 1
+                  },
+                  "targetId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "targetTick": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30000
+                  },
+                  "runId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "bootId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "sceneDigest": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "requestId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "requestDigest": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "frame": {
+                    "const": "map"
+                  },
+                  "forceMapN": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "durationSubsteps": {
+                    "const": 10
+                  },
+                  "beforePositionM": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "afterPositionM": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "eventId",
+                  "presetId",
+                  "revision",
+                  "targetId",
+                  "targetTick",
+                  "runId",
+                  "bootId",
+                  "sceneDigest",
+                  "requestId",
+                  "requestDigest",
+                  "frame",
+                  "forceMapN",
+                  "durationSubsteps",
+                  "beforePositionM",
+                  "afterPositionM"
+                ]
+              }
             }
           },
           "required": [
@@ -1245,6 +1393,110 @@
       "required": [
         "position",
         "quaternionXyzw"
+      ]
+    },
+    "WorldControlV1": {
+      "title": "WorldControlV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "program": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "commandId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "transferId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "cupId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "sourceEventId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "payloadHash": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "controlEpoch": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "programId": {
+                  "enum": [
+                    "cup-pick",
+                    "cup-place"
+                  ]
+                },
+                "stage": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 16
+                },
+                "waypoint": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "required": [
+                "commandId",
+                "transferId",
+                "cupId",
+                "sourceEventId",
+                "payloadHash",
+                "controlEpoch",
+                "programId",
+                "stage",
+                "waypoint"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attachmentProxyPropId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "movementInterlocked": {
+          "type": "boolean"
+        },
+        "stopLatched": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "version",
+        "program",
+        "attachmentProxyPropId",
+        "movementInterlocked",
+        "stopLatched"
       ]
     }
   }

@@ -17,7 +17,7 @@ export interface NavigationController{
  route(robotId:string,pose:Pose2):P[]|null;
 }
 const DT=0.02,TURN_TOL=0.01,LEG_TOL=0.02,EPS=1e-9;
-type Step={kind:'rotate';yaw:number}|{kind:'translate';to:[number,number]};
+type Step={kind:'rotate';yaw:number}|{kind:'translate';to:[number,number];reverse?:true};
 type Plan={ok:true;steps:Step[]}|{ok:false;reason:'no_path'|'PLANNER_BUDGET_EXCEEDED'};
 /** More unusable beams than this and the scan says nothing reliable about the way ahead. */
 const MAX_INVALID_BEAM_FRACTION=0.1;
@@ -36,9 +36,17 @@ class Heap{
  * grid-diff-v1: a known-map SE2 lattice planner (8 headings, forward and rotate edges, swept footprint plus margin) with a rotate-translate-rotate follower. The map is known; LiDAR
  * only adds dynamic obstacles. It sends bounded body velocities and never uses an engine goal behavior. Limits are the fixture policy, not a hardware braking certificate.
  */
-export interface NavigationControllerOptions {ramp?:'previous-sent-command-v1'}
+export interface NavigationControllerOptions {ramp?:'previous-sent-command-v1';composition?:'single_world';worldBounds?:{minM:[number,number];maxM:[number,number]};worldTolerances?:{legM:number;positionM:number;yawRad:number};worldBraking?:{designBrakingDecelerationMps2:number;settleBeforeTranslationAdvance:true};worldTerminalApproachM?:number;worldTerminalApproachDirection?:'forward'|'reverse'}
 export function createNavigationController(scene:NavigationSceneV1,options:NavigationControllerOptions={}):NavigationController{
- const pol=scene.policy.parameters,margin=pol.safetyMarginM,res=pol.gridResolutionM,H=pol.headingCount,W=scene.world.widthM,Hm=scene.world.heightM;
+ const bounds=options.worldBounds;
+ if(bounds&&(!Array.isArray(bounds.minM)||!Array.isArray(bounds.maxM)||bounds.minM.length!==2||bounds.maxM.length!==2||options.composition!=='single_world'||scene.engine.id!=='mujoco_3d'||![...bounds.minM,...bounds.maxM].every(Number.isFinite)||bounds.minM.some((v,i)=>v>0||v< -10||bounds.maxM[i]!<=v)||bounds.maxM[0]!==scene.world.widthM||bounds.maxM[1]!==scene.world.heightM))throw Error('WORLD_NAVIGATION_BOUNDS_INVALID');
+ const tolerance=options.worldTolerances;if(tolerance&&(!bounds||[tolerance.legM,tolerance.positionM,tolerance.yawRad].some(v=>!Number.isFinite(v)||v<=0)||tolerance.legM>.02||tolerance.positionM>.05||tolerance.yawRad>.05))throw Error('WORLD_NAVIGATION_BOUNDS_INVALID');
+ const braking=options.worldBraking;if(braking&&(!bounds||!tolerance||!Number.isFinite(braking.designBrakingDecelerationMps2)||braking.designBrakingDecelerationMps2<=0||braking.designBrakingDecelerationMps2>scene.policy.parameters.maxAccelerationMps2||braking.settleBeforeTranslationAdvance!==true))throw Error('WORLD_NAVIGATION_BRAKING_INVALID');
+ const approach=options.worldTerminalApproachM;if(approach!==undefined&&(!bounds||!tolerance||!braking||approach!==.2))throw Error('WORLD_NAVIGATION_TERMINAL_APPROACH_INVALID');
+ const approachDirection=options.worldTerminalApproachDirection;if(approachDirection!==undefined&&(approach===undefined||!['forward','reverse'].includes(approachDirection)||approachDirection==='reverse'&&options.ramp!=='previous-sent-command-v1'))throw Error('WORLD_NAVIGATION_TERMINAL_APPROACH_INVALID');
+ const pol=tolerance?{...scene.policy.parameters,goalPositionToleranceM:tolerance.positionM,goalYawToleranceRad:tolerance.yawRad}:scene.policy.parameters,legTolerance=tolerance?.legM??LEG_TOL,margin=pol.safetyMarginM,res=pol.gridResolutionM,H=pol.headingCount,minX=bounds?.minM[0]??0,minY=bounds?.minM[1]??0,maxX=scene.world.widthM,maxY=scene.world.heightM,W=maxX-minX,Hm=maxY-minY;
+ const wx=(ix:number)=>minX+ix*res,wy=(iy:number)=>minY+iy*res;
+
  const nx=Math.round(W/res)+1,ny=Math.round(Hm/res)+1;
  const statics=[...scene.world.obstacles,...scene.world.boundaries].map(o=>{if(!isConvex(o.verticesM as P[]))throw new Error(`OBSTACLE_NOT_CONVEX ${o.id}`);return o.verticesM as P[];});
  const robots=new Map(scene.robots.map(r=>[r.robotId,{model:r.model,hull:r.model.footprint.verticesM as P[],radius:Math.max(...(r.model.footprint.verticesM as P[]).map(v=>Math.hypot(v[0],v[1])))}]));
@@ -55,7 +63,7 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
    const lattice=Math.abs(yaw/(2*Math.PI/H)-Math.round(yaw/(2*Math.PI/H)))<1e-9,h=lattice?((Math.round(yaw/(2*Math.PI/H))%H)+H)%H:-1;
    const shape=h>=0?shapes[h]!:undefined,body=shape?shape.body.map(([a,b])=>[x+a,y+b] as P):place(hull,x,y,yaw);
    const x0=shape?x+shape.x0:x-radius,x1=shape?x+shape.x1:x+radius,y0=shape?y+shape.y0:y-radius,y1=shape?y+shape.y1:y+radius;
-   if(x0<0||y0<0||x1>W||y1>Hm)return false; // bounding box inside the world implies every vertex is
+   if(x0<minX||y0<minY||x1>maxX||y1>maxY)return false; // bounding box inside the world implies every vertex is
    return !hit(body,x0,x1,y0,y1);
   };
   // a turn in place has the same swept shape at every cell: computed once per yaw pair at the origin, then translated
@@ -66,17 +74,17 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
    if(!at0){at0=sweptHulls(hull,[0,0,a[2]],[0,0,b[2]]);turns.set(key,at0);}
    return at0.map(h=>h.map(([x,y]):P=>[x+a[0],y+a[1]]));
   };
-  const moveFree=(a:Pose2,b:Pose2)=>swept(a,b).every(h=>{const xs=h.map(p=>p[0]),ys=h.map(p=>p[1]);return !hit(h,Math.min(...xs),Math.max(...xs),Math.min(...ys),Math.max(...ys));})&&b[0]>=0;
+  const moveFree=(a:Pose2,b:Pose2)=>swept(a,b).every(h=>{const xs=h.map(p=>p[0]),ys=h.map(p=>p[1]);return !hit(h,Math.min(...xs),Math.max(...xs),Math.min(...ys),Math.max(...ys));})&&(bounds?swept(a,b).every(h=>h.every(([x,y])=>x>=minX&&y>=minY&&x<=maxX&&y<=maxY)):b[0]>=0);
   // 2D connectivity of the robot's inscribed disc: if even that cannot get from A to B, nothing of the robot's shape can
   const inscribed=Math.min(...hull.map((p,i)=>{const q=hull[(i+1)%hull.length]!,dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy);return l===0?Infinity:Math.abs(p[0]*dy-p[1]*dx)/l;}));
   const discReach=(from:[number,number],to:[number,number])=>{
-   const cell=(v:number)=>Math.round(v/res),seen=new Uint8Array(nx*ny),blocked=new Uint8Array(nx*ny);
+   const cell=(v:number,origin:number)=>Math.round((v-origin)/res),seen=new Uint8Array(nx*ny),blocked=new Uint8Array(nx*ny);
    for(let iy=0;iy<ny;iy++)for(let ix=0;ix<nx;ix++){
-    const x=ix*res,y=iy*res;
-    if(x<inscribed||y<inscribed||x>W-inscribed||y>Hm-inscribed){blocked[iy*nx+ix]=1;continue;}
+    const x=wx(ix),y=wy(iy);
+    if(x<minX+inscribed||y<minY+inscribed||x>maxX-inscribed||y>maxY-inscribed){blocked[iy*nx+ix]=1;continue;}
     for(const o of inflated){if(x+inscribed<o.x0||x-inscribed>o.x1||y+inscribed<o.y0||y-inscribed>o.y1)continue;if(pointDistance([x,y],o.poly)<inscribed){blocked[iy*nx+ix]=1;break;}}
    }
-   const goal=cell(to[1])*nx+cell(to[0]),stack=[cell(from[1])*nx+cell(from[0])];
+   const goal=cell(to[1],minY)*nx+cell(to[0],minX),stack=[cell(from[1],minY)*nx+cell(from[0],minX)];
    while(stack.length){const k=stack.pop()!;if(k<0||k>=nx*ny||seen[k]||blocked[k])continue;seen[k]=1;if(k===goal)return true;const ix=k%nx;if(ix>0)stack.push(k-1);if(ix<nx-1)stack.push(k+1);stack.push(k-nx,k+nx);}
    return false;
   };
@@ -91,13 +99,13 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
   }
   return free(to[0],to[1],to[2])?{ok:true,steps}:{ok:false,reason:'no_path'};
  }
- function plan(robotId:string,from:Pose2,to:Pose2,obstacles:P[][]):Plan{
+ function planDirect(robotId:string,from:Pose2,to:Pose2,obstacles:P[][]):Plan{
   const {free,moveFree,discReach}=planner(robotId,obstacles),cache=new Map<number,boolean>();
   // already within the position tolerance: only the turn to the goal heading is needed (no drive away and back to a lattice cell)
   if(Math.hypot(to[0]-from[0],to[1]-from[1])<=pol.goalPositionToleranceM/2)return verified([{kind:'rotate',yaw:to[2]}],from,to,moveFree,free);
   const key=(ix:number,iy:number,h:number)=>(h*ny+iy)*nx+ix;
-  const ok=(ix:number,iy:number,h:number)=>{const k=key(ix,iy,h);let v=cache.get(k);if(v===undefined){v=ix>=0&&iy>=0&&ix<nx&&iy<ny&&free(ix*res,iy*res,h*2*Math.PI/H);cache.set(k,v);}return v;};
-  const sx=Math.round(from[0]/res),sy=Math.round(from[1]/res),sh=((Math.round(wrapPi(from[2])/(2*Math.PI/H))%H)+H)%H,gx=Math.round(to[0]/res),gy=Math.round(to[1]/res);
+  const ok=(ix:number,iy:number,h:number)=>{const k=key(ix,iy,h);let v=cache.get(k);if(v===undefined){v=ix>=0&&iy>=0&&ix<nx&&iy<ny&&free(wx(ix),wy(iy),h*2*Math.PI/H);cache.set(k,v);}return v;};
+  const sx=Math.round((from[0]-minX)/res),sy=Math.round((from[1]-minY)/res),sh=((Math.round(wrapPi(from[2])/(2*Math.PI/H))%H)+H)%H,gx=Math.round((to[0]-minX)/res),gy=Math.round((to[1]-minY)/res);
   // continuous endpoints are connected to the lattice by straight, swept-checked legs: the actual pose is never snapped
   const legFree=(a:[number,number],b:[number,number])=>{if(Math.hypot(b[0]-a[0],b[1]-a[1])<EPS)return true;const yaw=Math.atan2(b[1]-a[1],b[0]-a[0]);return free(a[0],a[1],yaw)&&free(b[0],b[1],yaw)&&moveFree([a[0],a[1],yaw],[b[0],b[1],yaw]);};
   if(!ok(sx,sy,sh)&&!free(from[0],from[1],from[2]))return {ok:false,reason:'no_path'};
@@ -115,8 +123,8 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
    if(n.x===gx&&n.y===gy){
     const t:[number,number]=[to[0],to[1]];
     // the last turn (from this arrival heading to the goal heading) must also be free here; otherwise keep searching for another approach
-    const here=Math.hypot(t[0]-n.x*res,t[1]-n.y*res)<EPS;
-    if(legFree([n.x*res,n.y*res],t)&&(!here||moveFree([n.x*res,n.y*res,n.h*2*Math.PI/H],[t[0],t[1],to[2]]))){goalKey=n.id;break;}
+    const here=Math.hypot(t[0]-wx(n.x),t[1]-wy(n.y))<EPS;
+    if(legFree([wx(n.x),wy(n.y)],t)&&(!here||moveFree([wx(n.x),wy(n.y),n.h*2*Math.PI/H],[t[0],t[1],to[2]]))){goalKey=n.id;break;}
     continue;
    }
    const relax=(ix:number,iy:number,h:number,cost:number)=>{
@@ -127,11 +135,11 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
    const [dx,dy]=dirs[n.h*(8/H)|0]!,yaw=n.h*2*Math.PI/H;
    if(H===8){
     const tx=n.x+dx,ty=n.y+dy;
-    if(ok(tx,ty,n.h)&&moveFree([n.x*res,n.y*res,yaw],[tx*res,ty*res,yaw]))relax(tx,ty,n.h,pol.distanceCostPerM*res*Math.hypot(dx,dy));
+    if(ok(tx,ty,n.h)&&moveFree([wx(n.x),wy(n.y),yaw],[wx(tx),wy(ty),yaw]))relax(tx,ty,n.h,pol.distanceCostPerM*res*Math.hypot(dx,dy));
    }
    for(const turn of [1,-1]){
     const h2=(n.h+turn+H)%H,yaw2=yaw+turn*2*Math.PI/H;
-    if(ok(n.x,n.y,h2)&&moveFree([n.x*res,n.y*res,yaw],[n.x*res,n.y*res,yaw2]))relax(n.x,n.y,h2,pol.rotationCostPerRad*2*Math.PI/H);
+    if(ok(n.x,n.y,h2)&&moveFree([wx(n.x),wy(n.y),yaw],[wx(n.x),wy(n.y),yaw2]))relax(n.x,n.y,h2,pol.rotationCostPerRad*2*Math.PI/H);
    }
   }
   if(goalKey<0)return {ok:false,reason:'no_path'};
@@ -140,21 +148,31 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
   states.reverse();
   const steps:Step[]=[];
   const start:[number,number]=[from[0],from[1]],first=states[0]!;
-  if(Math.hypot(first.x*res-start[0],first.y*res-start[1])>EPS){
-   if(!legFree(start,[first.x*res,first.y*res]))return {ok:false,reason:'no_path'};
-   steps.push({kind:'rotate',yaw:Math.atan2(first.y*res-start[1],first.x*res-start[0])},{kind:'translate',to:[first.x*res,first.y*res]});
+  if(Math.hypot(wx(first.x)-start[0],wy(first.y)-start[1])>EPS){
+   if(!legFree(start,[wx(first.x),wy(first.y)]))return {ok:false,reason:'no_path'};
+   steps.push({kind:'rotate',yaw:Math.atan2(wy(first.y)-start[1],wx(first.x)-start[0])},{kind:'translate',to:[wx(first.x),wy(first.y)]});
   }
   for(let i=1;i<states.length;i++){
    const a=states[i-1]!,b=states[i]!;
    if(a.x===b.x&&a.y===b.y){steps.push({kind:'rotate',yaw:b.h*2*Math.PI/H});continue;}
    const prev=steps.at(-1);
-   if(prev&&prev.kind==='translate'&&states[i-2]&&states[i-2]!.h===a.h&&a.h===b.h&&(states[i-1]!.x-states[i-2]!.x)*(b.y-a.y)===(states[i-1]!.y-states[i-2]!.y)*(b.x-a.x))prev.to=[b.x*res,b.y*res];
-   else steps.push({kind:'translate',to:[b.x*res,b.y*res]});
+   if(prev&&prev.kind==='translate'&&states[i-2]&&states[i-2]!.h===a.h&&a.h===b.h&&(states[i-1]!.x-states[i-2]!.x)*(b.y-a.y)===(states[i-1]!.y-states[i-2]!.y)*(b.x-a.x))prev.to=[wx(b.x),wy(b.y)];
+   else steps.push({kind:'translate',to:[wx(b.x),wy(b.y)]});
   }
   const lastCell=states.at(-1)!;
-  if(Math.hypot(to[0]-lastCell.x*res,to[1]-lastCell.y*res)>EPS)steps.push({kind:'rotate',yaw:Math.atan2(to[1]-lastCell.y*res,to[0]-lastCell.x*res)},{kind:'translate',to:[to[0],to[1]]});
+  if(Math.hypot(to[0]-wx(lastCell.x),to[1]-wy(lastCell.y))>EPS)steps.push({kind:'rotate',yaw:Math.atan2(to[1]-wy(lastCell.y),to[0]-wx(lastCell.x))},{kind:'translate',to:[to[0],to[1]]});
   steps.push({kind:'rotate',yaw:to[2]});
   return verified(steps,from,to,moveFree,free);
+ }
+
+ /** World v3 places the large terminal turn before the last feedback-driven translation. The staging point is only an internal step of the same goal. */
+ function plan(robotId:string,from:Pose2,to:Pose2,obstacles:P[][]):Plan{
+  if(approach===undefined||Math.hypot(to[0]-from[0],to[1]-from[1])<=pol.goalPositionToleranceM/2)return planDirect(robotId,from,to,obstacles);
+  const reverse=approachDirection==='reverse',offset=reverse?approach:-approach,stage:Pose2=[to[0]+offset*Math.cos(to[2]),to[1]+offset*Math.sin(to[2]),to[2]],{free,moveFree}=planner(robotId,obstacles);
+  // Neither a failed staging pose nor a blocked terminal corridor may fall back to an unchecked direct leg.
+  if(!free(...stage)||!free(...to)||!moveFree(stage,to))return {ok:false,reason:'no_path'};
+  const prefix=planDirect(robotId,from,stage,obstacles);if(!prefix.ok)return prefix;
+  return verified([...prefix.steps,{kind:'translate',to:[to[0],to[1]],...reverse?{reverse:true as const}:{}},{kind:'rotate',yaw:to[2]}],from,to,moveFree,free);
  }
 
  /** Path still to be driven: remaining leg lengths plus 0.1 m per rad of turning. A detour that first moves away from the goal still makes this fall. */
@@ -177,10 +195,10 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
     if(Math.abs(err)<=(final?pol.goalYawToleranceRad/2:TURN_TOL)&&Math.abs(vel[1])<=pol.stoppedAngularRadps){goal.stepIndex+=1;continue;}
     w=Math.sign(err)*Math.min(k.maxAngularRadps,Math.sqrt(2*aAng*Math.abs(err)),Math.abs(err)/DT*0.5);
    }else{
-    const dx=step.to[0]-pose[0],dy=step.to[1]-pose[1],d=Math.hypot(dx,dy),herr=wrapPi(Math.atan2(dy,dx)-pose[2]);
-    if(d<=LEG_TOL){goal.stepIndex+=1;continue;}
+    const dx=step.to[0]-pose[0],dy=step.to[1]-pose[1],d=Math.hypot(dx,dy),herr=wrapPi(Math.atan2(dy,dx)+(step.reverse?Math.PI:0)-pose[2]);
+    if(d<=legTolerance){if(braking&&Math.abs(vel[0])>pol.stoppedLinearMps)break;goal.stepIndex+=1;continue;}
     if(Math.abs(herr)>0.3)w=Math.sign(herr)*Math.min(k.maxAngularRadps,Math.sqrt(2*aAng*Math.abs(herr)));
-    else{v=Math.min(k.maxLinearMps,Math.sqrt(2*aLin*Math.max(0,d-LEG_TOL/2)),d/DT*0.5);w=Math.max(-k.maxAngularRadps,Math.min(k.maxAngularRadps,2*herr/(DT*10)));}
+    else{v=(step.reverse?-1:1)*Math.min(k.maxLinearMps,Math.sqrt(2*(braking?.designBrakingDecelerationMps2??aLin)*Math.max(0,d-legTolerance/2)),d/DT*0.5);w=Math.max(-k.maxAngularRadps,Math.min(k.maxAngularRadps,2*herr/(DT*10)));}
    }
    break;
   }
@@ -263,7 +281,7 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
     const dist=Math.hypot(goal.target[0]-pose[0],goal.target[1]-pose[1]),yawErr=Math.abs(wrapPi(goal.target[2]-pose[2]));
     const settled=dist<=pol.goalPositionToleranceM&&yawErr<=pol.goalYawToleranceRad&&Math.abs(vel[0])<=pol.stoppedLinearMps&&Math.abs(vel[1])<=pol.stoppedAngularRadps;
     goal.hold=settled?goal.hold+1:0;
-    if(goal.hold>=pol.arrivalHoldTicks){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'arrived',reason:null});continue;}
+    if(approachDirection!=='reverse'&&goal.hold>=pol.arrivalHoldTicks){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'arrived',reason:null});continue;}
     // sensors: no fresh scan means no clear path; a dynamic point inside the stopping corridor means wait
     let reason:string|null=null,hold=goal.waiting;
     const m=robots.get(robotId)!.model;
@@ -273,29 +291,34 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
      // unknown is not free: every expected sensor must report, as itself, and mostly with usable beams ('no_return' is a valid clear view, 'invalid' is not)
      else if(scans.length!==m.sensors.length||scans.some((s,i)=>s.sensorId!==m.sensors[i]!.id||s.states.length===0||s.states.filter(x=>x==='invalid').length/s.states.length>MAX_INVALID_BEAM_FRACTION)){hold=true;reason='SENSOR_INVALID';}
     }
-    const next=goal.steps?goal.steps[goal.stepIndex]:undefined;
+    let next=goal.steps?goal.steps[goal.stepIndex]:undefined;
+    // v4 guards the step follow() can actually select after retiring already-settled steps this tick.
+    if(approachDirection==='reverse'&&goal.steps){let i=goal.stepIndex;while(i<goal.steps.length){const st=goal.steps[i]!,final=i===goal.steps.length-1,done=st.kind==='rotate'?Math.abs(wrapPi(st.yaw-pose[2]))<=(final?pol.goalYawToleranceRad/2:TURN_TOL)&&Math.abs(vel[1])<=pol.stoppedAngularRadps:Math.hypot(st.to[0]-pose[0],st.to[1]-pose[1])<=legTolerance&&Math.abs(vel[0])<=pol.stoppedLinearMps;if(!done)break;i++;}next=goal.steps[i];}
     if(!hold&&next&&dyn.length){
      const speed=Math.max(Math.abs(vel[0]),0.05),scanAge=obs.scans.length?tick-Math.min(...obs.scans.map(s=>s.tick)):0;
      const stopDist=speed*speed/(2*pol.maxAccelerationMps2)+speed*(scanAge*DT+DT)+margin;
-     const heading=next.kind==='translate'?Math.atan2(next.to[1]-pose[1],next.to[0]-pose[0]):pose[2];
-     const ahead=convexHull([...place(robots.get(robotId)!.hull,pose[0],pose[1],heading),...place(robots.get(robotId)!.hull,pose[0]+stopDist*Math.cos(heading),pose[1]+stopDist*Math.sin(heading),heading)]);
+     const heading=next.kind==='translate'?Math.atan2(next.to[1]-pose[1],next.to[0]-pose[0]):pose[2],bodyHeading=next.kind==='translate'&&next.reverse?wrapPi(heading+Math.PI):heading;
+     const ahead=convexHull([...place(robots.get(robotId)!.hull,pose[0],pose[1],bodyHeading),...place(robots.get(robotId)!.hull,pose[0]+stopDist*Math.cos(heading),pose[1]+stopDist*Math.sin(heading),bodyHeading)]);
      // a turn in place sweeps the whole footprint through the yaw change, not just the body as it stands now
-     const turnTo=next.kind==='rotate'?next.yaw:Math.abs(wrapPi(heading-pose[2]))>0.3?heading:null;
+     const turnTo=next.kind==='rotate'?next.yaw:Math.abs(wrapPi(bodyHeading-pose[2]))>0.3?bodyHeading:null;
      const sweptTurn=turnTo!==null&&Math.abs(wrapPi(turnTo-pose[2]))>0.02?sweptHulls(robots.get(robotId)!.hull,pose,[pose[0],pose[1],turnTo]):[];
      if(dyn.some(p=>pointDistance(p,ahead)<=0.05)||dyn.some(p=>sweptTurn.some(h=>pointDistance(p,h)<=margin))){hold=true;reason='DYNAMIC_OBSTACLE';if(!goal.waiting)goal.waiting=true;}
     }
-    if(!hold&&m.sensors.length&&invalidAhead(robotId,obs,pose,!next||next.kind==='rotate'||Math.abs(wrapPi(Math.atan2(next.to[1]-pose[1],next.to[0]-pose[0])-pose[2]))>0.3?null:Math.atan2(next.to[1]-pose[1],next.to[0]-pose[0]))){hold=true;reason='SENSOR_INVALID';}
+    if(approachDirection==='reverse'&&!rearCoverage(robotId,obs,tick)){hold=true;reason??='SENSOR_INVALID';}
+    if(!hold&&m.sensors.length&&invalidAhead(robotId,obs,pose,!next||next.kind==='rotate'||Math.abs(wrapPi(Math.atan2(next.to[1]-pose[1],next.to[0]-pose[0])+(next.reverse?Math.PI:0)-pose[2]))>0.3?null:Math.atan2(next.to[1]-pose[1],next.to[0]-pose[0]))){hold=true;reason='SENSOR_INVALID';}
     // progress and deadline
     const metric=remaining(goal,pose,dist);
     // waiting for a reservation (no route exists until the zone is granted) is the domain's timeout to enforce, not lack of progress; the goal deadline still bounds it
     if(!goal.steps||goal.zoneWait)reason??='RESERVATION_PENDING';
     else if(metric<goal.best-0.01){goal.best=metric;goal.stagnant=0;}else goal.stagnant+=1;
-    if(goal.stagnant>=pol.noProgressTicks&&goal.hold===0){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:reason??'NO_PROGRESS'});continue;}
+    if(goal.stagnant>=pol.noProgressTicks&&(goal.hold===0||approachDirection==='reverse')){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:reason??'NO_PROGRESS'});continue;}
     if(tick-goal.startTick>=pol.goalDeadlineTicks){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:'GOAL_DEADLINE'});continue;}
     if(!hold&&goal.waiting)goal.waiting=false;
-    const f=follow(robotId,goal,pose,vel,hold||!goal.steps);
+    // v4 arrival observes the acceptance window anew on every tick; terminal zero obeys the same ramp as motion.
+    const settle=approachDirection==='reverse'&&goal.hold>=pol.arrivalHoldTicks&&!hold,f=follow(robotId,goal,pose,vel,hold||!goal.steps||settle);
     velocities.push({robotId,vMps:f.v,omegaRadps:f.w});
-    decisions.push({robotId,commandId:goal.commandId,status:'executing',reason});
+    if(settle&&f.v===0&&f.w===0){goals.delete(robotId);decisions.push({robotId,commandId:goal.commandId,status:'arrived',reason:null});}
+    else decisions.push({robotId,commandId:goal.commandId,status:'executing',reason});
    }
    // All outputs, including explicit terminal/hold zeros, become the next ramp origin. A failed send terminates the run.
    if(options.ramp==='previous-sent-command-v1')for(const v of velocities)sent.set(v.robotId,[v.vMps,v.omegaRadps]);
@@ -303,6 +326,10 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
   },
  };
 
+ // Reverse is admitted only with an actual full rear view, not a truncated scan whose missing beams look clear.
+ function rearCoverage(robotId:string,obs:IRSimSnapshotV1['robots'][number],tick:number):boolean{
+  return robots.get(robotId)!.model.sensors.some((m,i)=>{const s=obs.scans[i];return m.fieldOfViewRad>=2*Math.PI-1e-6&&m.beamCount>=360&&s?.sensorId===m.id&&Number.isSafeInteger(s.tick)&&s.tick<=tick&&tick-s.tick<=pol.scanFreshnessTicks&&s.states.length===m.beamCount&&s.rangesM.length===m.beamCount&&Number.isFinite(s.angleMinRad)&&Number.isFinite(s.angleIncrementRad)&&s.angleIncrementRad>0&&Math.abs(s.angleIncrementRad*m.beamCount-2*Math.PI)<=s.angleIncrementRad*1.1;});
+ }
  // world-frame direction and kind of every beam of every sensor
  function beams(robotId:string,obs:IRSimSnapshotV1['robots'][number],pose:Pose2,visit:(angle:number,range:number|null,state:string,origin:P,min:number)=>void){
   const model=robots.get(robotId)!.model;

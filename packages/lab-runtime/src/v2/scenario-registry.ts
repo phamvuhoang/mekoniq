@@ -75,6 +75,7 @@ export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<str
  ['WB-BV01',{id:'WB-BV01',revision:1,title:'Espresso and iced milk coffee on the Webots arm: recipe -> verify -> arm (position servo) -> robot -> table',...bv01,basedOn:{id:'BV01',revision:1}}],
  // MuJoCo arm (R2a): the BV01 business template with the arm as a MuJoCo xArm 6 that grips the cup by contact; the AMR and the coffee machine stay mocks. Only engineering-mujoco-arm-v1 runs it,
  // and only a runtime given MEKONIQ_LAB_MUJOCO=1 offers it (scenario-matrix.ts scenarioOffered).
+ ['MJ-CELL-BV01',{id:'MJ-CELL-BV01',revision:1,title:'Two coffees through one continuous MuJoCo world with Source custody',...bv01,basedOn:{id:'BV01',revision:1}}],
  ['MJ-BV01',{id:'MJ-BV01',revision:1,title:'Espresso and iced milk coffee on the MuJoCo arm: recipe -> verify -> arm (contact grip) -> robot -> table',...bv01,basedOn:{id:'BV01',revision:1}}],
 ]);
 export const scenarioHash=(d:ScenarioDefinition)=>hashJson(d);

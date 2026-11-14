@@ -983,13 +983,7 @@ export interface RunVerification {
   }[];
 }
 
-/**
- * This interface was referenced by `TransferObservation`'s JSON-Schema
- * via the `definition` "SimProducer".
- */
-export type SimProducer = 'mock_arm' | 'mock_amr' | 'linuxcnc_virtual_grip' | 'gazebo_tray';
-
-export interface TransferObservation {
+export type TransferObservation = {
   observationId: string;
   runId: string;
   cupId: string;
@@ -1017,9 +1011,22 @@ export interface TransferObservation {
    * Optional actual/modeled lift observation. Grasp alone projects attachment; arm custody confirmation requires true.
    */
   liftPoseReached?: boolean;
-}
+  world?: {
+    engine: 'mujoco_3d';
+    sceneDigest: string;
+    tick: number;
+    physicsSubsteps: number;
+  };
+};
 /**
- * This interface was referenced by `TransferObservation`'s JSON-Schema
+ * This interface was referenced by `undefined`'s JSON-Schema
+ * via the `definition` "SimProducer".
+ */
+export type SimProducer =
+  'mock_arm' | 'mock_amr' | 'linuxcnc_virtual_grip' | 'gazebo_tray' | 'mujoco_world_arm' | 'mujoco_world_tray';
+
+/**
+ * This interface was referenced by `undefined`'s JSON-Schema
  * via the `definition` "CorrelatedTransferEvidence".
  */
 export interface CorrelatedTransferEvidence {
@@ -1036,7 +1043,7 @@ export interface CorrelatedTransferEvidence {
   };
 }
 /**
- * This interface was referenced by `TransferObservation`'s JSON-Schema
+ * This interface was referenced by `undefined`'s JSON-Schema
  * via the `definition` "CupPhysicalState".
  */
 export interface CupPhysicalState {
@@ -1181,6 +1188,8 @@ export interface TwinCupState {
    */
   quaternionXyzw?: number[];
   restingOn?: string | null;
+  held?: boolean;
+  sceneDigest?: string;
 }
 /**
  * Free simulated payload observation in map coordinates; declared support is a reference frame, never custody. Digests identify admitted file bytes.

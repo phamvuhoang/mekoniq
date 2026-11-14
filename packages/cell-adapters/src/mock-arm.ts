@@ -73,7 +73,9 @@ export interface ArmCollisionEvidence {intervals:ArmCollisionInterval[];worlds:R
  /** A collision latches the arm, so this is the immutable triggering failure even if later scene snapshots change. */
  firstFailure?:{tick:number;fromQ:number[];toQ:number[];heldCupId:string|null;worldRevision:string;world:ArmObstacle[];scene:ArmSceneSnapshot|null;result:SweepResult}}
 interface Program {commandId:string;payloadHash:string;controlEpoch:number;program:string;index:number;state:'running'|'completed'|'failed'|'unknown';waiting:number;evidence:TransferEvidence;accepted:CellAcceptance}
-export interface ArmPlantState {deviceId:string;q:number[];gripper:'open'|'closed';holding:string|null;bootId:string;seq:number;tick:number;programs:Program[];modifiers:ArmFault[];
+export interface ArmPlantState {
+ /** Source shared-world derived caches only; full observations remain in the durable world stream. */historyRetention?:{mode:'world_durable_v1';limit:16;droppedTraceSamples:number;droppedPropsSamples:number;droppedDebugSamples:number};
+ deviceId:string;q:number[];gripper:'open'|'closed';holding:string|null;bootId:string;seq:number;tick:number;programs:Program[];modifiers:ArmFault[];
  trace:{tick:number;q:number[];tcp:[number,number,number]}[];limitsOk:boolean;commandedQ?:number[];stop?:ArmStopState;tracking?:ArmTrackingState;
  collision?:{/** Manually injected obstacles in arm-base coordinates; scene refresh does not replace these. */world:ArmObstacle[];checks:number;last:SweepResult|null;scene?:ArmSceneSnapshot;evidence?:ArmCollisionEvidence};
  plantId?:'webots_arm'|'mujoco_arm';/** Contact mode: the gripper opening commanded to the plant (m). Only a grip or a release step writes it; stop() and halt() never do. */gripperCommandM?:number;
@@ -116,7 +118,7 @@ export class MockArmPlant {
   // A tracked plant never rests exactly: an interval also absorbs ticks of a clear, nearly still arm (within TRACKED_REST_RAD of where the interval began, about 0.2 mm at 1 m reach, below the 0.5 mm sweep tolerance). Motion and every collision get their own record.
   const still=(a:number[],b:readonly number[])=>a.every((v,i)=>Math.abs(v-b[i]!)<=TRACKED_REST_RAD);
   const resting=this.tracking!==undefined&&result.ok&&last!==undefined&&last.result.ok&&still(last.fromQ,s.q)&&still(last.fromQ,toQ);
-  if(last&&last.lastTick===s.tick-1&&last.worldRevision===worldRevision&&last.sceneRevision===sceneRevision&&last.heldCupId===heldCupId&&(resting||same(last.fromQ,s.q)&&same(last.toQ,toQ))){last.lastTick=s.tick;if(resting)last.toQ=[...toQ];}
+  if(last&&last.lastTick===s.tick-1&&last.worldRevision===worldRevision&&last.sceneRevision===sceneRevision&&last.heldCupId===heldCupId&&hashJson(last.result.allowed?.pairs??[])===hashJson(result.allowed?.pairs??[])&&(resting||same(last.fromQ,s.q)&&same(last.toQ,toQ))){last.lastTick=s.tick;if(resting)last.toQ=[...toQ];}
   else if(e.intervals.length<ARM_COLLISION_TRACE_LIMIT){
    e.worlds[worldRevision]??=structuredClone(world);
    e.intervals.push({firstTick:s.tick,lastTick:s.tick,fromQ:[...s.q],toQ:[...toQ],heldCupId,worldRevision,sceneRevision,result:structuredClone(result)});
@@ -127,10 +129,10 @@ export class MockArmPlant {
   }
  }
  /** The plant behind a tracked arm is gone (worker lost): latch the arm and leave every running program unknown. Nothing is resent, nothing is released. */
- halt(reason:string,detail?:string){this.stop(reason);if(detail!==undefined)this.state.stop!.detail=detail;}
- private stop(reason:string){
+ halt(reason:string,detail?:string,observedTick=this.state.tick){if(!Number.isSafeInteger(observedTick)||observedTick<this.state.tick||observedTick>this.state.tick+1)throw Error('ARM_STOP_TICK_INVALID');this.stop(reason,observedTick);if(detail!==undefined)this.state.stop!.detail=detail;}
+ private stop(reason:string,observedTick=this.state.tick){
   const s=this.state,events=s.stop?.events??[];
-  for(const stage of ['requested','acknowledged','observed'] as const)events.push({tick:s.tick,stage,reason,provenance:'modelled'});
+  for(const stage of ['requested','acknowledged','observed'] as const)events.push({tick:observedTick,stage,reason,provenance:'modelled'});
   s.stop={latched:true,reconcileRequired:true,reason,events};
   for(const p of s.programs.filter(x=>x.state==='running')){p.state='unknown';Object.assign(p.evidence,{stopReason:reason,stopProvenance:'modelled',actualJointsRad:[...s.q],commandedJointsRad:s.commandedQ??[...s.q]});this.emit(p,'outcome_unknown',[reason],{...p.evidence});}
   this.hold();

@@ -182,3 +182,5 @@ export const validateWorldSceneShape=(value:unknown):boolean=>ajv.validate('lab-
 
 export const validateWorldEvidenceShape=ajv.getSchema('world-evidence-v1.schema.json')!;
 export const validateWorldEvidenceRecordShape=ajv.getSchema('world-evidence-v1.schema.json#/definitions/WorldEvidenceRecord')!;
+
+export const validateWorldControlShape=ajv.getSchema('sim3d-worker-v1.schema.json#/definitions/WorldControlV1')!;
