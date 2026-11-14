@@ -1,4 +1,4 @@
-// IR-SIM 2D navigation evidence (navigation-run-evidence-v1) of a run report, as the Lab may show it. The document is validated against the synced source
+// Navigation evidence (navigation-run-evidence-v1) for the providers this Lab renders. The document is validated against the synced source
 // schema; anything unknown is unsupported, and "complete" needs every signal to agree (server completeness, end record, gaps, listing, sensor publications).
 // Imported folders are a trust boundary: every listed chunk that is present must match its size and SHA-256 (else refused); one that is absent makes the
 // imported copy incomplete. The Lab never reads chunk contents to upgrade a verdict.
@@ -23,8 +23,10 @@ const STREAMS=['trajectory','sensors','control','collisions'] as const;
 /** The evidence document, or null when absent or not a navigation-run-evidence-v1 the Lab knows (closed schema, a provider this Lab knows, safe chunk names). */
 /** The engines whose evidence the Lab renders; an unknown id is unsupported, never shown under another name. */
 export const NAVIGATION_PROVIDERS=['irsim_2d','webots_3d'] as const;
-/** The engine's version, which the two branches of the evidence schema name differently (version / engineVersion). */
-export const engineVersionOf=(e:NavigationRunEvidenceV1['engine'])=>e.id==='webots_3d'?e.engineVersion:e.version;
+/** Version field for each synced source engine branch; knowing its version does not admit a provider for rendering. */
+export const engineVersionOf=(e:NavigationRunEvidenceV1['engine'])=>{
+ switch(e.id){case 'irsim_2d':return e.version;case 'webots_3d':case 'mujoco_3d':return e.engineVersion;}
+};
 export function navigationEvidence(report:RunReport):NavigationRunEvidenceV1|null{
  const n=report.navigation2d;
  return validEvidence(n)&&(NAVIGATION_PROVIDERS as readonly string[]).includes(n.engine.id)&&STREAMS.every(s=>n.artifacts[s].every(a=>safeArtifactPath(a.path)&&!a.path.includes('/')))?n:null;

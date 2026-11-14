@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/engineering.ts @ eef984e7b71ab68f67eda2d9c8d15b0f6c26d0dc (sha256 852e21d4a0ef50110f8bcb534992bb417b3d56b59bfdec0c3d106c069bb42735). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/engineering.ts @ 5235791218c6330c358676fe36ae0ed978be3654 (sha256 30d404a6582ba56b4793dba7e12450a616dc13fe8ac34dea38d0bd5eac87b319). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
 import type {LabProjectV2,AssetRevision} from './types';
 export type CoffeeRecipe=Record<string,unknown>;
@@ -87,7 +87,11 @@ export type Joint =
  * via the `definition` "EngineeringProfile".
  */
 export type EngineeringProfile =
-  'engineering-rigid-v1' | 'engineering-contact-v1' | 'engineering-irsim-2d-v1' | 'engineering-webots-3d-v1';
+  | 'engineering-rigid-v1'
+  | 'engineering-contact-v1'
+  | 'engineering-irsim-2d-v1'
+  | 'engineering-webots-3d-v1'
+  | 'engineering-mujoco-3d-v1';
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
  * via the `definition` "BundleReceipt".

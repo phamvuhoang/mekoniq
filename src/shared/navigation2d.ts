@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ eef984e7b71ab68f67eda2d9c8d15b0f6c26d0dc (sha256 60af8dcd5ffbe3bf3e8df84737266546c8e10cff8e230fca55447f89229831a5). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 5235791218c6330c358676fe36ae0ed978be3654 (sha256 f7ba8fa2057866239ba9f4441dfa5b2ca65938c820bd0d46eac42076c8ac8208). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -706,6 +706,18 @@ export interface NavigationSceneV11 {
           path: string;
           sha256: Digest;
         };
+        stopPolicyRef?: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
+        controllerPolicyRef?: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
       };
   policy: NavigationPolicyV1;
   /**
@@ -882,6 +894,39 @@ export interface NavigationRunEvidenceV11 {
         pythonVersion: string;
         platform: string;
         lockDigest: Digest;
+      }
+    | {
+        id: 'mujoco_3d';
+        engineVersion: '3.17.0';
+        pythonVersion: string;
+        platform: string;
+        lockDigest: Digest;
+        timestepMs: 2;
+        substeps: 10;
+        stopPolicyRef: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
+        physicsProfileRef: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
+        loadProfileRef: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
+        controllerPolicyRef: {
+          id: string;
+          revision: number;
+          path: string;
+          sha256: Digest;
+        };
       };
   /**
    * Optional (added with B05): the versions a rerun must match besides the engine and lock.
@@ -903,7 +948,7 @@ export interface NavigationRunEvidenceV11 {
   seed: {
     runSeed: number;
     engineSeed: number;
-    engineSeedAlgorithm: 'irsim-env-seed-v1' | 'webots-worldinfo-seed-v1';
+    engineSeedAlgorithm: 'irsim-env-seed-v1' | 'webots-worldinfo-seed-v1' | 'mujoco-identity-seed-v1';
     /**
      * @minItems 0
      * @maxItems 32

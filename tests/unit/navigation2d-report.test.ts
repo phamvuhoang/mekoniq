@@ -2,7 +2,8 @@
 // old reports "unavailable", unknown schemas unsupported, and imported folders verified chunk by chunk (hash fails closed, a missing chunk is incomplete).
 import {expect,test,vi} from 'vitest';
 vi.hoisted(()=>{(globalThis as Record<string,unknown>).localStorage={getItem:()=>'en',setItem:()=>{}};});
-import {navigationEvidenceView,importNavigationEvidence,navigationRows} from '../../src/reports/navigation2d';
+import {navigationEvidenceView,importNavigationEvidence,navigationRows,engineVersionOf,NAVIGATION_PROVIDERS} from '../../src/reports/navigation2d';
+import type {NavigationRunEvidenceV1} from '../../src/shared/navigation2d';
 import type {RunReport} from '../../src/scenarios/controls';
 import {chunks,D,evidence,project,report} from '../support/navigation-report';
 import {reportCsv,reportHtml} from '../../src/reports/metrics';
@@ -137,4 +138,19 @@ test('a Webots report: provider webots_3d from the evidence, supported, and the 
 test('a Webots report whose manifest names another engine version is a provider mismatch, never shown as the evidence says',()=>{
  const r=webotsReport();(r.manifest as unknown as {backends:{version:string}[]}).backends[0]!.version='R2025b';
  expect(navigationEvidenceView(r).reasons).toContain('IDENTITY_MISMATCH:provider');
+});
+
+const mujocoEngine:NavigationRunEvidenceV1['engine']={id:'mujoco_3d',engineVersion:'3.17.0',timestepMs:2,substeps:10,pythonVersion:'3.11.15',platform:'darwin-arm64',lockDigest:D('f'),
+ stopPolicyRef:{id:'serve-mobile-stop-v1',revision:1,path:'mobile-stop-policy.json',sha256:D('a')},controllerPolicyRef:{id:'serve-mobile-controller-v1',revision:1,path:'mobile-controller-policy.json',sha256:D('b')},loadProfileRef:{id:'cup-center',revision:1,path:'cup-center.json',sha256:D('c')},physicsProfileRef:{id:'serve-drive-contact-v1',revision:1,path:'drive-contact-profile.json',sha256:D('d')}};
+test('engine version follows each explicit source schema branch, including synced MuJoCo',()=>{
+ expect(engineVersionOf(report().navigation2d!.engine)).toBe('2.12.0');
+ expect(engineVersionOf(webotsReport().navigation2d!.engine)).toBe('R2025a');
+ expect(engineVersionOf(mujocoEngine)).toBe('3.17.0');
+});
+test('synced MuJoCo engine typing does not admit or mislabel a report before mobile UI support',()=>{
+ const n=report().navigation2d!;n.engine=mujocoEngine;n.seed.engineSeedAlgorithm='mujoco-identity-seed-v1';delete n.seed.engineRng;
+ const r=report({navigation2d:n});
+ expect(NAVIGATION_PROVIDERS).toEqual(['irsim_2d','webots_3d']);
+ expect(navigationEvidenceView(r)).toEqual({supported:false,provider:null,complete:false,reasons:['NAVIGATION_EVIDENCE_SCHEMA_UNKNOWN']});
+ expect(navigationRows(r)).toEqual([]);expect(navigationHtml(r)).not.toMatch(/IR-SIM|Webots/);
 });
