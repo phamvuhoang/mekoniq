@@ -17,3 +17,9 @@ export function validateWorldDisturbance(snapshot:Sim3DSnapshotV1,command:WorldE
  if(!preset||intent.presetId!==admitted!.presetId||intent.revision!==admitted!.revision||intent.targetId!==admitted!.targetId||intent.targetTick!==snapshot.tick||!intent.eventId||r.eventId!==intent.eventId||r.presetId!==intent.presetId||r.revision!==intent.revision||r.targetId!==intent.targetId||r.targetTick!==snapshot.tick||r.runId!==snapshot.runId||r.bootId!==snapshot.bootId||r.sceneDigest!==snapshot.sceneDigest||r.requestId!==`world-${snapshot.tick+2}`||r.requestDigest!==hashJson(command)||r.frame!=='map'||r.durationSubsteps!==preset.durationSubsteps||hashJson(r.forceMapN)!==hashJson(preset.forceMapN)||hashJson(r.beforePositionM)!==hashJson(at(previous!,intent.targetId))||hashJson(r.afterPositionM)!==hashJson(at(snapshot,intent.targetId)))fail();
  return admitted!.presetId;
 }
+
+export type WorldExperimentId='world-nominal-v1'|keyof typeof WORLD_DISTURBANCE_PRESETS;
+/** Fixed cup from the registered two-cup cell workload; no browser target, force, timing or same-run edit. */
+export function worldExperiment(input:{worldExperimentId?:string;backendSetId:string;scenarioId:string;mode:string}):CellDisturbanceOption|undefined{
+ const id=input.worldExperimentId;if(id===undefined)return undefined;if(input.backendSetId!=='engineering-mujoco-cell-v1'||input.scenarioId!=='MJ-CELL-BV01'||input.mode!=='simulation'||id!=='world-nominal-v1'&&!Object.hasOwn(WORLD_DISTURBANCE_PRESETS,id))throw Error('WORLD_EXPERIMENT_SCOPE_INVALID');return id==='world-nominal-v1'?undefined:{presetId:id as CellDisturbanceOption['presetId'],cupId:'cup-1'};
+}

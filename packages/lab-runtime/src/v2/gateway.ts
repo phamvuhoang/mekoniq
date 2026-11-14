@@ -1,6 +1,8 @@
+import {exportWebReplay,readReplayInput} from './replay/export';
+import type {ReplayManifest} from './replay/reader';
 import {PAYLOAD_EXPERIMENTS} from './simulation3d/payload-experiments';
-import {randomBytes,randomUUID} from 'node:crypto';
-import {rm,writeFile} from 'node:fs/promises';
+import {createHash,randomBytes,randomUUID} from 'node:crypto';
+import {mkdir,rm,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import type {IncomingMessage,ServerResponse} from 'node:http';
 import {admitBackend,defaultCatalog,type CapabilityCatalog,type Access} from './capabilities';
@@ -15,7 +17,7 @@ import {findReclaim,proofHash,saveReclaim} from './reclaim-store';
 import {ENGINEERING_CAPABILITY,EngineeringError,type EngineeringService,type LockedEngineering} from '../engineering/gateway';
 /** Hooks into the v1 gateway so v2 shares its pairing token, body parser and response helper without importing it. */
 export interface V2Deps {
- sourceCommit:string;schemaHash:string;now:()=>number;catalog?:CapabilityCatalog;
+ worldExperiments?:boolean;sourceCommit:string;schemaHash:string;now:()=>number;catalog?:CapabilityCatalog;
  /** Parent directory for per-run journals; each run gets a fresh server-chosen subdirectory. */
  directory:string;
  /** Backends whose execution has been switched on. Schema-only builds enable none, so every run is denied before any backend starts. */
@@ -52,11 +54,13 @@ export function createV2Gateway(deps:V2Deps){
  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
  const sessions=new Map<string,{csrf:string;expiresAt:number}>();
  // Runs are owned by the v2 pairing session that created them; another session sees 404, exactly as for an unknown id.
+ let replayClosing=false;const replayWork=new Map<string,{abort:AbortController;done:Promise<void>;finish():void}>();
+ const replayPackages=new Map<string,{runId:string;directory:string;manifest:ReplayManifest}>(),replayPending=new Map<string,number>();
  const runs=new Map<string,{owner:string;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput}>();let creating=0;
  // Readiness and creation share cleanup. Concurrent callers wait for the worker to close before probing its slot.
  let expiryCleanup=Promise.resolve();
  const closeExpiredRuns=()=>expiryCleanup=expiryCleanup.then(async()=>{
-  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});}}
+  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});for(const [key,p]of replayPackages)if(p.runId===id){replayPackages.delete(key);await rm(p.directory,{recursive:true,force:true});}}}
  });
  const reclaiming=new Set<string>();
  let pairingFailures:number[]=[];
@@ -72,10 +76,11 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(method==='GET'&&sub==='/health')return send(response,200,{
    protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
-   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true,pacedStep:true},deployment:{bind:deps.deployment?.bind??'loopback'},
+   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true,pacedStep:true,replayExport:{version:1,available:deps.worldExperiments===true,maxVersionsPerRun:2,maxRetainedVersions:8,maxConcurrentExports:2,maxPackageBytes:25*1024*1024,backendSetIds:['engineering-mujoco-cell-v1']}},deployment:{bind:deps.deployment?.bind??'loopback'},
    ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?{mobilePayloadExperiments:Object.entries(PAYLOAD_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,maxLinearMps:e.maxLinearMps,maxAngularRadps:e.maxAngularRadps,calibration:'not_calibrated',requiresNewRun:true}))}:{},
+   ...deps.worldExperiments?{worldExperiments:[{id:'world-nominal-v1',requiresNewRun:true},{id:'world-dock-drift-v1',requiresNewRun:true,cause:'registered_external_impulse'},{id:'world-cup-fall-v1',requiresNewRun:true,cause:'registered_external_impulse'}]}:{},
    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
-   capabilities:[...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
+   capabilities:[...deps.worldExperiments?['web_replay_package_v1','sim3d_world_experiments_v1']:[],...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
     // the arm plant needs no engineering bundle: its scene is built from the run's project
     ...enabled.has('webots_arm')&&catalog.backends.some(b=>b.id==='webots_arm'&&b.installed&&b.reachable)?['sim3d_arm_v1']:[],
     ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?['sim3d_mujoco_mobile_v1','sim3d_payload_experiments_v1']:[],
@@ -160,6 +165,28 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    await closeExpiredRuns();
    return send(response,200,await collectReadiness(context,readinessOptions()));
   }
+  const replayRoute=new RegExp(`^/runs/(${UUID})/replay(?:/([a-f0-9-]{36})(?:/assets/(0|[1-9][0-9]{0,2}))?)?$`).exec(sub);
+  if(replayRoute){
+   const [,runId,exportId,index]=replayRoute,entry=runs.get(runId!);
+   if(!entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);
+   if(new URL(request.url??'/','http://127.0.0.1').searchParams.size)return deny(response,422,'INVALID_REPLAY_REQUEST',[]);
+   if(method==='POST'&&!exportId){
+    if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);const body=await deps.readBody(request,1024);if(Object.keys(body).length)return deny(response,422,'INVALID_REPLAY_REQUEST',[]);
+    if(!entry.run.captureReplay)return deny(response,422,'REPLAY_PROVIDER_UNSUPPORTED',[]);
+    if(entry.archiving||reclaiming.has(runId!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
+    if([...replayPackages.values()].filter(p=>p.runId===runId).length+(replayPending.get(runId!)??0)>=2)return deny(response,429,'REPLAY_VERSION_LIMIT',[]);
+    if(replayClosing||replayWork.size>=2||replayPackages.size+[...replayPending.values()].reduce((n,v)=>n+v,0)>=8)return deny(response,429,'REPLAY_CAPACITY',[]);
+    replayPending.set(runId!,1+(replayPending.get(runId!)??0));const id=randomUUID(),directory=join(deps.directory,'replay-exports',id),abort=new AbortController(),disconnect=()=>{if(!response.writableFinished)abort.abort();};response.once('close',disconnect);let finish!:()=>void;const done=new Promise<void>(resolve=>finish=resolve);replayWork.set(id,{abort,done,finish});
+    try{const capture=await entry.run.captureReplay({signal:abort.signal});if(capture.report.manifest.runId!==runId)throw Error('REPLAY_CAPTURE_IDENTITY');abort.signal.throwIfAborted();await mkdir(join(deps.directory,'replay-exports'),{recursive:true,mode:0o700});const manifest=await exportWebReplay(capture,directory,{signal:abort.signal});
+     if(replayClosing||runs.get(runId!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)throw Error('REPLAY_OWNER_CHANGED');replayPackages.set(id,{runId:runId!,directory,manifest});return send(response,201,{exportId:id,manifest});
+    }catch(e){await rm(directory,{recursive:true,force:true});return deny(response,422,'REPLAY_EXPORT_REFUSED',[(e as Error).message.split(':')[0]!]);}finally{response.off('close',disconnect);replayWork.get(id)?.finish();replayWork.delete(id);const n=(replayPending.get(runId!)??1)-1;if(n)replayPending.set(runId!,n);else replayPending.delete(runId!);}
+   }
+   const pkg=exportId?replayPackages.get(exportId):undefined;if(!pkg||pkg.runId!==runId)return deny(response,404,'NOT_FOUND',[]);
+   if(method==='DELETE'&&index===undefined){if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);replayPackages.delete(exportId!);await rm(pkg.directory,{recursive:true,force:true});return send(response,200,{deleted:true});}
+   if(method!=='GET')return deny(response,405,'METHOD_NOT_ALLOWED',[]);if(index===undefined)return send(response,200,pkg.manifest);
+   const asset=pkg.manifest.assets[Number(index)];if(!asset)return deny(response,404,'NOT_FOUND',[]);
+   try{const bytes=await readReplayInput(pkg.directory,asset.path,asset.bytes);if(bytes.length!==asset.bytes||createHash('sha256').update(bytes).digest('hex')!==asset.sha256)throw Error('REPLAY_ASSET_HASH');if(runs.get(runId!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'NOT_FOUND',[]);response.writeHead(200,{'content-type':'application/octet-stream','cache-control':'no-store','x-content-type-options':'nosniff','content-length':bytes.length});response.end(bytes);return;}catch{return deny(response,422,'REPLAY_ASSET_UNAVAILABLE',[]);}
+  }
   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
   const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|events|telemetry|reclaim|archive))?$`).exec(sub);
   const runAllow=runRoute?({actions:'POST',reclaim:'POST',archive:'POST'}as Record<string,string>)[runRoute[2]??'']??'GET':undefined;
@@ -208,7 +235,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
    creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
    try{
-    const input:RunManifestInput={project,scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...engineering?{engineering}:{}};
+    const input:RunManifestInput={project,scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...r.worldExperimentId?{worldExperimentId:r.worldExperimentId}:{},...engineering?{engineering}:{}};
     run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...engineering?{assets:engineering.runtimeProjection.assets as never,bundleFile}:{}});
     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
     // the run → bundle association is durable before the client hears about the run
@@ -262,7 +289,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    try{
     const report=await entry.run.report(),view=await entry.run.snapshot();
     await writeFile(join(entry.directory,`archive-${view.run.runRevision}.json`),JSON.stringify(report),{mode:0o600,flag:'wx'}).catch(e=>{if((e as NodeJS.ErrnoException).code!=='EEXIST')throw e;});
-    await entry.run.close();runs.delete(entry.run.id);return send(response,200,{archived:true,runId:entry.run.id,eventCursor:view.run.eventCursor});
+    await entry.run.close();runs.delete(entry.run.id);for(const [key,p]of replayPackages)if(p.runId===entry.run.id){replayPackages.delete(key);await rm(p.directory,{recursive:true,force:true});}return send(response,200,{archived:true,runId:entry.run.id,eventCursor:view.run.eventCursor});
    }catch(e){entry.archiving=false;return failed(response,e);}
   }
   if(kind==='events'||kind==='telemetry'){streams.add(response);return serveRunStream(kind,entry.run,request,response,streamOptions,new URL(request.url??'/','http://127.0.0.1'),()=>streams.delete(response),()=>sessions.get(sessionId)===session&&deps.now()<session.expiresAt&&runs.get(entry.run.id)===entry&&entry.owner===sessionId&&!entry.archiving);}
@@ -271,5 +298,5 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
  return Object.assign(handle,{
   /** Ends open SSE connections so the HTTP server can close. */
   endStreams(){for(const r of streams)r.end();streams.clear();},
-  close:async()=>{await expiryCleanup;await Promise.all([...runs.values()].map(x=>x.run.close().catch(()=>{})));runs.clear();}});
+  close:async()=>{replayClosing=true;for(const work of replayWork.values())work.abort.abort();await Promise.all([...replayWork.values()].map(w=>w.done));await expiryCleanup;await Promise.all([...runs.values()].map(x=>x.run.close().catch(()=>{})));runs.clear();for(const p of replayPackages.values())await rm(p.directory,{recursive:true,force:true});replayPackages.clear();}});
 }

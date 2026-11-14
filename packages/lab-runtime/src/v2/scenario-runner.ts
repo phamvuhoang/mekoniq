@@ -1,3 +1,4 @@
+import {worldExperiment,type WorldExperimentId} from './simulation3d/world-disturbance';
 import type {RobotAdapter} from '../../../robot-adapters/src/contract';
 import type {Sim3DSnapshotV1} from './navigation2d/contracts';
 import type {WorldPlantBindings,WorldPortsFactory} from './simulation3d/world-ports';
@@ -42,12 +43,12 @@ import type {JournalEvents} from './event-stream';
 import {awaitTick,realWall,type PaceAnchor,type WallClock} from './pace';
 /** Locked engineering extension: the bundle ref plus the exact project and projection it was compiled from (absent for every legacy run). */
 export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
-export interface RunManifestInput {project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
+export interface RunManifestInput {worldExperimentId?:WorldExperimentId;project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
 export interface RunProviders {directory:string;worldPorts?:import('./simulation3d/world-ports').WorldPortsFactory;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
  /** A plant arm whose program comes from its fixture (MuJoCo): what its ports run, for the manifest. Ignored unless the set's arm is a plant. */armProgram?:ArmProgramRecord;
  /** Wall clock of paced steps (tests inject a fake); consulted only by a step that carries `pace`. */wall?:WallClock}
 export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'}
-export interface ScenarioRun {readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
+export interface ScenarioRun {captureReplay?(options?:{signal?:AbortSignal}):Promise<import('./replay/export').CapturedReplay>;readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
  /** Cheap, synchronous liveness for stream heartbeats: never reads the journal. `paused` is the acknowledged pause of the virtual clock. */
  pulse():{tick:number;paused:boolean;runRevision:number};
  /** Durable business events in journal order (queued behind actions, so a reader sees committed state). */
@@ -85,6 +86,7 @@ export function checkWorld(p:LabProjectV2,armModel:ArmModelSI=PUMA560_SI){
  for(const o of w.obstacles)if(!(o.x>=0&&o.y>=0&&o.width>0&&o.height>0&&o.x+o.width<=w.width&&o.y+o.height<=w.height))throw new Error('INVALID_PROJECT');
 }
 export async function createScenarioRun(input:RunManifestInput,providers:RunProviders):Promise<ScenarioRun>{
+ worldExperiment(input);
  const registered=(providers.scenarios??scenarioRegistry).get(input.scenarioId);if(!registered)throw new Error('SCENARIO_UNSUPPORTED');
  const capabilities=providers.catalog??defaultCatalog,runSet=Object.hasOwn(capabilities.sets,input.backendSetId)?capabilities.sets[input.backendSetId]:undefined,plantSet=isArmPlantSet(runSet);
  // the arm model is the run's arm provider's: the MuJoCo arm is the xArm 6, every other arm the PUMA 560 reference. Chosen by the set, so a project for the other model is refused.
@@ -116,7 +118,7 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  const program=plantSet?providers.armProgram:undefined;
  const armProfile=program?{kinematics:armModel,program:{fixture:program.fixture,physicsDigest:program.physicsDigest,programsDigest:program.programsDigest,waypointsDigest:program.waypointsDigest,programs:program.programs},collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}}
   :{kinematics:armModel,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={amr:singleWorld?{composition:'single_world',admission:'source_factory'}:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
- const manifest:Omit<RunReport['manifest'],'runId'>={...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:backends.mode,access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
+ const manifest:Omit<RunReport['manifest'],'runId'>={...input.worldExperimentId?{worldExperimentId:input.worldExperimentId}:{},...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:backends.mode,access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends:backends.descriptors}),configuration,
   recipes:COFFEE_RECIPES.filter(r=>scenario.coffee?.orders.some(o=>o.recipe===r.id)).map(r=>({id:r.id,revision:r.revision,hash:r.hash})),
@@ -528,12 +530,15 @@ class Run implements ScenarioRun {
   return this.cp.plant.robots.map(r=>{const g=r.goals.find(x=>x.state==='executing')??r.goals[r.goals.length-1];
    return {id:r.id,kind:'amr',pose:{...r.pose},quality:r.stale?'stale':'valid',moving:r.moving,hold:r.hold,goal:g?{commandId:g.commandId,state:g.state}:null,path:g?.state==='executing'?g.path.map(p=>[p[0],p[1]] as [number,number]):[],distanceM:r.distanceM};});
  }
+ async captureReplay(options:{signal?:AbortSignal}={}):Promise<import('./replay/export').CapturedReplay>{
+  if(!this.worldConfig)throw Error('REPLAY_PROVIDER_UNSUPPORTED');const check=()=>{if(options.signal?.aborted)throw Error('REPLAY_ABORTED');};check();const capture=this.queue.then(()=>{check();return this.captureReport(true);});this.queue=capture.then(()=>undefined,()=>undefined);const {report,materializeArm}=await capture;let world:import('./replay/export').CapturedReplay['world'];if(materializeArm){const evidence=await materializeArm(async owned=>{check();world=owned;});check();report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;}return {directory:this.dir,report,...world?{world}:{}};
+ }
  async report():Promise<RunReport>{
   if(!this.worldConfig){await this.queue;return (await this.captureReport()).report;}
   const capture=this.queue.then(()=>this.captureReport(true));this.queue=capture.then(()=>undefined,()=>undefined);const {report,materializeArm}=await capture;
   if(materializeArm){const evidence=await materializeArm();report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;}return report;
  }
- private async captureReport(deferred=false):Promise<{report:RunReport;materializeArm:(()=>Promise<{arm:ArmReportBlock;worldSweep?:WorldSweepResult}>)|null}>{
+ private async captureReport(deferred=false):Promise<{report:RunReport;materializeArm:((replay?:import('./beverage/coffee-ports').WorldReplaySink)=>Promise<{arm:ArmReportBlock;worldSweep?:WorldSweepResult}>)|null}>{
   if(this.closed)throw new Error('RUN_CLOSED');
   const c=this.cp,v=await this.view(),known=c.plant.robots.every(r=>r.radiusM!==null);
   const journal=await this.source.journal(),businessEvents:BusinessEvent[]=journal.flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({sequence:entry.sequence,at:entry.recordedAt,type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject})));

@@ -1,7 +1,7 @@
 /** Source-owned continuous world factory: one engine, journal-correlated custody,
  * bounded durable observations and no browser transport or hardware route. */
 import {worldArmGeometry,worldAllowedPairs,validateWorldControl} from './world-control';
-import {WORLD_DISTURBANCE_PRESETS} from './world-disturbance';
+import {WORLD_DISTURBANCE_PRESETS,worldExperiment} from './world-disturbance';
 import {boundWorldArmHistory,WORLD_HISTORY_POLICY} from './world-history';
 import {materializeWorldArmReport} from './world-arm-report';
 import {defaultCatalog} from '../capabilities';
@@ -46,7 +46,8 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions):WorldPortsFactory
   const {scene,files}=await readWorldFixture(runtime.workerRoot,'coffee-delivery-cell-v1'),st=input.state,ctx=input.context;
   if(scene.inputs.projectDigest!==hashJson(input.manifest.project)||st.armId!==scene.armCell.arm.armId||st.arm.programs.length||hashJson([...new Set([...st.plant.cups.map(c=>c.cupId),...st.workload.map(w=>w.cupId)])].sort())!==hashJson(scene.propBindings.map(p=>p.cupId).sort()))throw Error('WORLD_SOURCE_ADMISSION_MISMATCH');
   const fixtureDigest=scene.sceneDigest;
-  if(runtime.cellDisturbance){const o=runtime.cellDisturbance,b=scene.propBindings.find(b=>b.cupId===o.cupId);if(!b||!Object.hasOwn(WORLD_DISTURBANCE_PRESETS,o.presetId))throw Error('WORLD_PERTURBATION_NOT_ADMITTED');const preset=WORLD_DISTURBANCE_PRESETS[o.presetId];scene.disturbance={presetId:o.presetId,revision:1,cupId:o.cupId,targetId:o.presetId==='world-dock-drift-v1'?scene.navigation.robots[0]!.robotId:b.propId,trigger:preset.trigger};}
+  const selected=worldExperiment(input.manifest);if(selected&&runtime.cellDisturbance)throw Error('WORLD_PERTURBATION_NOT_ADMITTED');
+  if(selected??runtime.cellDisturbance){const o=(selected??runtime.cellDisturbance)!,b=scene.propBindings.find(b=>b.cupId===o.cupId);if(!b||!Object.hasOwn(WORLD_DISTURBANCE_PRESETS,o.presetId))throw Error('WORLD_PERTURBATION_NOT_ADMITTED');const preset=WORLD_DISTURBANCE_PRESETS[o.presetId];scene.disturbance={presetId:o.presetId,revision:1,cupId:o.cupId,targetId:o.presetId==='world-dock-drift-v1'?scene.navigation.robots[0]!.robotId:b.propId,trigger:preset.trigger};}
   scene.armCell.engineSeed=input.manifest.seed;scene.armCell.sceneDigest=documentDigest(scene.armCell,'sceneDigest');scene.sceneDigest=documentDigest(scene,'sceneDigest');
   const admission=prepareWorldAdmission(scene,files),doc=<T>(p:string)=>JSON.parse(Buffer.from(files.get(p)!).toString()) as T;
   const physical=doc<RobotPhysicalModelV1>(scene.models.mobilePhysical.path),load=doc<LoadProfileV1>(scene.models.emptyLoad.path),programDoc=doc<{programs:ArmProgramSet;digest:string;table:{waypoint:string;q:number[];positionErrorM:number;orientationErrorRad:number;condition:number}[]}>(scene.programsRef.path);
@@ -86,7 +87,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions):WorldPortsFactory
    }
   },...workflow?{
    holdMotion(reason:string){invalidate();cellHalted=reason;arm.halt(reason);},
-   async armReportState(publicCommittedTick:number,source:import('../beverage/coffee-ports').WorldReportSource){if(observing||publicCommittedTick!==ctx.tick()||st.arm.tick!==publicCommittedTick)throw Error('WORLD_REPORT_HORIZON_INVALID');const critical=structuredClone(st.arm),capturedSource=structuredClone(source),capture=await recorder.capture({runId:input.runId,bootId:last.bootId,sceneDigest:scene.sceneDigest,admissionDigest:admission.digest,publicCommittedTick});return {materialize:()=>materializeWorldArmReport(capture,admission,critical,capturedSource)};},
+   async armReportState(publicCommittedTick:number,source:import('../beverage/coffee-ports').WorldReportSource){if(observing||publicCommittedTick!==ctx.tick()||st.arm.tick!==publicCommittedTick)throw Error('WORLD_REPORT_HORIZON_INVALID');const critical=structuredClone(st.arm),capturedSource=structuredClone(source),capture=await recorder.capture({runId:input.runId,bootId:last.bootId,sceneDigest:scene.sceneDigest,admissionDigest:admission.digest,publicCommittedTick});return {materialize:(replay?:import('../beverage/coffee-ports').WorldReplaySink)=>materializeWorldArmReport(capture,admission,critical,capturedSource,replay)};},
    async canPickCup(missionId:string){if(!evaluateDockWindow(dockSamples,{...dockPolicy,expectedTick:last.tick}).ready||st.arm.programs.some(p=>p.state==='running'))return false;const m=(await ctx.source.read('mission',missionId)).state,stop=(m.stops as JsonObject[]).find(s=>s.id===m.currentStopId);return m.robotId===rid&&stop?.action==='load'&&stop.targetId===st.stationId&&stop.status==='awaiting_action';},
    bindLedger(value:CupLedger){if(ledger&&ledger!==value)throw Error('CUP_LEDGER_ALREADY_BOUND');ledger=value;},
    drain(){const reports=base.drain();return failed?[]:[...reports,...transferReports.splice(0)];},

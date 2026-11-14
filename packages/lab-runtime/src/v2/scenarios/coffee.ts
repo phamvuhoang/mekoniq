@@ -298,7 +298,7 @@ export class CoffeeDriver {
  /** Capture under the Source action boundary; only immutable inputs are used after it releases. */
  async captureArmEvidence(directory:string,world:ArmCollisionEvidenceRecord['worldRevision'],assetRef:JsonObject,source:WorldReportSource){
   const r=structuredClone(this.ports.report());if(!r.armPlant)return null;const critical=structuredClone(this.st.arm),collision=armCollisionRecord(critical,world,assetRef),captured=await this.ports.armReportState?.(this.ctx.tick(),source);
-  return async()=>{const materialized=captured?await captured.materialize():null,legacy=structuredClone(collision);if(materialized&&!materialized.worldTrace.prefixCovered&&legacy.result==='pass'){legacy.result='not_run';legacy.reasonCodes=[...materialized.worldTrace.reasonCodes];}
+  return async(replay?:import('../beverage/coffee-ports').WorldReplaySink)=>{const materialized=captured?await captured.materialize(replay):null,legacy=structuredClone(collision);if(materialized&&!materialized.worldTrace.prefixCovered&&legacy.result==='pass'){legacy.result='not_run';legacy.reasonCodes=[...materialized.worldTrace.reasonCodes];}
    const arm=await buildArmReport(materialized?.state??critical,r.armPlant!,directory,world,assetRef,r.armCell,{collision:legacy,...materialized?{worldTrace:materialized.worldTrace,contentAddressed:true}:{}});return {arm,...materialized?{worldSweep:materialized.worldSweep}:{}};};
  }
  async close(){try{await this.ports.close();}finally{this.ledger?.close();this.ledger=undefined;}}

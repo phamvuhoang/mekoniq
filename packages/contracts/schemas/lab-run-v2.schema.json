@@ -227,6 +227,13 @@
             "bundleDigest",
             "projectDigest"
           ]
+        },
+        "worldExperimentId": {
+          "enum": [
+            "world-nominal-v1",
+            "world-dock-drift-v1",
+            "world-cup-fall-v1"
+          ]
         }
       },
       "required": [

@@ -17,7 +17,9 @@ export interface ArmCellEvidence {waypoints:{digest:string;table:{waypoint:strin
  /** What the engine was given: the fixture's componentDigest, the digest of physics.json as used (after any override) and the sceneDigest of the cell scene the worker was bound to. */inputs?:{componentDigest:string;physicsDigest:string;sceneDigest:string}}
 export interface WorldReportSource {journal:import('../simulation3d/world-sweep').WorldSourceJournal;businessEpochMs:number}
 export interface ArmReportMaterialization {state:ArmPlantState;worldTrace:import('./arm-plant-report').WorldArmTraceScope;worldSweep:import('../simulation3d/world-sweep').WorldSweepResult}
-export interface ArmReportCapture {materialize():Promise<ArmReportMaterialization>}
+/** Owned copies; sink runs after reconstruction outside Source actions and cannot mutate normal report/critical state. */
+export type WorldReplaySink=(world:{records:import('../../../../contracts/generated/navigation2d').WorldEvidenceRecord[];admission:import('../simulation3d/world-evidence').WorldAdmission})=>Promise<void>;
+export interface ArmReportCapture {materialize(replay?:WorldReplaySink):Promise<ArmReportMaterialization>}
 export interface CoffeePlantPorts {
  /** Source-only: custody requires journal-correlated physical observations, even with an arm state snapshot. */
  custodyEvidence?:'correlated';

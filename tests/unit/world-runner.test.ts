@@ -74,3 +74,12 @@ test('two same-H report materializations coalesce trace and props publication wh
   traceBlocked.release();await propsReads.promise;await new Promise<void>(r=>setImmediate(r));expect(writes.props).toBe(1);propsBlocked.release();const [a,b]=await Promise.all(reports);expect(a.outcome.tick).toBe(2);expect(b.outcome.tick).toBe(2);expect(a.arm!.trace).toEqual(b.arm!.trace);expect(a.arm!.props).toEqual(b.arm!.props);for(const report of [a,b]){expect((await readArmTrace(h.directory,report.arm!)).samples.map(s=>s.tick)).toEqual([0,1,2]);expect((await readArmProps(h.directory,report.arm!)).samples.map(s=>s.tick)).toEqual([0,1,2]);}
  }finally{traceBlocked.release();propsBlocked.release();await Promise.allSettled(reports);await run.close();}
 });
+
+test('Source replay capture uses the same nonmultiple-of-five horizon while a later action proceeds',async()=>{
+ const h=await setup(undefined,true),run=await h.open();try{await run.start();await act(run,'step',{ticks:7});expect(typeof run.captureReplay).toBe('function');const p=run.captureReplay!();await act(run,'step',{ticks:1});const c=await p;expect(c.report.outcome.tick).toBe(7);expect((await run.snapshot()).tick).toBe(8);expect(c.report.arm!.worldTrace!.publicCommittedTick).toBe(7);expect(c.world).toBeUndefined();}finally{await run.close();}
+});
+test('replay capture materialization never holds Source actions while immutable trace publication is blocked',async()=>{
+ const h=await setup(undefined,true),run=await h.open(),blocked=publicationGate(),entered=publicationGate(),write=durable.writeDurable;let capture:ReturnType<NonNullable<typeof run.captureReplay>>|undefined;
+ vi.spyOn(durable,'writeDurable').mockImplementation(async(dir,name,bytes)=>{if(dir===h.directory&&/^arm-trace-/.test(name)){entered.release();await blocked.promise;}await write(dir,name,bytes);});
+ try{await run.start();await act(run,'step',{ticks:7});capture=run.captureReplay!();await entered.promise;const next=act(run,'step',{ticks:1});expect(await Promise.race([next.then(v=>v.tick),new Promise(r=>setTimeout(()=>r('ACTION_BLOCKED_BY_EXPORT'),2000))])).toBe(8);blocked.release();const c=await capture;expect(c.report.outcome.tick).toBe(7);expect((await readArmTrace(h.directory,c.report.arm!)).samples.at(-1)!.tick).toBe(7);}finally{blocked.release();await capture?.catch(()=>{});await run.close();}
+});

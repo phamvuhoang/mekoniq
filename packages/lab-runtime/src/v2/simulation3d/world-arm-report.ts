@@ -14,7 +14,7 @@ import {trackingStats} from './arm-ports';
 import type {ArmCellEvidence,CoffeePlantPorts} from '../beverage/coffee-ports';
 import type {ArmProgramRecord} from '../report';
 import type {LoadProfileV1} from '../navigation2d/contracts';
-export async function materializeWorldArmReport(capture:WorldPrefixCapture,admission:WorldAdmission,critical:ArmPlantState,source:WorldReportSource):Promise<ArmReportMaterialization>{
+export async function materializeWorldArmReport(capture:WorldPrefixCapture,admission:WorldAdmission,critical:ArmPlantState,source:WorldReportSource,replay?:import('../beverage/coffee-ports').WorldReplaySink):Promise<ArmReportMaterialization>{
  const state=structuredClone(critical),h=capture.requestedTick,prefix=await materializeWorldPrefix(capture,admission),issues=[...prefix.issues];let covered=prefix.covered;
  if(covered)try{
   if(!state.tracking)throw Error('WORLD_TRACKING_STATE_MISSING');const aid=admission.scene.armCell.arm.armId,physics=worldDocument<XArmPhysics>(admission.files,admission.scene.models.armPhysics.path),trace:NonNullable<ArmPlantState['tracking']>['trace']=[],props:ArmPropSample[]=[];
@@ -27,6 +27,7 @@ export async function materializeWorldArmReport(capture:WorldPrefixCapture,admis
  const authority={runId:capture.authority.runId,bootId:capture.authority.bootId,sceneDigest:capture.authority.sceneDigest,lastCommittedTick:h,businessEpochMs:source.businessEpochMs};
  const worldSweep=covered?evaluateWorldSweep(prefix.records,admission,source.journal,authority,true):unavailableWorldSweep(h,issues);worldSweep.complete=worldSweep.complete&&prefix.publication.streamFinalized;
  worldSweep.scope={kind:'source_committed_prefix',publicCommittedTick:h,prefixCovered:covered,streamFinalized:prefix.publication.streamFinalized,identity:{runId:authority.runId,bootId:authority.bootId,sceneDigest:authority.sceneDigest,admissionDigest:admission.digest},publication:prefix.publication};
+ if(replay){if(!covered)throw Error('REPLAY_WORLD_PREFIX_UNAVAILABLE');await replay({records:structuredClone(prefix.records),admission:{...admission,files:new Map([...admission.files].map(([p,b])=>[p,new Uint8Array(b)])),scene:structuredClone(admission.scene),physics:structuredClone(admission.physics),modelCounts:{...admission.modelCounts}}});}
  const samples=state.tracking?.trace??[];return {state,worldSweep,worldTrace:{method:'world-committed-trace-v1',scope:covered?'all_world_ticks':'retained_cache_only',publicCommittedTick:h,prefixCovered:covered,streamFinalized:prefix.publication.streamFinalized,trackingStatisticsScope:'active_program_ticks',trackingSamples:critical.tracking?.samples??0,firstTick:samples[0]?.tick??null,lastTick:samples.at(-1)?.tick??null,samples:samples.length,reasonCodes:issues,publication:prefix.publication,...critical.historyRetention?{hotHistoryPolicy:{mode:critical.historyRetention.mode,limit:critical.historyRetention.limit}}:{}}};
 }
 
@@ -49,6 +50,6 @@ export async function retainedWorldArmReports(o:{directory:string;runId:string;b
  return {report(){const t=o.state().tracking;return {...t?{armPlant:{engine:'mujoco_3d' as const,engineVersion:o.engineVersion,control:'position_actuator' as const,grip:'contact' as const,dynamics:'manufacturer_nominal+assumed' as const,calibration:'not_calibrated' as const,tracking:trackingStats(t)}}:{},...cell?{armCell:structuredClone(cell)}:{}};},
   async armReportState(publicCommittedTick,source){if(publicCommittedTick!==o.publicTick()||o.state().tick!==publicCommittedTick)throw Error('WORLD_REPORT_HORIZON_INVALID');const critical=structuredClone(o.state()),capturedSource=structuredClone(source),identity={runId:o.runId,bootId:o.bootId,sceneDigest:o.sceneDigest},a=admission;
    if(!a)return {materialize:async()=>unavailableWorldArmReport(critical,identity,publicCommittedTick,[unavailable])};
-   const capture=await captureWorldPrefixDisk(join(o.directory,'world-evidence'),a,{...identity,admissionDigest:a.digest,publicCommittedTick});return {materialize:()=>materializeWorldArmReport(capture,a,critical,capturedSource)};
+   const capture=await captureWorldPrefixDisk(join(o.directory,'world-evidence'),a,{...identity,admissionDigest:a.digest,publicCommittedTick});return {materialize:replay=>materializeWorldArmReport(capture,a,critical,capturedSource,replay)};
   }};
 }

@@ -938,6 +938,7 @@ export interface CreateRunRequest {
     bundleDigest: string;
     projectDigest: string;
   };
+  worldExperimentId?: 'world-nominal-v1' | 'world-dock-drift-v1' | 'world-cup-fall-v1';
 }
 
 export interface RunVerification {

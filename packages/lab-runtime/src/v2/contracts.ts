@@ -49,6 +49,7 @@ export function validateRunRequestV2(value:unknown):Validated<CreateRunRequest>{
  const shape=checkRun(value);
  if(!shape.ok)return shape;
  if(shape.value.project===undefined&&shape.value.engineeringRef===undefined)return {ok:false,issues:[{path:'/project',code:'FIELD_REQUIRED',message:'Missing "project" (or "engineeringRef" for an engineering run)'}]};
+ if(shape.value.worldExperimentId&&(shape.value.mode!=='simulation'||shape.value.backendSetId!=='engineering-mujoco-cell-v1'||shape.value.scenarioId!=='MJ-CELL-BV01'))return {ok:false,issues:[{path:'/worldExperimentId',code:'WORLD_EXPERIMENT_SCOPE_INVALID',message:'Selection requires the registered shared-world cell'}]};
  // An engineering request carries engineeringRef instead of (or equal to) a project; the gateway derives the project from the bundle.
  const project=shape.value.project===undefined?undefined:validateProjectV2(shape.value.project);
  return !project||project.ok?shape:{ok:false,issues:project.issues.map(i=>({...i,path:'/project'+i.path}))};
