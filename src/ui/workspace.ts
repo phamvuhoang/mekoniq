@@ -37,7 +37,7 @@ import {morph} from './morph';
 import {loopbackPage,mayAutoProbe,parseTarget,saveTarget,targetAddress,type RuntimeTarget} from '../runtime/target';
 import {openReplayV2} from '../reports/replay';
 import {reportCsv,reportHtml,reportJson} from '../reports/metrics';
-import {reportPanel,reportSummary,replayBody,replayMarks,controllerVerificationHtml,type ReplayState} from './report-panel';
+import {reportPanel,reportSummary,navigationAtCursor,replayBody,replayMarks,controllerVerificationHtml,type ReplayState} from './report-panel';
 import {tr} from '../i18n';
 import {businessSimulationNote,illustrativeNote,stateLabel} from './labels';
 import {importControllerBundle} from '../reports/verification';
@@ -659,6 +659,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   const r=this.replay!;morphInner(document.getElementById('twin-replay-body'),replayBody(r,this.vs.selected));
   const verification=document.querySelector('[data-testid="controller-verification"]');if(verification&&this.report)morphOuter(verification,controllerVerificationHtml(this.report,r.tick));
   if(this.report){morphOuter(document.getElementById('payload-physics')!,physicsHtml(this.report,r.tick));morphOuter(document.getElementById('payload-timeline')!,physicsTimeline(this.report,r.tick));}
+  if(this.report)morphInner(document.getElementById('twin-navigation-evidence'),navigationAtCursor(this.report,r.tick));
   const range=document.getElementById('twin-replay-cursor') as HTMLInputElement|null;if(range&&(played||document.activeElement!==range))range.value=String(r.tick);
   this.painted='';this.tick();
  }

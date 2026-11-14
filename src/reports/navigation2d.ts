@@ -108,6 +108,7 @@ export async function importNavigationEvidence(files:readonly File[]):Promise<{o
  if(!validReportShape(value))throw new Error('REPORT_INVALID');
  const report=structuredClone(value as RunReport),n=navigationEvidence(report);
  if(!n)throw new Error('NAVIGATION_EVIDENCE_SCHEMA_UNKNOWN');
+ if(n.engine.id!=='mujoco_3d'&&(report.manifest.backends.some(b=>b.id==='mujoco_3d')||report.telemetry?.samples.some(s=>s.providerId==='mujoco_3d')))throw new Error('PAYLOAD_REPORT_IDENTITY_MISMATCH');
  const missing:string[]=[];
  for(const s of STREAMS)for(const a of n.artifacts[s]){
   const file=entries.get(a.path)??entries.get(`evidence/${a.path}`);
@@ -120,11 +121,17 @@ export async function importNavigationEvidence(files:readonly File[]):Promise<{o
   const bytes=await read(n.sceneRef.path,n.sceneRef.sha256);if(bytes.length!==n.sceneRef.bytes)throw new Error('PAYLOAD_SCENE_SIZE_MISMATCH');
   payloadBundle=await readPayloadBundle(read,JSON.parse(new TextDecoder().decode(bytes)));
   if(payloadBundle.scene.sceneDigest!==n.sceneDigest)throw new Error('PAYLOAD_SCENE_MISMATCH');
+  const admitted=payloadBundle.scene,engine=admitted.engine;
+  // The report and inline physics may collude on a false ref. Both must agree with the independently hash-validated scene/load we render.
+  if(engine.id!=='mujoco_3d'||n.engine.engineVersion!==engine.version||n.engine.timestepMs!==engine.timestepMs||n.engine.substeps!==engine.substeps||n.clock.tickMs!==admitted.clock.tickMs||
+   (['loadProfileRef','physicsProfileRef','stopPolicyRef','controllerPolicyRef'] as const).some(k=>hashJson(n.engine.id==='mujoco_3d'?n.engine[k]:null)!==hashJson(engine[k]??null))||
+   hashJson(n.policyRef)!==hashJson({id:admitted.policy.id,revision:admitted.policy.revision,hash:admitted.policy.hash})||sorted(n.modelDigests)!==sorted(admitted.robots.map(r=>r.model.modelDigest))||
+   identityMismatches(report,n).some(k=>['provider','policy','modelDigests','sceneDigest'].includes(k)))throw new Error('PAYLOAD_REPORT_IDENTITY_MISMATCH');
   for(const sample of report.telemetry?.samples??[])if(sample.providerId==='mujoco_3d'){
    const q=payloadState(sample);if(sample.runId!==report.manifest.runId||q&&!payloadMatches(q,payloadBundle))throw new Error('PAYLOAD_TELEMETRY_MISMATCH');
   }
   const p=report.physicsEvidence;if(p){
-   const id=p.manifest.identity;if(id.runId!==report.manifest.runId||id.sceneDigest!==n.sceneDigest||id.loadProfileDigest!==n.engine.loadProfileRef.sha256||id.physicsProfileDigest!==n.engine.physicsProfileRef.sha256||p.manifest.metricsPolicyDigest!==n.engine.stopPolicyRef.sha256||(report.telemetry?.samples??[]).some(s=>s.providerId==='mujoco_3d'&&s.bootId!==id.bootId))throw new Error('PHYSICS_IDENTITY_MISMATCH');
+   const id=p.manifest.identity;if(id.runId!==report.manifest.runId||id.sceneDigest!==n.sceneDigest||id.loadProfileDigest!==payloadBundle.loadSha256||id.physicsProfileDigest!==engine.physicsProfileRef.sha256||p.manifest.metricsPolicyDigest!==engine.stopPolicyRef?.sha256||(report.telemetry?.samples??[]).some(s=>s.providerId==='mujoco_3d'&&s.bootId!==id.bootId))throw new Error('PHYSICS_IDENTITY_MISMATCH');
    if(sha256Hex(new TextEncoder().encode(JSON.stringify(p.manifest)))!==p.manifestSha256)throw new Error('PHYSICS_MANIFEST_HASH_MISMATCH');
    for(const stream of p.manifest.streams)for(const c of stream.chunks){const f=entries.get(`physics/${c.path}`)??entries.get(`run/physics/${c.path}`);if(f&&(f.size!==c.bytes||await hex(f)!==c.sha256))throw new Error('PHYSICS_ARTIFACT_HASH_MISMATCH');}
    // Hash checks do not recompute metric semantics or establish producer trust. Imported values stay unavailable.
