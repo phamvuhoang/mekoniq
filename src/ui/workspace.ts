@@ -89,7 +89,7 @@ export class TwinWorkspace {
  /** Telemetry (lossy) lives in the store; the durable view only changes from action receipts, resets and polled snapshots. */
  private store=new TwinStore();private link:Link={state:'closed',lastHeartbeatMs:null,paused:false};private streams:ReturnType<typeof openRunStreams>|null=null;private streamRun='';
  private business=0;private ticker:ReturnType<typeof setInterval>|undefined;private painted='';private refreshing=false;
- private replay:ReplayState|null=null;private replayTimer:ReturnType<typeof setInterval>|undefined;private previous:RunReport|null=null;
+ private replayPending=false;private replay:ReplayState|null=null;private replayTimer:ReturnType<typeof setInterval>|undefined;private previous:RunReport|null=null;
  private scheduleOpen=false;private scheduleDraft:ScheduleDraft={faultId:'reboot',targetId:'',trigger:'elapsed_sim_ms',value:'1000',durationMs:'1000'};private projects=new ProjectStore();
  /** IR-SIM runs: the run bundle's compiled navigation scene, loaded once per run from the bundle the runtime locked. */
  private exportBusy=false;private exportAbort:AbortController|null=null;private world:WorldDrawing|null=null;private worldView:RunView|null=null;private worldReceived=0;private worldBusy=false;private worldAbort:AbortController|null=null;private worldDrawing:Omit<WorldDrawing,'record'>|null=null;private worldRun='';private worldBoot='';private worldReason='';private storyPhase='';private storyCamera:StoryCameraState={camera:'overview',follow:false,phaseFollow:false,instant:false};
@@ -159,11 +159,11 @@ export class TwinWorkspace {
  private clock(){return this.view?clockControls(this.view,this.health):undefined;}
  private target(){return this.rt.target??SAME_ORIGIN;}
  private frame():TwinFrame {
-  const paired=this.world&&this.worldView&&this.world.record.snapshot.runId===this.view?.run.id&&performance.now()-this.worldReceived<=500;const v=paired?this.worldView:this.view,base={preset:this.runPreset??this.resolve(this.preset),report:this.report,world:undefined as WorldDrawing|undefined,payloadBundle:this.payloadBundle?.scene.sceneDigest===this.scene().scene?.sceneDigest?this.payloadBundle:null,navigation:this.scene().scene};
-  if(this.world&&this.world.record.snapshot.runId===v?.run.id&&this.world.record.snapshot.tick===v?.tick){base.world=this.world;base.navigation=this.world.scene.navigation;base.payloadBundle={scene:this.world.scene.navigation,physical:this.world.physical,load:this.world.load,physicalSha256:this.world.scene.models.mobilePhysical.sha256,loadSha256:this.world.scene.models.emptyLoad.sha256};}
+  const paired=!this.replay&&!this.replayPending&&this.world&&this.worldView&&this.world.record.snapshot.runId===this.view?.run.id&&performance.now()-this.worldReceived<=500;const v=paired?this.worldView:this.view,base={preset:this.runPreset??this.resolve(this.preset),report:this.report,world:undefined as WorldDrawing|undefined,payloadBundle:this.payloadBundle?.scene.sceneDigest===this.scene().scene?.sceneDigest?this.payloadBundle:null,navigation:this.scene().scene};
+  if(!this.replay&&!this.replayPending&&this.world&&this.world.record.snapshot.runId===v?.run.id&&this.world.record.snapshot.tick===v?.tick&&this.world.sourceRevision===v.run.runRevision){base.world=this.world;base.navigation=this.world.scene.navigation;base.payloadBundle={scene:this.world.scene.navigation,physical:this.world.physical,load:this.world.load,physicalSha256:this.world.scene.models.mobilePhysical.sha256,loadSha256:this.world.scene.models.emptyLoad.sha256};}
   if(!v)return {...base,view:v};
+  if(this.replay){const r=this.replay,projection=r.rp.project(this.view!,r.tick);if(base.preset.id==='mujoco-cell'){const report:RunReport&{worldSweep?:unknown}={...projection.report};delete report.arm;delete report.worldSweep;delete report.physicsEvidence;return {...base,...projection,report,world:undefined,navigation:null,payloadBundle:null,samples:{}};}return {...base,...projection};}
   if(base.world)return {...base,report:this.report&&this.report.outcome.tick<=v.tick?this.report:null,view:v,samples:Object.fromEntries(this.store.entities().filter(s=>s.simTimeNs===null||BigInt(s.simTimeNs)<=BigInt(v.simTimeNs)).map(s=>[s.entityId,s])),nowMs:performance.now()};
-  if(this.replay){const r=this.replay,projection=r.rp.project(v,r.tick);return {...base,...projection};}
   const now=performance.now();
   return {...base,samples:Object.fromEntries(this.store.entities().map(s=>[s.entityId,s])),nowMs:now,view:{...v,entities:v.entities.filter(e=>e.kind==='amr').map(e=>{const s=this.store.entity(e.id),o=s?.observed;if(!s||!o||typeof o.xM!=='number')return e;
    const fresh=freshness(s,this.link,now),newer=s.simTimeNs!==null&&BigInt(s.simTimeNs)>=BigInt(v.simTimeNs)&&(v.run.telemetryCursor===null||BigInt(s.seq)>=BigInt(v.run.telemetryCursor));
@@ -184,9 +184,9 @@ export class TwinWorkspace {
   catch(e){if(epoch===this.gen)this.notice=abort.signal.aborted?tr('Đã hủy xuất gói.','出力を中止しました。','Export cancelled.'):String(e);}
   finally{capture?.reader.close();await capture?.release().catch(e=>{if(epoch===this.gen)this.notice=String(e);});if(this.exportAbort===abort)this.exportAbort=null;this.exportBusy=false;this.paint();}
  }
- private clearWorld(){this.worldAbort?.abort();this.worldAbort=null;this.worldBusy=false;this.world=null;this.worldView=null;this.worldDrawing=null;this.worldRun='';this.worldReason='';this.worldBoot='';this.storyPhase='';this.playback.clear();}
+ private clearWorld(){this.replayPending=false;this.worldAbort?.abort();this.worldAbort=null;this.worldBusy=false;this.world=null;this.worldView=null;this.worldDrawing=null;this.worldRun='';this.worldReason='';this.worldBoot='';this.storyPhase='';this.playback.clear();}
  private async refreshWorld(){
-  const v=this.view;if(this.worldBusy||!v||v.run.backendSetId!==CELL_SET||this.archived||this.replay||!this.rt.worldDisplay||!this.rt.worldDisplayScene)return;
+  const v=this.view;if(this.worldBusy||this.replayPending||!v||v.run.backendSetId!==CELL_SET||this.archived||this.replay||!this.rt.worldDisplay||!this.rt.worldDisplayScene)return;
   const epoch=this.gen,id=v.run.id,abort=new AbortController();this.worldAbort=abort;this.worldBusy=true;
   try{if(this.worldRun!==id){this.world=null;this.worldDrawing=null;this.worldRun=id;this.playback.clear();const meta=await this.rt.worldDisplayScene(id,abort.signal);if(this.left||epoch!==this.gen||this.view?.run.id!==id)return;this.worldDrawing=meta.scene?knownWorldDrawing(meta.scene):null;this.worldReason=meta.reason??(this.worldDrawing?'':'WORLD_MODEL_PROXY_UNAVAILABLE');}
    const observation=await this.rt.worldDisplay(id,abort.signal);if(this.left||epoch!==this.gen||this.view?.run.id!==id||observation.runId!==id)return;
@@ -299,7 +299,9 @@ export class TwinWorkspace {
   try{const answer=await this.current(ref?this.rt.readiness(p.scenarioId,p.backendSetId,undefined,ref):this.rt.readiness(p.scenarioId,p.backendSetId,p.project));if(request===this.readinessRequest&&p.id===this.readinessPreset().id&&p.backendSetId===this.readinessPreset().backendSetId){this.readiness=answer;this.watchReadinessExpiry();}}catch{/* the unknown state keeps Start disabled */}
  }
  async checkHealth(){const g=this.gen;let h:TwinHealth|null=null;try{h=await this.rt.health();}catch{/* not there */}this.probing=false;if(g!==this.gen)return;this.health=h;await this.checkReadiness();this.healthChecked=true;this.rerender();}
- private ops(f:TwinFrame):OpsState{const c=this.clock(),clock=c&&!this.health?.features?.pacedStep?{...c,play:false}:c;return {paired:this.rt.paired,ready:!this.pinBlock()&&ready(preflight(this.readinessPreset(),this.health,this.rt.paired,this.readiness)),busy:this.busy||!!this.replay,playing:this.playing,view:f.view,preset:f.preset,...clock&&!this.replay?{clock}:{}};}
+ private ops(f:TwinFrame,view=f.view):OpsState{const c=this.clock(),clock=c&&!this.health?.features?.pacedStep?{...c,play:false}:c;return {paired:this.rt.paired,ready:!this.pinBlock()&&ready(preflight(this.readinessPreset(),this.health,this.rt.paired,this.readiness)),busy:this.busy||!!this.replay,playing:this.playing,view,preset:f.preset,...clock&&!this.replay?{clock}:{}};}
+ /** Retained frames are display context; only the current live view supplies action policy. */
+ private controlOps(f:TwinFrame){return this.ops(f,this.replay?f.view:this.view);}
  /** Preflight matters until a run starts; afterwards the run's own state does. */
  private showChecks(){return !this.view||this.view.run.status==='ready';}
  private runtimeState():RunBarState['runtime']{/* one word for the run bar; `connecting` until the health check answers (no run) or the first heartbeat arrives (a run) */
@@ -310,12 +312,12 @@ export class TwinWorkspace {
   return {...runtimeWord(link,this.fresh().f.state,this.rt.paired,!!this.replay,this.playing,{attempt,pinMismatch:!!this.pinBlock()}),detail:this.health?`source ${this.health.sourceCommit.slice(0,7)}`:''};
  }
  private bar(f=this.frame()){
-  const v=f.view,r=v?.run,ops=this.ops(f),n=nextAction(ops),c=runControls(ops);
+  const v=f.view,r=v?.run,ops=this.controlOps(f),n=nextAction(ops),c=runControls(ops);
   // the primary action is the recommended step; while a run is live with none, auto-run (or stopping it)
   const primary=this.replay?null:n.action?{action:n.action.id,label:n.action.label,disabled:ops.busy||f.preset.id==='mujoco-cell'&&n.action.id==='twin-run'&&!this.view&&!ops.ready||!!this.pinBlock()&&['twin-run','twin-rerun','twin-reset'].includes(n.action.id)}:c.live?c.paused?{action:'twin-resume',label:tr('Tiếp tục mô phỏng','シミュレーション再開','Resume simulation'),disabled:ops.busy}:this.pausing?{action:'twin-pause',label:tr('Đang tạm dừng…','一時停止中…','Pausing…'),disabled:true}:this.playing?{action:'twin-stop',label:tr('Dừng','停止','Stop'),disabled:false}:{action:'twin-play',label:tr('Chạy tiếp','続行','Keep running'),disabled:!c.canPlay}:null;
   const p=this.problems(f);if(!p.length)this.ui.problemsOpen=false;const u=this.ui;// an emptied problems box closes: a later problem never opens it by itself
   const boxes=scenarioPicker(pickerItems(presets,this.health),this.preset.id,u.pickerOpen)+runtimePopover({open:u.runtimeOpen,target:this.target(),draftUrl:this.addressDraft,paired:this.rt.paired,busy:this.busy||this.playing,health:this.health,pin:{expected:this.pinExpected,actual:this.health?.sourceCommit??null},error:this.boxError(),where:this.whereChoice,pageOrigin:typeof location==='undefined'?'':location.origin,pageHasRuntime:onLoopbackPage()},v?this.linkText():null)
-   +problemsPanel(p,u.problemsOpen,attentionChain(ops))+caveatPopover(r?`${r.mode.toUpperCase()} · ${r.access}`:'—',f.report?.limitations??[],u.caveatOpen);
+   +problemsPanel(p,u.problemsOpen,attentionChain(this.ops(f)))+caveatPopover(r?`${r.mode.toUpperCase()} · ${r.access}`:'—',f.report?.limitations??[],u.caveatOpen);
   return runBar({scenarioTitle:f.preset.title(),runtime:this.runtimeState(),mode:simLabel(r?.mode??null,f.report?.manifest.calibration?.status==='calibrated'),modeToken:r?.mode??null,status:r?statusText(r.status):null,simTimeS:v?Number(v.simTimeNs)/1e9:null,served:v?v.served:null,...problemCounts(p),primary,inspectorOpen:u.inspectorOpen},
    {pickerOpen:u.pickerOpen,runtimeOpen:u.runtimeOpen,problemsOpen:u.problemsOpen,caveatOpen:u.caveatOpen,boxesHtml:boxes});
  }
@@ -339,18 +341,18 @@ export class TwinWorkspace {
   return `<div class="twin-objects" id="twin-objects">${cycleQueue(ops)}${f.view?`<p class="twin-bar-item"><small>${tr('Cốc hiện tại','現在のカップ','Current cup')}${cup?` ${esc(cup.cupId)}`:''}</small><b data-testid="cup-owner">${cup?esc(nameOf(f.preset,cup.ownerId)):'—'}</b></p>`:''}</div>`;
  }
  /** A run that is simply running needs no person: its next step stays on the run bar. */
- private strip(f:TwinFrame){const n=nextAction(this.ops(f)),v=f.view,u=this.replay?f.unrecorded??[]:[];
+ private strip(f:TwinFrame){const n=nextAction(this.controlOps(f)),v=f.view,u=this.replay?f.unrecorded??[]:[];
   // replay: an object with recorded samples but none at this cursor is drawn without them, and that is said
   const none=u.length?`<p class="source-note" data-testid="replay-unrecorded" role="status">${icon('info',15)}${tr('Không có mẫu ghi lại tại thời điểm này (trước mẫu đầu tiên hoặc trong khoảng trống telemetry) cho','この時点の記録サンプルがありません(最初のサンプルより前、またはテレメトリ欠落中):','No recorded sample at this point (before the first one, or in a telemetry gap) for')} ${esc(u.map(id=>nameOf(f.preset,id)).join(', '))}: ${tr('vẽ như khi không có telemetry.','テレメトリがない場合と同じく描画します。','drawn as without telemetry.')}</p>`:'';
   return `<div class="twin-next" id="twin-next">${none}${nextStrip(this.problems(f),v?.run.status==='running'&&!v.attention.length?{title:n.title,detail:n.detail}:n)}</div>`;}
  private transport(f:TwinFrame):TransportState{
   // a runtime that paces steps accepts exactly these factors; an older one keeps the clock's own list
-  const v=f.view,c=runControls(this.ops(f)),r=this.replay,speeds=this.health?.features?.pacedStep||!this.clock()?.speeds.length?[...SPEED_FACTORS]:this.clock()!.speeds;
+  const v=f.view,c=runControls(this.controlOps(f)),r=this.replay,speeds=this.health?.features?.pacedStep||!this.clock()?.speeds.length?[...SPEED_FACTORS]:this.clock()!.speeds;
   // a paced run pauses with one press (the loop stops, then pause follows its last step); while that is pending it says so and cannot be pressed again
-  const pacedPause=!!this.health?.features?.pacedStep&&this.playing&&!r;
+  const pacedPause=!!this.health?.features?.pacedStep&&this.playing&&!r&&c.live;
   return {mode:r?'replay':v?'live':'idle',playing:this.playing,canPlay:c.canPlay,canStep:c.canStep,canPause:!this.pausing&&(c.canPause||pacedPause||this.payloadStopping&&!this.payloadStopPause),pausing:this.pausing||this.payloadStopping&&this.payloadStopPause,paused:this.payloadStopping?false:c.paused||this.runPreset?.id==='mujoco-payload'&&this.payloadCancelPaused,canCancel:c.canCancel,speeds,speed:this.runSpeed,
    simTimeS:r?r.tick*r.rp.range.tickMs/1000:v?Number(v.simTimeNs)/1e9:0,tick:r?r.tick:v?.tick??0,measuredSpeed:this.playing&&!r?this.measuredSpeed:undefined,
-   ...r?{replay:{fromTick:r.rp.range.fromTick,toTick:r.rp.range.toTick,tick:r.tick,playing:r.playing,step:f.preset.id==='mujoco-payload'?1:5,marks:this.report?replayMarks(this.report):[]}}:{}};
+   ...r?{replay:{fromTick:r.rp.range.fromTick,toTick:r.rp.range.toTick,tick:r.tick,playing:r.playing,step:['mujoco-payload','mujoco-cell'].includes(f.preset.id)?1:5,marks:this.report?replayMarks(this.report):[]}}:{}};
  }
  /** [runtime, pin] short commits when the runtime this page reached is not the Lab's pin (or a create was refused for it): no run is started. */
  private pinBlock():string[]|null{const c=this.health?.sourceCommit;return c&&this.pinExpected&&c!==this.pinExpected?[c.slice(0,7),this.pinExpected.slice(0,7)]:this.pinMismatch;}
@@ -380,7 +382,7 @@ ${this.vs.view==='3d'&&this.v3d?.armCellDrawn(f)?`<p class="source-note" data-te
   const viewport=`<section class="twin-viewport" aria-label="${tr('Khung nhìn','ビューポート','Viewport')}"><div class="twin-stage" id="twin-stage" data-testid="twin-scene">${renderTwin(f,this.vs)}</div>
 <div class="twin-viewport-tools"><div class="twin-tool-row">${this.vs.view==='3d'&&!this.webglFailed?tool('twin-camera-home','home',tr('Về góc nhìn gốc (kịch bản tay máy: trạm tay máy)','初期視点に戻す(アームのシナリオ:アームセル)','Reset the camera (arm scenarios: the arm cell)'))+tool('twin-camera-fit','fit',tr('Vừa khung đối tượng chọn (không chọn: cả mặt bằng)','選択対象に合わせる(未選択なら床全体)','Fit the selected object (none: the whole floor)')):''}${tool('twin-watch',this.ui.watch?'cross':'eye',this.ui.watch?tr('Thoát chế độ xem','視聴モードを終了','Exit watch mode'):tr('Chế độ xem','視聴モード','Watch mode'),` aria-pressed="${this.ui.watch}"`)}${tool('twin-help','keyboard',tr('Phím tắt','キーボードショートカット','Keyboard shortcuts'),` aria-expanded="${this.helpOpen}" aria-controls="twin-shortcuts"`)}<button class="button quiet" data-action="twin-display-toggle" aria-expanded="${this.ui.displayOpen}" aria-controls="twin-display-menu">${icon('design',16)}${tr('Hiển thị','表示','Display')}</button></div>${display}</div>
 ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(this.notice)}</span><button aria-label="${tr('Đóng','閉じる','Dismiss')}" data-action="twin-dismiss">${icon('cross',16)}</button></div>`:''}
-<div class="twin-overlay">${this.reportPending()?`<p class="source-note" data-testid="report-pending" role="status">${icon('info',15)}${tr('Đang tải báo cáo cuối của lần chạy; lưu, xuất và xem lại chờ báo cáo này.','実行の最終レポートを読み込み中です。保存・書き出し・再生はこのレポートを待ちます。','Loading the run\'s final report; saving, export and replay wait for it.')}</p>`:''}${this.webglFailed?`<p class="source-note" data-testid="twin-fallback-note" role="status">${icon('info',15)}${tr('WebGL không khả dụng · đang hiển thị mặt bằng 2D với cùng dữ liệu và lựa chọn.','WebGLを利用できません · 同じデータと選択で2D平面図を表示中。','WebGL unavailable · showing the 2D plan with the same data and selection.')}</p>`:''}${this.strip(f)}</div></section>`;
+<div class="twin-overlay">${p.id==='mujoco-cell'&&(this.replay||this.replayPending)?`<p class="source-note" data-testid="cell-report-world-unavailable" role="status"><b>${tr('Không có tư thế thế giới chính xác trong báo cáo này.','このレポートに正確なワールド姿勢はありません。','Exact world poses are unavailable in this report replay.')}</b> ${tr('Xuất gói replay của lần chạy, giải nén rồi nhập tại Xem mẫu để xem các mẫu vật lý đã xác minh.','実行の再生パッケージを出力・展開し、サンプル画面で読み込んで検証済み物理サンプルを表示してください。','Export this run’s replay package, extract it, then import it in Explore recordings to view verified physical samples.')} <code>WORLD_NOT_RECORDED_IN_REPORT</code> <a href="/#replay">${tr('Xem mẫu','サンプルを見る','Explore recordings')}</a></p>`:''}${this.reportPending()?`<p class="source-note" data-testid="report-pending" role="status">${icon('info',15)}${tr('Đang tải báo cáo cuối của lần chạy; lưu, xuất và xem lại chờ báo cáo này.','実行の最終レポートを読み込み中です。保存・書き出し・再生はこのレポートを待ちます。','Loading the run\'s final report; saving, export and replay wait for it.')}</p>`:''}${this.webglFailed?`<p class="source-note" data-testid="twin-fallback-note" role="status">${icon('info',15)}${tr('WebGL không khả dụng · đang hiển thị mặt bằng 2D với cùng dữ liệu và lựa chọn.','WebGLを利用できません · 同じデータと選択で2D平面図を表示中。','WebGL unavailable · showing the 2D plan with the same data and selection.')}</p>`:''}${this.strip(f)}</div></section>`;
   const list=`<ul class="entity-list" id="twin-entity-list" data-testid="entity-list" aria-label="${tr('Đối tượng trong twin','ツイン内の対象','Twin objects')}">${this.entityList(f)}</ul>`;
   const panels={
    objects:`${this.objects(f)}<div class="panel-heading"><h3 id="ent-title">${tr('Đối tượng trong twin','ツイン内の対象','Twin objects')}</h3><span class="pill">${ents.length}</span></div>${list}`,
@@ -404,7 +406,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   projectImporter?.addEventListener('change',()=>{const file=projectImporter.files?.[0];if(!file||this.busy||this.playing||this.replay||this.archived)return;void this.call(async()=>{if(file.size>MAX_PROJECT_BYTES)throw new Error('PROJECT_TOO_LARGE');const project=await this.projects.importV2(await file.text());this.preset={...this.preset,project};this.readiness=null;});},{once:true});
   importer?.addEventListener('change',()=>{const files=Array.from(importer.files??[]);if(!files.length)return;void this.call(async()=>{const report=files.find(f=>(f.webkitRelativePath?f.webkitRelativePath.split('/').slice(1).join('/'):f.name)==='report.json'),isNavigation=report?!!JSON.parse(await report.text())?.navigation2d:false;const imported=isNavigation?await importNavigationEvidence(files):await importControllerBundle(files);const saved={...captureEvidence(imported.report,imported.project,(imported as {payloadBundle?:PayloadBundle}).payloadBundle),origin:'imported' as const};await this.evidenceStore.save(saved);this.saved=await this.evidenceStore.list();this.notice=tr('Đã nhập bằng chứng chỉ đọc; không thay đổi readiness.','読み取り専用の証跡を取り込みました。実行準備状態は変更しません。','Read-only evidence imported; readiness is unchanged.');});},{once:true});
   if(!this.savedLoaded&&typeof indexedDB!=='undefined'){this.savedLoaded=true;void this.evidenceStore.list().then(saved=>{this.saved=saved;this.rerender();}).catch(e=>{this.notice=String(e);this.rerender();});}
-  if(this.view&&this.rt.paired&&!this.streams&&!this.archived)this.openStreams(this.view);
+  if(this.view&&this.rt.paired&&!this.streams&&!this.archived&&!this.replay&&!this.replayPending)this.openStreams(this.view);
   const token=document.getElementById('twin-pair-token') as HTMLInputElement|null;if(token&&this.tokenDraft)token.value=this.tokenDraft;
   // only a loopback page probes, only its own origin, once, when the twin page is first shown; any other runtime waits for a click (D52)
   if(!this.healthChecked&&!this.probing&&mayAutoProbe(this.target(),location.hostname)){this.probing=true;void this.checkHealth();}
@@ -425,6 +427,11 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
  }
  private fallback(){this.viewer?.dispose();this.viewer=null;this.webglFailed=true;this.vs={...this.vs,view:'2d'};this.rerender();}
  leave(){this.clearWorld();this.exportAbort?.abort();this.worldAbort?.abort();this.worldAbort=null;this.world=null;this.worldView=null;this.worldDrawing=null;this.worldRun='';this.left=true;if(this.raf)cancelAnimationFrame(this.raf);if(this.hiddenStop){this.hiddenStop=false;document.removeEventListener('visibilitychange',this.onVisible);}this.raf=0;if(this.keys){document.removeEventListener('keydown',this.onKey);document.removeEventListener('pointerdown',this.onPress);this.keys=false;}this.ui.watch=false;this.helpOpen=false;this.playing=false;this.viewer?.dispose();this.viewer=null;this.streams?.close();this.streams=null;clearInterval(this.ticker);clearTimeout(this.readinessExpiry);this.stopReplay();}
+ /** Report replay has no exact shared-world stream. Invalidate live requests/history before either report path. */
+ private async startReportReplay(){
+  this.exportAbort?.abort();this.clearWorld();const epoch=++this.gen;this.replayPending=true;this.playing=false;this.stopReplay();this.streams?.close();this.streams=null;clearInterval(this.ticker);this.store=new TwinStore();this.exact=null;if(this.raf)cancelAnimationFrame(this.raf);this.raf=0;
+  try{const report=this.reportFits()?this.report!:await this.finalReport();if(epoch!==this.gen)return;this.replay={rp:openReplayV2(report),tick:0,playing:false};}finally{if(epoch===this.gen)this.replayPending=false;}
+ }
  private stopReplay(){clearInterval(this.replayTimer);this.replayTimer=undefined;if(this.replay)this.replay.playing=false;}
  private track(v:RunView){for(const c of v.coffee?.cups??[]){const k=`${c.cupId}:${c.ownerKind}:${c.ownerId}`;if(!(k in this.seen))this.seen[k]=v.tick;}}
  private async call(task:()=>Promise<void>){
@@ -642,8 +649,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   const current=!this.view||this.reportFits();// a matching report acts at once, as before; otherwise the action waits for the fetch
   if(action==='twin-export'&&this.report)return current?this.download(value??'json',this.report):void this.call(async()=>{this.download(value??'json',await this.finalReport());});
   if(action==='twin-replay'&&this.report&&!this.busy){
-   if(current){this.playing=false;this.replay={rp:openReplayV2(this.report),tick:0,playing:false};return this.rerender();}
-   return void this.call(async()=>{const r=await this.finalReport();this.playing=false;this.replay={rp:openReplayV2(r),tick:0,playing:false};});
+   return void this.call(()=>this.startReportReplay());
   }
   if(action==='twin-replay-exit'){this.stopReplay();this.replay=null;if(this.archived){this.exportAbort?.abort();this.clearWorld();this.gen++;this.archived=false;this.view=null;this.report=null;this.runPreset=null;}this.painted='';return this.rerender();}
   if(action==='twin-replay-play'&&this.replay){
