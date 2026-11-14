@@ -5,11 +5,11 @@ import {readFile,lstat,realpath} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {dirname,resolve,basename} from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath,pathToFileURL} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 // Require a complete clean Git checker; this is independent of the received subject identity.
 // Raw Git-blob comparisons cover fixed imports/reference trees even when index flags hide edits.
-async function checkedCheckerCommit(){
+export async function checkedCheckerCommit(){
  const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',timeout:10000,maxBuffer:8*1024*1024,stdio:['ignore','pipe','pipe']}).trim();
  let sourceCommit,tree;
  try{if(await realpath(git('rev-parse','--show-toplevel'))!==await realpath(root))throw Error('wrong root');sourceCommit=git('rev-parse','HEAD');if(!/^[a-f0-9]{40}$/.test(sourceCommit)||git('rev-parse','--show-object-format')!=='sha1')throw Error('unsupported Git identity');tree=git('ls-tree','-r','-z','--full-tree','HEAD','--','scripts','packages','robotics','integrations','tests/fixtures','package.json','pnpm-lock.yaml','tsconfig.json','.gitignore');}catch{throw Error('CHECKER_GIT_REQUIRED');}
@@ -23,7 +23,7 @@ async function checkedCheckerCommit(){
  }
  return sourceCommit;
 }
-try{
+if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href)try{
  const sourceCommit=await checkedCheckerCommit();
  const {validateNativeHandoff,readNativeHandoff,readHandoffFile,exportNativeHandoff}=await tsImport('../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url);
  const [command,...args]=process.argv.slice(2),allowed=command==='export'?['--input','--out']:command==='verify'?['--input','--inventory']:[];
@@ -33,7 +33,7 @@ try{
  const input=resolve(options['--input']),manifest=await readNativeHandoff(input),inventoryPath=options['--inventory']&&resolve(options['--inventory']);
  const inventory=inventoryPath?JSON.parse((await readHandoffFile(dirname(inventoryPath),basename(inventoryPath))).toString('utf8')):undefined;
  const result=command==='export'?await exportNativeHandoff(input,options['--out']):await validateNativeHandoff(input,manifest,inventory);
- const files=['scripts/native-handoff.mjs','packages/lab-runtime/src/v2/sil/native-handoff.ts','packages/lab-runtime/src/v2/sil/native-handoff-documents.ts','scripts/native-sim/native-inventory.mjs','packages/contracts/schemas/native-handoff-v1.schema.json','pnpm-lock.yaml'],hash=createHash('sha256');
+ const files=['scripts/native-handoff.mjs','packages/lab-runtime/src/v2/sil/native-handoff.ts','packages/lab-runtime/src/v2/sil/native-handoff-documents.ts','packages/lab-runtime/src/v2/sil/native-handoff-r2a.ts','scripts/native-sim/r2a-arm-baseline.json','scripts/native-sim/native-inventory.mjs','packages/contracts/schemas/native-handoff-v1.schema.json','pnpm-lock.yaml'],hash=createHash('sha256');
  for(const file of files)hash.update(file+'\n').update(await readFile(resolve(root,file)));
  if(await checkedCheckerCommit()!==sourceCommit)throw Error('CHECKER_CHANGED_DURING_ASSESSMENT');
  console.log(JSON.stringify({...result,subject:manifest.subject,checker:{sourceCommit,toolSha256:hash.digest('hex')},inventoryAssessment:'supplied_records_only',qualification:'not_run',accepted:false,dynamics:'not_calibrated'},null,2));

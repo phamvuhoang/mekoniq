@@ -1,4 +1,5 @@
 // Static admission for explicitly pinned preparation profiles. No workers, imports from input, or live probes.
+import {r2aDocumentBinding,validateR2aDocuments} from './native-handoff-r2a';
 import {createHash} from 'node:crypto';
 import {canonicalize} from 'json-canonicalize';
 import {isDeepStrictEqual as same} from 'node:util';
@@ -42,6 +43,7 @@ const pumaModel=toSI({id:pumaDh.id,convention:'modified_dh',provenance:'illustra
 const WORLD_KINDS=['mujoco_world_v1','mujoco_cell_v1','xarm_ros_canonical_v1'];
 /** Authoring helper for the supported pinned reference profiles; this never derives expected compatibility from caller documents. */
 export function nativeDocumentBinding(kind:string):HandoffDocumentBinding{
+ if(kind==='mujoco_r2a_arm_v1')return r2aDocumentBinding();
  if(kind==='puma_controller_reference_v1')return {
   kind,modelRevision:pumaManifest.hashes['modified-dh.json'],siModelRevision:pumaModel.revision,sourceUnits:{length:'inch',angle:'deg',alpha:'rad'},lengthToM:0.0254,angleToRad:Math.PI/180,
   frameMap:{world:'world',robotBase:pumaManifest.frames.base,armBase:pumaManifest.frames.base,flange:pumaManifest.frames.flange,tcp:pumaManifest.frames.tcp,tree:pumaFrames.frames,toolRevision:pumaFrames.toolRevision,drive:null,tray:null,sensors:[],simulationPlacement:pumaConfig.simulationScene.worldFromArmBaseM,placementProvenance:'illustrative_simulation_only'},
@@ -72,6 +74,7 @@ export function validateNativeDocuments(m:NativeHandoffV1,contents:ReadonlyMap<s
  const read=(role:'project'|'world'|'model')=>{try{return JSON.parse(contents.get(m.refs[role][0].path)!.toString('utf8')) as unknown;}catch{throw Error('DOCUMENT_JSON_INVALID');}};
  const all=Object.values(m.refs).flat(),bySource=(path:string)=>{const refs=all.filter(r=>r.sourcePath===path);if(refs.length!==1)throw Error('DOCUMENT_DEPENDENCY_MISSING');return contents.get(refs[0]!.path)!;};
  try{
+  if(m.profile.documents.kind==='mujoco_r2a_arm_v1'){validateR2aDocuments(m,contents);return issues;}
   for(const [name,schema]of Object.entries(SCHEMAS)){const ref=m.refs.schema.find(r=>r.sourcePath===name);if(!ref)throw Error('DOCUMENT_SCHEMA_MISSING');if(!same(JSON.parse(contents.get(ref.path)!.toString()),schema))throw Error('DOCUMENT_SCHEMA_UNSUPPORTED');}
   const p=read('project'),w=read('world'),model=read('model'),kind=m.profile.documents.kind,binding=nativeDocumentBinding(kind);
   if(kind==='engineering_navigation_ros_canonical_v1'){

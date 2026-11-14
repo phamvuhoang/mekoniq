@@ -1,0 +1,380 @@
+{
+  "id": "mujoco-r2a-linux-amd64-v1",
+  "modelId": "xarm6-g2-v1",
+  "modelSha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+  "architecture": "amd64",
+  "os": {
+    "id": "debian",
+    "version": "12"
+  },
+  "requiredPackages": [
+    {
+      "name": "mujoco",
+      "version": "3.17.0",
+      "sha256": null
+    }
+  ],
+  "forbiddenPackages": [
+    "mujoco-core"
+  ],
+  "clockDomains": [
+    "engine_fixed_20ms",
+    "source_monotonic"
+  ],
+  "installation": {
+    "kind": "oci"
+  },
+  "documents": {
+    "kind": "mujoco_r2a_arm_v1",
+    "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+    "siModelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+    "sourceUnits": {
+      "length": "m",
+      "angle": "rad",
+      "alpha": "rad"
+    },
+    "lengthToM": 1,
+    "angleToRad": 1,
+    "frameMap": {
+      "world": "map",
+      "robotBase": "base",
+      "armBase": "base",
+      "baseInMap": {
+        "position": [
+          2.65,
+          0.65,
+          0.7
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "flange": "link6",
+      "tcp": "tcp",
+      "tcpInFlange": {
+        "translationM": [
+          0,
+          0,
+          0.172
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "armTree": [
+        {
+          "id": "link1",
+          "parent": "base",
+          "origin": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0.267
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "link2",
+          "parent": "link1",
+          "origin": {
+            "quaternionXyzw": [
+              -0.707108079859,
+              0,
+              0,
+              0.707105482511
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "link3",
+          "parent": "link2",
+          "origin": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0.0535,
+              -0.2845,
+              0
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "link4",
+          "parent": "link3",
+          "origin": {
+            "quaternionXyzw": [
+              -0.707108079859,
+              0,
+              0,
+              0.707105482511
+            ],
+            "xyzM": [
+              0.0775,
+              0.3425,
+              0
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "link5",
+          "parent": "link4",
+          "origin": {
+            "quaternionXyzw": [
+              0.707108079859,
+              0,
+              0,
+              0.707105482511
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "link6",
+          "parent": "link5",
+          "origin": {
+            "quaternionXyzw": [
+              -0.707108079859,
+              0,
+              0,
+              0.707105482511
+            ],
+            "xyzM": [
+              0.076,
+              0.097,
+              0
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "xarm_gripper_base_link",
+          "parent": "link6",
+          "origin": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "kind": "fixed"
+        },
+        {
+          "id": "left_outer_knuckle",
+          "parent": "xarm_gripper_base_link",
+          "origin": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0.035,
+              0.059098
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "left_finger",
+          "parent": "left_outer_knuckle",
+          "origin": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0.035465,
+              0.042039
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "left_inner_knuckle",
+          "parent": "xarm_gripper_base_link",
+          "origin": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0.02,
+              0.074098
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "right_outer_knuckle",
+          "parent": "xarm_gripper_base_link",
+          "origin": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              -0.035,
+              0.059098
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "right_finger",
+          "parent": "right_outer_knuckle",
+          "origin": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              -0.035465,
+              0.042039
+            ]
+          },
+          "kind": "revolute"
+        },
+        {
+          "id": "right_inner_knuckle",
+          "parent": "xarm_gripper_base_link",
+          "origin": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              -0.02,
+              0.074098
+            ]
+          },
+          "kind": "revolute"
+        }
+      ],
+      "drive": null,
+      "tray": {
+        "frame": "arm_base",
+        "centerM": [
+          0.35,
+          0.35,
+          0.03
+        ],
+        "sizeM": [
+          0.2,
+          0.2,
+          0.06
+        ]
+      },
+      "sensors": []
+    },
+    "jointMap": [
+      {
+        "id": "J1",
+        "controllerJoint": "J1",
+        "sign": 1,
+        "zeroOffsetRad": 0,
+        "lowerRad": -6.28318530718,
+        "upperRad": 6.28318530718,
+        "velocityRadS": 3.14
+      },
+      {
+        "id": "J2",
+        "controllerJoint": "J2",
+        "sign": 1,
+        "zeroOffsetRad": 0,
+        "lowerRad": -2.059,
+        "upperRad": 2.0944,
+        "velocityRadS": 3.14
+      },
+      {
+        "id": "J3",
+        "controllerJoint": "J3",
+        "sign": 1,
+        "zeroOffsetRad": 0,
+        "lowerRad": -3.927,
+        "upperRad": 0.19198,
+        "velocityRadS": 3.14
+      },
+      {
+        "id": "J4",
+        "controllerJoint": "J4",
+        "sign": 1,
+        "zeroOffsetRad": 0,
+        "lowerRad": -6.28318530718,
+        "upperRad": 6.28318530718,
+        "velocityRadS": 3.14
+      },
+      {
+        "id": "J5",
+        "controllerJoint": "J5",
+        "sign": 1,
+        "zeroOffsetRad": 0,
+        "lowerRad": -1.69297,
+        "upperRad": 3.14159265359,
+        "velocityRadS": 3.14
+      },
+      {
+        "id": "J6",
+        "controllerJoint": "J6",
+        "sign": 1,
+        "zeroOffsetRad": 0,
+        "lowerRad": -6.28318530718,
+        "upperRad": 6.28318530718,
+        "velocityRadS": 3.14
+      }
+    ],
+    "inertiaOrder": "xx_xy_xz_yy_yz_zz"
+  }
+}

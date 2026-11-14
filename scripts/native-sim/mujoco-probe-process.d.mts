@@ -1,0 +1,1 @@
+export function runProbeCommand(command:string,args:string[],options:{out:string;cwd?:string;env?:NodeJS.ProcessEnv;timeoutMs:number;signal?:AbortSignal;maxBytes?:number}):Promise<{status:string;reason:string|null;exitCode:number|null;[key:string]:unknown}>;
