@@ -5,6 +5,8 @@ import {auditBundle} from './runtime-audit.mjs';
 export const digest=(value)=>createHash('sha256').update(value).digest('hex');
 // Protocol majors this Lab speaks: v1 (S01 business_sim) and v2 (twin, FD01/BV01). An artifact offering anything else needs a Lab update first.
 export const LAB_PROTOCOL_MAJORS=[1,2];
+/** Incoming UTF-8 manifest bound, matched by the Source exporter; closure/schema/path limits remain separate. */
+export const RUNTIME_MANIFEST_MAX_BYTES=256*1024;
 const SCHEMA_NAME=/^[a-z0-9][a-z0-9.-]*\.json$/;
 export function validateManifest(m) {
  if(m?.dirty!==false)throw new Error('DIRTY_SOURCE_ARTIFACT');
@@ -79,7 +81,7 @@ async function readSchemas(input,manifest){
  * Any failure leaves the current lock and installed artifacts untouched. The previous lock is kept in .runtime/rollback.lock.json (its artifact stays installed). */
 export async function installRuntime(from,destination) {
  const input=resolve(from),root=resolve(destination);
- if((await stat(join(input,'manifest.json'))).size>65536) throw new Error('INVALID_RUNTIME_MANIFEST');
+ if((await stat(join(input,'manifest.json'))).size>RUNTIME_MANIFEST_MAX_BYTES) throw new Error('INVALID_RUNTIME_MANIFEST');
  const manifest=validateManifest(JSON.parse(await readFile(join(input,'manifest.json'),'utf8')));
  if((await stat(join(input,'runtime.mjs'))).size>64*1024*1024) throw new Error('ARTIFACT_TOO_LARGE');
  const bytes=await readFile(join(input,'runtime.mjs'));

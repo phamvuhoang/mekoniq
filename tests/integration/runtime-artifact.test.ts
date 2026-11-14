@@ -1,5 +1,5 @@
 import {expect,test} from 'vitest';
-import {mkdtemp,writeFile,readFile,mkdir,rm} from 'node:fs/promises';
+import {mkdtemp,writeFile,readFile,mkdir,rm,readdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
@@ -25,4 +25,12 @@ test('installed schema tampering is rejected before launch or offline repackagin
   await writeFile(join(f.dest,'.runtime',f.manifest.artifactSha256,'manifest.json'),JSON.stringify(withoutSchemas));
   await expect(checkedRuntime(f.dest)).rejects.toThrow('SCHEMA_SET_MISMATCH');
  }finally{await rm(f.dir,{recursive:true,force:true});}
+});
+
+const paddedManifest=(manifest:object,size:number)=>{const base={...manifest,note:''},empty=Buffer.byteLength(JSON.stringify(base)+'\n');return Buffer.from(JSON.stringify({...base,note:'x'.repeat(size-empty)})+'\n');};
+test('valid runtime manifests above64KiB and at the256KiB boundary install with identical provenance',async()=>{
+ for(const size of [65537,256*1024]){const f=await fixture();try{await writeFile(join(f.from,'manifest.json'),paddedManifest(f.manifest,size));const lock=await installRuntime(f.from,f.dest);expect(lock.sourceCommit).toBe(f.manifest.sourceCommit);expect(lock.artifactSha256).toBe(f.manifest.artifactSha256);await checkedRuntime(f.dest);}finally{await rm(f.dir,{recursive:true,force:true});}}
+});
+test('manifest cap+1 refuses before new destination or existing pin/artifact mutation',async()=>{
+ const f=await fixture();try{await installRuntime(f.from,f.dest);const pin=await readFile(join(f.dest,'config/source-runtime.lock.json')),names=await readdir(join(f.dest,'.runtime'));await writeFile(join(f.from,'manifest.json'),paddedManifest(f.manifest,256*1024+1));await expect(installRuntime(f.from,f.dest)).rejects.toThrow('INVALID_RUNTIME_MANIFEST');expect(await readFile(join(f.dest,'config/source-runtime.lock.json'))).toEqual(pin);expect(await readdir(join(f.dest,'.runtime'))).toEqual(names);expect(await readFile(join(f.dest,'.runtime',f.manifest.artifactSha256,'runtime.mjs'),'utf8')).toBe(f.js);const absent=join(f.dir,'never-created');await expect(installRuntime(f.from,absent)).rejects.toThrow('INVALID_RUNTIME_MANIFEST');await expect(readdir(absent)).rejects.toMatchObject({code:'ENOENT'});}finally{await rm(f.dir,{recursive:true,force:true});}
 });

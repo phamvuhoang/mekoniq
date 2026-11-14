@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 9f68476f784cfe58bf7eaa66969656b9e3d266f9 (sha256 6680b00433419d2058e069c865648cff9faa77040bde216bccdb8744a63d1f4a). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ c49d5bfea6087811ace89874c092d0d62001eead (sha256 5051d7e59fab627319456fc301afcec941a47d8dbbe7a813f792f6abc6b3b7d9). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -307,6 +307,17 @@ export type Sim3DRequestV1 =
           kind: 'birth' | 'remove';
           targetTick: number;
         }[];
+        /**
+         * @maxItems 1
+         */
+        worldPerturbations?: {
+          eventId: string;
+          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+          revision: 1;
+          targetId: string;
+          targetTick: number;
+        }[];
+        worldControl?: WorldControlV1;
       };
     }
   | {
@@ -1258,6 +1269,38 @@ export interface Sim3DSnapshotV1 {
     nv: number;
     nbody: number;
     ngeom: number;
+    /**
+     * @maxItems 1
+     */
+    disturbances?: {
+      eventId: string;
+      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+      revision: 1;
+      targetId: string;
+      targetTick: number;
+      runId: string;
+      bootId: string;
+      sceneDigest: string;
+      requestId: string;
+      requestDigest: string;
+      frame: 'map';
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      forceMapN: number[];
+      durationSubsteps: 10;
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      beforePositionM: number[];
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      afterPositionM: number[];
+    }[];
   };
 }
 /**
@@ -1485,6 +1528,27 @@ export interface Sim3DPoseV1 {
    * @maxItems 4
    */
   quaternionXyzw: number[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "WorldControlV1".
+ */
+export interface WorldControlV1 {
+  version: 1;
+  program: {
+    commandId: string;
+    transferId: string;
+    cupId: string;
+    sourceEventId: string;
+    payloadHash: string;
+    controlEpoch: number;
+    programId: 'cup-pick' | 'cup-place';
+    stage: number;
+    waypoint: string;
+  } | null;
+  attachmentProxyPropId: string | null;
+  movementInterlocked: boolean;
+  stopLatched: boolean;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1883,6 +1947,44 @@ export interface LabWorldSceneV1 {
     phase: 'grasp' | 'release';
     regionId: string;
   }[];
+  controllerPolicy?: {
+    id: 'grid-diff-world-v1' | 'grid-diff-world-v2' | 'grid-diff-world-v3' | 'grid-diff-world-v4';
+    version: '1' | '2' | '3' | '4';
+    provenance: 'assumed';
+    bounds: {
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      minM: number[];
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      maxM: number[];
+    };
+    justification: string;
+    tolerances: {
+      legM: 0.004;
+      positionM: 0.008;
+      yawRad: 0.016;
+      translationScope: 'every_translation';
+    };
+    braking?: {
+      designBrakingDecelerationMps2: 0.25;
+      settleBeforeTranslationAdvance: true;
+    };
+    terminalApproachDistanceM?: 0.2;
+    terminalApproachDirection?: 'reverse';
+  };
+  disturbance?: {
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+    revision: 1;
+    targetId: string;
+    trigger: 'before_release' | 'transport';
+    cupId: string;
+  };
+  controlContextVersion?: 1;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1952,6 +2054,17 @@ export interface WorldEvidenceRecord {
       kind: 'birth' | 'remove';
       targetTick: number;
     }[];
+    /**
+     * @maxItems 1
+     */
+    worldPerturbations?: {
+      eventId: string;
+      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+      revision: 1;
+      targetId: string;
+      targetTick: number;
+    }[];
+    worldControl?: WorldControlV1;
   } | null;
   /**
    * @maxItems 16
