@@ -1,0 +1,608 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "native-handoff-v1.schema.json",
+  "title": "NativeHandoffV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "subject",
+    "checker",
+    "refs",
+    "profile",
+    "frames",
+    "units",
+    "seeds",
+    "casePolicy",
+    "accepted",
+    "dynamics"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "subject": {
+      "$ref": "#/definitions/HandoffSubject"
+    },
+    "checker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceCommit",
+        "toolSha256"
+      ],
+      "properties": {
+        "sourceCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "toolSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtimeManifest",
+        "labLock",
+        "runtime",
+        "project",
+        "world",
+        "model",
+        "profile",
+        "schema",
+        "engine",
+        "tool"
+      ],
+      "properties": {
+        "runtimeManifest": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        },
+        "labLock": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        },
+        "runtime": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        },
+        "project": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        },
+        "world": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        },
+        "model": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        },
+        "profile": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        },
+        "schema": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 512,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        },
+        "engine": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 512,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        },
+        "tool": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 512,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        },
+        "archive": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
+        }
+      }
+    },
+    "profile": {
+      "$ref": "#/definitions/HandoffProfile"
+    },
+    "frames": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "world",
+        "robotBase",
+        "tool",
+        "handedness"
+      ],
+      "properties": {
+        "world": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "robotBase": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "tool": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "handedness": {
+          "const": "right"
+        }
+      }
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "length",
+        "angle",
+        "mass",
+        "time"
+      ],
+      "properties": {
+        "length": {
+          "const": "m"
+        },
+        "angle": {
+          "const": "rad"
+        },
+        "mass": {
+          "const": "kg"
+        },
+        "time": {
+          "const": "s"
+        }
+      }
+    },
+    "seeds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 4294967295
+      },
+      "uniqueItems": true
+    },
+    "casePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "lostAck",
+        "authority"
+      ],
+      "properties": {
+        "required": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "uniqueItems": true
+        },
+        "lostAck": {
+          "const": "unknown_no_resend"
+        },
+        "authority": {
+          "const": "source"
+        }
+      }
+    },
+    "accepted": {
+      "const": false
+    },
+    "dynamics": {
+      "const": "not_calibrated"
+    }
+  },
+  "definitions": {
+    "HandoffImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "manifestDigest",
+        "configDigest"
+      ],
+      "properties": {
+        "platform": {
+          "enum": [
+            "linux/amd64",
+            "linux/arm64"
+          ]
+        },
+        "manifestDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "configDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      }
+    },
+    "HandoffSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "sourceCommit",
+        "labCommit",
+        "schemaHash",
+        "portableClosureHash",
+        "runtimeArtifactSha256",
+        "image",
+        "executionKind",
+        "profileSha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "sourceCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "labCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "schemaHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "portableClosureHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "runtimeArtifactSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "image": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/HandoffImage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executionKind": {
+          "enum": [
+            "mujoco_image",
+            "ros2_native",
+            "linuxcnc_native"
+          ]
+        },
+        "profileSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "HandoffPackage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "sha256"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "HandoffProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "modelId",
+        "modelSha256",
+        "architecture",
+        "os",
+        "requiredPackages",
+        "forbiddenPackages",
+        "clockDomains",
+        "installation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "modelId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "modelSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "architecture": {
+          "enum": [
+            "amd64",
+            "arm64"
+          ]
+        },
+        "os": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          }
+        },
+        "requiredPackages": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/definitions/HandoffPackage"
+          }
+        },
+        "forbiddenPackages": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 256,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "uniqueItems": true
+        },
+        "clockDomains": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "uniqueItems": true
+        },
+        "installation": {
+          "$ref": "#/definitions/HandoffInstallation"
+        }
+      }
+    },
+    "HandoffRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "bytes",
+        "sourcePath",
+        "sourceCommit"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "maxLength": 240,
+          "pattern": "^[A-Za-z0-9_-][A-Za-z0-9_.-]*(/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 67108864
+        },
+        "sourcePath": {
+          "type": "string",
+          "maxLength": 240,
+          "pattern": "^[A-Za-z0-9_-][A-Za-z0-9_.-]*(/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$"
+        },
+        "sourceCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        }
+      }
+    },
+    "HandoffInstallation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "oci"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "sources",
+            "packageSources"
+          ],
+          "properties": {
+            "kind": {
+              "const": "native_apt"
+            },
+            "sources": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "kind",
+                  "uri",
+                  "sha256"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "kind": {
+                    "enum": [
+                      "apt_repository",
+                      "source_archive"
+                    ]
+                  },
+                  "uri": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  },
+                  "sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "packageSources": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "sourceId"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "sourceId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

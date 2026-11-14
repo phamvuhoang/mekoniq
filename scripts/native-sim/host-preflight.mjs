@@ -6,6 +6,7 @@ import {execFileSync} from 'node:child_process';
 import {cpus,totalmem,platform,arch} from 'node:os';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
+export {collectNativeInventory} from './native-inventory.mjs';
 export function resourceDecision({systemFreeBytes,vmFreeBytes,sameVolume,memoryBytes}){
  const gib=1024**3,blockers=[];
  if(systemFreeBytes<20*gib)blockers.push('SYSTEM_RESERVE_INSUFFICIENT');

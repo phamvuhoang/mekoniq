@@ -57,7 +57,11 @@ for (const [name, type] of Object.entries(navFiles)) {
 }
 const navOutput = "/* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */\nimport type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';\n" + await compile({ title: 'Navigation2DContracts', type: 'object', additionalProperties: false, properties: {}, definitions: navDefinitions }, 'Navigation2DContracts', { bannerComment: '', ignoreMinAndMaxItems: true, style: { singleQuote: true, semi: true, tabWidth: 2 }, unknownAny: false, unreachableDefinitions: true });
 const navFile = new URL('../packages/contracts/generated/navigation2d.ts', import.meta.url);
+const handoffSchema=JSON.parse(await readFile(new URL('native-handoff-v1.schema.json',v2Dir),'utf8'));
+const handoffOutput=await compile(handoffSchema,'NativeHandoffV1',{bannerComment:'/* Generated from native-handoff-v1.schema.json. Run pnpm contracts:generate; do not edit. */',style:{singleQuote:true,semi:true,tabWidth:2},unknownAny:false,ignoreMinAndMaxItems:true});
+const handoffFile=new URL('../packages/contracts/generated/native-handoff.ts',import.meta.url);
 if (process.argv.includes('--check')) {
+  if ((await readFile(handoffFile,'utf8').catch(()=>''))!==handoffOutput) throw new Error('GENERATED_CONTRACT_DRIFT: native-handoff');
   const actual = await readFile(outputFile, 'utf8').catch(() => '');
   if (actual !== output) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate');
   if ((await readFile(v2File, 'utf8').catch(() => '')) !== v2Output) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate (lab-v2)');
@@ -65,9 +69,10 @@ if (process.argv.includes('--check')) {
   if ((await readFile(navFile, 'utf8').catch(() => '')) !== navOutput) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate (navigation2d)');
   console.log('Contract generation matches schema.');
 } else {
+  await writeFile(handoffFile,handoffOutput);
   await writeFile(outputFile, output);
   await writeFile(v2File, v2Output);
   await writeFile(engFile, engOutput);
   await writeFile(navFile, navOutput);
-  console.log('Generated packages/contracts/generated/wire.ts, lab-v2.ts, engineering.ts and navigation2d.ts');
+  console.log('Generated packages/contracts/generated/wire.ts, lab-v2.ts, engineering.ts, navigation2d.ts and native-handoff.ts');
 }

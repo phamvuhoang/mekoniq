@@ -1,7 +1,8 @@
-const sha=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
+import {isSha256 as sha,nativeInventoryIssues} from './native-inventory.mjs';
 const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const strings=v=>Array.isArray(v)&&v.every(x=>typeof x==='string');
-export function validNativeProfileReport(v,id){
+export function validNativeProfileReport(v,id,expected){
+ if(expected!==undefined)return v?.profileId===id&&expected?.profile?.id===id&&nativeInventoryIssues(v,expected).length===0;
  if(!object(v)||v.id!==id||typeof v.available!=='boolean'||!strings(v.reasonCodes))return false;
  if(!v.available)return v.reasonCodes.length>0;
  if(v.reasonCodes.length||!sha(v.profileSha256)||!sha(v.inventorySha256)||v.installation!=='native_apt'||v.image!==null||v.headless!==true)return false;
