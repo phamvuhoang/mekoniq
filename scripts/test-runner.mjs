@@ -12,6 +12,7 @@ if (suite === 'acceptance' && args[0] === 'continuity') args[0] = 'tests/accepta
 else if (suite === 'acceptance' && ['release-manifest', 'first-shift'].includes(args[0])) args[0] = `tests/acceptance/${args[0]}.test.ts`;
 else if (suite === 'acceptance' && args[0] === 'linkforge-irsim') args[0] = 'tests/acceptance/linkforge-irsim.acceptance.test.ts';
 else if (suite === 'acceptance' && args[0] === 'sim-extension') args[0] = 'tests/acceptance/sim-extension.acceptance.test.ts';
+else if (suite === 'acceptance' && args[0] === 'cloud-run') args[0] = 'tests/acceptance/cloud-run.acceptance.test.ts';
 if (suite === 'load') {
   // the load suite MEASURES first (a fresh artifact for this commit), then asserts the budget on that artifact
   const free = args.includes('--free'), measured = spawnSync(process.execPath, ['scripts/run-load.mjs', ...(free ? ['--free'] : [])], { stdio: 'inherit' });
