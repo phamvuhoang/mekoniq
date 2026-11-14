@@ -5,14 +5,14 @@
   "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
   "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
   "productionLabUrl": "https://mekoniq-lab.vercel.app",
-  "productionLabStatus": "pending_new_pin_deployment",
+  "productionLabStatus": "READY",
   "cloud": {
     "url": "https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app",
     "project": "mekoniq",
     "region": "asia-southeast1",
     "revision": "mekoniq-lab-runtime-00002-9lx",
     "httpSmoke": "tested",
-    "browserSmoke": "not_run",
+    "browserSmoke": "passed",
     "tick": 4800,
     "served": 2,
     "httpStepWallMs": 71313,
@@ -24,7 +24,8 @@
       "basis": "cloud-run supplemental guard",
       "originalR2aStatus": "blocked_external",
       "accepted": false
-    }
+    },
+    "browserSmokeScope": "automated headless Chrome157 from production Lab origin to Cloud Run; not manual HTTPS-to-loopback qualification"
   },
   "humanAcceptance": false,
   "images": [
@@ -64,5 +65,55 @@
       "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-twin-transport/U03-watch-desktop.png",
       "scope": "automated local UI test; not deployed production UI"
     }
-  ]
+  ],
+  "productionLabCommit": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+  "productionSourceCommit": "d1a2522a89f17d0f9d8d2c444975778844f74425",
+  "productionSourceUrl": "https://www.mekoniq.app",
+  "productionSourceStatus": "READY",
+  "productionVerifiedAt": "2026-11-14T01:29:09.640714+00:00",
+  "productionHttpSmoke": {
+    "status": "tested",
+    "sourceLive": {
+      "status": 200,
+      "live": true
+    },
+    "sourceReady": {
+      "status": 200,
+      "ready": true
+    },
+    "sourceRoot": 200,
+    "labRoot": 200
+  },
+  "labCommitRole": "historical local qualification and screenshot capture",
+  "manualBrowserChecks": {
+    "status": "not_run",
+    "scope": "human Chrome/Firefox/Safari HTTPS-to-loopback permissions"
+  },
+  "localUiBaseline": {
+    "scenarioId": "MJ-BV01",
+    "finalTick": 4810,
+    "served": 2,
+    "initialStepTicks": 250,
+    "pacedStepTicks": 20,
+    "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/suites/lab-e2e-mujoco-coffee.log",
+    "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00"
+  },
+  "productionBrowserSmoke": {
+    "status": "passed",
+    "automated": true,
+    "headless": true,
+    "browser": "157.0.8103.78",
+    "finishedAt": "2026-11-14T01:35:34.055Z",
+    "finalTick": 4810,
+    "served": 2,
+    "wallMs": 78411,
+    "selectedSpeed": "16x",
+    "timingScope": "includes network, UI and report overhead; not a CPU/tick or 1x benchmark",
+    "ownRunArchived": true,
+    "pageErrors": [],
+    "manualBrowserCheck": "not_run",
+    "accepted": false,
+    "evidenceFile": "docs/implementation/evidence/production/r2a-2026-11-14/browser-smoke.json",
+    "evidenceSha256": "fa5f1a4843482e1dd75f10e45b763908e969568b2acbf0e959488b084ac44bdb"
+  }
 }

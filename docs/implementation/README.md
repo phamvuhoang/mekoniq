@@ -73,6 +73,7 @@ Bản ghi mới nhất sau code review (source `4f893ac`, Lab `a6ec316`), cùng 
 - [R1.1 candidate-04](evidence/sim-extension/r11-candidate-04/README.md), tay máy Webots.
 - [R2a candidate-02](evidence/sim-extension/r2a-candidate-02/README.md), MuJoCo xArm 6, runtime web và UI; regression R-MOCK tại `lab/docs/implementation/evidence/sim-extension-r2a/regression-02`.
 - [Cloud Run mekoniq / CL01](evidence/cloud-run/mekoniq-2026-11-14/README.md): đã deploy theo lệnh người dùng, image amd64 cùng pin; health, ghép nối, mock, nối lại stream và MJ-BV01 đều đạt trên x86-64 thật. Guard `cloud-run` xác nhận **G-CLOUD1 `tested` qua bản bổ sung**, ràng buộc SHA-256 của đúng qualification R2a và source/Lab pin. Qualification gốc giữ trạng thái legacy `blocked_external`/`not_run`; không sửa dữ liệu đã ghi.
+- [Cập nhật production R2a](evidence/production/r2a-2026-11-14/README.md): source và Lab đã push, Vercel READY, health đạt; Chrome tự động từ Lab production tới Cloud Run chạy `MJ-BV01` hoàn tất, phục vụ 2 và archive run thử. Bằng chứng này có phạm vi riêng với kiểm tay HTTPS tới loopback.
 
 Mọi gate của IR-SIM, R1, R1.1 và bảy gate cục bộ R2a đều `tested`; G-CLOUD1 được kiểm riêng bằng bản bổ sung Cloud Run. ALG04 còn `not_run` (thuộc R3); kiểm tay Chrome, Firefox, Safari trên bản Lab HTTPS mới còn `not_run`. Chưa có sidecar `acceptance.json` cho các bản ghi này; các lần chấp nhận candidate cũ không chuyển sang bản mới. Bản ghi bị thay thế được xóa khỏi cây và giữ trong lịch sử Git.
 

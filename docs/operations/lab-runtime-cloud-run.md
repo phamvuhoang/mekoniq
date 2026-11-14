@@ -10,7 +10,7 @@ Trên Cloud Run Linux x86-64, `MJ-BV01` đã hoàn tất ở tick 4800, phục v
 
 Cùng image amd64 dưới giả lập trên Mac arm64 vẫn gặp `PLANT_UNSTABLE`/`BADQACC` ở tick 1585, kết thúc `needs_attention`, phục vụ 0. Kết quả này được giữ nguyên bên cạnh kết quả Cloud Run; chưa xác định nguyên nhân khác biệt. Các test Python trong image không thay cho smoke đầy đủ của scenario.
 
-Kiểm tay UI trên bản Lab HTTPS mới vẫn `not_run`: chưa push hai nhánh main. Muốn Lab nối dịch vụ này, build Lab phải ghim đúng commit runtime; một build cũ bị từ chối bằng `RUNTIME_PIN_MISMATCH`.
+Hai nhánh main đã được push theo lệnh người dùng ngày 2026-11-14; Vercel production đã READY cho source `d1a2522` và Lab `a744954`. Lab production ghim runtime `4f893ac`, khớp dịch vụ Cloud Run. [Kiểm tự động trên Lab production](../implementation/evidence/production/r2a-2026-11-14/README.md) bằng Chrome đã đạt: ghép nối, mô hình xArm, `MJ-BV01` hoàn tất và phục vụ 2; run thử được archive sau kiểm. UI ghi 4810 tick (bước đầu 250, sau đó nhóm 20), khớp baseline UI trước deploy; CL01 HTTP ghi 4800 với nhóm 50. Kiểm tay Chrome, Firefox, Safari cho luồng HTTPS tới runtime cục bộ vẫn `not_run`.
 
 ## Hành vi nền tảng đã đối chiếu tài liệu, chưa kiểm trên dịch vụ
 
@@ -59,7 +59,7 @@ Có thể thay tệp bằng đường ống để không tạo tệp: `openssl r
 
 ## 3. Dựng và đẩy image
 
-**Điều kiện trước.** Commit mà Lab ghim (trường `sourceCommit` trong `lab/config/source-runtime.lock.json`) phải chứa thư mục `deploy/lab-runtime/` và phần hỗ trợ khóa truy cập của gateway. Nếu commit đang ghim cũ hơn, phải ghim lại Lab vào một commit đủ mới **trước**, rồi mới dựng image. Image phải được dựng từ **một bản clone mới, đúng commit mà Lab đã ghim**, không phải commit khác: Lab từ chối runtime có commit khác với ghim bằng `RUNTIME_PIN_MISMATCH`. Mỗi commit source mới cần Lab ghim lại và image dựng lại.
+**Điều kiện trước.** Commit mà Lab ghim (trường `sourceCommit` trong `lab/config/source-runtime.lock.json`) phải chứa thư mục `deploy/lab-runtime/` và phần hỗ trợ khóa truy cập của gateway. Nếu commit đang ghim cũ hơn, phải ghim lại Lab vào một commit đủ mới **trước**, rồi mới dựng image. Image phải được dựng từ **một bản clone mới, đúng commit mà Lab đã ghim**, không phải commit khác: Lab từ chối runtime có commit khác với ghim bằng `RUNTIME_PIN_MISMATCH`. Khi source thay đổi runtime, schema hoặc portable tool, phải ghim lại Lab và dựng lại image; commit chỉ cập nhật tài liệu, bằng chứng hoặc artifact trình bày không đổi runtime đang ghim.
 
 ```sh
 export PATH="$HOME/.nvm/versions/node/v24.22.2/bin:$PATH"      # Node 24.22.2, pnpm 10.32.1

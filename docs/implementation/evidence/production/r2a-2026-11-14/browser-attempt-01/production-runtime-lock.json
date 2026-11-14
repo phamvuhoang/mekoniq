@@ -1,0 +1,18 @@
+{
+  "dirty": false,
+  "packageVersion": "0.1.0",
+  "toolchain": {
+    "node": "v24.22.2"
+  },
+  "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
+  "protocolMajor": 2,
+  "protocolMajors": [
+    1,
+    2
+  ],
+  "nodeMajor": 24,
+  "artifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+  "entrypoint": "runtime.mjs",
+  "portableToolsDigest": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d"
+}

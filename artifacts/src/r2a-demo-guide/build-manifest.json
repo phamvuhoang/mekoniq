@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "artifact": "mekoniq-r2a-demo-guide.html",
-  "sha256": "324f89585f13d48c3a25a178aafed9ec0cd74b76011d8bacd99ad6b257994773",
-  "bytes": 1129953,
+  "sha256": "a22dabf893a7bea5f5aaaa72dfac8e1c060602c497b7d5b24708f959e097e540",
+  "bytes": 1131427,
   "inputs": {
-    "build.py": "9c05550e02656d31d2339f920468734136303c43b91a0fcd6ea024dd316629c7",
+    "build.py": "73447f2511c72d6110c80d56461c9783a764740cc50eb7d849e1fa7fea12e42f",
     "style.css": "06a984f25a1a8c8c0e932c9bd80e020e9a57a3adef5a9f376b907b1a786ae8d3",
     "app.js": "8999434c1f7782113fed12f607c664e52fef5230df0d57e2762672a1defb7b30",
-    "facts.json": "5dba1673a1ca96694e44fb621c7daf042a36521228c16cd5dbdbdf8fb7dc383e"
+    "facts.json": "46555e67d12bb63001efa6eccfe4c60fcc5d6976a1920151fb09992ac32fc785"
   },
   "translationTriples": 177,
   "shellCommands": [

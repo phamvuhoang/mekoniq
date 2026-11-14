@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-11-14T01:09:09.762Z",
+  "recordedAt": "2026-11-14T01:37:33.075Z",
   "artifact": "mekoniq-r2a-demo-guide.html",
   "mode": "browser",
   "checks": [
@@ -62,6 +62,6 @@
     }
   ],
   "passed": true,
-  "sha256": "324f89585f13d48c3a25a178aafed9ec0cd74b76011d8bacd99ad6b257994773",
+  "sha256": "a22dabf893a7bea5f5aaaa72dfac8e1c060602c497b7d5b24708f959e097e540",
   "browser": "157.0.8103.78"
 }

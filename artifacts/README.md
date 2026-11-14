@@ -12,7 +12,7 @@ Các bản HTML tự chứa, chuyển trực tiếp **Tiếng Việt / 日本語
 
 ## Hướng dẫn demo R2a
 
-[HTML R2a](mekoniq-r2a-demo-guide.html) trình bày chức năng và các bước demo xArm 6 trên MuJoCo: ghép nối Web/Local, điều khiển 1× và tăng tốc, xem khớp, camera/watch mode, báo cáo và replay. Có lệnh/URL sao chép, ma trận backend và xử lý lỗi. Bốn ảnh gốc từ bản ghi kiểm UI cục bộ R2a; không phải ảnh production. Snapshot ghi rõ Cloud Run HTTP đã đạt, production Lab còn chờ bản pin mới và chưa nghiệm thu bởi con người.
+[HTML R2a](mekoniq-r2a-demo-guide.html) trình bày chức năng và các bước demo xArm 6 trên MuJoCo: ghép nối Web/Local, điều khiển 1× và tăng tốc, xem khớp, camera/watch mode, báo cáo và replay. Có lệnh/URL sao chép, ma trận backend và xử lý lỗi. Bốn ảnh gốc từ bản ghi kiểm UI cục bộ R2a; không phải ảnh production. Snapshot ghi rõ Cloud Run HTTP đã đạt, source và Lab production đã READY, demo Chrome production đã đạt và chưa nghiệm thu bởi con người.
 
 Nguồn và builder riêng: [src/r2a-demo-guide/README.md](src/r2a-demo-guide/README.md). Build bằng `python3 -B artifacts/src/r2a-demo-guide/build.py`; kiểm bằng `node artifacts/src/r2a-demo-guide/verify.cjs` từ source. HTML không chạy engine hay đọc khóa truy cập. Xem [kết quả kiểm](src/r2a-demo-guide/verification.json), [desktop](src/r2a-demo-guide/desktop-preview.png) và [mobile](src/r2a-demo-guide/mobile-preview.png).
 

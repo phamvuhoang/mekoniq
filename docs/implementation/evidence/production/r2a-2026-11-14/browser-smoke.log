@@ -1,0 +1,66 @@
+Production Lab runtime pin: passed
+Pairing and runtime identity from production origin: passed
+MuJoCo preset, xArm mesh and cell supports: passed
+MuJoCo browser run: 120 step requests completed
+MuJoCo browser run: 193 step requests completed
+MJ-BV01 completed in production UI: passed
+{
+  "schema": "mekoniq-production-browser-smoke/1",
+  "startedAt": "2026-11-14T01:34:05.057Z",
+  "origin": "https://mekoniq-lab.vercel.app",
+  "runtime": "https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app",
+  "sourceCommit": "d1a2522a89f17d0f9d8d2c444975778844f74425",
+  "labCommit": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+  "runtimePin": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "automated": true,
+  "manualBrowserCheck": "not_run",
+  "accepted": false,
+  "checks": [
+    {
+      "name": "Production Lab runtime pin",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "Pairing and runtime identity from production origin",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "MuJoCo preset, xArm mesh and cell supports",
+      "passed": true,
+      "details": true
+    },
+    {
+      "name": "MJ-BV01 completed in production UI",
+      "passed": true,
+      "details": {
+        "runId": "f0d8d70d-f824-496b-9da2-a3f8bcc901cb",
+        "status": "completed",
+        "tick": 4810,
+        "served": "2",
+        "wallMs": 78411,
+        "stepRequests": 229
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "runId": "f0d8d70d-f824-496b-9da2-a3f8bcc901cb",
+      "archived": true
+    }
+  ],
+  "browser": "157.0.8103.78",
+  "run": {
+    "runId": "f0d8d70d-f824-496b-9da2-a3f8bcc901cb",
+    "status": "completed",
+    "tick": 4810,
+    "served": "2",
+    "wallMs": 78411,
+    "stepRequests": 229
+  },
+  "status": "passed",
+  "finishedAt": "2026-11-14T01:35:34.055Z",
+  "pageErrors": []
+}
+
