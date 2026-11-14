@@ -7,6 +7,7 @@ import type {MujocoRuntimeOptions} from './mujoco';
 import {spawnMujocoWorker} from './worker-client';
 export const MUJOCO_MOBILE={id:'mujoco_3d',version:'3.17.0',model:'mujoco_serve_diff_drive',dynamics:true} as const;
 export const mujocoMobilePlant=(runtime:MujocoRuntimeOptions):PlantPort=>({
+ startupPolicy:{preMutationCreateRefusals:['SCENE_PATH_REJECTED','SCENE_SCHEMA_INVALID','SCENE_UNSUPPORTED','SCENE_DIGEST_MISMATCH','SCENE_FILE_MISMATCH','PROFILE_ID_MISMATCH','DIGEST_MISMATCH','MODEL_DIGEST_MISMATCH','WORLD_CAPACITY_EXCEEDED','PHYSICS_PROFILE_INVALID']},
  prepareStopMonitor:prepareMobileStopMonitor,
  identity:{amr:MUJOCO_MOBILE,adapterIdentity:MUJOCO_MOBILE,controller:{identity:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},options:{ramp:'previous-sent-command-v1'}},telemetryOrigin:'physics_sim',telemetryLabel:'mujoco_3d simulated plant (rigid-body physics, in memory)',capability:'sim3d_mujoco_mobile_v1',coverage:{dynamics:true},
   limitations:['MuJoCo 3.17.0 rigid-body differential drive with fixed sliding sphere casters: not_calibrated.',

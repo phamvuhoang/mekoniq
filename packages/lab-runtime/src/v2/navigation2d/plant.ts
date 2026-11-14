@@ -31,6 +31,8 @@ export interface PlantWorker {
 }
 export type PlantStopMonitor=(snapshot:IRSimSnapshotV1)=>{code:string;robotId:string}|null;
 export interface PlantPort {
+ /** Opt-in: persist a world-creation attempt before sending it; only these explicit pre-mutation create refusals permit a new attempt. */
+ startupPolicy?:{preMutationCreateRefusals:readonly string[]};
  /** Admitted, plant-specific observation policy; returns a fresh monitor per run. */
  prepareStopMonitor?(scene:NavigationSceneV1,read:(path:string)=>Promise<Uint8Array>):Promise<PlantStopMonitor>;
 

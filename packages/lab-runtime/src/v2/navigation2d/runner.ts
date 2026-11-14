@@ -55,7 +55,7 @@ export interface IRSimRunProviders extends RunProviders {irsim:IRSimRuntimeOptio
 const TILT_LIMIT_RAD=0.35,EVIDENCE_FLUSH_TICKS=100,EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'],FINAL=['completed','cancelled','failed'],SCENE='navigation-scene.json',FIXTURE='scenario-fixture.json';
 const sha256=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 interface Confirmation {due:number|null;type:string;robotId:string}
-interface PlantCheckpoint {status:'none'|'live'|'lost'|'stopped';reason:string|null;bootId:string|null;requests:number;snapshot:IRSimSnapshotV1|null}
+interface PlantCheckpoint {status:'none'|'live'|'lost'|'stopped';reason:string|null;bootId:string|null;requests:number;snapshot:IRSimSnapshotV1|null;/** Mobile-only durable latch: create may have mutated the world, including tick-0 priming. */startupAttempt?:true}
 interface Checkpoint {
  schemaVersion:1;provider:string;runId:string;manifestHash:string;manifest:RunReport['manifest'];roles:Roles;trays:Record<string,number>;
  tick:number;started:boolean;paused:boolean;cancelled:boolean;suspended:boolean;revision:number;ordinal:number;dispatchDue:boolean;telemetrySeq?:number;reclaimed?:boolean;
@@ -247,25 +247,35 @@ class FixedStepRun implements ScenarioRun {
  // ---- plant (one worker process per run, never a second one) ----
  private async ask(op:'describe'|'create'|'start'|'pause'|'resume',payload:Record<string,unknown>):Promise<Extract<IRSimResponseV1,{ok:true}>>{
   const c=this.cp,r=await this.worker!.request({protocol:this.plant.protocol,requestId:`${op}-${++c.plant.requests}`,runId:c.runId,expectedTick:c.tick,op,payload} as never);
-  if(!r.ok)throw new WorkerLostError(r.error.code,'not_sent',`${op} refused`);
+  if(!r.ok)throw new WorkerLostError(r.error.code,this.plant.startupPolicy&&op==='create'&&!this.plant.startupPolicy.preMutationCreateRefusals.includes(r.error.code)?'unknown':'not_sent',`${op} refused`);
   return r;
  }
  private async startPlant(){
-  const c=this.cp,o=this.irsim;
+  const c=this.cp,o=this.irsim;let created=false;
   this.worker=await this.plant.spawn({python:o.python,workerRoot:o.workerRoot,runId:c.runId,bundleRoot:join(this.dir,'bundle'),runDirectory:join(this.dir,'worker'),lockDigest:o.lockDigest,schemaDir:o.schemaDir,sceneDigest:this.scene.sceneDigest,...this.fixture.actors.length?{fixtureSha256:sha256(Buffer.from(JSON.stringify(fixtureFile(this.fixture))))}:{},...o.entry?{entry:o.entry}:{},...o.deadlinesMs?{deadlinesMs:o.deadlinesMs}:{}});
   try{
    const d=(await this.ask('describe',{})).result as {lockDigest:string;packageVersion:string;pythonVersion:string};
    if(d.lockDigest!==o.lockDigest||d.packageVersion!==this.plant.identity.amr.version)throw new Error('IRSIM_PROVIDER_MISMATCH');
    c.engine={packageVersion:d.packageVersion,pythonVersion:d.pythonVersion};
    // The plant's explicit seed profile determines engine identity; IR-SIM keeps its legacy NumPy derivation.
+   if(this.plant.startupPolicy){c.plant.startupAttempt=true;await this.persist();}
    const snap=(await this.ask('create',{sceneRef:SCENE,seed:this.engineSeed})).result as IRSimSnapshotV1;
+   created=true;
    const fault=this.stopMonitor?.(snap);if(fault)throw new Error(fault.code);
    await this.ask('start',{});
    await this.rec.append(snap,null);
    c.plant={status:'live',reason:null,bootId:this.worker.bootId,requests:c.plant.requests,snapshot:snap};
    for(const a of this.adapters.values())a.sink.observe(snap);
-  }catch(e){await this.worker.close('START_FAILED').catch(()=>{});this.worker=undefined;this.releaseSlot();throw new Error(`PLANT_START_FAILED:${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,80)}`);}
+  }catch(e){
+   if(this.plant.startupPolicy&&c.plant.startupAttempt){
+    // A known refusal/not-sent create is before mutation. Once create succeeds, even a not-sent start cannot recreate this run's world.
+    if(!created&&e instanceof WorkerLostError&&e.outcome==='not_sent')delete c.plant.startupAttempt;
+    else this.startupLost();
+   }
+   await this.worker.close('START_FAILED').catch(()=>{});this.worker=undefined;this.releaseSlot();throw new Error(`PLANT_START_FAILED:${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,80)}`);
+  }
  }
+ private startupLost(){const c=this.cp;c.plant.status='lost';c.plant.reason='STARTUP_UNKNOWN';c.attention.push({reason:'STARTUP_UNKNOWN',tick:c.tick});this.suspend();}
  private async plantLost(code:string,reason='WORKER_LOST'){
   const c=this.cp;if(c.plant.status==='lost')return;
   c.plant.status='lost';c.plant.reason=code;
@@ -285,6 +295,7 @@ class FixedStepRun implements ScenarioRun {
  /** Reopened after a crash or restart: the journal is the truth. A leg the journal still shows travelling is unknown; cargo, reservations and custody stay. */
  async recover(){
   const c=this.cp;
+  if(this.plant.startupPolicy&&c.plant.startupAttempt&&!c.started)this.startupLost();
   for(const op of c.pendingOps)c.recoveredOps.push({ordinal:op.ordinal,operationId:op.operationId,type:op.type,committed:!!await this.source.receipt(op.operationId,op.payloadHash)});
   c.pendingOps=[];
   if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RUNTIME_RESTART';}
@@ -421,6 +432,9 @@ class FixedStepRun implements ScenarioRun {
   // the verified tick goes to the evidence store with the step that produced it, before anything is derived from it
   // a refused append is never skipped silently: it ends the recording (and so the plant) with the reason
   await this.rec.append(next,payload).catch(async(e:Error)=>{const why=`EVIDENCE_REJECTED:${e.message.slice(0,60)}`;await this.recordGap({fromTick:c.tick,toTick:c.tick,reason:why});await this.rec.terminate(why);});
+  // Mobile faults retain the acknowledged tick as evidence but cannot confirm a source outcome or publish valid telemetry.
+  const observationFault=this.stopMonitor?.(next);
+  if(observationFault){c.attention.push({reason:observationFault.code,robotId:observationFault.robotId,tick:c.tick});await this.plantLost(observationFault.code,observationFault.code);return false;}
   // live view distance at the robot base origin (the report's metric is recomputed from the durable evidence)
   for(const r of next.robots){const p=prev.robots.find(x=>x.robotId===r.robotId);if(!p||c.distanceM[r.robotId]===undefined)continue;const a=this.basePose(r.robotId,r.poseDriveMap),b=this.basePose(r.robotId,p.poseDriveMap);c.distanceM[r.robotId]+=Math.hypot(a[0]-b[0],a[1]-b[1]);}
   c.maxConcurrentMovers=Math.max(c.maxConcurrentMovers,c.roles.robots.filter(r=>this.moving(r.id)).length);
@@ -429,7 +443,7 @@ class FixedStepRun implements ScenarioRun {
   if(c.tick%TELEMETRY_RATE_TICKS===0)this.record();
   if(this.rec.terminal){await this.evidenceEnded();return false;}
   // a 3D plant's robot that tipped over, sank into the floor or left the physics ends the run now, with that reason: not at the mission timeout with a wrong one
-  const unstable=this.stopMonitor?this.stopMonitor(next):(()=>{const robotId=this.unstableRobot(next);return robotId===null?null:{code:'PLANT_UNSTABLE',robotId};})();
+  const unstable=this.stopMonitor?null:(()=>{const robotId=this.unstableRobot(next);return robotId===null?null:{code:'PLANT_UNSTABLE',robotId};})();
   if(unstable){c.attention.push({reason:unstable.code,robotId:unstable.robotId,tick:c.tick});await this.plantLost(unstable.code,unstable.code);return false;}
   return true;
  }
@@ -483,6 +497,7 @@ class FixedStepRun implements ScenarioRun {
   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
   if(a.expectedRevision!==c.revision)throw new Error('REVISION_CONFLICT');
   const view=await this.view(),status=view.run.status;
+  if(a.kind==='start'&&this.plant.startupPolicy&&c.plant.startupAttempt)throw new Error('INVALID_STATE:STARTUP_UNKNOWN');
   if(a.kind==='start'&&c.started||a.kind!=='start'&&!c.started)throw new Error('INVALID_STATE');
   if(a.kind==='pause'&&c.paused||a.kind==='resume'&&!c.paused)throw new Error('INVALID_STATE');
   if(a.kind==='step'&&c.paused)throw new Error('RUN_PAUSED');
@@ -566,7 +581,8 @@ class FixedStepRun implements ScenarioRun {
   const c=this.cp,m=c.manifest;
   let status:RunView['run']['status']='running';
   const awaiting=Object.entries(c.confirmations).filter(([,x])=>x.due===null).map(([k,x])=>({subjectId:k.split('/')[1]!,confirmationType:x.type,missionId:k.split('/')[0]!,robotId:x.robotId}));
-  if(!c.started)status='ready';
+  if(this.plant.startupPolicy&&c.plant.startupAttempt&&!c.started)status='needs_attention';
+  else if(!c.started)status='ready';
   else if(c.attention.length)status='needs_attention';
   else if(c.cancelled)status=await this.cancelDone()?'cancelled':'running';
   else if(await this.missionsDone())status='completed';
