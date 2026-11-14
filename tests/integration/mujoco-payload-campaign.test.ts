@@ -62,14 +62,17 @@ test('campaign readback refuses a missing run set instead of trusting a summary'
 
 test('actual 19-run campaign round-trips, and missing/skip/seed/profile/corrupt/fault mutations cannot pass',async()=>{
  const {runPayloadCampaign,verifyPayloadCampaign}=await import('../../packages/lab-runtime/src/v2/simulation3d/payload-campaign');
- const {writeFile,rename,cp}=await import('node:fs/promises');
+ const {writeFile,rename,cp,readdir,lstat}=await import('node:fs/promises');const {createHash}=await import('node:crypto');
  const out=join(await temp(),'campaign');
  // Optional fresh output from this build's CLI recording avoids a second native campaign; mutation tests always use a private temporary copy.
  if(process.env.PAYLOAD_CAMPAIGN_EVIDENCE)await cp(process.env.PAYLOAD_CAMPAIGN_EVIDENCE,out,{recursive:true,errorOnExist:true});
  const {execFileSync}=await import('node:child_process');const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),dirty=execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim();
+ const inventory=async()=>Promise.all((await readdir(out,{recursive:true})).sort().map(async p=>{const info=await lstat(join(out,p));return info.isFile()?[p,info.size,createHash('sha256').update(await readFile(join(out,p))).digest('hex')]:[p,'directory'];}));
+ const before=process.env.PAYLOAD_CAMPAIGN_EVIDENCE?await inventory():null;
  const verdict=process.env.PAYLOAD_CAMPAIGN_EVIDENCE?await verifyPayloadCampaign(out):await runPayloadCampaign({root:resolve('.'),out,sourceCommit:head+(dirty?'-dirty':'')});
  expect(verdict,JSON.stringify(verdict)).toMatchObject({expectedRuns:19,completedCases:19,issues:[],missingArtifacts:[]});expect(verdict.faultCases.every(f=>f.detected&&!f.falseServed)).toBe(true);
- const reject=async()=>{const v=await verifyPayloadCampaign(out);expect(v.completedCases).toBeLessThan(19);expect(v.issues.length).toBeGreaterThan(0);};
+ if(before)expect(await inventory()).toEqual(before);const retained=await inventory();expect(await verifyPayloadCampaign(out)).toEqual(verdict);expect(await inventory()).toEqual(retained);
+ const reject=async()=>{const retained=await inventory(),v=await verifyPayloadCampaign(out);expect(v.completedCases).toBeLessThan(19);expect(v.issues.length).toBeGreaterThan(0);expect(await inventory()).toEqual(retained);};
  const missing=join(out,'turn-empty-s7');await rename(missing,missing+'-hidden');try{await reject();}finally{await rename(missing+'-hidden',missing);}
  const file=join(out,'turn-center-s7','case.json'),original=await readFile(file);
  for(const mutate of [(r:Record<string,Record<string,unknown>>)=>r.case.seed=99,(r:Record<string,Record<string,unknown>>)=>r.case.experimentId='payload-empty-v1',(r:Record<string,Record<string,unknown>>)=>r.case.skip=true]){const r=JSON.parse(original.toString());mutate(r);await writeFile(file,JSON.stringify(r));try{await reject();}finally{await writeFile(file,original);}}

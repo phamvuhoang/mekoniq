@@ -1,7 +1,8 @@
 /** Headless registered experiments use the production fixed-step runner and both independent readers. */
 import {createHash} from 'node:crypto';
-import {mkdir,readFile,writeFile,lstat,readdir,realpath} from 'node:fs/promises';
+import {mkdir,readFile,writeFile,lstat,readdir,realpath,mkdtemp,rm} from 'node:fs/promises';
 import {join,sep} from 'node:path';
+import {tmpdir} from 'node:os';
 import {DatabaseSync} from 'node:sqlite';
 import canonicalPhysical from '../../../../../robotics/simulation-mujoco/fixtures/serve-payload-v1/physical-model-amr-1.json';
 import canonicalEmpty from '../../../../../robotics/simulation-mujoco/fixtures/serve-payload-v1/empty.json';
@@ -166,8 +167,16 @@ export async function verifyPayloadCampaign(root:string):Promise<PayloadCampaign
    const physics=await readPhysicsEvidence(join(dir,'run/physics'),manifest,{admission:prepared.admission,metricsPolicyDigest:prepared.metricsPolicyDigest,identity:{runId:record.runId,bootId:cp.plant.bootId,sceneDigest:scene.sceneDigest,loadProfileDigest:engine.loadProfileRef.sha256,physicsProfileDigest:engine.physicsProfileRef.sha256},runTick:cp.tick});
    const navManifest=await read('run/evidence/manifest.json');check(navManifest.runId===record.runId&&navManifest.sceneDigest===scene.sceneDigest&&navManifest.boots.length===1&&navManifest.boots[0].bootId===cp.plant.bootId&&navManifest.boots[0].firstTick===0,'NAVIGATION_RUN_IDENTITY');
    const navigation=await readNavigationEvidence(join(dir,'run/evidence'),navManifest,{scene,runTick:cp.tick});
-   const db=new DatabaseSync(join(dir,'run/journal.db'),{readOnly:true});let events:RunReport['businessEvents'];
-   try{const rows=db.prepare('SELECT entry_json FROM journal ORDER BY length(producer_sequence),producer_sequence').all();check(rows.length>0&&rows.length<100000,'JOURNAL_LIMIT');events=rows.flatMap(row=>{const e=JSON.parse(String(row.entry_json));return e.payload.events.map((x:{type:string;data:{kind:string;id:string;state:unknown}})=>({sequence:e.sequence,at:e.recordedAt,type:x.type,kind:String(x.data.kind),id:String(x.data.id),state:x.data.state??{}}));});}finally{db.close();}
+   // SQLite readOnly still creates WAL/SHM sidecars. Open only a bounded isolated copy so verification never mutates retained evidence.
+   const scratch=await mkdtemp(join(tmpdir(),'payload-journal-read-'));let events:RunReport['businessEvents'];
+   try{
+    for(const name of ['journal.db','journal.db-wal','journal.db-shm'])if(paths.has(`run/${name}`)){
+     const ref=record.artifacts.find(f=>f.path===`run/${name}`)!,bytes=await bounded(dir,ref.path,100*1024*1024);check(bytes.length===ref.bytes&&sha(bytes)===ref.sha256,'JOURNAL_COPY_HASH');
+     await writeFile(join(scratch,name),bytes,{flag:'wx',mode:0o600});
+    }
+    const db=new DatabaseSync(join(scratch,'journal.db'),{readOnly:true});
+    try{const rows=db.prepare('SELECT entry_json FROM journal ORDER BY length(producer_sequence),producer_sequence').all();check(rows.length>0&&rows.length<100000,'JOURNAL_LIMIT');events=rows.flatMap(row=>{const e=JSON.parse(String(row.entry_json));return e.payload.events.map((x:{type:string;data:{kind:string;id:string;state:unknown}})=>({sequence:e.sequence,at:e.recordedAt,type:x.type,kind:String(x.data.kind),id:String(x.data.id),state:x.data.state??{}}));});}finally{db.close();}
+   }finally{await rm(scratch,{recursive:true,force:true});}
    check(hashJson(events!)===hashJson(report.businessEvents),'JOURNAL_REPORT_MISMATCH');
    const falseServed=events!.some(e=>e.kind==='fulfillment'&&BigInt(String(e.state.served??'0'))>0n);
    check(trace.spawns===1&&trace.steps.length===cp.tick+(isAckFault?1:0)&&trace.steps.every((s,i)=>s.targetTick===i+1)&&new Set(trace.steps.map(s=>s.requestId)).size===trace.steps.length,'STEP_RETRY_OR_GAP');
