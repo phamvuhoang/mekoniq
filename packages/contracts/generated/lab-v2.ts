@@ -1064,7 +1064,7 @@ export interface TwinSampleV2 {
    */
   reasonCodes: string[];
   commanded: TwinAmrState | TwinAmrGoal | TwinArmState | TwinCoffeeCellState | TwinCupState | null;
-  observed: TwinAmrState | TwinAmrGoal | TwinArmState | TwinCoffeeCellState | TwinCupState | null;
+  observed: TwinAmrState | TwinAmrGoal | TwinArmState | TwinCoffeeCellState | TwinCupState | TwinPayloadState | null;
   estimated: TwinAmrState | TwinAmrGoal | TwinArmState | TwinCoffeeCellState | TwinCupState | null;
   causationId: string | null;
 }
@@ -1181,4 +1181,32 @@ export interface TwinCupState {
    */
   quaternionXyzw?: number[];
   restingOn?: string | null;
+}
+/**
+ * Free simulated payload observation in map coordinates; declared support is a reference frame, never custody. Digests identify admitted file bytes.
+ *
+ * This interface was referenced by `TwinSampleV2`'s JSON-Schema
+ * via the `definition` "TwinPayloadState".
+ */
+export interface TwinPayloadState {
+  payloadKind: 'free';
+  propId: string;
+  supportId: string;
+  loadProfileSha256: string;
+  sceneDigest: string;
+  geometry: {
+    kind: 'cylinder';
+    radiusM: number;
+    heightM: number;
+  };
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  positionM: number[];
+  /**
+   * @minItems 4
+   * @maxItems 4
+   */
+  quaternionXyzw: number[];
 }

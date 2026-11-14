@@ -1,0 +1,17 @@
+{
+  "drive-contact-profile": {
+    "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+    "digest": "1ef1c4de61894e35e89fbbc8cb534c184ef66944e40fed60dedf496f81956480",
+    "probeId": "b02a-locked"
+  },
+  "drive-contact-low-v1": {
+    "sha256": "c9aec2a6a250e81f4c5c1d1372e88d7d90340b7e42f7526fe90a7ad3d1d4ad9c",
+    "digest": "fa342b45c20e462a3d48a8a6cc7444c643cd4adaeec8dbb8e7854a77d8666562",
+    "probeId": "b04a-drive-contact-low-v1"
+  },
+  "drive-contact-high-v1": {
+    "sha256": "9d1f7f3315cfe9df89ed8b8b15361b3fd09d66dedbe4ea5240a5c04b54ecbe8a",
+    "digest": "64efa556fd308f818a3806727eea307b38689821ed06331419285af34cd08626",
+    "probeId": "b04a-drive-contact-high-v1"
+  }
+}

@@ -103,6 +103,7 @@ export const validateComponentRevision=check<ComponentRevision>('engineering-com
 
 function projectRules(p:EngineeringProject):Problem[]{
  const out=[...duplicates(p.assembly.instances.map(i=>i.id),'/assembly/instances'),...duplicates(p.entityBindings.map(b=>b.entityId).map(String),'/entityBindings'),...poseProblems(p.assembly,'/assembly')];
+ if(p.mujocoExperimentId&&p.requestedProfile!=='engineering-mujoco-3d-v1')out.push(problem('MUJOCO_EXPERIMENT_PROFILE_REQUIRED','/mujocoExperimentId','payload experiments require the mobile MuJoCo profile'));
  const bound=new Map<string,string>();
  p.entityBindings.forEach((b,i)=>b.instanceIds.forEach((id,j)=>{const other=bound.get(id);if(other&&other!==b.entityId)out.push(problem('DUPLICATE_INSTANCE_BINDING',`/entityBindings/${i}/instanceIds/${j}`,`${id} already bound to ${other}`));bound.set(id,b.entityId);}));
  return out;

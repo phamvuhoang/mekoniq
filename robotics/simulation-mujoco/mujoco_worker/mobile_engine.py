@@ -121,6 +121,26 @@ class MobileEngine:
                 sample[2], sample[3] = c.pos.copy(), float(force[0])
         return out
 
+    def apply_payload_impulse(self, perturbation_id):
+        """One registered support-frame force over one logical tick; never writes qpos/qvel."""
+        if perturbation_id != "payload-cup-forward-impulse-v1" or len(self.profile["props"]) != 1:
+            raise WorkerError("PERTURBATION_SCOPE_INVALID", "registered cup impulse requires one free cup")
+        prop = self.profile["props"][0]
+        if prop["propId"] != "cup-1" or prop["attachment"]["kind"] != "free":
+            raise WorkerError("PERTURBATION_SCOPE_INVALID", "registered cup impulse requires cup-1 free attachment")
+        before = self.read()["loads"][0]["poseMap"]
+        support = self.names["supports"][prop["attachment"]["supportId"]]
+        sp = support["poseInBody"]
+        sbid = self.model.body(self.names["links"][support["parentBodyId"]]).id
+        st = _transform(self.data, sbid) @ pose(sp["positionM"], sp["quaternionXyzw"])
+        force_map = st[:3, :3] @ np.array([30., 0., 0.])
+        self.data.xfrc_applied[self.prop["cup-1"], :3] = force_map
+        return {"propId": "cup-1", "frameId": "support", "supportId": prop["attachment"]["supportId"], "supportPoseMap": matrix_pose(st), "forceTransform": "support-at-start-of-tick-held-in-map", "forceMapN": force_map.tolist(), "forceN": [30,0,0], "durationS": .02,
+                "impulseNs": [.6,0,0], "substeps": 10, "method": "mujoco-xfrc-applied", "beforePoseMap": before}
+
+    def clear_payload_impulse(self):
+        self.data.xfrc_applied[self.prop["cup-1"], :] = 0
+
     def step(self, v_mps, omega_radps):
         d, m = self.data, self.model
         targets = wheel_targets(v_mps, omega_radps, self.radius, self.separation)

@@ -6,18 +6,23 @@ import type {PlantPort,PlantStopMonitor} from '../navigation2d/plant';
 import type {MujocoRuntimeOptions} from './mujoco';
 import {spawnMujocoWorker} from './worker-client';
 export const MUJOCO_MOBILE={id:'mujoco_3d',version:'3.17.0',model:'mujoco_serve_diff_drive',dynamics:true} as const;
-export const mujocoMobilePlant=(runtime:MujocoRuntimeOptions):PlantPort=>({
+export const MOBILE_PAYLOAD_IMPULSE=Object.freeze({id:'payload-cup-forward-impulse-v1',revision:1,parameters:Object.freeze({targetTick:501,frameSampleTick:500,forceTransform:'support-at-start-of-tick-held-in-map',frameId:'support',supportId:'amr-1/tray-1',forceN:Object.freeze([30,0,0]),durationS:.02,impulseNs:Object.freeze([.6,0,0]),substeps:10,propId:'cup-1',method:'mujoco-xfrc-applied',provenance:'assumed_simulation_fault'})});
+export const MOBILE_BRAKE_OBSERVATION=Object.freeze({id:'payload-brake-observation-v1' as const,extraTicks:5 as const});
+export const mujocoMobilePlant=(runtime:MujocoRuntimeOptions,experiment?:'payload-cup-forward-impulse-v1'|'payload-brake-observation-v1'):PlantPort=>{
+ if(experiment&&experiment!==MOBILE_PAYLOAD_IMPULSE.id&&experiment!==MOBILE_BRAKE_OBSERVATION.id)throw new Error('PERTURBATION_UNREGISTERED');
+ const perturbation=experiment===MOBILE_PAYLOAD_IMPULSE.id?experiment:undefined,completionObservation=experiment===MOBILE_BRAKE_OBSERVATION.id?MOBILE_BRAKE_OBSERVATION:undefined;
+ return ({
  startupPolicy:{preMutationCreateRefusals:['SCENE_PATH_REJECTED','SCENE_SCHEMA_INVALID','SCENE_UNSUPPORTED','SCENE_DIGEST_MISMATCH','SCENE_FILE_MISMATCH','PROFILE_ID_MISMATCH','DIGEST_MISMATCH','MODEL_DIGEST_MISMATCH','WORLD_CAPACITY_EXCEEDED','PHYSICS_PROFILE_INVALID']},
  prepareStopMonitor:prepareMobileStopMonitor,
- identity:{amr:MUJOCO_MOBILE,adapterIdentity:MUJOCO_MOBILE,controller:{identity:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},options:{ramp:'previous-sent-command-v1'}},telemetryOrigin:'physics_sim',telemetryLabel:'mujoco_3d simulated plant (rigid-body physics, in memory)',capability:'sim3d_mujoco_mobile_v1',coverage:{dynamics:true},
+ identity:{...completionObservation?{completionObservation}:{},...perturbation?{simulationPerturbation:MOBILE_PAYLOAD_IMPULSE}:{},amr:MUJOCO_MOBILE,adapterIdentity:MUJOCO_MOBILE,controller:{identity:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},options:{ramp:'previous-sent-command-v1'}},telemetryOrigin:'physics_sim',telemetryLabel:'mujoco_3d simulated plant (rigid-body physics, in memory)',capability:'sim3d_mujoco_mobile_v1',coverage:{dynamics:true},
   limitations:['MuJoCo 3.17.0 rigid-body differential drive with fixed sliding sphere casters: not_calibrated.',
    'One zero-target priming tick precedes tick 0: engine time is (tick+1)*20 ms; source time is tick*20 ms.',
    'The seed is identity only: no stochastic engine, noisy sensors or actors. Fixed-caster drag and wheel-odometry slip are modeled limitations.',
    'Declared support coordinates and instantaneous payload contact are not proof of custody or delivery; physics metrics require verified durable coverage.'],
   evidence:{seedAlgorithm:'mujoco-identity-seed-v1',limitation:'mujoco_3d rigid-body dynamics, not_calibrated; seed is identity only (no stochastic engine or sensor noise)',
    engine:d=>({id:'mujoco_3d',engineVersion:runtime.engineVersion,timestepMs:2,substeps:10,pythonVersion:d.pythonVersion,platform:d.platform,lockDigest:d.lockDigest,...d.scene.engine.id==='mujoco_3d'?{stopPolicyRef:d.scene.engine.stopPolicyRef,controllerPolicyRef:d.scene.engine.controllerPolicyRef,loadProfileRef:d.scene.engine.loadProfileRef,physicsProfileRef:d.scene.engine.physicsProfileRef}:{}})}},
- protocol:'mekoniq-sim3d/1',spawn:o=>spawnMujocoWorker(o),
-});
+ protocol:'mekoniq-sim3d/1',spawn:o=>spawnMujocoWorker({...o,...perturbation?{payloadPerturbationId:perturbation}:{}}),
+});};
 
 /** Experiment cutoffs only, not physical safety limits. Separate from the B02a numerical measurement lock. */
 export const MOBILE_CONTROLLER_POLICY=Object.freeze({schemaVersion:1,id:'serve-mobile-controller-v1',revision:1,calibration:'not_calibrated',controller:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},ramp:'previous-sent-command-v1',

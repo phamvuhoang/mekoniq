@@ -31,10 +31,15 @@ def targets(case, tick):
     return ((.5 if case == "stop" else .2) * ramp, .4 * ramp if case == "circle" else 0.0)
 
 
-def run_case(case, load, repeat, out):
+def run_case(case, load, repeat, out, physics_name="drive-contact-profile"):
     read = lambda name: json.loads((FIXTURE / (name + ".json")).read_text())
-    scene, model, profile, physics = read("navigation-scene"), read("physical-model-amr-1"), read(load), read("drive-contact-profile")
+    scene, model, profile, physics = read("navigation-scene"), read("physical-model-amr-1"), read(load), read(physics_name)
     scene["engine"]["loadProfileRef"].update(id=profile["id"], revision=profile["revision"], path=load+".json", sha256=hashlib.sha256((FIXTURE/(load+".json")).read_bytes()).hexdigest())
+    scene["engine"]["physicsProfileRef"].update(id=physics["id"], revision=physics["revision"], path=physics_name+".json", sha256=hashlib.sha256((FIXTURE/(physics_name+".json")).read_bytes()).hexdigest())
+    if physics_name != "drive-contact-profile":
+        raw_profile = (FIXTURE/(physics_name+".json")).read_bytes()
+        scene["files"].append({"path": physics_name+".json", "sha256": hashlib.sha256(raw_profile).hexdigest(), "bytes": len(raw_profile)})
+        scene["files"].sort(key=lambda ref: ref["path"])
     scene["sceneDigest"] = scene_digest_of(scene)
     engine = MobileEngine(scene, {"amr-1": model}, profile, physics)
     filename = f"{load}-{case}-r{repeat}.ndjson.gz"
@@ -45,7 +50,7 @@ def run_case(case, load, repeat, out):
     base_load = np.array(baseline_load[0]["poseInSupport"]["positionM"]) if baseline_load else None
     with (out / filename).open("wb") as stream, gzip.GzipFile(filename="", fileobj=stream, mode="wb", mtime=0) as raw:
         identity = {"record": "identity", "case": case, "load": load, "repeat": repeat, "engineVersion": mujoco.__version__, "seed": 7,
-                    "inputs": {name: hashlib.sha256((FIXTURE/name).read_bytes()).hexdigest() for name in ("navigation-scene.json", "physical-model-amr-1.json", load+".json", "drive-contact-profile.json")},
+                    "inputs": {name: hashlib.sha256((FIXTURE/name).read_bytes()).hexdigest() for name in ("navigation-scene.json", "physical-model-amr-1.json", load+".json", physics_name+".json")},
                     "physicsProfile": physics, "navigationScene": scene, "compiledSceneDigest": scene["sceneDigest"], "modelReadback": engine.readback(), "initialLoads": baseline_load, "initialBase": engine.read()["base"], "engineClock": "(tick+1)*0.02", "logicalTickMs": 20,
                     "limits": {"repeatPositionM": 1e-6, "repeatAngleRad": 1e-6}, "limitations": ["not_calibrated", "fixed sphere casters with explicit sliding contact pairs", "LiDAR raw arrays excluded; covered by focused independent-raycast test"]}
         raw.write((json.dumps(identity, separators=(",", ":"), allow_nan=False) + "\n").encode())
@@ -85,6 +90,7 @@ def run_case(case, load, repeat, out):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--physics", choices=("drive-contact-profile", "drive-contact-low-v1", "drive-contact-high-v1"), default="drive-contact-profile")
     args = parser.parse_args()
     if args.out.exists():
         raise SystemExit("output exists; preserve earlier probe evidence")
@@ -94,7 +100,7 @@ def main():
         for case in CASES:
             first_base = first_load = None
             for repeat in range(1, 4):
-                metrics, base, payload = run_case(case, load, repeat, args.out)
+                metrics, base, payload = run_case(case, load, repeat, args.out, args.physics)
                 if first_base is None:
                     first_base, first_load = base, payload
                 position = float(np.max(abs(base[:,:3]-first_base[:,:3])))
@@ -106,7 +112,7 @@ def main():
                 repeats.append({"load": load, "case": case, "repeat": repeat, "maxPositionDifferenceM": position, "maxAngleDifferenceRad": angle, "pass": position <= 1e-6 and angle <= 1e-6})
                 runs.append(metrics)
                 print(json.dumps(metrics, separators=(",", ":")), flush=True)
-    summary = {"schemaVersion": 1, "accepted": False, "calibration": "not_calibrated", "engineVersion": mujoco.__version__, "pythonVersion": platform.python_version(), "machine": platform.machine(),
+    summary = {"probeId": json.loads((FIXTURE/(args.physics+".json")).read_text())["measurementLock"]["probeId"], "physicsProfileSha256": hashlib.sha256((FIXTURE/(args.physics+".json")).read_bytes()).hexdigest(), "schemaVersion": 1, "accepted": False, "calibration": "not_calibrated", "engineVersion": mujoco.__version__, "pythonVersion": platform.python_version(), "machine": platform.machine(),
                "platform": platform.platform(), "repeats": repeats, "runs": runs, "measurementChecks": {"allFinite": all(r["finite"] for r in runs), "repeatWithinTolerance": all(r["pass"] for r in repeats)},
                "limitations": ["measurement probe only; no campaign, hardware, native, payload safety or human acceptance", "hold case runs 10 seconds; each maneuver includes 2s hold, bounded ramp and stop", "timings are host observations, not realtime guarantees"]}
     (args.out / "summary.json").write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n")

@@ -132,6 +132,9 @@
           "$ref": "#/definitions/TwinCupState"
         },
         {
+          "$ref": "#/definitions/TwinPayloadState"
+        },
+        {
           "type": "null"
         }
       ]
@@ -578,6 +581,82 @@
       "required": [
         "ownerKind",
         "ownerId"
+      ]
+    },
+    "TwinPayloadState": {
+      "description": "Free simulated payload observation in map coordinates; declared support is a reference frame, never custody. Digests identify admitted file bytes.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "payloadKind": {
+          "const": "free"
+        },
+        "propId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "supportId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "loadProfileSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sceneDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "geometry": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "cylinder"
+            },
+            "radiusM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "heightM": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "kind",
+            "radiusM",
+            "heightM"
+          ]
+        },
+        "positionM": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "quaternionXyzw": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "payloadKind",
+        "propId",
+        "supportId",
+        "loadProfileSha256",
+        "sceneDigest",
+        "geometry",
+        "positionM",
+        "quaternionXyzw"
       ]
     }
   }

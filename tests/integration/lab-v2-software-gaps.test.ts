@@ -24,7 +24,7 @@ test('project speed limit reaches mission admission and the plant, while the run
   slow=await openFixture('FD01',{seed:42,project});Object.assign(project.entities[0]!,{speedLimitMps:0.5});
   await normal.start();await slow.start();const a=await act(normal,'step',{ticks:250}),b=await act(slow,'step',{ticks:250});
   // The grid path turns within a tick; chord-distance integration can differ by less than one millimetre.
-  expect(b.entities[0]!.distanceM).toBeCloseTo(a.entities[0]!.distanceM/2,3);
+  expect(b.entities.find(e=>e.kind==='amr')!.distanceM).toBeCloseTo(a.entities.find(e=>e.kind==='amr')!.distanceM/2,3);
   const r=await slow.report();expect(r.effects.find(e=>e.type==='robot.execute')?.payload.limits).toMatchObject({speedLimitMps:0.25});
   expect(r.manifest.project.hash).not.toBe((await normal.report()).manifest.project.hash);
  }finally{await normal.close();await slow?.close();}

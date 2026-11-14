@@ -13,7 +13,10 @@ import type {ArmReportBlock} from './beverage/arm-plant-report';
 export interface BusinessEvent {sequence:string;at:string;type:string;kind:string;id:string;state:JsonObject}
 export interface Attention {reason:string;tick:number;robotId?:string;subjectId?:string;commandId?:string}
 export interface WorkloadItem {actor:string;tableId:string;quantity:number;atTick:number;sessionId:string;status:'planned'|'placed';lineId?:string;missionId?:string;allocationId?:string}
-export interface EntityView {id:string;kind:'amr';pose:{x:number;y:number;yawRad:number};quality:'valid'|'stale';moving:boolean;hold:string|null;goal:{commandId:string;state:string}|null;path:[number,number][];distanceM:number}
+export interface AmrEntityView {id:string;kind:'amr';pose:{x:number;y:number;yawRad:number};quality:'valid'|'stale';moving:boolean;hold:string|null;goal:{commandId:string;state:string}|null;path:[number,number][];distanceM:number}
+/** Renderable observed free payload; AMR travel distance is unavailable; moving derives from actual payload twist and admitted stopped thresholds. */
+export interface PayloadEntityView {id:string;kind:'payload';plant:import('../../../contracts/generated/lab-v2').TwinPayloadState;pose:{x:number;y:number;yawRad:number};quality:'valid'|'stale';moving:boolean;hold:null;goal:null;path:[];distanceM:null}
+export type EntityView=AmrEntityView|PayloadEntityView;
 export interface CoffeeView {jobs:{jobId:string;status:string;recipeId:string;cupId:string;attentionReason:string|null;waitingReason?:string|null;canRestoreCup?:boolean}[];cups:{cupId:string;ownerKind:string;ownerId:string}[]}
 export interface CupMovementView {transferId:string;from:{kind:string;id:string};to:{kind:string;id:string;slot?:number};provenance:string;observedBy:string;at:string;reason?:string;evidence?:JsonObject}
 export interface CoffeeReport {
@@ -26,7 +29,7 @@ export interface RunReport {
  /** Optional independent read-back physics evidence; deliberately excluded from canonicalOutcome. */
  physicsEvidence?:{manifest:import('../../../contracts/generated/navigation2d').PhysicsEvidenceV1;manifestSha256:string;complete:boolean;issues:string[];metrics:import('./simulation3d/physics-metrics').PhysicsMetrics};
  faultScheduleFires?:FaultFireRecord[];
- manifest:{faultSchedule?:{entries:FaultScheduleEntry[];hash:string};engineering?:{bundleDigest:string;projectDigest:string};runId:string;sourceCommit:string;mode:'mock'|'simulation';access:'simulated';backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];prng:{algorithm:string;seeding:string;version:number};clock:{tickMs:number;businessEpochMs?:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
+ manifest:{completionObservation?:import('./navigation2d/plant').CompletionObservation;simulationPerturbation?:import('./navigation2d/plant').SimulationPerturbation;faultSchedule?:{entries:FaultScheduleEntry[];hash:string};engineering?:{bundleDigest:string;projectDigest:string};runId:string;sourceCommit:string;mode:'mock'|'simulation';access:'simulated';backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];prng:{algorithm:string;seeding:string;version:number};clock:{tickMs:number;businessEpochMs?:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
   scenario:{id:string;revision:number;hash:string;basedOn?:{id:string;revision:number}};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[];
   hashAlgorithm:'sha256-canonical-json-v1';designHash:string;adapterHash:string;configuration:{revision:number;hash:string};recipes:{id:string;revision:number;hash:string}[];
   models:{id:string;revision:string;hash:string;provenance:string}[];profiles:{id:string;revision:number;hash:string;provenance:string}[];calibration:{status:'not_calibrated';revision:null;hash:null;reason:string};armCollisionScene?:ArmSceneDeclaration;/** Only a run whose arm provider supplies its program (MuJoCo arm). */armProgram?:ArmProgramRecord};

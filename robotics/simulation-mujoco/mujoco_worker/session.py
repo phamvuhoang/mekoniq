@@ -58,7 +58,10 @@ def overlaps(p, a, q, b):
 
 
 class WorkerSession:
-    def __init__(self, *, run_id, bundle_root, lock_digest, expected_scene_digest=None, engine_factory=None, host_info=None, schema_dir=None):
+    def __init__(self, *, run_id, bundle_root, lock_digest, expected_scene_digest=None, engine_factory=None, host_info=None, schema_dir=None, payload_perturbation=None):
+        if payload_perturbation not in (None, "payload-cup-forward-impulse-v1"):
+            raise WorkerError("PERTURBATION_UNREGISTERED", str(payload_perturbation))
+        self.payload_perturbation, self.perturbation_done = payload_perturbation, False
         self.run_id, self.bundle_root, self.lock_digest, self.expected_scene_digest = run_id, Path(bundle_root), lock_digest, expected_scene_digest
         self._factory, self._host = engine_factory, host_info
         self.boot_id = str(uuid.uuid4())
@@ -131,6 +134,8 @@ class WorkerSession:
             raise WorkerError("INVALID_STATE", f"create on a {self.state} run")
         if p.get("sceneRef") == "navigation-scene.json":
             return self._create_mobile(p)
+        if self.payload_perturbation:
+            raise WorkerError("PERTURBATION_SCOPE_INVALID", "mobile free payload only")
         arms = p.get("arms") or []
         if len(arms) != 1 or p["sceneRef"] != SCENE_FILE or arms[0]["sceneRef"] != SCENE_FILE:
             raise WorkerError("INVALID_REQUEST", f"an arm cell run names {SCENE_FILE} as sceneRef and as arms[0].sceneRef")
@@ -220,6 +225,10 @@ class WorkerSession:
         load = profile(scene["engine"]["loadProfileRef"], "load-profile-v1.schema.json")
         physics = profile(scene["engine"]["physicsProfileRef"])
         self._check_physics_profile(physics)
+        if self.payload_perturbation:
+            canonical = json.loads((Path(__file__).resolve().parents[1] / "fixtures/serve-payload-v1/cup-center.json").read_text())
+            if load["props"] != canonical["props"] or load["supports"] != canonical["supports"]:
+                raise WorkerError("PERTURBATION_SCOPE_INVALID", "canonical free center cup required")
         ref = load["modelRef"]
         confined(self.bundle_root, ref["path"])
         if ref["path"] not in files or files[ref["path"]][0] != ref["sha256"]:
@@ -263,7 +272,7 @@ class WorkerSession:
                   "contact": obj({"sliding": number, "torsionalM": number, "rollingM": number}),
                   "sources": obj({k: {"type": "object"} for k in ("velocityGainNmsPerRad", "brakeTorqueNm", "driveCurve", "contact", "solver")}),
                   "requiresB02MeasurementLock": {"const": False}, "numerics": {"const": NUMERICS},
-                  "measurementLock": obj({"probeId": {"const": "b02a-locked"},
+                  "measurementLock": obj({"probeId": {"enum": ["b02a-locked", "b04a-drive-contact-low-v1", "b04a-drive-contact-high-v1"]},
                     "numericalInputSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "engineVersion": {"const": "3.17.0"}, "status": {"const": "locked_not_calibrated"},
                     "repeatPositionToleranceM": {"const": 1e-6}, "repeatAngleToleranceRad": {"const": 1e-6}})}
         schema = obj(fields)
@@ -274,6 +283,10 @@ class WorkerSession:
         fingerprint = hashlib.sha256(rfc8785.dumps({k: p[k] for k in keys})).hexdigest()
         if fingerprint != p["measurementLock"]["numericalInputSha256"]:
             raise WorkerError("PHYSICS_PROFILE_INVALID", "numerical lock fingerprint mismatch")
+        registered = json.loads((Path(__file__).resolve().parents[1] / "fixtures/serve-payload-v1/registered-physics.json").read_text())
+        digest = hashlib.sha256(rfc8785.dumps({k:v for k,v in p.items() if k != "digest"})).hexdigest()
+        if not any(x["digest"] == digest and x["probeId"] == p["measurementLock"]["probeId"] for x in registered.values()):
+            raise WorkerError("PHYSICS_PROFILE_INVALID", "unregistered numerical profile")
         for value in p["sources"].values():
             self._validate_document(value, "engineering-component.schema.json#/definitions/SourceRef")
         curve = p["driveCurve"]
@@ -281,7 +294,23 @@ class WorkerSession:
             raise WorkerError("PHYSICS_PROFILE_INVALID", "ordered non-increasing torque curve must start at rest and end at zero torque")
 
     def _advance_mobile(self, v, w, tick):
-        reading = self.engine.step(v, w)
+        injected = self.payload_perturbation is not None and tick == 501 and not self.perturbation_done
+        if injected:
+            self.perturbation_done = True  # never repeat, including if the step fails
+            declaration = self.engine.apply_payload_impulse(self.payload_perturbation)
+        try:
+            reading = self.engine.step(v, w)
+        finally:
+            if injected:
+                self.engine.clear_payload_impulse()
+        if injected:
+            import os
+            receipt = {"id": self.payload_perturbation, "runId": self.run_id, "bootId": self.boot_id,
+                       "tick": tick, "frameSampleTick": tick - 1, "sceneDigest": self.scene["sceneDigest"],
+                       "loadProfileSha256": self.scene["engine"]["loadProfileRef"]["sha256"],
+                       **declaration, "afterPoseMap": reading["loads"][0]["poseMap"]}
+            with open("payload-perturbation.json", "x") as f:
+                json.dump(receipt, f, allow_nan=False); f.flush(); os.fsync(f.fileno())
         self.substeps += self.scene["engine"]["substeps"]
         snapshot.check_mobile_stable(reading)
         expected = self.substeps * self.scene["engine"]["timestepMs"] / 1000
@@ -305,6 +334,8 @@ class WorkerSession:
         return v,w
 
     def _check_step(self, p):
+        if self.payload_perturbation:
+            raise WorkerError("PERTURBATION_SCOPE_INVALID", "mobile free payload only")
         """(targets, opening or None, placements) of a valid arm cell step; refuses before anything reaches the engine."""
         if p["velocities"] or p["actorUpdates"]:
             raise WorkerError("INVALID_REQUEST", "an arm cell run takes jointTargets, gripperTargets and propPlacements, not velocities or actor updates")

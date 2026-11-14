@@ -24,7 +24,7 @@ export async function preparePhysicsAdmission(scene:NavigationSceneV1,read:(path
  const physical=await doc(load.modelRef) as RobotPhysicalModelV1,robot=scene.robots[0]!;
  const policy=await doc(scene.engine.stopPolicyRef);
  const admission:PhysicsAdmission={maxAbsRollPitchRad:policy.maxAbsRollPitchRad,robotId:robot.robotId,props:load.props.map(p=>({propId:p.propId,supportId:p.attachment.kind==='free'?p.attachment.supportId:null})),contactIds:['floor',...physical.links.flatMap(l=>l.collision.map((_,i)=>`${robot.robotId}/${l.id}/c${i}`)),...load.props.map(p=>`prop/${p.propId}`),...[...scene.world.obstacles,...scene.world.boundaries].map(o=>`static/${o.id}`)],tickMs:20,substeps:10,driveFrameInBase:robot.model.driveFrameInBase};
- return {admission,assumptions:load.assumptions,metricsPolicyDigest:scene.engine.stopPolicyRef.sha256,loadProfileDigest:scene.engine.loadProfileRef.sha256,physicsProfileDigest:scene.engine.physicsProfileRef.sha256};
+ return {load,admission,assumptions:load.assumptions,metricsPolicyDigest:scene.engine.stopPolicyRef.sha256,loadProfileDigest:scene.engine.loadProfileRef.sha256,physicsProfileDigest:scene.engine.physicsProfileRef.sha256};
 }
 export function validatePhysicsRecord(input:unknown,a:PhysicsAdmission,expectedTick?:number):asserts input is PhysicsTickRecord{
  if(!validatePhysicsTickShape(input))throw new Error('PHYSICS_OBSERVATION_INVALID');

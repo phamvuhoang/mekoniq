@@ -9,7 +9,11 @@ export type {SpawnOptions};
 
 export const IRSIM_BACKEND=IRSIM_AMR.id;
 /** Who the plant is and what a report may claim about it. */
+export interface SimulationPerturbation {id:string;revision:number;parameters:Record<string,unknown>}
+export interface CompletionObservation {id:'payload-brake-observation-v1';extraTicks:5}
 export interface PlantIdentity {
+ /** Registered server-only post-cancellation observation window, not a business confirmation delay. */completionObservation?:CompletionObservation;
+ /** Server-only named fault input, included in source run/configuration identity. */simulationPerturbation?:SimulationPerturbation;
  /** Optional provider-specific controller; absent preserves the legacy controller identity and behavior. */
  controller?:{identity:{id:'grid-diff-v1';version:string};options:import('./controller').NavigationControllerOptions};
  adapterIdentity?:{id:string;version:string;model:string};

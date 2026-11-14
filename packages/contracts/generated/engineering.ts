@@ -694,6 +694,17 @@ export interface EngineeringProject {
    */
   entityBindings: EntityBinding[];
   requestedProfile: EngineeringProfile;
+  /**
+   * Registered server-owned new-run payload experiment; only engineering-mujoco-3d-v1.
+   */
+  mujocoExperimentId?:
+    | 'payload-empty-v1'
+    | 'payload-center-v1'
+    | 'payload-offset-v1'
+    | 'payload-slow-v1'
+    | 'payload-fast-v1'
+    | 'payload-friction-low-v1'
+    | 'payload-friction-high-v1';
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema

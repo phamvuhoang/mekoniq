@@ -72,6 +72,7 @@ interface Checkpoint {
  evidenceGaps?:Gap[];
  /** the recording's terminal reason once it ended: re-recorded on reopen when the manifest never got it (its write failed), so the evidence never turns complete */
  evidenceTerminal?:string|null;
+ /** Only the registered braking campaign retains this bounded observation tail in the same world. */completionTail?:{firstTick:number;lastTick:number};
  /** contention rig only (scenario.rig): each robot's directly-given controller goal and its last decision */
  rig?:Record<string,{commandId:string;state:string;tick:number}>;
 }
@@ -125,6 +126,8 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  const fresh=!cp;
  if(fresh&&(await readdir(dir)).length)throw new Error('RECOVERY_CHECKPOINT_MISSING');
  if(cp&&cp.provider!==amr.id)throw new Error('RUN_IDENTITY_MISMATCH');
+ if(plant.identity.completionObservation&&(amr.id!=='mujoco_3d'||plant.identity.completionObservation.id!=='payload-brake-observation-v1'||plant.identity.completionObservation.extraTicks!==5))throw new Error('COMPLETION_OBSERVATION_UNREGISTERED');
+ if(cp?.completionTail&&(!plant.identity.completionObservation||!Number.isSafeInteger(cp.completionTail.firstTick)||cp.completionTail.firstTick<0||cp.completionTail.lastTick!==cp.completionTail.firstTick+5||cp.tick<cp.completionTail.firstTick||cp.tick>cp.completionTail.lastTick))throw new Error('RECOVERY_CHECKPOINT_INVALID');
  if(cp?.evidenceTerminal!=null&&(typeof cp.evidenceTerminal!=='string'||!cp.evidenceTerminal||cp.evidenceTerminal.length>500))throw new Error('RECOVERY_CHECKPOINT_INVALID');
  // a new run copies its locked scene out of the bundle; a reopened one reads (and re-verifies) only its own copy
  const read=fresh?(path:string)=>{if(!providers.bundleFile)throw new Error('ENGINEERING_CLOSURE_MISSING');return providers.bundleFile(input.engineering!.ref.bundleDigest,path);}:(path:string)=>readFile(join(bundleDir,path));
@@ -136,9 +139,9 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  const fixture=resolveScenarioFixture(scenario.id,scene,input.seed),fixtureBytes=fixture.actors.length?Buffer.from(JSON.stringify(fixtureFile(fixture))):null;
  const mapId=scene.world.id,mapRevision=scene.sceneDigest,lock=providers.runtime.lockDigest;
  // an IR-FD01 run without actors or zones keeps its configuration identity exactly as before (no fixture key)
- const configuration={revision:1,hash:hashJson({roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,...plant.identity.controller?{controllerImplementation:plant.identity.controller.identity}:{},entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
+ const configuration={revision:1,hash:hashJson({...plant.identity.completionObservation?{completionObservation:plant.identity.completionObservation}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:plant.identity.simulationPerturbation}:{},roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,...plant.identity.controller?{controllerImplementation:plant.identity.controller.identity}:{},entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
  const backends=[{...amr}];
- const manifest:Omit<RunReport['manifest'],'runId'>={engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
+ const manifest:Omit<RunReport['manifest'],'runId'>={...plant.identity.completionObservation?{completionObservation:structuredClone(plant.identity.completionObservation)}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:structuredClone(plant.identity.simulationPerturbation)}:{},engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario),...scenario.basedOn?{basedOn:{...scenario.basedOn}}:{}},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends,workerLockDigest:lock,files:files.map(([p,b])=>[p,sha256(b)])}),configuration,recipes:[],
   models:[{id:amr.id,revision:amr.version,hash:scene.sceneDigest,provenance:'simulated_plant'},...scene.robots.map(r=>({id:`navigation-model:${r.robotId}`,revision:String(r.model.schemaVersion),hash:r.model.modelDigest,provenance:'projected'}))],
@@ -248,6 +251,18 @@ class FixedStepRun implements ScenarioRun {
    const [xM,yM,yawRad]=this.basePose(id,r.poseDriveMap),pose3d=(r as {pose3d?:{z:number;roll:number;pitch:number}}).pose3d;
    return [{schemaVersion:2,runId:c.runId,entityId:id,providerId:this.plant.identity.amr.id,bootId:c.plant.bootId??c.adapters[id]!.bootId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:this.plant.identity.telemetryOrigin??'controller_sim',
     quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:live?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM,yM,yawRad,...pose3d?{zM:pose3d.z,rollRad:pose3d.roll,pitchRad:pose3d.pitch}:{},moving:this.moving(id),hold:this.holds[id]??null},estimated:null,causationId:live?g.commandId:null} as TwinSampleV2];}));
+  this.telemetry.record(this.payloadStates().map(({id,plant}):TwinSampleV2=>({schemaVersion:2,runId:c.runId,entityId:id,providerId:'mujoco_3d',bootId:c.plant.bootId!,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:'physics_sim',quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:null,observed:plant,estimated:null,causationId:null})));
+ }
+ /** Only the committed checkpoint can publish a free payload. No coffee/custody IDs are synthesized. */
+ private payloadStates(){
+  const snapshot=this.cp.plant.snapshot as import('./contracts').Sim3DSnapshotV1|null;
+  if(!this.physics||!snapshot?.physics)return [];
+  return this.physics.load.props.flatMap(p=>{
+   const observed=snapshot.physics!.loads.find(l=>l.propId===p.propId);
+   if(p.attachment.kind!=='free'||!observed)return [];
+   const plant:import('../../../../contracts/generated/lab-v2').TwinPayloadState={payloadKind:'free',propId:p.propId,supportId:p.attachment.supportId,loadProfileSha256:this.physics!.loadProfileDigest,sceneDigest:this.scene.sceneDigest,geometry:structuredClone(p.geometry),positionM:[...observed.poseMap.positionM],quaternionXyzw:[...observed.poseMap.quaternionXyzw]};
+   return [{id:`payload:${p.propId}`,plant,moving:Math.hypot(...observed.linearVelocityMapMps)>this.scene.policy.parameters.stoppedLinearMps||Math.hypot(...observed.angularVelocityMapRadps)>this.scene.policy.parameters.stoppedAngularRadps}];
+  });
  }
  // ---- plant (one worker process per run, never a second one) ----
  private async ask(op:'describe'|'create'|'start'|'pause'|'resume',payload:Record<string,unknown>):Promise<Extract<IRSimResponseV1,{ok:true}>>{
@@ -583,7 +598,12 @@ class FixedStepRun implements ScenarioRun {
   for(const id of await this.runMissions())if(!FINAL.includes(String((await this.source.read('mission',id)).state.status)))return false;
   return !this.cp.roles.robots.some(r=>this.moving(r.id));
  }
- private async finished(){const c=this.cp;return c.started&&!c.attention.length&&(c.cancelled?await this.cancelDone():await this.missionsDone());}
+ private async finished(){
+  const c=this.cp,done=c.started&&!c.attention.length&&(c.cancelled?await this.cancelDone():await this.missionsDone());
+  if(!done||!c.cancelled||!this.plant.identity.completionObservation)return done;
+  c.completionTail??={firstTick:c.tick,lastTick:c.tick+this.plant.identity.completionObservation.extraTicks};
+  return c.tick>=c.completionTail.lastTick;
+ }
  /** Pause/cancel received while a step was queued or ran: each is executed as its own action (own admission, revision check and receipt) at a tick boundary,
   * or right after a batch refused at admission. Once no step is pending, new controls take the ordinary queue (nothing is left behind: the last empty check and
   * the steps decrement happen before any await). */
@@ -615,10 +635,11 @@ class FixedStepRun implements ScenarioRun {
  }
  private entities():EntityView[]{
   const c=this.cp;
-  return c.roles.robots.map(({id})=>{
+  const robots:EntityView[]=c.roles.robots.map(({id})=>{
    const r=this.robotObs(id),start=this.scene.robots.find(x=>x.robotId===id)!.initialPoseMap,[x,y,yawRad]=this.basePose(id,r?.poseDriveMap??start),g=this.adapters.get(id)!.goal();
    return {id,kind:'amr' as const,pose:{x,y,yawRad},quality:this.verified()?'valid' as const:'stale' as const,moving:c.plant.status==='live'&&this.moving(id),hold:this.holds[id]??null,goal:g?{commandId:g.commandId,state:g.state}:null,path:[],distanceM:c.distanceM[id]??0};
   });
+  return [...robots,...this.payloadStates().map(({id,plant,moving}):EntityView=>({id,kind:'payload',plant,pose:{x:plant.positionM[0]!,y:plant.positionM[1]!,yawRad:yawOf(plant.quaternionXyzw)},quality:this.verified()?'valid':'stale',moving,hold:null,goal:null,path:[],distanceM:null}))];
  }
  /** One critical section: no action interleaves while the report reads the checkpoint, the journal, the evidence listing and the clock (one moment, never two). */
  report():Promise<RunReport>{const p=this.queue.then(()=>this.buildReport());this.queue=p.catch(()=>{});return p;}

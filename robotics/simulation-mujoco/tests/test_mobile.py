@@ -480,3 +480,67 @@ def test_mobile_admission_refuses_before_engine_factory(tmp_path, change):
     assert not response["ok"], response
     assert called == []
     assert session.engine is None
+
+@pytest.mark.parametrize('name', ['drive-contact-low-v1', 'drive-contact-high-v1'])
+def test_registered_friction_profiles_have_their_own_lock_and_reject_numerical_relabel(tmp_path, name):
+    session = bundle(tmp_path)
+    path = FX / (name + '.json')
+    assert path.exists(), 'registered numerical variant missing'
+    p = json.loads(path.read_text())
+    assert p['measurementLock']['probeId'] == 'b04a-' + name
+    session._check_physics_profile(p)
+    p['contact']['sliding'] += .01
+    keys = ('tickMs','timestepMs','substeps','integrator','solver','velocityGainNmsPerRad','brakeTorqueNm','driveCurve','contact','numerics')
+    canonical = __import__('rfc8785').dumps
+    p['measurementLock']['numericalInputSha256'] = hashlib.sha256(canonical({k:p[k] for k in keys})).hexdigest()
+    p['digest'] = hashlib.sha256(canonical({k:v for k,v in p.items() if k != 'digest'})).hexdigest()
+    with pytest.raises(WorkerError):
+        session._check_physics_profile(p)
+
+
+def test_registered_payload_impulse_is_integrated_once_without_pose_teleport(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    bundle(tmp_path / 'bundle')
+    session = WorkerSession(run_id='mobile-1', bundle_root=tmp_path / 'bundle', lock_digest='b'*64,
+                            payload_perturbation='payload-cup-forward-impulse-v1')
+    assert session.handle(create_request())['ok']
+    assert session.handle(request('start'))['ok']
+    rows = []
+    try:
+        for tick in range(1, 551):
+            r = session.handle(request('step', {'targetTick':tick,'velocities':[{'robotId':'amr-1','vMps':0,'omegaRadps':0}],'actorUpdates':[]}, tick=tick-1))
+            assert r['ok'], r
+            rows.append(r['result'])
+            if tick == 501:
+                assert session.handle(request('step', {'targetTick':tick,'velocities':[{'robotId':'amr-1','vMps':0,'omegaRadps':0}],'actorUpdates':[]}, tick=tick-1)) == r
+        receipt = json.loads((tmp_path/'payload-perturbation.json').read_text())
+        assert receipt['runId'] == 'mobile-1' and receipt['tick'] == 501
+        assert receipt['forceN'] == [30,0,0] and receipt['durationS'] == .02
+        before, after = rows[499]['physics']['loads'][0], rows[500]['physics']['loads'][0]
+        delta = np.linalg.norm(np.array(after['poseMap']['positionM'])-before['poseMap']['positionM'])
+        assert 0 < delta < .05
+        assert rows[-1]['physics']['loads'][0]['poseInSupport']['positionM'][2] < -.1
+        assert np.max(np.abs(session.engine.data.xfrc_applied)) == 0
+    finally:
+        session.end()
+
+
+def test_payload_perturbation_refuses_arm_and_unknown_selector_before_mutation(tmp_path):
+    with pytest.raises(WorkerError, match='PERTURBATION_UNREGISTERED'):
+        WorkerSession(run_id='mobile-1',bundle_root=tmp_path,lock_digest='b'*64,payload_perturbation='custom-force')
+    s = WorkerSession(run_id='mobile-1',bundle_root=tmp_path,lock_digest='b'*64,payload_perturbation='payload-cup-forward-impulse-v1')
+    response = s.handle(request('create', {'sceneRef':'scene.json','seed':7,'arms':[]}))
+    assert not response['ok'] and response['error']['code'] == 'PERTURBATION_SCOPE_INVALID'
+    assert s.engine is None and s.tick == 0
+
+
+def test_variant_probe_scene_declares_the_actual_profile_bytes(tmp_path):
+    from probe_mobile import run_case
+    name = 'drive-contact-low-v1'
+    metrics, _, _ = run_case('hold','empty',1,tmp_path,name)
+    with gzip.open(tmp_path/metrics['raw']['path'],'rt') as raw:
+        identity = json.loads(next(raw))
+    ref = identity['navigationScene']['engine']['physicsProfileRef']
+    assert ref['path'] == name+'.json'
+    files = identity['navigationScene']['files']
+    assert any(x['path'] == ref['path'] and x['sha256'] == ref['sha256'] and x['bytes'] == (FX/ref['path']).stat().st_size for x in files)

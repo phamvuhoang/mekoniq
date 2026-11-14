@@ -39,6 +39,8 @@ export interface SpawnOptions{
  entry?:string[];
  /** Webots plant only: the host installation the worker starts (never from a request). */
  webotsHome?:string;
+ /** Server-owned campaign fault selector, never read from a browser request. */
+ payloadPerturbationId?:'payload-cup-forward-impulse-v1';
 }
 interface Pending{request:WireRequest;resolve:(r:IRSimResponseV1)=>void;reject:(e:Error)=>void}
 
@@ -47,6 +49,7 @@ export const IRSIM_WIRE:WireSpec={protocol:'mekoniq-irsim/1',module:'irsim_worke
 export const spawnIRSimWorker=(o:SpawnOptions):Promise<IRSimWorkerClient>=>spawnWorker(o,IRSIM_WIRE);
 
 export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWorkerClient>{
+ if(o.payloadPerturbationId&&wire.module!=='mujoco_worker')throw new Error('PERTURBATION_PROVIDER_UNSUPPORTED');
  await mkdir(o.runDirectory,{recursive:true});
  const deadlines={...DEFAULT_DEADLINES_MS,...wire.deadlinesMs,...o.deadlinesMs},root=resolve(o.workerRoot);
  const args=isolatedPythonArgs([root],o.entry??['-m',wire.module],['--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[],...wire.extraArgs(o)]);

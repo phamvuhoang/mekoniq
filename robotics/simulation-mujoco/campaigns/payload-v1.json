@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "id": "payload-v1",
+  "accepted": false,
+  "scenarioId": "MJ-FD01",
+  "coverage": [
+    "MJ01",
+    "MJ02",
+    "MJ03",
+    "MJ04",
+    "MJ05",
+    "MJ06",
+    "MJ07"
+  ],
+  "cases": [
+    {
+      "id": "turn-empty-s7",
+      "experimentId": "payload-empty-v1",
+      "seed": 7,
+      "kind": "turn"
+    },
+    {
+      "id": "turn-center-s7",
+      "experimentId": "payload-center-v1",
+      "seed": 7,
+      "kind": "turn"
+    },
+    {
+      "id": "turn-offset-s7",
+      "experimentId": "payload-offset-v1",
+      "seed": 7,
+      "kind": "turn"
+    },
+    {
+      "id": "turn-empty-s19",
+      "experimentId": "payload-empty-v1",
+      "seed": 19,
+      "kind": "turn"
+    },
+    {
+      "id": "turn-center-s19",
+      "experimentId": "payload-center-v1",
+      "seed": 19,
+      "kind": "turn"
+    },
+    {
+      "id": "turn-offset-s19",
+      "experimentId": "payload-offset-v1",
+      "seed": 19,
+      "kind": "turn"
+    },
+    {
+      "id": "turn-empty-s41",
+      "experimentId": "payload-empty-v1",
+      "seed": 41,
+      "kind": "turn"
+    },
+    {
+      "id": "turn-center-s41",
+      "experimentId": "payload-center-v1",
+      "seed": 41,
+      "kind": "turn"
+    },
+    {
+      "id": "turn-offset-s41",
+      "experimentId": "payload-offset-v1",
+      "seed": 41,
+      "kind": "turn"
+    },
+    {
+      "id": "repeat-center-s7-r1",
+      "experimentId": "payload-center-v1",
+      "seed": 7,
+      "kind": "repeat"
+    },
+    {
+      "id": "repeat-center-s7-r2",
+      "experimentId": "payload-center-v1",
+      "seed": 7,
+      "kind": "repeat"
+    },
+    {
+      "id": "repeat-center-s7-r3",
+      "experimentId": "payload-center-v1",
+      "seed": 7,
+      "kind": "repeat"
+    },
+    {
+      "id": "brake-slow",
+      "experimentId": "payload-slow-v1",
+      "seed": 7,
+      "kind": "brake",
+      "atTick": 500,
+      "completionObservation": {
+        "id": "payload-brake-observation-v1",
+        "extraTicks": 5
+      }
+    },
+    {
+      "id": "brake-fast",
+      "experimentId": "payload-fast-v1",
+      "seed": 7,
+      "kind": "brake",
+      "atTick": 500,
+      "completionObservation": {
+        "id": "payload-brake-observation-v1",
+        "extraTicks": 5
+      }
+    },
+    {
+      "id": "friction-low",
+      "experimentId": "payload-friction-low-v1",
+      "seed": 7,
+      "kind": "friction"
+    },
+    {
+      "id": "friction-high",
+      "experimentId": "payload-friction-high-v1",
+      "seed": 7,
+      "kind": "friction"
+    },
+    {
+      "id": "worker-kill",
+      "experimentId": "payload-center-v1",
+      "seed": 7,
+      "kind": "worker-kill",
+      "atTick": 500
+    },
+    {
+      "id": "ack-loss",
+      "experimentId": "payload-center-v1",
+      "seed": 7,
+      "kind": "ack-loss",
+      "atTick": 500
+    },
+    {
+      "id": "cup-fall",
+      "experimentId": "payload-center-v1",
+      "seed": 7,
+      "kind": "cup-fall",
+      "atTick": 500,
+      "perturbation": {
+        "id": "payload-cup-forward-impulse-v1",
+        "targetTick": 501,
+        "frameSampleTick": 500,
+        "forceTransform": "support-at-start-of-tick-held-in-map",
+        "frameId": "support",
+        "supportId": "amr-1/tray-1",
+        "forceN": [
+          30,
+          0,
+          0
+        ],
+        "durationS": 0.02,
+        "impulseNs": [
+          0.6,
+          0,
+          0
+        ],
+        "substeps": 10,
+        "propId": "cup-1",
+        "method": "mujoco-xfrc-applied",
+        "provenance": "assumed_simulation_fault"
+      }
+    }
+  ]
+}
