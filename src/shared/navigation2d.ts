@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 0624b5ad4645a5a7cc655b11084f5ce8d7e79a75 (sha256 5051d7e59fab627319456fc301afcec941a47d8dbbe7a813f792f6abc6b3b7d9). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 716e16b9d487c956d774faa10f3328ea38c61a1f (sha256 7da19827a84b7bd377873c6e2478db333a1ac83f571e90fedaa1a53997637ab0). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -2113,5 +2113,103 @@ export interface WorldEvidenceV1 {
     lastCommittedTick: number;
     ackTick: number | null;
     reason: string;
+  }[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "WebReplayPackageV1".
+ */
+export interface WebReplayPackageV1 {
+  schemaVersion: 1;
+  documentType: 'web-replay-package';
+  runId: string;
+  horizon: {
+    tick: number;
+    tickMs: 20;
+  };
+  provenance: {
+    kind: 'imported_integrity_only';
+    accepted: false;
+    calibration: 'not_calibrated';
+    scope: 'display_only_not_requalification';
+    rawReportSha256: string;
+    reportTransform: 'credential_redaction_v1';
+  };
+  coverage: {
+    prefixCovered: boolean;
+    streamFinalized: boolean;
+    sampled: false;
+    terminal: string | null;
+    /**
+     * @maxItems 100
+     */
+    gaps: (
+      | {
+          targetTick: number;
+          lastCommittedTick: number;
+          ackTick: number | null;
+          reason: string;
+        }
+      | {
+          firstTick: number;
+          lastTick: number;
+          reason: string;
+        }
+    )[];
+    /**
+     * @maxItems 100
+     */
+    issues: string[];
+  };
+  /**
+   * @maxItems 512
+   */
+  assets: {
+    path: string;
+    sha256: string;
+    decodedSha256: string;
+    bytes: number;
+    decodedBytes: number;
+    encoding: 'identity' | 'gzip';
+    role:
+      | 'report'
+      | 'events'
+      | 'scene'
+      | 'model'
+      | 'profile'
+      | 'notice'
+      | 'vendor'
+      | 'trace'
+      | 'world'
+      | 'physics'
+      | 'navigation';
+    mediaType: 'application/json' | 'application/x-ndjson' | 'model/stl' | 'text/plain';
+  }[];
+  /**
+   * @maxItems 3
+   */
+  streams: {
+    kind: 'world' | 'physics' | 'navigation';
+    /**
+     * @maxItems 256
+     */
+    chunks: string[];
+    firstTick: number;
+    lastTick: number;
+    samples: number;
+  }[];
+  /**
+   * @maxItems 8
+   */
+  licensing: {
+    kind: 'supplemental_licensing';
+    repository: string;
+    commit: string;
+    recordPath: string;
+    noticePath: string;
+    /**
+     * @maxItems 100
+     */
+    matchedAssets: string[];
   }[];
 }
