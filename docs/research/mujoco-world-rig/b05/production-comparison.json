@@ -1,0 +1,120 @@
+{
+  "scope": "model array inspection and existing raw trace comparison; no new physics trial",
+  "directCounts": {
+    "nq": 28,
+    "nv": 26,
+    "nbody": 29,
+    "ngeom": 26,
+    "nu": 9
+  },
+  "productionCounts": {
+    "nq": 35,
+    "nv": 32,
+    "nbody": 30,
+    "ngeom": 27,
+    "nu": 9
+  },
+  "sharedPhysicalArrayDifferences": [],
+  "globalOptions": {
+    "timestep": {
+      "direct": 0.002,
+      "production": 0.002
+    },
+    "cone": {
+      "direct": 1.0,
+      "production": 1.0
+    },
+    "impratio": {
+      "direct": 10.0,
+      "production": 10.0
+    },
+    "integrator": {
+      "direct": 3.0,
+      "production": 3.0
+    },
+    "solver": {
+      "direct": 2.0,
+      "production": 2.0
+    },
+    "iterations": {
+      "direct": 100.0,
+      "production": 100.0
+    },
+    "tolerance": {
+      "direct": 1e-08,
+      "production": 1e-08
+    }
+  },
+  "recordsCompared": 2503,
+  "firstDifferenceAbove1e12": {
+    "cupPosition": {
+      "tick": 103,
+      "stage": "source-placement",
+      "maxAbsDifference": 9.72268534962359e-07,
+      "direct": [
+        0.4899984973275665,
+        -3.0064488355261416e-06,
+        0.1499239093209711
+      ],
+      "production": [
+        0.4899992062219431,
+        -2.0341803005637826e-06,
+        0.14992402045189088
+      ]
+    },
+    "armQ": {
+      "tick": 505,
+      "stage": "grip",
+      "maxAbsDifference": 1.6889595848557093e-06,
+      "direct": [
+        -9.830570290232606e-07,
+        0.13296502733983603,
+        -0.3567617037569133,
+        -3.141600222442033,
+        1.3420097210998765,
+        4.1500175099880436e-05
+      ],
+      "production": [
+        -8.03278707194492e-07,
+        0.13296390734185742,
+        -0.35676267297908104,
+        -3.1416004020033608,
+        1.3420114100594613,
+        4.196877450782557e-05
+      ]
+    },
+    "amrPosition": {
+      "tick": 784,
+      "stage": "move-lift",
+      "maxAbsDifference": 1.0063616606714731e-12,
+      "direct": [
+        0.34999999999899195,
+        0.4859209092227542,
+        0.0899252775670259
+      ],
+      "production": [
+        0.3499999999999983,
+        0.4859209092231433,
+        0.0899252775670259
+      ]
+    }
+  },
+  "maximumComponentDifferences": {
+    "armQ": 6.234447353920082e-05,
+    "cupPosition": 9.130948565172492e-05,
+    "amrPosition": 5.426090516486015e-05
+  },
+  "supportFrameInTrayBody": {
+    "positionM": [
+      0,
+      0,
+      0.01
+    ],
+    "quaternionXyzw": [
+      0,
+      0,
+      0,
+      1
+    ]
+  }
+}

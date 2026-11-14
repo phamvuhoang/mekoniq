@@ -18,15 +18,15 @@ export const isArmPlantSet=(set:{mode:string;providers?:{arm?:string}}|undefined
 export function instantiateBackends(setId:string,catalog:CapabilityCatalog,enabled:readonly string[],required?:readonly string[]):InstantiatedBackends {
  const set=Object.hasOwn(catalog.sets,setId)?catalog.sets[setId]:undefined;
  if(!set)throw new Error('BACKEND_SET_UNKNOWN');
- const plant=isArmPlantSet(set);
+ const plant=isArmPlantSet(set),implemented=set.execution?.composition==='single_world'?{...IMPLEMENTED,mujoco_3d:{id:'mujoco_3d',version:'3.17.0',model:'mujoco_shared_world',dynamics:true}}:IMPLEMENTED;
  if(!(set.mode==='mock'||plant)||set.access!=='simulated')throw new Error('BACKEND_EXECUTION_DISABLED');
  const needed=required??set.backends;
  if(!needed.length||!needed.every(id=>set.backends.includes(id)))throw new Error('SCENARIO_BACKEND_MISSING');
  const admission=admitBackend(set.mode,needed,catalog,set.access);
  if(!admission.ok)throw new Error(`BACKEND_UNAVAILABLE:${admission.reasonCodes.join(',')}`);
- if(!needed.every(id=>enabled.includes(id)&&Object.hasOwn(IMPLEMENTED,id)))throw new Error('BACKEND_EXECUTION_DISABLED');
- const active=set.backends.filter(id=>enabled.includes(id)&&Object.hasOwn(IMPLEMENTED,id)&&admitBackend(set.mode,[id],catalog,set.access).ok);
- return {setId,mode:plant?'simulation':'mock',access:'simulated',backends:active,descriptors:active.map(id=>IMPLEMENTED[id]!)};
+ if(!needed.every(id=>enabled.includes(id)&&Object.hasOwn(implemented,id)))throw new Error('BACKEND_EXECUTION_DISABLED');
+ const active=set.backends.filter(id=>enabled.includes(id)&&Object.hasOwn(implemented,id)&&admitBackend(set.mode,[id],catalog,set.access).ok);
+ return {setId,mode:plant?'simulation':'mock',access:'simulated',backends:active,descriptors:active.map(id=>implemented[id]!)};
 }
 /** Server asset catalog: the illustrative service AMR (lab/fixtures/catalog/service-illustrative.json) for every tray count and sensor. Resolved by content hash only. */
 export const serverAssets:readonly AssetRevision[]=[1,2,3,4,5,6,7,8,9,10].flatMap(trays=>(['lidar','depth'] as const).map(sensor=>serviceAmrAsset({id:'service-robot',revision:1,chassis:'service',trays,sensor})));

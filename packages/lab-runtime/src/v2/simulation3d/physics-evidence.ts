@@ -38,14 +38,14 @@ export function validatePhysicsRecord(input:unknown,a:PhysicsAdmission,expectedT
  for(const l of r.loads){const p=a.props.find(p=>p.propId===l.propId);if(!p||p.supportId!==l.supportId||!pose(l.poseMap)||(p.supportId!==null&&!l.poseInSupport)||(l.poseInSupport&&!pose(l.poseInSupport)))fail();}
  const pairs=new Set<string>();for(const c of r.contacts){const key=JSON.stringify([c.a,c.b]);if(c.a>=c.b||!a.contactIds.includes(c.a)||!a.contactIds.includes(c.b)||pairs.has(key)||c.samples>a.substeps||c.normalImpulseNs>c.peakNormalN*c.samples*.002+1e-9)fail();pairs.add(key);}
 }
-async function sizeOf(dir:string){let bytes=0;for(const name of await readdir(dir)){const st=await lstat(join(dir,name));if(!st.isFile())throw new Error('PHYSICS_PATH_REJECTED');bytes+=st.size;}return bytes;}
-async function boundedFile(root:string,name:string,max:number){
+export async function physicsDirectoryBytes(dir:string){let bytes=0;for(const name of await readdir(dir)){const st=await lstat(join(dir,name));if(!st.isFile())throw new Error('PHYSICS_PATH_REJECTED');bytes+=st.size;}return bytes;}
+export async function readBoundedPhysicsFile(root:string,name:string,max:number){
  const file=join(root,name),st=await lstat(file);if(!st.isFile()||st.size>max)throw new Error('PHYSICS_READ_LIMIT_OR_PATH');
  const realRoot=await realpath(root),real=await realpath(file);if(!real.startsWith(realRoot+sep))throw new Error('PHYSICS_PATH_REJECTED');
  const b=await readFile(file);if(b.length!==st.size||b.length>max)throw new Error('PHYSICS_READ_LIMIT');return b;
 }
 export async function readPhysicsManifest(root:string):Promise<PhysicsEvidenceV1>{
- const m:unknown=JSON.parse((await boundedFile(root,MANIFEST,READ_LIMITS.manifestBytes)).toString());if(!validatePhysicsEvidenceShape(m))throw new Error('PHYSICS_MANIFEST_INVALID');return m as PhysicsEvidenceV1;
+ const m:unknown=JSON.parse((await readBoundedPhysicsFile(root,MANIFEST,READ_LIMITS.manifestBytes)).toString());if(!validatePhysicsEvidenceShape(m))throw new Error('PHYSICS_MANIFEST_INVALID');return m as PhysicsEvidenceV1;
 }
 export async function openPhysicsRecorder(o:PhysicsRecorderOptions):Promise<PhysicsRecorder>{
  const maxBytes=o.maxBytes??EVIDENCE_LIMITS.maxBytes,maxTicks=o.maxTicks??EVIDENCE_LIMITS.maxTicks,chunkTicks=o.chunkTicks??250;
@@ -58,7 +58,7 @@ export async function openPhysicsRecorder(o:PhysicsRecorderOptions):Promise<Phys
  // Every atomic publication temporarily coexists with all existing bytes, including its old
  // target and any orphan/tmp file. Reserve one worst-case terminal + gap document before
  // healthy writes: JSON control-character escapes cost six bytes per UTF-16 code unit.
- const quota=async(extra:number)=>{if(await sizeOf(o.directory)+extra>maxBytes)throw new Error('PHYSICS_QUOTA_EXCEEDED');};
+ const quota=async(extra:number)=>{if(await physicsDirectoryBytes(o.directory)+extra>maxBytes)throw new Error('PHYSICS_QUOTA_EXCEEDED');};
  const intentBytes=Buffer.byteLength(JSON.stringify({lastTick:Number.MAX_SAFE_INTEGER}));
  const reserve=(manifest:PhysicsEvidenceV1)=>manifest.terminalReason?0:Buffer.byteLength(JSON.stringify({...manifest,coverage:{...manifest.coverage,complete:false},terminalReason:'\u0000'.repeat(200),gaps:[...manifest.gaps,{firstTick:Number.MAX_SAFE_INTEGER,lastTick:Number.MAX_SAFE_INTEGER,reason:'\u0000'.repeat(200)}]}))+intentBytes;
  const publish=async(name:string,bytes:Uint8Array|string,extra=0)=>{await quota(Buffer.byteLength(bytes)+extra);await writeDurable(o.directory,name,bytes);};
@@ -94,11 +94,11 @@ export async function readPhysicsEvidence(root:string,manifest:unknown,options?:
  if(options.identity&&hashJson(options.identity)!==hashJson(m.identity))issues.push('PHYSICS_IDENTITY_MISMATCH');
  if(!m.coverage.complete||m.gaps.length||m.terminalReason)issues.push('PHYSICS_COVERAGE_INCOMPLETE');
  if(refs.length>READ_LIMITS.chunksPerStream||m.coverage.firstTick!==0||m.coverage.lastTick>EVIDENCE_LIMITS.maxTicks){issues.push('PHYSICS_READ_LIMIT');return result();}
- try{if(await sizeOf(root)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_QUOTA_EXCEEDED');if((await lstat(join(root,WAL)).catch(()=>null))?.size||await lstat(join(root,INTENT)).catch(()=>null))issues.push('PHYSICS_UNPUBLISHED_TAIL');}catch(e){issues.push((e as Error).message);return result();}
+ try{if(await physicsDirectoryBytes(root)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_QUOTA_EXCEEDED');if((await lstat(join(root,WAL)).catch(()=>null))?.size||await lstat(join(root,INTENT)).catch(()=>null))issues.push('PHYSICS_UNPUBLISHED_TAIL');}catch(e){issues.push((e as Error).message);return result();}
  let inflated=0;const names=new Set<string>();
  for(const ref of refs){try{
   if(!NAME.test(ref.path)||names.has(ref.path))throw new Error('PHYSICS_PATH_REJECTED');names.add(ref.path);
-  if(ref.bytes>READ_LIMITS.chunkBytes)throw new Error('PHYSICS_READ_LIMIT');const b=await boundedFile(root,ref.path,READ_LIMITS.chunkBytes);if(b.length!==ref.bytes||sha(b)!==ref.sha256)throw new Error('PHYSICS_HASH_MISMATCH');
+  if(ref.bytes>READ_LIMITS.chunkBytes)throw new Error('PHYSICS_READ_LIMIT');const b=await readBoundedPhysicsFile(root,ref.path,READ_LIMITS.chunkBytes);if(b.length!==ref.bytes||sha(b)!==ref.sha256)throw new Error('PHYSICS_HASH_MISMATCH');
   const body=gunzipSync(b,{maxOutputLength:Math.min(READ_LIMITS.chunkInflated,READ_LIMITS.totalInflated-inflated)});inflated+=body.length;
   const text=body.toString('utf8');if(!text.endsWith('\n'))throw new Error('PHYSICS_TRUNCATED');const lines=text.slice(0,-1).split('\n');if(lines.length>READ_LIMITS.linesPerChunk)throw new Error('PHYSICS_READ_LIMIT');
   for(const line of lines){if(Buffer.byteLength(line)>READ_LIMITS.lineBytes||records.length> EVIDENCE_LIMITS.maxTicks)throw new Error('PHYSICS_READ_LIMIT');const r:unknown=JSON.parse(line);validatePhysicsRecord(r,options.admission,records.length);records.push(r);}

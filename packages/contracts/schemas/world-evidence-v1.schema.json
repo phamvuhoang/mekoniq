@@ -1,0 +1,437 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "world-evidence"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "bootId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "sceneDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "admissionDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "chunks": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^world-[0-9]{6}-[a-f0-9]{8}\\.ndjson\\.gz$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16777216
+          },
+          "firstTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30000
+          },
+          "lastTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30000
+          }
+        },
+        "required": [
+          "path",
+          "sha256",
+          "bytes",
+          "firstTick",
+          "lastTick"
+        ]
+      }
+    },
+    "lastTick": {
+      "type": "integer",
+      "minimum": -1,
+      "maximum": 30000
+    },
+    "complete": {
+      "type": "boolean"
+    },
+    "terminal": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "gaps": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "targetTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30000
+          },
+          "lastCommittedTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30000
+          },
+          "ackTick": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 30000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "targetTick",
+          "lastCommittedTick",
+          "ackTick",
+          "reason"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "runId",
+    "bootId",
+    "sceneDigest",
+    "admissionDigest",
+    "chunks",
+    "lastTick",
+    "complete",
+    "terminal",
+    "gaps"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.world-evidence.v1",
+  "title": "WorldEvidenceV1",
+  "definitions": {
+    "WorldEvidenceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "snapshot": {
+          "$ref": "sim3d-worker-v1.schema.json#/definitions/Sim3DSnapshotV1"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "targetTick": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "velocities": {
+                  "type": "array",
+                  "minItems": 0,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "robotId": {
+                        "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                      },
+                      "vMps": {
+                        "type": "number"
+                      },
+                      "omegaRadps": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "robotId",
+                      "vMps",
+                      "omegaRadps"
+                    ]
+                  }
+                },
+                "actorUpdates": {
+                  "type": "array",
+                  "minItems": 0,
+                  "maxItems": 16,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "actorId": {
+                        "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                      },
+                      "poseMap": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "required": [
+                      "actorId",
+                      "poseMap"
+                    ]
+                  }
+                },
+                "singleStep": {
+                  "type": "boolean"
+                },
+                "jointTargets": {
+                  "type": "array",
+                  "minItems": 0,
+                  "maxItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "armId": {
+                        "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                      },
+                      "positionsRad": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "items": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "required": [
+                      "armId",
+                      "positionsRad"
+                    ]
+                  }
+                },
+                "gripperTargets": {
+                  "type": "array",
+                  "minItems": 0,
+                  "maxItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "armId": {
+                        "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                      },
+                      "openingM": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "armId",
+                      "openingM"
+                    ]
+                  }
+                },
+                "propPlacements": {
+                  "type": "array",
+                  "minItems": 0,
+                  "maxItems": 8,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "propId": {
+                        "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                      },
+                      "pose": {
+                        "anyOf": [
+                          {
+                            "$ref": "sim3d-worker-v1.schema.json#/definitions/Sim3DPoseV1"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "propId",
+                      "pose"
+                    ]
+                  }
+                },
+                "worldInteractions": {
+                  "type": "array",
+                  "maxItems": 16,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "eventId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "cupId": {
+                        "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                      },
+                      "propId": {
+                        "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                      },
+                      "kind": {
+                        "enum": [
+                          "birth",
+                          "remove"
+                        ]
+                      },
+                      "targetTick": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 30000
+                      }
+                    },
+                    "required": [
+                      "eventId",
+                      "cupId",
+                      "propId",
+                      "kind",
+                      "targetTick"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "targetTick",
+                "velocities",
+                "actorUpdates"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "interactions": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "eventId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "cupId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "propId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "kind": {
+                "enum": [
+                  "birth",
+                  "remove"
+                ]
+              },
+              "tick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 30000
+              },
+              "commandDigest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "reason": {
+                "enum": [
+                  "source_nozzle_birth",
+                  "source_recipient_removal",
+                  "rig_birth",
+                  "rig_removal"
+                ]
+              },
+              "before": {
+                "anyOf": [
+                  {
+                    "$ref": "sim3d-worker-v1.schema.json#/definitions/Sim3DPoseV1"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "after": {
+                "anyOf": [
+                  {
+                    "$ref": "sim3d-worker-v1.schema.json#/definitions/Sim3DPoseV1"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "eventId",
+              "cupId",
+              "propId",
+              "kind",
+              "tick",
+              "commandDigest",
+              "reason",
+              "before",
+              "after"
+            ]
+          }
+        }
+      },
+      "required": [
+        "snapshot",
+        "command",
+        "interactions"
+      ],
+      "title": "WorldEvidenceRecord"
+    }
+  }
+}

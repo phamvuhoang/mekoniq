@@ -1,3 +1,8 @@
+import type {RobotAdapter} from '../../../robot-adapters/src/contract';
+import type {Sim3DSnapshotV1} from './navigation2d/contracts';
+import type {WorldPlantBindings,WorldPortsFactory} from './simulation3d/world-ports';
+import type {WorldTickCommand} from './simulation3d/world-ports';
+import {stepWorldOnce} from './simulation3d/world-step';
 import {dueFaults,validateFaultSchedule,validateFaultTarget,type FaultFireRecord,type FaultPhase} from './fault-schedule';
 // Mock scenario runner. Per tick: scripted inputs -> source decisions/outbox dispatch -> model advance -> observations -> journal.
 // Business truth lives only in the run's source journal; the plant owns pose/path; the report reads events back from the journal.
@@ -35,7 +40,7 @@ import {awaitTick,realWall,type PaceAnchor,type WallClock} from './pace';
 /** Locked engineering extension: the bundle ref plus the exact project and projection it was compiled from (absent for every legacy run). */
 export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
 export interface RunManifestInput {project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
-export interface RunProviders {directory:string;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
+export interface RunProviders {directory:string;worldPorts?:import('./simulation3d/world-ports').WorldPortsFactory;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
  /** A plant arm whose program comes from its fixture (MuJoCo): what its ports run, for the manifest. Ignored unless the set's arm is a plant. */armProgram?:ArmProgramRecord;
  /** Wall clock of paced steps (tests inject a fake); consulted only by a step that carries `pace`. */wall?:WallClock}
 export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'}
@@ -60,6 +65,7 @@ interface Checkpoint {
  recoveredOps:RunReport['recoveredOps'];confirmationLog:RunReport['confirmations'];faults:RunReport['faults'];
  pendingOps:{ordinal:number;operationId:string;type:string;payloadHash:string}[];inFlight:boolean;crashArmed:boolean;
  faultFires?:FaultFireRecord[];
+ world?:{navigation?:import('./session').SourceFixture['navigation'];snapshot?:Sim3DSnapshotV1;terminal?:string;pending?:{targetTick:number;stage:string;ackTick:number|null;command?:WorldTickCommand}};
  coffee?:CoffeeState;
 }
 class SimulatedCrash extends Error {constructor(){super('SIMULATED_CRASH');}}
@@ -80,13 +86,15 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  const capabilities=providers.catalog??defaultCatalog,runSet=Object.hasOwn(capabilities.sets,input.backendSetId)?capabilities.sets[input.backendSetId]:undefined,plantSet=isArmPlantSet(runSet);
  // the arm model is the run's arm provider's: the MuJoCo arm is the xArm 6, every other arm the PUMA 560 reference. Chosen by the set, so a project for the other model is refused.
  const armModel=runSet?.providers?.arm===MUJOCO_ARM.id?XARM6_SI:PUMA560_SI;
- if(plantSet&&!providers.coffeePorts)throw new Error('BACKEND_EXECUTION_DISABLED'); // a plant-backed arm is only ever the caller's ports; never a silent mock
+ const singleWorld=runSet?.execution?.composition==='single_world';
+ if(singleWorld&&!providers.worldPorts)throw new Error('WORLD_COMPOSITION_UNAVAILABLE');
+ if(plantSet&&!singleWorld&&!providers.coffeePorts)throw new Error('BACKEND_EXECUTION_DISABLED'); // a plant-backed arm is only ever the caller's ports; never a silent mock
  const backends=instantiateBackends(input.backendSetId,capabilities,providers.enabledBackends??[],requiredBackends(registered,plantSet?'simulation':'mock',input.backendSetId,capabilities));
  if(input.mode!==backends.mode||input.access!==backends.access)throw new Error('MODE_BACKEND_MISMATCH');
  const valid=validateProjectV2(input.project);if(!valid.ok)throw new Error('INVALID_PROJECT');
  const project=structuredClone(valid.value);checkWorld(project,armModel);
  const scenario=structuredClone(registered);
- checkScenario(scenario);if(scenario.revision!==input.scenarioRevision)throw new Error('SCENARIO_REVISION_MISMATCH');
+ checkScenario(scenario);if(singleWorld&&(!scenario.coffee||scenario.obstacles?.length))throw new Error('WORLD_SCENARIO_UNSUPPORTED');if(scenario.revision!==input.scenarioRevision)throw new Error('SCENARIO_REVISION_MISMATCH');
  // A coffee scenario needs the coffee and arm backends of the locked set; there is no fallback to an AMR-only run.
  if(scenario.coffee&&!(backends.backends.includes('mock_coffee')&&(backends.backends.includes('mock_arm')||backends.backends.includes('webots_arm')||backends.backends.includes(MUJOCO_ARM.id))))throw new Error('SCENARIO_BACKEND_MISSING');
  if(!Number.isSafeInteger(input.seed)||input.seed<0||input.seed>0xffffffff)throw new Error('INVALID_SEED');
@@ -104,12 +112,12 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  // a plant arm that runs its fixture's program (MuJoCo) records that program, its motion and its geometry; every other run keeps the mock arm's parameters
  const program=plantSet?providers.armProgram:undefined;
  const armProfile=program?{kinematics:armModel,program:{fixture:program.fixture,physicsDigest:program.physicsDigest,programsDigest:program.programsDigest,waypointsDigest:program.waypointsDigest,programs:program.programs},collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}}
-  :{kinematics:armModel,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={amr:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
+  :{kinematics:armModel,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={amr:singleWorld?{composition:'single_world',admission:'source_factory'}:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
  const manifest:Omit<RunReport['manifest'],'runId'>={...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:backends.mode,access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends:backends.descriptors}),configuration,
   recipes:COFFEE_RECIPES.filter(r=>scenario.coffee?.orders.some(o=>o.recipe===r.id)).map(r=>({id:r.id,revision:r.revision,hash:r.hash})),
-  models:[{id:MOCK_AMR.id,revision:MOCK_AMR.version,hash:hashJson(MOCK_AMR_PARAMS),provenance:'illustrative'},...scenario.coffee?[{id:'mock_coffee',revision:'1',hash:hashJson(MOCK_COFFEE_PARAMS),provenance:'illustrative'},{id:armModel.id,revision:armModel.revision,hash:hashJson(armProfile),provenance:armModel===XARM6_SI?'manufacturer_nominal':'illustrative_reference'}]:[]],
+  models:[...singleWorld?[]:[{id:MOCK_AMR.id,revision:MOCK_AMR.version,hash:hashJson(MOCK_AMR_PARAMS),provenance:'illustrative'}],...scenario.coffee?[{id:'mock_coffee',revision:'1',hash:hashJson(MOCK_COFFEE_PARAMS),provenance:'illustrative'},{id:armModel.id,revision:armModel.revision,hash:hashJson(armProfile),provenance:armModel===XARM6_SI?'manufacturer_nominal':'illustrative_reference'}]:[]],
   profiles:[{id:'mock-runtime',revision:1,hash:configuration.hash,provenance:'illustrative'},...armCollisionScene?.profile?[{id:armCollisionScene.profile.id,revision:armCollisionScene.profile.revision,hash:armCollisionScene.profileHash!,provenance:armCollisionScene.profile.provenance}]:[]],calibration:{status:'not_calibrated',revision:null,hash:null,reason:'MOCK_ILLUSTRATIVE'},...armCollisionScene?{armCollisionScene}:{},...program?{armProgram:structuredClone(program)}:{}};
  const manifestHash=hashJson(manifest),dir=providers.directory;
  await mkdir(dir,{recursive:true,mode:0o700});await chmod(dir,0o700);
@@ -127,10 +135,11 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
    plant:{width:project.world.width,height:project.world.height,obstacles:structuredClone(project.world.obstacles),injected:[],contacts:0,minSeparationM:null,maxConcurrentMovers:0,
     robots:roles.robots.map(r=>({id:r.id,radiusM:radius[r.id]!,speedLimitMps:project.entities.find(e=>e.id===r.id)?.speedLimitMps??MOCK_AMR_PARAMS.speedMps,pose:{x:point(r.parkingId).x,y:point(r.parkingId).y,yawRad:0},bootId:randomUUID(),seq:0,goals:[],lastCompleted:null,moving:false,hold:null,stale:false,distanceM:0}))}};
  }
- const run=new Run(dir,cp,scenario,project,providers.wall??realWall);
+ const run=new Run(dir,cp,scenario,project,providers.wall??realWall,singleWorld?{manifest:input,factory:providers.worldPorts!}:undefined);
  const coffee=roles.coffee&&scenario.coffee?{...roles.coffee,recipes:CoffeeDriver.recipes(scenario.coffee.orders)}:undefined;
- run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[...new Set([roles.stationId,...coffee?[coffee.stationId]:[]])],...coffee?{coffee}:{},...scenario.fleet?{fleet:scenario.fleet}:{}},fresh);
- try{await run.attach(providers.coffeePorts);
+ const openSource=()=>SourceSession.open(dir,cp.runId,()=>run.nowMs(),{...run.worldNavigation?{navigation:run.worldNavigation}:{},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[...new Set([roles.stationId,...coffee?[coffee.stationId]:[]])],...coffee?{coffee}:{},...scenario.fleet?{fleet:scenario.fleet}:{}},fresh);
+ if(!singleWorld)run.source=await openSource();
+ try{await run.attach(providers.coffeePorts);if(singleWorld)run.source=await openSource();
  // telemetry is not checkpointed: a reopened run starts a new buffer and says so
  if(!fresh)run.telemetry.gap('RUNTIME_RESTART',null,cp.tick);
  await run.initializeCoffee();
@@ -145,7 +154,10 @@ class Run implements ScenarioRun {
  source!:SourceSession;
  readonly clock:Clock;
  private plant!:MockPlant;
- private adapters:MockAmrAdapter[]=[];
+ private adapters:RobotAdapter[]=[];
+ private world?:WorldPlantBindings;
+ private observationTick?:number;
+ nowMs(){return this.observationTick===undefined?this.clock.nowMs():EPOCH+this.observationTick*TICK_MS;}
  private observations:RobotEvent[]=[];
  private coffee?:CoffeeDriver;
  private queue:Promise<unknown>=Promise.resolve();
@@ -153,35 +165,59 @@ class Run implements ScenarioRun {
  /** Paced-step anchor (D57): memory only, never checkpointed or digested; cleared by pause, resume, cancel, an unpaced step and a reopen. */
  private anchor:PaceAnchor|null=null;
  readonly telemetry=new TelemetryRecorder();
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private wall:WallClock){this.clock=createClock(EPOCH,cp.tick,cp.paused);}
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private wall:WallClock,private worldConfig?:{manifest:RunManifestInput;factory:WorldPortsFactory}){this.clock=createClock(EPOCH,cp.tick,cp.paused);}
  get id(){return this.cp.runId;}
+ get worldNavigation(){return this.cp.world?.navigation;}
  async attach(coffeePorts?:RunProviders['coffeePorts']){
-  this.plant=new MockPlant(this.cp.plant,()=>this.clock.nowMs(),randomUUID);
+  if(!this.worldConfig){this.plant=new MockPlant(this.cp.plant,()=>this.clock.nowMs(),randomUUID);
   this.adapters=this.cp.roles.robots.map(r=>new MockAmrAdapter(this.plant,{id:r.id,adapter:'simulator',protocolVersion:'1',firmware:`${MOCK_AMR.id}@${MOCK_AMR.version}`,capabilities:['delivery'],mapId:'lab-world',mapRevision:String(this.project.world.revision),offlineExecution:true,maxLoadMinor:'10000',trays:this.cp.trays[r.id]!,validation:'simulated'}));
+  }
   for(const a of this.adapters)a.observe(e=>this.observations.push(e));
   const c=this.cp;
   if(c.coffee){
    const pickup=this.project.world.points.find(p=>p.id===c.coffee!.stationId)!,robotId=c.roles.robots[0]!.id;
    const collisionRobots=()=>c.plant.robots.map(({id,radiusM,pose})=>({id,radiusM,pose:{...pose}}));
    let previousRobots=collisionRobots();
-   const context:CoffeeContext={source:this.source,runId:c.runId,directory:this.dir,nowMs:()=>this.clock.nowMs(),tick:()=>c.tick,
+   const context:CoffeeContext={source:this.worldConfig?new Proxy({} as SourceSession,{get:(_target,key)=>{const target=this.source;if(!target)throw new Error('WORLD_SOURCE_NOT_INITIALIZED');if(key==='store')this.assertOutsideWorldCommit();const value=Reflect.get(target,key);if(typeof value!=='function')return value;return (...args:unknown[])=>{if(key==='submit'||key==='close')this.assertOutsideWorldCommit();return value.apply(target,args);};}}):this.source,runId:c.runId,directory:this.dir,nowMs:()=>this.nowMs(),tick:()=>this.observationTick??c.tick,
     armScene:()=>{const robots=collisionRobots(),scene=materializeArmScene(c.manifest.armCollisionScene!,robots,c.tick,previousRobots);previousRobots=robots;return scene;},
     submit:(type,payload,observer)=>this.submit(type,payload,observer),must:(type,payload)=>this.must(type,payload),
     // tray receiver: the run's robot stopped at the pickup point within 5 cm (illustrative dock tolerance)
     receiver:()=>{const r=c.plant.robots.find(x=>x.id===robotId)!;return !r.stale&&!r.moving&&Math.hypot(r.pose.x-pickup.x,r.pose.y-pickup.y)<=DOCK_TOLERANCE_M?{robotId,slot:1}:null;},
     dock:()=>{const r=c.plant.robots.find(x=>x.id===robotId)!;return {robotId,errorM:Math.hypot(r.pose.x-pickup.x,r.pose.y-pickup.y),moving:r.moving,localizationValid:!r.stale,bootId:r.bootId};},
-    confirmLoad:async(missionId,stopId,robot)=>{const key=`${missionId}/${stopId}`;c.confirmations[key]={due:c.tick,type:'load',robotId:robot};await this.confirmStop(key,'system');},
+    confirmLoad:async(missionId,stopId,robot)=>{this.assertOutsideWorldCommit();const key=`${missionId}/${stopId}`;c.confirmations[key]={due:c.tick,type:'load',robotId:robot};await this.confirmStop(key,'system');},
     createMission:async(allocationId)=>{
+     this.assertOutsideWorldCommit();
      const food=this.scenario.mixFoodCoffee?c.workload.filter(w=>!w.missionId):[];if(food.some(w=>w.status!=='placed'))return null;
      const r=await this.must('Mission.Create',{allocationIds:[...food.map(w=>w.allocationId!),allocationId],robotId});const missionId=String(r.value.missionId);
      for(const w of food)w.missionId=missionId;return missionId;
     },
     attention:a=>c.attention.push({...a,tick:c.tick}),suspend:()=>this.suspend(),
     rejected:r=>{c.rejectedObservations.push({...r,tick:c.tick});if(c.rejectedObservations.length>1000)c.rejectedObservations.shift();}};
-   this.coffee=new CoffeeDriver(c.coffee,context,randomUUID,await coffeePorts?.(c.coffee,context,randomUUID,this.dir));
+   let ports:CoffeePlantPorts|undefined;
+   if(this.worldConfig){
+    if(c.world){
+     c.world.terminal??='WORLD_RESTART_UNKNOWN';c.reclaimed=true;c.suspended=true;
+     for(const r of c.plant.robots){r.stale=true;r.moving=false;r.hold='WORLD_UNKNOWN';}
+     if(!c.attention.some(a=>a.reason==='WORLD_RESTART_UNKNOWN'))c.attention.push({reason:'WORLD_RESTART_UNKNOWN',tick:c.tick});
+     ports={adapters:[],async advance(){throw new Error('WORLD_TERMINAL');},async recover(){},snapshot:()=>({coffee:c.coffee!.plant,arm:c.coffee!.arm}),drain:()=>[],transferEvidence:()=>null,report:()=>({cupLedger:[],arm:null}),async close(){}};
+    }else{
+     this.world=await this.worldConfig.factory({manifest:this.worldConfig.manifest,runId:c.runId,directory:this.dir,state:c.coffee,context,newBootId:randomUUID});
+     if(!this.world.evidence)throw new Error('WORLD_RECORDER_REQUIRED');if(this.world.metadata){Object.assign(c.manifest,structuredClone(this.world.metadata));c.manifest.calibration.reason='WORLD_NOMINAL_ASSUMED';}
+     const initial=this.world.snapshot();if(initial.tick!==0||initial.runId!==c.runId)throw new Error('WORLD_INITIAL_SNAPSHOT_INVALID');
+     await this.world.evidence.append(initial);c.world={snapshot:structuredClone(initial),...this.world.navigation?{navigation:structuredClone(this.world.navigation)}:{}};this.applyWorldView(initial);
+     this.adapters=c.roles.robots.map(r=>{const a=this.world!.robots.get(r.id);if(!a)throw new Error('WORLD_ADAPTER_MISSING');return a;});
+     for(const a of this.adapters)a.observe(e=>this.observations.push(e));ports=this.world.coffee;
+    }
+   }else ports=await coffeePorts?.(c.coffee,context,randomUUID,this.dir);
+   this.coffee=new CoffeeDriver(c.coffee,context,randomUUID,ports);
   }
  }
- async initializeCoffee(){await this.coffee?.initialize();}
+ async initializeCoffee(){if(!this.cp.world?.terminal)await this.coffee?.initialize();}
+ private assertOutsideWorldCommit(){if(this.observationTick!==undefined)throw new Error('WORLD_COMMIT_SIDE_EFFECT_FORBIDDEN');}
+ private applyWorldView(s:Sim3DSnapshotV1){
+  for(const r of this.cp.plant.robots){const actual=s.robots.find(x=>x.robotId===r.id);if(!actual)throw new Error('WORLD_ROBOT_MISSING');const [x,y,yawRad]=actual.poseDriveMap;r.distanceM+=this.cp.tick===0?0:Math.hypot(x!-r.pose.x,y!-r.pose.y);r.pose={x:x!,y:y!,yawRad:yawRad!};r.bootId=s.bootId;r.seq=Number(s.seq);r.moving=Math.abs(actual.bodyVelocity[0]!)>.01||Math.abs(actual.bodyVelocity[1]!)>.02;r.stale=false;r.hold=null;}
+  this.cp.plant.contacts+=s.robots.reduce((n,r)=>n+r.collisionIds.length,0);this.cp.plant.maxConcurrentMovers=Math.max(this.cp.plant.maxConcurrentMovers,this.cp.plant.robots.filter(r=>r.moving).length);
+ }
  persist(){return writeCheckpoint(this.dir,this.cp);}
  record(){const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;this.telemetry.record(projectSamples({runId:c.runId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),nowMs:this.clock.nowMs(),robots:c.plant.robots,...c.coffee?{coffee:c.coffee}:{}},String(process.hrtime.bigint())));}
  pulse(){const c=this.cp;return {tick:c.tick,paused:c.paused,runRevision:c.revision};}
@@ -189,6 +225,7 @@ class Run implements ScenarioRun {
  /** Crash between journal commit and checkpoint: the journal is ahead of the plant. Rebuild poses from source, report in-flight goals unknown, suspend the script. */
  async recover(){
   const c=this.cp;c.crashArmed=false;
+  if(this.worldConfig){c.world??={};c.world.terminal??='WORLD_RESTART_UNKNOWN';c.suspended=true;for(const r of c.plant.robots)r.stale=true;return;}
   for(const op of c.pendingOps)c.recoveredOps.push({ordinal:op.ordinal,operationId:op.operationId,type:op.type,committed:!!await this.source.receipt(op.operationId,op.payloadHash)});
   c.pendingOps=[];
   for(const r of c.plant.robots){
@@ -204,6 +241,7 @@ class Run implements ScenarioRun {
   c.inFlight=false;c.dispatchDue=true;c.revision++;
  }
  private async submit(type:string,payload:JsonObject,robotId?:string):Promise<CommandResult>{
+  this.assertOutsideWorldCommit();
   if(type==='Mission.Create'){
    const limits=this.project.entities.filter(e=>e.kind==='amr'&&(payload.robotId===undefined||e.id===payload.robotId)).flatMap(e=>e.speedLimitMps===undefined?[]:[e.speedLimitMps]);
    if(limits.length)payload={...payload,speedLimitMps:Math.min(...limits,typeof payload.speedLimitMps==='number'?payload.speedLimitMps:Infinity)};
@@ -245,7 +283,7 @@ class Run implements ScenarioRun {
  }
  private async confirmStop(key:string,provenance:string){
   const c=this.cp,[missionId,stopId]=key.split('/') as [string,string],x=c.confirmations[key]!;
-  if(this.plant.robot(x.robotId).stale)return;
+  if(c.plant.robots.find(r=>r.id===x.robotId)!.stale)return;
   delete c.confirmations[key];
   const m=await this.source.read('mission',missionId);
   const r=await this.submit('Mission.ConfirmStop',{missionId,expectedVersion:m.version,missionRevision:m.state.revision!,stopId});
@@ -306,8 +344,24 @@ class Run implements ScenarioRun {
   await this.scheduledFaults();
   if(!c.suspended)await this.scripted();
   if(c.dispatchDue)await this.dispatch();
-  this.clock.advance(1);c.tick=this.clock.tick;
-  this.plant.advance();await this.coffee?.advance();
+  if(this.world){
+   const w=this.world,previous=structuredClone(c.coffee),targetTick=c.tick+1;
+   c.world!.pending={targetTick,stage:'prepared',ackTick:null};await writeCheckpoint(this.dir,c,{sync:true});
+   try{
+    const snapshot=await stepWorldOnce({...w.world,
+     step:async command=>{c.world!.pending!.command=structuredClone(command);c.world!.pending!.stage='sent';await writeCheckpoint(this.dir,c,{sync:true});const s=await w.world.step(command);c.world!.pending!.ackTick=s.tick;c.world!.pending!.stage='acked';return s;},
+     commit:async s=>{this.observationTick=s.tick;try{await w.world.commit(s);await this.coffee?.advance();}finally{this.observationTick=undefined;}}
+    },c.tick,async s=>{await w.evidence.append(s);c.world!.pending!.stage='durable';await writeCheckpoint(this.dir,c,{sync:true});});
+    this.clock.advance(1);c.tick=this.clock.tick;c.world!.snapshot=structuredClone(snapshot);this.applyWorldView(snapshot);delete c.world!.pending;
+   }catch(e){
+    this.observationTick=undefined;this.observations=[];
+    if(previous&&c.coffee){for(const k of Object.keys(c.coffee))delete (c.coffee as unknown as Record<string,unknown>)[k];Object.assign(c.coffee,previous);}
+    c.world!.terminal='WORLD_UNKNOWN';c.suspended=true;for(const r of c.plant.robots){r.stale=true;r.moving=false;r.hold='WORLD_UNKNOWN';}
+    c.attention.push({reason:'WORLD_UNKNOWN',tick:c.tick});
+    const pending=c.world!.pending!;await w.evidence.fail({targetTick,lastCommittedTick:c.tick,ackTick:pending.ackTick,reason:(e as Error).message}).catch(()=>{});
+    await writeCheckpoint(this.dir,c,{sync:true});throw e;
+   }
+  }else{this.clock.advance(1);c.tick=this.clock.tick;this.plant.advance();await this.coffee?.advance();}
   await this.drain();await this.coffee?.drain();
   if(c.tick%TELEMETRY_RATE_TICKS===0)this.record();
  }
@@ -342,7 +396,7 @@ class Run implements ScenarioRun {
   const c=this.cp;c.faults.push({tick:c.tick,faultId,entityId});
   if(COFFEE_FAULTS.includes(faultId)||ARM_FAULTS.includes(faultId))await this.coffee!.fault(faultId);
   else if(faultId==='crash-after-commit')c.crashArmed=true;
-  else{this.plant.fault(entityId,faultId as PlantFault);await this.drain();
+  else{if(this.worldConfig)throw new Error('WORLD_FAULT_UNSUPPORTED');this.plant.fault(entityId,faultId as PlantFault);await this.drain();
    if(faultId==='localization-lost'||faultId==='map-changed'){const reason=faultId==='map-changed'?'MAP_CHANGED':'LOCALIZATION_LOST';if(!c.attention.some(a=>a.reason===reason&&a.robotId===entityId))c.attention.push({reason,robotId:entityId,tick:c.tick});this.suspend();}
   }
  }
@@ -386,6 +440,7 @@ class Run implements ScenarioRun {
   if(this.closed)throw new Error('RUN_CLOSED');
   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
   const a=checked.value,c=this.cp,p=a.payload as Record<string,unknown>,hash=hashJson(a),old=c.receipts[a.actionId];
+  if(c.world?.terminal)throw new Error('WORLD_TERMINAL');
   if(c.reclaimed&&a.kind!=='reconcile')throw new Error('INVALID_STATE:RECLAIM_READ_ONLY');
   if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');return structuredClone(old.view);}
   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
@@ -402,7 +457,7 @@ class Run implements ScenarioRun {
   const pending=a.kind==='confirm'?Object.entries(c.confirmations).find(([k,x])=>x.due===null&&k.endsWith(`/${String(p.subjectId)}`)):undefined;
   if(a.kind==='confirm'&&!pending)throw new Error('CONFIRMATION_NOT_PENDING');
   if(pending&&pending[1].type!==p.confirmationType)throw new Error('CONFIRMATION_TYPE_MISMATCH');
-  if(pending&&this.plant.robot(pending[1].robotId).stale)throw new Error('INVALID_STATE:LOCALIZATION_LOST');
+  if(pending&&c.plant.robots.find(r=>r.id===pending[1].robotId)!.stale)throw new Error('INVALID_STATE:LOCALIZATION_LOST');
   if(a.kind==='restoreCup'&&!await this.coffee?.canRestoreJob(String(p.subjectId)))throw new Error('INVALID_STATE:CUP_RESTORE_UNSAFE');
   // Admission applies only to a new action, inside the same queue as receipt replay and execution.
   // A lost response can therefore be retried even if providers became unavailable after success.
@@ -438,7 +493,7 @@ class Run implements ScenarioRun {
    c.revision++;c.pendingOps=[];c.inFlight=false;this.record();
    const after=await this.view();c.receipts[a.actionId]={hash,view:after};await this.persist();return structuredClone(after);
   }catch(e){
-   if(e instanceof SimulatedCrash){this.closed=true;try{await this.coffee?.close();}finally{await this.source.close();}throw e;}
+   if(e instanceof SimulatedCrash){this.closed=true;try{await this.coffee?.close();}finally{try{if(this.world){await this.world.evidence.fail({targetTick:c.tick,lastCommittedTick:c.tick,ackTick:c.tick,reason:'SIMULATED_CRASH'});await this.world.world.close();}}finally{await this.source?.close();}}throw e;}
    c.attention.push({reason:'ACTION_INTERRUPTED',tick:c.tick});c.revision++;c.inFlight=false;await this.persist();throw e;
   }
  }
@@ -463,7 +518,7 @@ class Run implements ScenarioRun {
   let served=0n;for(const lineId of [...c.workload.map(w=>w.lineId),...c.coffee?.workload.map(w=>w.lineId)??[]])if(lineId)served+=BigInt(String((await this.source.read('fulfillment',lineId)).state.served??'0'));
   const journal=await this.source.journal();
   return {run:{...m.faultSchedule?{faultScheduleHash:m.faultSchedule.hash}:{},schemaVersion:2,id:c.runId,mode:m.mode,access:'simulated',backendSetId:m.backendSetId,backends:m.backends.map(b=>b.id),status,runRevision:c.revision,eventCursor:journal.length?journal[journal.length-1]!.sequence:null,telemetryCursor:this.telemetry.cursor(),fidelity:'modeled',ageMs:0,sourceCommit:m.sourceCommit,scenarioId:m.scenario.id,scenarioRevision:m.scenario.revision,seed:m.seed},
-   tick:c.tick,simTimeNs:this.clock.simTimeNs(),model:MOCK_AMR.model,entities:this.entities(),workload:structuredClone(c.workload),awaiting,attention:structuredClone(c.attention),served:String(served),coffee:this.coffee?await this.coffee.view():null,...c.reclaimed?{controlAccess:'view_reconcile' as const}:{}};
+   tick:c.tick,simTimeNs:this.clock.simTimeNs(),model:this.worldConfig?'mujoco_shared_world':MOCK_AMR.model,entities:this.entities(),workload:structuredClone(c.workload),awaiting,attention:structuredClone(c.attention),served:String(served),coffee:this.coffee?await this.coffee.view():null,...c.reclaimed?{controlAccess:'view_reconcile' as const}:{}};
  }
  private entities():EntityView[]{
   return this.cp.plant.robots.map(r=>{const g=r.goals.find(x=>x.state==='executing')??r.goals[r.goals.length-1];
@@ -479,18 +534,18 @@ class Run implements ScenarioRun {
    effects:(await this.source.effects()).filter(e=>ROBOT_TYPES.includes(String(e.type))).map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
    metrics:{maxConcurrentMovers:c.plant.maxConcurrentMovers,holds:structuredClone(c.plant.holdLog??[]),distanceM:Object.fromEntries(c.plant.robots.map(r=>[r.id,r.distanceM])),collision:known?{available:true,contacts:c.plant.contacts,minSeparationM:c.plant.minSeparationM}:{available:false,reason:'GEOMETRY_UNKNOWN',contacts:null,minSeparationM:null}},
    rejectedObservations:structuredClone(c.rejectedObservations),reconciliations:structuredClone(c.reconciliations),recoveredOps:structuredClone(c.recoveredOps),confirmations:structuredClone(c.confirmationLog),faults:structuredClone(c.faults),...c.faultFires?{faultScheduleFires:structuredClone(c.faultFires)}:{},
-   coverage:{businessSimulation:true,kinematicModel:true,dynamics:false,nativeExecution:false,physicalStop:false,sensorEvidence:false,eventStream:true,
+   coverage:{businessSimulation:true,kinematicModel:true,dynamics:!!this.worldConfig,nativeExecution:false,physicalStop:false,sensorEvidence:!!this.worldConfig,eventStream:true,
     ...this.coffee?{coffeeProcessModel:true,armKinematics:true,armTorque:false,physicalGrip:false,fluidModel:false,armCollisionChecker:(c.coffee!.arm.collision?.checks??0)>0,armSceneCollision:(c.coffee!.arm.collision?.checks??0)>0&&c.coffee!.arm.collision?.scene?.available===true,armCollisionTraceComplete:(c.coffee!.arm.collision?.checks??0)>0&&c.coffee!.arm.collision?.evidence?.droppedIntervals===0}:{}},
-   limitations:['mock_kinematic: constant-speed motion on a footprint grid; no dynamics, sensors or hardware collision avoidance.','Venue movement zone serialises robots; parallel granular zones are not enabled for the simulator profile.','Plant goals lost in a crash are reported unknown; mock reconciliation audits only and cannot release them without native proof.','Unresolved asset geometry runs a point model and reports no collision metric.',
+   limitations:[...this.worldConfig?['Shared MuJoCo world: actual arm/AMR/free cup observations, not_calibrated. B05 seam; B06 owns final source-correlated custody and full cell qualification.']:['mock_kinematic: constant-speed motion on a footprint grid; no dynamics, sensors or hardware collision avoidance.','Venue movement zone serialises robots; parallel granular zones are not enabled for the simulator profile.','Plant goals lost in a crash are reported unknown; mock reconciliation audits only and cannot release them without native proof.','Unresolved asset geometry runs a point model and reports no collision metric.'],
     ...this.coffee?['mock_process coffee cell: illustrative rates/volumes, scalar quantities, no fluid/thermal model; measurements are modelled, not sensed.',
      c.manifest.armProgram?'mujoco_arm program: the fixture\'s solved waypoints commanded as quintic-sync-v1 joint trajectories and tracked by a simulated position-controlled xArm 6; dynamics nominal and assumed, not_calibrated; the capsule sweep checks model geometry on the actual joints, with no physical stopping proof.'
       :'mock_kinematic arm: illustrative joint waypoints and linear joint interpolation; capsule sweep checks model geometry, with no torque, grip force or physical stopping proof.',
      'Arm sweep evidence records motion and scene changes with attachment identity and referenced geometry; identical stationary checks share a tick interval. Evidence is bounded to 4096 intervals; droppedIntervals and armCollisionTraceComplete expose truncation. The first blocked sweep retains its geometry independently.',
-     c.manifest.armCollisionScene?.profile?'Arm scene scope: project obstacle rectangles extruded from map z=0, declared illustrative heights, compiled AMR radii, conservative swept AABBs in the declared arm base frame. No calibrated fixture or robot mesh, force, or physical safety validation.':'Arm scene scope unavailable: no declared armCollisionProfile; checker covers self and injected arm-frame obstacles only.',
+     this.worldConfig?'Arm scene scope: actual observed mobile base, admitted per-primitive geometry and fixed mount transforms, conservative arm palm capsule; not calibrated or a physical safety proof.':c.manifest.armCollisionScene?.profile?'Arm scene scope: project obstacle rectangles extruded from map z=0, declared illustrative heights, compiled AMR radii, conservative swept AABBs in the declared arm base frame. No calibrated fixture or robot mesh, force, or physical safety validation.':'Arm scene scope unavailable: no declared armCollisionProfile; checker covers self and injected arm-frame obstacles only.',
      'Coffee reconciliation is human-provenance audit only; consumption of an unknown step stays an open stock exception.']:[],
-    ...arm?.armPlant.engine==='mujoco_3d'?[`mujoco_arm: the arm is a MuJoCo ${arm.armPlant.engineVersion} xArm 6 under position actuators with the fixture's Gripper G2. not_calibrated: masses, inertia, joint limits and forces are the manufacturer's nominal values; gains, friction, contact, pads and the cell layout are assumed. The cup is gripped, lifted and released by contact (the plant reports what the pads hold and where the cup rests); the AMR and the coffee machine are mocks. ARM03 is the swept capsule check on the actual joints every tick, not a physical safety proof.`]
+    ...this.worldConfig?[]:arm?.armPlant.engine==='mujoco_3d'?[`mujoco_arm: the arm is a MuJoCo ${arm.armPlant.engineVersion} xArm 6 under position actuators with the fixture's Gripper G2. not_calibrated: masses, inertia, joint limits and forces are the manufacturer's nominal values; gains, friction, contact, pads and the cell layout are assumed. The cup is gripped, lifted and released by contact (the plant reports what the pads hold and where the cup rests); the AMR and the coffee machine are mocks. ARM03 is the swept capsule check on the actual joints every tick, not a physical safety proof.`]
      :arm?['webots_arm: the arm is a Webots R2025a rigid-body plant under position servo. not_calibrated: link masses, inertia, joint torque limits and floor friction are assumed fixture values. Gripping is an event of the program state machine, never physics; the AMR and the coffee machine are mocks. ARM03 is the swept capsule check on the actual joints every tick, not a physical safety proof.']:[]],
    ...this.coffee?{coffee:await this.coffee.report()}:{},...arm?{arm}:{},telemetry};
  }
- async close(){await this.queue;if(!this.closed){this.closed=true;try{await this.coffee?.close();}finally{await this.source.close();}}}
+ async close(){await this.queue;if(!this.closed){this.closed=true;try{try{await this.coffee?.close();}finally{if(this.world){try{await this.world.evidence.finish();}finally{await this.world.world.close();}}}}finally{await this.source?.close();}}}
 }

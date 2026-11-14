@@ -58,6 +58,10 @@ export function plantDispatcher(catalog:CapabilityCatalog,plants:PlantTable|unde
  return async(input,providers)=>{
   const set=Object.hasOwn(catalog.sets,input.backendSetId)?catalog.sets[input.backendSetId]:undefined;
   if(!set)throw new Error('BACKEND_SET_UNKNOWN');
+  if(set.execution?.composition==='single_world'){
+   if(!providers.worldPorts)throw new Error('WORLD_COMPOSITION_UNAVAILABLE');
+   return createScenarioRun(input,providers);
+  }
   if(set.execution?.host==='portable_python'&&set.providers?.arm!==undefined){
    const live=arms&&Object.hasOwn(arms,set.providers.arm)?arms[set.providers.arm]:undefined;
    if(!live)throw new Error('BACKEND_EXECUTION_DISABLED');

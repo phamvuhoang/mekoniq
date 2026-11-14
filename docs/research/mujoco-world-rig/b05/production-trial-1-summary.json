@@ -1,0 +1,48 @@
+{
+  "dockWindowTicks": 10,
+  "retained": true,
+  "accepted": false,
+  "scope": "real worker rig; no Source business custody",
+  "offsetM": [
+    0,
+    0
+  ],
+  "logicalSteps": 2502,
+  "primingSubsteps": 10,
+  "totalPhysicsSubsteps": 25030,
+  "workerCount": 1,
+  "modelCount": 1,
+  "workerPid": 27699,
+  "nativeModel": {
+    "nq": 35,
+    "nv": 32,
+    "nbody": 30,
+    "ngeom": 27
+  },
+  "gripped": true,
+  "lifted": true,
+  "receiverWindowTicks": 150,
+  "maxTickCupTranslationM": 0.003950912266669254,
+  "unexpectedArmMobileContacts": 0,
+  "transportDistanceM": 1.0078115492496293,
+  "finalCupInSupportM": [
+    0.0010409254863817995,
+    -0.0016485495053754073,
+    0.04993619416984374
+  ],
+  "passed": true,
+  "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+  "runId": "rig:worker:1",
+  "bootId": "0652782a-4628-4396-a5cc-59cf845392f8",
+  "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+  "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+  "workerRequests": 2505,
+  "snapshotBytes": {
+    "largest": 11338,
+    "total": 26832793
+  },
+  "recorderStoredBytes": 2535040,
+  "readComplete": true,
+  "readIssues": [],
+  "records": 2503
+}

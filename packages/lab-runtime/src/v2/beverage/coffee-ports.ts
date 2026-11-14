@@ -33,7 +33,7 @@ export interface CoffeePlantPorts {
  acknowledgeCompletion?(commandId:string,observationId:string):void|Promise<void>;
 }
 /** Default uses precisely the old mock choreography and mutable checkpoint objects. */
-export function createMockCoffeePorts(st:CoffeeState,ctx:CoffeeContext,newBootId:()=>string,options:{tracking?:ArmTracking;programs?:ArmProgramSet;model?:ArmModelSI}={}):CoffeePlantPorts {
+export function createMockCoffeePorts(st:CoffeeState,ctx:CoffeeContext,newBootId:()=>string,options:{tracking?:ArmTracking;programs?:ArmProgramSet;model?:ArmModelSI;advanceArm?:boolean}={}):CoffeePlantPorts {
  st.trays??={};
  const parents=new Map<string,string>();
  const coffee=new MockCoffeePlant(st.plant,ctx.nowMs,newBootId),arm=new MockArmPlant(st.arm,ctx.nowMs,newBootId,
@@ -41,7 +41,7 @@ export function createMockCoffeePorts(st:CoffeeState,ctx:CoffeeContext,newBootId
  const adapters=[new MockCoffeeAdapter(coffee,ctx.runId),new MockArmAdapter(arm,ctx.runId,st.cellId)],reports:CellReport[]=[];
  const off=adapters.map(a=>a.observe(r=>reports.push(r)));
  return {adapters,coffeePlant:coffee,mockArm:arm,setArmScene:s=>arm.setCollisionScene(s),
-  async advance(){coffee.advance();arm.advance();},
+  async advance(){coffee.advance();if(options.advanceArm!==false)arm.advance();},
   async recover(){if(st.plant.commands.some(c=>c.state==='running'||c.state==='settling'))coffee.fault('coffee-reboot');if(st.arm.programs.some(p=>p.state==='running'))arm.fault('arm-reboot');},
   snapshot:()=>({coffee:st.plant,arm:st.arm}),drain:()=>reports.splice(0),transferEvidence:()=>null,
   custodyResolved:(cupId,parent)=>{parents.set(cupId,parent);},

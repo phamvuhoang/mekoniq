@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "id": "b05-world-rig-candidate-01",
+  "accepted": false,
+  "calibration": "not_calibrated",
+  "scope": "direct physical rig only; no source business custody or worker envelope claim",
+  "tickMs": 20,
+  "substeps": 10,
+  "timestepMs": 2,
+  "primingSubsteps": 10,
+  "globalNumerics": {
+    "integrator": "implicitfast",
+    "cone": "elliptic",
+    "impratio": 10,
+    "solver": "Newton",
+    "iterations": 100,
+    "tolerance": 1e-08
+  },
+  "contactPolicy": {
+    "arm": "original explicit parameters",
+    "mobile": "original explicit geom defaults; caster floor pairs preserved",
+    "floor": "arm floor sliding1.0; mobile geometry sliding0.6; engine max mixing",
+    "cup": "original arm0.32kg/R.04/H.1 free body; no payload initially on AMR"
+  },
+  "dock": {
+    "xyM": [
+      0.35,
+      0.48591366218667575
+    ],
+    "yawRad": 1.5707963267948966,
+    "xyToleranceM": 0.01,
+    "yawToleranceRad": 0.02,
+    "linearVelocityMps": 0.01,
+    "angularVelocityRadps": 0.02,
+    "holdTicks": 10
+  },
+  "receiver": {
+    "relativeSpeedMps": 0.01,
+    "holdTicks": 25,
+    "supportId": "amr-1/tray-1",
+    "comMarginM": 0.005,
+    "cupFootprintMarginM": 0.005
+  },
+  "motion": {
+    "segmentTicks": 150,
+    "settleTicks": 25,
+    "gripperCommandRadPerTick": 0.04,
+    "transportMaxMps": 0.15,
+    "transportRampMpsPerTick": 0.002,
+    "transportDistanceM": 1
+  },
+  "maxCupTranslationPerTickM": 0.02,
+  "offsetsM": [
+    [
+      0,
+      0
+    ],
+    [
+      0.005,
+      0.005
+    ],
+    [
+      0.005,
+      -0.005
+    ],
+    [
+      -0.005,
+      0.005
+    ],
+    [
+      -0.005,
+      -0.005
+    ],
+    [
+      0.005,
+      0
+    ],
+    [
+      -0.005,
+      0
+    ],
+    [
+      0,
+      0.005
+    ],
+    [
+      0,
+      -0.005
+    ],
+    [
+      0.0025,
+      -0.0035
+    ]
+  ],
+  "files": {
+    "rig.py": "857634619fe6e587e46e5d4c78dce929385622dd0ebba4e69ed243dee7fae591",
+    "rotated-world.xml": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+    "waypoints.json": "c824a3b9b7c4c23c6e7782221174322e1f95138fc2194f7828007f15276474b8",
+    "rotated-sweeps.json": "68e8d8fbf0f867a570d1491e48a5e392a84fb7a73010909c18104867bd8b9c97"
+  }
+}

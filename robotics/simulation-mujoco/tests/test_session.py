@@ -311,3 +311,13 @@ def test_the_clock_moves_only_on_a_step_and_expected_tick_must_match(run):
     r = s.handle(req("getState", tick=3))
     assert r["error"]["code"] == "TICK_MISMATCH"
     assert s.handle(req("stop"))["result"] == {"state": "stopped"} and e.closed
+
+
+def test_arm_rejects_world_interactions_before_mutation(run):
+    s,e,_=run
+    intent={'eventId':'rig:birth','cupId':'cup-1','propId':'cup-1','kind':'birth','targetTick':1}
+    r=s.handle(step(0,payload={'worldInteractions':[intent]}))
+    assert not r['ok'] and r['error']['code']=='INVALID_REQUEST'
+    assert len(e.calls)==1 and s.tick==0
+    r=s.handle(step(0,request_id='empty-extension',payload={'worldInteractions':[]}))
+    assert r['ok'] and s.tick==1

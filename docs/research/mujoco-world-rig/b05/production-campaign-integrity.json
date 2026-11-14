@@ -1,0 +1,1323 @@
+{
+  "accepted": false,
+  "scope": "ten production IPC-worker physical rigs and final-reader validation, no Source business custody",
+  "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+  "finalRecorderSha256": "6cc7f4ca823ac71ca4400bd6077ab9f895e1a98b2d04c5eed49ecd9f9b1bcea2",
+  "passedCount": 10,
+  "uniqueBoots": 10,
+  "totalRawRows": 25030,
+  "totalPhysicsSubsteps": 250300,
+  "totalStoredEvidenceBytes": 25369856,
+  "trials": [
+    {
+      "trial": 1,
+      "offsetM": [
+        0,
+        0
+      ],
+      "passed": true,
+      "readComplete": true,
+      "issues": [],
+      "records": 2503,
+      "logicalSteps": 2502,
+      "totalPhysicsSubsteps": 25030,
+      "workerPid": 27699,
+      "runId": "rig:worker:1",
+      "bootId": "0652782a-4628-4396-a5cc-59cf845392f8",
+      "nativeModel": {
+        "nq": 35,
+        "nv": 32,
+        "nbody": 30,
+        "ngeom": 27
+      },
+      "receiverWindowTicks": 150,
+      "transportDistanceM": 1.0078115492496293,
+      "maxCupTranslationPerTickM": 0.003950912266669254,
+      "unexpectedArmMobileContacts": 0,
+      "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+      "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+      "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+      "commandStreamSha256": "75e19382fecfdb5db1a29e0c04b086705f6f21f20e7b5c26a975e537286463f8",
+      "summary": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-1/summary.json",
+        "sha256": "7ed7289a1aa2371ad6e05bfcbf65681464cd96c18bb0b9fa92a47985e4294a8c",
+        "bytes": 1244
+      },
+      "nativeReadback": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-1/native-readback.json",
+        "sha256": "a2d0e8708cb5bfa28ba5d14d06af589fe611ed22c49382f962b444918720dd59",
+        "bytes": 4995
+      },
+      "manifest": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-1/evidence/manifest.json",
+        "sha256": "28a2c662da976e4f3cddd1afb64a7c26f74023443cf46e07dd616c4227cb72b4",
+        "bytes": 2182
+      },
+      "chunks": [
+        {
+          "path": "world-000000-9ebe8841.ndjson.gz",
+          "sha256": "1f6a7f4549fb84fd3be5581c9d0adfdb61933d64ac7fab95e608f12c81bc6ebb",
+          "bytes": 193811,
+          "firstTick": 0,
+          "lastTick": 249
+        },
+        {
+          "path": "world-000001-10d4a977.ndjson.gz",
+          "sha256": "4ffcfa49ead312669ec0cfe0594ea4810d6eb38d5b3e8a174b066485d1184804",
+          "bytes": 237096,
+          "firstTick": 250,
+          "lastTick": 499
+        },
+        {
+          "path": "world-000002-c9b8e97d.ndjson.gz",
+          "sha256": "e612134dc5f6b359c9b3f9ef1985fd3474c41ddee9118223c6351848d3217c57",
+          "bytes": 269880,
+          "firstTick": 500,
+          "lastTick": 749
+        },
+        {
+          "path": "world-000003-52bb2d88.ndjson.gz",
+          "sha256": "6d378b15ff9fa53373409de9ec91a9f5297b51193d487bfaab4a413571c78550",
+          "bytes": 264227,
+          "firstTick": 750,
+          "lastTick": 999
+        },
+        {
+          "path": "world-000004-98ded200.ndjson.gz",
+          "sha256": "fea61f1cee43c8e416ae2283c14f777084979d9b275382400fb0db1f35d599cf",
+          "bytes": 269192,
+          "firstTick": 1000,
+          "lastTick": 1249
+        },
+        {
+          "path": "world-000005-7759fd4b.ndjson.gz",
+          "sha256": "4b601b7c3ab5a7915e70a03540dba0919845289ecdc492c4a890a61caf8f8b7b",
+          "bytes": 267320,
+          "firstTick": 1250,
+          "lastTick": 1499
+        },
+        {
+          "path": "world-000006-eca22a6e.ndjson.gz",
+          "sha256": "826484c28afa22bba80101f01b3961415a4cf77b4118dd9692cf204b790766fd",
+          "bytes": 261245,
+          "firstTick": 1500,
+          "lastTick": 1749
+        },
+        {
+          "path": "world-000007-22a6f5a5.ndjson.gz",
+          "sha256": "de429c5bb799f0eaf8f386d4ca8e347e1ddfded5d5e4af5f693bb406ede7690b",
+          "bytes": 264472,
+          "firstTick": 1750,
+          "lastTick": 1999
+        },
+        {
+          "path": "world-000008-945c6afb.ndjson.gz",
+          "sha256": "30e8f7bf2c521fc419f771ba89dd21438c2948aabf030e92208192a1657068c7",
+          "bytes": 254585,
+          "firstTick": 2000,
+          "lastTick": 2249
+        },
+        {
+          "path": "world-000009-46f91d5b.ndjson.gz",
+          "sha256": "3d771c19a1821e28f9c4785ab45ca0f7d588e09c34a35f698418c8f6caa00836",
+          "bytes": 246832,
+          "firstTick": 2250,
+          "lastTick": 2499
+        },
+        {
+          "path": "world-000010-e4b251f3.ndjson.gz",
+          "sha256": "780980074a4f18666012440684df4f1ff65656c6a5f0b9e9fbe03624e0efee89",
+          "bytes": 4198,
+          "firstTick": 2500,
+          "lastTick": 2502
+        }
+      ],
+      "bytes": {
+        "maxLine": 11708,
+        "maxInflatedChunk": 2880570,
+        "maxStoredChunk": 269880,
+        "totalInflated": 27787229,
+        "totalStored": 2535040
+      }
+    },
+    {
+      "trial": 2,
+      "offsetM": [
+        0.005,
+        0.005
+      ],
+      "passed": true,
+      "readComplete": true,
+      "issues": [],
+      "records": 2503,
+      "logicalSteps": 2502,
+      "totalPhysicsSubsteps": 25030,
+      "workerPid": 27716,
+      "runId": "rig:worker:2",
+      "bootId": "099aaef8-e51d-4db4-a199-3235e2287a35",
+      "nativeModel": {
+        "nq": 35,
+        "nv": 32,
+        "nbody": 30,
+        "ngeom": 27
+      },
+      "receiverWindowTicks": 150,
+      "transportDistanceM": 1.0078122942171142,
+      "maxCupTranslationPerTickM": 0.003951211446616843,
+      "unexpectedArmMobileContacts": 0,
+      "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+      "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+      "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+      "commandStreamSha256": "cc6f169e68f4f7a9e068057398f5e27e6574f48c83adc5018bfbd166b78a7b18",
+      "summary": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-2/summary.json",
+        "sha256": "ea4cdf282e7c3e09ed57ba06d7a0c64f8d107c42b4c49acc7d5e0c64f214abf5",
+        "bytes": 1252
+      },
+      "nativeReadback": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-2/native-readback.json",
+        "sha256": "af2be98d31e32d8c6a56f567a60103a190cdd6616e254c55165a730094a90000",
+        "bytes": 5000
+      },
+      "manifest": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-2/evidence/manifest.json",
+        "sha256": "df1296475f46f306aa1ee190abb084ad1966e8ddd2afb723d736592ec19dc5ac",
+        "bytes": 2182
+      },
+      "chunks": [
+        {
+          "path": "world-000000-265a7d23.ndjson.gz",
+          "sha256": "70b352b77d574ca8be916b27864db9e9da7d208c76797ac63bbcdf7f1e2261e3",
+          "bytes": 193831,
+          "firstTick": 0,
+          "lastTick": 249
+        },
+        {
+          "path": "world-000001-cae3554c.ndjson.gz",
+          "sha256": "d1aa343a59a00749d9b7cc333118435b293ffcacf975e8a0ae360a55fdc01d95",
+          "bytes": 242841,
+          "firstTick": 250,
+          "lastTick": 499
+        },
+        {
+          "path": "world-000002-39496873.ndjson.gz",
+          "sha256": "f1b6f1e4fff22dfcd52acbe8765c28d5f9c62ee1206baa783500cdc36ebf0121",
+          "bytes": 271071,
+          "firstTick": 500,
+          "lastTick": 749
+        },
+        {
+          "path": "world-000003-bb410c6e.ndjson.gz",
+          "sha256": "c5c82b8a0b6b8b2f973206edc5192e5a2a7ee973088a2c52add692439ec79ce1",
+          "bytes": 263079,
+          "firstTick": 750,
+          "lastTick": 999
+        },
+        {
+          "path": "world-000004-80ab35fd.ndjson.gz",
+          "sha256": "52183d077200477bf08fb902445b6f0fbbfed276fcd1b1ac71c5d6cb583a3d43",
+          "bytes": 268998,
+          "firstTick": 1000,
+          "lastTick": 1249
+        },
+        {
+          "path": "world-000005-f75ead47.ndjson.gz",
+          "sha256": "1446e9a65e9ef012a83fe5d1e1bcf32e15f9c11bcea5e41f6a216fdb7b1d73ee",
+          "bytes": 266858,
+          "firstTick": 1250,
+          "lastTick": 1499
+        },
+        {
+          "path": "world-000006-cd65a7a9.ndjson.gz",
+          "sha256": "9f076c952b994adbfea25fced31b0ea9bd635aca7ca28284aa4835691019f3b9",
+          "bytes": 260407,
+          "firstTick": 1500,
+          "lastTick": 1749
+        },
+        {
+          "path": "world-000007-bce97f0a.ndjson.gz",
+          "sha256": "5e6ed9f87b15e7775ac64542f3646cc6609830e46ffb354ca2fde362e2c88214",
+          "bytes": 263441,
+          "firstTick": 1750,
+          "lastTick": 1999
+        },
+        {
+          "path": "world-000008-0dd10a0e.ndjson.gz",
+          "sha256": "f2a5295a14eee2099ab0390604f0483c192add2d266d8dc2a6c3e22cfd3db302",
+          "bytes": 254659,
+          "firstTick": 2000,
+          "lastTick": 2249
+        },
+        {
+          "path": "world-000009-6d4dd712.ndjson.gz",
+          "sha256": "74b8bf267e5dbd63ed6abc241bf586cb9d75814ad5cd8fde658c8d592104be3b",
+          "bytes": 246393,
+          "firstTick": 2250,
+          "lastTick": 2499
+        },
+        {
+          "path": "world-000010-c9aa4f54.ndjson.gz",
+          "sha256": "359d505c389d67196890b3624ddfed93208826e562a4103e8145fd819f04d0b8",
+          "bytes": 4211,
+          "firstTick": 2500,
+          "lastTick": 2502
+        }
+      ],
+      "bytes": {
+        "maxLine": 11703,
+        "maxInflatedChunk": 2880049,
+        "maxStoredChunk": 271071,
+        "totalInflated": 27798334,
+        "totalStored": 2537971
+      }
+    },
+    {
+      "trial": 3,
+      "offsetM": [
+        0.005,
+        -0.005
+      ],
+      "passed": true,
+      "readComplete": true,
+      "issues": [],
+      "records": 2503,
+      "logicalSteps": 2502,
+      "totalPhysicsSubsteps": 25030,
+      "workerPid": 27735,
+      "runId": "rig:worker:3",
+      "bootId": "ab98da5d-ade5-479b-be9d-83044447d8d7",
+      "nativeModel": {
+        "nq": 35,
+        "nv": 32,
+        "nbody": 30,
+        "ngeom": 27
+      },
+      "receiverWindowTicks": 150,
+      "transportDistanceM": 1.007812335325074,
+      "maxCupTranslationPerTickM": 0.00395123470348714,
+      "unexpectedArmMobileContacts": 0,
+      "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+      "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+      "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+      "commandStreamSha256": "789c4a0a0401fb283b52da2ae892ffd35ec30e74840a1f910b1e7e75caffe73d",
+      "summary": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-3/summary.json",
+        "sha256": "38530fec2450a7934a06bf846f2892c8dc986d2823dd2f7dcb31d35640e3ef0d",
+        "bytes": 1248
+      },
+      "nativeReadback": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-3/native-readback.json",
+        "sha256": "40880b6d91ec44240ea1c70dbb07f771ada3cb372c609ea812fd83fe5625a94c",
+        "bytes": 5001
+      },
+      "manifest": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-3/evidence/manifest.json",
+        "sha256": "220018d72bd8a3ad1ec9aecd696f991e342fe3fc1092c78139fa20cf282d0425",
+        "bytes": 2182
+      },
+      "chunks": [
+        {
+          "path": "world-000000-5f81b7d6.ndjson.gz",
+          "sha256": "faedf997eadcb058e54bdde3c3ce29afb1a375953cbcfc4e41c3838b4ecbebaa",
+          "bytes": 193918,
+          "firstTick": 0,
+          "lastTick": 249
+        },
+        {
+          "path": "world-000001-f7c1a9e9.ndjson.gz",
+          "sha256": "c5dd66a982b8d62d7dd5b55875d46dc39fa4e6b46c6effc3f75c10d0c41002a5",
+          "bytes": 242966,
+          "firstTick": 250,
+          "lastTick": 499
+        },
+        {
+          "path": "world-000002-e58d1c88.ndjson.gz",
+          "sha256": "c8fbd90d7f1348c046466a32a3e8d74b373ae4fdf05dc494c0d6a258a28dbd35",
+          "bytes": 270903,
+          "firstTick": 500,
+          "lastTick": 749
+        },
+        {
+          "path": "world-000003-ab539fc3.ndjson.gz",
+          "sha256": "d348f61085c82fbd36d849d0c060ca8c4bd58cbfa0b3d5b492fc7b5934870371",
+          "bytes": 263185,
+          "firstTick": 750,
+          "lastTick": 999
+        },
+        {
+          "path": "world-000004-46548661.ndjson.gz",
+          "sha256": "6e47b2bd295b2860e4462745141fce4ffa572d251092c1681d7d33e43ddc5975",
+          "bytes": 269025,
+          "firstTick": 1000,
+          "lastTick": 1249
+        },
+        {
+          "path": "world-000005-df423110.ndjson.gz",
+          "sha256": "5625cb85bf1439c878338c19aa4d9f09d74b983b8a73f3b4c86fa3f54ceefa84",
+          "bytes": 266492,
+          "firstTick": 1250,
+          "lastTick": 1499
+        },
+        {
+          "path": "world-000006-e1e2fa50.ndjson.gz",
+          "sha256": "cf88a41791a2a5ec48006fff074f5c0e5aa17c909021981e826eb0c7f5dde33b",
+          "bytes": 260372,
+          "firstTick": 1500,
+          "lastTick": 1749
+        },
+        {
+          "path": "world-000007-442e9964.ndjson.gz",
+          "sha256": "06d84cd4bc5909f9f173b321e94c07b9a0f816e4c1784af3b24895855da2671b",
+          "bytes": 263314,
+          "firstTick": 1750,
+          "lastTick": 1999
+        },
+        {
+          "path": "world-000008-2d8ba5a7.ndjson.gz",
+          "sha256": "52d9967fef9f2e7bd982e447305dfde233f0f0bdc6a8a0c81b15fda4ed19385f",
+          "bytes": 254501,
+          "firstTick": 2000,
+          "lastTick": 2249
+        },
+        {
+          "path": "world-000009-817be72d.ndjson.gz",
+          "sha256": "e3e8455b1861835616934a4ad5f90d681b3b9f1efafac802b2f68119c45d8213",
+          "bytes": 246484,
+          "firstTick": 2250,
+          "lastTick": 2499
+        },
+        {
+          "path": "world-000010-4b6ada74.ndjson.gz",
+          "sha256": "af5a41410577f1a8d0e67ebd1ef58f210a1de0f27c6527e5ef2e62f769ab7f8b",
+          "bytes": 4235,
+          "firstTick": 2500,
+          "lastTick": 2502
+        }
+      ],
+      "bytes": {
+        "maxLine": 11699,
+        "maxInflatedChunk": 2879063,
+        "maxStoredChunk": 270903,
+        "totalInflated": 27797305,
+        "totalStored": 2537577
+      }
+    },
+    {
+      "trial": 4,
+      "offsetM": [
+        -0.005,
+        0.005
+      ],
+      "passed": true,
+      "readComplete": true,
+      "issues": [],
+      "records": 2503,
+      "logicalSteps": 2502,
+      "totalPhysicsSubsteps": 25030,
+      "workerPid": 27749,
+      "runId": "rig:worker:4",
+      "bootId": "34518f59-946b-4056-837d-b6e62183ddf9",
+      "nativeModel": {
+        "nq": 35,
+        "nv": 32,
+        "nbody": 30,
+        "ngeom": 27
+      },
+      "receiverWindowTicks": 150,
+      "transportDistanceM": 1.0078114910405631,
+      "maxCupTranslationPerTickM": 0.003950836518959983,
+      "unexpectedArmMobileContacts": 0,
+      "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+      "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+      "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+      "commandStreamSha256": "783be593bdea1038153941a915502fbaef3dfab42ee7e23381a553460ee1e332",
+      "summary": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-4/summary.json",
+        "sha256": "b4904350393c555dd9153b9393c9eeccc47716100f89ca45cc5c30419b2be5ee",
+        "bytes": 1256
+      },
+      "nativeReadback": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-4/native-readback.json",
+        "sha256": "164b5c0305c8d31d4d3e7151f468d969425cba2d720f1d21b6a3bc7b9b899c13",
+        "bytes": 4996
+      },
+      "manifest": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-4/evidence/manifest.json",
+        "sha256": "92fe2435ce0a219b2440015b402be39b3c79d02a00988696929831f27b06d50f",
+        "bytes": 2182
+      },
+      "chunks": [
+        {
+          "path": "world-000000-b1a521c2.ndjson.gz",
+          "sha256": "c1dbbf151df580fd33a455aaa4c3fbcb611100026df3d51188ccdfe9e45931c6",
+          "bytes": 193741,
+          "firstTick": 0,
+          "lastTick": 249
+        },
+        {
+          "path": "world-000001-a5d35fae.ndjson.gz",
+          "sha256": "e8a223270a67a6669b97c82df2dce845b841dd94e865c199a59fa7ea20a32871",
+          "bytes": 243816,
+          "firstTick": 250,
+          "lastTick": 499
+        },
+        {
+          "path": "world-000002-62f2bdd0.ndjson.gz",
+          "sha256": "661e1d3acaf97c934fb9782c8892235305faf04451a51977d265ecd4029f78fd",
+          "bytes": 271363,
+          "firstTick": 500,
+          "lastTick": 749
+        },
+        {
+          "path": "world-000003-8b3eb9ae.ndjson.gz",
+          "sha256": "fc433aa65aa61c59fea86de7d85455e2e037da5df1bee2a856b28d819bd71574",
+          "bytes": 263225,
+          "firstTick": 750,
+          "lastTick": 999
+        },
+        {
+          "path": "world-000004-df4898b3.ndjson.gz",
+          "sha256": "b1af1a5843cd165cc80351fe632207aa433111cb4a63af0125499815f1c76816",
+          "bytes": 269127,
+          "firstTick": 1000,
+          "lastTick": 1249
+        },
+        {
+          "path": "world-000005-69787258.ndjson.gz",
+          "sha256": "332d423cb68fde919daa689fbd96cf2ed321577c32df85681ed64c2a975de316",
+          "bytes": 267520,
+          "firstTick": 1250,
+          "lastTick": 1499
+        },
+        {
+          "path": "world-000006-1574dcda.ndjson.gz",
+          "sha256": "035dfbf2f362ed6772db1462befabaf2beb95d7734eb5a782b2ab5201b0eb3c3",
+          "bytes": 260660,
+          "firstTick": 1500,
+          "lastTick": 1749
+        },
+        {
+          "path": "world-000007-39a0c93b.ndjson.gz",
+          "sha256": "4226e7f118b7ecb0ae5c28cb2c2d9c6a042c7983e3e9c906c4761974c1293a16",
+          "bytes": 263949,
+          "firstTick": 1750,
+          "lastTick": 1999
+        },
+        {
+          "path": "world-000008-6512e61e.ndjson.gz",
+          "sha256": "4621a12504b4fb6ee51c2c7bb9e7c0a98409c03afa8aa7aaab1bdc3b2f73ae1e",
+          "bytes": 255013,
+          "firstTick": 2000,
+          "lastTick": 2249
+        },
+        {
+          "path": "world-000009-47d02a05.ndjson.gz",
+          "sha256": "7909e74c5e7b29cff23bed7eea2beb323476728a3883de0740c6cc08d03de8f7",
+          "bytes": 247133,
+          "firstTick": 2250,
+          "lastTick": 2499
+        },
+        {
+          "path": "world-000010-948902c4.ndjson.gz",
+          "sha256": "43934f96ef2b92684c1e1358d8f1e260d684937caac61ff58848553b01fba631",
+          "bytes": 4233,
+          "firstTick": 2500,
+          "lastTick": 2502
+        }
+      ],
+      "bytes": {
+        "maxLine": 11691,
+        "maxInflatedChunk": 2878715,
+        "maxStoredChunk": 271363,
+        "totalInflated": 27805577,
+        "totalStored": 2541962
+      }
+    },
+    {
+      "trial": 5,
+      "offsetM": [
+        -0.005,
+        -0.005
+      ],
+      "passed": true,
+      "readComplete": true,
+      "issues": [],
+      "records": 2503,
+      "logicalSteps": 2502,
+      "totalPhysicsSubsteps": 25030,
+      "workerPid": 27756,
+      "runId": "rig:worker:5",
+      "bootId": "8571a2cc-bdc1-44ca-9b91-fabb71d9fa16",
+      "nativeModel": {
+        "nq": 35,
+        "nv": 32,
+        "nbody": 30,
+        "ngeom": 27
+      },
+      "receiverWindowTicks": 150,
+      "transportDistanceM": 1.0078113933816644,
+      "maxCupTranslationPerTickM": 0.003950839871223148,
+      "unexpectedArmMobileContacts": 0,
+      "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+      "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+      "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+      "commandStreamSha256": "97231495de33f956be59cf123a3dc430ab29b44a8ea06595517ba8ad682757ee",
+      "summary": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-5/summary.json",
+        "sha256": "a3f452c15ee079a22f8e440f3f2c457a0a6273ed52fb423e1fa9cdfdb70c42da",
+        "bytes": 1256
+      },
+      "nativeReadback": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-5/native-readback.json",
+        "sha256": "62a6041d53efe6873b1dbdb0b19456ae783bfd10dd001dbc30ccf0b1f3c79c1f",
+        "bytes": 4995
+      },
+      "manifest": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-5/evidence/manifest.json",
+        "sha256": "36f1a74d5f49d20b7a9bd51bc45acc4b95d538ce487ae4bfcc00d01de6b7acb2",
+        "bytes": 2182
+      },
+      "chunks": [
+        {
+          "path": "world-000000-bf4522b8.ndjson.gz",
+          "sha256": "06e3dc764b31d85e9dd62352c6312d2e208a97d90e33dee94cef0f19ffcccde6",
+          "bytes": 193662,
+          "firstTick": 0,
+          "lastTick": 249
+        },
+        {
+          "path": "world-000001-d3abb0a6.ndjson.gz",
+          "sha256": "b7d7b06803ac0a0db7d08bed73b48bbe335c12b27d9768dbc068c98253694833",
+          "bytes": 243780,
+          "firstTick": 250,
+          "lastTick": 499
+        },
+        {
+          "path": "world-000002-cc8e0b16.ndjson.gz",
+          "sha256": "3f4944732c3ffeaa90df64c22749905d94566add2a596298f3f6f2ce08ef64d5",
+          "bytes": 270730,
+          "firstTick": 500,
+          "lastTick": 749
+        },
+        {
+          "path": "world-000003-d2f49df5.ndjson.gz",
+          "sha256": "4c3a279fd0da093486af1edf3cc413d7cd5c614ff6b2974af48c8cc4bc29b4da",
+          "bytes": 263265,
+          "firstTick": 750,
+          "lastTick": 999
+        },
+        {
+          "path": "world-000004-6a527510.ndjson.gz",
+          "sha256": "1fb52e3ae4dfa84ebbf7bb2fc9aa557ddccc5e5207e05f377c3c7ec9937e5f61",
+          "bytes": 268983,
+          "firstTick": 1000,
+          "lastTick": 1249
+        },
+        {
+          "path": "world-000005-8d61df01.ndjson.gz",
+          "sha256": "38dbc240994e2f674d7a582f0c1fcbebc465c695d7853ff0aec35f83159eac39",
+          "bytes": 267504,
+          "firstTick": 1250,
+          "lastTick": 1499
+        },
+        {
+          "path": "world-000006-5637b3a0.ndjson.gz",
+          "sha256": "dc691bfc81d212f78b12e7f3a552e6cf885789b6322e58f8965981a32ad33aa7",
+          "bytes": 261010,
+          "firstTick": 1500,
+          "lastTick": 1749
+        },
+        {
+          "path": "world-000007-9d47c4fa.ndjson.gz",
+          "sha256": "bdef5ec13eb5a86a60ca0dfe776a5872eb8a4ac8a86316edd3ec4b1497d0f72c",
+          "bytes": 263612,
+          "firstTick": 1750,
+          "lastTick": 1999
+        },
+        {
+          "path": "world-000008-4be26ae8.ndjson.gz",
+          "sha256": "6218a5072059e83ef09139e7fdf9f2b4bac01a4620d8719ffbd1ece3ddba53ed",
+          "bytes": 255169,
+          "firstTick": 2000,
+          "lastTick": 2249
+        },
+        {
+          "path": "world-000009-7f97116c.ndjson.gz",
+          "sha256": "4b67517413fc370cbcc970ad413e5331e56717fe14f78ab69443e336b46a1b10",
+          "bytes": 246810,
+          "firstTick": 2250,
+          "lastTick": 2499
+        },
+        {
+          "path": "world-000010-09fc647f.ndjson.gz",
+          "sha256": "66b57353bcd8bdf9152a1c936efdc12a58698d65de029e5396ea034a2779d001",
+          "bytes": 4238,
+          "firstTick": 2500,
+          "lastTick": 2502
+        }
+      ],
+      "bytes": {
+        "maxLine": 11699,
+        "maxInflatedChunk": 2879520,
+        "maxStoredChunk": 270730,
+        "totalInflated": 27805942,
+        "totalStored": 2540945
+      }
+    },
+    {
+      "trial": 6,
+      "offsetM": [
+        0.005,
+        0
+      ],
+      "passed": true,
+      "readComplete": true,
+      "issues": [],
+      "records": 2503,
+      "logicalSteps": 2502,
+      "totalPhysicsSubsteps": 25030,
+      "workerPid": 27768,
+      "runId": "rig:worker:6",
+      "bootId": "529db9c5-d492-4558-ba27-e3434cf16976",
+      "nativeModel": {
+        "nq": 35,
+        "nv": 32,
+        "nbody": 30,
+        "ngeom": 27
+      },
+      "receiverWindowTicks": 150,
+      "transportDistanceM": 1.007811947732462,
+      "maxCupTranslationPerTickM": 0.003951098704932328,
+      "unexpectedArmMobileContacts": 0,
+      "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+      "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+      "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+      "commandStreamSha256": "46b70328ade00195596aa9993517b3fef20426891bad1fbd5c2fb8b8d4f201ba",
+      "summary": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-6/summary.json",
+        "sha256": "f157ff876c704fefdac7f7fdb56bb5d1da6264df2d5bbb2f412b0178c2c68967",
+        "bytes": 1244
+      },
+      "nativeReadback": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-6/native-readback.json",
+        "sha256": "18662b235322b21eab2d40e8fe3f79455408ff51cb45b3b457234c0f324a066f",
+        "bytes": 4999
+      },
+      "manifest": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-6/evidence/manifest.json",
+        "sha256": "845eff202f4aac6d0702af71aaa6fe6b3172b3f2dcb58f1a6e7543fe55c2e3aa",
+        "bytes": 2182
+      },
+      "chunks": [
+        {
+          "path": "world-000000-4a22c99b.ndjson.gz",
+          "sha256": "91d4bb5e2c15f873253183482582859c4e6021f0d93e62563002571c160cb5d8",
+          "bytes": 194108,
+          "firstTick": 0,
+          "lastTick": 249
+        },
+        {
+          "path": "world-000001-9ac27939.ndjson.gz",
+          "sha256": "65e06db4cda8dd69cc94aa8d5102f8533b448fcccbc4639d2a7f5e8c136132ac",
+          "bytes": 237432,
+          "firstTick": 250,
+          "lastTick": 499
+        },
+        {
+          "path": "world-000002-5bca88cb.ndjson.gz",
+          "sha256": "eb3de2a4607d8fb779bbf2d324cdd532e1bbadf9345e62313ac1dcc1a0433764",
+          "bytes": 270361,
+          "firstTick": 500,
+          "lastTick": 749
+        },
+        {
+          "path": "world-000003-e1b322c0.ndjson.gz",
+          "sha256": "3b046121b5d5a646544ba4994489c710a10925e818b3b85c588432d022d6641e",
+          "bytes": 263921,
+          "firstTick": 750,
+          "lastTick": 999
+        },
+        {
+          "path": "world-000004-26ae2935.ndjson.gz",
+          "sha256": "8fe7381f765984a9d52ac09ed082d1328da78cf1e1fcda34d5206f36b2e9cfbf",
+          "bytes": 269029,
+          "firstTick": 1000,
+          "lastTick": 1249
+        },
+        {
+          "path": "world-000005-0a7c5dfc.ndjson.gz",
+          "sha256": "711c995fb7daa5872fff43e21f39a27996c16ffbbc7c512548bf65e73e31122b",
+          "bytes": 266536,
+          "firstTick": 1250,
+          "lastTick": 1499
+        },
+        {
+          "path": "world-000006-14e87674.ndjson.gz",
+          "sha256": "ece19b4cbe7ccd32bac79d52a612273a707dc035677934aa1c0e05115d6c33c5",
+          "bytes": 260064,
+          "firstTick": 1500,
+          "lastTick": 1749
+        },
+        {
+          "path": "world-000007-89756b2f.ndjson.gz",
+          "sha256": "1f23e70248fe14a1945839c1144f6b1e566b73383db84de751d4ee40cc94052c",
+          "bytes": 262971,
+          "firstTick": 1750,
+          "lastTick": 1999
+        },
+        {
+          "path": "world-000008-d0929284.ndjson.gz",
+          "sha256": "63cd007cf292c460ac352a3ba3e6093c3c0b90ae84df3cd4afbe3eeb5f9f3d83",
+          "bytes": 254425,
+          "firstTick": 2000,
+          "lastTick": 2249
+        },
+        {
+          "path": "world-000009-52da035f.ndjson.gz",
+          "sha256": "7aaa77a8fba5dfd1742548da4cbc3e50cd7d4596358f56458634e31bbfcac9d0",
+          "bytes": 246324,
+          "firstTick": 2250,
+          "lastTick": 2499
+        },
+        {
+          "path": "world-000010-dc36fe89.ndjson.gz",
+          "sha256": "97ac830e12deb224a464a5b7bcde6ad8a42d2e59d62195caa4a524787eac3e68",
+          "bytes": 4187,
+          "firstTick": 2500,
+          "lastTick": 2502
+        }
+      ],
+      "bytes": {
+        "maxLine": 11705,
+        "maxInflatedChunk": 2880603,
+        "maxStoredChunk": 270361,
+        "totalInflated": 27785515,
+        "totalStored": 2531540
+      }
+    },
+    {
+      "trial": 7,
+      "offsetM": [
+        -0.005,
+        0
+      ],
+      "passed": true,
+      "readComplete": true,
+      "issues": [],
+      "records": 2503,
+      "logicalSteps": 2502,
+      "totalPhysicsSubsteps": 25030,
+      "workerPid": 27777,
+      "runId": "rig:worker:7",
+      "bootId": "e5f2d38c-e4ad-4bfd-affa-d564eb9f2e4f",
+      "nativeModel": {
+        "nq": 35,
+        "nv": 32,
+        "nbody": 30,
+        "ngeom": 27
+      },
+      "receiverWindowTicks": 150,
+      "transportDistanceM": 1.0078111891665031,
+      "maxCupTranslationPerTickM": 0.003950730963199698,
+      "unexpectedArmMobileContacts": 0,
+      "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+      "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+      "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+      "commandStreamSha256": "52658e94edd84db55bcd6ec88210b95220ab7d712bf824093daaf5fa7b690bde",
+      "summary": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-7/summary.json",
+        "sha256": "46d67584eaa81aed437514eea656998a98fb2bdffbcb94e1792a6b40f67256cb",
+        "bytes": 1249
+      },
+      "nativeReadback": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-7/native-readback.json",
+        "sha256": "c1fe9b71b4c2c6d8f9f71539295fea3fb88557ec3bc11fc3243609cdc41ce183",
+        "bytes": 4995
+      },
+      "manifest": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-7/evidence/manifest.json",
+        "sha256": "f48c34b43f271a3cc8287475a76b0ae82aded0cd35a86cb7db7c943753a6c9f5",
+        "bytes": 2182
+      },
+      "chunks": [
+        {
+          "path": "world-000000-d7589fca.ndjson.gz",
+          "sha256": "c0bb5985418e98dafea219bed020373d33801bc9cbd1c568302c28f41a7117f7",
+          "bytes": 193859,
+          "firstTick": 0,
+          "lastTick": 249
+        },
+        {
+          "path": "world-000001-4b470406.ndjson.gz",
+          "sha256": "ba9a28daf5953e21f56eaa3c8e9fc62da8ff092affb2e9477a0bb5fc22dc7d11",
+          "bytes": 237085,
+          "firstTick": 250,
+          "lastTick": 499
+        },
+        {
+          "path": "world-000002-d376cf11.ndjson.gz",
+          "sha256": "6eec6b204adb7403b6a871dcc5b89d6d6a5e12c8b618a20174ea5e00f833ab0d",
+          "bytes": 269898,
+          "firstTick": 500,
+          "lastTick": 749
+        },
+        {
+          "path": "world-000003-94bc8ba1.ndjson.gz",
+          "sha256": "c0dc21f0cfe0b196534d97d256392fa2097021e0f28d468998d6228af7db0a76",
+          "bytes": 263786,
+          "firstTick": 750,
+          "lastTick": 999
+        },
+        {
+          "path": "world-000004-f17d5eb7.ndjson.gz",
+          "sha256": "03728a70c9af7ce82576d37984c411e7d8f5d450c46f1b4f7ce329bdf3f7cbab",
+          "bytes": 268810,
+          "firstTick": 1000,
+          "lastTick": 1249
+        },
+        {
+          "path": "world-000005-13b0f469.ndjson.gz",
+          "sha256": "9bd6a9330ce578ebe61d193f38ed8cd9bac833a063e098567be3dbe8b36b3207",
+          "bytes": 266713,
+          "firstTick": 1250,
+          "lastTick": 1499
+        },
+        {
+          "path": "world-000006-04b0bf78.ndjson.gz",
+          "sha256": "eb288d7c1a909379d3fbfdacf15be630a9ce7d546119aff86c5ba6dfbf113228",
+          "bytes": 260949,
+          "firstTick": 1500,
+          "lastTick": 1749
+        },
+        {
+          "path": "world-000007-2d5695e4.ndjson.gz",
+          "sha256": "42edc2da43aa819d9626eeb0f267929287138a8e9ff0530d9cf26d314559f489",
+          "bytes": 263703,
+          "firstTick": 1750,
+          "lastTick": 1999
+        },
+        {
+          "path": "world-000008-27d6c18b.ndjson.gz",
+          "sha256": "a5ac065f208bdaaf815dbcb5d8941b571f59fdd511912ee982a33089709f6472",
+          "bytes": 254467,
+          "firstTick": 2000,
+          "lastTick": 2249
+        },
+        {
+          "path": "world-000009-15913dc0.ndjson.gz",
+          "sha256": "de77b649413c661ca067c435e6c8b58d76a8a76c0fb709e2c471097313454b9e",
+          "bytes": 246967,
+          "firstTick": 2250,
+          "lastTick": 2499
+        },
+        {
+          "path": "world-000010-925df2a3.ndjson.gz",
+          "sha256": "7790a133e0d35d8034d31d7213a7f9ef67c2224c068e9ae3ce2b8b5775dc8ce4",
+          "bytes": 4222,
+          "firstTick": 2500,
+          "lastTick": 2502
+        }
+      ],
+      "bytes": {
+        "maxLine": 11705,
+        "maxInflatedChunk": 2880958,
+        "maxStoredChunk": 269898,
+        "totalInflated": 27790088,
+        "totalStored": 2532641
+      }
+    },
+    {
+      "trial": 8,
+      "offsetM": [
+        0,
+        0.005
+      ],
+      "passed": true,
+      "readComplete": true,
+      "issues": [],
+      "records": 2503,
+      "logicalSteps": 2502,
+      "totalPhysicsSubsteps": 25030,
+      "workerPid": 27802,
+      "runId": "rig:worker:8",
+      "bootId": "e2377ec7-51c7-482b-b86f-28044c99273b",
+      "nativeModel": {
+        "nq": 35,
+        "nv": 32,
+        "nbody": 30,
+        "ngeom": 27
+      },
+      "receiverWindowTicks": 150,
+      "transportDistanceM": 1.0078117531499644,
+      "maxCupTranslationPerTickM": 0.003951020481159205,
+      "unexpectedArmMobileContacts": 0,
+      "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+      "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+      "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+      "commandStreamSha256": "4a40034a4f0d8ba8e2dee9947f07be95a9a70fe399d43055ab56b5615fb31fd3",
+      "summary": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-8/summary.json",
+        "sha256": "7e7a64711f596b772b4c7228dc2f9f7d58b8e75fc3ddced128ac0b1d56820c54",
+        "bytes": 1247
+      },
+      "nativeReadback": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-8/native-readback.json",
+        "sha256": "3aa8557aa75ea697580d7d3b7660882bf911df35d9477b2949cd873936dd4d28",
+        "bytes": 4997
+      },
+      "manifest": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-8/evidence/manifest.json",
+        "sha256": "ffec55172748cbbf810f7945a29949666a902c421fafecc0de80480ecfd39339",
+        "bytes": 2182
+      },
+      "chunks": [
+        {
+          "path": "world-000000-6c046d56.ndjson.gz",
+          "sha256": "7b0a8c60e7febdf335c7f76dea75ee18fadccae6d82dfd995553b2ec0a9f6efd",
+          "bytes": 193770,
+          "firstTick": 0,
+          "lastTick": 249
+        },
+        {
+          "path": "world-000001-72ac4b3c.ndjson.gz",
+          "sha256": "5007e6e2fec69fafaaf3b3072ecf8bfb515e120dadc8b643cc093009f71026d5",
+          "bytes": 243384,
+          "firstTick": 250,
+          "lastTick": 499
+        },
+        {
+          "path": "world-000002-d6e3b56d.ndjson.gz",
+          "sha256": "d48d54b5f1e8b8b290670cbfb1b4986009281eab34b03989f878bedbe823d07c",
+          "bytes": 270751,
+          "firstTick": 500,
+          "lastTick": 749
+        },
+        {
+          "path": "world-000003-3925e5d1.ndjson.gz",
+          "sha256": "c93e8149b506d785c3d833f877b09ed7815f470d06e9fd7a0b13b7bc4b69edd3",
+          "bytes": 263590,
+          "firstTick": 750,
+          "lastTick": 999
+        },
+        {
+          "path": "world-000004-fe6f8845.ndjson.gz",
+          "sha256": "cb6cb5b22bf01f033dc1595da271cfbdc411801085303ddbcc5a016fcfc8c2e1",
+          "bytes": 269000,
+          "firstTick": 1000,
+          "lastTick": 1249
+        },
+        {
+          "path": "world-000005-7d65463a.ndjson.gz",
+          "sha256": "59012ffc0a1f9b8d331d026f0250b17fc9c9816b833689ce15cce55b69833c05",
+          "bytes": 266965,
+          "firstTick": 1250,
+          "lastTick": 1499
+        },
+        {
+          "path": "world-000006-f2493ca4.ndjson.gz",
+          "sha256": "c5ef468fcbcf79de7bdfa5e036cc1bb23efb18ba0ab3697b62add9c3c3744244",
+          "bytes": 260656,
+          "firstTick": 1500,
+          "lastTick": 1749
+        },
+        {
+          "path": "world-000007-ff2f1548.ndjson.gz",
+          "sha256": "082e6edad89c01aeaefe70019fbc1d524c65f05e3a7e74a082bba29497e3963b",
+          "bytes": 263691,
+          "firstTick": 1750,
+          "lastTick": 1999
+        },
+        {
+          "path": "world-000008-d39d94c3.ndjson.gz",
+          "sha256": "8a9561ccb64c48dc67f7efe075dd341234b82010d8df128626af55aca28ee308",
+          "bytes": 254840,
+          "firstTick": 2000,
+          "lastTick": 2249
+        },
+        {
+          "path": "world-000009-584a2378.ndjson.gz",
+          "sha256": "a78a427462950f4b2e711835d6481740afec643bc822901ff7a0202cae16c698",
+          "bytes": 246830,
+          "firstTick": 2250,
+          "lastTick": 2499
+        },
+        {
+          "path": "world-000010-fca6cf19.ndjson.gz",
+          "sha256": "09d4d5d4c5e8929b311a801ce58b2a74a759c2bc78acf94258bd2e980877fd01",
+          "bytes": 4214,
+          "firstTick": 2500,
+          "lastTick": 2502
+        }
+      ],
+      "bytes": {
+        "maxLine": 11688,
+        "maxInflatedChunk": 2877966,
+        "maxStoredChunk": 270751,
+        "totalInflated": 27800616,
+        "totalStored": 2539873
+      }
+    },
+    {
+      "trial": 9,
+      "offsetM": [
+        0,
+        -0.005
+      ],
+      "passed": true,
+      "readComplete": true,
+      "issues": [],
+      "records": 2503,
+      "logicalSteps": 2502,
+      "totalPhysicsSubsteps": 25030,
+      "workerPid": 27835,
+      "runId": "rig:worker:9",
+      "bootId": "64752fb6-39b2-4ae8-9815-801764c04852",
+      "nativeModel": {
+        "nq": 35,
+        "nv": 32,
+        "nbody": 30,
+        "ngeom": 27
+      },
+      "receiverWindowTicks": 150,
+      "transportDistanceM": 1.0078117316450503,
+      "maxCupTranslationPerTickM": 0.003951028055107714,
+      "unexpectedArmMobileContacts": 0,
+      "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+      "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+      "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+      "commandStreamSha256": "77377447c9e75babadd008af97963fe7b8cce5d33e0e8fee316df3b48833f72d",
+      "summary": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-9/summary.json",
+        "sha256": "60c11713faef865c021b530a7c6bb524082e26259f55bd9cfe0126d8c12009ec",
+        "bytes": 1248
+      },
+      "nativeReadback": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-9/native-readback.json",
+        "sha256": "ba17bf69d373a68d88ec7f78e1e31c2eac03cbc0263aa224c49ba9cdf5d132fa",
+        "bytes": 5003
+      },
+      "manifest": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-9/evidence/manifest.json",
+        "sha256": "7fdb70ee2b99b95572439c202b3245cead8d69d272a0585c70780a86a155dcee",
+        "bytes": 2182
+      },
+      "chunks": [
+        {
+          "path": "world-000000-fc9487b5.ndjson.gz",
+          "sha256": "76423a3777f0e79766b60bb63f9e9d954a7a8e8e1ed9e38863d5a26fa6aaf330",
+          "bytes": 193661,
+          "firstTick": 0,
+          "lastTick": 249
+        },
+        {
+          "path": "world-000001-755d21c4.ndjson.gz",
+          "sha256": "a326c3e847b3b003fdf359feaf09e3b841ca9ad84ed2a059dbaa5b300e0527cd",
+          "bytes": 243326,
+          "firstTick": 250,
+          "lastTick": 499
+        },
+        {
+          "path": "world-000002-1d8e823e.ndjson.gz",
+          "sha256": "bfb94dfd8977d711eacb0e1a83733274d9e413b4deb7de8014ae54e48111a207",
+          "bytes": 270464,
+          "firstTick": 500,
+          "lastTick": 749
+        },
+        {
+          "path": "world-000003-5c0e175b.ndjson.gz",
+          "sha256": "53921d788c96a8f1da7627174ed7146366bfc598d9a5b4c1103afadc14e541fc",
+          "bytes": 263315,
+          "firstTick": 750,
+          "lastTick": 999
+        },
+        {
+          "path": "world-000004-12d1498b.ndjson.gz",
+          "sha256": "463a1cf65a6c14bffdcb75d8ce181732466aec87a766b01fef2e4882ee06d12b",
+          "bytes": 268928,
+          "firstTick": 1000,
+          "lastTick": 1249
+        },
+        {
+          "path": "world-000005-09cf0dca.ndjson.gz",
+          "sha256": "82c599e843e77366755d1e6910e8f0e6244f340fe87e6a3c57b6a68feaed2c12",
+          "bytes": 266830,
+          "firstTick": 1250,
+          "lastTick": 1499
+        },
+        {
+          "path": "world-000006-cffd44f1.ndjson.gz",
+          "sha256": "08b010cbd68bed269167db03d073914849e0030712f37792d61aab42ded31e62",
+          "bytes": 260720,
+          "firstTick": 1500,
+          "lastTick": 1749
+        },
+        {
+          "path": "world-000007-9d8ce7a7.ndjson.gz",
+          "sha256": "564fbacaf9c5092237c6e54c860004b851d736c23eb30d6a37f70697d4631aca",
+          "bytes": 263851,
+          "firstTick": 1750,
+          "lastTick": 1999
+        },
+        {
+          "path": "world-000008-28bfa2bb.ndjson.gz",
+          "sha256": "d987340e65c34c7b51572e0c9feb30e7dd12e93208f866f1000e0bf9a0738500",
+          "bytes": 254730,
+          "firstTick": 2000,
+          "lastTick": 2249
+        },
+        {
+          "path": "world-000009-9ee0a33c.ndjson.gz",
+          "sha256": "75879106a56cde2368a1076348223e11c7d6611a5c039386a377f52c1312278f",
+          "bytes": 246948,
+          "firstTick": 2250,
+          "lastTick": 2499
+        },
+        {
+          "path": "world-000010-5100726a.ndjson.gz",
+          "sha256": "7cf3e559b40c673b43b6214171f34d7c1cf72bcb92a13075816eadf1857b463f",
+          "bytes": 4188,
+          "firstTick": 2500,
+          "lastTick": 2502
+        }
+      ],
+      "bytes": {
+        "maxLine": 11686,
+        "maxInflatedChunk": 2877341,
+        "maxStoredChunk": 270464,
+        "totalInflated": 27799768,
+        "totalStored": 2539143
+      }
+    },
+    {
+      "trial": 10,
+      "offsetM": [
+        0.0025,
+        -0.0035
+      ],
+      "passed": true,
+      "readComplete": true,
+      "issues": [],
+      "records": 2503,
+      "logicalSteps": 2502,
+      "totalPhysicsSubsteps": 25030,
+      "workerPid": 27846,
+      "runId": "rig:worker:10",
+      "bootId": "a58e1c94-f52b-40a2-a404-838ff4bf3cfb",
+      "nativeModel": {
+        "nq": 35,
+        "nv": 32,
+        "nbody": 30,
+        "ngeom": 27
+      },
+      "receiverWindowTicks": 150,
+      "transportDistanceM": 1.0078119014558964,
+      "maxCupTranslationPerTickM": 0.003951052752506948,
+      "unexpectedArmMobileContacts": 0,
+      "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+      "admissionDigest": "c5ba3589a0a205a8649bdedc307319601406f0f67037824bb01be241309f02a3",
+      "policySha256": "59f324285e224158d3ac4690adb2c4226b9a0021be9a3d3d0433dd891f2723cf",
+      "commandStreamSha256": "087a89a441899ae73b8b4208fd38744251536561669700f99eab064ee97a3e06",
+      "summary": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-10/summary.json",
+        "sha256": "2fb336e174ccee3ba37ac1f1dce87f05fb7cf1b046eae0500c1ca39416e32fb5",
+        "bytes": 1254
+      },
+      "nativeReadback": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-10/native-readback.json",
+        "sha256": "60bf8a4d19cd0fc3c6338655ec218439051bf887f50f1be5f3c866b345bdcf95",
+        "bytes": 5002
+      },
+      "manifest": {
+        "path": "/tmp/mekoniq-b05-production-ten/trial-10/evidence/manifest.json",
+        "sha256": "9be49b070701576618223d68b603a1eb2145513eed6237e6f13d16758f5eb5c3",
+        "bytes": 2183
+      },
+      "chunks": [
+        {
+          "path": "world-000000-76c0cffa.ndjson.gz",
+          "sha256": "9bf75ae276755393e5e68b968bd3b92b4d3f87ddeb67e59bdeb33f5de7621403",
+          "bytes": 193957,
+          "firstTick": 0,
+          "lastTick": 249
+        },
+        {
+          "path": "world-000001-c2bd68a5.ndjson.gz",
+          "sha256": "58991c7ba173bd5a64b6fddd7a831a53590f8087c6f5b5f9fcef5e92be7a8693",
+          "bytes": 237111,
+          "firstTick": 250,
+          "lastTick": 499
+        },
+        {
+          "path": "world-000002-26a31bc8.ndjson.gz",
+          "sha256": "5b1c6347d4aaf86ea2ffc507b09d795e2f4805545cbc8f179ad966bc39815e18",
+          "bytes": 270938,
+          "firstTick": 500,
+          "lastTick": 749
+        },
+        {
+          "path": "world-000003-3707b4d3.ndjson.gz",
+          "sha256": "a7bee5d9a375a67e9b45a758b98985751af6b0b1ab63cbf8711146e4c93be627",
+          "bytes": 263544,
+          "firstTick": 750,
+          "lastTick": 999
+        },
+        {
+          "path": "world-000004-6b8efcfe.ndjson.gz",
+          "sha256": "7a86e50e92e4623b05a2bbdc7a3d8da1639958508568b1c675c97741a234abe0",
+          "bytes": 269006,
+          "firstTick": 1000,
+          "lastTick": 1249
+        },
+        {
+          "path": "world-000005-b242b6a0.ndjson.gz",
+          "sha256": "efb5cd3aabaaefa9c5e82e1b20100e1ed1f668642e76980d2fad0d4d52708981",
+          "bytes": 266583,
+          "firstTick": 1250,
+          "lastTick": 1499
+        },
+        {
+          "path": "world-000006-02e290e9.ndjson.gz",
+          "sha256": "563e3409e906ebd8b61db5651fbb85335face2d825120d54262ef09542d97e5c",
+          "bytes": 260644,
+          "firstTick": 1500,
+          "lastTick": 1749
+        },
+        {
+          "path": "world-000007-0cc854a9.ndjson.gz",
+          "sha256": "0336078aa5ebd5a9ed480a639871855101ac35a696f995022641509f62e454f8",
+          "bytes": 263481,
+          "firstTick": 1750,
+          "lastTick": 1999
+        },
+        {
+          "path": "world-000008-bba853ea.ndjson.gz",
+          "sha256": "3fda757544a1a974ab3becbea622944c5a9e040805b783fb40964a468ef0764c",
+          "bytes": 254760,
+          "firstTick": 2000,
+          "lastTick": 2249
+        },
+        {
+          "path": "world-000009-2fd4bcff.ndjson.gz",
+          "sha256": "564d9c48f764202e8e1b66a1a03f32ecdeb1360293df86905d80535992578363",
+          "bytes": 246746,
+          "firstTick": 2250,
+          "lastTick": 2499
+        },
+        {
+          "path": "world-000010-3c45a1d8.ndjson.gz",
+          "sha256": "ca123971335a6e121b06e5f6546abb9b94efe1ee483eba3eba112eafdb24215f",
+          "bytes": 4211,
+          "firstTick": 2500,
+          "lastTick": 2502
+        }
+      ],
+      "bytes": {
+        "maxLine": 11694,
+        "maxInflatedChunk": 2878304,
+        "maxStoredChunk": 270938,
+        "totalInflated": 27783702,
+        "totalStored": 2533164
+      }
+    }
+  ]
+}

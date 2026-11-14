@@ -1,0 +1,22 @@
+import {readFile,writeFile,readdir,stat} from 'node:fs/promises';
+import {join} from 'node:path';
+import {createHash} from 'node:crypto';
+import {gunzipSync} from 'node:zlib';
+import {tsImport} from '/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/tsx/dist/esm/api/index.mjs';
+const source='/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source',root='/tmp/mekoniq-b05-production-ten';
+const {readWorldFixture}=await tsImport(join(source,'packages/lab-runtime/src/v2/simulation3d/world-scene.ts'),import.meta.url);
+const {prepareWorldAdmission,readWorldEvidence}=await tsImport(join(source,'packages/lab-runtime/src/v2/simulation3d/world-evidence.ts'),import.meta.url);
+const sha=b=>createHash('sha256').update(b).digest('hex'),f=await readWorldFixture(join(source,'robotics/simulation-mujoco')),admission=prepareWorldAdmission(f.scene,f.files),trials=[];
+for(let trial=1;trial<=10;trial++){
+ const dir=join(root,`trial-${trial}`),e=join(dir,'evidence'),manifestBytes=await readFile(join(e,'manifest.json')),manifest=JSON.parse(manifestBytes),summaryBytes=await readFile(join(dir,'summary.json')),summary=JSON.parse(summaryBytes),before=new Map();
+ for(const ref of manifest.chunks)before.set(ref.path,sha(await readFile(join(e,ref.path))));
+ const read=await readWorldEvidence(e,admission);if(!read.complete||read.records.length!==2503||!summary.passed)throw Error(`TRIAL_${trial}_INCOMPLETE:${read.issues}`);
+ let maxLine=0,inflated=0,maxInflated=0,maxStored=0,stored=0;const chunks=[];
+ for(const ref of manifest.chunks){const bytes=await readFile(join(e,ref.path)),raw=gunzipSync(bytes);if(sha(bytes)!==before.get(ref.path))throw Error('READER_MUTATED_CHUNK');maxLine=Math.max(maxLine,...raw.toString().trimEnd().split('\n').map(l=>Buffer.byteLength(l)+1));inflated+=raw.length;maxInflated=Math.max(maxInflated,raw.length);maxStored=Math.max(maxStored,bytes.length);chunks.push(ref);}
+ for(const name of await readdir(e))stored+=(await stat(join(e,name))).size;
+ const commands=createHash('sha256');for(const r of read.records)commands.update(JSON.stringify(r.command)+'\n');
+ const nativeBytes=await readFile(join(dir,'native-readback.json'));
+ trials.push({trial,offsetM:summary.offsetM,passed:true,readComplete:true,issues:read.issues,records:read.records.length,logicalSteps:summary.logicalSteps,totalPhysicsSubsteps:summary.totalPhysicsSubsteps,workerPid:summary.workerPid,runId:summary.runId,bootId:summary.bootId,nativeModel:summary.nativeModel,receiverWindowTicks:summary.receiverWindowTicks,transportDistanceM:summary.transportDistanceM,maxCupTranslationPerTickM:summary.maxTickCupTranslationM,unexpectedArmMobileContacts:summary.unexpectedArmMobileContacts,sceneDigest:summary.sceneDigest,admissionDigest:summary.admissionDigest,policySha256:summary.policySha256,commandStreamSha256:commands.digest('hex'),summary:{path:join(dir,'summary.json'),sha256:sha(summaryBytes),bytes:summaryBytes.length},nativeReadback:{path:join(dir,'native-readback.json'),sha256:sha(nativeBytes),bytes:nativeBytes.length},manifest:{path:join(e,'manifest.json'),sha256:sha(manifestBytes),bytes:manifestBytes.length},chunks,bytes:{maxLine,maxInflatedChunk:maxInflated,maxStoredChunk:maxStored,totalInflated:inflated,totalStored:stored}});
+}
+const result={accepted:false,scope:'ten production IPC-worker physical rigs and final-reader validation, no Source business custody',policySha256:sha(await readFile('/tmp/mekoniq-b05-production-policy.json')),finalRecorderSha256:sha(await readFile(join(source,'packages/lab-runtime/src/v2/simulation3d/world-evidence.ts'))),passedCount:trials.length,uniqueBoots:new Set(trials.map(t=>t.bootId)).size,totalRawRows:trials.reduce((n,t)=>n+t.records,0),totalPhysicsSubsteps:trials.reduce((n,t)=>n+t.totalPhysicsSubsteps,0),totalStoredEvidenceBytes:trials.reduce((n,t)=>n+t.bytes.totalStored,0),trials};
+await writeFile(join(root,'campaign-integrity.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({passed:result.passedCount,uniqueBoots:result.uniqueBoots,rows:result.totalRawRows,physicsSubsteps:result.totalPhysicsSubsteps,totalStoredEvidenceBytes:result.totalStoredEvidenceBytes,inventorySha256:sha(await readFile(join(root,'campaign-integrity.json'))),maxLine:Math.max(...trials.map(t=>t.bytes.maxLine)),maxChunkInflated:Math.max(...trials.map(t=>t.bytes.maxInflatedChunk)),maxRunStored:Math.max(...trials.map(t=>t.bytes.totalStored)),maxRunInflated:Math.max(...trials.map(t=>t.bytes.totalInflated))},null,2));

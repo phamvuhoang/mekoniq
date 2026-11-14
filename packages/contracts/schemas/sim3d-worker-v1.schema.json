@@ -327,6 +327,45 @@
                   "pose"
                 ]
               }
+            },
+            "worldInteractions": {
+              "type": "array",
+              "maxItems": 16,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "eventId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "cupId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "propId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "kind": {
+                    "enum": [
+                      "birth",
+                      "remove"
+                    ]
+                  },
+                  "targetTick": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30000
+                  }
+                },
+                "required": [
+                  "eventId",
+                  "cupId",
+                  "propId",
+                  "kind",
+                  "targetTick"
+                ]
+              }
             }
           },
           "required": [
@@ -784,6 +823,57 @@
         },
         "physics": {
           "$ref": "physics-evidence-v1.schema.json#/definitions/PhysicsTickRecord"
+        },
+        "worldStep": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workerPid": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "modelCount": {
+              "const": 1
+            },
+            "physicsSubsteps": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 300010
+            },
+            "primingSubsteps": {
+              "const": 10
+            },
+            "nq": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "nv": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "nbody": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "ngeom": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            }
+          },
+          "required": [
+            "workerPid",
+            "modelCount",
+            "physicsSubsteps",
+            "primingSubsteps",
+            "nq",
+            "nv",
+            "nbody",
+            "ngeom"
+          ]
         }
       },
       "required": [

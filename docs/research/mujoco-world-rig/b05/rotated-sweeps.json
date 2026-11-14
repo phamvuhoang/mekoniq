@@ -1,0 +1,355 @@
+[
+  {
+    "from": "home",
+    "to": "pickApproach",
+    "heldCup": false,
+    "result": {
+      "ok": true,
+      "engine": "capsule-sweep-v1",
+      "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+      "geometryRevision": "ad7de6cfdcbfcbb184232bd5847d528dee4d556cf2c04effe29ca5dd4d48c02b",
+      "toleranceM": 0.0005,
+      "evaluations": 2049,
+      "allowed": {
+        "pairs": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "held-cup",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ],
+        "inContact": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "from": "pickApproach",
+    "to": "pick",
+    "heldCup": false,
+    "result": {
+      "ok": true,
+      "engine": "capsule-sweep-v1",
+      "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+      "geometryRevision": "ad7de6cfdcbfcbb184232bd5847d528dee4d556cf2c04effe29ca5dd4d48c02b",
+      "toleranceM": 0.0005,
+      "evaluations": 513,
+      "allowed": {
+        "pairs": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "held-cup",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ],
+        "inContact": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "from": "pick",
+    "to": "lift",
+    "heldCup": true,
+    "result": {
+      "ok": true,
+      "engine": "capsule-sweep-v1",
+      "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+      "geometryRevision": "ad7de6cfdcbfcbb184232bd5847d528dee4d556cf2c04effe29ca5dd4d48c02b",
+      "toleranceM": 0.0005,
+      "evaluations": 513,
+      "allowed": {
+        "pairs": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "held-cup",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ],
+        "inContact": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "held-cup",
+            "nozzle-stand/SUPPORT_1"
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "from": "lift",
+    "to": "high",
+    "heldCup": true,
+    "result": {
+      "ok": true,
+      "engine": "capsule-sweep-v1",
+      "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+      "geometryRevision": "ad7de6cfdcbfcbb184232bd5847d528dee4d556cf2c04effe29ca5dd4d48c02b",
+      "toleranceM": 0.0005,
+      "evaluations": 1025,
+      "allowed": {
+        "pairs": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "held-cup",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ],
+        "inContact": []
+      }
+    }
+  },
+  {
+    "from": "high",
+    "to": "horizontalApproach",
+    "heldCup": true,
+    "result": {
+      "ok": true,
+      "engine": "capsule-sweep-v1",
+      "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+      "geometryRevision": "ad7de6cfdcbfcbb184232bd5847d528dee4d556cf2c04effe29ca5dd4d48c02b",
+      "toleranceM": 0.0005,
+      "evaluations": 513,
+      "allowed": {
+        "pairs": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "held-cup",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ],
+        "inContact": [
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "from": "horizontalApproach",
+    "to": "place",
+    "heldCup": true,
+    "result": {
+      "ok": true,
+      "engine": "capsule-sweep-v1",
+      "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+      "geometryRevision": "ad7de6cfdcbfcbb184232bd5847d528dee4d556cf2c04effe29ca5dd4d48c02b",
+      "toleranceM": 0.0005,
+      "evaluations": 513,
+      "allowed": {
+        "pairs": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "held-cup",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ],
+        "inContact": [
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "from": "place",
+    "to": "horizontalApproach",
+    "heldCup": false,
+    "result": {
+      "ok": true,
+      "engine": "capsule-sweep-v1",
+      "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+      "geometryRevision": "ad7de6cfdcbfcbb184232bd5847d528dee4d556cf2c04effe29ca5dd4d48c02b",
+      "toleranceM": 0.0005,
+      "evaluations": 513,
+      "allowed": {
+        "pairs": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "held-cup",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ],
+        "inContact": [
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "from": "horizontalApproach",
+    "to": "high",
+    "heldCup": false,
+    "result": {
+      "ok": true,
+      "engine": "capsule-sweep-v1",
+      "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+      "geometryRevision": "ad7de6cfdcbfcbb184232bd5847d528dee4d556cf2c04effe29ca5dd4d48c02b",
+      "toleranceM": 0.0005,
+      "evaluations": 513,
+      "allowed": {
+        "pairs": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "held-cup",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ],
+        "inContact": [
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "from": "high",
+    "to": "home",
+    "heldCup": false,
+    "result": {
+      "ok": true,
+      "engine": "capsule-sweep-v1",
+      "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+      "geometryRevision": "ad7de6cfdcbfcbb184232bd5847d528dee4d556cf2c04effe29ca5dd4d48c02b",
+      "toleranceM": 0.0005,
+      "evaluations": 513,
+      "allowed": {
+        "pairs": [
+          [
+            "gripper",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "held-cup",
+            "nozzle-stand/SUPPORT_1"
+          ],
+          [
+            "gripper",
+            "tray-1/plate/M_GEOM_5"
+          ],
+          [
+            "held-cup",
+            "tray-1/plate/M_GEOM_5"
+          ]
+        ],
+        "inContact": []
+      }
+    }
+  }
+]

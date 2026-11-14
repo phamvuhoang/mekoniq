@@ -21,13 +21,13 @@ export const ARM_CHOREOGRAPHY:Record<string,{waypoint:string;action?:'grip'|'rel
 export interface ArmProgramSet {modelId:string;waypoints:Record<string,number[]>;choreography:Record<string,{waypoint:string;action?:'grip'|'release'}[]>;
  motion:{profile:'linear-clamp'}|{profile:'quintic-sync-v1';maxAccelerationRadS2:number[];speedFraction:number};
  /** Present = grip by contact (tracking only): the plant's pads say what is held, the plant's supports say where a cup rests. Absent = grip is an event (mock, webots_arm). */
- contact?:{openM:number;closedM:number;gripSettleTicks:number;dropTicks:number;liftMinM:number;releaseTimeoutTicks:number};
+ contact?:{openM:number;closedM:number;gripSettleTicks:number;dropTicks:number;liftMinM:number;releaseTimeoutTicks:number;releaseObservationRequired?:boolean;releaseSettleTicks?:number};
  /** Present = checkArmSweep gets this geometry and these allowed pairs; absent = DEFAULT_ARM_GEOMETRY and no pair (as before). */
  collision?:{geometry:ArmGeometry;allowedPairs:readonly (readonly [string,string])[]}}
 export const PUMA_PROGRAMS:ArmProgramSet={modelId:PUMA560_SI.id,waypoints:W,choreography:ARM_CHOREOGRAPHY,motion:{profile:'linear-clamp'}};
 /** What a contact plant reports each tick beside the joints: the measured gripper opening (m, between the pads), the cups both pads touch, and each cup's position (m, arm base frame) and support. */
 /** `inMap` (optional) is the same cup's pose in the map frame, kept untouched with the entry for the telemetry projection; the machine reads only `position`. */
-export interface PlantExtras {gripper?:{openingM:number;heldPropIds:readonly string[]};props?:readonly {propId:string;position:readonly number[];restingOn:string|null;inMap?:{positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}}[]}
+export interface PlantExtras {releaseObservation?:{propId:string;valid:boolean};gripper?:{openingM:number;heldPropIds:readonly string[]};props?:readonly {propId:string;position:readonly number[];restingOn:string|null;inMap?:{positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}}[]}
 /** Contact grip counters (JSON). `ticks`: closing = ticks the opening changed < 1e-4 m, opening = ticks the cup rested on the tray; `lost`: ticks the held cup was not between the pads.
  * `maxSlipM` (the largest norm of the change of the cup's position in the TCP frame since the baseline) is null until a baseline was measured. `openingM` the last measured opening,
  * `slipFromM` the cup's position in the TCP frame (m) on the first tick, at or after the take, the held cup's position was seen, `elapsed` ticks since the release command, `receiver` the receiver the release started for. */
@@ -51,7 +51,7 @@ function validatePrograms(set:ArmProgramSet,model:ArmModelSI){
  }else if(m?.profile!=='linear-clamp')bad('motion profile');
  const c=set.contact;
  if(c){
-  if(!tick(c.gripSettleTicks)||!tick(c.dropTicks)||!tick(c.releaseTimeoutTicks))bad('contact tick counts must be integers >= 1');
+  if(!tick(c.gripSettleTicks)||!tick(c.dropTicks)||!tick(c.releaseTimeoutTicks)||(c.releaseSettleTicks!==undefined&&!tick(c.releaseSettleTicks)))bad('contact tick counts must be integers >= 1');
   if(![c.openM,c.closedM,c.liftMinM].every(Number.isFinite)||!(c.openM>c.closedM)||!(c.closedM>=0))bad('contact needs finite openM > closedM >= 0 and liftMinM');
  }
 }
@@ -221,7 +221,7 @@ export class MockArmPlant {
     s.gripperCommandM=c.openM;
     if(s.holding!==null){s.grip={...g??{lost:0,liftFromM:null,maxSlipM:null,openingM:null,slipFromM:null},phase:'opening',ticks:0,elapsed:0,receiver:rx};return;}
     s.gripper='open';delete s.grip;Object.assign(p.evidence,{released:true,receiverId:rx.robotId,slot:rx.slot,cupId:null}); // nothing was held: open, as the event grip does
-   }else if(g.ticks<c.gripSettleTicks){
+   }else if(g.ticks<(c.releaseSettleTicks??c.gripSettleTicks)){
     // the cup was let go but the plant never saw it on the tray: its whereabouts are unknown. The program fails, the arm latches until reconciled, the cup stays in the arm's custody.
     if(g.elapsed>c.releaseTimeoutTicks){s.gripper='open';p.state='failed';this.emit(p,'failed',['RELEASE_NOT_ON_RECEIVER'],{...p.evidence});this.stop('RELEASE_NOT_ON_RECEIVER');}
     return;
@@ -239,7 +239,7 @@ export class MockArmPlant {
   * on the tray (a missing opening counts as unchanged). Returns true when it stopped the arm. */
  private watchContact(p:Program|undefined,extras?:PlantExtras){
   const s=this.state,g=s.grip;if(!g)return false;
-  if(g.phase==='opening'){g.elapsed++;g.ticks=extras?.props?.find(x=>x.propId===s.holding)?.restingOn==='tray'?g.ticks+1:0;return false;}
+  if(g.phase==='opening'){g.elapsed++;const valid=this.programs.contact!.releaseObservationRequired?extras?.releaseObservation?.propId===s.holding&&extras.releaseObservation.valid:extras?.props?.find(x=>x.propId===s.holding)?.restingOn==='tray';g.ticks=valid?g.ticks+1:0;return false;}
   if(s.holding===null){const o=extras?.gripper?.openingM;g.ticks=o===undefined||g.openingM!==null&&Math.abs(o-g.openingM)<1e-4?g.ticks+1:0;if(o!==undefined)g.openingM=o;return false;}
   const held=extras?.gripper?.heldPropIds.includes(s.holding)??false,at=extras?.props?.find(x=>x.propId===s.holding)?.position;
   g.lost=held?0:g.lost+1;

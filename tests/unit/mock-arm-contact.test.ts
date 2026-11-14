@@ -286,3 +286,17 @@ test('quintic-sync-v1: the command reaches the waypoint in exactly quinticSegmen
   const before = commanded.at(-2)!;
   goal.forEach((v, i) => { if (Math.abs(v - home[i]!) > 1e-6) expect(before[i], `joint ${i}`).not.toBe(v); });
 });
+
+test('world release requires explicit receiver observation and a full window; legacy tray contact alone cannot release',()=>{
+ const set:ArmProgramSet={...PROGRAMS,contact:{...CONTACT,releaseObservationRequired:true,releaseSettleTicks:25}};
+ const h=make({},set);expect(h.drive('pick-world','cup-pick').state).toBe('completed');
+ expect(h.plant.execute(command('place-world','cup-place')).accepted).toBe(true);
+ for(let i=0;i<4000&&!h.state.stop?.latched;i++)h.tick();
+ expect(h.puts).toHaveLength(0);expect(h.state.stop?.reason).toBe('RELEASE_NOT_ON_RECEIVER');
+});
+
+test('world release accepts the explicit settled receiver observation on a named mobile support',()=>{
+ const set:ArmProgramSet={...PROGRAMS,contact:{...CONTACT,releaseObservationRequired:true,releaseSettleTicks:25}},h=make({},set),step=h.fake.step;
+ h.fake.step=(...args)=>{const out=step(...args);if(out.extras){const p=out.extras.props?.[0];out.extras.releaseObservation={propId:p?.propId??'absent',valid:p?.restingOn==='tray'};if(p)p.restingOn='amr-1/tray-1';}return out;};
+ expect(h.drive('pick-world-valid','cup-pick').state).toBe('completed');expect(h.drive('place-world-valid','cup-place').state).toBe('completed');expect(h.puts).toHaveLength(1);expect(h.puts[0]!.restingOn).toBe('amr-1/tray-1');
+});

@@ -1,0 +1,403 @@
+{
+  "engine": "3.17.0",
+  "policy": {
+    "timestep": "0.002",
+    "integrator": "implicitfast",
+    "cone": "elliptic",
+    "impratio": "10.0",
+    "solver": "Newton",
+    "iterations": "100",
+    "tolerance": "1e-8"
+  },
+  "modelCount": 1,
+  "trayInitiallyEmpty": true,
+  "waypoints": {
+    "home": {
+      "q": [
+        -4.93613604879e-10,
+        -1.14779631171,
+        -0.324460234973,
+        -3.14159266066,
+        0.098539780113,
+        7.05694566235e-09
+      ],
+      "contacts": [
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_1",
+          "bodyA": "world",
+          "bodyB": "caster-front/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_2",
+          "bodyA": "world",
+          "bodyB": "caster-rear/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        }
+      ]
+    },
+    "lift": {
+      "q": [
+        -5.9442658709e-17,
+        -0.402330393433,
+        -0.428402627469,
+        -3.14159265359,
+        0.740063305598,
+        -3.20950485167e-16
+      ],
+      "contacts": [
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_1",
+          "bodyA": "world",
+          "bodyB": "caster-front/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_2",
+          "bodyA": "world",
+          "bodyB": "caster-rear/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        }
+      ]
+    },
+    "pick": {
+      "q": [
+        -3.61465593187e-16,
+        0.130550805606,
+        -0.358580734739,
+        -3.14159265359,
+        1.34276639765,
+        -3.6678410097e-16
+      ],
+      "contacts": [
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_1",
+          "bodyA": "world",
+          "bodyB": "caster-front/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_2",
+          "bodyA": "world",
+          "bodyB": "caster-rear/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "M_GEOM_0",
+          "b": "ARM_link4",
+          "bodyA": "chassis/base",
+          "bodyB": "ARM_link4",
+          "distanceM": -0.004341085638513127
+        },
+        {
+          "a": "M_GEOM_0",
+          "b": "ARM_link4",
+          "bodyA": "chassis/base",
+          "bodyB": "ARM_link4",
+          "distanceM": -0.0042142679733604155
+        }
+      ]
+    },
+    "pickApproach": {
+      "q": [
+        -4.13540496363e-16,
+        -0.17133876115,
+        0.0487768123208,
+        -3.14159265359,
+        1.44823437625,
+        -2.24924546421e-16
+      ],
+      "contacts": [
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_1",
+          "bodyA": "world",
+          "bodyB": "caster-front/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_2",
+          "bodyA": "world",
+          "bodyB": "caster-rear/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        }
+      ]
+    },
+    "place": {
+      "q": [
+        0.785398163397358,
+        -0.4938334284006984,
+        -1.1520498469648794,
+        -3.1415926535893073,
+        -0.0750869484649222,
+        -4.847597165850401e-13
+      ],
+      "contacts": [
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_1",
+          "bodyA": "world",
+          "bodyB": "caster-front/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_2",
+          "bodyA": "world",
+          "bodyB": "caster-rear/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        }
+      ]
+    },
+    "placeApproach": {
+      "q": [
+        0.7853981633977423,
+        -0.2986508444200278,
+        -1.6948960164045839,
+        -3.141592653590641,
+        -0.4227505332129104,
+        7.727749183052444e-13
+      ],
+      "contacts": [
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_1",
+          "bodyA": "world",
+          "bodyB": "caster-front/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_2",
+          "bodyA": "world",
+          "bodyB": "caster-rear/ball",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_10",
+          "bodyA": "world",
+          "bodyB": "wheel-left/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "FLOOR",
+          "b": "M_GEOM_12",
+          "bodyA": "world",
+          "bodyB": "wheel-right/rim",
+          "distanceM": 0.0
+        },
+        {
+          "a": "M_GEOM_6",
+          "b": "ARM_link4",
+          "bodyA": "tray-2/plate",
+          "bodyB": "ARM_link4",
+          "distanceM": -0.008641014393536782
+        },
+        {
+          "a": "M_GEOM_6",
+          "b": "ARM_link4",
+          "bodyA": "tray-2/plate",
+          "bodyB": "ARM_link4",
+          "distanceM": -0.008633822670323522
+        },
+        {
+          "a": "M_GEOM_6",
+          "b": "ARM_link4",
+          "bodyA": "tray-2/plate",
+          "bodyB": "ARM_link4",
+          "distanceM": -0.008799072680309626
+        },
+        {
+          "a": "M_GEOM_6",
+          "b": "ARM_link5",
+          "bodyA": "tray-2/plate",
+          "bodyB": "ARM_link5",
+          "distanceM": -0.008648986367932264
+        },
+        {
+          "a": "M_GEOM_6",
+          "b": "ARM_link5",
+          "bodyA": "tray-2/plate",
+          "bodyB": "ARM_link5",
+          "distanceM": -0.008722364574137642
+        },
+        {
+          "a": "M_GEOM_6",
+          "b": "ARM_link5",
+          "bodyA": "tray-2/plate",
+          "bodyB": "ARM_link5",
+          "distanceM": -0.008760160324275417
+        },
+        {
+          "a": "M_GEOM_6",
+          "b": "ARM_link5",
+          "bodyA": "tray-2/plate",
+          "bodyB": "ARM_link5",
+          "distanceM": -0.008578441453878887
+        }
+      ]
+    }
+  }
+}

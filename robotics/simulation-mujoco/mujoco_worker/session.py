@@ -70,6 +70,8 @@ class WorkerSession:
         self.receipts = Receipts()
         self.cups, self.present = {}, {}  # propId -> (radius, height); cups in the scene -> position after the last step
         self.mobile = False
+        self.world = False
+        self.world_events, self.world_born = set(), set()
         self.schema_dir = Path(schema_dir) if schema_dir else Path(__file__).resolve().parents[3] / "packages" / "contracts" / "schemas"
 
     # ---- plumbing (as the Webots worker) ----
@@ -132,6 +134,8 @@ class WorkerSession:
     def _op_create(self, p):
         if self.state != "new":
             raise WorkerError("INVALID_STATE", f"create on a {self.state} run")
+        if p.get("sceneRef") == "lab-world-scene.json":
+            return self._create_world(p)
         if p.get("sceneRef") == "navigation-scene.json":
             return self._create_mobile(p)
         if self.payload_perturbation:
@@ -185,6 +189,90 @@ class WorkerSession:
         errors = list(schema_validator(self.schema_dir, filename).iter_errors(value))
         if errors:
             raise WorkerError("SCENE_SCHEMA_INVALID", f"{filename}: {errors[0].message}")
+
+    def _create_world(self, p):
+        from .world_engine import WorldEngine
+        from .compile import CompileError
+        if p.get("arms") or self.payload_perturbation:
+            raise WorkerError("INVALID_REQUEST", "one world create has no separate arm tokens or mobile perturbation")
+        scene = json.loads(confined(self.bundle_root, "lab-world-scene.json").read_text())
+        self._validate_document(scene, "lab-world-scene-v1.schema.json")
+        digest = scene_digest_of(scene)
+        if digest != scene["sceneDigest"] or self.expected_scene_digest and digest != self.expected_scene_digest:
+            raise WorkerError("SCENE_DIGEST_MISMATCH", "world scene identity mismatch")
+        for part in (scene["navigation"], scene["armCell"]):
+            if scene_digest_of(part) != part["sceneDigest"]:
+                raise WorkerError("SCENE_DIGEST_MISMATCH", "nested world scene identity mismatch")
+        if engine_seed(p["seed"]) != scene["armCell"]["engineSeed"]:
+            raise WorkerError("SEED_MISMATCH", "world engine seed mismatch")
+        files = {}
+        for ref in scene["files"]:
+            raw = confined(self.bundle_root, ref["path"]).read_bytes()
+            if ref["path"] in files or len(raw) != ref["bytes"] or hashlib.sha256(raw).hexdigest() != ref["sha256"]:
+                raise WorkerError("SCENE_FILE_MISMATCH", ref["path"])
+            files[ref["path"]] = (ref["sha256"], raw)
+        def document(ref):
+            if ref["path"] not in files or files[ref["path"]][0] != ref["sha256"]:
+                raise WorkerError("SCENE_FILE_MISMATCH", ref["path"])
+            return json.loads(files[ref["path"]][1])
+        docs = {k: document(ref) for k,ref in scene["models"].items()}
+        self.world_policy = document(scene["handoffPolicyRef"])
+        document(scene["programsRef"])
+        self._validate_document(docs["emptyLoad"], "load-profile-v1.schema.json")
+        self._validate_document(docs["mobilePhysical"], "robot-physical-model-v1.schema.json")
+        self._check_physics_profile(docs["mobilePhysics"]) # component drive policy only; world numerics override explicitly
+        nav, arm = scene["navigation"], scene["armCell"]
+        rid = nav["robots"][0]["robotId"]
+        model = docs["mobilePhysical"]
+        actual = hashlib.sha256(rfc8785.dumps({k:v for k,v in model.items() if k != "modelDigest"})).hexdigest()
+        bindings = scene["propBindings"]
+        ids = [rid, arm["arm"]["armId"], *[b["propId"] for b in bindings]]
+        if actual != model["modelDigest"] or actual != nav["robots"][0]["model"]["physicalModelDigest"] or model["robotId"] != rid or len(set(ids)) != len(ids) or len(set(b["cupId"] for b in bindings)) != len(bindings) or set(b["propId"] for b in bindings) != set(c["propId"] for c in arm["props"]):
+            raise WorkerError("WORLD_IDENTITY_INVALID", "world model or prop binding mismatch")
+        try:
+            self.engine = WorldEngine(scene,docs["armComponent"],docs["armPhysics"],{rid:model},docs["emptyLoad"],docs["mobilePhysics"],str(confined(self.bundle_root,"blobs",directory=True)))
+        except CompileError as e:
+            raise WorkerError(e.code,e.detail or e.code)
+        self.scene,self.world,self.state = scene,True,"created"
+        self.cups = {c["propId"]:(c["radiusM"],c["heightM"]) for c in arm["props"]}
+        return self._advance_world(arm["arm"]["homeRad"],self.engine.opening_max_m,[],0,0,0)
+
+    def _advance_world(self,q,opening,placements,v,w,tick):
+        reading = self.engine.step(q,opening,placements,v,w)
+        self.substeps += 10
+        if abs(reading["time"]-self.substeps*.002)>CLOCK_TOLERANCE_S:
+            raise WorkerError("CLOCK_DRIFT","world clock mismatch",fatal=True)
+        self.seq += 1
+        self.snapshot = {**reading["world"],"runId":self.run_id,"bootId":self.boot_id,"seq":str(self.seq),"tick":tick,"simTimeNs":str(tick*20_000_000),"sceneDigest":self.scene["sceneDigest"]}
+        self.present = {p["propId"]:tuple(p["position"]) for p in self.snapshot["props"]}
+        return self.snapshot
+
+    def _step_world(self,p):
+        # Validate every intent and command before the shared engine can mutate.
+        intents,placements = p.get("worldInteractions") or [],p.get("propPlacements") or []
+        bad = lambda: WorkerError("WORLD_INTERACTION_INVALID","world placements require unique admitted source intents")
+        if len(intents)!=len(placements) or p.get("actorUpdates"):
+            raise bad()
+        seen=set();props=set()
+        for i,pl in zip(intents,placements):
+            pid=i["propId"]
+            if i["eventId"] in seen or i["eventId"] in self.world_events or pid in props or pid!=pl["propId"] or i["targetTick"]!=p["targetTick"] or not any(b["propId"]==pid and b["cupId"]==i["cupId"] for b in self.scene["propBindings"]):raise bad()
+            seen.add(i["eventId"]);props.add(pid)
+            if i["kind"]=="birth":
+                at=pl["pose"];birth=self.world_policy["birth"]
+                if at is None or pid in self.world_born or any(abs(at["position"][k]-birth["centerM"][k])>(birth["maxOffsetXYM"]+1e-10 if k<2 else 1e-9) for k in range(3)) or any(abs(a-b)>1e-6 for a,b in zip(at["quaternionXyzw"],[0,0,0,1])):raise bad()
+            elif i["kind"]=="remove":
+                if pl["pose"] is not None or pid not in self.present:raise bad()
+            else:raise bad()
+        velocities=p.get("velocities") or [];nav=self.scene["navigation"]
+        if len(velocities)!=1 or velocities[0]["robotId"]!=nav["robots"][0]["robotId"]:raise WorkerError("ROBOT_UNKNOWN","world needs one AMR target")
+        v,w=velocities[0]["vMps"],velocities[0]["omegaRadps"];kin=nav["robots"][0]["model"]["kinematics"]
+        if not snapshot._finite([v,w]) or abs(v)>kin["maxLinearMps"] or abs(w)>kin["maxAngularRadps"]:raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE","world target exceeds navigation limits")
+        q,opening,checked=self._check_step({**p,"velocities":[],"actorUpdates":[]})
+        result=self._advance_world(q,opening,checked,v,w,self.tick+1)
+        self.world_events.update(seen)
+        self.world_born.update(i["propId"] for i in intents if i["kind"]=="birth")
+        return result
 
     def _create_mobile(self, p):
         """Schema, confinement and stored byte identities are admitted before model construction."""
@@ -339,7 +427,7 @@ class WorkerSession:
         """(targets, opening or None, placements) of a valid arm cell step; refuses before anything reaches the engine."""
         if p["velocities"] or p["actorUpdates"]:
             raise WorkerError("INVALID_REQUEST", "an arm cell run takes jointTargets, gripperTargets and propPlacements, not velocities or actor updates")
-        arm_id, limits = self.scene["arm"]["armId"], self.engine.arm_limits
+        arm_id, limits = (self.scene["armCell"] if self.world else self.scene)["arm"]["armId"], self.engine.arm_limits
         targets = p.get("jointTargets") or []
         if len(targets) != 1 or targets[0]["armId"] != arm_id:
             raise WorkerError("JOINT_TARGET_SHAPE", f"every tick needs one explicit target for {arm_id!r}; got {[t['armId'] for t in targets]}")
@@ -382,7 +470,9 @@ class WorkerSession:
             raise WorkerError("INVALID_STATE", f"step{' (singleStep)' if single else ''} on a {self.state} run")
         if p["targetTick"] != self.tick + 1:
             raise WorkerError("TICK_MISMATCH", f"targetTick {p['targetTick']} must be {self.tick + 1}")
-        snap = (self._advance_mobile(*self._check_mobile_step(p), tick=self.tick + 1) if self.mobile else self._advance(*self._check_step(p), tick=self.tick + 1))
+        if not self.world and p.get("worldInteractions"):
+            raise WorkerError("INVALID_REQUEST", "world interactions require a shared world")
+        snap = self._step_world(p) if self.world else (self._advance_mobile(*self._check_mobile_step(p), tick=self.tick + 1) if self.mobile else self._advance(*self._check_step(p), tick=self.tick + 1))
         self.tick += 1
         return snap
 

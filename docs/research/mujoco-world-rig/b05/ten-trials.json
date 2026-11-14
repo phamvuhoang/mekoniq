@@ -1,0 +1,577 @@
+{
+  "accepted": false,
+  "passedCount": 10,
+  "total": 10,
+  "results": [
+    {
+      "accepted": false,
+      "engineVersion": "3.17.0",
+      "workerCount": 1,
+      "modelCount": 1,
+      "workerPid": 24378,
+      "scope": "direct physical rig, no source business custody",
+      "offsetM": [
+        0.0,
+        0.0
+      ],
+      "xmlSha256": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+      "primingSubsteps": 10,
+      "dockWindowTicks": 10,
+      "bilateralGrip": true,
+      "pickCupM": [
+        0.4899798210439326,
+        -3.194596707553891e-05,
+        0.14997252281181844
+      ],
+      "liftCupM": [
+        0.49042120347816837,
+        -3.423327589580043e-05,
+        0.2984190936586402
+      ],
+      "lifted": true,
+      "preReleaseCupM": [
+        0.3518876810579814,
+        0.3518867616504566,
+        0.5676352507123641
+      ],
+      "receiverWindowTicks": 150,
+      "releasedCupM": [
+        0.3517800000561776,
+        0.3518009320418032,
+        0.567680586245013
+      ],
+      "releaseRelativeSpeedMps": 2.1528852859582752e-05,
+      "withdrawnCupM": [
+        0.3517788440858572,
+        0.35180352645544366,
+        0.5676807924030808
+      ],
+      "transportDistanceM": 1.007811655920869,
+      "finalCupInTrayM": [
+        0.0011359295481709229,
+        -0.0016993650640676583,
+        0.05993603047124326
+      ],
+      "dockDriftM": 0.0007371206070414682,
+      "unexpectedContactCount": 0,
+      "unexpectedContactsFirst": [],
+      "maxTickCupTranslationM": 0.003950914745816388,
+      "logicalSteps": 2502,
+      "totalSubsteps": 25030,
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "engineVersion": "3.17.0",
+      "workerCount": 1,
+      "modelCount": 1,
+      "workerPid": 24380,
+      "scope": "direct physical rig, no source business custody",
+      "offsetM": [
+        0.005,
+        0.005
+      ],
+      "xmlSha256": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+      "primingSubsteps": 10,
+      "dockWindowTicks": 10,
+      "bilateralGrip": true,
+      "pickCupM": [
+        0.49792673014560385,
+        -2.1399990722606732e-05,
+        0.14997296478757127
+      ],
+      "liftCupM": [
+        0.49836889194608186,
+        -4.001140490486026e-05,
+        0.29840494095789766
+      ],
+      "lifted": true,
+      "preReleaseCupM": [
+        0.35752146396281126,
+        0.3575128686374248,
+        0.567638173964791
+      ],
+      "receiverWindowTicks": 150,
+      "releasedCupM": [
+        0.3574072819668265,
+        0.3574242486495817,
+        0.5676815935590268
+      ],
+      "releaseRelativeSpeedMps": 7.006007345751136e-05,
+      "withdrawnCupM": [
+        0.35740997680946507,
+        0.3574222477920606,
+        0.5676812758067796
+      ],
+      "transportDistanceM": 1.00781211296218,
+      "finalCupInTrayM": [
+        0.006759458786065942,
+        -0.007333968628466186,
+        0.059935823413046485
+      ],
+      "dockDriftM": 0.0007301046340732212,
+      "unexpectedContactCount": 0,
+      "unexpectedContactsFirst": [],
+      "maxTickCupTranslationM": 0.003951206915061727,
+      "logicalSteps": 2502,
+      "totalSubsteps": 25030,
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "engineVersion": "3.17.0",
+      "workerCount": 1,
+      "modelCount": 1,
+      "workerPid": 24395,
+      "scope": "direct physical rig, no source business custody",
+      "offsetM": [
+        0.005,
+        -0.005
+      ],
+      "xmlSha256": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+      "primingSubsteps": 10,
+      "dockWindowTicks": 10,
+      "bilateralGrip": true,
+      "pickCupM": [
+        0.4990645138365234,
+        -5.061549014319707e-05,
+        0.14997280382883957
+      ],
+      "liftCupM": [
+        0.4995050298409006,
+        -4.0811648772178185e-05,
+        0.29839997460686324
+      ],
+      "lifted": true,
+      "preReleaseCupM": [
+        0.3583233028523732,
+        0.35831724446729385,
+        0.5676384612189076
+      ],
+      "receiverWindowTicks": 150,
+      "releasedCupM": [
+        0.35821019155562706,
+        0.3582308394001256,
+        0.5676819332031849
+      ],
+      "releaseRelativeSpeedMps": 0.00013128657739433668,
+      "withdrawnCupM": [
+        0.35821033112546147,
+        0.3582295864229148,
+        0.567681840647481
+      ],
+      "transportDistanceM": 1.0078122975921135,
+      "finalCupInTrayM": [
+        0.0075621023030064015,
+        -0.008134726071122303,
+        0.05993584630668046
+      ],
+      "dockDriftM": 0.0007320334716025441,
+      "unexpectedContactCount": 0,
+      "unexpectedContactsFirst": [],
+      "maxTickCupTranslationM": 0.003951248593744677,
+      "logicalSteps": 2502,
+      "totalSubsteps": 25030,
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "engineVersion": "3.17.0",
+      "workerCount": 1,
+      "modelCount": 1,
+      "workerPid": 24399,
+      "scope": "direct physical rig, no source business custody",
+      "offsetM": [
+        -0.005,
+        0.005
+      ],
+      "xmlSha256": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+      "primingSubsteps": 10,
+      "dockWindowTicks": 10,
+      "bilateralGrip": true,
+      "pickCupM": [
+        0.4880947846058809,
+        -2.267657046901326e-05,
+        0.1499690548595464
+      ],
+      "liftCupM": [
+        0.48851236588974106,
+        -3.2942562580370734e-05,
+        0.29837699874688905
+      ],
+      "lifted": true,
+      "preReleaseCupM": [
+        0.3505268359309794,
+        0.35052881899924665,
+        0.5676315877986802
+      ],
+      "receiverWindowTicks": 150,
+      "releasedCupM": [
+        0.35042134587640916,
+        0.3504455928280578,
+        0.5676805459323474
+      ],
+      "releaseRelativeSpeedMps": 0.00015115871029863464,
+      "withdrawnCupM": [
+        0.3504206562707041,
+        0.35044455504497873,
+        0.5676804273561789
+      ],
+      "transportDistanceM": 1.0078114037161316,
+      "finalCupInTrayM": [
+        -0.00026656711980096775,
+        -0.0003312951238756628,
+        0.059936175534852434
+      ],
+      "dockDriftM": 0.0007830494826084397,
+      "unexpectedContactCount": 0,
+      "unexpectedContactsFirst": [],
+      "maxTickCupTranslationM": 0.003950843214568626,
+      "logicalSteps": 2502,
+      "totalSubsteps": 25030,
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "engineVersion": "3.17.0",
+      "workerCount": 1,
+      "modelCount": 1,
+      "workerPid": 24414,
+      "scope": "direct physical rig, no source business custody",
+      "offsetM": [
+        -0.005,
+        -0.005
+      ],
+      "xmlSha256": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+      "primingSubsteps": 10,
+      "dockWindowTicks": 10,
+      "bilateralGrip": true,
+      "pickCupM": [
+        0.4882973499953492,
+        -5.8134545928002406e-05,
+        0.14997020754257817
+      ],
+      "liftCupM": [
+        0.4887188392012856,
+        -3.29881340447174e-05,
+        0.29838564956673286
+      ],
+      "lifted": true,
+      "preReleaseCupM": [
+        0.3506734715856272,
+        0.35067561296626376,
+        0.567631629242777
+      ],
+      "receiverWindowTicks": 150,
+      "releasedCupM": [
+        0.35056783296445776,
+        0.35058873475461394,
+        0.5676801691020407
+      ],
+      "releaseRelativeSpeedMps": 8.218403285087279e-05,
+      "withdrawnCupM": [
+        0.3505674005747366,
+        0.35059040100381805,
+        0.567680389372451
+      ],
+      "transportDistanceM": 1.0078113938408761,
+      "finalCupInTrayM": [
+        -0.0001164991033835796,
+        -0.0004803521585640111,
+        0.05993588852380478
+      ],
+      "dockDriftM": 0.0007795113925999175,
+      "unexpectedContactCount": 0,
+      "unexpectedContactsFirst": [],
+      "maxTickCupTranslationM": 0.003950850804156115,
+      "logicalSteps": 2502,
+      "totalSubsteps": 25030,
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "engineVersion": "3.17.0",
+      "workerCount": 1,
+      "modelCount": 1,
+      "workerPid": 24420,
+      "scope": "direct physical rig, no source business custody",
+      "offsetM": [
+        0.005,
+        0.0
+      ],
+      "xmlSha256": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+      "primingSubsteps": 10,
+      "dockWindowTicks": 10,
+      "bilateralGrip": true,
+      "pickCupM": [
+        0.4949881687948323,
+        -3.379892311657544e-05,
+        0.14997253976806418
+      ],
+      "liftCupM": [
+        0.49542876367280936,
+        -3.778517710468096e-05,
+        0.29840751625313694
+      ],
+      "lifted": true,
+      "preReleaseCupM": [
+        0.3554378159736929,
+        0.35543022168773813,
+        0.5676367765339909
+      ],
+      "receiverWindowTicks": 150,
+      "releasedCupM": [
+        0.35532879531294725,
+        0.35534606871846547,
+        0.5676812811392059
+      ],
+      "releaseRelativeSpeedMps": 0.00019794058349761038,
+      "withdrawnCupM": [
+        0.3553292189697728,
+        0.3553415311603804,
+        0.5676811097185109
+      ],
+      "transportDistanceM": 1.0078119522848341,
+      "finalCupInTrayM": [
+        0.004680055390811555,
+        -0.005250142877522483,
+        0.05993589740112836
+      ],
+      "dockDriftM": 0.0007309412930095573,
+      "unexpectedContactCount": 0,
+      "unexpectedContactsFirst": [],
+      "maxTickCupTranslationM": 0.003951098742572782,
+      "logicalSteps": 2502,
+      "totalSubsteps": 25030,
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "engineVersion": "3.17.0",
+      "workerCount": 1,
+      "modelCount": 1,
+      "workerPid": 24441,
+      "scope": "direct physical rig, no source business custody",
+      "offsetM": [
+        -0.005,
+        0.0
+      ],
+      "xmlSha256": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+      "primingSubsteps": 10,
+      "dockWindowTicks": 10,
+      "bilateralGrip": true,
+      "pickCupM": [
+        0.48497571380697346,
+        -2.884942137073865e-05,
+        0.14997251227035893
+      ],
+      "liftCupM": [
+        0.48541776979619966,
+        -3.08994344809408e-05,
+        0.29843060795933046
+      ],
+      "lifted": true,
+      "preReleaseCupM": [
+        0.3483407447651025,
+        0.3483433014913413,
+        0.5676350582650299
+      ],
+      "receiverWindowTicks": 150,
+      "releasedCupM": [
+        0.34823731897955534,
+        0.34825822724128186,
+        0.56767992011089
+      ],
+      "releaseRelativeSpeedMps": 6.152515800487147e-05,
+      "withdrawnCupM": [
+        0.3482368951394185,
+        0.34826049501406214,
+        0.5676800734932862
+      ],
+      "transportDistanceM": 1.0078111063536843,
+      "finalCupInTrayM": [
+        -0.002409408647077945,
+        0.0018517621651453437,
+        0.059936249808706724
+      ],
+      "dockDriftM": 0.0007423029353020024,
+      "unexpectedContactCount": 0,
+      "unexpectedContactsFirst": [],
+      "maxTickCupTranslationM": 0.003950730990526599,
+      "logicalSteps": 2502,
+      "totalSubsteps": 25030,
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "engineVersion": "3.17.0",
+      "workerCount": 1,
+      "modelCount": 1,
+      "workerPid": 24444,
+      "scope": "direct physical rig, no source business custody",
+      "offsetM": [
+        0.0,
+        0.005
+      ],
+      "xmlSha256": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+      "primingSubsteps": 10,
+      "dockWindowTicks": 10,
+      "bilateralGrip": true,
+      "pickCupM": [
+        0.4929421245366692,
+        -1.1545629844691275e-05,
+        0.14997552668435696
+      ],
+      "liftCupM": [
+        0.4934071059361968,
+        -3.637752737144495e-05,
+        0.2984589473792607
+      ],
+      "lifted": true,
+      "preReleaseCupM": [
+        0.3540156298219799,
+        0.35400711833933296,
+        0.5676405411908015
+      ],
+      "receiverWindowTicks": 150,
+      "releasedCupM": [
+        0.3539069326334493,
+        0.3539242507416449,
+        0.5676810728580147
+      ],
+      "releaseRelativeSpeedMps": 3.7789644375562424e-05,
+      "withdrawnCupM": [
+        0.3539065062257002,
+        0.35392057365471447,
+        0.5676808327063293
+      ],
+      "transportDistanceM": 1.007811789625761,
+      "finalCupInTrayM": [
+        0.003305302647111124,
+        -0.0038324542596759807,
+        0.059935851778233684
+      ],
+      "dockDriftM": 0.0006859479024065696,
+      "unexpectedContactCount": 0,
+      "unexpectedContactsFirst": [],
+      "maxTickCupTranslationM": 0.00395102536455716,
+      "logicalSteps": 2502,
+      "totalSubsteps": 25030,
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "engineVersion": "3.17.0",
+      "workerCount": 1,
+      "modelCount": 1,
+      "workerPid": 24501,
+      "scope": "direct physical rig, no source business custody",
+      "offsetM": [
+        0.0,
+        -0.005
+      ],
+      "xmlSha256": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+      "primingSubsteps": 10,
+      "dockWindowTicks": 10,
+      "bilateralGrip": true,
+      "pickCupM": [
+        0.4933138304533853,
+        -9.473548406220474e-05,
+        0.1499713631575554
+      ],
+      "liftCupM": [
+        0.49374178541083036,
+        -3.64150103400716e-05,
+        0.29838857359104265
+      ],
+      "lifted": true,
+      "preReleaseCupM": [
+        0.3542251855661769,
+        0.3542252663904422,
+        0.5676323980196701
+      ],
+      "receiverWindowTicks": 150,
+      "releasedCupM": [
+        0.354116538101766,
+        0.35413690809177023,
+        0.5676806362470449
+      ],
+      "releaseRelativeSpeedMps": 0.00014696459693446903,
+      "withdrawnCupM": [
+        0.3541189613182641,
+        0.3541404525383252,
+        0.5676808034866333
+      ],
+      "transportDistanceM": 1.007811821984865,
+      "finalCupInTrayM": [
+        0.0034182014830655754,
+        -0.004031385593332933,
+        0.05993593101824804
+      ],
+      "dockDriftM": 0.0007894035574276884,
+      "unexpectedContactCount": 0,
+      "unexpectedContactsFirst": [],
+      "maxTickCupTranslationM": 0.003951035983681266,
+      "logicalSteps": 2502,
+      "totalSubsteps": 25030,
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "engineVersion": "3.17.0",
+      "workerCount": 1,
+      "modelCount": 1,
+      "workerPid": 24560,
+      "scope": "direct physical rig, no source business custody",
+      "offsetM": [
+        0.0025,
+        -0.0035
+      ],
+      "xmlSha256": "bff0060b257e500efec8dc62e6308890f192bd78b1f2c94d9bec5e1d47741c95",
+      "primingSubsteps": 10,
+      "dockWindowTicks": 10,
+      "bilateralGrip": true,
+      "pickCupM": [
+        0.49386151865115835,
+        -5.422844645062023e-05,
+        0.14997051915161663
+      ],
+      "liftCupM": [
+        0.4942853493214231,
+        -3.6909646061328454e-05,
+        0.29837791311701056
+      ],
+      "lifted": true,
+      "preReleaseCupM": [
+        0.3546209544006042,
+        0.3546170839739091,
+        0.5676346442327777
+      ],
+      "receiverWindowTicks": 150,
+      "releasedCupM": [
+        0.3545121831568274,
+        0.3545328862091172,
+        0.5676812273575702
+      ],
+      "releaseRelativeSpeedMps": 0.00013653171430111748,
+      "withdrawnCupM": [
+        0.35451197382548816,
+        0.35453000773584975,
+        0.5676809434787665
+      ],
+      "transportDistanceM": 1.0078118163392367,
+      "finalCupInTrayM": [
+        0.0038362052335806705,
+        -0.004428403174500756,
+        0.05993607602805629
+      ],
+      "dockDriftM": 0.0007650654733016454,
+      "unexpectedContactCount": 0,
+      "unexpectedContactsFirst": [],
+      "maxTickCupTranslationM": 0.003951056019233768,
+      "logicalSteps": 2502,
+      "totalSubsteps": 25030,
+      "passed": true
+    }
+  ]
+}

@@ -544,3 +544,15 @@ def test_variant_probe_scene_declares_the_actual_profile_bytes(tmp_path):
     assert ref['path'] == name+'.json'
     files = identity['navigationScene']['files']
     assert any(x['path'] == ref['path'] and x['sha256'] == ref['sha256'] and x['bytes'] == (FX/ref['path']).stat().st_size for x in files)
+
+
+def test_mobile_rejects_world_interactions_before_mutation(tmp_path):
+    s=bundle(tmp_path)
+    try:
+        assert s.handle(create_request())['ok']
+        assert s.handle(request('start'))['ok']
+        intent={'eventId':'rig:birth','cupId':'cup-1','propId':'cup-1','kind':'birth','targetTick':1}
+        r=s.handle(request('step',{'targetTick':1,'velocities':[{'robotId':'amr-1','vMps':0,'omegaRadps':0}],'actorUpdates':[],'worldInteractions':[intent]}))
+        assert not r['ok'] and r['error']['code']=='INVALID_REQUEST'
+        assert s.tick==0 and s.engine.data.time==pytest.approx(.02)
+    finally:s.end()

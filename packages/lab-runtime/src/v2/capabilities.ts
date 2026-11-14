@@ -5,7 +5,7 @@ export interface BackendCapability {id:string;modes:readonly Mode[];accesses:rea
 /** Server-owned provider roles of a set. Engineering sets (the ones with scenarioIds) resolve requirements from these roles; legacy sets keep the mode-only formula. */
 export interface BackendProviders {amr:string;arm?:string;coffee?:string}
 /** Optional execution metadata (workers-runtime §6). Legacy sets omit it and keep their behaviour; it never grants anything by itself. */
-export interface BackendExecution {host:'portable_python'|'linux_native';clock:'source_fixed_step'|'native';manualStep:boolean;speedMultipliers:readonly number[]}
+export interface BackendExecution {composition?:'single_world';host:'portable_python'|'linux_native';clock:'source_fixed_step'|'native';manualStep:boolean;speedMultipliers:readonly number[]}
 export interface BackendSet {mode:Mode;access:Access;backends:readonly string[];providers?:BackendProviders;/** Scenarios this set supports; absent means every scenario the mode supports. *//** false: the set runs from the request's own project (a plant arm builds its scene from it), so no compiled engineering bundle is required. */bundle?:false;scenarioIds?:readonly string[];execution?:BackendExecution;}
 export interface CapabilityCatalog {backends:readonly BackendCapability[];sets:Readonly<Record<string,BackendSet>>;}
 export interface AdmissionResult {ok:boolean;reasonCodes:string[];}

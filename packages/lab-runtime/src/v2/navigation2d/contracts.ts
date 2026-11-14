@@ -1,3 +1,5 @@
+import worldEvidenceSchema from '../../../../contracts/schemas/world-evidence-v1.schema.json';
+import worldSchema from '../../../../contracts/schemas/lab-world-scene-v1.schema.json';
 import loadSchema from '../../../../contracts/schemas/load-profile-v1.schema.json';
 import physicsSchema from '../../../../contracts/schemas/physics-evidence-v1.schema.json';
 import Ajv,{type ErrorObject} from 'ajv';
@@ -27,7 +29,7 @@ export interface NavigationIssue{path:string;code:string;message:string;}
 export type NavigationDocument=RobotPhysicalModelV1|NavigationModel2DV1|NavigationSceneV1|ModelValidationReportV1;
 export type NavigationCheck={ok:true;value:NavigationDocument}|{ok:false;issues:NavigationIssue[]};
 
-const FILES:Record<string,object>={'load-profile-v1.schema.json':loadSchema,'physics-evidence-v1.schema.json':physicsSchema,'engineering-component.schema.json':componentSchema,'robot-physical-model-v1.schema.json':physicalSchema,'navigation-model-2d-v1.schema.json':modelSchema,'navigation-scene-v1.schema.json':sceneSchema,'model-validation-report-v1.schema.json':reportSchema,'irsim-worker-v1.schema.json':workerSchema,'navigation-run-evidence-v1.schema.json':evidenceSchema,'algorithm-result-v1.schema.json':algorithmSchema,'sim3d-worker-v1.schema.json':sim3dSchema,'arm-scene-3d-v1.schema.json':armScene3dSchema,'arm-cell-scene-v1.schema.json':armCellSceneSchema};
+const FILES:Record<string,object>={'world-evidence-v1.schema.json':worldEvidenceSchema,'lab-world-scene-v1.schema.json':worldSchema,'load-profile-v1.schema.json':loadSchema,'physics-evidence-v1.schema.json':physicsSchema,'engineering-component.schema.json':componentSchema,'robot-physical-model-v1.schema.json':physicalSchema,'navigation-model-2d-v1.schema.json':modelSchema,'navigation-scene-v1.schema.json':sceneSchema,'model-validation-report-v1.schema.json':reportSchema,'irsim-worker-v1.schema.json':workerSchema,'navigation-run-evidence-v1.schema.json':evidenceSchema,'algorithm-result-v1.schema.json':algorithmSchema,'sim3d-worker-v1.schema.json':sim3dSchema,'arm-scene-3d-v1.schema.json':armScene3dSchema,'arm-cell-scene-v1.schema.json':armCellSceneSchema};
 const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});addFormats(ajv);
 for(const [key,schema] of Object.entries(FILES))ajv.addSchema(schema,key);
 const KEYS:Record<string,{schema:string;digest:string}>={
@@ -174,3 +176,9 @@ export function defaultNavigationPolicy():NavigationPolicyV1{
 /** Schema shape only; admitted engine semantics are enforced by the physics recorder/reader. */
 export const validatePhysicsTickShape=ajv.getSchema('physics-evidence-v1.schema.json#/definitions/PhysicsTickRecord')!;
 export const validatePhysicsEvidenceShape=ajv.getSchema('physics-evidence-v1.schema.json')!;
+
+export type {LabWorldSceneV1} from '../../../../contracts/generated/navigation2d';
+export const validateWorldSceneShape=(value:unknown):boolean=>ajv.validate('lab-world-scene-v1.schema.json',value) as boolean;
+
+export const validateWorldEvidenceShape=ajv.getSchema('world-evidence-v1.schema.json')!;
+export const validateWorldEvidenceRecordShape=ajv.getSchema('world-evidence-v1.schema.json#/definitions/WorldEvidenceRecord')!;

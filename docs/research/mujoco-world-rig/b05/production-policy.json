@@ -1,0 +1,294 @@
+{
+  "schemaVersion": 1,
+  "id": "b05-production-world-rig-v1",
+  "accepted": false,
+  "scope": "production IPC worker/complete world recorder; no Source business custody",
+  "sourceBase": "681b8adb8ed473f7195062773b23fabc3b922cd5",
+  "sourceState": "uncommitted implementation, exact files identified below; final commit recorded after gate",
+  "engineVersion": "3.17.0",
+  "sceneDigest": "5a084fc95ddb9eb4a9414362820df329315961e7b5550082bf37f035e334981a",
+  "directCandidatePolicySha256": "2ae0ca593bbc5d1fb1997c733b5ac3ee8b053df4d1eb79d6519ac6321b4048b1",
+  "nativeModel": {
+    "nq": 35,
+    "nv": 32,
+    "nbody": 30,
+    "ngeom": 27,
+    "modelCount": 1,
+    "activeCupCount": 1,
+    "inactiveCupCount": 1
+  },
+  "offsetSemantics": "nozzle cup birth XY; dock and controller unchanged",
+  "offsetsM": [
+    [
+      0,
+      0
+    ],
+    [
+      0.005,
+      0.005
+    ],
+    [
+      0.005,
+      -0.005
+    ],
+    [
+      -0.005,
+      0.005
+    ],
+    [
+      -0.005,
+      -0.005
+    ],
+    [
+      0.005,
+      0
+    ],
+    [
+      -0.005,
+      0
+    ],
+    [
+      0,
+      0.005
+    ],
+    [
+      0,
+      -0.005
+    ],
+    [
+      0.0025,
+      -0.0035
+    ]
+  ],
+  "clock": {
+    "tickMs": 20,
+    "timestepMs": 2,
+    "substeps": 10,
+    "primingSubsteps": 10,
+    "rawTick0IncludesPriming": true
+  },
+  "frame": "poseInSupport uses top support frame 0.01 m above tray body origin",
+  "oracles": {
+    "dockHoldTicks": 10,
+    "dockXYM": 0.01,
+    "dockYawRad": 0.02,
+    "dockLinearMps": 0.01,
+    "dockAngularRadps": 0.02,
+    "bilateralGrip": true,
+    "liftHeightAboveM": 0.25,
+    "receiverHoldTicks": 25,
+    "relativeSpeedMps": 0.01,
+    "receiverXAbsBelowM": 0.155,
+    "receiverYAbsBelowM": 0.185,
+    "transportAtLeastM": 1,
+    "maxCupTranslationPerTickM": 0.02,
+    "unexpectedArmMobileContacts": 0,
+    "finiteAndWarningResetChecks": true
+  },
+  "quotas": {
+    "storedBytes": 104857600,
+    "lineBytes": 262144,
+    "chunkStoredBytes": 16777216,
+    "chunkInflatedBytes": 67108864,
+    "totalInflatedBytes": 419430400,
+    "walFlushInflatedBytes": 12582912,
+    "chunkRows": 250
+  },
+  "files": [
+    {
+      "path": "packages/cell-adapters/src/mock-arm.ts",
+      "sha256": "11a1b9407a68b091fa6edc5a166b7525c44700ea24f71965d4bfed52e18aded4",
+      "bytes": 31911
+    },
+    {
+      "path": "packages/contracts/schemas/lab-world-scene-v1.schema.json",
+      "sha256": "868ba42d223f8482cbb0ac37242521b0cca2d1dbcc444e6359295837c3995ec2",
+      "bytes": 9295
+    },
+    {
+      "path": "packages/contracts/schemas/sim3d-worker-v1.schema.json",
+      "sha256": "b39534e3599e190632752ff366d0c8a7a2c6435b12c5eb325494c50cef91d4c2",
+      "bytes": 32264
+    },
+    {
+      "path": "packages/contracts/schemas/world-evidence-v1.schema.json",
+      "sha256": "16b0935b468a2abdf0ff4792365fcdfea7a6e230570b6755d4dcb6bfa5c3df74",
+      "bytes": 12138
+    },
+    {
+      "path": "packages/lab-runtime/src/v2/beverage/coffee-ports.ts",
+      "sha256": "0d767336a4aa941493b2c951884face574efe446e013ebd602d7c4a1bbb9e31a",
+      "bytes": 5227
+    },
+    {
+      "path": "packages/lab-runtime/src/v2/scenario-runner.ts",
+      "sha256": "bc8d248cf3afb780073d21f37ccf2181956a29a1d81b2d8dfa5c9c08c873c175",
+      "bytes": 57131
+    },
+    {
+      "path": "packages/lab-runtime/src/v2/simulation3d/mujoco-world-ports.ts",
+      "sha256": "4e8cddf329b9ba132125a43599d68c55c82d6251f218c436fc1f22ec25fef021",
+      "bytes": 12998
+    },
+    {
+      "path": "packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts",
+      "sha256": "b62070fa505761b7990dec784e7d453a53fbb84ed0d0adb860c925634d072113",
+      "bytes": 14478
+    },
+    {
+      "path": "packages/lab-runtime/src/v2/simulation3d/world-evidence.ts",
+      "sha256": "28d652f8eb6bfb4bce2b9e8bdf83b450631a7262ce17cf04e76497e815e6fa3d",
+      "bytes": 12805
+    },
+    {
+      "path": "packages/lab-runtime/src/v2/simulation3d/world-ports.ts",
+      "sha256": "7ad6fe5edad8027bf4a022073c93d0b51a4b37118d380fd1f5289159d3513b20",
+      "bytes": 2045
+    },
+    {
+      "path": "packages/lab-runtime/src/v2/simulation3d/world-scene.ts",
+      "sha256": "5bbda2675a139ce405249d130172ccedfc39295b0159b5d832a441f797e9f6fc",
+      "bytes": 7399
+    },
+    {
+      "path": "packages/lab-runtime/src/v2/simulation3d/world-step.ts",
+      "sha256": "6b6e941f5e1155150c3aa9db368eb00273aeda81ae5b4eef9a99398703fbeecd",
+      "bytes": 715
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/NOTICE",
+      "sha256": "7b06a81d2e13936d721ea6ab2d0e3fc00901600a4f4c2cd6aa2829698518303c",
+      "bytes": 1840
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/README.md",
+      "sha256": "c74fddf412c6c7d1c6c23082a93f58825d23286db805a86dc4e6814777c534ec",
+      "bytes": 1233
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/arm-component.json",
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "bytes": 69507
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/arm-physics.json",
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "bytes": 3930
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/empty-load.json",
+      "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+      "bytes": 1474
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/handoff-policy.json",
+      "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+      "bytes": 809
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/lab-world-scene.json",
+      "sha256": "9abbc53d45e8b52224e7a53b91e678155a6404c989c043c3ca75b35f4186fabc",
+      "bytes": 20089
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/manifest.json",
+      "sha256": "2fc80b1e6bda399309ee9d8a22eb66893f9ee3adec6f869099a34d20423d3428",
+      "bytes": 1751
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/mobile-drive.json",
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "bytes": 3092
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/mobile-physical.json",
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "bytes": 47385
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/programs.json",
+      "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+      "bytes": 7591
+    },
+    {
+      "path": "robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/project.json",
+      "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+      "bytes": 2676
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/__main__.py",
+      "sha256": "8188c231734d36d671cf3594a88148f03f7a42fc542fb465724eac03da2a27b5",
+      "bytes": 2197
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/compile.py",
+      "sha256": "9185142c8dc3495790ba46369e07fe2041e439dd03343ff198d59f15950b572d",
+      "bytes": 18480
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/compile_mobile.py",
+      "sha256": "f1a1c359902d51cbe7b581d8ce2f677d2edc94ddab784723cc4c09644b55c7f7",
+      "bytes": 17499
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/compile_world.py",
+      "sha256": "23afdbedd42a71593fce540d47c8d33358d26e01c958c1831e2fa457649b5311",
+      "bytes": 3754
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/drive.py",
+      "sha256": "13f202fcf50c6858f94d7748e9186b79bcf7cfd16fd5f27cbed7142731b47282",
+      "bytes": 1296
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/engine.py",
+      "sha256": "b10f38a6cf81a6630b6b699dfd57a83712ca86eaadc826407fd89b75766fde78",
+      "bytes": 8850
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/mobile_engine.py",
+      "sha256": "e720fe3b0251cf2736df0af1630f746479b28c7196469bb2d08deb84178b7b59",
+      "bytes": 16006
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/protocol.py",
+      "sha256": "058e47d8500e42b08f8176657b4fc9be034fa79b1d4f08378299bb5c4544df2b",
+      "bytes": 4114
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/session.py",
+      "sha256": "d82305945058d710caea84855717617017a5ae97c70893d45cdae2e87d63551b",
+      "bytes": 32671
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/snapshot.py",
+      "sha256": "e4aecaf4d8847ba014d8e65d02d4c52d00f169ca406b8507eb616efeaa9053bb",
+      "bytes": 7163
+    },
+    {
+      "path": "robotics/simulation-mujoco/mujoco_worker/world_engine.py",
+      "sha256": "670ac23d448c6bc3d5021c0e29686940a7743f6839f3595978d2cc3609661579",
+      "bytes": 11170
+    },
+    {
+      "path": "robotics/simulation-mujoco/requirements.lock",
+      "sha256": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84",
+      "bytes": 37555
+    },
+    {
+      "path": "tests/integration/mujoco-world-rig.test.ts",
+      "sha256": "66df2590bc5bdf99a21f92faff8c18a681cd5f099b234bfca01f261fe2ce07a9",
+      "bytes": 9488
+    },
+    {
+      "path": "tests/support/world-rig.ts",
+      "sha256": "b99ad8eeb4cb72fbe78373e8b6d969cb2822fc3c858e851887b0b54dd015b2dd",
+      "bytes": 4270
+    }
+  ]
+}
