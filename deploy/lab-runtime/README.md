@@ -1,8 +1,8 @@
-# Lab runtime image (headless, mock + MuJoCo arm)
+# Lab runtime image (persistent simulation runtime)
 
-The Lab runtime as a container: Node 24.22.2, the bundled `runtime.mjs`, the schemas and the MuJoCo arm worker (`robotics/simulation-mujoco`) with its hash-locked Python 3.11 environment. Only the mock backends and `mujoco_arm` exist in it: no Webots, IR-SIM, LinkForge or algorithm tools. Nothing is deployed by this directory (D59, D60).
+Node 24.22.2, the bundled runtime and schema closure, hash-locked Python 3.11 MuJoCo worker, arm/mobile/cell fixtures and the portable Serve catalog. Actual available providers are mock AMR/arm/coffee and MuJoCo arm/mobile/single-world cell. Native engineering profiles are explicitly blocked; Webots/IR-SIM/ROS/hardware are not installed or advertised as executable. Every parameter remains `not_calibrated`.
 
-**A run inside this container is not evidence for G-MA1 or G-MA2 (D50).** It only proves that the image starts and completes `MJ-BV01` (G-RT2, RT05). Every plant parameter stays `not_calibrated`.
+Use [the persistent single-host profile](single-host/README.md) and [operations runbook](../../docs/operations/lab-runtime-single-host.md) for TLS, exact Host/Origin, one writer, lease, recovery, key rotation and export. These files do not deploy anything. Container execution is only evidence for the architecture actually run, not native hardware/amd64 qualification.
 
 ## Build
 
@@ -27,11 +27,12 @@ docker run --rm --read-only --tmpfs /tmp -p 127.0.0.1:8080:8080 \
 | Variable | Meaning |
 |---|---|
 | `MEKONIQ_LAB_ACCESS_KEY` | Required (>= 32 characters). The only credential: pair with `POST /lab/v2/sessions {"token": key}`, then `Authorization: Bearer`. Read by the runtime itself. |
+| `LAB_DATA_DIR` | Writable run directory; image default `/tmp/runs`, persistent profile `/data/runs`. Exclusive process lease acquired before providers start. |
 | `PORT` | Listening port; default 8080 (Cloud Run sets it). |
 | `LAB_PUBLIC_HOST` | The `Host` the runtime must accept, as the proxy forwards it (for Cloud Run the service host without scheme, e.g. `svc-xyz.a.run.app`). Becomes `--public-host`; omitted when empty. |
 | `LAB_ALLOW_ORIGIN` | The one browser origin allowed (e.g. `https://mekoniq-lab.vercel.app`). Becomes `--allow-origin`; omitted when empty. |
 
-Fixed flags: `--bind 0.0.0.0 --data-dir /tmp/runs --mujoco-python /opt/venv-mujoco/bin/python --mujoco-worker /app/robotics/simulation-mujoco --mujoco-lock …/requirements.lock`, `MEKONIQ_LAB_MUJOCO=1`. Runs live in RAM and under `/tmp`; the rest of the file system can be read-only. The entrypoint `exec`s Node, so Node is PID 1 and a `SIGTERM` (`docker stop`, Cloud Run) closes the gateway and exits 0.
+Flags: `--bind 0.0.0.0 --data-dir "$LAB_DATA_DIR" --engineering-catalog /app/catalog --engineering-portable-only --mujoco-python /opt/venv-mujoco/bin/python --mujoco-worker /app/robotics/simulation-mujoco --mujoco-lock …/requirements.lock`, `MEKONIQ_LAB_MUJOCO=1`. The default remains ephemeral under `/tmp`; mount the persistent profile named volume to retain committed run data. The remaining filesystem is read-only. The entrypoint `exec`s Node, so Node is PID 1 and a `SIGTERM` (`docker stop`, Cloud Run) closes the gateway and exits 0.
 
 `/app` holds `runtime.mjs`, `schemas/`, `packages/contracts/schemas/` (a second copy: the worker derives this path from its root) and `robotics/simulation-mujoco/` (worker, fixture, lock, licenses).
 
@@ -41,11 +42,11 @@ Fixed flags: `--bind 0.0.0.0 --data-dir /tmp/runs --mujoco-python /opt/venv-mujo
 LAB_CONTAINER_IMAGE=mekoniq-lab-runtime:dev perl -e 'alarm 900; exec @ARGV' pnpm test:integration -- tests/integration/lab-runtime-container.test.ts
 ```
 
-Skipped (never failed or passed) when `docker info` fails or `LAB_CONTAINER_IMAGE` is unset. It fails with `IMAGE_STALE` when the image's `sourceCommit` is not the repository HEAD. It publishes the port on `127.0.0.1` only, generates a random access key, runs with a read-only root and a tmpfs `/tmp`, pairs with the key, runs `MJ-BV01` through the public API, checks `served 2`, `not_calibrated`, an empty `docker diff`, a non-root user and a prompt clean stop, and leaves no container.
+Not run when `docker info` fails or `LAB_CONTAINER_IMAGE` is unset. WEB05 additionally exercises the compiled mobile profile, completed cell, competing container, persistent volume crash/reclaim and finished replay. It fails with `IMAGE_STALE` when the image's `sourceCommit` is not the repository HEAD. It publishes the port on `127.0.0.1` only, generates a random access key, runs with a read-only root and a tmpfs `/tmp`, pairs with the key, runs `MJ-BV01` through the public API, checks `served 2`, `not_calibrated`, an empty `docker diff`, a non-root user and a prompt clean stop, and leaves no container.
 
 The runtime's own asset catalog resolves the project's robot asset by content hash, so a run created over the public API sweeps the arm against the docked robot; the test asserts `coverage.armSceneCollision`.
 
-## Status and measurements (2026-11-13)
+## Historical R2a measurements (2026-11-13; not B09 image evidence)
 
 Base image: `node:24.22.2-bookworm-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9` (index; linux/arm64 and linux/amd64). Image size about 474 MB (arm64) and 457 MB (amd64) (the 178 MB venv holds the whole lock, including pytest). Builds take about 10-15 s with a warm layer cache, 40-60 s cold.
 
@@ -53,7 +54,7 @@ Each row names the commit its image was built from. Any later commit makes an ea
 
 | Built from | Architecture | Result | Wall time per tick |
 |---|---|---|---|
-| `939d8a2` | linux/arm64 (native, RT05) | passed: completed at tick 4800, served 2 | 1.77 ms (8.5 s) |
+| `939d8a2` | linux/arm64 (Mac Linux VM, RT05) | passed: completed at tick 4800, served 2 | 1.77 ms (8.5 s) |
 | `d6e7b8c`, `78f166c` | linux/arm64 | passed | 1.80-1.88 ms (this 1.88 ms run is not the final-HEAD run) |
 | `69f1be5` (wheels only) | linux/arm64 | passed, `docker stop` 0.33 s | 2.15 ms (10.3 s, a busier machine) |
 | `d6e7b8c`-`69f1be5` | linux/amd64 under emulation | not completed (see below), a partial failed run | 3.4-4.5 ms, over the 1600 ticks it ran |

@@ -5,20 +5,21 @@
 import {execFileSync,spawnSync} from 'node:child_process';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {createServer} from 'node:net';
+import {readFile} from 'node:fs/promises';
 import {afterAll,describe,expect,test} from 'vitest';
 import {xarmProject} from '../support/mujoco-arm';
 
 const image=process.env.LAB_CONTAINER_IMAGE??'',LABEL='mekoniq-lab-container-test',ORIGIN='http://127.0.0.1:4175';
-const docker=(args:string[],env?:Record<string,string>)=>{const r=spawnSync('docker',args,{encoding:'utf8',env:{...process.env,...env},timeout:120_000});return {ok:r.status===0,out:(r.stdout??'').trim(),err:(r.stderr??'').trim()};};
-const dockerUp=(()=>{try{execFileSync('docker',['info'],{stdio:'ignore',timeout:20_000});return true;}catch{return false;}})();
+const docker=(args:string[],env?:Record<string,string>)=>{const r=spawnSync('docker',args,{encoding:'utf8',env:{...process.env,...env},timeout:120_000,killSignal:'SIGKILL'});return {ok:r.status===0,out:(r.stdout??'').trim(),err:(r.stderr??'').trim()};};
+const dockerUp=!!image&&(()=>{try{execFileSync('docker',['info'],{stdio:'ignore',timeout:15_000,killSignal:'SIGKILL'});return true;}catch{return false;}})();
 const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 const freePort=()=>new Promise<number>((resolve,reject)=>{const s=createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=(s.address() as {port:number}).port;s.close(()=>resolve(p));});});
 const logs=(name:string,key:string)=>{const l=docker(['logs','--tail','20',name]);return `${l.out}\n${l.err}`.replaceAll(key,'<key>');};
 // MuJoCo writes its warnings (which name the DOF and the time) to MUJOCO_LOG.TXT in the run's working directory: the last 20 lines of each, for a run that did not complete
 const mujocoLog=(name:string,key:string)=>{const l=docker(['exec',name,'sh','-c','for f in $(find /tmp/runs -name MUJOCO_LOG.TXT 2>/dev/null); do echo "== $f"; tail -n 20 "$f"; done']);return `${l.out}\n${l.err}`.trim().replaceAll(key,'<key>');};
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
-const runId=randomUUID(),names:string[]=[];
-afterAll(()=>{for(const n of names)docker(['rm','-f',n]);});
+const runId=randomUUID(),names:string[]=[],volumes:string[]=[];
+afterAll(()=>{for(const n of names)docker(['rm','-f',n]);for(const v of volumes)docker(['volume','rm',v]);});
 
 describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
  test('pairs with the access key and runs MJ-BV01 to completion inside the image',async()=>{
@@ -44,7 +45,7 @@ describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
    if(health.sourceCommit!==head)throw new Error(`IMAGE_STALE: the image was built from ${health.sourceCommit}, the repository HEAD is ${head}; commit, then rebuild with deploy/lab-runtime/build.sh ${image}`);
    const backend=(id:string)=>health!.backends.find(b=>b.id===id);
    expect(backend('mujoco_arm')).toMatchObject({installed:true,reachable:true});
-   expect(health.backends.filter(b=>b.installed).map(b=>b.id).sort()).toEqual(['mock_amr','mock_arm','mock_coffee','mujoco_arm']);
+   expect(health.backends.filter(b=>b.installed).map(b=>b.id).sort()).toEqual(['mock_amr','mock_arm','mock_coffee','mujoco_3d','mujoco_arm']);
    for(const id of ['webots_3d','irsim_2d'])expect(backend(id)?.installed??false,id).toBe(false);
    expect(health.deployment.bind).toBe('public');
    // wrong key refused; the key pairs; the run goes through the bearer token only
@@ -77,4 +78,41 @@ describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
   }finally{docker(['rm','-f',name]);}
   expect(docker(['ps','-a','-q','--filter',`label=${LABEL}=${runId}`]).out).toBe('');
  },1_500_000);
+});
+
+// WEB05 actual worker + local Docker named volume. Never counted as native-amd64 or public HTTPS.
+describe.skipIf(!dockerUp||!image)('persistent mobile/cell image',()=>{
+ test('compiles mobile, excludes a competing container, recovers committed active chunks and replays a finished cell',async()=>{
+  const name=`mekoniq-b09-${runId.slice(0,8)}`,contender=name+'-contender',volume=name+'-runs';names.push(name,contender);volumes.push(volume);
+  expect(docker(['volume','create','--label',`${LABEL}=${runId}`,volume]).ok).toBe(true);
+  const port=await freePort(),key=randomBytes(24).toString('hex');let token='';
+  const env={MEKONIQ_LAB_ACCESS_KEY:key},common=['--read-only','--tmpfs','/tmp','-v',`${volume}:/data/runs`,'-e','LAB_DATA_DIR=/data/runs','-e','MEKONIQ_LAB_ACCESS_KEY'];
+  expect(docker(['run','-d','--name',name,'--label',`${LABEL}=${runId}`,...common,'-p',`127.0.0.1:${port}:8080`,'-e',`LAB_PUBLIC_HOST=127.0.0.1:${port}`,'-e',`LAB_ALLOW_ORIGIN=${ORIGIN}`,image],env).ok).toBe(true);
+  const api=async(path:string,body?:unknown)=>{const r=await fetch(`http://127.0.0.1:${port}/lab/v2${path}`,{method:body===undefined?'GET':'POST',signal:AbortSignal.timeout(60_000),headers:{origin:ORIGIN,'content-type':'application/json',...token?{authorization:`Bearer ${token}`} :{}},...body!==undefined?{body:JSON.stringify(body)}:{}});return {status:r.status,body:await r.json() as Record<string,any>};};
+  const healthy=async()=>{for(let n=0;n<120;n++){try{const r=await api('/health');if(r.status===200)return r.body;}catch{/* owned container may still be starting */}await sleep(500);}throw Error('HEALTH_TIMEOUT');};
+  const ok=async(path:string,body?:unknown)=>{const r=await api(path,body);expect(r.status,JSON.stringify(r.body).slice(0,700)).toBeLessThan(300);return r.body;};
+  const health=await healthy();expect(health.sourceCommit,'IMAGE_STALE').toBe(head);expect(health.engineeringCompilerProfiles).toEqual(['engineering-mujoco-3d-v1']);token=(await ok('/sessions',{token:key})).sessionToken;
+  const runtimeIdentity={sourceCommit:health.sourceCommit,schemaHash:health.schemaHash};
+  const project=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-project.json','utf8'));project.requestedProfile='engineering-mujoco-3d-v1';
+  const receipt=await ok('/engineering/compile',{project});expect(receipt.state).toBe('compiled');const engineeringRef={bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest};
+  const readiness=await ok('/readiness',{scenarioId:'MJ-FD01',backendSetId:'engineering-mujoco-3d-v1',engineeringRef});expect(readiness.canStart).toBe(true);
+  const mobile=await ok('/runs',{engineeringRef,scenarioId:'MJ-FD01',backendSetId:'engineering-mujoco-3d-v1',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',runtimeIdentity});
+  const action=async(view:Record<string,any>,kind:string,payload:Record<string,unknown>={})=>ok(`/runs/${view.run.id}/actions`,{actionId:randomUUID(),expectedRevision:view.run.runRevision,kind,payload});
+  const moved=await action(await action(mobile,'start'),'step',{ticks:100});expect(moved.tick).toBe(100);const mobileReport=await ok(`/runs/${mobile.run.id}/report`);expect(mobileReport.manifest.backends.some((b:{id:string})=>b.id==='mujoco_3d')).toBe(true);expect(mobileReport.physicsEvidence.manifest.identity.runId).toBe(mobile.run.id);await ok(`/runs/${mobile.run.id}/archive`,{});
+  const cellProject=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json','utf8'));
+  const createCell=()=>ok('/runs',{project:cellProject,scenarioId:'MJ-CELL-BV01',backendSetId:'engineering-mujoco-cell-v1',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',runtimeIdentity});
+  const finished=await createCell();let view=await action(finished,'start');while(['running','created','paused'].includes(view.run.status)){if(view.tick>30000)throw Error('CELL_STEP_LIMIT');view=await action(view,'step',{ticks:100});}expect(view.run.status).toBe('completed');await ok(`/runs/${finished.run.id}/archive`,{});
+  const active=await createCell(),stepped=await action(await action(active,'start'),'step',{ticks:100});expect(stepped.tick).toBe(100);const before=await ok(`/runs/${active.run.id}/report`);
+  const committedFiles=(id:string)=>{const result=docker(['exec',name,'node','-e',"const fs=require('fs'),path=require('path'),crypto=require('crypto');const root='/data/runs',id=process.argv[1];const dir=fs.readdirSync(root).find(n=>{try{return JSON.parse(fs.readFileSync(path.join(root,n,'reclaim.json'))).runId===id}catch{return false}});const evidence=path.join(root,dir,'world-evidence');console.log(JSON.stringify(Object.fromEntries(fs.readdirSync(evidence).filter(n=>n.endsWith('.ndjson.gz')).map(n=>[n,crypto.createHash('sha256').update(fs.readFileSync(path.join(evidence,n))).digest('hex')]))))",id]);expect(result.ok,result.err).toBe(true);return JSON.parse(result.out);};
+  const committed=committedFiles(active.run.id);expect(Object.keys(committed).length).toBeGreaterThan(0);
+
+  expect(docker(['run','-d','--name',contender,'--label',`${LABEL}=${runId}`,...common,image],env).ok).toBe(true);expect(docker(['wait',contender]).out).toBe('1');expect(logs(contender,key)).toContain('LAB_DATA_DIR_BUSY');
+  expect(docker(['kill','--signal','KILL',name]).ok).toBe(true);expect(docker(['start',name]).ok).toBe(true);await healthy();token=(await ok('/sessions',{token:key})).sessionToken;
+  const reclaimed=await ok(`/runs/${active.run.id}/reclaim`,{proof:active.reclaimToken});expect(reclaimed.controlAccess).toBe('view_reconcile');expect(reclaimed.tick).toBe(100);expect(reclaimed.run.status).toBe('needs_attention');const after=await ok(`/runs/${active.run.id}/report`);expect(after.outcome.tick).toBe(before.outcome.tick);expect(committedFiles(active.run.id)).toMatchObject(committed);expect((await api(`/runs/${active.run.id}/actions`,{actionId:'resume-refused',expectedRevision:reclaimed.run.runRevision,kind:'resume',payload:{}})).body.error).toBe('RECLAIM_READ_ONLY');
+  const workers=docker(['exec',name,'node','-e',"const fs=require('fs');console.log(fs.readdirSync('/proc').filter(n=>/^\\d+$/.test(n)).filter(n=>{try{return fs.readFileSync('/proc/'+n+'/cmdline','utf8').split('\\0').includes('mujoco_worker')}catch{return false}}).length)"]);expect(workers.out).toBe('0');
+  await ok(`/runs/${active.run.id}/archive`,{});await ok(`/runs/${finished.run.id}/reclaim`,{proof:finished.reclaimToken});const replay=await ok(`/runs/${finished.run.id}/replay`,{});expect(replay.manifest.provenance.accepted).toBe(false);expect(replay.manifest.assets.length).toBeGreaterThan(0);
+  const downloaded=await fetch(`http://127.0.0.1:${port}/lab/v2/runs/${finished.run.id}/replay/${replay.exportId}/assets/0`,{headers:{authorization:`Bearer ${token}`,origin:ORIGIN}});expect(downloaded.status).toBe(200);expect((await downloaded.arrayBuffer()).byteLength).toBe(replay.manifest.assets[0].bytes);
+  const stop=docker(['stop','-t','20',name]);expect(stop.ok).toBe(true);expect(docker(['inspect','--format','{{.State.ExitCode}}',name]).out).toBe('0');
+  console.log('B09 WEB05',JSON.stringify({platform:docker(['image','inspect','--format','{{.Os}}/{{.Architecture}}',image]).out,sourceCommit:head,imageId:docker(['image','inspect','--format','{{.Id}}',image]).out,volumeRecovery:true,finishedReplay:true,accepted:false}));
+ },800_000);
 });

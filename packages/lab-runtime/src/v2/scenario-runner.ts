@@ -44,7 +44,7 @@ import {awaitTick,realWall,type PaceAnchor,type WallClock} from './pace';
 /** Locked engineering extension: the bundle ref plus the exact project and projection it was compiled from (absent for every legacy run). */
 export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
 export interface RunManifestInput {worldExperimentId?:WorldExperimentId;project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
-export interface RunProviders {directory:string;worldPorts?:import('./simulation3d/world-ports').WorldPortsFactory;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
+export interface RunProviders {directory:string;/** Gateway-only recovery: existing checkpoint, no new plant or physical observations. */reclaimOnly?:boolean;worldPorts?:import('./simulation3d/world-ports').WorldPortsFactory;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
  /** A plant arm whose program comes from its fixture (MuJoCo): what its ports run, for the manifest. Ignored unless the set's arm is a plant. */armProgram?:ArmProgramRecord;
  /** Wall clock of paced steps (tests inject a fake); consulted only by a step that carries `pace`. */wall?:WallClock}
 export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'}
@@ -128,6 +128,7 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  await mkdir(dir,{recursive:true,mode:0o700});await chmod(dir,0o700);
  let cp=await readCheckpoint<Checkpoint>(dir);
  if(cp&&cp.manifestHash!==manifestHash)throw new Error('RUN_IDENTITY_MISMATCH');
+ if(providers.reclaimOnly&&(!cp||singleWorld&&!cp.world))throw Error('RECOVERY_CHECKPOINT_MISSING');
  const fresh=!cp;
  if(fresh&&(await readdir(dir)).length)throw new Error('RECOVERY_CHECKPOINT_MISSING');
  if(!cp){
@@ -140,14 +141,14 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
    plant:{width:project.world.width,height:project.world.height,obstacles:structuredClone(project.world.obstacles),injected:[],contacts:0,minSeparationM:null,maxConcurrentMovers:0,
     robots:roles.robots.map(r=>({id:r.id,radiusM:radius[r.id]!,speedLimitMps:project.entities.find(e=>e.id===r.id)?.speedLimitMps??MOCK_AMR_PARAMS.speedMps,pose:{x:point(r.parkingId).x,y:point(r.parkingId).y,yawRad:0},bootId:randomUUID(),seq:0,goals:[],lastCompleted:null,moving:false,hold:null,stale:false,distanceM:0}))}};
  }
- const run=new Run(dir,cp,scenario,project,providers.wall??realWall,singleWorld?{manifest:input,factory:providers.worldPorts!}:undefined);
+ const run=new Run(dir,cp,scenario,project,providers.wall??realWall,singleWorld?{manifest:input,factory:providers.worldPorts!}:undefined,providers.reclaimOnly===true);
  const coffee=roles.coffee&&scenario.coffee?{...roles.coffee,recipes:CoffeeDriver.recipes(scenario.coffee.orders)}:undefined;
  const openSource=()=>SourceSession.open(dir,cp.runId,()=>run.nowMs(),{...run.worldNavigation?{navigation:run.worldNavigation}:{},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[...new Set([roles.stationId,...coffee?[coffee.stationId]:[]])],...coffee?{coffee}:{},...scenario.fleet?{fleet:scenario.fleet}:{}},fresh);
  if(!singleWorld)run.source=await openSource();
  try{await run.attach(providers.coffeePorts);if(singleWorld)run.source=await openSource();
  // telemetry is not checkpointed: a reopened run starts a new buffer and says so
  if(!fresh)run.telemetry.gap('RUNTIME_RESTART',null,cp.tick);
- await run.initializeCoffee();
+ if(!providers.reclaimOnly)await run.initializeCoffee();
  if(cp.inFlight)await run.recover();
  run.recoverFaultSchedule();
  run.record();
@@ -170,7 +171,7 @@ class Run implements ScenarioRun {
  /** Paced-step anchor (D57): memory only, never checkpointed or digested; cleared by pause, resume, cancel, an unpaced step and a reopen. */
  private anchor:PaceAnchor|null=null;
  readonly telemetry=new TelemetryRecorder();
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private wall:WallClock,private worldConfig?:{manifest:RunManifestInput;factory:WorldPortsFactory}){this.clock=createClock(EPOCH,cp.tick,cp.paused);}
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private wall:WallClock,private worldConfig?:{manifest:RunManifestInput;factory:WorldPortsFactory},private readonly recoveryOnly=false){this.clock=createClock(EPOCH,cp.tick,cp.paused);}
  get id(){return this.cp.runId;}
  get worldNavigation(){return this.cp.world?.navigation;}
  async attach(coffeePorts?:RunProviders['coffeePorts']){
@@ -214,7 +215,12 @@ class Run implements ScenarioRun {
      this.adapters=c.roles.robots.map(r=>{const a=this.world!.robots.get(r.id);if(!a)throw new Error('WORLD_ADAPTER_MISSING');return a;});
      for(const a of this.adapters)a.observe(e=>this.observations.push(e));ports=this.world.coffee;
     }
+   }else if(this.recoveryOnly){
+    // Retained state only: no plant constructor, bootstrap, scene rewrite or new sensor/contact sample.
+    ports={recoveryOnly:true,adapters:[],async advance(){throw Error('RECLAIM_READ_ONLY');},async recover(){},snapshot:()=>({coffee:c.coffee!.plant,arm:c.coffee!.arm}),drain:()=>[],transferEvidence:()=>null,report:()=>({cupLedger:[],arm:null}),async close(){}};
+    if(!c.attention.some(a=>a.reason==='RECLAIM_PLANT_UNAVAILABLE'))c.attention.push({reason:'RECLAIM_PLANT_UNAVAILABLE',tick:c.tick});
    }else ports=await coffeePorts?.(c.coffee,context,randomUUID,this.dir);
+   if(this.recoveryOnly&&ports)ports.recoveryOnly=true;
    this.coffee=new CoffeeDriver(c.coffee,context,randomUUID,ports);
   }
  }
@@ -225,12 +231,13 @@ class Run implements ScenarioRun {
   this.cp.plant.contacts+=s.robots.reduce((n,r)=>n+r.collisionIds.length,0);this.cp.plant.maxConcurrentMovers=Math.max(this.cp.plant.maxConcurrentMovers,this.cp.plant.robots.filter(r=>r.moving).length);
  }
  persist(){return writeCheckpoint(this.dir,this.cp);}
- record(){const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;this.telemetry.record(projectSamples({runId:c.runId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),nowMs:this.clock.nowMs(),robots:c.plant.robots,...c.world?.snapshot?{world:c.world.snapshot,worldStale:!!c.world.terminal}:{},...c.coffee?{coffee:c.coffee}:{}},String(process.hrtime.bigint())));}
+ record(){if(this.recoveryOnly)return;const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;this.telemetry.record(projectSamples({runId:c.runId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),nowMs:this.clock.nowMs(),robots:c.plant.robots,...c.world?.snapshot?{world:c.world.snapshot,worldStale:!!c.world.terminal}:{},...c.coffee?{coffee:c.coffee}:{}},String(process.hrtime.bigint())));}
  pulse(){const c=this.cp;return {tick:c.tick,paused:c.paused,runRevision:c.revision};}
  journal(){return this.queue.then(async()=>{if(this.closed)throw new Error('RUN_CLOSED');return (await this.source.journal()).map(entry=>({sequence:entry.sequence,at:entry.recordedAt,events:(entry.payload.events as unknown as DomainEvent[]).map(e=>({type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject}))}));});}
  /** Crash between journal commit and checkpoint: the journal is ahead of the plant. Rebuild poses from source, report in-flight goals unknown, suspend the script. */
  async recover(){
   const c=this.cp;c.crashArmed=false;
+  if(this.recoveryOnly){for(const op of c.pendingOps)c.recoveredOps.push({ordinal:op.ordinal,operationId:op.operationId,type:op.type,committed:!!await this.source.receipt(op.operationId,op.payloadHash)});c.pendingOps=[];c.inFlight=false;c.suspended=true;c.attention.push({reason:'RECOVERY_UNKNOWN',tick:c.tick});return;}
   if(this.worldConfig){c.world??={};c.world.terminal??='WORLD_RESTART_UNKNOWN';c.suspended=true;for(const r of c.plant.robots)r.stale=true;return;}
   for(const op of c.pendingOps)c.recoveredOps.push({ordinal:op.ordinal,operationId:op.operationId,type:op.type,committed:!!await this.source.receipt(op.operationId,op.payloadHash)});
   c.pendingOps=[];
@@ -430,7 +437,7 @@ class Run implements ScenarioRun {
    if(!c.reclaimed){
     this.suspend();c.paused=true;this.clock.pause();
     // A reclaimed process can inspect and reconcile; its old motion is made unknown, never restarted from the checkpoint.
-    for(const a of this.adapters)await a.requestStop('LOCAL_RECLAIM');await this.drain();await this.coffee?.recover();
+    if(!this.recoveryOnly){for(const a of this.adapters)await a.requestStop('LOCAL_RECLAIM');await this.drain();await this.coffee?.recover();}
     if(c.started&&!await this.missionsDone()){
      let targets=0;
      // A completed navigation can still be awaiting load/handoff. Identify its active mission even when requestStop emitted no event.
@@ -500,7 +507,7 @@ class Run implements ScenarioRun {
     for(let i=0;index<0&&i<c.roles.robots.length;i++)if((await this.source.read('robot',c.roles.robots[i]!.id)).state.missionId===subject)index=i;
     if(index<0)throw new Error('INVALID_ACTION');
     const missionId=(await this.source.read('robot',c.roles.robots[index]!.id)).state.missionId,commandId=typeof missionId==='string'?String((await this.source.read('mission',missionId)).state.commandId):null;
-    c.reconciliations.push({subjectId:subject,commandId,nativeState:commandId?(await this.adapters[index]!.reconcile(commandId)).status:'idle',tick:c.tick});}
+    c.reconciliations.push({subjectId:subject,commandId,nativeState:this.recoveryOnly?'unknown':commandId?(await this.adapters[index]!.reconcile(commandId)).status:'idle',tick:c.tick});}
    }
    c.revision++;c.pendingOps=[];c.inFlight=false;this.record();
    const after=await this.view();c.receipts[a.actionId]={hash,view:after};await this.persist();return structuredClone(after);
@@ -534,7 +541,7 @@ class Run implements ScenarioRun {
  }
  private entities():EntityView[]{
   return this.cp.plant.robots.map(r=>{const g=r.goals.find(x=>x.state==='executing')??r.goals[r.goals.length-1];
-   return {id:r.id,kind:'amr',pose:{...r.pose},quality:r.stale?'stale':'valid',moving:r.moving,hold:r.hold,goal:g?{commandId:g.commandId,state:g.state}:null,path:g?.state==='executing'?g.path.map(p=>[p[0],p[1]] as [number,number]):[],distanceM:r.distanceM};});
+   return {id:r.id,kind:'amr',pose:{...r.pose},quality:this.recoveryOnly||r.stale?'stale':'valid',moving:r.moving,hold:r.hold,goal:g?{commandId:g.commandId,state:g.state}:null,path:g?.state==='executing'?g.path.map(p=>[p[0],p[1]] as [number,number]):[],distanceM:r.distanceM};});
  }
  async captureReplay(options:{signal?:AbortSignal}={}):Promise<import('./replay/export').CapturedReplay>{
   if(!this.worldConfig)throw Error('REPLAY_PROVIDER_UNSUPPORTED');const check=()=>{if(options.signal?.aborted)throw Error('REPLAY_ABORTED');};check();const capture=this.queue.then(()=>{check();return this.captureReport(true);});this.queue=capture.then(()=>undefined,()=>undefined);const {report,materializeArm}=await capture;let world:import('./replay/export').CapturedReplay['world'];if(materializeArm){const evidence=await materializeArm(async owned=>{check();world=owned;});check();report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;}return {directory:this.dir,report,...world?{world}:{}};

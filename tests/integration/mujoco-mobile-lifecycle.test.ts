@@ -24,7 +24,7 @@ async function setup(wrap:(plant:PlantPort)=>void,evidence?:{maxBytes:number}){
  const runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot:root,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(root,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1,...evidence?{evidence}:{}};
  const plant=mujocoMobilePlant(runtime);wrap(plant);
  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)},directory=await temp();
- const open=async()=>{const r=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'lifecycle-test',engineering:locked},{directory,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});runs.push(r);return r;};
+ const open=async(reclaimOnly=false)=>{const r=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'lifecycle-test',engineering:locked},{directory,reclaimOnly,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});runs.push(r);return r;};
  return {open,directory};
 }
 let ordinal=0;
@@ -122,3 +122,9 @@ test('impossible physics initialization quota after create retains startup unkno
  const {readdir}=await import('node:fs/promises');expect(await readdir(join(directory,'physics'))).toEqual([]);
  await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');await run.close();const restored=await open();await expect(act(restored,'start')).rejects.toThrow('STARTUP_UNKNOWN');expect(spawns).toBe(1);
 },30_000);
+
+test('gateway reclaim-only mobile recovery retains committed tick without spawning a world',async()=>{
+ let spawns=0;const {open}=await setup(plant=>{const original=plant.spawn;plant.spawn=async options=>{spawns++;return original(options);};});
+ await expect(open(true)).rejects.toThrow('RECOVERY_CHECKPOINT_MISSING');expect(spawns).toBe(0);
+ const run=await open();await run.start();await act(run,'step',{ticks:5});await run.close();const reclaimed=await open(true);await reclaimed.holdForReclaim();expect((await reclaimed.snapshot()).tick).toBe(5);expect(spawns).toBe(1);await expect(act(reclaimed,'resume')).rejects.toThrow();
+});

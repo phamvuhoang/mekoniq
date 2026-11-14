@@ -44,3 +44,11 @@ test.skipIf(!available)('with a catalog and a working compiler the runtime compi
   expect(run.status).toBeGreaterThanOrEqual(422);   // gazebo_nav2 is not installed here: Start stays blocked, never falls back
   expect((await run.json()).error).toMatch(/BACKEND_UNAVAILABLE/);
 });
+test('portable-only engineering compiles mobile without native Python/helpers and blocks native profiles',async()=>{
+ const directory=await temp(),catalogRoot=join(directory,'catalog');execFileSync(process.execPath,['deploy/lab-runtime/prepare-catalog.mjs','robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-components.json',catalogRoot]);
+ const engineering=await engineeringFromOptions({directory,catalogRoot,portableOnly:true,mujoco:{workerRoot:resolve('robotics/simulation-mujoco')}});
+ const project=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-project.json','utf8'));project.requestedProfile='engineering-mujoco-3d-v1';
+ const receipt=await engineering!.compileEngineeringProject(project,'session');expect(receipt.state,JSON.stringify(receipt.problems)).toBe('compiled');
+ expect(engineering!.compilerProfiles).toEqual(['engineering-mujoco-3d-v1']);
+ const native={...project,requestedProfile:'engineering-rigid-v1'},blocked=await engineering!.compileEngineeringProject(native,'session');expect(blocked.state).toBe('blocked');expect(blocked.problems.map(p=>p.code)).toContain('PROFILE_COMPILER_UNAVAILABLE');
+});

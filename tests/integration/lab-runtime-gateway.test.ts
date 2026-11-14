@@ -31,5 +31,5 @@ test('source geometry admission rejects furniture, footprint overlap, walls and 
   {...project,world:{...project.world,obstacles:[{id:'table-1',x:8,y:1,width:1,height:1}]}},
  ];
  for(const candidate of invalids){const response=await fetch(g.url+'/lab/v1/runs',{method:'POST',headers,body:JSON.stringify({project:candidate,scenarioId:'S01',seed:1,sourceCommit:'test-commit'})});expect(response.status).toBe(422);}
- const {readdir}=await import('node:fs/promises');expect(await readdir(directories[directories.length-1]!)).toEqual([]);
+ const {readdir}=await import('node:fs/promises');expect((await readdir(directories[directories.length-1]!)).filter(n=>n!=='.runtime-owner.sqlite')).toEqual([]);
 });

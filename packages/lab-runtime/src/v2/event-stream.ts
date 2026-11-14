@@ -37,11 +37,12 @@ export function pumpEvents(sink:SseSink,entries:readonly JournalEvents[],cursor:
 export function serveRunStream(kind:'events'|'telemetry',run:ScenarioRun,request:IncomingMessage,response:ServerResponse,o:StreamOptions,url:URL,onEnd:()=>void,authorized:()=>boolean){
  response.writeHead(200,{'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-store','Connection':'keep-alive','X-Content-Type-Options':'nosniff'});
  response.write(`retry: 2000\n\n`);
+ let settled!:()=>void;const done=new Promise<void>(resolve=>settled=resolve);
  let blocked=false,closed=false,busy=false;const timers:NodeJS.Timeout[]=[];
  const sink:SseSink={write:c=>{if(!active())return false;const ok=response.write(c);if(!ok)blocked=true;return ok;}};
  const publisher=kind==='telemetry'?new TelemetryPublisher(sink):null;
  const drain=()=>{blocked=false;publisher?.drained();};response.on('drain',drain);
- const end=()=>{if(closed)return;closed=true;for(const t of timers)clearInterval(t);request.off('close',end);response.off('close',end);response.off('finish',end);response.off('drain',drain);onEnd();};
+ const end=()=>{if(closed)return;closed=true;for(const t of timers)clearInterval(t);request.off('close',end);response.off('close',end);response.off('finish',end);response.off('drain',drain);onEnd();if(!busy)settled();};
  const active=()=>{if(closed)return false;if(authorized())return true;end();response.end();return false;};
  request.on('close',end);response.on('close',end);response.on('finish',end);
  const beat=()=>{if(active()&&!blocked){const p=run.pulse();sink.write(sseFrame('heartbeat',{monotonicNs:String(process.hrtime.bigint()),...p}));}};
@@ -53,7 +54,7 @@ export function serveRunStream(kind:'events'|'telemetry',run:ScenarioRun,request
   if(from!==null)sink.write(sseFrame('gap',{reason:'RECONNECT',fromSeq:from,toSeq:now,samplesNotSent:t.countBetween(from,now)}));
   for(const g of t.gaps)sink.write(sseFrame('gap',g));
   const push=()=>{if(active())publisher.offer(t.latest());};push();timers.push(setInterval(push,o.telemetryMs));
-  return;
+  return done;
  }
  const cursor0=lastId??url.searchParams.get('after')??undefined;
  let cursor:string|null=null,seen='';
@@ -70,7 +71,7 @@ export function serveRunStream(kind:'events'|'telemetry',run:ScenarioRun,request
    }
    cursor=pumpEvents(sink,entries,cursor,blocked);
    if(cursor!==(entries[entries.length-1]?.sequence??null))seen=''; // more to send once drained
-  }catch{response.end();}finally{busy=false;}
+  }catch{response.end();}finally{busy=false;if(closed)settled();}
  };
- void pump(true);timers.push(setInterval(()=>void pump(false),o.pollMs));
+ void pump(true);timers.push(setInterval(()=>void pump(false),o.pollMs));return done;
 }

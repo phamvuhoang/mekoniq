@@ -14,14 +14,16 @@ LABEL org.opencontainers.image.title="mekoniq-lab-runtime" org.opencontainers.im
 RUN apt-get update && apt-get install -y --no-install-recommends python3 && rm -rf /var/lib/apt/lists/*
 COPY --from=venv /opt/venv-mujoco /opt/venv-mujoco
 COPY runtime.mjs /app/runtime.mjs
+COPY catalog /app/catalog
 # the schemas twice: the exporter's layout (/app/schemas) and the one the worker derives from its root (<root>/../../packages/contracts/schemas)
 COPY schemas /app/schemas
 COPY schemas /app/packages/contracts/schemas
 COPY robotics/simulation-mujoco /app/robotics/simulation-mujoco
 ENV MEKONIQ_LAB_MUJOCO=1 PYTHONDONTWRITEBYTECODE=1 NODE_ENV=production
+RUN mkdir -p /data/runs && chown node:node /data/runs
 USER node
 EXPOSE 8080
 # PORT is read by the runtime (Cloud Run sets it; 8080 otherwise), the access key by the runtime from MEKONIQ_LAB_ACCESS_KEY. The one line of shell only adds a flag
 # for a non-empty LAB_PUBLIC_HOST / LAB_ALLOW_ORIGIN (quoted, no eval) and execs node so that it is PID 1 and receives SIGTERM.
-ENV PORT=8080
-ENTRYPOINT ["/bin/sh","-c","exec node /app/runtime.mjs --bind 0.0.0.0 --data-dir /tmp/runs --mujoco-python /opt/venv-mujoco/bin/python --mujoco-worker /app/robotics/simulation-mujoco --mujoco-lock /app/robotics/simulation-mujoco/requirements.lock ${LAB_PUBLIC_HOST:+--public-host \"$LAB_PUBLIC_HOST\"} ${LAB_ALLOW_ORIGIN:+--allow-origin \"$LAB_ALLOW_ORIGIN\"}","lab-runtime"]
+ENV PORT=8080 LAB_DATA_DIR=/tmp/runs
+ENTRYPOINT ["/bin/sh","-c","exec node /app/runtime.mjs --bind 0.0.0.0 --data-dir \"$LAB_DATA_DIR\" --engineering-catalog /app/catalog --engineering-portable-only --mujoco-python /opt/venv-mujoco/bin/python --mujoco-worker /app/robotics/simulation-mujoco --mujoco-lock /app/robotics/simulation-mujoco/requirements.lock ${LAB_PUBLIC_HOST:+--public-host \"$LAB_PUBLIC_HOST\"} ${LAB_ALLOW_ORIGIN:+--allow-origin \"$LAB_ALLOW_ORIGIN\"}","lab-runtime"]

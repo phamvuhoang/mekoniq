@@ -21,6 +21,8 @@ export interface ArmReportMaterialization {state:ArmPlantState;worldTrace:import
 export type WorldReplaySink=(world:{records:import('../../../../contracts/generated/navigation2d').WorldEvidenceRecord[];admission:import('../simulation3d/world-evidence').WorldAdmission})=>Promise<void>;
 export interface ArmReportCapture {materialize(replay?:WorldReplaySink):Promise<ArmReportMaterialization>}
 export interface CoffeePlantPorts {
+ /** Retained checkpoint only: reconciliation must not query a physical adapter. */
+ recoveryOnly?:boolean;
  /** Source-only: custody requires journal-correlated physical observations, even with an arm state snapshot. */
  custodyEvidence?:'correlated';
  /** Capture only under the Source run action boundary; materialization never mutates live state. */

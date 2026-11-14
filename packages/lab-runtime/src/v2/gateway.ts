@@ -13,7 +13,7 @@ import {scenarioRegistry} from './scenario-registry';
 import {createScenarioRun,type ScenarioRun,type RunManifestInput,type RunProviders} from './scenario-runner';
 import {serveRunStream,STREAM_DEFAULTS,type StreamOptions} from './event-stream';
 import type {WallClock} from './pace';
-import {findReclaim,proofHash,saveReclaim} from './reclaim-store';
+import {findReclaim,proofHash,saveReclaim,saveControlEpoch} from './reclaim-store';
 import {ENGINEERING_CAPABILITY,EngineeringError,type EngineeringService,type LockedEngineering} from '../engineering/gateway';
 /** Hooks into the v1 gateway so v2 shares its pairing token, body parser and response helper without importing it. */
 export interface V2Deps {
@@ -49,10 +49,10 @@ const UUID='[0-9a-f-]{36}';
 const PAIRING_FAILURES=5,PAIRING_WINDOW_MS=60000;
 const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
 // the MuJoCo slot is taken: a conflict, as IR-SIM's; the engine could not create the cell: unavailable, not a runtime failure (the Webots codes keep 500)
-const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
+const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
 export function createV2Gateway(deps:V2Deps){
  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
- const sessions=new Map<string,{csrf:string;expiresAt:number}>();
+ const sessions=new Map<string,{publicId:string;csrf:string;expiresAt:number}>();
  // Runs are owned by the v2 pairing session that created them; another session sees 404, exactly as for an unknown id.
  const replayReads=new Set<{abort:AbortController;response:ServerResponse;done:Promise<void>}>();let replayReadBytes=0;
  let replayClosing=false;const replayWork=new Map<string,{abort:AbortController;done:Promise<void>;finish():void}>();
@@ -62,11 +62,24 @@ export function createV2Gateway(deps:V2Deps){
  /** Unknown residue has unknown size: refuse new exports, never follow/adopt/delete it. */
  const replayDiskOccupied=async()=>{const root=join(deps.directory,'replay-exports'),known=new Set([...replayPackages.keys(),...replayWork.keys()]),stat=await lstat(root).catch((e:NodeJS.ErrnoException)=>{if(e.code==='ENOENT')return null;throw Error('REPLAY_RECOVERY_REQUIRED');});if(!stat)return 0;if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('REPLAY_RECOVERY_REQUIRED');try{let count=0;for await(const entry of await opendir(root,{bufferSize:8})){if(entry.isSymbolicLink()||!entry.isDirectory()||!known.has(entry.name))throw Error('REPLAY_RECOVERY_REQUIRED');if(++count>=8)break;}return count;}catch{throw Error('REPLAY_RECOVERY_REQUIRED');}};
  const dropReplayRun=(runId:string)=>replaySerial(async()=>{for(const [key,p]of replayPackages)if(p.runId===runId){await rm(p.directory,{recursive:true,force:true});replayPackages.delete(key);}});
- const runs=new Map<string,{owner:string;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput}>();let creating=0;
+ type Entry={owner:string;readers:Set<string>;controlEpoch:number;queue:Promise<void>;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput};
+ const runs=new Map<string,Entry>();let creating=0;
+ const readable=(e:Entry,id:string)=>e.owner===id||e.readers.has(id);
+ const serial=<T>(e:Entry,work:()=>Promise<T>)=>{const pending=e.queue.then(work);e.queue=pending.then(()=>undefined,()=>undefined);return pending;};
+ const writerView=(e:Entry)=>({runId:e.run.id,sessionId:e.readOnly?null:sessions.get(e.owner)?.publicId??null,controlEpoch:e.controlEpoch});
+ const authority=(e:Entry,id:string,epoch:string|undefined,allowReconcile=false)=>{
+  const session=sessions.get(id);if(!session||deps.now()>=session.expiresAt)throw Error('SESSION_REQUIRED');
+  if(runs.get(e.run.id)!==e||!readable(e,id))throw Error('RUN_NOT_FOUND');
+  if(e.archiving||reclaiming.has(e.run.id))throw Error('RUN_ARCHIVE_CONFLICT');
+  if(epoch!==undefined&&epoch!==String(e.controlEpoch))throw Error('RUN_WRITER_CONFLICT');
+  if(e.readOnly&&e.owner===id&&allowReconcile)return;
+  if(e.readOnly&&e.owner===id)throw Error('RECLAIM_READ_ONLY');
+  if(e.owner!==id||epoch===undefined&&e.controlEpoch!==0||epoch!==undefined&&epoch!==String(e.controlEpoch))throw Error('RUN_WRITER_CONFLICT');
+ };
  // Readiness and creation share cleanup. Concurrent callers wait for the worker to close before probing its slot.
  let expiryCleanup=Promise.resolve();
  const closeExpiredRuns=()=>expiryCleanup=expiryCleanup.then(async()=>{
-  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});await dropReplayRun(id);}}
+  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){await serial(e,async()=>{const current=sessions.get(e.owner);if(current&&deps.now()<current.expiresAt)return;runs.delete(id);await e.run.close();await dropReplayRun(id);});}}
  });
  const reclaiming=new Set<string>();
  let pairingFailures:number[]=[];
@@ -80,7 +93,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
  const handle=async function handle(request:IncomingMessage,response:ServerResponse,path:string,origin:string|undefined){
   const method=request.method,{send}=deps,sub=path.slice('/lab/v2'.length);
   if(method==='GET'&&sub==='/health')return send(response,200,{
-   protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
+   ...deps.engineering?{engineeringCompilerProfiles:deps.engineering.compilerProfiles}:{},protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
    backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true,pacedStep:true,replayExport:{version:1,available:deps.worldExperiments===true,maxVersionsPerRun:2,maxRetainedVersions:8,maxConcurrentExports:2,maxConcurrentDownloads:4,maxDownloadBytes:16*1024*1024,maxPackageBytes:25*1024*1024,backendSetIds:['engineering-mujoco-cell-v1']}},deployment:{bind:deps.deployment?.bind??'loopback'},
    ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?{mobilePayloadExperiments:Object.entries(PAYLOAD_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,maxLinearMps:e.maxLinearMps,maxAngularRadps:e.maxAngularRadps,calibration:'not_calibrated',requiresNewRun:true}))}:{},
@@ -106,10 +119,10 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    // single tenant with an access key: whoever holds the key owns the runtime, so a pairing with the key at the cap ends the oldest session (its runs are then handled as
    // runs of an expired session: closed by the next create, reclaimable with their proof). Without a key the cap refuses, as before.
    if(sessions.size>=10){if(!viaKey)return deny(response,429,'SESSION_LIMIT',[]);sessions.delete(sessions.keys().next().value!);}
-   if(!viaKey)deps.spendPairing();const id=token(),csrf=token();sessions.set(id,{csrf,expiresAt:deps.now()+3600000});
+   if(!viaKey)deps.spendPairing();const id=token(),csrf=token(),publicId=randomUUID();sessions.set(id,{publicId,csrf,expiresAt:deps.now()+3600000});
    response.setHeader('Set-Cookie',`${COOKIE}=${id}; HttpOnly; SameSite=Strict; Path=/lab/v2; Max-Age=3600`);
    // The principal is assigned by the server; nothing in the request can choose it.
-   return send(response,201,{csrfToken:csrf,sessionToken:id,principal:{kind:'local_pairing',controlOwner:'lab_simulation',accesses:PAIRING_ACCESS}});
+   return send(response,201,{csrfToken:csrf,sessionToken:id,sessionId:publicId,principal:{kind:'local_pairing',controlOwner:'lab_simulation',accesses:PAIRING_ACCESS}});
   }
   // D53: the bearer header, when present, is the only credential looked at; otherwise the cookie. Never from the URL.
   const authorization=request.headers.authorization,bearer=authorization!==undefined;
@@ -173,26 +186,28 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   }
   const displayRoute=new RegExp(`^/runs/(${UUID})/world-display(/scene)?$`).exec(sub);
   if(displayRoute){
-   const entry=runs.get(displayRoute[1]!);if(!entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);
+   const entry=runs.get(displayRoute[1]!);if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
    if(method!=='GET'||request.url?.includes('?'))return deny(response,422,'INVALID_WORLD_DISPLAY',[]);
    const read=displayRoute[2]?entry.run.worldDisplayScene:entry.run.worldDisplay;if(!read)return deny(response,422,'WORLD_DISPLAY_UNSUPPORTED',[]);
-   try{const value=displayRoute[2]?await entry.run.worldDisplayScene!():await entry.run.worldDisplay!();if(runs.get(displayRoute[1]!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return (e as Error).message==='WORLD_DISPLAY_UNSUPPORTED'?deny(response,422,'WORLD_DISPLAY_UNSUPPORTED',[]):failed(response,e);}
+   try{const value=displayRoute[2]?await entry.run.worldDisplayScene!():await entry.run.worldDisplay!();if(runs.get(displayRoute[1]!)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return (e as Error).message==='WORLD_DISPLAY_UNSUPPORTED'?deny(response,422,'WORLD_DISPLAY_UNSUPPORTED',[]):failed(response,e);}
   }
   const replayRoute=new RegExp(`^/runs/(${UUID})/replay(?:/([a-f0-9-]{36})(?:/assets/(0|[1-9][0-9]{0,2}))?)?$`).exec(sub);
   if(replayRoute){
    const [,runId,exportId,index]=replayRoute,entry=runs.get(runId!);
-   if(!entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);
+   if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
    if(new URL(request.url??'/','http://127.0.0.1').searchParams.size)return deny(response,422,'INVALID_REPLAY_REQUEST',[]);
    if(method==='POST'&&!exportId){
+    if(entry.owner!==sessionId)return deny(response,409,'RUN_WRITER_CONFLICT',[]);
     if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);const body=await deps.readBody(request,1024);if(Object.keys(body).length)return deny(response,422,'INVALID_REPLAY_REQUEST',[]);
     if(!entry.run.captureReplay)return deny(response,422,'REPLAY_PROVIDER_UNSUPPORTED',[]);
     if(entry.archiving||reclaiming.has(runId!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
     const id=randomUUID(),directory=join(deps.directory,'replay-exports',id),abort=new AbortController();let finish!:()=>void;const done=new Promise<void>(resolve=>finish=resolve);
     const refusal=await replaySerial(async()=>{
-     if(runs.get(runId!)!==entry||entry.owner!==sessionId)return {status:404,error:'RUN_NOT_FOUND'};
+     if(runs.get(runId!)!==entry||!readable(entry,sessionId))return {status:404,error:'RUN_NOT_FOUND'};
      try{await replayDiskOccupied();}catch{return {status:429,error:'REPLAY_RECOVERY_REQUIRED'};}
      if([...replayPackages.values()].filter(p=>p.runId===runId).length+(replayPending.get(runId!)??0)>=2)return {status:429,error:'REPLAY_VERSION_LIMIT'};
      if(replayClosing||replayWork.size>=2||replayPackages.size+[...replayPending.values()].reduce((n,v)=>n+v,0)>=8)return {status:429,error:'REPLAY_CAPACITY'};
+     try{authority(entry,sessionId,request.headers['x-lab-control-epoch'] as string|undefined,entry.readOnly);}catch(e){return {status:statusOf((e as Error).message),error:(e as Error).message};}
      replayPending.set(runId!,1+(replayPending.get(runId!)??0));replayWork.set(id,{abort,done,finish});return null;
     });if(refusal)return deny(response,refusal.status,refusal.error,[]);
     const disconnect=()=>{if(!response.writableFinished)abort.abort();};response.once('close',disconnect);if(response.destroyed||request.aborted)abort.abort();let ownsDirectory=false;
@@ -201,7 +216,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     }catch(e){if(ownsDirectory)await rm(directory,{recursive:true,force:true});return deny(response,422,'REPLAY_EXPORT_REFUSED',[(e as Error).message.split(':')[0]!]);}finally{response.off('close',disconnect);await replaySerial(async()=>{replayWork.get(id)?.finish();replayWork.delete(id);const n=(replayPending.get(runId!)??1)-1;if(n)replayPending.set(runId!,n);else replayPending.delete(runId!);});}
    }
    const pkg=exportId?replayPackages.get(exportId):undefined;if(!pkg||pkg.runId!==runId)return deny(response,404,'NOT_FOUND',[]);
-   if(method==='DELETE'&&index===undefined){if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);const deleted=await replaySerial(async()=>{if(runs.get(runId!)!==entry||entry.owner!==sessionId||replayPackages.get(exportId!)!==pkg)return false;await rm(pkg.directory,{recursive:true,force:true});replayPackages.delete(exportId!);return true;});return deleted?send(response,200,{deleted:true}):deny(response,404,'NOT_FOUND',[]);}
+   if(method==='DELETE'&&index===undefined){if(entry.owner!==sessionId)return deny(response,409,'RUN_WRITER_CONFLICT',[]);if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);const deleted=await replaySerial(async()=>{if(runs.get(runId!)!==entry||entry.owner!==sessionId||replayPackages.get(exportId!)!==pkg)return false;authority(entry,sessionId,request.headers['x-lab-control-epoch'] as string|undefined,entry.readOnly);await rm(pkg.directory,{recursive:true,force:true});replayPackages.delete(exportId!);return true;});return deleted?send(response,200,{deleted:true}):deny(response,404,'NOT_FOUND',[]);}
    if(method!=='GET')return deny(response,405,'METHOD_NOT_ALLOWED',[]);if(index===undefined)return send(response,200,pkg.manifest);
    const asset=pkg.manifest.assets[Number(index)];if(!asset)return deny(response,404,'NOT_FOUND',[]);
    // Reserve synchronously after private run/version/index admission and before any IO/allocation. No read queue.
@@ -209,12 +224,12 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    const abort=new AbortController();let ioDone=false,responseDone=response.writableFinished||response.destroyed,released=false,finish!:()=>void;const done=new Promise<void>(resolve=>finish=resolve),read={abort,response,done};
    const release=()=>{if(released||!ioDone||!responseDone)return;released=true;response.off('finish',onFinish);response.off('close',onClose);response.off('error',onError);replayReads.delete(read);replayReadBytes-=asset.bytes;finish();};
    const onFinish=()=>{responseDone=true;release();},onClose=()=>{responseDone=true;abort.abort();release();},onError=()=>{abort.abort();response.destroy();};replayReads.add(read);replayReadBytes+=asset.bytes;response.once('finish',onFinish);response.once('close',onClose);response.once('error',onError);if(responseDone)abort.abort();
-   try{const bytes=await readReplayInput(join(pkg.directory,'package'),asset.path,asset.bytes,{signal:abort.signal});if(abort.signal.aborted||response.destroyed)return;if(bytes.length!==asset.bytes||createHash('sha256').update(bytes).digest('hex')!==asset.sha256)throw Error('REPLAY_ASSET_HASH');if(runs.get(runId!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt||replayPackages.get(exportId!)!==pkg)return deny(response,404,'NOT_FOUND',[]);response.writeHead(200,{'content-type':'application/octet-stream','cache-control':'no-store','x-content-type-options':'nosniff','content-length':bytes.length});response.end(bytes);return;}catch{if(!response.destroyed&&!abort.signal.aborted){if(response.headersSent)response.destroy();else return deny(response,422,'REPLAY_ASSET_UNAVAILABLE',[]);}}finally{ioDone=true;release();}
+   try{const bytes=await readReplayInput(join(pkg.directory,'package'),asset.path,asset.bytes,{signal:abort.signal});if(abort.signal.aborted||response.destroyed)return;if(bytes.length!==asset.bytes||createHash('sha256').update(bytes).digest('hex')!==asset.sha256)throw Error('REPLAY_ASSET_HASH');if(runs.get(runId!)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt||replayPackages.get(exportId!)!==pkg)return deny(response,404,'NOT_FOUND',[]);response.writeHead(200,{'content-type':'application/octet-stream','cache-control':'no-store','x-content-type-options':'nosniff','content-length':bytes.length});response.end(bytes);return;}catch{if(!response.destroyed&&!abort.signal.aborted){if(response.headersSent)response.destroy();else return deny(response,422,'REPLAY_ASSET_UNAVAILABLE',[]);}}finally{ioDone=true;release();}
 
   }
   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
-  const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|events|telemetry|reclaim|archive))?$`).exec(sub);
-  const runAllow=runRoute?({actions:'POST',reclaim:'POST',archive:'POST'}as Record<string,string>)[runRoute[2]??'']??'GET':undefined;
+  const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|events|telemetry|reclaim|archive|writer))?$`).exec(sub);
+  const runAllow=runRoute?({writer:'POST',actions:'POST',reclaim:'POST',archive:'POST'}as Record<string,string>)[runRoute[2]??'']??'GET':undefined;
   if(!route&&!runRoute)return deny(response,404,'NOT_FOUND',[]);
   if(method!==(route?.allow??runAllow))return deny(response,405,'METHOD_NOT_ALLOWED',[]);
   if(method==='POST'&&!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
@@ -265,11 +280,29 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
     // the run → bundle association is durable before the client hears about the run
     if(engineering)await deps.engineering!.bindRun(run.id,engineering.ref);
-    const view=await run.snapshot();runs.set(run.id,{owner:sessionId,run,directory,input});return send(response,201,{...view,reclaimToken});
+    const view=await run.snapshot();const entry:Entry={owner:sessionId,readers:new Set(),controlEpoch:0,queue:Promise.resolve(),run,directory,input};runs.set(run.id,entry);return send(response,201,{...view,reclaimToken,writer:writerView(entry)});
    }catch(e){await run?.close().catch(()=>{});if(r.mode==='mock')await rm(directory,{recursive:true,force:true});return failed(response,e);}
    finally{creating--;}
   }
   const entry=runs.get(runRoute![1]!),kind=runRoute![2];
+  if(kind==='writer'){
+   if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
+   const b=await deps.readBody(request,1024);
+   if(Object.keys(b).sort().join(',')!=='controlEpoch,operation,recipientSessionId'||!['grant_read','transfer'].includes(String(b.operation))||typeof b.recipientSessionId!=='string'||!Number.isSafeInteger(b.controlEpoch)||Number(b.controlEpoch)<0)return deny(response,422,'INVALID_WRITER_REQUEST',[]);
+   try{return await serial(entry,async()=>{
+    if(entry.readOnly)throw Error('RUN_WRITER_CONFLICT');if(request.headers['x-lab-control-epoch']!==undefined&&request.headers['x-lab-control-epoch']!==String(entry.controlEpoch))throw Error('RUN_WRITER_CONFLICT');authority(entry,sessionId,String(b.controlEpoch));
+    const recipient=[...sessions].find(([,s])=>s.publicId===b.recipientSessionId&&deps.now()<s.expiresAt);
+    if(!recipient)return deny(response,422,'INVALID_WRITER_RECIPIENT',[]);
+    if(b.operation==='transfer'){
+     if(recipient[0]===entry.owner)return deny(response,422,'INVALID_WRITER_RECIPIENT',[]);
+     await saveControlEpoch(entry.directory,entry.controlEpoch+1);
+     // Session expiry during persistence cannot confer control; no response is published until it is rechecked.
+     authority(entry,sessionId,String(b.controlEpoch));entry.controlEpoch++;if(deps.now()>=recipient[1].expiresAt||sessions.get(recipient[0])!==recipient[1])return deny(response,422,'INVALID_WRITER_RECIPIENT',[]);
+     entry.readers.add(entry.owner);entry.owner=recipient[0];
+    }else entry.readers.add(recipient[0]);
+    return send(response,200,{writer:writerView(entry)});
+   });}catch(e){return failed(response,e);}
+  }
   if(kind==='reclaim'){
    const body=await deps.readBody(request),id=runRoute![1]!;
    if(Object.keys(body).some(k=>k!=='proof')||typeof body.proof!=='string'||body.proof.length>200)return deny(response,422,'INVALID_RECLAIM',[]);
@@ -278,50 +311,60 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(stored.record.schemaHash!==deps.schemaHash||stored.record.input.sourceCommit!==deps.sourceCommit)return deny(response,409,'CONTRACT_MISMATCH',['CONTRACT_MISMATCH']);
    if(reclaiming.has(id)||entry?.archiving)return deny(response,409,'RECLAIM_CONFLICT',[]);
    if(!entry&&runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
+   const reclaim=async()=>{
+   if(sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,401,'SESSION_REQUIRED',[]);
    reclaiming.add(id);if(!entry)creating++;let reopened:ScenarioRun|undefined;
    try{
     const factory=stored.record.input.mode==='simulation'?deps.simulationFactory:createScenarioRun;if(!factory)throw new Error('BACKEND_EXECUTION_DISABLED');
     const locked=stored.record.input.engineering;
-    const run=entry?.run??(reopened=await factory(stored.record.input,{directory:stored.directory,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...locked?{assets:locked.runtimeProjection.assets as never}:{}}));
+    const run=entry?.run??(reopened=await factory(stored.record.input,{directory:stored.directory,reclaimOnly:true,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...locked?{assets:locked.runtimeProjection.assets as never}:{}}));
     // a verified proof restores read access to this run's bundle for the new session; it never confers control
     if(locked&&deps.engineering)await deps.engineering.grantRun(sessionId,locked.ref);
     const closure=locked&&deps.engineering?await deps.engineering.verifyClosure(locked.ref.bundleDigest):null;
     const view=await run.holdForReclaim();
-    if(entry){entry.owner=sessionId;entry.readOnly=true;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,run,directory:stored.directory,readOnly:true,input:stored.record.input});
+    const epoch=Math.max(entry?.controlEpoch??0,stored.record.controlEpoch??0)+1;await saveControlEpoch(stored.directory,epoch);
+    if(entry){entry.owner=sessionId;entry.readOnly=true;entry.readers.clear();entry.controlEpoch=epoch;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,readers:new Set(),controlEpoch:epoch,queue:Promise.resolve(),run,directory:stored.directory,readOnly:true,input:stored.record.input});
     // Only the proof-protected record supplies reset/evidence inputs; the caller cannot substitute a project or seed.
-    return send(response,200,{...view,controlAccess:'view_reconcile',lockedInput:structuredClone(stored.record.input),...closure?{engineeringClosure:{status:closure.length?'missing':'ok',problems:closure}}:{}});
+    return send(response,200,{...view,writer:writerView(runs.get(id)!),controlAccess:'view_reconcile',lockedInput:structuredClone(stored.record.input),...closure?{engineeringClosure:{status:closure.length?'missing':'ok',problems:closure}}:{}});
    }catch(e){await reopened?.close().catch(()=>{});return failed(response,e);}finally{reclaiming.delete(id);if(!entry)creating--;}
+   };return entry?serial(entry,reclaim):reclaim();
   }
   if(kind==='actions'){
    const action=validateActionV2(await deps.readBody(request));
    if(!action.ok)return deny(response,422,'INVALID_ACTION',codesOf(action.issues),action.issues);
-   if(!entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);
+   if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
    if(entry.archiving||reclaiming.has(runRoute![1]!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
    if(entry.readOnly&&action.value.kind!=='reconcile')return deny(response,403,'RECLAIM_READ_ONLY',['VIEW_RECONCILE_ONLY']);
-   const beforeExecute=action.value.kind==='start'||action.value.kind==='resume'?async()=>{
+   const checkAuthority=()=>authority(entry,sessionId,request.headers['x-lab-control-epoch'] as string|undefined,action.value.kind==='reconcile');
+   const beforeExecute=async()=>{
+    checkAuthority();if(action.value.kind!=='start'&&action.value.kind!=='resume')return;
     // the bundle a run was created from must still be whole before any motion is started or resumed
     if(entry.input.engineering&&deps.engineering&&(await deps.engineering.verifyClosure(entry.input.engineering.ref.bundleDigest)).length)throw new Error('ENGINEERING_CLOSURE_MISSING');
     const readiness=await collectReadiness({scenarioId:entry.input.scenarioId,backendSetId:entry.input.backendSetId,project:entry.input.project,...entry.input.engineering?{engineering:entry.input.engineering.ref}:{},runId:entry.run.id},readinessOptions());
     if(!readiness.canStart)throw new Error(`BACKEND_UNAVAILABLE:${readiness.checks.flatMap(c=>c.reasonCodes).join(',')}`);
-   }:undefined;
-   try{return send(response,200,await entry.run.action(action.value,beforeExecute));}catch(e){return failed(response,e);}
+    checkAuthority();
+   };
+   try{return await serial(entry,async()=>{checkAuthority();return send(response,200,{...await entry.run.action(action.value,beforeExecute),writer:writerView(entry)});});}catch(e){return failed(response,e);}
   }
-  if(!entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);
+  if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
   if(kind==='archive'){
+   if(entry.owner!==sessionId)return deny(response,409,'RUN_WRITER_CONFLICT',[]);
    const body=await deps.readBody(request);if(Object.keys(body).length)return deny(response,422,'INVALID_ARCHIVE',[]);
    if(entry.archiving||reclaiming.has(runRoute![1]!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
+   return serial(entry,async()=>{try{authority(entry,sessionId,request.headers['x-lab-control-epoch'] as string|undefined,entry.readOnly); }catch(e){return failed(response,e);}
    entry.archiving=true;
    try{
     const report=await entry.run.report(),view=await entry.run.snapshot();
     await writeFile(join(entry.directory,`archive-${view.run.runRevision}.json`),JSON.stringify(report),{mode:0o600,flag:'wx'}).catch(e=>{if((e as NodeJS.ErrnoException).code!=='EEXIST')throw e;});
     await entry.run.close();runs.delete(entry.run.id);await dropReplayRun(entry.run.id);return send(response,200,{archived:true,runId:entry.run.id,eventCursor:view.run.eventCursor});
-   }catch(e){entry.archiving=false;return failed(response,e);}
+   }catch(e){entry.archiving=false;return failed(response,e);}});
   }
-  if(kind==='events'||kind==='telemetry'){streams.add(response);return serveRunStream(kind,entry.run,request,response,streamOptions,new URL(request.url??'/','http://127.0.0.1'),()=>streams.delete(response),()=>sessions.get(sessionId)===session&&deps.now()<session.expiresAt&&runs.get(entry.run.id)===entry&&entry.owner===sessionId&&!entry.archiving);}
-  try{return send(response,200,kind==='report'?{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2}:{...await entry.run.snapshot(),...entry.readOnly?{controlAccess:'view_reconcile'}:{}});}catch(e){return failed(response,e);}
+  if(kind==='events'||kind==='telemetry'){streams.add(response);return serveRunStream(kind,entry.run,request,response,streamOptions,new URL(request.url??'/','http://127.0.0.1'),()=>streams.delete(response),()=>sessions.get(sessionId)===session&&deps.now()<session.expiresAt&&runs.get(entry.run.id)===entry&&readable(entry,sessionId)&&!entry.archiving);}
+  try{const value=kind==='report'?{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2}:{...await entry.run.snapshot(),writer:writerView(entry),...entry.readOnly?{controlAccess:'view_reconcile'}:{}};if(runs.get(entry.run.id)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return failed(response,e);}
  };
  return Object.assign(handle,{
   /** Ends open SSE connections so the HTTP server can close. */
   endStreams(){for(const r of streams)r.end();streams.clear();},
-  close:async()=>{replayClosing=true;for(const read of replayReads){read.abort.abort();read.response.destroy();}await Promise.all([...replayReads].map(r=>r.done));for(const work of replayWork.values())work.abort.abort();await Promise.all([...replayWork.values()].map(w=>w.done));await expiryCleanup;await Promise.all([...runs.values()].map(x=>x.run.close().catch(()=>{})));runs.clear();for(const p of replayPackages.values())await rm(p.directory,{recursive:true,force:true});replayPackages.clear();}});
+  beginClose(){replayClosing=true;for(const read of replayReads){read.abort.abort();read.response.destroy();}for(const work of replayWork.values())work.abort.abort();},
+  close:async()=>{replayClosing=true;for(const read of replayReads){read.abort.abort();read.response.destroy();}await Promise.all([...replayReads].map(r=>r.done));for(const work of replayWork.values())work.abort.abort();await Promise.all([...replayWork.values()].map(w=>w.done));await expiryCleanup;await Promise.all([...runs.values()].map(x=>x.run.close()));runs.clear();for(const p of replayPackages.values())await rm(p.directory,{recursive:true,force:true});replayPackages.clear();}});
 }

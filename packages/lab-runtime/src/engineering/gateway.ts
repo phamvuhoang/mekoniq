@@ -26,7 +26,7 @@ export interface CompilerPort{
 export interface EngineeringLimits{timeoutMs:number;maxJsonBytes:number;maxLinks:number;maxBundleBytes:number}
 export const DEFAULT_LIMITS:EngineeringLimits={timeoutMs:60_000,maxJsonBytes:2*1024*1024,maxLinks:1000,maxBundleBytes:200*1024*1024};
 export interface EngineeringServiceOptions{
- directory:string;catalogRoot:string;compiler:CompilerPort;
+ directory:string;catalogRoot:string;compiler?:CompilerPort;
  /** Compilers by requested profile. A profile listed in IR_PROFILES never falls back to `compiler` (the native one): without its own compiler the receipt is blocked. */
  compilers?:Partial<Record<string,CompilerPort>>;recipes?:CoffeeRecipe[];limits?:Partial<EngineeringLimits>;
  /** LinkForge shadow validation. Absent means every validation is `not_run` with `validationUnavailable` as the reason; compile and run never depend on it. */
@@ -124,6 +124,7 @@ export function createEngineeringService(options:EngineeringServiceOptions){
  const ROBOT_ID=/^[A-Za-z0-9_.:-]{1,200}$/;
  return {
   store,
+  compilerProfiles:[...Object.keys(options.compilers??{}),...options.compiler?['engineering-rigid-v1','engineering-contact-v1']:[]].sort(),
   compileEngineeringProject,
   authorizeBundle:store.authorizeBundle,
   async readManifest(sessionId:string,digest:string){

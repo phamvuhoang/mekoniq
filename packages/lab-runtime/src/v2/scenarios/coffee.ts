@@ -274,7 +274,7 @@ export class CoffeeDriver {
   const w=this.st.workload.find(x=>x.jobId===jobId)!,job=await this.job(w),cup=(await this.ctx.source.read('cup',w.cupId)).state;
   const step=(job.steps as JsonObject[]).find(s=>s.status==='running'||s.status==='unknown'),pending=cup.pendingTransfer as JsonObject|null;
   const commandId=step?String(step.commandId):pending?String(pending.commandId):null;
-  const nativeState=commandId?(step?this.plant.reconcile(commandId):await this.ports.adapters[1]!.reconcile(commandId)).status:'idle';
+  const nativeState=this.ports.recoveryOnly?'unknown':commandId?(step?this.plant.reconcile(commandId):await this.ports.adapters[1]!.reconcile(commandId)).status:'idle';
   const r=await this.ctx.submit('Coffee.Reconcile',{stationId:this.st.stationId,jobId,disposition:'discard',reason:'Lab reconcile action (human provenance)',provenance:'human'});
   if(r.status!=='accepted')this.ctx.attention({reason:'RECONCILE_REJECTED',subjectId:jobId,commandId:String(r.code)});
   return {subjectId:jobId,commandId,nativeState};

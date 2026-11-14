@@ -38,7 +38,7 @@ async function setup(failure?:'append'|'commit'|'source-write'|'direct-source-wr
    world:{prepareTick(targetTick){calls.push(`prepare:${targetTick}`);return {targetTick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]};},async step(c){calls.push(`step:${c.targetTick}`);if(failure==='lost')throw Error('WORKER_LOST');return {...snap(c.targetTick),runId:input.runId};},async commit(s){calls.push(`commit:${s.tick}:${ctx.tick()}:${ctx.nowMs()}`);if(failure==='source-write')await ctx.must('Session.Open',{sessionId:'forbidden',tableId:'table-1'});if(failure==='direct-source-write')await ctx.source.submit('Session.Open',{sessionId:'forbidden',tableId:'table-1'},'forbidden');if(failure==='commit')throw Error('COMMIT_FAILED');committed=s;},async close(){calls.push('close');}}};};
  const scenario=structuredClone(scenarioRegistry.get('MJ-BV01')!);for(const o of scenario.coffee!.orders)o.atTick=[5000,5000];
  const providers={directory,catalog,enabledBackends:['mujoco_3d','mujoco_arm','mock_coffee'],scenarios:new Map([[scenario.id,scenario]]),worldPorts:factory};
- const open=()=>createScenarioRun(manifest,providers);return {open,calls,directory,evidenceDirectory,admission,opens:()=>opens,source:()=>ctx.source};
+ const open=(reclaimOnly=false)=>createScenarioRun(manifest,{...providers,reclaimOnly});return {open,calls,directory,evidenceDirectory,admission,opens:()=>opens,source:()=>ctx.source};
 }
 test('world path never constructs/advances mock AMR and commits actual pose with target observation time',async()=>{
  const h=await setup();vi.spyOn(MockPlant.prototype,'advance').mockImplementation(()=>{throw Error('MOCK_ADVANCE_FORBIDDEN');});
@@ -97,3 +97,10 @@ test('failed H+1 ACK never becomes a public world display observation or control
 });
 
 test('display read queued behind an in-flight action publishes a single settled H/revision',async()=>{const h=await setup(),run=await h.open();const gate=publicationGate(),entered=publicationGate();try{await run.start();const v=await run.snapshot(),action=run.action({actionId:'held-display-step',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:7}},async()=>{entered.release();await gate.promise;});await entered.promise;let read=false;const display=run.worldDisplay!().then(d=>{read=true;return d;});await new Promise<void>(r=>setImmediate(r));expect(read).toBe(false);gate.release();const after=await action,d=await display;expect(d).toMatchObject({tick:7,revision:after.run.runRevision,snapshot:{tick:7},control:{targetTick:7}});}finally{gate.release();await run.close();}});
+
+test('explicit world reclaim never respawns and refuses a missing committed world checkpoint',async()=>{
+ const h=await setup(),run=await h.open();await run.start();await act(run,'step',{ticks:1});await run.close();
+ const reopened=await h.open(true);expect(h.opens()).toBe(1);expect((await reopened.snapshot()).tick).toBe(1);await reopened.close();
+ const path=join(h.directory,'run.json'),cp=JSON.parse(await fs.readFile(path,'utf8'));delete cp.world;await fs.writeFile(path,JSON.stringify(cp));
+ await expect(h.open(true)).rejects.toThrow('RECOVERY_CHECKPOINT_MISSING');expect(h.opens()).toBe(1);
+});

@@ -123,6 +123,7 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  const dir=providers.directory,bundleDir=join(dir,'bundle');
  await mkdir(dir,{recursive:true,mode:0o700});await chmod(dir,0o700);
  let cp=await readCheckpoint<Checkpoint>(dir);
+ if(providers.reclaimOnly&&!cp)throw Error('RECOVERY_CHECKPOINT_MISSING');
  const fresh=!cp;
  if(fresh&&(await readdir(dir)).length)throw new Error('RECOVERY_CHECKPOINT_MISSING');
  if(cp&&cp.provider!==amr.id)throw new Error('RUN_IDENTITY_MISMATCH');

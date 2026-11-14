@@ -47,7 +47,7 @@ test('a configured origin gets an exact-match CORS answer without credentials; l
  const g=await setup({allowOrigins:[remote]});
  const pre=await call(g.url+'/lab/v2/sessions',{method:'OPTIONS',headers:{Origin:remote,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,content-type'}});
  expect(pre.status).toBe(204);expect(pre.headers['access-control-allow-origin']).toBe(remote);expect(pre.headers.vary).toBe('Origin');
- expect(String(pre.headers['access-control-allow-headers']).split(', ')).toEqual(['Content-Type','X-CSRF-Token','Authorization','Last-Event-ID']);
+ expect(String(pre.headers['access-control-allow-headers']).split(', ')).toEqual(['Content-Type','X-CSRF-Token','Authorization','Last-Event-ID','X-Lab-Control-Epoch']);
  expect(pre.headers['access-control-max-age']).toBe('600');
  expect(pre.headers['access-control-allow-credentials']).toBeUndefined();expect(pre.headers['access-control-allow-private-network']).toBeUndefined();
  const health=await call(g.url+'/lab/v2/health',{headers:{Origin:remote}});

@@ -16,6 +16,8 @@ const run=promisify(execFile);
 export interface EngineeringRuntimeOptions{
  /** Run data directory; the bundle store lives in <directory>/engineering. */
  directory:string;
+ /** Explicit image profile: only registered portable compilers, no native Python fallback. */
+ portableOnly?:boolean;
  /** Opt-in. Without a catalog the runtime offers no engineering at all. */
  catalogRoot?:string;
  simulationRoot?:string;
@@ -43,12 +45,12 @@ export interface EngineeringRuntimeOptions{
 export async function engineeringFromOptions(o:EngineeringRuntimeOptions):Promise<EngineeringService|undefined>{
  if(!o.catalogRoot&&!o.simulationRoot)return undefined;
  if(!o.catalogRoot)throw new Error('ENGINEERING_CATALOG_REQUIRED');
- if(!o.simulationRoot)throw new Error('ENGINEERING_SIMULATION_ROOT_REQUIRED');
- const simulationRoot=resolve(o.simulationRoot),catalogRoot=resolve(o.catalogRoot),python=o.python??'python3';
- if(!await stat(join(simulationRoot,'compiler','engineering.py')).then(s=>s.isFile(),()=>false))throw new Error('ENGINEERING_SIMULATION_ROOT_INVALID');
+ if(!o.simulationRoot&&!o.portableOnly)throw new Error('ENGINEERING_SIMULATION_ROOT_REQUIRED');
+ const simulationRoot=resolve(o.simulationRoot??'.'),catalogRoot=resolve(o.catalogRoot),python=o.python??'python3';
+ if(!o.portableOnly&&!await stat(join(simulationRoot,'compiler','engineering.py')).then(s=>s.isFile(),()=>false))throw new Error('ENGINEERING_SIMULATION_ROOT_INVALID');
  const catalog=await loadCatalog(catalogRoot);
  if(!Object.keys(catalog.components).length)throw new Error(`ENGINEERING_CATALOG_UNREADABLE: ${catalog.problems[0]?.code??'empty'}`);
- try{await run(python,['-c','import rfc8785, jsonschema, referencing, yaml'],{timeout:15_000,env:{...process.env,...bytecodeEnv()}});}
+ if(!o.portableOnly)try{await run(python,['-c','import rfc8785, jsonschema, referencing, yaml'],{timeout:15_000,env:{...process.env,...bytecodeEnv()}});}
  catch{throw new Error('ENGINEERING_COMPILER_UNAVAILABLE: the Python interpreter lacks rfc8785, jsonschema, referencing or PyYAML (see robotics/simulation/requirements-dev.txt)');}
 
  let validator:RobotModelValidator|undefined,validationUnavailable='LINKFORGE_DISABLED';
@@ -69,5 +71,6 @@ export async function engineeringFromOptions(o:EngineeringRuntimeOptions):Promis
  }
  if(o.mujoco)compilers['engineering-mujoco-3d-v1']=createMujocoCompiler({workerRoot:resolve(o.mujoco.workerRoot)});
  if(o.webots)compilers['engineering-webots-3d-v1']=createWebotsCompiler();
- return createEngineeringService({directory:join(o.directory,'engineering'),catalogRoot,compiler:createPythonCompiler({python,simulationRoot}),compilers,validator,validationUnavailable});
+ if(o.portableOnly&&!Object.keys(compilers).length)throw Error('ENGINEERING_COMPILER_UNAVAILABLE');
+ return createEngineeringService({directory:join(o.directory,'engineering'),catalogRoot,...!o.portableOnly?{compiler:createPythonCompiler({python,simulationRoot})}:{},compilers,validator,validationUnavailable});
 }

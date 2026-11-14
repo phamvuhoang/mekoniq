@@ -4,6 +4,7 @@ import {join} from 'node:path';
 import {isIPv4} from 'node:net';
 import {createLabSession,type LabSession,type RunAction} from './session';
 import {parseJsonStrict} from '../../contracts/src/validate';
+import {acquireDataRoot} from './v2/data-root';
 import {createV2Gateway,type V2Deps} from './v2/gateway';
 import type {CapabilityCatalog} from './v2/capabilities';
 export interface LabGateway {url:string;pairingToken:string;issuePairingToken():string;close():Promise<void>;}
@@ -16,6 +17,7 @@ export interface GatewayOptions {port?:number;directory:string;sourceCommit:stri
  allowOrigins?:readonly string[];
  /** >= 32 characters; /lab/v2/sessions accepts it like the pairing code but never spends it. */
  accessKey?:string;
+prepareV2?:()=>Promise<GatewayOptions['v2']>;
 v2?:{worldExperiments?:V2Deps['worldExperiments'];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];stream?:V2Deps['stream'];readinessProbes?:V2Deps['readinessProbes'];nativeChecks?:V2Deps['nativeChecks'];portableChecks?:V2Deps['portableChecks'];simulationFactory?:V2Deps['simulationFactory'];engineering?:V2Deps['engineering'];wall?:V2Deps['wall']};}
 class GatewayError extends Error {constructor(readonly status:number,message:string){super(message);}}
 const origins=new Set(['http://127.0.0.1:4175','http://127.0.0.1:4176']);
@@ -47,6 +49,10 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
  /** The one origin policy: loopback origins are credentialed everywhere; configured origins reach /lab/v2 only and never with credentials. */
  const originPolicy=(origin:string,path:string)=>origins.has(origin)?{credentials:true}:configuredOrigins.has(origin)&&(path==='/lab/v2'||path.startsWith('/lab/v2/'))?{credentials:false}:undefined;
  const hostAllowed=(host:string)=>[`127.0.0.1:${port}`,`${urlHost}:${port}`,'127.0.0.1:4175','127.0.0.1:4176'].includes(host)||publicHosts.has(host.toLowerCase());
+ let port=options.port??4176;
+ const ownership=acquireDataRoot(options.directory);
+ try{
+ const configuredV2=options.prepareV2?await options.prepareV2():options.v2;
  let currentToken='',tokenExpiresAt=0;
  const sessions=new Map<string,{csrf:string;expiresAt:number}>();
  const runs=new Map<string,{owner:string;session:LabSession}>();
@@ -56,14 +62,14 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
  const pairingToken=issuePairingToken();
  const pairingValid=(t:unknown)=>typeof t==='string'&&!!currentToken&&now()<tokenExpiresAt&&same(t,currentToken);
  const accessKeyValid=(t:unknown)=>typeof t==='string'&&!!accessKey&&same(t,accessKey);
- const v2=createV2Gateway({directory:options.directory,sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,now,worldExperiments:options.v2?.worldExperiments,catalog:options.v2?.catalog,enabledBackends:options.v2?.enabledBackends,stream:options.v2?.stream,readinessProbes:options.v2?.readinessProbes,nativeChecks:options.v2?.nativeChecks,portableChecks:options.v2?.portableChecks,simulationFactory:options.v2?.simulationFactory,engineering:options.v2?.engineering,...options.v2?.wall?{wall:options.v2.wall}:{},pairingValid,...accessKey?{accessKeyValid}:{},spendPairing(){currentToken='';},same,deployment:{bind:loopbackBind(bind)?'loopback':'public'},readBody:body,send:(r,s,d)=>send(r,s,d)});
- let port=options.port??4176;
- const server=createServer((request,response)=>{void handle(request,response).catch(error=>{
+ const v2=createV2Gateway({directory:options.directory,sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,now,worldExperiments:configuredV2?.worldExperiments,catalog:configuredV2?.catalog,enabledBackends:configuredV2?.enabledBackends,stream:configuredV2?.stream,readinessProbes:configuredV2?.readinessProbes,nativeChecks:configuredV2?.nativeChecks,portableChecks:configuredV2?.portableChecks,simulationFactory:configuredV2?.simulationFactory,engineering:configuredV2?.engineering,...configuredV2?.wall?{wall:configuredV2.wall}:{},pairingValid,...accessKey?{accessKeyValid}:{},spendPairing(){currentToken='';},same,deployment:{bind:loopbackBind(bind)?'loopback':'public'},readBody:body,send:(r,s,d)=>send(r,s,d)});
+ let closing=false,closePromise:Promise<void>|undefined;const requests=new Set<Promise<void>>(),responses=new Set<ServerResponse>();
+ const server=createServer((request,response)=>{if(closing){response.destroy();return;}responses.add(response);response.once('close',()=>responses.delete(response));const work=handle(request,response).catch(error=>{
   const message=error instanceof Error?error.message:'INTERNAL_ERROR';
   const code=error instanceof GatewayError?error.status:/CONFLICT|MISMATCH|RECONCILIATION_REQUIRED|INVALID_STATE/.test(message)?409:/^(INVALID_|BACKEND_|SCENARIO_|ACTION_LIMIT|COMMAND_NOT_ALLOWED)/.test(message)?422:500;
   send(response,code,{error:code===500?'RUNTIME_FAILURE':message});
- });});
- const send=(response:ServerResponse,status:number,data:unknown)=>{if(response.writableEnded)return;response.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});response.end(JSON.stringify(data));};
+ }).finally(()=>requests.delete(work));requests.add(work);});
+ const send=(response:ServerResponse,status:number,data:unknown)=>{if(response.writableEnded||response.destroyed)return;response.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});response.end(JSON.stringify(data));};
  async function handle(request:IncomingMessage,response:ServerResponse){
   const host=request.headers.host;
   if(!host||!hostAllowed(host))throw new GatewayError(403,'HOST_FORBIDDEN');
@@ -72,7 +78,7 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
   if(origin){response.setHeader('Access-Control-Allow-Origin',origin);response.setHeader('Vary','Origin');if(policy!.credentials)response.setHeader('Access-Control-Allow-Credentials','true');}
   if(request.method==='OPTIONS'){
    if(!origin)throw new GatewayError(403,'ORIGIN_REQUIRED');
-   response.setHeader('Access-Control-Allow-Methods',/^\/lab\/v2\/runs\/[0-9a-f-]{36}\/replay\/[0-9a-f-]{36}$/.test(path)?'GET, POST, DELETE':'GET, POST');response.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token, Authorization, Last-Event-ID');response.setHeader('Access-Control-Max-Age','600');return send(response,204,null);
+   response.setHeader('Access-Control-Allow-Methods',/^\/lab\/v2\/runs\/[0-9a-f-]{36}\/replay\/[0-9a-f-]{36}$/.test(path)?'GET, POST, DELETE':'GET, POST');response.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token, Authorization, Last-Event-ID'+(path.startsWith('/lab/v2/')?', X-Lab-Control-Epoch':''));response.setHeader('Access-Control-Max-Age','600');return send(response,204,null);
   }
   // the only query accepted: the initial business-event cursor of a v2 stream (EventSource cannot send Last-Event-ID on first connect)
   if(url.search&&path!=='/lab/v2/readiness'&&!(/^\/lab\/v2\/runs\/[0-9a-f-]{36}\/events$/.test(path)&&/^\?after=\d{1,20}$/.test(url.search)))throw new GatewayError(400,'QUERY_UNSUPPORTED');
@@ -116,5 +122,11 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
  server.requestTimeout=10000;server.headersTimeout=10000;server.maxRequestsPerSocket=1000;
  await new Promise<void>((resolve,reject)=>{server.once('error',reject);server.listen(port,bind,()=>resolve());});
  port=(server.address() as {port:number}).port;
- return {url:`http://${urlHost}:${port}`,pairingToken,issuePairingToken,async close(){v2.endStreams();server.closeIdleConnections();await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));await Promise.all([...runs.values()].map(r=>r.session.close()));await v2.close();}};
+ return {url:`http://${urlHost}:${port}`,pairingToken,issuePairingToken,close(){return closePromise??=(async()=>{
+  closing=true;const stopped=new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
+  v2.beginClose();v2.endStreams();for(const response of responses)response.destroy();server.closeAllConnections();
+  // Admitted handlers own file/compiler/capture work even after their clients disconnect.
+  await Promise.all([...requests]);await Promise.all([...runs.values()].map(r=>r.session.close()));await v2.close();await stopped;ownership.close();
+ })();}};
+ }catch(error){ownership.close();throw error;}
 }

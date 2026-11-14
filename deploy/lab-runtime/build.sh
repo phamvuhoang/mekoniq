@@ -19,6 +19,7 @@ mkdir "$ctx/robotics"
 cp "$ctx/export/runtime.mjs" "$ctx/runtime.mjs"; cp -R "$ctx/export/schemas" "$ctx/schemas"; rm -rf "$ctx/export"
 # only the MuJoCo tool root, as committed, without its tests
 git -C "$root" archive HEAD robotics/simulation-mujoco | tar -x -C "$ctx" --exclude 'robotics/simulation-mujoco/tests'
+node "$here/prepare-catalog.mjs" "$ctx/robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-components.json" "$ctx/catalog"
 cp "$here/Dockerfile" "$ctx/Dockerfile"
 printf '%s\n' '**/__pycache__' '**/*.pyc' '**/tests' '**/.git' '**/.env*' > "$ctx/.dockerignore"
 docker build ${platform:+--platform "$platform"} --build-arg "SOURCE_COMMIT=$commit" -t "$tag" "$ctx"
