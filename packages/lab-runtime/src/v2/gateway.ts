@@ -56,13 +56,16 @@ export function createV2Gateway(deps:V2Deps){
  // Runs are owned by the v2 pairing session that created them; another session sees 404, exactly as for an unknown id.
  let replayClosing=false;const replayWork=new Map<string,{abort:AbortController;done:Promise<void>;finish():void}>();
  const replayPackages=new Map<string,{runId:string;directory:string;manifest:ReplayManifest}>(),replayPending=new Map<string,number>();
- /** Count unknown/crash-stale folders as occupied. Never recover or delete a directory this process did not publish. */
- const replayDiskOccupied=async()=>{const root=join(deps.directory,'replay-exports');try{const stat=await lstat(root);if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('REPLAY_EXPORT_ROOT_INVALID');let count=0;for await(const _entry of await opendir(root)){void _entry;if(++count>=8)break;}return count;}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return 0;throw e;}};
+ // Scan/admission and deletion share one short queue; captured materialization never holds it.
+ let replayAdmission=Promise.resolve();const replaySerial=<T>(work:()=>Promise<T>)=>{const pending=replayAdmission.then(work);replayAdmission=pending.then(()=>undefined,()=>undefined);return pending;};
+ /** Unknown residue has unknown size: refuse new exports, never follow/adopt/delete it. */
+ const replayDiskOccupied=async()=>{const root=join(deps.directory,'replay-exports'),known=new Set([...replayPackages.keys(),...replayWork.keys()]),stat=await lstat(root).catch((e:NodeJS.ErrnoException)=>{if(e.code==='ENOENT')return null;throw Error('REPLAY_RECOVERY_REQUIRED');});if(!stat)return 0;if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('REPLAY_RECOVERY_REQUIRED');try{let count=0;for await(const entry of await opendir(root,{bufferSize:8})){if(entry.isSymbolicLink()||!entry.isDirectory()||!known.has(entry.name))throw Error('REPLAY_RECOVERY_REQUIRED');if(++count>=8)break;}return count;}catch{throw Error('REPLAY_RECOVERY_REQUIRED');}};
+ const dropReplayRun=(runId:string)=>replaySerial(async()=>{for(const [key,p]of replayPackages)if(p.runId===runId){await rm(p.directory,{recursive:true,force:true});replayPackages.delete(key);}});
  const runs=new Map<string,{owner:string;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput}>();let creating=0;
  // Readiness and creation share cleanup. Concurrent callers wait for the worker to close before probing its slot.
  let expiryCleanup=Promise.resolve();
  const closeExpiredRuns=()=>expiryCleanup=expiryCleanup.then(async()=>{
-  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});for(const [key,p]of replayPackages)if(p.runId===id){replayPackages.delete(key);await rm(p.directory,{recursive:true,force:true});}}}
+  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});await dropReplayRun(id);}}
  });
  const reclaiming=new Set<string>();
  let pairingFailures:number[]=[];
@@ -176,19 +179,24 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);const body=await deps.readBody(request,1024);if(Object.keys(body).length)return deny(response,422,'INVALID_REPLAY_REQUEST',[]);
     if(!entry.run.captureReplay)return deny(response,422,'REPLAY_PROVIDER_UNSUPPORTED',[]);
     if(entry.archiving||reclaiming.has(runId!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
-    let occupied:number;try{occupied=await replayDiskOccupied();}catch{return deny(response,422,'REPLAY_EXPORT_ROOT_INVALID',[]);}if(runs.get(runId!)!==entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);if(occupied+[...replayPending.values()].reduce((n,v)=>n+v,0)>=8)return deny(response,429,'REPLAY_CAPACITY',[]);
-    if([...replayPackages.values()].filter(p=>p.runId===runId).length+(replayPending.get(runId!)??0)>=2)return deny(response,429,'REPLAY_VERSION_LIMIT',[]);
-    if(replayClosing||replayWork.size>=2||replayPackages.size+[...replayPending.values()].reduce((n,v)=>n+v,0)>=8)return deny(response,429,'REPLAY_CAPACITY',[]);
-    replayPending.set(runId!,1+(replayPending.get(runId!)??0));const id=randomUUID(),directory=join(deps.directory,'replay-exports',id),abort=new AbortController(),disconnect=()=>{if(!response.writableFinished)abort.abort();};response.once('close',disconnect);let finish!:()=>void;const done=new Promise<void>(resolve=>finish=resolve);replayWork.set(id,{abort,done,finish});
-    try{const capture=await entry.run.captureReplay({signal:abort.signal});if(capture.report.manifest.runId!==runId)throw Error('REPLAY_CAPTURE_IDENTITY');abort.signal.throwIfAborted();await mkdir(join(deps.directory,'replay-exports'),{recursive:true,mode:0o700});const manifest=await exportWebReplay(capture,directory,{signal:abort.signal});
+    const id=randomUUID(),directory=join(deps.directory,'replay-exports',id),abort=new AbortController();let finish!:()=>void;const done=new Promise<void>(resolve=>finish=resolve);
+    const refusal=await replaySerial(async()=>{
+     if(runs.get(runId!)!==entry||entry.owner!==sessionId)return {status:404,error:'RUN_NOT_FOUND'};
+     try{await replayDiskOccupied();}catch{return {status:429,error:'REPLAY_RECOVERY_REQUIRED'};}
+     if([...replayPackages.values()].filter(p=>p.runId===runId).length+(replayPending.get(runId!)??0)>=2)return {status:429,error:'REPLAY_VERSION_LIMIT'};
+     if(replayClosing||replayWork.size>=2||replayPackages.size+[...replayPending.values()].reduce((n,v)=>n+v,0)>=8)return {status:429,error:'REPLAY_CAPACITY'};
+     replayPending.set(runId!,1+(replayPending.get(runId!)??0));replayWork.set(id,{abort,done,finish});return null;
+    });if(refusal)return deny(response,refusal.status,refusal.error,[]);
+    const disconnect=()=>{if(!response.writableFinished)abort.abort();};response.once('close',disconnect);if(response.destroyed||request.aborted)abort.abort();let ownsDirectory=false;
+    try{const capture=await entry.run.captureReplay({signal:abort.signal});if(capture.report.manifest.runId!==runId)throw Error('REPLAY_CAPTURE_IDENTITY');abort.signal.throwIfAborted();await mkdir(join(deps.directory,'replay-exports'),{recursive:true,mode:0o700});await mkdir(directory,{mode:0o700});ownsDirectory=true;const manifest=await exportWebReplay(capture,join(directory,'package'),{signal:abort.signal});
      if(replayClosing||runs.get(runId!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)throw Error('REPLAY_OWNER_CHANGED');replayPackages.set(id,{runId:runId!,directory,manifest});return send(response,201,{exportId:id,manifest});
-    }catch(e){await rm(directory,{recursive:true,force:true});return deny(response,422,'REPLAY_EXPORT_REFUSED',[(e as Error).message.split(':')[0]!]);}finally{response.off('close',disconnect);replayWork.get(id)?.finish();replayWork.delete(id);const n=(replayPending.get(runId!)??1)-1;if(n)replayPending.set(runId!,n);else replayPending.delete(runId!);}
+    }catch(e){if(ownsDirectory)await rm(directory,{recursive:true,force:true});return deny(response,422,'REPLAY_EXPORT_REFUSED',[(e as Error).message.split(':')[0]!]);}finally{response.off('close',disconnect);await replaySerial(async()=>{replayWork.get(id)?.finish();replayWork.delete(id);const n=(replayPending.get(runId!)??1)-1;if(n)replayPending.set(runId!,n);else replayPending.delete(runId!);});}
    }
    const pkg=exportId?replayPackages.get(exportId):undefined;if(!pkg||pkg.runId!==runId)return deny(response,404,'NOT_FOUND',[]);
-   if(method==='DELETE'&&index===undefined){if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);replayPackages.delete(exportId!);await rm(pkg.directory,{recursive:true,force:true});return send(response,200,{deleted:true});}
+   if(method==='DELETE'&&index===undefined){if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);const deleted=await replaySerial(async()=>{if(runs.get(runId!)!==entry||entry.owner!==sessionId||replayPackages.get(exportId!)!==pkg)return false;await rm(pkg.directory,{recursive:true,force:true});replayPackages.delete(exportId!);return true;});return deleted?send(response,200,{deleted:true}):deny(response,404,'NOT_FOUND',[]);}
    if(method!=='GET')return deny(response,405,'METHOD_NOT_ALLOWED',[]);if(index===undefined)return send(response,200,pkg.manifest);
    const asset=pkg.manifest.assets[Number(index)];if(!asset)return deny(response,404,'NOT_FOUND',[]);
-   try{const bytes=await readReplayInput(pkg.directory,asset.path,asset.bytes);if(bytes.length!==asset.bytes||createHash('sha256').update(bytes).digest('hex')!==asset.sha256)throw Error('REPLAY_ASSET_HASH');if(runs.get(runId!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'NOT_FOUND',[]);response.writeHead(200,{'content-type':'application/octet-stream','cache-control':'no-store','x-content-type-options':'nosniff','content-length':bytes.length});response.end(bytes);return;}catch{return deny(response,422,'REPLAY_ASSET_UNAVAILABLE',[]);}
+   try{const bytes=await readReplayInput(join(pkg.directory,'package'),asset.path,asset.bytes);if(bytes.length!==asset.bytes||createHash('sha256').update(bytes).digest('hex')!==asset.sha256)throw Error('REPLAY_ASSET_HASH');if(runs.get(runId!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'NOT_FOUND',[]);response.writeHead(200,{'content-type':'application/octet-stream','cache-control':'no-store','x-content-type-options':'nosniff','content-length':bytes.length});response.end(bytes);return;}catch{return deny(response,422,'REPLAY_ASSET_UNAVAILABLE',[]);}
   }
   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
   const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|events|telemetry|reclaim|archive))?$`).exec(sub);
@@ -292,7 +300,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    try{
     const report=await entry.run.report(),view=await entry.run.snapshot();
     await writeFile(join(entry.directory,`archive-${view.run.runRevision}.json`),JSON.stringify(report),{mode:0o600,flag:'wx'}).catch(e=>{if((e as NodeJS.ErrnoException).code!=='EEXIST')throw e;});
-    await entry.run.close();runs.delete(entry.run.id);for(const [key,p]of replayPackages)if(p.runId===entry.run.id){replayPackages.delete(key);await rm(p.directory,{recursive:true,force:true});}return send(response,200,{archived:true,runId:entry.run.id,eventCursor:view.run.eventCursor});
+    await entry.run.close();runs.delete(entry.run.id);await dropReplayRun(entry.run.id);return send(response,200,{archived:true,runId:entry.run.id,eventCursor:view.run.eventCursor});
    }catch(e){entry.archiving=false;return failed(response,e);}
   }
   if(kind==='events'||kind==='telemetry'){streams.add(response);return serveRunStream(kind,entry.run,request,response,streamOptions,new URL(request.url??'/','http://127.0.0.1'),()=>streams.delete(response),()=>sessions.get(sessionId)===session&&deps.now()<session.expiresAt&&runs.get(entry.run.id)===entry&&entry.owner===sessionId&&!entry.archiving);}
