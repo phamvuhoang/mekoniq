@@ -10,7 +10,7 @@ const worldRoot='robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1',pu
 const cache=new Map<string,Buffer>();async function source(path:string){let b=cache.get(path);if(!b){b=await readFile(path);cache.set(path,b);}return b;}
 export async function nativeHandoffFixture(mode:'oci'|'native_apt'|'ros_navigation'|'ros_xarm'='oci'){
  const root=await mkdtemp(join(tmpdir(),'native-handoff-test-')),sha='a'.repeat(64),commit='1'.repeat(40);
- const configBytes=JSON.stringify({os:'linux',architecture:'amd64'}),manifestBytes=JSON.stringify({schemaVersion:2,mediaType:'application/vnd.oci.image.manifest.v1+json',config:{digest:'sha256:'+digest(configBytes)}});
+ const configBytes=JSON.stringify({os:'linux',architecture:'amd64',rootfs:{type:'layers',diff_ids:['sha256:'+'b'.repeat(64)]}}),manifestBytes=JSON.stringify({schemaVersion:2,mediaType:'application/vnd.oci.image.manifest.v1+json',config:{mediaType:'application/vnd.oci.image.config.v1+json',size:Buffer.byteLength(configBytes),digest:'sha256:'+digest(configBytes)},layers:[{mediaType:'application/vnd.oci.image.layer.v1.tar+gzip',size:123,digest:'sha256:'+'c'.repeat(64)}]});
  const image={platform:'linux/amd64',manifestDigest:'sha256:'+digest(manifestBytes),configDigest:'sha256:'+digest(configBytes)};
  await writeFile(join(root,'image-config.json'),configBytes);await writeFile(join(root,'image-manifest.json'),manifestBytes);
  const subject={nativeClosureHash:mode==='native_apt'?sha:null as string|null,executionKind:mode==='oci'?'mujoco_image':mode==='native_apt'?'linuxcnc_native':'ros2_native',profileSha256:sha,id:'synthetic-'+mode,sourceCommit:commit,labCommit:'2'.repeat(40),schemaHash:sha,portableClosureHash:sha,runtimeArtifactSha256:digest('runtime'),image:mode==='oci'?image:null};

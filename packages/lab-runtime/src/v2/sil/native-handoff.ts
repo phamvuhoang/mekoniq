@@ -13,6 +13,20 @@ import {validateNativeDocuments} from './native-handoff-documents';
 export type Issue={code:string;path:string;severity:'error'|'prerequisite'};
 export type HandoffAssessment={prepared:boolean;nativeReady:boolean;issues:Issue[]};
 const shape=new Ajv({strict:true,allErrors:true}).compile<NativeHandoffV1>(schema);
+// Supported image records only: SHA-256 OCI image v1 / Docker image manifest v2, not indexes or artifacts.
+// Layer bytes are not fetched/executed; descriptors and uncompressed rootfs identities are structurally bound.
+type ImageDescriptor={mediaType:string;digest:string;size:number};
+type ImageManifest={mediaType:string;schemaVersion:2;config:ImageDescriptor;layers:ImageDescriptor[]};
+type ImageConfig={os:string;architecture:string;rootfs:{type:'layers';diff_ids:string[]};history?:{empty_layer?:boolean}[]};
+const digestShape={type:'string',pattern:'^sha256:[a-f0-9]{64}$'},stringArray={type:'array',items:{type:'string'}};
+const descriptorShape={type:'object',required:['mediaType','digest','size'],properties:{mediaType:{type:'string'},digest:digestShape,size:{type:'integer',minimum:0,maximum:Number.MAX_SAFE_INTEGER},urls:stringArray,annotations:{type:'object',additionalProperties:{type:'string'}}}};
+const imageManifestShape=new Ajv({strict:true}).compile<ImageManifest>({type:'object',required:['schemaVersion','mediaType','config','layers'],properties:{schemaVersion:{const:2},mediaType:{enum:['application/vnd.oci.image.manifest.v1+json','application/vnd.docker.distribution.manifest.v2+json']},config:descriptorShape,layers:{type:'array',minItems:1,items:descriptorShape},annotations:{type:'object',additionalProperties:{type:'string'}}}});
+const imageConfigShape=new Ajv({strict:true}).compile<ImageConfig>({type:'object',required:['os','architecture','rootfs'],properties:{os:{type:'string',minLength:1},architecture:{type:'string',minLength:1},variant:{type:'string'},'os.version':{type:'string'},'os.features':stringArray,created:{type:'string'},author:{type:'string'},rootfs:{type:'object',required:['type','diff_ids'],properties:{type:{const:'layers'},diff_ids:{type:'array',items:digestShape}}},config:{type:'object',properties:{User:{type:'string'},Env:stringArray,Entrypoint:{anyOf:[stringArray,{type:'null'}]},Cmd:{anyOf:[stringArray,{type:'null'}]},WorkingDir:{type:'string'},StopSignal:{type:'string'},ArgsEscaped:{type:'boolean'},Labels:{anyOf:[{type:'object',additionalProperties:{type:'string'}},{type:'null'}]},Volumes:{anyOf:[{type:'object',additionalProperties:{type:'object'}},{type:'null'}]},ExposedPorts:{type:'object',additionalProperties:{type:'object'}}}},history:{type:'array',items:{type:'object',properties:{created:{type:'string'},author:{type:'string'},created_by:{type:'string'},comment:{type:'string'},empty_layer:{type:'boolean'}}}}}});
+function validImageRecords(manifest:unknown,config:unknown,configBytes:number){
+ if(!imageManifestShape(manifest)||!imageConfigShape(config))return false;
+ const oci=manifest.mediaType==='application/vnd.oci.image.manifest.v1+json',types=oci?['application/vnd.oci.image.layer.v1.tar','application/vnd.oci.image.layer.v1.tar+gzip','application/vnd.oci.image.layer.v1.tar+zstd','application/vnd.oci.image.layer.nondistributable.v1.tar','application/vnd.oci.image.layer.nondistributable.v1.tar+gzip','application/vnd.oci.image.layer.nondistributable.v1.tar+zstd']:['application/vnd.docker.image.rootfs.diff.tar.gzip','application/vnd.docker.image.rootfs.foreign.diff.tar.gzip'];
+ return manifest.config.mediaType===(oci?'application/vnd.oci.image.config.v1+json':'application/vnd.docker.container.image.v1+json')&&manifest.config.size===configBytes&&manifest.layers.every((layer:{mediaType:string})=>types.includes(layer.mediaType))&&config.rootfs.diff_ids.length===manifest.layers.length&&(!config.history||config.history.filter((entry:{empty_layer?:boolean})=>!entry.empty_layer).length===manifest.layers.length);
+}
 const FILE_LIMIT=64*1024*1024,JSON_LIMIT=1024*1024,TOTAL_LIMIT=256*1024*1024,REF_LIMIT=768;
 const hash=(bytes:Buffer|string)=>createHash('sha256').update(bytes).digest('hex');
 const safePath=(p:string)=>/^[A-Za-z0-9_-][A-Za-z0-9_.-]*(\/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$/.test(p)&&p.length<=240&&!p.split('/').some(x=>x==='.'||x==='..');
@@ -96,7 +110,7 @@ export async function validateNativeHandoff(root:string,value:unknown,inventory?
    if(m.profile.installation.kind==='oci'){
     const image=m.subject.image;if(!image)throw new Error('unbuilt');
     const imageBytes=await readHandoffFile(root,record.platformManifestPath),configBytes=await readHandoffFile(root,record.imageConfigPath),platformManifest=json(imageBytes),config=json(configBytes);
-    if('sha256:'+hash(imageBytes)!==image.manifestDigest||'sha256:'+hash(configBytes)!==image.configDigest||platformManifest.schemaVersion!==2||!['application/vnd.oci.image.manifest.v1+json','application/vnd.docker.distribution.manifest.v2+json'].includes(platformManifest.mediaType)||platformManifest.config?.digest!==image.configDigest||config.os!=='linux'||config.architecture!==m.profile.architecture)throw new Error('platform identity mismatch');
+    if('sha256:'+hash(imageBytes)!==image.manifestDigest||'sha256:'+hash(configBytes)!==image.configDigest||!validImageRecords(platformManifest,config,configBytes.length)||platformManifest.config?.digest!==image.configDigest||config.os!=='linux'||config.architecture!==m.profile.architecture)throw new Error('platform identity mismatch');
    }else{
     if(!Array.isArray(record.sources)||record.sources.length!==m.profile.installation.sources.length)throw new Error('source evidence missing');
     let provenanceBytes=0;
