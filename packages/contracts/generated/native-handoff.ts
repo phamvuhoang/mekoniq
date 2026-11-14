@@ -94,7 +94,7 @@ export interface NativeHandoffV1 {
   frames: {
     world: string;
     robotBase: string;
-    tool: string;
+    tool: string | null;
     handedness: 'right';
   };
   units: {
@@ -130,6 +130,7 @@ export interface HandoffSubject {
   image: HandoffImage | null;
   executionKind: 'mujoco_image' | 'ros2_native' | 'linuxcnc_native';
   profileSha256: string;
+  nativeClosureHash: string | null;
 }
 export interface HandoffImage {
   platform: 'linux/amd64' | 'linux/arm64';
@@ -168,9 +169,39 @@ export interface HandoffProfile {
    */
   clockDomains: string[];
   installation: HandoffInstallation;
+  documents: HandoffDocumentBinding;
 }
 export interface HandoffPackage {
   name: string;
   version: string | null;
   sha256: string | null;
+}
+export interface HandoffDocumentBinding {
+  kind: string;
+  modelRevision: string;
+  siModelRevision: string;
+  sourceUnits: {
+    length: string;
+    angle: string;
+    alpha: string;
+  };
+  lengthToM: number;
+  angleToRad: number;
+  frameMap: {
+    [k: string]: any;
+  };
+  /**
+   * @minItems 1
+   * @maxItems 1000
+   */
+  jointMap: {
+    id: string;
+    controllerJoint: string;
+    sign: -1 | 1;
+    zeroOffsetRad: number;
+    lowerRad: number | null;
+    upperRad: number | null;
+    velocityRadS: number;
+  }[];
+  inertiaOrder: 'xx_xy_xz_yy_yz_zz' | 'unknown';
 }

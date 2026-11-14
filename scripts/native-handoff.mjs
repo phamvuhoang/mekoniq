@@ -16,7 +16,7 @@ try{
  const input=resolve(options['--input']),manifest=await readNativeHandoff(input),inventoryPath=options['--inventory']&&resolve(options['--inventory']);
  const inventory=inventoryPath?JSON.parse((await readHandoffFile(dirname(inventoryPath),basename(inventoryPath))).toString('utf8')):undefined;
  const result=command==='export'?await exportNativeHandoff(input,options['--out']):await validateNativeHandoff(input,manifest,inventory);
- const files=['scripts/native-handoff.mjs','packages/lab-runtime/src/v2/sil/native-handoff.ts','scripts/native-sim/native-inventory.mjs','packages/contracts/schemas/native-handoff-v1.schema.json','pnpm-lock.yaml'],hash=createHash('sha256');
+ const files=['scripts/native-handoff.mjs','packages/lab-runtime/src/v2/sil/native-handoff.ts','packages/lab-runtime/src/v2/sil/native-handoff-documents.ts','scripts/native-sim/native-inventory.mjs','packages/contracts/schemas/native-handoff-v1.schema.json','pnpm-lock.yaml'],hash=createHash('sha256');
  for(const file of files)hash.update(file+'\n').update(await readFile(resolve(root,file)));
  let sourceCommit=null;try{sourceCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8',timeout:5000}).trim();}catch{/* copied checker has only its byte identity */}
  console.log(JSON.stringify({...result,subject:manifest.subject,checker:{sourceCommit,toolSha256:hash.digest('hex')},inventoryAssessment:'supplied_records_only',qualification:'not_run',accepted:false,dynamics:'not_calibrated'},null,2));

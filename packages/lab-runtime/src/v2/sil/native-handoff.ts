@@ -9,6 +9,7 @@ import {isDeepStrictEqual} from 'node:util';
 import schema from '../../../../contracts/schemas/native-handoff-v1.schema.json';
 import type {NativeHandoffV1,HandoffRef} from '../../../../contracts/generated/native-handoff';
 import {nativeInventoryIssues} from '../../../../../scripts/native-sim/native-inventory.mjs';
+import {validateNativeDocuments} from './native-handoff-documents';
 export type Issue={code:string;path:string;severity:'error'|'prerequisite'};
 export type HandoffAssessment={prepared:boolean;nativeReady:boolean;issues:Issue[]};
 const shape=new Ajv({strict:true,allErrors:true}).compile<NativeHandoffV1>(schema);
@@ -76,8 +77,14 @@ export async function validateNativeHandoff(root:string,value:unknown,inventory?
    const s=json(contents.get(ref.path)!);if(s===null||typeof s!=='object'||Array.isArray(s))add('SCHEMA_CONTENT_INVALID','/refs/schema');
   }
   if(schemaHash.digest('hex')!==subject.schemaHash)add('SCHEMA_IDENTITY_MISMATCH','/subject/schemaHash');
-  for(const ref of [...m.refs.engine,...m.refs.tool])if(!closure?.files?.some((f:HandoffRef)=>f.path===ref.sourcePath&&f.sha256===ref.sha256&&f.bytes===ref.bytes))add('TOOL_IDENTITY_MISMATCH',`/refs/${ref.path}`);
+  const native=runtime.nativeTools;
+  if(subject.nativeClosureHash!==null){
+   if(native?.version!==1||native?.digest!==subject.nativeClosureHash||!Array.isArray(native?.files)||hash(JSON.stringify(native.files))!==subject.nativeClosureHash)add('NATIVE_CLOSURE_IDENTITY_MISMATCH','/subject/nativeClosureHash');
+   else for(const file of native.files)if(!refs.some(({role,ref})=>(role==='schema'?'packages/contracts/schemas/'+ref.sourcePath:ref.sourcePath)===file.path&&ref.sha256===file.sha256&&ref.bytes===file.bytes))add('NATIVE_CLOSURE_FILE_MISSING',`/refs/${file.path}`);
+  }
+  for(const ref of [...m.refs.engine,...m.refs.tool])if(![...closure?.files??[],...subject.nativeClosureHash!==null?native?.files??[]:[]].some((f:HandoffRef)=>f.path===ref.sourcePath&&f.sha256===ref.sha256&&f.bytes===ref.bytes))add('TOOL_IDENTITY_MISMATCH',`/refs/${ref.path}`);
  }catch{add('REF_METADATA_INVALID','/refs');}
+ if(!issues.some(i=>i.severity==='error'))issues.push(...validateNativeDocuments(m,contents));
  issues.push(...nativeInventoryIssues(inventory,{profile:m.profile,subject:m.subject}));
  if(inventory&&typeof inventory==='object'){
   const provenance=(inventory as {provenance?:{evidencePath?:unknown;evidenceSha256?:unknown}}).provenance;
