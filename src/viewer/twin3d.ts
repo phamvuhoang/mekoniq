@@ -1,3 +1,4 @@
+import {payloadGeometry} from '../twin/payload';
 // Optional WebGL view of the same TwinFrame/ViewState the 2D plan draws. Read-only. The scene is kept: update() rebuilds it only when the scene itself
 // (sceneKey: project, world, navigation scene, layers, selection) changes; an object whose own drawing changes (objectKeys: it appears or goes, its source,
 // a cup entering or leaving the plant's report, the arm's display source) is redrawn alone (dataset.redraws); otherwise it moves what is there; pose() only changes transforms. Renders on demand: the workspace drives pose() from an
@@ -34,7 +35,7 @@ export interface OverlayShape {layer:'path'|'footprint'|'safety'|'observed';enti
 /** The plan overlays of the 3D view, from the same frame data and helpers the 2D plan uses (no data of its own). Pure: what update() draws. */
 export function overlayShapes(f:TwinFrame,vs:ViewState):OverlayShape[]{
  const out:OverlayShape[]=[];
- for(const r of f.view?.entities??[]){
+ for(const r of f.view?.entities.filter(e=>e.kind==='amr')??[]){
   if(vs.layers.path&&r.path.length)out.push({layer:'path',entityId:r.id,loop:false,z:0.02,points:[[r.pose.x,r.pose.y],...r.path.map(([x,y])=>[x!,y!] as [number,number])]});
   // IR-SIM runs: the compiled footprint on the drive frame (T_map_base x T_base_drive); other runs: the Lab asset footprint
   const model=f.navigation?.robots.find(x=>x.robotId===r.id)?.model,poly=vs.layers.footprint?model?footprintInMap(model,r.pose):f.navigation?null:amrFootprint(assetOf(f.preset.project,f.preset.assets,r.id),r.pose):null;
@@ -109,7 +110,7 @@ export const sceneKey=(f:TwinFrame,vs:ViewState):string=>{const p=f.preset.proje
 /** How each drawn object looks (never its pose or joint angles): a changed entry redraws that object alone. Pure. */
 export function objectKeys(f:TwinFrame):Map<string,string>{
  const chain=!!armBase(f);
- return new Map(drawn(f).map(({e,arm})=>[e.id,JSON.stringify([e.kind,e.source,!!e.pose3d,!!e.plant,arm&&[arm.source,arm.frozen,chain&&!!arm.jointsRad,arm.model,arm.mesh]])]));
+ return new Map(drawn(f).map(({e,arm})=>[e.id,JSON.stringify([e.kind,e.source,!!e.pose3d,!!e.plant,e.payload?.geometry,f.payloadBundle?.physicalSha256,arm&&[arm.source,arm.frozen,chain&&!!arm.jointsRad,arm.model,arm.mesh]])]));
 }
 /** Changes when the scene or any object's drawing changes; never when only a pose or a joint angle does. Pure. */
 export const structureKey=(f:TwinFrame,vs:ViewState):string=>JSON.stringify([sceneKey(f,vs),[...objectKeys(f)]]);
@@ -249,9 +250,21 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    const l=a.wantMesh?meshLoad(mount):null;if(l?.set)dressMeshes(a,l);else dress(a,null);if(l&&!l.set&&!l.error)await_(l);
    return;
   }
+  if(e.kind==='amr'&&f.preset.id==='mujoco-payload'&&!f.payloadBundle)return;// no generic body presented as admitted mobile geometry
+  if(e.kind==='amr'&&f.payloadBundle){
+   // All link geometry is canonical base-frame SI; convert each local pose once, then place the group at the measured base.
+   const group=new THREE.Group();group.userData.entityId=e.id;
+   for(const shape of payloadGeometry(f.payloadBundle.physical)){
+    const g=shape.geometry,geo=g.kind==='box'?new THREE.BoxGeometry(g.sizeM[0]!,g.sizeM[2]!,g.sizeM[1]!):g.kind==='cylinder'?new THREE.CylinderGeometry(g.radiusM,g.radiusM,g.lengthM,24):g.kind==='sphere'?new THREE.SphereGeometry(g.radiusM,16,12):null;
+    if(!geo)continue;
+    const mesh=new THREE.Mesh(geo,mat(shape.linkId.startsWith('tray-')?0x91a8ac:shape.linkId.startsWith('wheel')?0x29373c:0xd3dcd3,{wire:e.source==='unknown',emissive:on}));
+    const pl=placeBody(shape.positionM,shape.quaternionXyzw,0);mesh.position.set(...pl.position);mesh.quaternion.set(...pl.quaternion);mesh.userData.entityId=e.id;mesh.userData.linkId=shape.linkId;group.add(mesh);
+   }
+   world.add(group);objs.set(e.id,{obj:group,c:0});return;
+  }
   // a cup the plant reports: its own size (cell layout, assumed) at the plant's pose, set by pose(); any other cup: the schematic cup at its custodian
-  const cup=xarmLayout.cup,geo=e.kind==='amr'?new THREE.CylinderGeometry(0.3,0.3,0.45,24):e.kind==='coffee_machine'?new THREE.BoxGeometry(0.4,0.45,0.3):e.kind==='arm'?new THREE.CylinderGeometry(0.09,0.12,0.7,16):e.kind==='cup'?e.plant?new THREE.CylinderGeometry(cup.radiusM,cup.radiusM,cup.heightM,20):new THREE.CylinderGeometry(0.05,0.04,0.12,16):new THREE.BoxGeometry(0.25,0.3,0.25);
-  const mesh=new THREE.Mesh(geo,mat(e.kind==='amr'?0xd3dcd3:e.kind==='cup'?0xf5f0e6:NAVY+0x101010,{wire:e.source==='unknown'||e.source==='derived',emissive:on}));
+  const cup=e.payload?.geometry??xarmLayout.cup,geo=e.kind==='amr'?new THREE.CylinderGeometry(0.3,0.3,0.45,24):e.kind==='coffee_machine'?new THREE.BoxGeometry(0.4,0.45,0.3):e.kind==='arm'?new THREE.CylinderGeometry(0.09,0.12,0.7,16):(e.kind==='cup'||e.kind==='payload')?e.plant?new THREE.CylinderGeometry(cup.radiusM,cup.radiusM,cup.heightM,20):new THREE.CylinderGeometry(0.05,0.04,0.12,16):new THREE.BoxGeometry(0.25,0.3,0.25);
+  const mesh=new THREE.Mesh(geo,mat(e.kind==='amr'?0xd3dcd3:(e.kind==='cup'||e.kind==='payload')?0xf5f0e6:NAVY+0x101010,{wire:e.source==='unknown'||e.source==='derived',emissive:on}));
   // a 3D plant: the body centre sits above the base origin by its height less the wheel radius (the base origin's height when it stands level)
   const wheel=f.navigation?.robots.find(r=>r.robotId===e.id)?.model.kinematics.wheelRadiusM??0.09;
   mesh.userData.entityId=e.id;mesh.userData.plant=!!e.plant;world.add(mesh);objs.set(e.id,{obj:mesh,c:heightOf(e)-(e.pose3d?wheel:0)});
@@ -304,6 +317,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    if(a.mesh)poseArmMeshes(a.mesh,fr,a.opening);else if(a.chain)poseArmChain(a.chain,fr);// the fingers follow the measured opening only
   }
   for(const [id,c] of Object.entries(p.cups??{})){const o=objs.get(id);if(o?.obj.userData.plant){const pl=placeBody(c.positionM,c.quaternionXyzw,0);o.obj.position.set(...pl.position);o.obj.quaternion.set(...pl.quaternion);}}
+  put('payloadCount',String(Object.keys(p.cups??{}).filter(id=>id.startsWith('payload:')).length));put('payloadPoses',JSON.stringify(p.cups??{}));put('bodyPoses',JSON.stringify(p.bodies));put('payloadGeometry',lf?.payloadBundle?.physicalSha256??'');
   status();render();
  };
  const home=()=>{if(!lf)return;const w=lf.preset.project.world,m=Math.max(w.width,w.height);camera.position.set(w.width/2,m*0.9,w.height*0.4+m*0.6);controls.target.set(w.width/2,0,-w.height/2);
@@ -337,6 +351,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
   fit(id){
    const o=id?objs.get(id)?.obj:undefined,box=new THREE.Box3().setFromObject(o??world);if(box.isEmpty())return;
    const s=box.getBoundingSphere(new THREE.Sphere()),d=Math.max(s.radius,0.3)/Math.sin(THREE.MathUtils.degToRad(camera.fov)/2),dir=camera.position.clone().sub(controls.target).normalize();
+   if(id?.startsWith('payload:')){dir.y=0.22;dir.normalize();}// see the cup between trays through the existing one-click Fit action
    controls.target.copy(s.center);camera.position.copy(s.center).addScaledVector(dir,d);userMoved=true;controls.update();render();
   },
   // the shared geometry stays parsed in the page cache, but its GPU buffers (and this renderer's dispose listeners on it) go with this view; a later view re-uploads it

@@ -1,6 +1,6 @@
 import type { Locale } from "../shared/types";
 export let locale: Locale =
-  (localStorage.getItem("mekoniq-locale") as Locale) || "vi";
+  ((typeof localStorage==='undefined'?null:localStorage.getItem("mekoniq-locale")) as Locale) || "vi";
 if (!["vi", "ja", "en"].includes(locale)) locale = "vi";
 export function setLocale(value: Locale): void {
   locale = value;

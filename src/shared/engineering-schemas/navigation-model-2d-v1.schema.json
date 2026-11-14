@@ -1,0 +1,274 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.navigation-model-2d.v1",
+  "title": "NavigationModel2DV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "navigation-model-2d"
+    },
+    "modelDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "inputs": {
+      "$ref": "robot-physical-model-v1.schema.json#/definitions/InputIdentity"
+    },
+    "robotId": {
+      "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+    },
+    "physicalModelDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "baseFrameId": {
+      "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+    },
+    "driveFrameInBase": {
+      "$ref": "engineering-component.schema.json#/definitions/Pose"
+    },
+    "kinematics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "differential_drive"
+        },
+        "wheelRadiusM": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "wheelSeparationM": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "maxLinearMps": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "maxAngularRadps": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "maxWheelRadps": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "left": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "right": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "left",
+            "right"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "wheelRadiusM",
+        "wheelSeparationM",
+        "maxLinearMps",
+        "maxAngularRadps",
+        "maxWheelRadps"
+      ]
+    },
+    "footprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "frame": {
+          "const": "drive"
+        },
+        "verticesM": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 128,
+          "items": {
+            "$ref": "robot-physical-model-v1.schema.json#/definitions/Vec2"
+          }
+        },
+        "method": {
+          "const": "convex-hull-primitive-bounds-v1"
+        },
+        "contributingShapeIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1000,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          }
+        },
+        "conservative": {
+          "const": true
+        }
+      },
+      "required": [
+        "frame",
+        "verticesM",
+        "method",
+        "contributingShapeIds",
+        "conservative"
+      ]
+    },
+    "navigationPolicyRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "hash": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "hash"
+      ]
+    },
+    "sensors": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/definitions/Lidar2DProjection"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "modelDigest",
+    "inputs",
+    "robotId",
+    "physicalModelDigest",
+    "baseFrameId",
+    "driveFrameInBase",
+    "kinematics",
+    "footprint",
+    "navigationPolicyRef",
+    "sensors",
+    "limitations"
+  ],
+  "definitions": {
+    "Lidar2DProjection": {
+      "title": "Lidar2DProjection",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "type": {
+          "const": "lidar_2d"
+        },
+        "sourceModelDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "parentLinkId": {
+          "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+        },
+        "poseInDrive": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "heightM": {
+          "type": "number"
+        },
+        "rangeMinM": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rangeMaxM": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "fieldOfViewRad": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 6.283185307179587
+        },
+        "beamCount": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 1080
+        },
+        "publishEveryTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "noise": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "distribution": {
+              "enum": [
+                "none",
+                "gaussian"
+              ]
+            },
+            "stddevM": {
+              "type": "number",
+              "minimum": 0
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          },
+          "required": [
+            "distribution",
+            "stddevM",
+            "seed"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "sourceModelDigest",
+        "parentLinkId",
+        "poseInDrive",
+        "heightM",
+        "rangeMinM",
+        "rangeMaxM",
+        "fieldOfViewRad",
+        "beamCount",
+        "publishEveryTicks",
+        "noise"
+      ]
+    }
+  }
+}

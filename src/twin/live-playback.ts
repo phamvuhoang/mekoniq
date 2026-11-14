@@ -14,6 +14,8 @@ export class LivePlayback {
  /** Arm joints (observed, else commanded; then the measured gripper opening when there is one), a plant cup pose `[x, y, z, qx, qy, qz, qw]` or an AMR base pose
   * `[x, y, yaw, z?, roll?, pitch?]` into the entity's buffer. */
  feed(h:Held,epochReset:boolean):void{
+  if(h.providerId==='mujoco_3d'){this.bufs.delete(h.entityId);return;}// mobile payload/base stay on the same committed observation, with no client motion
+
   const a=armJointsView(h,h.receivedAtMs),d=displayJoints(null,a),o=h.observed,p3=pose3dOf(o),cup=plantCupPose(h);let src:string|null=null,val:number[]=[];
   if(d.jointsRad){if(!d.frozen){src=a.gripperOpeningM===null?d.source:`${d.source}+gripper`;val=a.gripperOpeningM===null?d.jointsRad:[...d.jointsRad,a.gripperOpeningM];}}
   else if(cup){src='cup';val=[...cup.positionM,...cup.quaternionXyzw];}

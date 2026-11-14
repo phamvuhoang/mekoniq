@@ -1,0 +1,355 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.load-profile.v1",
+  "title": "LoadProfileV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "load-profile"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "digest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "calibration": {
+      "const": "not_calibrated"
+    },
+    "modelRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "maxLength": 240,
+          "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_-]+(?:/[A-Za-z0-9_.-]+)*\\.json$"
+        },
+        "sha256": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ]
+    },
+    "supports": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "supportId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "parentBodyId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "poseInBody": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "positionM": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "quaternionXyzw": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "positionM",
+              "quaternionXyzw"
+            ]
+          },
+          "polygonM": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 32,
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          "source": {
+            "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+          }
+        },
+        "required": [
+          "supportId",
+          "parentBodyId",
+          "poseInBody",
+          "polygonM",
+          "source"
+        ]
+      }
+    },
+    "props": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "propId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "massKg": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "inertiaKgM2": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "type": "number"
+            }
+          },
+          "comM": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "geometry": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "cylinder"
+              },
+              "radiusM": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "heightM": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "kind",
+              "radiusM",
+              "heightM"
+            ]
+          },
+          "friction": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sliding": {
+                "type": "number",
+                "minimum": 0
+              },
+              "torsionalM": {
+                "type": "number",
+                "minimum": 0
+              },
+              "rollingM": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "sliding",
+              "torsionalM",
+              "rollingM"
+            ]
+          },
+          "sources": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mass": {
+                "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+              },
+              "inertia": {
+                "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+              },
+              "com": {
+                "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+              },
+              "geometry": {
+                "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+              },
+              "friction": {
+                "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+              },
+              "attachment": {
+                "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+              }
+            },
+            "required": [
+              "mass",
+              "inertia",
+              "com",
+              "geometry",
+              "friction",
+              "attachment"
+            ]
+          },
+          "attachment": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "free"
+                  },
+                  "supportId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "initialPoseInSupport": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "positionM": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": {
+                          "type": "number"
+                        }
+                      },
+                      "quaternionXyzw": {
+                        "type": "array",
+                        "minItems": 4,
+                        "maxItems": 4,
+                        "items": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "required": [
+                      "positionM",
+                      "quaternionXyzw"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "supportId",
+                  "initialPoseInSupport"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "fixed_ballast"
+                  },
+                  "parentLinkId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "poseInLink": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "positionM": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": {
+                          "type": "number"
+                        }
+                      },
+                      "quaternionXyzw": {
+                        "type": "array",
+                        "minItems": 4,
+                        "maxItems": 4,
+                        "items": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "required": [
+                      "positionM",
+                      "quaternionXyzw"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "parentLinkId",
+                  "poseInLink"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "propId",
+          "massKg",
+          "inertiaKgM2",
+          "comM",
+          "geometry",
+          "friction",
+          "sources",
+          "attachment"
+        ]
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "id",
+    "revision",
+    "digest",
+    "calibration",
+    "modelRef",
+    "supports",
+    "props",
+    "assumptions"
+  ]
+}

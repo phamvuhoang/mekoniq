@@ -2602,3 +2602,6 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 .assembly-page .asm-scene{min-height:80px;border:1px solid var(--mq-border);border-radius:var(--mq-radius-panel);padding:8px;color:var(--mq-text-muted)}
 .assembly-page .asm-scene canvas{width:100%;display:block}
 .assembly-page .asm-status{color:var(--mq-text-muted)}
+
+/* A status message must retain a readable line at phone widths, clear of the viewport tools. */
+@media(max-width:767px){.twin-viewport .notice{top:64px;right:8px;max-width:calc(100% - 16px)}.twin-viewport .notice span{min-width:0}.twin-viewport .notice>svg,.twin-viewport .notice button{flex-shrink:0}}

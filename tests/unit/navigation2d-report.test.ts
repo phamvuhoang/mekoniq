@@ -147,10 +147,10 @@ test('engine version follows each explicit source schema branch, including synce
  expect(engineVersionOf(webotsReport().navigation2d!.engine)).toBe('R2025a');
  expect(engineVersionOf(mujocoEngine)).toBe('3.17.0');
 });
-test('synced MuJoCo engine typing does not admit or mislabel a report before mobile UI support',()=>{
+test('MuJoCo mobile evidence is admitted explicitly and never mislabeled as IR-SIM or Webots',()=>{
  const n=report().navigation2d!;n.engine=mujocoEngine;n.seed.engineSeedAlgorithm='mujoco-identity-seed-v1';delete n.seed.engineRng;
- const r=report({navigation2d:n});
- expect(NAVIGATION_PROVIDERS).toEqual(['irsim_2d','webots_3d']);
- expect(navigationEvidenceView(r)).toEqual({supported:false,provider:null,complete:false,reasons:['NAVIGATION_EVIDENCE_SCHEMA_UNKNOWN']});
- expect(navigationRows(r)).toEqual([]);expect(navigationHtml(r)).not.toMatch(/IR-SIM|Webots/);
+ const r=report({navigation2d:n});r.manifest.backends=[{id:'mujoco_3d',version:'3.17.0',model:'mujoco',dynamics:true}];r.manifest.models![0]!.id='mujoco_3d';
+ expect(NAVIGATION_PROVIDERS).toEqual(['irsim_2d','webots_3d','mujoco_3d']);
+ expect(navigationEvidenceView(r)).toMatchObject({supported:true,provider:'mujoco_3d'});expect(navigationHtml(r)).toContain('mujoco_3d 3.17.0');expect(navigationHtml(r)).not.toMatch(/IR-SIM|Webots/);
+ const foreign=structuredClone(r);(foreign.navigation2d!.engine as {id:string}).id='unknown';expect(navigationEvidenceView(foreign).supported).toBe(false);
 });

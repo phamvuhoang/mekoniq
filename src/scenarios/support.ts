@@ -7,7 +7,7 @@ export interface CampaignFixture {schemaVersion:1;id:string;revision:number;titl
 export interface SupportRow {scenarioId:string;mode:'mock'|'simulation';backendSetId:string;status:'available'|'unavailable'|'unknown';reasons:string[]}
 export interface SetOption {id:string;mode:string;selectable:boolean;reasons:string[]}
 /** The capability the runtime must advertise before a portable provider's set is selectable. */
-export const PORTABLE_CAPABILITY:Readonly<Record<string,string>>={irsim_2d:'irsim_navigation_v1',webots_3d:'sim3d_navigation_v1',webots_arm:'sim3d_arm_v1',mujoco_arm:'sim3d_arm_contact_v1'};
+export const PORTABLE_CAPABILITY:Readonly<Record<string,string>>={irsim_2d:'irsim_navigation_v1',webots_3d:'sim3d_navigation_v1',webots_arm:'sim3d_arm_v1',mujoco_arm:'sim3d_arm_contact_v1',mujoco_3d:'sim3d_payload_experiments_v1'};
 /** Backend sets the run selector offers. Portable sets (execution.host portable_python, i.e. IR-SIM 2D or Webots 3D) are selectable only when health reports every backend
  * installed, enabled, compatible and reachable and advertises the provider's capability (PORTABLE_CAPABILITY); legacy sets keep their behaviour (always listed and selectable). */
 /** Why the set's backends (`required`, default all of them) cannot run: one reason per backend, its first failing condition, then a missing

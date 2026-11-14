@@ -64,6 +64,29 @@ pnpm test:mujoco-e2e -- mujoco-mesh-fallback.spec.ts   # chặn file STL: tay m�
 
 Trên trang **Twin**, bấm chip runtime để mở **hộp runtime**: chọn **Máy này** (runtime của trang khi mở từ launcher, hoặc `http://127.0.0.1:4176` khi Lab mở từ web) hoặc **Địa chỉ khác** (`https://…`), nhập mã một lần rồi bấm **Ghép nối runtime**. Lab chỉ liên lạc runtime khác origin sau một thao tác bấm. Hộp hiện commit Lab ghim và commit runtime báo; khác nhau thì `RUNTIME_PIN_MISMATCH` chặn mọi nút chạy. Preset `mujoco-coffee` (MJ-BV01, seed 42) bắt đầu ở tốc độ 1×.
 
+## Tải tự do trên Serve · MuJoCo
+
+```sh
+pnpm lab:mujoco -- --mujoco-mobile
+```
+
+Tùy chọn này bật thêm `mujoco_3d`, catalogue Serve đã pin và compiler kỹ thuật. Launcher kiểm cả `.venv-mujoco` và Python hỗ trợ compiler `.venv-irsim` theo lock (đổi bằng `--irsim-python`); thiếu điều kiện thì dừng trước khi mở cổng. Lệnh `pnpm lab:mujoco` không có tùy chọn vẫn là đường tay máy cũ, không cần compiler/catalogue di động.
+
+Ghép nối, chọn **MuJoCo · cốc trên robot Serve** (`mujoco-payload`), rồi chờ readiness. Mặc định là `payload-center-v1`, seed 7, tốc độ phát 1×. Lần chạy bắt đầu tại quan sát create/tick 0 đã commit; bấm Play để tiến đồng hồ nguồn. Bộ chọn chỉ có bảy thí nghiệm đã đăng ký: khay trống, cốc giữa/lệch tâm, giới hạn chậm/nhanh, tham số vật liệu thấp/cao. Đổi lựa chọn tạo project/bundle/run mới; × chỉ đổi nhịp phát, không đổi giới hạn vận tốc của mô hình.
+
+Chọn cốc trong danh sách rồi bấm **Fit** để nhìn giữa các khay trên điện thoại. Serve và khay dùng hình học được compiler tiếp nhận; cốc tự do dùng kích thước và pose nguồn, không có suy luận chủ sở hữu cốc cà phê. Không có vật lý phía trình duyệt. Mọi động lực học còn `not_calibrated`; định vị là `ground_truth`. Tham số ma sát thấp 0.3 bị quy tắc lấy lớn nhất che ở tiếp xúc sàn 0.8/cốc 0.6, nên không gọi đây là “sàn trơn”.
+
+Hủy khi clock đang tạm dừng sẽ ghi yêu cầu hủy trước, rồi chỉ tiến clock của cùng run đến khi nguồn quan sát dừng (tối đa 10 giây mô phỏng). Một yêu cầu Pause tiếp theo dừng quá trình quan sát này. Kết quả attention/unknown/pending giữ theo nguồn. Không thêm đuôi quan sát chiến dịch; quãng dừng tính từ mục tiêu 0 sau ramp, không phải từ cú bấm Hủy, và có thể thiếu cửa sổ năm mẫu.
+
+Nhập lại một case chiến dịch đã ghi bằng thư mục công khai chỉ đọc:
+
+```sh
+node scripts/export-payload-replay.mjs /path/to/campaign/cup-fall /tmp/new-payload-replay
+LAB_PAYLOAD_REPLAY_DIR=/tmp/new-payload-replay pnpm test:mujoco-e2e -- --mujoco-mobile mujoco-payload.spec.ts
+```
+
+Exporter chỉ sao chép report, project đã compile, bundle và các chunk được ràng buộc bằng hash; không sao chép journal, signing key hay trạng thái worker. Trong Report, chọn **Import evidence folder** rồi mở bản đã nhập. Pose/hình học được kiểm schema, digest và liên kết model/load; số đo tổng hợp đã nhập luôn ghi `IMPORTED_METRICS_NOT_RECOMPUTED`, không nhận là đã tính lại. Cốc rơi dừng ở pose cuối đã ghi, không tự chạy tiếp tới sàn. Khung dây thể hiện quan sát `stale/PLANT_NOT_LIVE`, không phải hình học thay thế. Fault và số đo cuối không xuất hiện như phép đo ở cursor trước đó. Bộ stress trực tiếp và catalogue offline đầy đủ thuộc B07.
+
 ## Gói offline có sẵn Node
 
 Trên máy build đúng hệ điều hành/kiến trúc đích, dùng Node 24, dependencies đã cài và runtime đã import/kiểm. Build lại UI sau mỗi lần đổi runtime pin:

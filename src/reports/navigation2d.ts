@@ -1,3 +1,5 @@
+import {readPayloadBundle,payloadMatches,payloadState,type PayloadBundle} from '../twin/payload';
+import {sha256Hex} from '../twin/hash';
 // Navigation evidence (navigation-run-evidence-v1) for the providers this Lab renders. The document is validated against the synced source
 // schema; anything unknown is unsupported, and "complete" needs every signal to agree (server completeness, end record, gaps, listing, sensor publications).
 // Imported folders are a trust boundary: every listed chunk that is present must match its size and SHA-256 (else refused); one that is absent makes the
@@ -22,7 +24,7 @@ export interface NavigationEvidenceView {supported:boolean;provider:string|null;
 const STREAMS=['trajectory','sensors','control','collisions'] as const;
 /** The evidence document, or null when absent or not a navigation-run-evidence-v1 the Lab knows (closed schema, a provider this Lab knows, safe chunk names). */
 /** The engines whose evidence the Lab renders; an unknown id is unsupported, never shown under another name. */
-export const NAVIGATION_PROVIDERS=['irsim_2d','webots_3d'] as const;
+export const NAVIGATION_PROVIDERS=['irsim_2d','webots_3d','mujoco_3d'] as const;
 /** Version field for each synced source engine branch; knowing its version does not admit a provider for rendering. */
 export const engineVersionOf=(e:NavigationRunEvidenceV1['engine'])=>{
  switch(e.id){case 'irsim_2d':return e.version;case 'webots_3d':case 'mujoco_3d':return e.engineVersion;}
@@ -97,7 +99,7 @@ export function navigationRows(report:RunReport):{id:string;result:string;detail
 }
 const hex=async(f:File)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await f.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');
 /** Read-only import of an IR-SIM evidence folder: report.json, project.json and the chunk files its navigation2d listing names (flat, by name). */
-export async function importNavigationEvidence(files:readonly File[]):Promise<{origin:'imported';report:RunReport;project:LabProjectV2}>{
+export async function importNavigationEvidence(files:readonly File[]):Promise<{origin:'imported';report:RunReport;project:LabProjectV2;payloadBundle?:PayloadBundle}>{
  if(!files.length||files.length>10000||files.reduce((n,f)=>n+f.size,0)>MAX_EVIDENCE_BYTES)throw new Error('EVIDENCE_SIZE_LIMIT');
  const entries=new Map<string,File>();
  for(const f of files){const path=f.webkitRelativePath?f.webkitRelativePath.split('/').slice(1).join('/'):f.name;if(!safeArtifactPath(path)||entries.has(path))throw new Error('ARTIFACT_PATH_INVALID');entries.set(path,f);}
@@ -112,6 +114,23 @@ export async function importNavigationEvidence(files:readonly File[]):Promise<{o
   if(!file){missing.push(a.path);continue;}
   if(file.size!==a.bytes||await hex(file)!==a.sha256)throw new Error('ARTIFACT_HASH_MISMATCH');
  }
+ let payloadBundle:PayloadBundle|undefined;
+ if(n.engine.id==='mujoco_3d'){
+  const read=async(path:string,sha:string)=>{const f=entries.get(path)??entries.get(`bundle/${path}`);if(!f)throw new Error('PAYLOAD_INPUT_MISSING');const b=new Uint8Array(await f.arrayBuffer());if(sha256Hex(b)!==sha)throw new Error('PAYLOAD_INPUT_HASH_MISMATCH');return b;};
+  const bytes=await read(n.sceneRef.path,n.sceneRef.sha256);if(bytes.length!==n.sceneRef.bytes)throw new Error('PAYLOAD_SCENE_SIZE_MISMATCH');
+  payloadBundle=await readPayloadBundle(read,JSON.parse(new TextDecoder().decode(bytes)));
+  if(payloadBundle.scene.sceneDigest!==n.sceneDigest)throw new Error('PAYLOAD_SCENE_MISMATCH');
+  for(const sample of report.telemetry?.samples??[])if(sample.providerId==='mujoco_3d'){
+   const q=payloadState(sample);if(sample.runId!==report.manifest.runId||q&&!payloadMatches(q,payloadBundle))throw new Error('PAYLOAD_TELEMETRY_MISMATCH');
+  }
+  const p=report.physicsEvidence;if(p){
+   const id=p.manifest.identity;if(id.runId!==report.manifest.runId||id.sceneDigest!==n.sceneDigest||id.loadProfileDigest!==n.engine.loadProfileRef.sha256||id.physicsProfileDigest!==n.engine.physicsProfileRef.sha256||p.manifest.metricsPolicyDigest!==n.engine.stopPolicyRef.sha256||(report.telemetry?.samples??[]).some(s=>s.providerId==='mujoco_3d'&&s.bootId!==id.bootId))throw new Error('PHYSICS_IDENTITY_MISMATCH');
+   if(sha256Hex(new TextEncoder().encode(JSON.stringify(p.manifest)))!==p.manifestSha256)throw new Error('PHYSICS_MANIFEST_HASH_MISMATCH');
+   for(const stream of p.manifest.streams)for(const c of stream.chunks){const f=entries.get(`physics/${c.path}`)??entries.get(`run/physics/${c.path}`);if(f&&(f.size!==c.bytes||await hex(f)!==c.sha256))throw new Error('PHYSICS_ARTIFACT_HASH_MISMATCH');}
+   // Hash checks do not recompute metric semantics or establish producer trust. Imported values stay unavailable.
+   p.complete=false;p.issues=[...p.issues,'IMPORTED_METRICS_NOT_RECOMPUTED'];p.metrics=Object.fromEntries(Object.entries(p.metrics).map(([k,m])=>[k,{available:false,value:null,unit:m.unit,reason:'IMPORTED_METRICS_NOT_RECOMPUTED'}])) as typeof p.metrics;
+  }
+ }
  const projectFile=entries.get('project.json');if(!projectFile)throw new Error('PROJECT_MISSING');
  const project=validateProjectV2(JSON.parse(await projectFile.text()));
  if(hashJson(project)!==report.manifest.project.hash)throw new Error('PROJECT_HASH_MISMATCH');
@@ -120,5 +139,5 @@ export async function importNavigationEvidence(files:readonly File[]):Promise<{o
  if(worldHash(project.world)!==w.hash||project.world.id!==w.id||project.world.revision!==w.revision)throw new Error('WORLD_HASH_MISMATCH');
  // a downgrade only: chunks this folder does not carry make the imported copy incomplete, with the names
  if(missing.length)n.completeness={status:'incomplete',reasons:[...n.completeness?.reasons??[],...missing.map(p=>`EVIDENCE_CHUNK_MISSING:${p}`)].slice(0,50)};
- return {origin:'imported',report,project};
+ return {origin:'imported',report,project,...payloadBundle?{payloadBundle}:{}};
 }

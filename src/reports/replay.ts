@@ -1,3 +1,4 @@
+import {physicsAt} from './physics';
 // Read-only replay of a v2 run report: scrub/playback over recorded business events (durable) and telemetry (lossy), and a causal trace
 // command -> observation -> business transition. No runtime client is imported here: replay cannot send anything.
 import {pose3dOf} from '../twin/pose3d';
@@ -74,6 +75,7 @@ export function openReplayV2(report:RunReport,o:{maxGapTicks?:number}={}){
   // never blend across a boot change or a hole wider than the declared gap: hold the last recorded value and say so
   if(after.bootId!==before.bootId)return {...p(before),interpolated:false,gap:false,epochChange:true,seq:before.seq};
   if(ta-tb>maxGap)return {...p(before),interpolated:false,gap:true,epochChange:false,seq:before.seq};
+  if(before.providerId==='mujoco_3d')return {...p(before),interpolated:false,gap:false,epochChange:false,seq:before.seq};
   const f=(tick-tb)/(ta-tb),a=p(before),b=p(after);
   const mix=(u:number|undefined,v:number|undefined)=>u!==undefined&&v!==undefined?u+(v-u)*f:undefined,z=mix(a.z,b.z),rollRad=mix(a.rollRad,b.rollRad),pitchRad=mix(a.pitchRad,b.pitchRad);
   return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,yawRad:a.yawRad+Math.atan2(Math.sin(b.yawRad-a.yawRad),Math.cos(b.yawRad-a.yawRad))*f,...z!==undefined&&rollRad!==undefined&&pitchRad!==undefined?{z,rollRad,pitchRad}:{},interpolated:true,gap:false,epochChange:false,seq:before.seq};
@@ -102,7 +104,7 @@ export function openReplayV2(report:RunReport,o:{maxGapTicks?:number}={}){
    const jobs=entries('coffee-job').map(([id,s])=>({...s,jobId:String(s.jobId??id)}));
    const cups=entries('cup').map(([id,s])=>({...s,cupId:String(s.cupId??id)}));
    const served=String(entries('fulfillment').reduce((n,[,s])=>n+BigInt(String(s.served??'0')),0n));
-   const entities:AmrView[]=base.entities.map(e=>{
+   const entities:AmrView[]=base.entities.filter(e=>e.kind==='amr').map(e=>{
     const sample=f.entities[e.id],p=pose(e.id,f.tick),observed=sample?.observed,commanded=sample?.commanded;
     return {id:e.id,kind:'amr',pose:p?{x:p.x,y:p.y,yawRad:p.yawRad,...p.z!==undefined?{z:p.z,rollRad:p.rollRad,pitchRad:p.pitchRad}:{}}:{x:NaN,y:NaN,yawRad:NaN},quality:p&&!p.gap&&!p.epochChange?'valid':'stale',moving:!!observed?.moving,hold:typeof observed?.hold==='string'?observed.hold:null,goal:typeof commanded?.goalCommandId==='string'?{commandId:commanded.goalCommandId,state:String(commanded.goalState??'unknown')}:null,path:[],distanceM:NaN};
    });
@@ -112,7 +114,7 @@ export function openReplayV2(report:RunReport,o:{maxGapTicks?:number}={}){
    const status:RunView['run']['status']=f.tick>=report.outcome.tick?base.run.status:attention.length?'needs_attention':awaiting.length?'awaiting_confirmation':f.events.length?'running':'ready';
    const telemetrySamples=samples.filter(s=>tickOfSample(s)<=f.tick),sampleCounts:Record<string,number>={};for(const s of telemetrySamples)sampleCounts[s.entityId]=(sampleCounts[s.entityId]??0)+1;
    const collision=collisionAt(report,f.tick);
-   const projectedReport:RunReport={...structuredClone(report),outcome:{status,served,tick:f.tick,simTimeNs:f.simTimeNs},businessEvents:f.events,attention,
+   const projectedReport:RunReport={...structuredClone(report),...report.physicsEvidence?{physicsEvidence:physicsAt(report,f.tick)!}:{},outcome:{status,served,tick:f.tick,simTimeNs:f.simTimeNs},businessEvents:f.events,attention,
     effects:f.tick>=report.outcome.tick?structuredClone(report.effects):[],faults:report.faults.filter(x=>x.tick<=f.tick),reconciliations:report.reconciliations.filter(x=>x.tick<=f.tick),
     metrics:f.tick>=report.outcome.tick?structuredClone(report.metrics):{distanceM:{},collision:{available:false,reason:'NOT_RECORDED_AT_CURSOR',contacts:null,minSeparationM:null}},
     coverage:{...report.coverage,...report.coffee?{armCollisionChecker:!!collision?.last,armSceneCollision:!!collision?.last&&collision.scene?.available===true,
@@ -122,7 +124,7 @@ export function openReplayV2(report:RunReport,o:{maxGapTicks?:number}={}){
    };
    const held:Record<string,Held>={},unrecorded:string[]=[],tickNs=BigInt(tickMs)*1000000n;
    for(const [id,list] of byEntity){
-    const s=f.gaps.length?undefined:f.entities[id];
+    const candidate=f.entities[id],s=f.gaps.length||candidate?.providerId==='mujoco_3d'&&f.tick-tickOfSample(candidate)>maxGap?undefined:candidate;
     if(s)held[id]={...s,receivedAtMs:Number(s.simTimeNs!==null?BigInt(s.simTimeNs):BigInt(tickOfSample(s))*tickNs)/1e6,epochResetAtMs:null};
     else if(!list.every(x=>typeof x.observed?.xM==='number'))unrecorded.push(id);
    }

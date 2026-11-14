@@ -3,6 +3,7 @@
 // pnpm lab:webots (--provider webots) — the same runtime with the Webots 3D provider instead: it also needs the host Webots R2025a (--webots-home, default /Applications/Webots.app),
 // which the launcher never installs; a missing or different Webots exits before any port is opened.
 // pnpm lab:mujoco (--provider mujoco) — the same runtime with the MuJoCo arm provider (MJ-BV01: the xArm 6 and its G2 gripper as a MuJoCo plant) and the mock backends only:
+// Add --mujoco-mobile for Serve free-payload experiments: it verifies the pinned engineering helper Python (--irsim-python) and catalog.
 // --mujoco-python (default <source>/.venv-mujoco/bin/python) must hold its lock exactly; no engineering catalog. The worker runs in the run's directory under --data-dir,
 // which must lie outside every tool root (the engine writes MUJOCO_LOG.TXT into its working directory when it warns).
 // Developer Mac/Linux only. It never downloads or installs anything, never falls back to the mock launcher, never stops a process it did not start.
@@ -37,6 +38,7 @@ export const checkIRSimHealth=(health,lock)=>checkProvider(health,lock,[IRSIM_BA
 /** Webots: a live webots_3d and webots_arm (one flag enables both on the shared Webots), engineering, Webots navigation and the Webots arm advertised. */
 export const checkWebotsHealth=(health,lock)=>checkProvider(health,lock,[WEBOTS_BACKEND,WEBOTS_ARM_BACKEND],['engineering_bundle_v1','sim3d_navigation_v1','sim3d_arm_v1'],'WEBOTS');
 /** MuJoCo: a live mujoco_arm and the contact arm capability; no engineering service is needed (the cell is built from the run's project). */
+export const checkMujocoMobileHealth=(health,lock)=>checkProvider(health,lock,[MUJOCO_BACKEND,'mujoco_3d'],['sim3d_arm_contact_v1','engineering_bundle_v1','sim3d_payload_experiments_v1'],'MUJOCO');
 export const checkMujocoHealth=(health,lock)=>checkProvider(health,lock,[MUJOCO_BACKEND],['sim3d_arm_contact_v1'],'MUJOCO');
 // Reads the venv's installed distributions with the standard library only (isolated mode: no user site, no cwd on sys.path).
 const PROBE="import sys,json,importlib.metadata as m\nprint(json.dumps({'version':list(sys.version_info[:2]),'impl':sys.implementation.name,'dists':{d.metadata['Name'].lower().replace('_','-'):d.version for d in m.distributions()}}))";
@@ -63,10 +65,10 @@ export async function venvProblem(python,lockText,track=()=>{}){
  return wrong.length?`LOCK_MISMATCH:${wrong.slice(0,5).join(', ')}`:null;
 }
 export function irsimOptions(argv){
- const o={source:resolve(lab,'../source'),provider:'irsim',irsimPython:undefined,linkforgePython:undefined,webotsPython:undefined,webotsHome:undefined,mujocoPython:undefined,rest:[]};
+ const o={source:resolve(lab,'../source'),provider:'irsim',mujocoMobile:false,irsimPython:undefined,linkforgePython:undefined,webotsPython:undefined,webotsHome:undefined,mujocoPython:undefined,rest:[]};
  const value=(i)=>{const v=argv[i];if(!v||v.startsWith('--'))throw new Error(`MISSING_VALUE:${argv[i-1]}`);return resolve(v);};
  for(let i=0;i<argv.length;i++){const a=argv[i];
-  if(a==='--source')o.source=value(++i);else if(a==='--irsim-python')o.irsimPython=value(++i);else if(a==='--linkforge-python')o.linkforgePython=value(++i);
+  if(a==='--mujoco-mobile')o.mujocoMobile=true;else if(a==='--source')o.source=value(++i);else if(a==='--irsim-python')o.irsimPython=value(++i);else if(a==='--linkforge-python')o.linkforgePython=value(++i);
   else if(a==='--provider'){const v=argv[++i];if(!['irsim','webots','mujoco'].includes(v))throw new Error(`INVALID_PROVIDER:${v}`);o.provider=v;}
   else if(a==='--webots-python')o.webotsPython=value(++i);else if(a==='--mujoco-python')o.mujocoPython=value(++i);else if(a==='--webots-home')o.webotsHome=value(++i);else o.rest.push(a);}
  o.irsimPython??=join(o.source,'.venv-irsim/bin/python');o.linkforgePython??=join(o.source,'.venv-linkforge/bin/python');o.webotsPython??=join(o.source,'.venv-webots/bin/python');o.mujocoPython??=join(o.source,'.venv-mujoco/bin/python');o.webotsHome??=process.env.MEKONIQ_WEBOTS_HOME?resolve(process.env.MEKONIQ_WEBOTS_HOME):'/Applications/Webots.app';
@@ -128,20 +130,21 @@ export async function prepareWebots(o,launch_,lock,track=()=>{}){
 /** The real path of `p`: its nearest existing ancestor resolved through symbolic links, the rest appended as given. */
 const realish=(p)=>{const parts=[];let d=resolve(p);for(;;){try{return join(realpathSync(d),...parts.reverse());}catch{const up=dirname(d);if(up===d)return resolve(p);parts.push(basename(d));d=up;}}};
 /** Every check before a process is spawned, for the MuJoCo arm provider: the pinned closure, .venv-mujoco against its lock, and a data directory outside every tool root
- * (the worker runs in a run directory under it, and the engine writes MUJOCO_LOG.TXT into its working directory when it warns). No engineering catalog. */
+ * (the worker runs in a run directory under it, and the engine writes MUJOCO_LOG.TXT into its working directory when it warns). Mobile opt-in additionally verifies the engineering Python and writes its pinned catalog. */
 export async function prepareMujoco(o,launch_,lock,track=()=>{}){
  // first, before any probe: compared as real paths (a symbolic link into a tool root is inside it), the missing tail of a directory not created yet kept as given
  const tools=(await installedManifest(launch_.root,lock)).portableSimulationTools?.tools??[],data=realish(launch_.dataDir);
  const inside=tools.map(t=>realish(join(o.source,t.root))).find(r=>data===r||data.startsWith(`${r}/`));
  if(inside)throw new Error(`DATA_DIR_IN_TOOL_ROOT: ${data} is inside the pinned tool root ${inside}; choose a --data-dir outside the source tools (the launcher never writes into them).`);
- const {tool,root}=await verifiedTools(o,launch_,lock,'mujoco_worker','the pinned runtime predates the MuJoCo arm provider; import an export that carries the mujoco_worker tool.',[['mujoco_worker',o.mujocoPython,'MUJOCO']],track);
- return {readyMs:60000,backends:[...MOCK_BACKENDS,MUJOCO_BACKEND].join(', '),env:{MEKONIQ_LAB_MUJOCO:'1'},
-  args:['--mujoco-python',o.mujocoPython,'--mujoco-worker',root('mujoco_worker'),'--mujoco-lock',join(o.source,tool('mujoco_worker').lock.path)]};
+ const {tool,root}=await verifiedTools(o,launch_,lock,'mujoco_worker','the pinned runtime predates the MuJoCo arm provider; import an export that carries the mujoco_worker tool.',[['mujoco_worker',o.mujocoPython,'MUJOCO'],...o.mujocoMobile?[['irsim_worker',o.irsimPython,'ENGINEERING']]:[]],track);
+ const engineering=o.mujocoMobile?['--engineering-catalog',await writeCatalog(join(root('mujoco_worker'),'fixtures/serve-payload-v1/serve-3d-components.json'),join(launch_.dataDir,'mujoco-catalog'),'serve-payload-v1'),'--engineering-simulation',join(o.source,tool('description_helper').root,'..'),'--engineering-python',o.irsimPython]:[];
+ return {readyMs:60000,backends:[...MOCK_BACKENDS,MUJOCO_BACKEND,...o.mujocoMobile?['mujoco_3d']:[]].join(', '),env:{MEKONIQ_LAB_MUJOCO:'1'},
+  args:[...engineering,'--mujoco-python',o.mujocoPython,'--mujoco-worker',root('mujoco_worker'),'--mujoco-lock',join(o.source,tool('mujoco_worker').lock.path)]};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  let o;try{o=irsimOptions(process.argv.slice(2));}catch(e){console.error(e.message);process.exit(1);}
  await launch(o.provider==='mujoco'
-  ?{argv:o.rest,prepare:(l,lock,track)=>prepareMujoco(o,l,lock,track),check:checkMujocoHealth,banner:'Mekoniq Robot Lab — MuJoCo arm twin (xArm 6 + G2 as a MuJoCo plant: manufacturer nominal masses and limits, every other parameter assumed, not_calibrated; no robot hardware)'}
+  ?{argv:o.rest,prepare:(l,lock,track)=>prepareMujoco(o,l,lock,track),check:o.mujocoMobile?checkMujocoMobileHealth:checkMujocoHealth,banner:o.mujocoMobile?'Mekoniq Robot Lab — MuJoCo Serve payload + arm twins (assumed parameters, not_calibrated; ground_truth localization; no robot hardware)':'Mekoniq Robot Lab — MuJoCo arm twin (xArm 6 + G2 as a MuJoCo plant: manufacturer nominal masses and limits, every other parameter assumed, not_calibrated; no robot hardware)'}
   :o.provider==='webots'
   ?{argv:o.rest,prepare:(l,lock,track)=>prepareWebots(o,l,lock,track),check:checkWebotsHealth,banner:'Mekoniq Robot Lab — Webots 3D twin (host Webots R2025a, assumed physical parameters, not_calibrated; no robot hardware, not a native/Gazebo run)'}
   :{argv:o.rest,prepare:(l,lock,track)=>prepareIRSim(o,l,lock,track),check:checkIRSimHealth,banner:'Mekoniq Robot Lab — IR-SIM 2D twin (portable simulation; no robot hardware, not a native/Gazebo run)'});

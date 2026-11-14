@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 // @ts-expect-error CLI JavaScript boundary
-import { checkMujocoHealth, irsimOptions } from '../../scripts/start-irsim.mjs';
+import { checkMujocoHealth, checkMujocoMobileHealth, irsimOptions } from '../../scripts/start-irsim.mjs';
 
 const lab = fileURLToPath(new URL('../../', import.meta.url)), launcher = join(lab, 'scripts/start-irsim.mjs');
 const dirs: string[] = [];
@@ -63,3 +63,9 @@ test('a data directory that reaches a tool root through a symbolic link is refus
   const r = await run(['--mujoco-python', join(d, 'none/python'), '--data-dir', join(d, 'link/runs-u06')]);
   expect(r.exit, r.err).toBe(1); expect(r.err).toContain('DATA_DIR_IN_TOOL_ROOT'); expect(r.out).not.toMatch(/Ready in/);
 }, 120_000);
+
+test('mobile opt-in adds exact engineering/mobile capability checks, arm-only remains separate',()=>{
+ expect(irsimOptions(['--provider','mujoco','--mujoco-mobile']).mujocoMobile).toBe(true);expect(irsimOptions(['--provider','mujoco']).mujocoMobile).toBe(false);
+ const health={protocolMajors:[1,2],...lock,capabilities:['engineering_bundle_v1','sim3d_payload_experiments_v1','sim3d_arm_contact_v1'],backends:[...['mock_amr','mock_coffee','mock_arm'].map(id=>({...b(id,true),modes:['mock']})),b('mujoco_arm',true),b('mujoco_3d',true)]};
+ expect(()=>checkMujocoMobileHealth(health,lock)).not.toThrow();expect(()=>checkMujocoMobileHealth({...health,capabilities:['sim3d_arm_contact_v1']},lock)).toThrow('CAPABILITY_MISSING:engineering_bundle_v1');
+});

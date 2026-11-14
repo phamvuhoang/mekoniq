@@ -27,11 +27,12 @@ export interface RunSnapshotV2 {schemaVersion:2;id:string;mode:'mock'|'simulatio
  fidelity:string;ageMs:number;sourceCommit:string;scenarioId:string;scenarioRevision:number;seed:number;}
 export interface Attention {reason:string;tick:number;robotId?:string;subjectId?:string;commandId?:string}
 export interface AmrView {sampleAgeMs?:number;id:string;kind:'amr';pose:{x:number;y:number;yawRad:number;z?:number;rollRad?:number;pitchRad?:number};quality:'valid'|'stale';moving:boolean;hold:string|null;goal:{commandId:string;state:string}|null;path:[number,number][];distanceM:number}
+export interface PayloadView extends Omit<AmrView,'kind'|'distanceM'> {kind:'payload';plant:import('../twin/payload').PayloadState;distanceM:null}
 export interface CoffeeJobView {canRestoreCup?:boolean;waitingReason?:string|null;jobId:string;status:string;recipeId:string;cupId:string;attentionReason:string|null}
 export interface CupView {cupId:string;ownerKind:string;ownerId:string}
 /** The inputs a run was created from, as stored by the runtime. Engineering runs also carry the exact project, projection and bundle ref. */
 export type LockedInput=CreateRun&{sourceCommit?:string;engineering?:{ref:EngineeringRef;project:EngineeringProject;runtimeProjection:{project:LabProjectV2;assets:unknown[]}}};
-export interface RunView {lockedInput?:LockedInput;controlAccess?:'view_reconcile';run:RunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:AmrView[];
+export interface RunView {lockedInput?:LockedInput;controlAccess?:'view_reconcile';run:RunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:(AmrView|PayloadView)[];
  workload:{actor:string;tableId:string;status:string;missionId?:string}[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];
  attention:Attention[];served:string;coffee:{jobs:CoffeeJobView[];cups:CupView[]}|null;}
 export interface Quantity {amount:string;unit:string;provenance:string;tolerance?:string}

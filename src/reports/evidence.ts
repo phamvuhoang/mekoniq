@@ -5,7 +5,7 @@ import {hashJson} from '../twin/hash';
 type ScopeHashes=Record<'model'|'world'|'recipe'|'profile',string>;
 /** 'assembly' exists only for engineering evidence: the project digest the run was compiled from. */
 export type EvidenceScope=keyof ScopeHashes|'assembly';
-export interface SavedEvidence {origin?:'local'|'imported';id:string;capturedAt:string;report:RunReport;project:LabProjectV2;hash:string;inputs:ScopeHashes;runtime:ScopeHashes;engineering?:{bundleDigest:string;projectDigest:string}}
+export interface SavedEvidence {payloadBundle?:import('../twin/payload').PayloadBundle;origin?:'local'|'imported';id:string;capturedAt:string;report:RunReport;project:LabProjectV2;hash:string;inputs:ScopeHashes;runtime:ScopeHashes;engineering?:{bundleDigest:string;projectDigest:string}}
 const sorted=<T,>(rows:T[])=>[...rows].sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
 export function inputScopes(project:LabProjectV2):ScopeHashes {
  return {model:hashJson(sorted(project.entities.map(e=>({id:e.id,kind:e.kind,assetRef:e.assetRef})))),world:hashJson(project.world),
@@ -17,9 +17,9 @@ function runtimeScopes(report:RunReport):ScopeHashes {
  return {model:hashJson({assets:m.assets,models:m.models??null}),world:m.world.hash,
   recipe:hashJson(m.recipes??[]),profile:hashJson({profiles:m.profiles??[],adapterHash:m.adapterHash??null,backends:m.backends,calibration:m.calibration??null})};
 }
-export function captureEvidence(report:RunReport,project:LabProjectV2):SavedEvidence {
+export function captureEvidence(report:RunReport,project:LabProjectV2,payloadBundle?:import('../twin/payload').PayloadBundle|null):SavedEvidence {
  const snapshot=structuredClone(report),input=structuredClone(project),hash=hashJson({report:snapshot,project:input});
- return {id:`${report.manifest.runId}:${hash}`,capturedAt:new Date().toISOString(),report:snapshot,project:input,hash,inputs:inputScopes(input),runtime:runtimeScopes(snapshot),...snapshot.manifest.engineering?{engineering:{...snapshot.manifest.engineering}}:{}};
+ return {id:`${report.manifest.runId}:${hash}`,capturedAt:new Date().toISOString(),report:snapshot,project:input,hash,...payloadBundle?{payloadBundle:structuredClone(payloadBundle)}:{},inputs:inputScopes(input),runtime:runtimeScopes(snapshot),...snapshot.manifest.engineering?{engineering:{...snapshot.manifest.engineering}}:{}};
 }
 export function evidenceStatus(saved:SavedEvidence,project:LabProjectV2,currentReport?:RunReport|null,current_?:{engineeringProjectDigest?:string}){
  const current=inputScopes(project),runtime=currentReport?runtimeScopes(currentReport):null;

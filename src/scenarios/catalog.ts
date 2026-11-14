@@ -1,3 +1,4 @@
+import {payloadPreset} from '../twin/payload';
 // Twin presets: a server-owned scenario id + backend set, run against a fixture project. Names are entity labels (data), not UI copy.
 import nativeFixture from '../../fixtures/twins/native-bv01-v2.json' with {type:'json'};
 import coffeeFixture from '../../fixtures/twins/coffee-cell-v2.json' with {type:'json'};
@@ -59,6 +60,7 @@ presets.push({...presets[0]!,id:'webots-coffee',mode:'simulation',scenarioId:'WB
 export const MUJOCO_ARM_SET='engineering-mujoco-arm-v1';
 presets.push({...presets[0]!,id:'mujoco-coffee',mode:'simulation',scenarioId:'MJ-BV01',backendSetId:MUJOCO_ARM_SET,seed:42,speed:1,view:'arm_cell',project:structuredClone(xarmCell) as LabProjectV2,assets:[],
  title:()=>tr('MuJoCo · cà phê với tay máy xArm 6','MuJoCo · xArm 6でコーヒー','MuJoCo · coffee with the xArm 6'),summary:()=>tr('BV01 · xArm 6 với kẹp G2 là plant MuJoCo (bộ truyền động vị trí, gắp bằng tiếp xúc mô phỏng) · khối lượng và giới hạn danh định của nhà sản xuất, còn lại giả định, chưa hiệu chuẩn · không phải phần cứng','BV01 · グリッパーG2付きxArm 6はMuJoCoのプラント(位置アクチュエータ、把持は模擬接触) · 質量と制限はメーカー公称値、他は仮定で未校正 · 実機ではない','BV01 · the xArm 6 with its G2 gripper is a MuJoCo plant (position actuators, grip by simulated contact) · manufacturer nominal masses and limits, everything else assumed, not calibrated · not hardware')});
+presets.push(payloadPreset());
 export const presetById=(id:string)=>presets.find(p=>p.id===id);
 /** Display name of an entity, point, cup or job; unknown ids are shown as-is, never invented. */
 export function nameOf(preset:TwinPreset|undefined,id:string):string {

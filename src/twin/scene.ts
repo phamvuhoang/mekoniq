@@ -1,3 +1,4 @@
+import {payloadState,payloadMatches,type PayloadBundle,type PayloadState} from './payload';
 // renderTwin(snapshot, viewState): a read-only 2D plan of one run (or of the preset before a run). It draws what the runtime reported;
 // it never moves anything, decides arrival or authorises an action. The 3D view (viewer/twin3d) consumes the same frame and view state.
 import type {RunReport,RunView} from '../scenarios/controls';
@@ -15,11 +16,11 @@ import {layerProvenance} from './overlays';
 import {plantCupPose} from './arm/arm-telemetry';
 export interface TwinFrame {preset:TwinPreset;view:RunView|null;report:RunReport|null;seen?:Record<string,number>;/** latest telemetry per entity from the browser store (plan 03: arm joints) */samples?:Record<string,Held>;nowMs?:number;
  /** IR-SIM 2D runs: the run bundle's compiled navigation scene (footprints, sensors, obstacles) and, for imported evidence only, scans with their own-tick poses. */
- navigation?:NavigationSceneV1|null;scans?:{scans:ScanSample[]};
+ payloadBundle?:PayloadBundle|null;navigation?:NavigationSceneV1|null;scans?:{scans:ScanSample[]};
  /** Replay: entities with recorded samples but none drawn at the cursor (before their first one, or in a recorded gap); drawn as without telemetry. */unrecorded?:string[]}
 export interface ViewState {view:'2d'|'3d';layers:Layers;selected:string|null}
 export interface SceneEntity {id:string;kind:string;name:string;x:number;y:number;/** AMR only, from a 3D plant: base height, roll and pitch */pose3d?:{z:number;rollRad:number;pitchRad:number};yawRad?:number;source:'observed'|'modeled'|'derived'|'unknown';status?:string;
- /** Cup only: its pose in the map as the MuJoCo plant reports it (drawn there instead of at its custodian) */plant?:{positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}}
+ /** Cup only: its pose in the map as the MuJoCo plant reports it (drawn there instead of at its custodian) */payload?:PayloadState;plant?:{positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}}
 /** Plant cup samples older than the plant's newest sample by more than this (sim time) have stopped: the cup left the cell and is drawn by custody again. */
 const PLANT_CUP_STOPPED_NS=1e9;
 /** Cups the plant currently reports that the run view does not list: not drawn (a cup is never invented), counted so a test can see none is lost. */
@@ -50,7 +51,7 @@ export function sceneEntities(f:TwinFrame):SceneEntity[] {
  const p=f.preset.project,l=cellLayout(p),v=f.view,out:SceneEntity[]=[];
  const parking=p.world.points.filter(x=>x.kind==='parking').sort((a,b)=>a.id<b.id?-1:1);
  p.entities.filter(e=>e.kind==='amr').forEach((e,i)=>{
-  const o=v?.entities.find(r=>r.id===e.id),park=parking[i];
+  const o=v?.entities.find(r=>r.kind==='amr'&&r.id===e.id),park=parking[i];
   if(o)out.push({id:e.id,kind:'amr',name:nameOf(f.preset,e.id),x:o.pose.x,y:o.pose.y,yawRad:o.pose.yawRad,...o.pose.z!==undefined?{pose3d:{z:o.pose.z,rollRad:o.pose.rollRad!,pitchRad:o.pose.pitchRad!}}:{},source:o.quality==='valid'?'observed':'unknown',status:o.moving?'moving':o.hold??'stopped'});
   else if(park)out.push({id:e.id,kind:'amr',name:nameOf(f.preset,e.id),x:park.x,y:park.y,source:'modeled',status:'planned'});
  });
@@ -61,9 +62,12 @@ export function sceneEntities(f:TwinFrame):SceneEntity[] {
  if(v&&l)jobsOf(v).forEach((j,i)=>out.push({id:j.jobId,kind:'job',name:j.jobId,x:l.machine.x-0.3+i*0.3,y:l.machine.y+0.42,source:'observed',status:j.status}));
  // a cup the plant reports is drawn where the plant has it; any other by its custodian (one entry per cup either way)
  if(v)for(const c of v.coffee?.cups??[]){const q=plantCup(f,c.cupId),at=q?{x:q.positionM[0],y:q.positionM[1]}:cupLocation(c,p,v);out.push({id:c.cupId,kind:'cup',name:c.cupId,x:at?.x??NaN,y:at?.y??NaN,source:at?'observed':'unknown',status:`${c.ownerKind}:${c.ownerId}`,...q?{plant:q}:{}});}
+ // Free simulation payloads are observed entities, independent of the coffee ledger.
+ for(const s of Object.values(f.samples??{})){const q=payloadState(s);if(!q||f.unrecorded?.includes(s.entityId)||!f.payloadBundle||!payloadMatches(q,f.payloadBundle))continue;
+ out.push({id:s.entityId,kind:'payload',name:q.propId,x:q.positionM[0],y:q.positionM[1],source:s.quality==='valid'?'observed':'unknown',status:s.quality==='valid'?tr('Tải tự do · mô phỏng','自由荷物 · シミュレーション','Free load · simulation'):tr('Tư thế đã ghi · đóng băng','記録姿勢 · 固定','Recorded pose · frozen'),plant:q,payload:q});}
  return out;
 }
-const kindLabel=(k:string)=>({amr:'AMR',arm:tr('Cánh tay','アーム','Arm'),coffee_machine:tr('Máy pha','コーヒーマシン','Coffee machine'),cup_station:tr('Trạm cốc','カップ置場','Cup station'),job:tr('Công việc','ジョブ','Job'),cup:tr('Cốc','カップ','Cup')})[k]??k;
+const kindLabel=(k:string)=>({amr:'AMR',arm:tr('Cánh tay','アーム','Arm'),coffee_machine:tr('Máy pha','コーヒーマシン','Coffee machine'),cup_station:tr('Trạm cốc','カップ置場','Cup station'),payload:tr('Tải mô phỏng','模擬荷物','Simulation load'),job:tr('Công việc','ジョブ','Job'),cup:tr('Cốc','カップ','Cup')})[k]??k;
 export {kindLabel};
 export function renderTwin(f:TwinFrame,vs:ViewState):string {
  const p=f.preset.project,w=p.world,v=f.view,X=(x:number)=>x*S,Y=(y:number)=>(w.height-y)*S,pt=(x:number,y:number)=>`${X(x).toFixed(1)},${Y(y).toFixed(1)}`;
@@ -76,7 +80,7 @@ export function renderTwin(f:TwinFrame,vs:ViewState):string {
   // compiled obstacles are what the plant collides with; table points stay icons, so a decorative table is never mistaken for geometry
   overlay+=nav.world.obstacles.map(o=>`<polygon class="tw-compiled-obstacle" points="${o.verticesM.map(v=>pt(v[0]!,v[1]!)).join(' ')}"><title>${esc(o.id)} · ${tr('vật cản đã compile','コンパイル済み障害物','compiled obstacle')}</title></polygon>`).join('');
   for(const e of ents.filter(x=>x.kind==='amr')){
-   const model=nav.robots.find(r=>r.robotId===e.id)?.model,pose=v?.entities.find(r=>r.id===e.id)?.pose??{x:e.x,y:e.y,yawRad:0};
+   const model=nav.robots.find(r=>r.robotId===e.id)?.model,pose=v?.entities.find(r=>r.kind==='amr'&&r.id===e.id)?.pose??{x:e.x,y:e.y,yawRad:0};
    if(!model){overlay+=`<text class="tw-unknown-label" x="${X(e.x)}" y="${Y(e.y)-36}" text-anchor="middle">? ${tr('không có mô hình compile','コンパイル済みモデルなし','no compiled model')}</text>`;continue;}
    if(L.footprint)overlay+=`<polygon class="tw-footprint" data-layer="footprint" points="${footprintInMap(model,pose).map(([x,y])=>pt(x,y)).join(' ')}"><title>${esc(layerProvenance('footprint'))}</title></polygon>`;
    if(L.safety)overlay+=`<polygon class="tw-safety" data-layer="safety" points="${footprintInMap(model,pose,nav.policy.parameters.safetyMarginM).map(([x,y])=>pt(x,y)).join(' ')}"><title>${esc(layerProvenance('safety'))}</title></polygon>`;
@@ -87,7 +91,7 @@ export function renderTwin(f:TwinFrame,vs:ViewState):string {
  }
  if(L.footprint&&!nav)for(const e of ents){
   if(e.kind!=='amr')continue;
-  const pose=v?.entities.find(r=>r.id===e.id)?.pose??{x:e.x,y:e.y,yawRad:0},poly=amrFootprint(assetOf(p,f.preset.assets,e.id),pose),resolved=runtimeResolved(f.report,p,e.id);
+  const pose=v?.entities.find(r=>r.kind==='amr'&&r.id===e.id)?.pose??{x:e.x,y:e.y,yawRad:0},poly=amrFootprint(assetOf(p,f.preset.assets,e.id),pose),resolved=runtimeResolved(f.report,p,e.id);
   overlay+=poly?`<polygon class="tw-footprint ${resolved===false?'unknown':''}" points="${poly.map(([x,y])=>pt(x,y)).join(' ')}"><title>${resolved===false?tr('Footprint của Lab; runtime chạy mô hình điểm (chưa rõ)','Labの形状。ランタイムは点モデル(不明)','Lab footprint; the runtime ran a point model (unknown)'):tr('Footprint mô hình','モデル形状','Modeled footprint')}</title></polygon>${resolved===false?`<text class="tw-unknown-label" x="${X(pose.x)}" y="${Y(pose.y)-34}" text-anchor="middle">? ${tr('hình học runtime','実行時形状','runtime geometry')}</text>`:''}`
    :`<circle class="tw-footprint unknown" cx="${X(pose.x)}" cy="${Y(pose.y)}" r="30"/><text class="tw-unknown-label" x="${X(pose.x)}" y="${Y(pose.y)-36}" text-anchor="middle">? footprint</text>`;
  }
@@ -105,9 +109,9 @@ export function renderTwin(f:TwinFrame,vs:ViewState):string {
    :e.kind==='coffee_machine'?`<rect x="-22" y="-16" width="44" height="32" rx="5" class="tw-cell ${e.source}"/><text y="4" text-anchor="middle" class="tw-glyph">CM</text>`
    :e.kind==='arm'?`<circle r="14" class="tw-cell ${e.source}"/><text y="4" text-anchor="middle" class="tw-glyph">A</text>`
    :e.kind==='cup_station'?`<rect x="-12" y="-12" width="24" height="24" rx="4" class="tw-cell ${e.source}"/>`
-   :e.kind==='cup'?`<circle r="8" class="tw-cup ${e.source}"/>`
+   :(e.kind==='cup'||e.kind==='payload')?`<circle r="8" class="tw-cup ${e.source}"/>`
    :`<rect x="-13" y="-9" width="26" height="18" rx="4" class="tw-job ${e.status==='needs_attention'?'attention':''}"/><text y="4" text-anchor="middle" class="tw-glyph">${e.status==='needs_attention'?'!':esc(e.id.split('-').pop()!)}</text>`;
-  const rot=e.kind==='amr'?` rotate(${-((v?.entities.find(r=>r.id===e.id)?.pose.yawRad??0)*180/Math.PI-90)})`:'';
+  const rot=e.kind==='amr'?` rotate(${-((v?.entities.find(r=>r.kind==='amr'&&r.id===e.id)?.pose.yawRad??0)*180/Math.PI-90)})`:'';
   return `<g class="tw-entity ${on?'selected':''}" data-action="twin-pick" data-value="${esc(e.id)}" data-entity="${esc(e.id)}" data-selected="${on}" data-source="${e.source}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${esc(label)}" transform="translate(${pt(e.x,e.y)})">${on?'<circle r="27" class="tw-ring"/>':''}<g transform="${rot.trim()||'rotate(0)'}">${shape}</g>${e.kind==='cup'||e.kind==='job'?'':`<text y="${e.kind==='amr'?-26:e.kind==='cup_station'?-18:30}" text-anchor="${e.kind==='cup_station'?'end':'middle'}" class="tw-name">${esc(e.name)}</text>`}<title>${esc(label)}</title></g>`;
  }).join('');
  return `<svg class="twin-plan" viewBox="-30 -30 ${w.width*S+60} ${w.height*S+60}" role="group" aria-label="${esc(tr(`Mặt bằng twin ${w.width} × ${w.height} m`,`ツイン平面図 ${w.width} × ${w.height} m`,`Twin plan ${w.width} × ${w.height} m`))}"><rect class="tw-floor" width="${w.width*S}" height="${w.height*S}"/>${grid}${obstacles}${points}${overlay}${marks}</svg>`;
