@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ a5b2ee0fb1d5f3799aca774d7930d66985a30321 (sha256 7da19827a84b7bd377873c6e2478db333a1ac83f571e90fedaa1a53997637ab0). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 5e09a48d4a8625276495694b1a29c04679bc6a77 (sha256 dbb199d1fd6dfdba0a77db1e05759f9d2b9eb9911729e1a4e5ae173b2c0db45f). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -2164,7 +2164,42 @@ export interface WebReplayPackageV1 {
   /**
    * @maxItems 512
    */
-  assets: {
+  assets: ((
+    | {
+        role?: 'report' | 'events' | 'scene' | 'profile' | 'vendor' | 'trace' | 'model';
+        mediaType?: 'application/json';
+        path?: {
+          [k: string]: any;
+        };
+        [k: string]: any;
+      }
+    | {
+        role?: 'model';
+        mediaType?: 'model/stl';
+        encoding?: 'identity';
+        path?: {
+          [k: string]: any;
+        };
+        [k: string]: any;
+      }
+    | {
+        role?: 'notice';
+        mediaType?: 'text/plain';
+        encoding?: 'identity';
+        path?: {
+          [k: string]: any;
+        };
+        [k: string]: any;
+      }
+    | {
+        role?: 'world' | 'physics' | 'navigation';
+        mediaType?: 'application/x-ndjson';
+        path?: {
+          [k: string]: any;
+        };
+        [k: string]: any;
+      }
+  ) & {
     path: string;
     sha256: string;
     decodedSha256: string;
@@ -2184,7 +2219,7 @@ export interface WebReplayPackageV1 {
       | 'physics'
       | 'navigation';
     mediaType: 'application/json' | 'application/x-ndjson' | 'model/stl' | 'text/plain';
-  }[];
+  })[];
   /**
    * @maxItems 3
    */
