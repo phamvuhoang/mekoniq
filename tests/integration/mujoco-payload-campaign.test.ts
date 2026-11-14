@@ -102,14 +102,39 @@ test('a registered real impulse reaches LOAD_FELL after contact without serving 
  }finally{await run.close();}
 },60000);
 
-test('registered braking observation tail supplies the full B03 stopped-hold window',async()=>{
+test.each(['complete','restart','ack-loss'])('registered braking observation tail has a durable terminal boundary: %s',async mode=>{
  const {createFixedStepScenarioRun}=await import('../../packages/lab-runtime/src/v2/navigation2d/runner');const {defaultCatalog}=await import('../../packages/lab-runtime/src/v2/capabilities');
  const {mujocoMobilePlant}=await import('../../packages/lab-runtime/src/v2/simulation3d/mujoco-mobile');const {lockDigestOf}=await import('../../packages/lab-runtime/src/engineering/linkforge');
  const {service,receipt}=await compile('payload-slow-v1'),locked=await service.admitRun('owner',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},'engineering-mujoco-3d-v1',undefined);
  const workerRoot=resolve('robotics/simulation-mujoco'),runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1};
  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)};
- const directory=await temp(),run=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'fall-test',engineering:locked},{directory,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant:mujocoMobilePlant(runtime,'payload-brake-observation-v1'),runtime});
- try{await run.start();let v=await run.snapshot();v=await run.action({actionId:'drive',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:500}});v=await run.action({actionId:'cancel',expectedRevision:v.run.runRevision,kind:'cancel',payload:{}});v=await run.action({actionId:'observe-stop',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:250}});
- expect(v.run.status).toBe('cancelled');const report=await run.report();expect(report.outcome.status).toBe('cancelled');expect(report.outcome.served).toBe('0');expect(report.physicsEvidence?.metrics.stopDistanceM.available).toBe(true);expect(report.physicsEvidence?.complete).toBe(true);expect(report.manifest.completionObservation).toEqual({id:'payload-brake-observation-v1',extraTicks:5});
+ const {WorkerLostError}=await import('../../packages/lab-runtime/src/v2/navigation2d/plant');
+ let loseAck=false,spawns=0;const steps:{tick:number;velocities:unknown}[]=[];
+ const plant=mujocoMobilePlant(runtime,'payload-brake-observation-v1'),spawn=plant.spawn;
+ plant.spawn=async options=>{spawns++;const w=await spawn(options);return {get state(){return w.state;},get pid(){return w.pid;},get bootId(){return w.bootId;},get stderrTail(){return w.stderrTail;},close:(reason:string)=>w.close(reason),async request(req){const r=await w.request(req);if(req.op==='step'){steps.push({tick:req.expectedTick+1,velocities:(req.payload as {velocities:unknown}).velocities});if(loseAck)throw new WorkerLostError('WORKER_TIMEOUT','unknown','tail ACK lost after actual advancement');}return r;}};};
+ const directory=await temp(),open=()=>createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'brake-test',engineering:locked},{directory,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});
+ let run=await open();
+ try{await run.start();let v=await run.snapshot();v=await run.action({actionId:'drive',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:500}});v=await run.action({actionId:'cancel',expectedRevision:v.run.runRevision,kind:'cancel',payload:{}});
+ let cp=JSON.parse(await readFile(join(directory,'run.json'),'utf8')),i=0;
+ // A real one-tick consumer stops on terminal status; that must not strand the observation window.
+ while(v.run.status==='running'&&!cp.completionTail&&i<250){v=await run.action({actionId:`stop-${++i}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}});cp=JSON.parse(await readFile(join(directory,'run.json'),'utf8'));}
+ expect(cp.completionTail).toBeDefined();expect(v.tick).toBe(cp.completionTail.firstTick);expect(v.run.status).toBe('running');
+ const mid=await run.report();expect(mid.outcome.status).toBe('running');expect(mid.businessEvents.some(e=>e.type==='RobotCommandObserved'&&e.state.status==='cancelled')).toBe(true);
+ const effectIds=mid.effects.map(e=>e.id),confirmed=mid.confirmations;
+ if(mode==='restart'){
+  await run.close();run=await open();v=await run.snapshot();expect(v.run.status).toBe('needs_attention');expect(v.attention.map(a=>a.reason)).toContain('RECOVERY_UNKNOWN');
+  expect((await run.report()).outcome.status).toBe('needs_attention');await expect(run.action({actionId:'after-restart',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}})).rejects.toThrow('PLANT_LOST');expect(spawns).toBe(1);return;
+ }
+ if(mode==='ack-loss')loseAck=true;
+ while(v.run.status==='running'&&v.tick<cp.completionTail.lastTick){v=await run.action({actionId:`tail-${++i}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}});}
+ const report=await run.report();expect(report.effects.map(e=>e.id)).toEqual(effectIds);expect(report.confirmations).toEqual(confirmed);expect(report.outcome.served).toBe('0');expect(spawns).toBe(1);
+ for(const step of steps.filter(s=>s.tick>cp.completionTail.firstTick))expect(step.velocities).toEqual([{robotId:'amr-1',vMps:0,omegaRadps:0}]);
+ if(mode==='ack-loss'){
+  expect(v.run.status).toBe('needs_attention');expect(v.tick).toBe(cp.completionTail.firstTick);expect(steps.at(-1)?.tick).toBe(v.tick+1);expect(report.physicsEvidence?.complete).toBe(false);
+  await expect(run.action({actionId:'retry',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}})).rejects.toThrow('PLANT_LOST');expect(steps.at(-1)?.tick).toBe(v.tick+1);
+ }else{
+  expect(v.tick).toBe(cp.completionTail.lastTick);expect(v.run.status).toBe('cancelled');expect(report.outcome.status).toBe('cancelled');expect(report.physicsEvidence?.metrics.stopDistanceM.available).toBe(true);expect(report.physicsEvidence?.complete).toBe(true);expect(report.manifest.completionObservation).toEqual({id:'payload-brake-observation-v1',extraTicks:5});
+  await expect(run.action({actionId:'extra',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}})).rejects.toThrow('RUN_FINISHED');
+ }
  }finally{await run.close();}
 },60000);

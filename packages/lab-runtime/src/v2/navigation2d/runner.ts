@@ -337,8 +337,8 @@ class FixedStepRun implements ScenarioRun {
    const m=await this.source.read('mission',robot.state.missionId),stop=(m.state.stops as JsonObject[]).find(s=>s.id===m.state.currentStopId);
    if(!FINAL.includes(String(m.state.status))&&stop?.status==='travelling'&&typeof m.state.commandId==='string'){travelling++;this.adapters.get(id)!.sink.reportUnknown((await this.source.read('robot-command',m.state.commandId)).state as unknown as RobotCommand,'RECOVERY_UNKNOWN');}
   }
-  // a finished run had nothing in flight: reopening it is a read, not a recovery; so is a journal-confirmed cancel whose robots were observed stopped
-  if(!travelling&&!c.inFlight&&(await this.missionsDone()||c.cancelled&&!c.attention.length&&await this.cancelDone()))return;
+  // A finished run is read-only. Business cancellation alone cannot complete a registered physical observation tail after a restart.
+  if(!travelling&&!c.inFlight&&(await this.missionsDone()||c.cancelled&&!c.attention.length&&await this.cancellationFinished()))return;
   c.attention.push({reason:'RECOVERY_UNKNOWN',tick:c.tick});c.suspended=true;c.confirmations={};
   await this.drain();await this.scanArrivals();
   c.inFlight=false;c.dispatchDue=true;c.revision++;
@@ -604,6 +604,10 @@ class FixedStepRun implements ScenarioRun {
   c.completionTail??={firstTick:c.tick,lastTick:c.tick+this.plant.identity.completionObservation.extraTicks};
   return c.tick>=c.completionTail.lastTick;
  }
+ /** Business cancellation can precede physical completion; reads must never start or shorten the registered observation tail. */
+ private async cancellationFinished(){
+  return await this.cancelDone()&&(!this.plant.identity.completionObservation||!!this.cp.completionTail&&this.cp.tick>=this.cp.completionTail.lastTick);
+ }
  /** Pause/cancel received while a step was queued or ran: each is executed as its own action (own admission, revision check and receipt) at a tick boundary,
   * or right after a batch refused at admission. Once no step is pending, new controls take the ordinary queue (nothing is left behind: the last empty check and
   * the steps decrement happen before any await). */
@@ -624,7 +628,7 @@ class FixedStepRun implements ScenarioRun {
   if(this.plant.startupPolicy&&c.plant.startupAttempt&&!c.started)status='needs_attention';
   else if(!c.started)status='ready';
   else if(c.attention.length)status='needs_attention';
-  else if(c.cancelled)status=await this.cancelDone()?'cancelled':'running';
+  else if(c.cancelled)status=await this.cancellationFinished()?'cancelled':'running';
   else if(await this.missionsDone())status='completed';
   else if(c.paused)status='paused';
   else if(awaiting.length)status='awaiting_confirmation';
