@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 681b8adb8ed473f7195062773b23fabc3b922cd5 (sha256 f7ba8fa2057866239ba9f4441dfa5b2ca65938c820bd0d46eac42076c8ac8208). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ ddc18dca876fc41e30dc88028dd8365effe32d0e (sha256 6680b00433419d2058e069c865648cff9faa77040bde216bccdb8744a63d1f4a). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -296,6 +296,16 @@ export type Sim3DRequestV1 =
         propPlacements?: {
           propId: EngineeringId;
           pose: Sim3DPoseV1 | null;
+        }[];
+        /**
+         * @maxItems 16
+         */
+        worldInteractions?: {
+          eventId: string;
+          cupId: EngineeringId;
+          propId: EngineeringId;
+          kind: 'birth' | 'remove';
+          targetTick: number;
         }[];
       };
     }
@@ -1239,6 +1249,16 @@ export interface Sim3DSnapshotV1 {
     restingOn: string | null;
   }[];
   physics?: PhysicsTickRecord;
+  worldStep?: {
+    workerPid: number;
+    modelCount: 1;
+    physicsSubsteps: number;
+    primingSubsteps: 10;
+    nq: number;
+    nv: number;
+    nbody: number;
+    ngeom: number;
+  };
 }
 /**
  * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
@@ -1770,4 +1790,215 @@ export interface PhysicsEvidenceV1 {
    * @maxItems 64
    */
   assumptions: SourceRef[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "LabWorldSceneV1".
+ */
+export interface LabWorldSceneV1 {
+  schemaVersion: 1;
+  documentType: 'lab-world-scene';
+  id: string;
+  revision: number;
+  sceneDigest: Digest;
+  inputs: {
+    projectDigest: Digest;
+    armModelDigest: Digest;
+    mobileModelDigest: Digest;
+  };
+  navigation: NavigationSceneV1;
+  armCell: ArmCellSceneV1;
+  models: {
+    armComponent: {
+      path: string;
+      sha256: Digest;
+    };
+    armPhysics: {
+      path: string;
+      sha256: Digest;
+    };
+    mobilePhysical: {
+      path: string;
+      sha256: Digest;
+    };
+    emptyLoad: {
+      path: string;
+      sha256: Digest;
+    };
+    mobilePhysics: {
+      path: string;
+      sha256: Digest;
+    };
+  };
+  supportMap: {
+    replacedStaticSupportId: 'tray';
+    mobileSupportId: string;
+  };
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  propBindings: {
+    propId: string;
+    cupId: string;
+  }[];
+  numericalPolicy: {
+    id: 'coffee-delivery-world-numerics-v1';
+    revision: 1;
+    calibration: 'not_calibrated';
+    timestepMs: 2;
+    substeps: 10;
+    primingSubsteps: 10;
+    integrator: 'implicitfast';
+    cone: 'elliptic';
+    impratio: 10;
+    solver: 'Newton';
+    iterations: 100;
+    tolerance: 1e-8;
+    floorSlidingFriction: 1;
+  };
+  handoffPolicyRef: {
+    path: string;
+    sha256: Digest;
+  };
+  programsRef: {
+    path: string;
+    sha256: Digest;
+  };
+  /**
+   * @minItems 1
+   * @maxItems 128
+   */
+  files: {
+    path: string;
+    sha256: Digest;
+    bytes: number;
+  }[];
+  /**
+   * @maxItems 32
+   */
+  allowedContactRules: {
+    a: string;
+    b: string;
+    phase: 'grasp' | 'release';
+    regionId: string;
+  }[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "WorldEvidenceRecord".
+ */
+export interface WorldEvidenceRecord {
+  snapshot: Sim3DSnapshotV1;
+  command: {
+    targetTick: number;
+    /**
+     * @minItems 0
+     * @maxItems 2
+     */
+    velocities: {
+      robotId: EngineeringId;
+      vMps: number;
+      omegaRadps: number;
+    }[];
+    /**
+     * @minItems 0
+     * @maxItems 16
+     */
+    actorUpdates: {
+      actorId: EngineeringId;
+      /**
+       * @minItems 3
+       * @maxItems 3
+       */
+      poseMap: number[];
+    }[];
+    singleStep?: boolean;
+    /**
+     * @minItems 0
+     * @maxItems 1
+     */
+    jointTargets?: {
+      armId: EngineeringId;
+      /**
+       * @minItems 1
+       * @maxItems 8
+       */
+      positionsRad: number[];
+    }[];
+    /**
+     * @minItems 0
+     * @maxItems 1
+     */
+    gripperTargets?: {
+      armId: EngineeringId;
+      openingM: number;
+    }[];
+    /**
+     * @minItems 0
+     * @maxItems 8
+     */
+    propPlacements?: {
+      propId: EngineeringId;
+      pose: Sim3DPoseV1 | null;
+    }[];
+    /**
+     * @maxItems 16
+     */
+    worldInteractions?: {
+      eventId: string;
+      cupId: EngineeringId;
+      propId: EngineeringId;
+      kind: 'birth' | 'remove';
+      targetTick: number;
+    }[];
+  } | null;
+  /**
+   * @maxItems 16
+   */
+  interactions: {
+    eventId: string;
+    cupId: string;
+    propId: string;
+    kind: 'birth' | 'remove';
+    tick: number;
+    commandDigest: string;
+    reason: 'source_nozzle_birth' | 'source_recipient_removal' | 'rig_birth' | 'rig_removal';
+    before: Sim3DPoseV1 | null;
+    after: Sim3DPoseV1 | null;
+  }[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "WorldEvidenceV1".
+ */
+export interface WorldEvidenceV1 {
+  schemaVersion: 1;
+  documentType: 'world-evidence';
+  runId: string;
+  bootId: string;
+  sceneDigest: string;
+  admissionDigest: string;
+  /**
+   * @maxItems 2000
+   */
+  chunks: {
+    path: string;
+    sha256: string;
+    bytes: number;
+    firstTick: number;
+    lastTick: number;
+  }[];
+  lastTick: number;
+  complete: boolean;
+  terminal: string | null;
+  /**
+   * @maxItems 10000
+   */
+  gaps: {
+    targetTick: number;
+    lastCommittedTick: number;
+    ackTick: number | null;
+    reason: string;
+  }[];
 }
