@@ -1,4 +1,7 @@
 import {isBuiltin,createRequire} from 'node:module';
+/** Compact UTF-8 manifest bytes, including the terminal LF; matched by the Lab importer. */
+export const RUNTIME_MANIFEST_MAX_BYTES=256*1024;
+export function serializeRuntimeManifest(manifest){const bytes=Buffer.from(JSON.stringify(manifest)+'\n');if(bytes.length>RUNTIME_MANIFEST_MAX_BYTES)throw new Error('RUNTIME_MANIFEST_TOO_LARGE');return bytes;}
 // A Lab artifact must run with no node_modules or checkout beside it, and carry no credential. Called by export-lab-runtime.mjs before the manifest is written.
 const SECRETS=[/-----BEGIN [A-Z ]*PRIVATE KEY-----(?:\\n|\s)*[A-Za-z0-9+/]{16}/,/\bsb_secret_[A-Za-z0-9_-]{16}/,/\bsk_(?:live|test)_[A-Za-z0-9]{16}/,/\bAKIA[0-9A-Z]{16}\b/,/\bgh[pousr]_[A-Za-z0-9]{30,}/,/\bgithub_pat_[A-Za-z0-9_]{30,}/,/\bxox[baprs]-[A-Za-z0-9-]{20,}/];
 export function auditBundle(text){

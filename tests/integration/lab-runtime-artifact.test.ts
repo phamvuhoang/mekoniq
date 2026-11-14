@@ -33,7 +33,7 @@ test('self-contained exported artifact opens its embedded SQLite migration away 
   // C03 LFIR-17: each worker ships its license inventory inside the closure, next to its lock
   for(const t of portable.tools.filter((t:{lock?:unknown})=>t.lock)){expect(t.licenses.path,t.id).toBe(`${t.root}/licenses.json`);expect(portable.closure.files.find((f:{path:string})=>f.path===t.licenses.path).sha256).toBe(t.licenses.sha256);}
   expect(portable.roots).toEqual(['robotics/navigation-2d','robotics/model-validation','robotics/algorithm','robotics/simulation-3d','robotics/simulation-mujoco','robotics/simulation/compiler','robotics/simulation/actors','robotics/simulation/worlds','packages/contracts/schemas']);expect(paths.every((p:string)=>portable.roots.some((r:string)=>p.startsWith(r+'/')))).toBe(true);
-  expect((await readFile(join(directory,'artifact/manifest.json'))).length).toBeLessThan(65536);// the Lab importer's manifest limit
+  expect((await readFile(join(directory,'artifact/manifest.json'))).length).toBeLessThanOrEqual(256*1024);// the shared exporter/Lab importer manifest byte limit
   const probe=createServer();await new Promise<void>(r=>probe.listen(0,'127.0.0.1',r));const port=(probe.address() as {port:number}).port;await new Promise<void>(r=>probe.close(()=>r()));
   child=spawn(process.execPath,[join(directory,'artifact/runtime.mjs'),'--port',String(port),'--data-dir',join(directory,'runs')],{cwd:directory,stdio:['ignore','pipe','pipe']});
   let stderr='';child.stderr!.on('data',c=>stderr+=c);
@@ -100,3 +100,11 @@ test.runIf(process.env.LAB_V2_CLEAN_EXPORT==='1')('--clean-checkout exports comm
   expect(manifest).toMatchObject({dirty:false,sourceCommit:head});
  }finally{await rm(out,{recursive:true,force:true});}
 },600000);
+
+test('runtime manifest serialization preserves identities and enforces the256KiB byte boundary',async()=>{
+ // @ts-expect-error CLI JavaScript boundary
+ const {serializeRuntimeManifest,RUNTIME_MANIFEST_MAX_BYTES}=await import('../../scripts/lab-runtime-audit.mjs') as {serializeRuntimeManifest:(m:object)=>Buffer;RUNTIME_MANIFEST_MAX_BYTES:number};
+ expect(RUNTIME_MANIFEST_MAX_BYTES).toBe(256*1024);const base={sourceCommit:'a'.repeat(40),note:''},empty=Buffer.byteLength(JSON.stringify(base)+'\n');
+ for(const size of [65537,256*1024]){const m={...base,note:'x'.repeat(size-empty)},b=serializeRuntimeManifest(m);expect(b.length).toBe(size);expect(JSON.parse(b.toString())).toEqual(m);}
+ expect(()=>serializeRuntimeManifest({...base,note:'x'.repeat(256*1024-empty+1)})).toThrow('RUNTIME_MANIFEST_TOO_LARGE');expect(()=>serializeRuntimeManifest({...base,note:'é'.repeat(128*1024)})).toThrow('RUNTIME_MANIFEST_TOO_LARGE');
+});

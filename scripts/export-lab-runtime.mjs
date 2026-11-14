@@ -8,7 +8,7 @@ import {execFileSync} from 'node:child_process';
 import {mkdtempSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {nativeToolClosure,portableToolClosure,PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
-import {auditBundle} from './lab-runtime-audit.mjs';
+import {auditBundle,serializeRuntimeManifest} from './lab-runtime-audit.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const out=resolve(process.argv.slice(2).find(a=>!a.startsWith('--'))??join(root,'packages/lab-runtime/dist'));
 if(out===root||out.startsWith(join(root,'packages/contracts')))throw new Error('UNSAFE_OUTPUT_DIRECTORY');
@@ -64,6 +64,6 @@ const portableSimulationTools={distribution:'separate',version:1,python:{impleme
   {id:'description_helper',root:'robotics/simulation/compiler'}],
  roots:PORTABLE_TOOL_PATHS,closure:portable,note:'not bundled; provision each venv from its lock (no download at run time), then lab:irsim verifies these files'};
 const manifest={sourceCommit,schemaHash,protocolMajor:2,protocolMajors:[1,2],artifactSha256,entrypoint:'runtime.mjs',nodeMajor:24,packageVersion:pkg.version,dirty:Boolean(dirty),schemas:names,toolchain:{node:process.version},simulationTools,nativeTools,portableSimulationTools};
-// compact: the Lab importer refuses a manifest above 65,536 bytes and the portable tool closure lists every file
-await writeFile(join(out,'manifest.json'),JSON.stringify(manifest)+'\n');
+// Compact UTF-8 manifests are bounded at256KiB by both exporter and Lab importer; every closure file remains listed.
+await writeFile(join(out,'manifest.json'),serializeRuntimeManifest(manifest));
 console.log(JSON.stringify({output:out,...manifest},null,2));
