@@ -1,3 +1,5 @@
+import {openPhysicsRecorder,readPhysicsEvidence,readPhysicsManifest,preparePhysicsAdmission,validatePhysicsRecord,type PhysicsRecorder} from '../simulation3d/physics-evidence';
+import {physicsMetrics} from '../simulation3d/physics-metrics';
 // Fixed-step scenario runner for a plant port (IR-SIM today). The source runner is the only scheduler; per fixed 20 ms tick:
 // scripted inputs -> source decisions/dispatch -> controller velocities -> one worker step -> verified ACK -> commit the logical clock -> observations -> journal.
 // Business truth lives only in the run's source journal (production registry via SourceSession); the Python worker owns plant state only.
@@ -128,6 +130,8 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  const read=fresh?(path:string)=>{if(!providers.bundleFile)throw new Error('ENGINEERING_CLOSURE_MISSING');return providers.bundleFile(input.engineering!.ref.bundleDigest,path);}:(path:string)=>readFile(join(bundleDir,path));
  const {scene,files}=await lockScene(input,project,roles,read,amr.id);
  const stopMonitor=await plant.prepareStopMonitor?.(scene,read);
+ const physics=plant.identity.amr.id==='mujoco_3d'?await preparePhysicsAdmission(scene,read):undefined;
+ if(physics&&(providers.runtime.evidence?.maxBytes??EVIDENCE_LIMITS.maxBytes)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_COMBINED_QUOTA_INVALID');
  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
  const fixture=resolveScenarioFixture(scenario.id,scene,input.seed),fixtureBytes=fixture.actors.length?Buffer.from(JSON.stringify(fixtureFile(fixture))):null;
  const mapId=scene.world.id,mapRevision=scene.sceneDigest,lock=providers.runtime.lockDigest;
@@ -163,7 +167,7 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // every terminal the recorder produces (any flush, the tick limit, close) goes into the checkpoint before its manifest write is attempted
  const owner:{run?:FixedStepRun}={},opened=cp;
  const recorder=await openNavigationRecorder({knownTerminal:cp.evidenceTerminal??null,onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.runtime.evidence,maxTicks:Math.min(providers.runtime.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
- const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor);owner.run=run;
+ const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor,physics);owner.run=run;
  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
  run.traffic=fixture.zones.length?createZoneTraffic(createZoneBridge(run.source,{async enter(){}},()=>`op-${++run.checkpoint.ordinal}`),fixture.zones,{clearanceM:scene.policy.parameters.safetyMarginM+2*scene.policy.parameters.gridResolutionM}):undefined;
  try{
@@ -206,9 +210,10 @@ class FixedStepRun implements ScenarioRun {
  private steps=0;
  private controls:{raw:unknown;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
  private engineSeed:number;
+ private physicsRec?:PhysicsRecorder;
  /** Paced-step anchor (D57): memory only, never checkpointed nor in evidence; cleared by pause, resume, cancel, an unpaced step and a reopen. */
  private anchor:PaceAnchor|null=null;
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor){
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor,private physics?:Awaited<ReturnType<typeof preparePhysicsAdmission>>){
   this.clock=createClock(EPOCH,cp.tick,cp.paused);
   this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
@@ -235,7 +240,7 @@ class FixedStepRun implements ScenarioRun {
  }
  private releaseSlot(){slotsOf(this.plant.identity.amr.id).delete(this.cp.runId);}
  /** A finished run needs no plant: the worker stops and its slot is free; the persisted last snapshot stays the run's state. */
- private async stopPlant(){const c=this.cp,w=this.worker;this.worker=undefined;c.plant.status='stopped';c.plant.reason='RUN_FINISHED';await w?.close('RUN_FINISHED').catch(()=>{});this.releaseSlot();await this.rec.flush();}
+ private async stopPlant(){const c=this.cp,w=this.worker;this.worker=undefined;c.plant.status='stopped';c.plant.reason='RUN_FINISHED';await w?.close('RUN_FINISHED').catch(()=>{});this.releaseSlot();await this.rec.flush();await this.flushPhysics();}
  record(){
   const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;const at=String(process.hrtime.bigint()),stale=!this.verified();
   // lossy in-memory samples for the live view; the durable per-tick record (and every metric) is the evidence store
@@ -261,9 +266,13 @@ class FixedStepRun implements ScenarioRun {
    if(this.plant.startupPolicy){c.plant.startupAttempt=true;await this.persist();}
    const snap=(await this.ask('create',{sceneRef:SCENE,seed:this.engineSeed})).result as IRSimSnapshotV1;
    created=true;
+   if(this.physics){
+    this.physicsRec=await openPhysicsRecorder({directory:join(this.dir,'physics'),identity:{runId:c.runId,bootId:snap.bootId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest},admission:this.physics.admission,assumptions:this.physics.assumptions,metricsPolicyDigest:this.physics.metricsPolicyDigest,...o.evidence,maxTicks:Math.min(o.evidence?.maxTicks??EVIDENCE_LIMITS.maxTicks,this.scenario.maxTicks)});
+    try{this.validatePhysics(snap,0);await this.physicsRec.append((snap as import('./contracts').Sim3DSnapshotV1).physics!);}catch(e){await this.recordGap({fromTick:0,toTick:0,reason:'PHYSICS_OBSERVATION_INVALID'});throw e;}
+   }
    const fault=this.stopMonitor?.(snap);if(fault)throw new Error(fault.code);
    await this.ask('start',{});
-   await this.rec.append(snap,null);
+   await this.rec.append(snap,null);if(this.physics&&this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');
    c.plant={status:'live',reason:null,bootId:this.worker.bootId,requests:c.plant.requests,snapshot:snap};
    for(const a of this.adapters.values())a.sink.observe(snap);
   }catch(e){
@@ -272,8 +281,15 @@ class FixedStepRun implements ScenarioRun {
     if(!created&&e instanceof WorkerLostError&&e.outcome==='not_sent')delete c.plant.startupAttempt;
     else this.startupLost();
    }
-   await this.worker.close('START_FAILED').catch(()=>{});this.worker=undefined;this.releaseSlot();throw new Error(`PLANT_START_FAILED:${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,80)}`);
+   await this.physicsRec?.finish('STARTUP_UNKNOWN').catch(()=>{});await this.worker.close('START_FAILED').catch(()=>{});this.worker=undefined;this.releaseSlot();throw new Error(`PLANT_START_FAILED:${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,80)}`);
   }
+ }
+ private validatePhysics(snap:IRSimSnapshotV1,tick:number){
+  if(!this.physics)return;const s=snap as import('./contracts').Sim3DSnapshotV1;
+  if(s.tick!==tick||s.runId!==this.cp.runId||s.sceneDigest!==this.scene.sceneDigest||s.simTimeNs!==String(tick*20_000_000)||(tick>0&&s.bootId!==this.cp.plant.snapshot?.bootId))throw new Error('PHYSICS_OBSERVATION_INVALID');
+  validatePhysicsRecord(s.physics,this.physics.admission,tick);
+  const base=s.physics!.base[0]!,pose=s.robots[0]?.pose3d;
+  if(!pose||Math.abs(pose.z-base.poseMap.positionM[2]!)>1e-6||Math.abs(pose.roll-base.rollRad)>1e-6||Math.abs(pose.pitch-base.pitchRad)>1e-6)throw new Error('PHYSICS_OBSERVATION_INVALID');
  }
  private startupLost(){const c=this.cp;c.plant.status='lost';c.plant.reason='STARTUP_UNKNOWN';c.attention.push({reason:'STARTUP_UNKNOWN',tick:c.tick});this.suspend();}
  private async plantLost(code:string,reason='WORKER_LOST'){
@@ -284,12 +300,12 @@ class FixedStepRun implements ScenarioRun {
   c.attention.push({reason,subjectId:code,tick:c.tick});this.suspend();
   // a zone held when the plant was lost stays held (the domain keeps it; nothing here frees it) and is named, never left implicit
   for(const [zoneId,robotId] of Object.entries(this.traffic?.owners()??{}))if(robotId)c.attention.push({reason:'ZONE_HELD_UNKNOWN',robotId,subjectId:zoneId,tick:c.tick});
-  await this.rec.flush();await this.drain();
+  await this.physicsRec?.finish(code).catch(()=>{});await this.rec.flush();await this.drain();
  }
  /** A step that was sent but not verified: the plant may be at tick+1 with a state nobody saw (a contact included). That tick is a recorded gap, then the plant is lost. */
  private async stepLost(code:string){const t=this.cp.tick+1;await this.recordGap({fromTick:t,toTick:t,reason:'STEP_ACK_LOST'});await this.plantLost(code);}
  /** A gap the run knows of goes into the checkpoint as well: if the recorder cannot write it now (it retries on every flush), a reopen records it from there. */
- private async recordGap(g:Gap){const c=this.cp;(c.evidenceGaps??=[]).push(g);await this.rec.gap(g).catch(()=>{});}
+ private async recordGap(g:Gap){const c=this.cp;(c.evidenceGaps??=[]).push(g);await this.rec.gap(g).catch(()=>{});await this.physicsRec?.gap(g.fromTick,g.toTick,g.reason).catch(()=>{});}
  /** A recording that ended (quota, tick limit, failed write) ends the plant too: no motion is ever left unrecorded. Legs in flight become unknown. */
  private evidenceEnded(){this.cp.evidenceTerminal=this.rec.terminal?.slice(0,500)??null;return this.plantLost(`EVIDENCE:${this.rec.terminal}`,'EVIDENCE_INCOMPLETE');}
  /** Reopened after a crash or restart: the journal is the truth. A leg the journal still shows travelling is unknown; cargo, reservations and custody stay. */
@@ -428,10 +444,14 @@ class FixedStepRun implements ScenarioRun {
    if(hashJson(next.robots.map(x=>x.robotId).sort())!==hashJson(this.scene.robots.map(x=>x.robotId).sort())||next.robots.some(x=>![...x.poseDriveMap,...x.bodyVelocity].every(Number.isFinite))){await this.stepLost('SNAPSHOT_INVALID');return false;}
   }catch(e){await this.stepLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED');return false;}
   const prev=c.plant.snapshot!;
+  if(this.physics){
+   try{this.validatePhysics(next,c.tick+1);await this.physicsRec!.append((next as import('./contracts').Sim3DSnapshotV1).physics!);await this.rec.append(next,payload);if(this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');}
+   catch(e){const why=(e as Error).message==='PHYSICS_OBSERVATION_INVALID'?'PHYSICS_OBSERVATION_INVALID':'PHYSICS_EVIDENCE_FAILED';await this.recordGap({fromTick:c.tick+1,toTick:c.tick+1,reason:why});await this.plantLost(why,why);return false;}
+  }
   this.clock.advance(1);c.tick=this.clock.tick;c.plant.snapshot=next;
   // the verified tick goes to the evidence store with the step that produced it, before anything is derived from it
   // a refused append is never skipped silently: it ends the recording (and so the plant) with the reason
-  await this.rec.append(next,payload).catch(async(e:Error)=>{const why=`EVIDENCE_REJECTED:${e.message.slice(0,60)}`;await this.recordGap({fromTick:c.tick,toTick:c.tick,reason:why});await this.rec.terminate(why);});
+  if(!this.physics)await this.rec.append(next,payload).catch(async(e:Error)=>{const why=`EVIDENCE_REJECTED:${e.message.slice(0,60)}`;await this.recordGap({fromTick:c.tick,toTick:c.tick,reason:why});await this.rec.terminate(why);});
   // Mobile faults retain the acknowledged tick as evidence but cannot confirm a source outcome or publish valid telemetry.
   const observationFault=this.stopMonitor?.(next);
   if(observationFault){c.attention.push({reason:observationFault.code,robotId:observationFault.robotId,tick:c.tick});await this.plantLost(observationFault.code,observationFault.code);return false;}
@@ -466,7 +486,7 @@ class FixedStepRun implements ScenarioRun {
    if(!c.reclaimed){
     this.suspend();c.paused=true;this.clock.pause();
     for(const a of this.adapters.values())await a.requestStop('LOCAL_RECLAIM');await this.drain();
-    if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RECLAIMED';const w=this.worker;this.worker=undefined;await w?.close('RECLAIMED').catch(()=>{});this.releaseSlot();await this.rec.flush();}
+    if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RECLAIMED';const w=this.worker;this.worker=undefined;await w?.close('RECLAIMED').catch(()=>{});this.releaseSlot();await this.rec.flush();await this.flushPhysics();}
     if(c.started&&!await this.missionsDone()){
      let targets=0;
      for(const {id:robotId} of c.roles.robots){
@@ -604,9 +624,11 @@ class FixedStepRun implements ScenarioRun {
  report():Promise<RunReport>{const p=this.queue.then(()=>this.buildReport());this.queue=p.catch(()=>{});return p;}
  private async buildReport():Promise<RunReport>{
   if(this.closed)throw new Error('RUN_CLOSED');
+  await this.flushPhysics();
   const c=this.cp,v=await this.view();
   // every plant metric comes from the evidence as read back from disk now: what is not durable yet is not measured
   const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed,{scene:this.scene,runTick:c.started?c.tick:null}),m=navigationMetrics(this.scene,read,this.fixture.actors);
+  const physicsEvidence=await this.physicsReport(read);
   const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??this.plant.identity.amr.version,pythonVersion:c.engine?.pythonVersion??'not_started'}},listed,read,m,c.started?c.tick:null,undefined,this.plant.identity.evidence);
   const available=m.coverage==='complete',why=m.coverageReasons.join(', ').slice(0,500)||'EVIDENCE_INCOMPLETE';
   const businessEvents:BusinessEvent[]=(await this.source.journal()).flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({sequence:entry.sequence,at:entry.recordedAt,type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject})));
@@ -621,7 +643,22 @@ class FixedStepRun implements ScenarioRun {
     'Distance, collision and clearance metrics are computed from the durable per-tick evidence (navigation2d) by the independent oracle; they are unavailable whenever that evidence is incomplete.',
     'A lost or refused worker step leaves its legs unknown; it is never resent and the run is never continued by a new worker process.',
     'Stop requests are model stops only (physicalStopConfirmed false).',...this.scene.limitations],
-   telemetry:this.telemetry.report(),navigation2d};
+   telemetry:this.telemetry.report(),navigation2d,...physicsEvidence?{physicsEvidence}:{}};
  }
- async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;try{await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{this.releaseSlot();await this.rec.close().catch(()=>{});await this.source.close();}}}
+ private async flushPhysics(){
+  if(!this.physicsRec)return;
+  try{await this.physicsRec.flush();}catch{const first=this.physicsRec.manifest().coverage.lastTick+1;await this.recordGap({fromTick:Math.min(first,this.cp.tick),toTick:this.cp.tick,reason:'PHYSICS_EVIDENCE_FAILED'});await this.plantLost('PHYSICS_EVIDENCE_FAILED','PHYSICS_EVIDENCE_FAILED');await this.persist();}
+ }
+ private async physicsReport(navigation:import('./evidence').EvidenceRead):Promise<RunReport['physicsEvidence']>{
+  if(!this.physics)return undefined;
+  const manifest=this.physicsRec?.manifest()??await readPhysicsManifest(join(this.dir,'physics')).catch(()=>this.cp.started||this.cp.plant.startupAttempt?{schemaVersion:1 as const,documentType:'physics-evidence' as const,identity:{runId:this.cp.runId,bootId:this.cp.plant.snapshot?.bootId??'unobserved',sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics!.loadProfileDigest,physicsProfileDigest:this.physics!.physicsProfileDigest},streams:[],coverage:{firstTick:0,lastTick:this.cp.tick,complete:false},gaps:[{firstTick:0,lastTick:this.cp.tick,reason:'PHYSICS_MANIFEST_INVALID'}],terminalReason:'PHYSICS_MANIFEST_INVALID',metricsPolicyDigest:this.physics!.metricsPolicyDigest,assumptions:this.physics!.assumptions}:null);
+  if(!manifest)return undefined;
+  // Checkpoint gaps are authoritative even when a failed disk could not publish the sidecar.
+  for(const g of [...this.cp.evidenceGaps??[],...this.rec.committed().gaps])if(!manifest.gaps.some(x=>x.firstTick===g.fromTick&&x.lastTick===g.toTick))manifest.gaps.push({firstTick:g.fromTick,lastTick:g.toTick,reason:g.reason.slice(0,200)});
+  if(this.cp.plant.status==='lost')manifest.terminalReason??=this.cp.plant.reason??'PLANT_LOST';
+  if(manifest.gaps.length||manifest.terminalReason)manifest.coverage.complete=false;
+  const read=await readPhysicsEvidence(join(this.dir,'physics'),manifest,{admission:this.physics.admission,metricsPolicyDigest:this.physics.metricsPolicyDigest,identity:{...manifest.identity,runId:this.cp.runId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest,...this.cp.plant.snapshot?{bootId:this.cp.plant.snapshot.bootId}:{}},runTick:this.cp.tick});
+  return {manifest,manifestSha256:sha256(Buffer.from(JSON.stringify(manifest))),complete:read.complete,issues:read.issues,metrics:physicsMetrics(read,this.physics.admission,{...navigation,policy:this.scene.policy.parameters})};
+ }
+ async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;try{await this.physicsRec?.flush().catch(()=>{});await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{this.releaseSlot();await this.rec.close().catch(()=>{});await this.source.close();}}}
 }

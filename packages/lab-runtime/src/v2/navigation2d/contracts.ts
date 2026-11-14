@@ -170,3 +170,7 @@ export function defaultNavigationPolicy():NavigationPolicyV1{
  const draft={schemaVersion:1 as const,id:'irsim-2d-default-v1',revision:1,source:{kind:'assumed' as const,documentId:'irsim-2d-default-v1',revision:'1',locator:'specs/2026-11-08-linkforge-irsim/contracts.md#navigation-policy',contentSha256:hashJson(parameters)},parameters};
  return {...draft,hash:documentDigest(draft,'hash')};
 }
+
+/** Schema shape only; admitted engine semantics are enforced by the physics recorder/reader. */
+export const validatePhysicsTickShape=ajv.getSchema('physics-evidence-v1.schema.json#/definitions/PhysicsTickRecord')!;
+export const validatePhysicsEvidenceShape=ajv.getSchema('physics-evidence-v1.schema.json')!;

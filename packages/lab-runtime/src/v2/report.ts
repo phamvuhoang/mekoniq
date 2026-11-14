@@ -23,6 +23,8 @@ export interface CoffeeReport {
 }
 export interface RunReport {
  schemaVersion:2;
+ /** Optional independent read-back physics evidence; deliberately excluded from canonicalOutcome. */
+ physicsEvidence?:{manifest:import('../../../contracts/generated/navigation2d').PhysicsEvidenceV1;manifestSha256:string;complete:boolean;issues:string[];metrics:import('./simulation3d/physics-metrics').PhysicsMetrics};
  faultScheduleFires?:FaultFireRecord[];
  manifest:{faultSchedule?:{entries:FaultScheduleEntry[];hash:string};engineering?:{bundleDigest:string;projectDigest:string};runId:string;sourceCommit:string;mode:'mock'|'simulation';access:'simulated';backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];prng:{algorithm:string;seeding:string;version:number};clock:{tickMs:number;businessEpochMs?:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
   scenario:{id:string;revision:number;hash:string;basedOn?:{id:string;revision:number}};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[];

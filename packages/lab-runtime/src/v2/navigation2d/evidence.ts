@@ -69,7 +69,7 @@ function listingProblem(l:{chunks?:unknown;gaps?:unknown;terminal?:unknown;lastT
 const empty=():Chunks=>({trajectory:[],sensors:[],control:[],collisions:[]});
 async function syncDir(dir:string){const h=await open(dir,'r');try{await h.sync();}finally{await h.close();}}
 /** tmp file, fsync, rename, fsync the directory: after this returns the bytes survive a crash under `name`. */
-async function writeDurable(dir:string,name:string,bytes:Uint8Array|string){
+export async function writeDurable(dir:string,name:string,bytes:Uint8Array|string){
  const tmp=join(dir,`.${name}.tmp`),h=await open(tmp,'w',0o600);
  try{await h.writeFile(bytes);await h.sync();}finally{await h.close();}
  await rename(tmp,join(dir,name));await syncDir(dir);

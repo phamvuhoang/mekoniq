@@ -26,6 +26,33 @@ def _euler(r):
     return math.atan2(r[2, 1], r[2, 2]), -math.asin(float(np.clip(r[2, 0], -1, 1))), math.atan2(r[1, 0], r[0, 0])
 
 
+class ContactAccumulator:
+    """One tick of all native substep samples, including contacts gone by its end."""
+    def __init__(self, dt, expected):
+        self.dt, self.expected, self.pairs = dt, expected, {}
+
+    def add(self, samples):
+        for pair, (normal, fmap, point, _) in samples.items():
+            if not math.isfinite(normal) or normal < 0 or not np.isfinite(fmap).all():
+                raise WorkerError("PLANT_UNSTABLE", "nonfinite contact force", fatal=True)
+            if pair not in self.pairs:
+                if len(self.pairs) >= 256:
+                    raise WorkerError("CONTACT_CAPACITY_EXCEEDED", "more than 256 contact pairs in a tick", fatal=True)
+                self.pairs[pair] = {"a": pair[0], "b": pair[1], "samples": 0, "peakNormalN": 0.0, "normalImpulseNs": 0.0,
+                                    "netImpulseMapNs": np.zeros(3), "pointAtPeakMapM": point.tolist(), "expected": pair in self.expected}
+            a = self.pairs[pair]
+            a["samples"] += 1
+            a["normalImpulseNs"] += normal * self.dt
+            a["netImpulseMapNs"] += fmap * self.dt
+            if not math.isfinite(a["normalImpulseNs"]) or not np.isfinite(a["netImpulseMapNs"]).all():
+                raise WorkerError("PLANT_UNSTABLE", "contact impulse overflow", fatal=True)
+            if normal > a["peakNormalN"]:
+                a["peakNormalN"], a["pointAtPeakMapM"] = normal, point.tolist()
+
+    def finish(self):
+        return [{**self.pairs[p], "netImpulseMapNs": self.pairs[p]["netImpulseMapNs"].tolist()} for p in sorted(self.pairs)]
+
+
 class MobileEngine:
     def __init__(self, scene, physical_models, load_profile, physics):
         if mujoco.__version__ != "3.17.0":
@@ -101,7 +128,7 @@ class MobileEngine:
             raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "wheel target exceeds canonical speed limit")
         self.targets[:] = targets
         d.ctrl[self.acts] = self.targets
-        aggregate, unstable, self.saturated = {}, set(), 0
+        aggregate, unstable, self.saturated = ContactAccumulator(self.dt, self.names["expected"]), set(), 0
         for _ in range(self.substeps):
             old = d.qpos[self.wq].copy()
             saturated = False
@@ -125,19 +152,8 @@ class MobileEngine:
             distance = ds * float(np.sinc(da / (2 * math.pi)))
             self.odom[:2] += distance * np.array([math.cos(self.odom[2] + da/2), math.sin(self.odom[2] + da/2)])
             self.odom[2] += da  # deliberately unwrapped; residual caller wraps differences
-            for pair, (normal, fmap, point, _) in self._sample_contacts().items():
-                if pair not in aggregate:
-                    if len(aggregate) >= 256:
-                        raise WorkerError("CONTACT_CAPACITY_EXCEEDED", "more than 256 contact pairs in a tick", fatal=True)
-                    aggregate[pair] = {"a": pair[0], "b": pair[1], "samples": 0, "peakNormalN": 0.0, "normalImpulseNs": 0.0,
-                                       "netImpulseMapNs": np.zeros(3), "pointAtPeakMapM": point.tolist(), "expected": pair in self.names["expected"]}
-                a = aggregate[pair]
-                a["samples"] += 1
-                a["normalImpulseNs"] += normal * self.dt
-                a["netImpulseMapNs"] += fmap * self.dt
-                if normal > a["peakNormalN"]:
-                    a["peakNormalN"], a["pointAtPeakMapM"] = normal, point.tolist()
-        self.contacts = [{**aggregate[p], "netImpulseMapNs": aggregate[p]["netImpulseMapNs"].tolist()} for p in sorted(aggregate)]
+            aggregate.add(self._sample_contacts())
+        self.contacts = aggregate.finish()
         self.tick += 1
         mujoco.mj_forward(m, d)  # read transforms/velocities at the final integrated pose
         if self.tick % self.entry["model"]["sensors"][0]["publishEveryTicks"] == 0:

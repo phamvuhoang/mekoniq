@@ -30,17 +30,17 @@ async function setup(wrap:(plant:PlantPort)=>void){
 let ordinal=0;
 async function act(run:ScenarioRun,kind:string,payload={}){const v=await run.snapshot();return run.action({actionId:`act-${++ordinal}`,expectedRevision:v.run.runRevision,kind,payload});}
 
-test.each(['missing','clock'])('mobile runner rejects %s physics before confirming a pending cancellation',async mode=>{
+test.each(['missing','clock','contacts','pose'])('mobile runner rejects %s physics before confirming a pending cancellation',async mode=>{
  let fault=false;
- const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(fault&&req.op==='step'&&r.ok){const s=r.result as unknown as {robots:{bodyVelocity:number[]}[];physics?:{tick:number}};s.robots[0]!.bodyVelocity=[0,0];if(mode==='missing')delete s.physics;else s.physics!.tick++;}return r;}};};});
+ const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(fault&&req.op==='step'&&r.ok){const s=r.result as unknown as {robots:{bodyVelocity:number[];pose3d:{roll:number}}[];physics?:{tick:number;contacts?:unknown}};s.robots[0]!.bodyVelocity=[0,0];if(mode==='missing')delete s.physics;else if(mode==='clock')s.physics!.tick++;else if(mode==='contacts')delete s.physics!.contacts;else s.robots[0]!.pose3d.roll+=.1;}return r;}};};});
  const run=await open();await run.start();let moving=await run.snapshot();while(!moving.entities[0]!.goal&&moving.tick<1000)moving=await act(run,'step',{ticks:20});const commandId=moving.entities[0]!.goal!.commandId;
  await act(run,'cancel');fault=true;const stopped=await act(run,'step',{ticks:1}),report=await run.report();
- expect(stopped.tick).toBe(moving.tick+1);expect(report.navigation2d?.clock.tickHorizon).toBe(stopped.tick);
+ expect(stopped.tick).toBe(moving.tick);expect(report.physicsEvidence?.manifest.gaps).toContainEqual(expect.objectContaining({firstTick:moving.tick+1,lastTick:moving.tick+1}));expect(report.navigation2d?.clock.tickHorizon).toBe(stopped.tick);
  expect(stopped.attention.map(x=>x.reason)).toContain('PHYSICS_OBSERVATION_INVALID');
  expect(report.businessEvents.filter(e=>e.type==='RobotCommandObserved'&&e.id===commandId).map(e=>e.state.status)).not.toContain('cancelled');
  expect(stopped.entities[0]!.goal?.state).toBe('unknown');
  expect(report.rejectedObservations).toEqual(expect.arrayContaining([expect.objectContaining({commandId,type:'unknown',code:'CANCELLATION_RECONCILIATION_REQUIRED'})]));
- expect(report.telemetry.samples.filter(s=>s.simTimeNs===String(stopped.tick*20_000_000)).every(s=>s.quality!=='valid')).toBe(true);
+ expect(report.telemetry.samples.filter(s=>s.simTimeNs===String((stopped.tick+1)*20_000_000)).every(s=>s.quality!=='valid')).toBe(true);
 },30_000);
 
 
@@ -85,4 +85,33 @@ test('an uncertain startup keeps engine capacity until the lost worker closes',a
  const run=await open(),starting=run.start().catch(e=>e);await reached;
  try{expect(activeRunCount('mujoco_arm')).toBe(1);}finally{release();await starting;}
  expect(activeRunCount('mujoco_arm')).toBe(0);await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');
+},30_000);
+
+test('durable append failure after advancement retains logical tick and terminal unknown across reopen',async()=>{
+ let steps=0,spawns=0;const {open,directory}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){if(req.op==='step')steps++;return w.request(req);}};};});
+ const run=await open();await run.start();await act(run,'step',{ticks:20});const before=await run.snapshot();
+ const {mkdir}=await import('node:fs/promises');await rm(join(directory,'physics','pending.ndjson'));await mkdir(join(directory,'physics','pending.ndjson'));
+ const after=await act(run,'step',{ticks:10}),report=await run.report();expect(after.tick).toBe(before.tick);expect(steps).toBe(21);expect(after.run.status).toBe('needs_attention');expect(report.physicsEvidence?.complete).toBe(false);expect(report.physicsEvidence?.manifest.gaps).toContainEqual(expect.objectContaining({firstTick:21,lastTick:21}));
+ await expect(act(run,'step',{ticks:1})).rejects.toThrow('PLANT_LOST');await run.close();const restored=await open();await expect(act(restored,'start')).rejects.toThrow('INVALID_STATE');expect(spawns).toBe(1);
+},30_000);
+
+test('initial physics append failure preserves startup latch and refuses respawn',async()=>{
+ let spawns=0;const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(req.op==='create'&&r.ok)delete (r.result as {physics?:unknown}).physics;return r;}};};});
+ const run=await open();await expect(run.start()).rejects.toThrow('PHYSICS_OBSERVATION_INVALID');await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');await run.close();const reopened=await open();await expect(act(reopened,'start')).rejects.toThrow('STARTUP_UNKNOWN');expect(spawns).toBe(1);
+},30_000);
+
+test('a report flush failure terminates the plant before another engine step',async()=>{
+ let steps=0;const {open,directory}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{const w=await spawn(o);return {...w,async request(req){if(req.op==='step')steps++;return w.request(req);}};};});
+ const run=await open();await run.start();await act(run,'step',{ticks:2});
+ const {mkdir}=await import('node:fs/promises');await mkdir(join(directory,'physics','.write.intent.tmp'));
+ const report=await run.report();expect(report.outcome.status).toBe('needs_attention');expect(report.physicsEvidence?.complete).toBe(false);await expect(act(run,'step',{ticks:1})).rejects.toThrow('PLANT_LOST');expect(steps).toBe(2);
+},30_000);
+
+test('restart after an in-flight step joins the explicit unknown horizon into physics coverage',async()=>{
+ const {open,directory}=await setup(()=>{}),run=await open();await run.start();await act(run,'step',{ticks:100});await run.report();
+ const checkpoint=JSON.parse(await readFile(join(directory,'run.json'),'utf8'));checkpoint.inFlight=true;
+ const physics=await readFile(join(directory,'physics','manifest.json')),navigation=await readFile(join(directory,'evidence','manifest.json'));
+ await act(run,'step',{ticks:1});await run.close();
+ await writeFile(join(directory,'run.json'),JSON.stringify(checkpoint));await writeFile(join(directory,'physics','manifest.json'),physics);await writeFile(join(directory,'evidence','manifest.json'),navigation);
+ const restored=await open(),report=await restored.report();expect(report.outcome.tick).toBe(100);expect(report.physicsEvidence?.complete).toBe(false);expect(report.physicsEvidence?.manifest.gaps).toContainEqual(expect.objectContaining({firstTick:101,lastTick:101,reason:'STEP_ACK_LOST'}));
 },30_000);
