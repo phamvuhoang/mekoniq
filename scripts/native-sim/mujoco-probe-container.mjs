@@ -1,5 +1,5 @@
 // Observer entrypoint inside the already-installed exact image. No network except private loopback.
-import {performance} from 'node:perf_hooks';
+import {createActionRecorder} from './mujoco-probe-actions.mjs';
 import {spawn} from 'node:child_process';
 import {readFile,writeFile,mkdir,readdir,lstat,copyFile,open} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -31,7 +31,7 @@ async function business(spec){
  const stdout=await open(join(out,'runtime.stdout.log'),'wx'),stderr=await open(join(out,'runtime.stderr.log'),'wx');let logs=Promise.resolve(),runtimeClosed=false;
  const runtime=spawn(process.execPath,['--import','/probe/mujoco-probe-observer.mjs','/app/runtime.mjs','--bind','127.0.0.1','--port','39176','--data-dir',data,'--mujoco-python',python,'--mujoco-worker','/app/robotics/simulation-mujoco','--mujoco-lock','/app/robotics/simulation-mujoco/requirements.lock'],{env:{...process.env,MEKONIQ_LAB_ACCESS_KEY:key,L01_OBSERVER_FILE:wirePath,L01_OWNED_ROOT:data},stdio:['ignore','pipe','pipe']});
  runtime.stdout.on('data',b=>{logs=logs.then(()=>stdout.write(b));});runtime.stderr.on('data',b=>{logs=logs.then(()=>stderr.write(b));});runtime.once('close',()=>{runtimeClosed=true;});
- const closed=once(runtime,'close');let token,runDir,runId,raw,view,revision=0,action=0,injection=null,afterLossSteps=0,maxRssKiB=0;
+ const closed=once(runtime,'close');let token,runDir,runId,raw,view,revision=0,injection=null,afterLossSteps=0,maxRssKiB=0;
  const requests=[],httpMs=[];
  const api=async(path,method='GET',body)=>{const r=await fetch(base+path,{method,headers:{origin:'http://127.0.0.1:4175','content-type':'application/json',...token?{authorization:'Bearer '+token}:{}},...body!==undefined?{body:JSON.stringify(body)}:{},signal:AbortSignal.any([abort.signal,AbortSignal.timeout(20000)])});const value=await r.json();if(!r.ok)throw Error(`HTTP_${r.status}:${JSON.stringify(value).slice(0,300)}`);return value;};
  const wire=async()=>{try{return (await readFile(wirePath,'utf8')).split('\n').filter(Boolean).map(s=>JSON.parse(s));}catch{return [];}};
@@ -44,7 +44,7 @@ async function business(spec){
   view=await api('/runs','POST',{project,scenarioId:'MJ-BV01',scenarioRevision:1,seed:spec.seed,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-arm-v1',runtimeIdentity:{sourceCommit:health.sourceCommit,schemaHash:health.schemaHash}});runId=view.run.id;revision=view.run.runRevision;
   for(const d of await readdir(data)){try{const cp=await read(join(data,d,'run.json'));if(cp.runId===runId){runDir=join(data,d);break;}}catch{/* readiness dir */}}
   if(!runDir)throw Error('RUN_DIRECTORY_MISSING');
-  const act=async(kind,payload={})=>{const actionId='native-'+(++action),r={actionId,kind,payload,received:false},t=performance.now();requests.push(r);await save('requests.json',requests);const next=await api('/runs/'+runId+'/actions','POST',{actionId,expectedRevision:revision,kind,payload});r.received=true;httpMs.push(performance.now()-t);revision=next.run.runRevision;await memory();return next;};
+  const act=createActionRecorder({runId,revision,requests,httpMs,save,api,memory});
   view=await act('start');
   while(view.tick<10000&&['running','created','paused'].includes(view.run.status)){
    if(spec.kind==='worker_loss'&&!injection&&view.coffee?.jobs?.some(j=>j.status==='transferring')){

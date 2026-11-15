@@ -14,7 +14,7 @@ import {probeFile,probeArtifacts,sha256,mujocoCases,assessCase,probePrerequisite
 import {verifyBusinessRaw,verifyBadStateRaw} from './mujoco-probe-raw.mjs';
 import baseline from './r2a-arm-baseline.json' with {type:'json'};
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'../..'),json=v=>JSON.stringify(v,null,2)+'\n';
-const OBSERVER=['mujoco-probe-container.mjs','mujoco-probe-engine.py','mujoco-probe-retention.py','mujoco-probe-observer.mjs','mujoco-probe-process.mjs','mujoco-probe-evidence.mjs'];
+const OBSERVER=['mujoco-probe-container.mjs','mujoco-probe-actions.mjs','mujoco-probe-engine.py','mujoco-probe-retention.py','mujoco-probe-observer.mjs','mujoco-probe-process.mjs','mujoco-probe-evidence.mjs'];
 const read=async(root,path,max)=>JSON.parse((await probeFile(root,path,max??1024*1024)).toString());
 async function stageObserver(out,handoff,manifest){
  const dest=join(out,'observer');await mkdir(dest,{mode:0o700});

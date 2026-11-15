@@ -184,22 +184,46 @@ test('execution and reader share exact historical image and measured package adm
 });
 
 // These exercise the actual reader's raw-source subvalidator, not full native admission.
-test.each(['none','truncated','resend','byte-count','incomplete','checkpoint','injection','requests'])('binds business reader claims to sealed raw sources: %s',async mutation=>{
+test.each(['none','truncated','resend','byte-count','incomplete','checkpoint','injection','requests','writer-final-success','writer-failed','writer-in-flight'])('binds business reader claims to sealed raw sources: %s',async mutation=>{
  const {mkdtemp,mkdir,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
  const {verifyBusinessRaw}=await import('../../scripts/native-sim/mujoco-probe-raw.mjs'),{sha256}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
  const root=await mkdtemp(join(tmpdir(),'L01-raw-reader-')),put=async(p:string,v:unknown)=>{await mkdir(join(root,p,'..'),{recursive:true});await writeFile(join(root,p),JSON.stringify(v)+'\n');};
  const runId='portable-double',wire=[{event:'spawn',runId,pid:42,atMs:1},{event:'request',runId,pid:42,atMs:2,value:{requestId:'a',op:'step'}},{event:'exit',runId,pid:42,atMs:4,signal:'SIGKILL'}],trace={samples:[]},props={samples:[]};
  const traceBytes=JSON.stringify(trace)+'\n',propsBytes=JSON.stringify(props)+'\n',subject={sourceCommit:'1'.repeat(40),schemaHash:'2'.repeat(64)},report={manifest:{runId,sourceCommit:subject.sourceCommit},schemaHash:subject.schemaHash,arm:{trace:{path:'trace.json',sha256:sha256(traceBytes)},props:{path:'props.json',sha256:sha256(propsBytes)}}};
- const raw={report,wire,trace,props,checkpoint:{runId,coffee:{arm:{programs:[{state:'unknown'}]}}},injection:{kind:'owned_pid_sigkill',pid:42,atMs:3},requests:[{actionId:'x'}]};
+ const raw={report,wire,trace,props,checkpoint:{runId,coffee:{arm:{programs:[{state:'unknown'}]}}},injection:{kind:'owned_pid_sigkill',pid:42,atMs:3},requests:[{actionId:'x',kind:'step',payload:{},received:true}]};
  await put('report.json',report);await put('run-wire.json',wire);await put('requests.json',mutation==='requests'?[]:raw.requests);await put('injection.json',mutation==='injection'?{...raw.injection,pid:43}:raw.injection);
  const copies=[];for(const [path,value] of Object.entries({'runtime/r/run.json':mutation==='checkpoint'?{runId,coffee:{arm:{programs:[]}}}:raw.checkpoint,'runtime/r/trace.json':trace,'runtime/r/props.json':props,'runtime/r/journal.db':{fixture:true}})){await put(path,value);const b=await readFile(join(root,path));copies.push({path,bytes:b.length,sha256:sha256(b)});}
  await put('runtime-copies.json',{afterRuntimeClose:true,copies});
+ if(mutation.startsWith('writer-')){
+  // Drive the production writer, retaining its real filesystem writes, before the strict reader.
+  const {createActionRecorder}=await import('../../scripts/native-sim/mujoco-probe-actions.mjs');
+  raw.requests.length=0;const httpMs:number[]=[];let enter!:()=>void,release!:()=>void;
+  const entered=new Promise<void>(resolve=>{enter=resolve;}),waiting=new Promise<void>(resolve=>{release=resolve;});
+  const response={run:{runRevision:8}},payload={ticks:5};
+  const act=createActionRecorder({runId,revision:7,requests:raw.requests,httpMs,save:put,memory:async()=>{},api:async(path,method,body)=>{
+   expect(path).toBe('/runs/'+runId+'/actions');expect(method).toBe('POST');
+   expect(body).toEqual({actionId:'native-1',expectedRevision:7,kind:'step',payload});
+   expect(JSON.parse(await readFile(join(root,'requests.json'),'utf8'))).toEqual([{actionId:'native-1',kind:'step',payload,received:false}]);
+   enter();if(mutation==='writer-in-flight')await waiting;
+   if(mutation!=='writer-final-success')throw Error('portable HTTP failure');return response;
+  }});
+  const action=act('step',payload);const settled=action.catch(error=>error);
+  if(mutation==='writer-in-flight'){
+   await entered;
+   expect(JSON.parse(await readFile(join(root,'requests.json'),'utf8'))[0].received).toBe(false);
+   expect(raw.requests[0].received).toBe(false);expect(httpMs).toEqual([]);release();
+  }
+  if(mutation==='writer-final-success'){expect(await settled).toBe(response);expect(httpMs).toHaveLength(1);}
+  else{expect(await settled).toEqual(Error('portable HTTP failure'));expect(raw.requests[0].received).toBe(false);expect(httpMs).toEqual([]);}
+ }
  const events=mutation==='truncated'?wire.slice(0,-1):mutation==='resend'?[...wire.slice(0,2),{...wire[1],atMs:2.5},wire[2]]:wire;
  const stream=events.map(e=>JSON.stringify(e)+'\n').join('');await writeFile(join(root,'wire.jsonl'),stream);await put('wire.jsonl.seal',{complete:true,totalBytes:Buffer.byteLength(stream)+(mutation==='byte-count'?1:0)});if(mutation==='incomplete')await writeFile(join(root,'wire.jsonl.incomplete'),'overflow\n');
  // Every retained file is newly hashed, so negatives reach raw semantics rather than stale artifact hashes.
  const {probeArtifacts}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');const artifacts=await probeArtifacts(root);expect(artifacts.length).toBeGreaterThan(5);
  const issues=await verifyBusinessRaw(root,{kind:'worker_loss'},raw,subject);
- if(mutation==='none')expect(issues).toEqual([]);else expect(issues.length).toBeGreaterThan(0);
+ if(mutation==='none'||mutation.startsWith('writer-'))expect(issues).toEqual([]);else expect(issues.length).toBeGreaterThan(0);
+ if(mutation.startsWith('writer-'))expect(JSON.parse(await readFile(join(root,'requests.json'),'utf8'))).toEqual(raw.requests);
+ if(['writer-failed','writer-in-flight'].includes(mutation)){const {assessCase}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');expect(assessCase({id:'portable',kind:'worker_loss',seed:42,scope:'unchanged_runtime'},{...raw,workerObservation:{maxActive:1}}).issues).toContain('SERIAL_NO_RESEND');}
 });
 
 test.each(['none','request','scene','compiled','before','injected','warning','snapshot','dimensions','npz-crc'])('binds bad-state reader to actual request/scene/state bytes: %s',async mutation=>{
