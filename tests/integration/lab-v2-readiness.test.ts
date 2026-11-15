@@ -53,11 +53,12 @@ test('an available scenario can start without unrelated backends in its set',asy
 test('a readiness probe failure at create is rechecked and leaves no journal',async()=>{
  const directory=await mkdtemp(join(tmpdir(),'lab-probe-'));roots.push(directory);let available=true;
  const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{enabledBackends:['mock_amr'],readinessProbes:{world:async()=>({status:available?'ready':'blocked',reasonCodes:available?[]:['WORLD_REVISION_MISMATCH'],evidenceRef:null})}}});gateways.push(g);
+ const baseline=(await readdir(directory)).sort();expect(baseline).toEqual(['.runtime-owner.sqlite']);
  const paired=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.pairingToken})});const cookie=paired.headers.get('set-cookie')!.split(';')[0]!,csrf=(await paired.json()).csrfToken as string;
  expect((await (await fetch(g.url+'/lab/v2/readiness?scenarioId=FD01&backendSetId=mock-amr',{headers:{cookie}})).json()).canStart).toBe(true);
  available=false;
  const r=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:{cookie,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':csrf},body:JSON.stringify({project:restaurant(),scenarioId:'FD01',scenarioRevision:1,seed:17,mode:'mock',access:'simulated',backendSetId:'mock-amr',runtimeIdentity:{sourceCommit:'test-commit',schemaHash:'a'.repeat(64)}})});
- expect(r.status).toBe(422);expect((await r.json()).reasonCodes).toContain('WORLD_REVISION_MISMATCH');expect(await readdir(directory)).toEqual([]);
+ expect(r.status).toBe(422);expect((await r.json()).reasonCodes).toContain('WORLD_REVISION_MISMATCH');expect((await readdir(directory)).sort()).toEqual(baseline);
 });
 test('native readiness explains actual host, model, clock and fixture dependencies without injected probes',async()=>{
  const {g,cookie}=await gateway();const snapshot=await (await fetch(g.url+'/lab/v2/readiness?scenarioId=BV01&backendSetId=coffee-simulation',{headers:{cookie}})).json();
@@ -76,11 +77,12 @@ test('starting a previously created ready run rechecks probes and leaves it read
 });
 test('project readiness is CSRF protected and validates the caller world before any allocation',async()=>{
  const {g,cookie,csrf,directory}=await gateway();
+ const baseline=(await readdir(directory)).sort();expect(baseline).toEqual(['.runtime-owner.sqlite']);
  const body=JSON.stringify({scenarioId:'BV01',backendSetId:'mock-default',project:restaurant()});
  const headers={cookie,origin:'http://127.0.0.1:4175','content-type':'application/json'};
  expect((await fetch(g.url+'/lab/v2/readiness',{method:'POST',headers,body})).status).toBe(403);
  const response=await fetch(g.url+'/lab/v2/readiness',{method:'POST',headers:{...headers,'x-csrf-token':csrf},body});expect(response.status).toBe(200);
- const snapshot=await response.json();expect(snapshot.canStart).toBe(false);expect(snapshot.checks.find((c:{id:string})=>c.id==='world').status).toBe('blocked');expect(await readdir(directory)).toEqual([]);
+ const snapshot=await response.json();expect(snapshot.canStart).toBe(false);expect(snapshot.checks.find((c:{id:string})=>c.id==='world').status).toBe('blocked');expect((await readdir(directory)).sort()).toEqual(baseline);
 });
 test.each(['start','resume'] as const)('an accepted %s replays its receipt after readiness becomes blocked',async kind=>{
  const directory=await mkdtemp(join(tmpdir(),'lab-retry-probe-'));roots.push(directory);let available=true;

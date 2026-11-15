@@ -1,7 +1,7 @@
 // Protocol-double routing only: no simulator or controller executes in this suite.
 import {afterEach,expect,test,vi} from 'vitest';
 import {mkdtemp,mkdir,writeFile,readdir,rm} from 'node:fs/promises';
-import {join} from 'node:path';
+import {basename,join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {randomUUID} from 'node:crypto';
 import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
@@ -31,7 +31,8 @@ test('native create and proof-protected reclaim use the same configured factory 
  const reopened=await startLabGateway(options);gateways.push(reopened);const h=await pair(reopened),reclaim=await fetch(reopened.url+`/lab/v2/runs/${id}/reclaim`,{method:'POST',headers:h,body:JSON.stringify({proof:created.reclaimToken})});expect(reclaim.status).toBe(200);expect((await reclaim.json()).run.mode).toBe('simulation');expect(seen).toEqual(['simulation','simulation']);
 });
 test('native factory failure preserves its attempt journal for diagnosis',async()=>{
- vi.spyOn(process,'platform','get').mockReturnValue('linux');const directory=await mkdtemp(join(tmpdir(),'native-attempt-'));roots.push(directory);
- const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{catalog:catalog(),enabledBackends:ids,nativeChecks:async()=>checks(),simulationFactory:async(_input,providers)=>{await mkdir(providers.directory,{recursive:true});await writeFile(join(providers.directory,'attempt.json'),'{}');throw new Error('INITIALIZATION_FAILED');}}});gateways.push(g);
- const response=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:await pair(g),body:JSON.stringify(input())});expect(response.status).toBe(500);const dirs=await readdir(directory);expect(dirs).toHaveLength(1);expect(await readdir(join(directory,dirs[0]!))).toContain('attempt.json');
+ vi.spyOn(process,'platform','get').mockReturnValue('linux');const directory=await mkdtemp(join(tmpdir(),'native-attempt-'));roots.push(directory);let attemptDirectory:string|undefined;
+ const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{catalog:catalog(),enabledBackends:ids,nativeChecks:async()=>checks(),simulationFactory:async(_input,providers)=>{attemptDirectory=providers.directory;await mkdir(providers.directory,{recursive:true});await writeFile(join(providers.directory,'attempt.json'),'{}');throw new Error('INITIALIZATION_FAILED');}}});gateways.push(g);
+ const baseline=(await readdir(directory)).sort();expect(baseline).toEqual(['.runtime-owner.sqlite']);
+ const response=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:await pair(g),body:JSON.stringify(input())});expect(response.status).toBe(500);expect(attemptDirectory).toBeDefined();const attempt=attemptDirectory!;expect(attempt).toBe(join(directory,basename(attempt)));expect((await readdir(directory)).sort()).toEqual([...baseline,basename(attempt)].sort());expect(await readdir(attempt)).toContain('attempt.json');
 });
