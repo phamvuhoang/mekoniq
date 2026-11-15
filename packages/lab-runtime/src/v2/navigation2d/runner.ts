@@ -212,7 +212,7 @@ class FixedStepRun implements ScenarioRun {
  private closed=false;
  /** step actions queued or running: a pause/cancel arriving meanwhile is taken at that batch's next tick boundary (or after its refusal), never behind it */
  private steps=0;
- private controls:{raw:unknown;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
+ private controls:{raw:unknown;beforeExecute?:()=>Promise<void>;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
  private engineSeed:number;
  private physicsRec?:PhysicsRecorder;
  /** Paced-step anchor (D57): memory only, never checkpointed nor in evidence; cleared by pause, resume, cancel, an unpaced step and a reopen. */
@@ -518,18 +518,27 @@ class FixedStepRun implements ScenarioRun {
   });this.queue=p.catch(()=>{});return p;
  }
  start(){return this.snapshot().then(v=>this.action({actionId:'start',expectedRevision:v.run.runRevision,kind:'start',payload:{}}));}
+ controlDuringStep(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>|undefined{
+  const kind=(a as {kind?:unknown}|null)?.kind;
+  if(!this.steps||(kind!=='pause'&&kind!=='cancel'))return undefined;
+  // Bound pending controls as well as durable action receipts; refusal never joins the batch.
+  if(this.controls.length>=10000)return Promise.reject(new Error('ACTION_LIMIT'));
+  return new Promise((resolve,reject)=>this.controls.push({raw:a,beforeExecute,resolve,reject}));
+ }
  action(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
-  const kind=(a as {kind?:unknown}|null)?.kind,step=kind==='step';
-  // from the moment a step is queued (synchronously, before any await of its admission) a pause/cancel waits for its next tick boundary instead of queueing behind it
-  if(this.steps&&(kind==='pause'||kind==='cancel'))return new Promise((resolve,reject)=>this.controls.push({raw:a,resolve,reject}));
+  // Synchronous admission closes the gap before a queued step's first await.
+  const control=this.controlDuringStep(a,beforeExecute);if(control)return control;
+  const step=(a as {kind?:unknown}|null)?.kind==='step';
   if(step)this.steps++;
   const p=this.queue.then(async()=>{try{return await this.execute(a,beforeExecute);}finally{if(step){this.steps--;await this.takeControls();}}});this.queue=p.catch(()=>{});return p;}
- private async execute(raw:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
+ private async execute(raw:unknown,beforeExecute?:()=>Promise<void>,control=false):Promise<RunView>{
   if(this.closed)throw new Error('RUN_CLOSED');
   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
   const a=checked.value,c=this.cp,p=a.payload as Record<string,unknown>,hash=hashJson(a),old=c.receipts[a.actionId];
   if(c.reclaimed&&a.kind!=='reconcile')throw new Error('INVALID_STATE:RECLAIM_READ_ONLY');
-  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');return structuredClone(old.view);}
+  // A priority receipt waited inside a step, so it still needs current writer/session authority.
+  // Ordinary cached actions keep their existing readiness-independent replay semantics.
+  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(control)await beforeExecute?.();return structuredClone(old.view);}
   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
   if(a.expectedRevision!==c.revision)throw new Error('REVISION_CONFLICT');
   const view=await this.view(),status=view.run.status;
@@ -559,7 +568,7 @@ class FixedStepRun implements ScenarioRun {
     // a batch ends at the tick the run finishes or first needs attention (IR09): the horizon is the same whatever the pacing (1 tick or 500 per request)
     // a paced step (D57) waits for each tick's wall-clock slot first; a control that arrived during the wait is taken before the tick
     const seen=c.attention.length,pace=(a.payload as {pace?:{factor:number}}).pace;if(!pace)this.anchor=null;
-    try{for(let i=0;i<Number(p.ticks)&&!this.controls.length;i++){if(pace){this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);if(this.controls.length)break;}if(!await this.tick()||c.attention.length>seen||await this.finished())break;}}finally{await this.takeControls();}
+    try{for(let i=0;i<Number(p.ticks);i++){if(await this.takeControls())break;if(pace){this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);if(await this.takeControls())break;}if(!await this.tick()||c.attention.length>seen||await this.finished())break;}}finally{await this.takeControls();}
    }
    else if(a.kind==='confirm')await this.confirmStop(pending![0],String(p.actorProvenance??'human'));
    else if(a.kind==='cancel'){
@@ -612,7 +621,13 @@ class FixedStepRun implements ScenarioRun {
  /** Pause/cancel received while a step was queued or ran: each is executed as its own action (own admission, revision check and receipt) at a tick boundary,
   * or right after a batch refused at admission. Once no step is pending, new controls take the ordinary queue (nothing is left behind: the last empty check and
   * the steps decrement happen before any await). */
- private async takeControls(){for(let x=this.controls.shift();x;x=this.controls.shift())await this.execute(x.raw).then(x.resolve,x.reject);}
+ private async takeControls(){
+  let admitted=false;
+  while(this.controls.length){const x=this.controls.shift()!;await this.execute(x.raw,async()=>{await x.beforeExecute?.();admitted=true;},true).then(x.resolve,x.reject);}
+  // Admission refusals do not stop the batch. Once admitted, even a failed checkpoint or
+  // worker operation ends it here; an uncertain mutation must never be followed by more ticks.
+  return admitted;
+ }
  private async missionsDone(){
   const c=this.cp;
   if(this.scenario.rig)return this.scenario.rig.goals.every(g=>c.rig?.[c.roles.robots[g.robot]!.id]?.state==='arrived');

@@ -49,6 +49,10 @@ export interface RunProviders {directory:string;/** Gateway-only recovery: exist
  /** Wall clock of paced steps (tests inject a fake); consulted only by a step that carries `pace`. */wall?:WallClock}
 export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'}
 export interface ScenarioRun {worldDisplay?():Promise<import('./simulation3d/world-display').WorldDisplay>;worldDisplayScene?():Promise<import('./simulation3d/world-display').WorldDisplayScene>;captureReplay?(options?:{signal?:AbortSignal}):Promise<import('./replay/export').CapturedReplay>;readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
+ /** Atomically attach pause/cancel to a pending step, or return undefined without enqueueing.
+  * The step owns completion of attached controls; callers must retain its lifecycle reservation.
+  * Runners without tick-boundary controls omit this method and keep ordinary action ordering. */
+ controlDuringStep?(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>|undefined;
  /** Cheap, synchronous liveness for stream heartbeats: never reads the journal. `paused` is the acknowledged pause of the virtual clock. */
  pulse():{tick:number;paused:boolean;runRevision:number};
  /** Durable business events in journal order (queued behind actions, so a reader sees committed state). */

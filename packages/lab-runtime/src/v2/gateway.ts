@@ -68,6 +68,10 @@ export function createV2Gateway(deps:V2Deps){
  // Reserve the logical run before selecting an entry: cold reclaim and existing-entry work share one queue.
  const runQueues=new Map<string,Promise<void>>();
  const serialRun=<T>(id:string,work:()=>Promise<T>)=>{const pending=(runQueues.get(id)??Promise.resolve()).then(work),settled=pending.then(()=>undefined,()=>undefined);runQueues.set(id,settled);void settled.then(()=>{if(runQueues.get(id)===settled)runQueues.delete(id);});return pending;};
+ // Register steps before their queue microtask, but lend ownership only after that exact
+ // reservation executes. Lifecycle work still waits for the complete action and its controls.
+ type StepReservation={entry:Entry;ready:Promise<void>;begin():void;active:boolean};
+ const steps=new Map<string,StepReservation[]>();
  const serial=<T>(e:Entry,work:()=>Promise<T>)=>serialRun(e.run.id,work);
  const writerView=(e:Entry)=>({runId:e.run.id,sessionId:e.readOnly?null:sessions.get(e.owner)?.publicId??null,controlEpoch:e.controlEpoch});
  const authority=(e:Entry,id:string,epoch:string|undefined,allowReconcile=false)=>{
@@ -348,7 +352,27 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     if(!readiness.canStart)throw new Error(`BACKEND_UNAVAILABLE:${readiness.checks.flatMap(c=>c.reasonCodes).join(',')}`);
     checkAuthority();
    };
-   try{return await serial(entry,async()=>{checkAuthority();return send(response,200,{...await entry.run.action(action.value,beforeExecute),writer:writerView(entry)});});}catch(e){return failed(response,e);}
+   let step:StepReservation|undefined;
+   if(action.value.kind==='step'&&entry.run.controlDuringStep){
+    let begin!:()=>void;step={entry,ready:new Promise<void>(resolve=>begin=resolve),begin:()=>begin(),active:false};
+    const pending=steps.get(entry.run.id)??[];pending.push(step);steps.set(entry.run.id,pending);
+   }
+   try{
+    const reservation=steps.get(entry.run.id)?.[0];
+    if((action.value.kind==='pause'||action.value.kind==='cancel')&&reservation?.entry===entry){
+     checkAuthority();await reservation.ready;checkAuthority();
+     // No await between the active reservation check and the runner's atomic step check/enqueue.
+     // A late arrival after the runner drained its step falls back to the ordinary reservation.
+     const control=reservation.active&&steps.get(entry.run.id)?.[0]===reservation?entry.run.controlDuringStep?.(action.value,beforeExecute):undefined;
+     if(control)return send(response,200,{...await control,writer:writerView(entry)});
+    }
+    return await serial(entry,async()=>{
+     checkAuthority();if(step)step.active=true;
+     const pending=entry.run.action(action.value,beforeExecute);step?.begin();
+     return send(response,200,{...await pending,writer:writerView(entry)});
+    });
+   }catch(e){return failed(response,e);}
+   finally{if(step){step.active=false;step.begin();const pending=steps.get(entry.run.id)!.filter(s=>s!==step);if(pending.length)steps.set(entry.run.id,pending);else steps.delete(entry.run.id);}}
   }
   if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
   if(kind==='archive'){
