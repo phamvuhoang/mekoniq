@@ -150,3 +150,145 @@ def test_frozen_native_manifest_matches_current_compiler(tmp_path):
     compile_native(*inputs(),tmp_path)
     for name in ('compiler-manifest.json','native-mapping.json'):
         assert (tmp_path/name).read_bytes()==(ROOT/'robotics/simulation/fixtures/engineering-navigation-v1'/name).read_bytes()
+
+
+@pytest.fixture
+def live_engineering_ports(tmp_path, monkeypatch):
+    """Actual observer wiring/health; only ROS transport and action server are portable doubles."""
+    import sys
+    from types import SimpleNamespace as NS
+    from bridge import engineering_session as module
+    from compiler.engineering_native import compile_native
+    from test_nav2_session import FakePorts
+
+    class Buffer:
+        def __init__(self): self.edges = set()
+        def set_transform(self, msg, authority): self.edges.add((msg.header.frame_id, msg.child_frame_id))
+        set_transform_static = set_transform
+        def can_transform(self, target, source, at):
+            if (target, source) == ('map', 'chassis/base'):
+                return {('map', 'odom'), ('odom', 'chassis/base')} <= self.edges
+            return (target, source) in self.edges
+
+    class Node:
+        def __init__(self): self.callbacks = {}
+        def set_parameters(self, _): pass
+        def create_subscription(self, kind, topic, callback, qos): self.callbacks[topic] = callback
+        def create_publisher(self, *args): return NS(publish=lambda _: None)
+
+    node = Node()
+    scene = NS(node=node, executor=NS(add_node=lambda _: None), clock=2_000_000_000)
+    monkeypatch.setattr(module, '_SceneNode', lambda *args: scene)
+    for name, value in {
+        'geometry_msgs.msg': NS(Twist=object, TwistStamped=object),
+        'sensor_msgs.msg': NS(LaserScan=object, JointState=object),
+        'rclpy.parameter': NS(Parameter=lambda *args, **kw: None),
+        'rclpy.qos': NS(qos_profile_sensor_data=object()),
+        'rclpy.time': NS(Time=lambda: 0),
+        'rclpy': NS(create_node=lambda *args, **kw: Node()),
+        'tf2_ros': NS(Buffer=Buffer, TransformListener=lambda buffer, *args, **kw: NS(buffer=buffer)),
+    }.items(): monkeypatch.setitem(sys.modules, name, value)
+    now = [10_000_000_000]
+    monkeypatch.setattr(module.time, 'monotonic_ns', lambda: now[0])
+    compile_native(*inputs(), tmp_path/'bundle')
+    ports = module.EngineeringRosPorts(tmp_path/'bundle', None, lambda *args: None)
+    ports._node()  # Exercise the real wiring that gives TransformListener its observed buffer.
+    fake = FakePorts(['amr_1'])
+    ports.navigation_for = fake.navigation_for
+    ports.launch = fake.launch
+    ports.pause = fake.pause
+    ports._proc = ports._bag = NS(poll=lambda: None)
+
+    def stamp(ns): return NS(sec=ns//1_000_000_000, nanosec=ns%1_000_000_000)
+    def publish_tf(edge, ns=None, static=False):
+        msg = NS(header=NS(frame_id=edge[0], stamp=stamp(scene.clock if ns is None else ns)), child_frame_id=edge[1])
+        setter = ports._listener.buffer.set_transform_static if static else ports._listener.buffer.set_transform
+        setter(msg, 'portable-transport')
+    def fresh_streams():
+        header = NS(frame_id='lidar/head', stamp=stamp(scene.clock))
+        node.callbacks['/amr_1/scan'](NS(header=header, ranges=[1.0]))
+        node.callbacks['/amr_1/joint_states'](NS(header=header, name=['wheel-left/axle', 'wheel-right/axle'], position=[0., 0.], velocity=[0., 0.]))
+    def advance(ns, provider_ns=None):
+        now[0] += ns; scene.clock += ns if provider_ns is None else provider_ns; fresh_streams()
+    fresh_streams()
+    return NS(ports=ports, fake=fake, scene=scene, now=now, publish=publish_tf, advance=advance)
+
+
+def ready_tf(h):
+    # AMCL deliberately postdates map->odom by its configured transform tolerance (1 s).
+    h.publish(('map', 'odom'), h.scene.clock+1_000_000_000)
+    h.publish(('odom', 'chassis/base'))
+    h.publish(('chassis/base', 'lidar/head'), 0, static=True)
+    assert h.ports.health() == {'alive': True, 'reasons': []}
+
+
+@pytest.mark.parametrize('stopped', [('map', 'odom'), ('odom', 'chassis/base')])
+def test_actual_health_expires_each_cached_dynamic_edge_and_latches(live_engineering_ports, stopped):
+    h = live_engineering_ports; ready_tf(h)
+    # Clock, scans, joints and unrelated wheel TF continue, as does the other dynamic edge.
+    h.advance(500_000_001, 100_000_000)  # provider stamps still valid; receipt watchdog alone expires
+    h.publish(('chassis/base', 'wheel-left'))
+    other = ('odom', 'chassis/base') if stopped == ('map', 'odom') else ('map', 'odom')
+    h.publish(other)
+    reason = 'TF_FEEDBACK_STALE:'+':'.join(stopped)
+    assert reason in h.ports.health()['reasons']
+    h.publish(stopped)
+    assert reason in h.ports.health()['reasons']  # no automatic recovery after readiness loss
+
+
+@pytest.mark.parametrize('edge', [('map', 'odom'), ('odom', 'chassis/base')])
+def test_actual_health_refuses_old_provider_tf_even_with_new_receipt(live_engineering_ports, edge):
+    h = live_engineering_ports; ready_tf(h)
+    h.publish(edge, h.scene.clock-500_000_001)
+    assert 'TF_FEEDBACK_STALE:'+':'.join(edge) in h.ports.health()['reasons']
+
+
+def test_actual_health_distinguishes_static_sensor_tf_from_dynamic_chain(live_engineering_ports):
+    h = live_engineering_ports; ready_tf(h)
+    h.advance(2_000_000_000)
+    h.publish(('map', 'odom'), h.scene.clock+1_000_000_000)
+    h.publish(('odom', 'chassis/base'))
+    assert h.ports.health()['alive']  # zero-stamped fixed sensor TF is valid indefinitely
+    h.publish(('map', 'odom'), 0, static=True)
+    assert not h.ports.health()['alive']  # a static publisher cannot replace localization
+
+
+def test_actual_health_requires_missing_tf_and_latches_clock_reset(live_engineering_ports):
+    h = live_engineering_ports
+    assert any(r.startswith('TF_MISSING') for r in h.ports.health()['reasons'])
+    ready_tf(h)
+    h.scene.clock -= 1
+    assert 'CLOCK_RESET' in h.ports.health()['reasons']
+
+
+@pytest.mark.parametrize('lost_ack', [False, True])
+def test_actual_tf_expiry_refuses_new_goals_and_results_without_resending(live_engineering_ports, tmp_path, lost_ack):
+    from bridge.engineering_session import EngineeringNav2Session
+    from test_nav2_session import execute_args
+    h = live_engineering_ports; ready_tf(h)
+    session = EngineeringNav2Session(h.ports, 'run-freshness', ['amr_1'], tmp_path/'commands')
+    args = execute_args('lost', robot='amr_1')
+    h.fake.clients['amr_1'].unreachable = lost_ack
+    answer = session.execute(args)
+    assert answer['status'] == ('unknown' if lost_ack else 'accepted')
+    if not lost_ack:
+        h.fake.clients['amr_1'].settle(answer['nativeGoalId'], 'SUCCEEDED', 0)
+    h.fake.clients['amr_1'].unreachable = False
+    h.advance(500_000_001)
+    assert session.execute(execute_args('new', robot='amr_1'))['status'] == 'rejected'
+    assert session.query({'commandId':'lost','robotId':'amr_1'})['status'] == 'unknown'
+    assert session.execute(args) == answer
+    assert len(h.fake.clients['amr_1'].sent) == (0 if lost_ack else 1)
+
+
+@pytest.mark.parametrize('edge,future_ns', [(('map','odom'), 1_000_000_001), (('odom','chassis/base'), 500_000_001)])
+def test_actual_health_refuses_tf_beyond_bounded_future_tolerance(live_engineering_ports, edge, future_ns):
+    h = live_engineering_ports; ready_tf(h)
+    h.publish(edge, h.scene.clock+future_ns)
+    assert 'TF_FEEDBACK_STALE:'+':'.join(edge) in h.ports.health()['reasons']
+
+
+def test_actual_health_requires_sensor_on_static_transport(live_engineering_ports):
+    h = live_engineering_ports; ready_tf(h)
+    h.publish(('chassis/base','lidar/head'))
+    assert 'TF_EXPECTED_STATIC:chassis/base:lidar/head' in h.ports.health()['reasons']

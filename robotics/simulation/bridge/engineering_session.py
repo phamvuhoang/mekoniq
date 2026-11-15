@@ -19,6 +19,54 @@ from .nav2_session import RosPorts, Nav2Session, _SceneNode, _emit, serve
 from .native_profile import inspect_profile
 
 
+class _ObservedTfBuffer:
+    """Observe the exact writes made by Jazzy TransformListener, not cache lookups.
+
+    The canonical chain has two dynamic edges and one fixed sensor edge. Other
+    joint TF traffic must never refresh these edges' monotonic receipt ages.
+    """
+    DYNAMIC = {('map','odom'):1_000_000_000, ('odom','chassis/base'):500_000_000}
+    SENSOR = ('chassis/base','lidar/head')
+
+    def __init__(self, buffer):
+        self.buffer=buffer;self._samples={};self._lock=threading.Lock()
+
+    def _record(self, transform, static):
+        edge=(transform.header.frame_id,transform.child_frame_id)
+        if edge in self.DYNAMIC or edge==self.SENSOR:
+            stamp=transform.header.stamp
+            self._samples[edge]=(stamp.sec*1_000_000_000+stamp.nanosec,time.monotonic_ns(),static)
+
+    def set_transform(self, transform, authority):
+        with self._lock:
+            self.buffer.set_transform(transform,authority);self._record(transform,False)
+
+    def set_transform_static(self, transform, authority):
+        with self._lock:
+            self.buffer.set_transform_static(transform,authority);self._record(transform,True)
+
+    def can_transform(self, *args):
+        return self.buffer.can_transform(*args)
+
+    def freshness_reasons(self, clock):
+        reasons=[]
+        with self._lock:
+            now=time.monotonic_ns()
+            for edge,future_ns in self.DYNAMIC.items():
+                label=':'.join(edge);sample=self._samples.get(edge)
+                if sample is None:reasons.append('TF_MISSING:'+label);continue
+                stamp,receipt,static=sample
+                if static:reasons.append('TF_EXPECTED_DYNAMIC:'+label)
+                # AMCL postdates map->odom by transform_tolerance=1.0 in the
+                # owned navigation config. Receipt expiry still applies at 500 ms.
+                elif clock is None or not 0<=now-receipt<=500_000_000 or not -future_ns<=clock-stamp<=500_000_000:
+                    reasons.append('TF_FEEDBACK_STALE:'+label)
+            sensor=self._samples.get(self.SENSOR)
+            if sensor is None:reasons.append('TF_MISSING:'+':'.join(self.SENSOR))
+            elif not sensor[2]:reasons.append('TF_EXPECTED_STATIC:'+':'.join(self.SENSOR))
+        return reasons
+
+
 class EngineeringRosPorts(RosPorts):
     def __init__(self,bundle,log,emit):
         self.plan=plan_engineering_launch(bundle); self.robots=['amr_1'];self.bundle=Path(bundle);self.log_path=log
@@ -53,7 +101,7 @@ class EngineeringRosPorts(RosPorts):
                 import rclpy
                 self._tf_node=rclpy.create_node('engineering_tf_observer',cli_args=['--ros-args','-r','/tf:=/amr_1/tf','-r','/tf_static:=/amr_1/tf_static'])
                 self._scene.executor.add_node(self._tf_node)
-                self._tf=Buffer();self._listener=TransformListener(self._tf,self._tf_node,spin_thread=False)
+                self._tf=_ObservedTfBuffer(Buffer());self._listener=TransformListener(self._tf,self._tf_node,spin_thread=False)
                 def scan(msg):
                     receipt=time.monotonic_ns();self._scan=(msg,receipt)
                     self.emit('native-sensor',{'sensor':'lidar-2d','frame':msg.header.frame_id,'providerSimNs':str(msg.header.stamp.sec*1_000_000_000+msg.header.stamp.nanosec),'receiveMonotonicNs':str(receipt),'rangesM':[float(x) if math.isfinite(x) else None for x in msg.ranges],'nonfinitePolicy':'null_no_return'})
@@ -89,6 +137,7 @@ class EngineeringRosPorts(RosPorts):
             if sample is None or now-sample[1]>500_000_000 or clock is not None and sample is not None and abs(clock-(sample[0].header.stamp.sec*1_000_000_000+sample[0].header.stamp.nanosec))>500_000_000:reasons.append(name+'_FEEDBACK_STALE')
         if self._joints and not {'wheel-left/axle','wheel-right/axle'} <= set(self._joints[0].name):reasons.append('JOINT_IDENTITY_MISMATCH')
         if self._tf:
+            reasons.extend(self._tf.freshness_reasons(clock))
             for target,source in [('map','chassis/base'),('chassis/base','lidar/head')]:
                 if not self._tf.can_transform(target,source,Time()):reasons.append('TF_MISSING:'+target+':'+source)
         else:reasons.append('TF_MISSING')
