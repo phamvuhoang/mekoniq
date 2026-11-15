@@ -45,6 +45,11 @@ export function observeProductionHTTP(page:Page,data:{responses:Row[];actions:Ro
     if(status!==201||typeof publication?.exportId!=='string'||!publication.exportId||manifest?.runId!==runId||manifest.documentType!=='web-replay-package'||!Number.isSafeInteger(manifest.horizon?.tick)||manifest.horizon.tick<0)throw Error('REPLAY_PUBLICATION_INVALID');
     if(!pending.has(request))return;
     data.exports.push({runId,status,startEpochMs:timing.startTime,responseMs:timing.responseEnd,receivedAt:performance.now(),exportId:publication.exportId,manifest});settle(entry,'completed',undefined,{runId,exportId:publication.exportId,tick:manifest.horizon.tick});
+   }else if(request.method()==='DELETE'&&/^\/lab\/v2\/runs\/[^/]+\/replay\/[^/]+$/.test(path)){
+    const ack=await response.json(),releaseRunId=path.split('/').at(-3),exportId=path.split('/').at(-1);
+    if(status!==200||ack?.deleted!==true)throw Error('REPLAY_RELEASE_INVALID');
+    // The recorder joins release/publication identity after drain; JSON observers may finish out of order.
+    settle(entry,'completed',undefined,{runId:releaseRunId,exportId});
    }else settle(entry,'completed');
   })().catch(error=>settle(entry,'invalid',String(error)));
  };

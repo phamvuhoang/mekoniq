@@ -209,7 +209,15 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
   get:(id,signal)=>request<RunView>(run(id),undefined,signal),
   async exportReplay(id,signal){
    const exportTarget=target,exportAuth=auth(),exportCsrf=csrf;const version=await request<{exportId:string;manifest:unknown}>(`${run(id)}/replay`,{},signal),path=`${run(id)}/replay/${encodeURIComponent(version.exportId)}`;let released=false;
-   const release=async()=>{if(released)return;released=true;const a=exportAuth;const r=await send(exportTarget.base+path,{...a,method:'DELETE',headers:{...a.headers as Record<string,string>,...exportCsrf&&exportTarget.kind==='same_origin'?{'X-CSRF-Token':exportCsrf}:{}}},exportTarget);if(!r.ok)throw new TwinRuntimeError('REPLAY_DELETE_REFUSED',[],r.status);};
+   const release=async()=>{
+    if(released)return;released=true;
+    // Cleanup still runs after export cancellation. Consume the acknowledgement: header-only fetch can leave the browser request nonterminal.
+    const cleanup=new AbortController(),timer=setTimeout(()=>cleanup.abort(),10000);
+    try{const a=exportAuth,r=await send(exportTarget.base+path,{...a,method:'DELETE',signal:cleanup.signal,headers:{...a.headers as Record<string,string>,...exportCsrf&&exportTarget.kind==='same_origin'?{'X-CSRF-Token':exportCsrf}:{}}},exportTarget),ack=await r.json().catch(()=>null);
+     if(!r.ok)throw new TwinRuntimeError('REPLAY_DELETE_REFUSED',[],r.status);
+     if(r.status!==200||ack?.deleted!==true)throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],r.status);
+    }catch(e){if(cleanup.signal.aborted)throw new TwinRuntimeError('REPLAY_DELETE_TIMEOUT',[],0);throw e;}finally{clearTimeout(timer);}
+   };
    try{const {openLiveReplay}=await import('../reports/replay-transport'),reader=await openLiveReplay(exportTarget.base+path,new TextEncoder().encode(JSON.stringify(version.manifest)),exportAuth,signal);return {reader,release};}catch(e){await release().catch(()=>{});throw e;}
   },
   worldDisplay:(id,signal)=>request<WorldDisplay>(`${run(id)}/world-display`,undefined,signal),
