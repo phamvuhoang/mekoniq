@@ -59,7 +59,7 @@ function run(id,repo,cmd,args,{kind=null,files=[],extraEnv={}}={}){
 const V='node_modules/vitest/vitest.mjs',out=f=>`--outputFile=${OUT}/${f}`;
 const referenced=['lab-v2-mock','lab-v2-recovery','lab-v2-contracts','lab-v2-model','lab-v2-arm-model','lab-v2-stream','lab-v2-report','lab-v2-residuals','lab-runtime','lab-runtime-gateway','lab-runtime-contracts','lab-runtime-artifact','coffee-job','coffee-transfer','coffee-recovery','coffee-review','coffee-policy','coffee-conservation','lab-v2-runtime-review','lab-v2-software-gaps','lab-v2-mixed','lab-v2-arm-safety-model','lab-v2-arm-faults','lab-v2-arm-scene','lab-v2-arm-inactive-scene','lab-v2-checkpoint-compat','lab-v2-reclaim-targets','robot-admission','table-order-amendments'].map(f=>`tests/integration/${f}.test.ts`);
 run('source-typecheck','source','pnpm',['-s','typecheck']);
-run('source-lint','source','pnpm',['-s','lint']);
+run('source-lint','source','pnpm',['-s','exec','eslint','.','--ignore-pattern','.superpowers/**']);
 run('source-contracts-check','source','pnpm',['-s','contracts:check']);
 // The full integration run is a superset of these references; do not execute the same scenarios twice in --ci mode.
 if(!ci)run('source-referenced','source',process.execPath,[V,'run',...referenced,'--reporter=json',out('source-referenced.json')],{kind:'vitest',files:['source-referenced.json'],extraEnv:{LAB_V2_CLEAN_EXPORT:'1'}});
