@@ -3,7 +3,8 @@
 import {expect,test} from 'vitest';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
-import {existsSync,readdirSync,readFileSync} from 'node:fs';
+import {existsSync,readdirSync,readFileSync,mkdtempSync,mkdirSync,writeFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 // @ts-expect-error plain ESM script without types
 import {CASES,GATES,SUITES,CASES_R11,GATES_R11,SUITES_R11,checkIrsimRecord,checkR1Record,checkQualification,qualify,qualifyR11} from '../../scripts/sim-extension-qualification.mjs';
@@ -323,17 +324,36 @@ test('r2a --blocked: only part A gates, only when the spike note concludes failu
 });
 
 test('r2a recorder refuses --blocked G-RT1 and --blocked G-MA1 (the spike concludes success) before it touches anything; --plan lists the suites without running them',()=>{
- const run=(...a:string[])=>spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r2a','--out','/nonexistent/r2a-x','--r11-record','/nonexistent/r11','--mock-regression','/nonexistent/reg',...a],{encoding:'utf8',timeout:60000});
+ const owned=mkdtempSync(join(tmpdir(),'recorder-plan-unit-')),bin=join(owned,'bin'),log=join(owned,'docker-calls.jsonl');
+ mkdirSync(bin);
+ const docker=join(bin,'docker');
+ writeFileSync(docker,`#!${process.execPath}
+const {appendFileSync}=require('node:fs');
+const args=process.argv.slice(2);appendFileSync(${JSON.stringify(log)},JSON.stringify({fixture:'recorder-plan-unit',executable:process.argv[1],args})+'\\n');
+process.exit(args.length===1&&args[0]==='info'?23:97);
+`,{mode:0o700});
+ // Exclusive PATH: this unit test cannot fall through to a host Docker executable.
+ const options={encoding:'utf8' as const,timeout:10000,env:{...process.env,PATH:bin}};
+ try{
+ const run=(...a:string[])=>spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r2a','--out','/nonexistent/r2a-x','--r11-record','/nonexistent/r11','--mock-regression','/nonexistent/reg',...a],options);
  const rt=run('--blocked','G-RT1','--blocked-reason','x');expect(rt.status).toBe(2);expect(rt.stderr).toMatch(/BLOCKED_NOT_PART_A:G-RT1/);
  const ma=run('--blocked','G-MA1','--blocked-reason','x');expect(ma.status).toBe(2);expect(ma.stderr).toMatch(/BLOCKED_SPIKE_NOT_FAILED/);
  const nr=run('--blocked','G-MA1');expect(nr.status).toBe(2);expect(nr.stderr).toMatch(/BLOCKED_REASON_MISSING|MISSING_OPTION:--blocked-reason/);
- const r1=spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r1','--out','/nonexistent/x','--irsim-record','/n','--mock-regression','/n','--blocked','G-MA1','--blocked-reason','x'],{encoding:'utf8',timeout:60000});
+ const r1=spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r1','--out','/nonexistent/x','--irsim-record','/n','--mock-regression','/n','--blocked','G-MA1','--blocked-reason','x'],options);
  expect(r1.status).toBe(2);expect(r1.stderr).toMatch(/UNKNOWN_OPTION:--blocked/);
  const cl=run('--cl01-result','/nonexistent/cl01.json');expect(cl.status).toBe(2);expect(cl.stderr).toMatch(/UNKNOWN_OPTION:--cl01-result/);
  const plan=run('--plan');expect(plan.status,plan.stderr).toBe(0);
  expect(plan.stdout).toMatch(/rt-image/);expect(plan.stdout).toMatch(/removed when the recording ends/);
  for(const id of ['docker','python-env','screen'])expect(plan.stdout,id).toMatch(new RegExp(`^preflight\\t${id}`,'m'));expect(plan.stdout).toMatch(/lab-e2e-mujoco-coffee/);expect(plan.stdout).toMatch(/test-irsim-e2e\.mjs --provider mujoco mujoco-coffee\.spec\.ts/);
  expect(existsSync('/nonexistent/r2a-x')).toBe(false);
+ const calls=readFileSync(log,'utf8').trim().split('\n').map(line=>JSON.parse(line));
+ expect(calls).toEqual([{fixture:'recorder-plan-unit',executable:docker,args:['info']}]);
+ expect(plan.stdout).toMatch(/^preflight\tdocker\tDOCKER_UNAVAILABLE\t/m);
+ const refused=spawnSync(docker,['unexpected-unit-argument'],options);expect(refused.status).toBe(97);
+ const receipts=readFileSync(log,'utf8').trim().split('\n').map(line=>JSON.parse(line));
+ expect(receipts).toEqual([...calls,{fixture:'recorder-plan-unit',executable:docker,args:['unexpected-unit-argument']}]);
+ console.info('Owned unit stub only:',JSON.stringify({receipts,infoExit:23,unexpectedExit:refused.status}));
+ }finally{rmSync(owned,{recursive:true,force:true});}
 });
 
 test('r2a guard: a complete record has no reasons and G-CLOUD1 blocked_external does not fail it; each defect is named',async()=>{
