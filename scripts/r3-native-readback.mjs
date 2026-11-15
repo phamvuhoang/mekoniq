@@ -11,6 +11,21 @@ import {boundedEvidenceRead as bytes,evidenceInventory} from './r2b-readback.mjs
 export const ENGINEERING_RUNS=[... [7,42,99].map(seed=>({directory:'nominal-'+seed,nativeCase:'nominal',seed})),...['obstacle','no-path','cancel','worker-loss'].map(nativeCase=>({directory:nativeCase+'-7',nativeCase,seed:7}))];
 export const XARM_RUNS=['X1','X2'].flatMap(mode=>['nominal','cancel','restart'].map(nativeCase=>({directory:mode+'-'+nativeCase,mode,nativeCase})));
 const sha=b=>createHash('sha256').update(b).digest('hex'),read=(root,p)=>JSON.parse(bytes(root,p));
+// JSON.parse's source context preserves the Python producer's unquoted integer bytes.
+// Never recover nanoseconds from an already rounded JavaScript Number.
+function xarmObservation(line){
+ return JSON.parse(line,(key,value,context)=>['stampNs','clockNs'].includes(key)&&typeof value==='number'&&/^(0|[1-9][0-9]*)$/.test(context?.source??'')?BigInt(context.source):value);
+}
+function validateWorkerClock(rows){
+ let origin,last,receipt;
+ for(const r of rows){
+  if(!r||!['providerSimNs','receiveMonotonicNs'].every(k=>typeof r[k]==='string'&&/^\d+$/.test(r[k]))||!Number.isSafeInteger(r.sourceTick)||r.sourceTick<0)throw Error('R3_RAW_CLOCK_MAPPING_INVALID');
+  const ns=BigInt(r.providerSimNs),now=BigInt(r.receiveMonotonicNs);origin??=ns;
+  // Health polling emits duplicate provider times; its monotonic receipt is local to the worker.
+  if(last!==undefined&&(ns<last||now<receipt)||BigInt(r.sourceTick)!==(ns-origin)/20_000_000n)throw Error('R3_RAW_CLOCK_MAPPING_INVALID');
+  last=ns;receipt=now;
+ }
+}
 export async function readEngineeringBag(root){
  const all=evidenceInventory(root);if(all.some(f=>/\.db3-(wal|shm)$/.test(f.file)))throw Error('R3_BAG_SNAPSHOT_REQUIRED');
  const entries=all.filter(f=>/^[\w.-]+\.db3$/.test(f.file));if(!entries.length)throw Error('R3_RAW_BAG_MISSING');
@@ -40,8 +55,11 @@ export async function readEngineeringObservation(root,subject,profile){
  const bag=await readEngineeringBag(join(root,'rosbag2'));if(!same(bag,e.bag))throw Error('R3_BAG_REPLAY_MISMATCH');
  for(const f of evidenceInventory(join(root,'rosbag2')))if(!m.outputs.some(x=>x.path==='rosbag2/'+f.file&&x.sha256===f.sha256))throw Error('R3_BAG_NOT_BOUND');
  const events=bytes(root,'native-events.jsonl').toString().trim().split('\n').filter(Boolean).map(line=>JSON.parse(line)),rawClock=events.filter(x=>x.event==='clock-mapping').map(x=>x.payload);
- if(rawClock.length<2||!Array.isArray(e.clockMapping)||!e.clockMapping.every(x=>rawClock.some(y=>y.providerSimNs===x.providerSimNs&&y.sourceTick===x.sourceTick)))throw Error('R3_RAW_CLOCK_MAPPING_MISSING');
+ if(rawClock.length<2||!Array.isArray(e.clockMapping))throw Error('R3_RAW_CLOCK_MAPPING_MISSING');
+ validateWorkerClock(rawClock);
  const assessment=api.assessEngineeringEvidence({...e,bag});if(assessment.result!=='pass')throw Error('R3_ENGINEERING_COVERAGE:'+assessment.blockers.join(','));
+ // The existing assessor validates Source's separate origin and 20 ms ticks. Only provider time crosses domains.
+ const providerTimes=new Set(rawClock.map(r=>BigInt(r.providerSimNs)));if(!e.clockMapping.every(r=>providerTimes.has(BigInt(r.providerSimNs))))throw Error('R3_RAW_CLOCK_MAPPING_MISSING');
  const journal=read(root,'journal.json'),effects=read(root,'effects.json'),domain=journal.flatMap(x=>x.events),observedCompleted=domain.filter(x=>x.type==='RobotCommandObserved'&&x.state.status==='completed').length;
  if(!Array.isArray(effects)||effects.some(x=>!Number.isSafeInteger(x.attempts)||x.attempts>1))throw Error('R3_COMMAND_REPLAY');
  if(['no-path','cancel','worker-loss'].includes(e.nativeCase)){
@@ -59,17 +77,19 @@ export async function readXarmObservation(root,subject,profile){
  if(!Array.isArray(m.artifacts)||new Set(m.artifacts.map(f=>f.path)).size!==m.artifacts.length)throw Error('R3_XARM_ARTIFACTS');
  for(const f of m.artifacts)if(sha(bytes(root,f.path))!==f.sha256)throw Error('R3_XARM_ARTIFACT_HASH');
  const bags=m.artifacts.filter(f=>f.path.startsWith('verified-bag/')&&f.path.endsWith('.db3'));if(!bags.length)throw Error('R3_RAW_BAG_MISSING');
- const required=['source-lifecycle.json','source-command.json','source-outcome.json','native-started.json','source-xarm-journal.json','native-journal.json','mapping.json','expanded.urdf','bag-coverage.json','observations.jsonl'];
+ const required=['native-inventory.json','source-lifecycle.json','source-command.json','source-outcome.json','native-started.json','source-xarm-journal.json','native-journal.json','mapping.json','expanded.urdf','bag-coverage.json','observations.jsonl'];
  for(const path of required)if(!m.artifacts.some(f=>f.path===path))throw Error('R3_XARM_TRACE_MISSING:'+path);
+ const {validNativeProfileReport}=await import('./native-sim/profile-report.mjs'),inventory=read(root,'native-inventory.json');
+ if(inventory.available!==true||!validNativeProfileReport(inventory,m.subjectProfileId))throw Error('R3_NATIVE_PROFILE_INVENTORY');
  const bag=await readEngineeringBag(join(root,'verified-bag'));if(!same(bag,read(root,'bag-coverage.json')))throw Error('R3_BAG_REPLAY_MISMATCH');
  for(const topic of ['/joint_states','/tf','/tf_static','/xarm6_traj_controller/controller_state','/xarm6_traj_controller/follow_joint_trajectory/_action/status',...m.mode==='X2'?['/clock']:[]])if(!bag.topics[topic]?.count)throw Error('R3_XARM_BAG_TOPIC:'+topic);
  const {validateXarmMappingRecord}=await tsImport('../packages/lab-runtime/src/v2/sil/xarm-mapping.ts',import.meta.url),mapping=read(root,'mapping.json');
  if(mapping.evidenceKind!==m.evidenceKind||mapping.mode!==m.mode)throw Error('R3_XARM_MAPPING_KIND');
  validateXarmMappingRecord(bytes(root,'expanded.urdf').toString(),mapping,{sourceCommit:subject.sourceCommit,profileId:m.subjectProfileId,architecture:profile.architecture,modelSha256:profile.modelSha256});
- const samples=bytes(root,'observations.jsonl').toString().trim().split('\n').filter(Boolean).map(line=>JSON.parse(line)).filter(x=>x.kind==='sample').map(x=>x.sample);
+ const samples=bytes(root,'observations.jsonl').toString().trim().split('\n').filter(Boolean).map(xarmObservation).filter(x=>x.kind==='sample').map(x=>x.sample);
  if(samples.length<2)throw Error('R3_XARM_ACTUAL_SAMPLES_MISSING');
  for(const [i,s]of samples.entries()){
-  if(!s||!Number.isSafeInteger(s.seq)||!Number.isSafeInteger(s.stampNs)||!Number.isSafeInteger(s.clockNs)||s.stampNs<0||s.clockNs<s.stampNs||!Number.isFinite(s.receivedMs)||s.receivedMs<0||!['actualRad','commandedRad','tcpM'].every(k=>Array.isArray(s[k])&&s[k].length===(k==='tcpM'?3:6)&&s[k].every(Number.isFinite)))throw Error('R3_XARM_SAMPLE_INVALID');
+  if(!s||!Number.isSafeInteger(s.seq)||typeof s.stampNs!=='bigint'||typeof s.clockNs!=='bigint'||s.stampNs<0n||s.clockNs<s.stampNs||!Number.isFinite(s.receivedMs)||s.receivedMs<0||!['actualRad','commandedRad','tcpM'].every(k=>Array.isArray(s[k])&&s[k].length===(k==='tcpM'?3:6)&&s[k].every(Number.isFinite)))throw Error('R3_XARM_SAMPLE_INVALID');
   if(i&&(s.seq<=samples[i-1].seq||s.stampNs<=samples[i-1].stampNs||s.clockNs<samples[i-1].clockNs||s.receivedMs<samples[i-1].receivedMs||s.bootId!==samples[0].bootId||s.epoch!==samples[0].epoch))throw Error('R3_XARM_SAMPLE_EPOCH_OR_CLOCK');
  }
  const start=read(root,'native-started.json'),source=read(root,'source-xarm-journal.json'),native=read(root,'native-journal.json'),command=read(root,'source-command.json').command;

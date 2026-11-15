@@ -47,15 +47,17 @@ test('R3 arm readers reject summary-only contact, absent raw controller traces a
  }finally{await rm(root,{recursive:true,force:true});}
 });
 
-async function xarm(){
+async function xarm(mode:'X1'|'X2'='X2'){
  const f=await engineering(),profile=(await import('../../robotics/manipulation/profiles/xarm6-jazzy-sim.json')).default,target=(await import('../../robotics/manipulation/profiles/xarm6-native-mapping.json')).default;
  const {cp}=await import('node:fs/promises');await cp(join(f.root,'rosbag2'),join(f.root,'verified-bag'),{recursive:true});const db=new DatabaseSync(join(f.root,'verified-bag/observations.db3'));
  const topics=['/clock','/joint_states','/tf','/tf_static','/xarm6_traj_controller/controller_state','/xarm6_traj_controller/follow_joint_trajectory/_action/status'];for(const [i,topic]of topics.entries())db.prepare('UPDATE topics SET name=? WHERE id=?').run(topic,i);db.close();await f.put('bag-coverage.json',await readEngineeringBag(join(f.root,'verified-bag')));
- const xml=await readFile('tests/fixtures/xarm-native-protocol.urdf','utf8');await f.put('expanded.urdf',xml);
- const {validateXarmUrdf}=await import('../../packages/lab-runtime/src/v2/sil/xarm-mapping');const mapping={...validateXarmUrdf(xml,'X2'),producer:'native_xarm.robot_description.v1',sourceCommit:commit,subjectProfileId:'engineering-amd64',environmentProfile:'engineering-amd64',sourceModelSha256:target.sourceModelSha256,vendorCommit:profile.vendorCommit,syntheticSimModelSelector:profile.syntheticSimModelSelector,evidenceKind:profile.modes.X2.evidenceKind,controller:{joints:profile.jointMap.map(j=>j.native),commandInterfaces:['position'],stateInterfaces:['position'],srdf:'<robot name="unit"/>'}};await f.put('mapping.json',mapping);
- const command={commandId:'c1',runId:'xarm-X2-nominal'},sample=(i:number)=>({seq:i+1,bootId:'boot',epoch:1,receivedMs:1000+i*100,stampNs:1000000000+i*100000000,clockNs:1000000000+i*100000000,actualRad:[0,0,-1,0,0,0],commandedRad:[0,0,-1,0,0,0],tcpM:[0,0,0]});
- await f.put('observations.jsonl',[0,1].map(i=>JSON.stringify({kind:'sample',sample:sample(i)})).join('\n'));await f.put('source-command.json',{command,ack:{accepted:true,unknown:false}});await f.put('source-outcome.json',{status:'completed'});await f.put('source-lifecycle.json',{startup:'ready'});await f.put('native-started.json',{runId:command.runId,mode:'X2'});await f.put('native-journal.json',{runId:command.runId,bootId:'boot',epoch:1,evidenceKind:profile.modes.X2.evidenceKind,receipts:{c1:{hash:hashJson(command),status:'completed'}}});await f.put('source-xarm-journal.json',{runId:command.runId,mode:'X2',evidenceKind:profile.modes.X2.evidenceKind,receipts:[{command,status:'completed'}]});
- const m:Doc={sourceCommit:commit,dirty:false,targetProfileId:profile.id,subjectProfileId:'engineering-amd64',profileHash:hashJson(profile),accepted:false,mode:'X2',nativeCase:'nominal',evidenceKind:profile.modes.X2.evidenceKind};
+ let xml=await readFile('tests/fixtures/xarm-native-protocol.urdf','utf8');
+ if(mode==='X1')xml=xml.replaceAll('file://'+profile.descriptionShare,'package://xarm_description').replaceAll(profile.modes.X2.plugin,profile.modes.X1.plugin).replace(/<gazebo><plugin filename="gz_ros2_control-system"[^]*?<\/plugin><\/gazebo>/,'');
+ await f.put('expanded.urdf',xml);
+ const {validateXarmUrdf}=await import('../../packages/lab-runtime/src/v2/sil/xarm-mapping');const mapping={...validateXarmUrdf(xml,mode),producer:'native_xarm.robot_description.v1',sourceCommit:commit,subjectProfileId:'engineering-amd64',environmentProfile:'engineering-amd64',sourceModelSha256:target.sourceModelSha256,vendorCommit:profile.vendorCommit,syntheticSimModelSelector:profile.syntheticSimModelSelector,evidenceKind:profile.modes[mode].evidenceKind,controller:{joints:profile.jointMap.map(j=>j.native),commandInterfaces:['position'],stateInterfaces:['position'],srdf:'<robot name="unit"/>'}};await f.put('mapping.json',mapping);
+ const command={commandId:'c1',runId:'xarm-'+mode+'-nominal'},sample=(i:number)=>({seq:i+1,bootId:'boot',epoch:1,receivedMs:1000+i*100,stampNs:1000000000+i*100000000,clockNs:1000000000+i*100000000,actualRad:[0,0,-1,0,0,0],commandedRad:[0,0,-1,0,0,0],tcpM:[0,0,0]});
+ await f.put('observations.jsonl',[0,1].map(i=>JSON.stringify({kind:'sample',sample:sample(i)})).join('\n'));await f.put('source-command.json',{command,ack:{accepted:true,unknown:false}});await f.put('source-outcome.json',{status:'completed'});await f.put('source-lifecycle.json',{startup:'ready'});await f.put('native-started.json',{runId:command.runId,mode});await f.put('native-journal.json',{runId:command.runId,bootId:'boot',epoch:1,evidenceKind:profile.modes[mode].evidenceKind,receipts:{c1:{hash:hashJson(command),status:'completed'}}});await f.put('source-xarm-journal.json',{runId:command.runId,mode,evidenceKind:profile.modes[mode].evidenceKind,receipts:[{command,status:'completed'}]});
+ const m:Doc={sourceCommit:commit,dirty:false,targetProfileId:profile.id,subjectProfileId:'engineering-amd64',profileHash:hashJson(profile),accepted:false,mode,nativeCase:'nominal',evidenceKind:profile.modes[mode].evidenceKind};
  const seal=async()=>{m.artifacts=evidenceInventory(f.root).filter((r:Doc)=>r.file!=='run-manifest.json').map((r:Doc)=>({path:r.file,sha256:r.sha256}));await f.put('run-manifest.json',m);};await seal();return {...f,m,mapping,seal,profile:{architecture:'amd64',modelSha256:target.sourceModelSha256}};
 }
 test('R3 xArm reader recomputes pinned model and raw sample coverage while preserving unqualified native scope',async()=>{
@@ -73,4 +75,70 @@ test('R3 LinuxCNC validates the exact supplied actual-joint format but never pro
   const r=await readLinuxcncObservation(root,{sourceCommit:commit});expect(r.qualification).toBe('not_run');expect(r.segments).toHaveLength(2);expect(r.limitations).toContain('CONTROLLER_SAMPLE_TIME_UNAVAILABLE');
   trace.model.id='xarm6';await writeFile(join(root,'actual-joint-trace.json'),JSON.stringify(trace));await expect(readLinuxcncObservation(root,{sourceCommit:commit})).rejects.toThrow('PUMA_MODEL_FRAME_HASH_MISMATCH');
  }finally{await rm(root,{recursive:true,force:true});}
+});
+
+// Portable producer-shaped protocol fixtures; these do not claim ROS execution.
+const epochNs=1_789_999_999_123_456_789n;
+async function putEpochSamples(f:Awaited<ReturnType<typeof xarm>>,values:{stamp:bigint;clock:bigint}[]){
+ const original=(await readFile(join(f.root,'observations.jsonl'),'utf8')).split('\n').map(line=>JSON.parse(line));
+ const lines=values.map((v,i)=>JSON.stringify({...original[i],sample:{...original[i].sample,stampNs:'STAMP_TOKEN',clockNs:'CLOCK_TOKEN'}}).replace('"STAMP_TOKEN"',String(v.stamp)).replace('"CLOCK_TOKEN"',String(v.clock)));
+ await f.put('observations.jsonl',lines.join('\n'));await f.seal();
+}
+test('I1 X1 admits exact adjacent epoch nanoseconds from unquoted producer integer tokens',async()=>{
+ const f=await xarm('X1');try{
+  await putEpochSamples(f,[{stamp:epochNs,clock:epochNs+100n},{stamp:epochNs+1n,clock:epochNs+101n}]);
+  const before=await readFile(join(f.root,'observations.jsonl'));
+  expect(await readXarmObservation(f.root,{sourceCommit:commit},f.profile)).toMatchObject({mode:'X1',sampleCoverage:'tested',qualification:'not_run'});
+  expect(await readFile(join(f.root,'observations.jsonl'))).toEqual(before);
+ }finally{await f.cleanup();}
+});
+test.each(['stamp reset','stamp repeat','clock reset','clock behind stamp'])('I1 X1 refuses exact adjacent epoch %s after valid mapping and inventory',async mutation=>{
+ const f=await xarm('X1');try{
+  const values=[{stamp:epochNs,clock:epochNs+100n},{stamp:epochNs+1n,clock:epochNs+101n}];
+  if(mutation==='stamp reset')values[1]!.stamp=epochNs-1n;
+  if(mutation==='stamp repeat')values[1]!.stamp=epochNs;
+  if(mutation==='clock reset')values[1]!.clock=epochNs+99n;
+  if(mutation==='clock behind stamp')values[1]!.clock=epochNs;
+  await putEpochSamples(f,values);
+  await expect(readXarmObservation(f.root,{sourceCommit:commit},f.profile)).rejects.toThrow(mutation==='clock behind stamp'?'R3_XARM_SAMPLE_INVALID':'R3_XARM_SAMPLE_EPOCH_OR_CLOCK');
+ }finally{await f.cleanup();}
+});
+async function independentClocks(f:Awaited<ReturnType<typeof engineering>>){
+ const e=JSON.parse(await readFile(join(f.root,'engineering-native-evidence.json'),'utf8'));
+ e.clockMapping=[{providerSimNs:'1500000000',sourceTick:0,receiveMonotonicNs:'100'},{providerSimNs:'2000000000',sourceTick:25,receiveMonotonicNs:'500000100'}];
+ // Repeated raw health calls during readiness and after subscription; worker and Source receive domains differ.
+ const raw=[1000000000,1000000000,1500000000,1500000000,2000000000].map((ns,i)=>({providerSimNs:String(ns),sourceTick:(ns-1000000000)/20000000,receiveMonotonicNs:String(9000000000+i*100000000)}));
+ return {e,raw,save:async()=>{await f.put('engineering-native-evidence.json',e);await f.put('native-events.jsonl',raw.map(payload=>JSON.stringify({event:'clock-mapping',payload})).join('\n'));await f.seal();}};
+}
+test('I2 engineering correlates provider time across independent origins and repeated raw readiness observations',async()=>{
+ const f=await engineering();try{const c=await independentClocks(f);await c.save();expect(await readEngineeringObservation(f.root,{sourceCommit:commit},'engineering-amd64')).toMatchObject({rawCoverage:'tested',qualification:'not_run'});}finally{await f.cleanup();}
+});
+test.each(['missing provider','worker tick','worker origin','worker reset','worker receipt reset','source tick','source origin','source receipt reset'])('I2 engineering refuses inconsistent %s with coherent artifact hashes',async mutation=>{
+ const f=await engineering();try{
+  const c=await independentClocks(f);
+  if(mutation==='missing provider')c.raw.splice(2,2);
+  if(mutation==='worker tick')c.raw[2]!.sourceTick++;
+  if(mutation==='worker origin')c.raw.forEach(r=>r.sourceTick++);
+  if(mutation==='worker reset'){c.raw[3]!.providerSimNs='1000000000';c.raw[3]!.sourceTick=0;}
+  if(mutation==='worker receipt reset')c.raw[3]!.receiveMonotonicNs='1';
+  if(mutation==='source tick')c.e.clockMapping[1].sourceTick++;
+  if(mutation==='source origin')c.e.clockMapping.forEach((r:Doc)=>r.sourceTick++);
+  if(mutation==='source receipt reset')c.e.clockMapping[1].receiveMonotonicNs='1';
+  await c.save();await expect(readEngineeringObservation(f.root,{sourceCommit:commit},'engineering-amd64')).rejects.toThrow(mutation==='missing provider'?'R3_RAW_CLOCK_MAPPING_MISSING':mutation.startsWith('worker')?'R3_RAW_CLOCK_MAPPING_INVALID':'CLOCK_MAPPING_INVALID');
+ }finally{await f.cleanup();}
+});
+test.each(['missing','unavailable','wrong ISA','wrong OS','wrong environment','unbound','wrong hash'])('I3 xArm refuses %s run inventory after valid X2 admission',async mutation=>{
+ const f=await xarm();try{
+  expect(await readXarmObservation(f.root,{sourceCommit:commit},f.profile)).toMatchObject({mode:'X2',sampleCoverage:'tested',qualification:'not_run'});
+  if(mutation==='missing')await rm(join(f.root,'native-inventory.json'));
+  if(mutation==='unavailable'){f.inventory.available=false;f.inventory.reasonCodes=['INVENTORY_UNRESOLVED'];}
+  if(mutation==='wrong ISA')f.inventory.actual.arch='arm64';
+  if(mutation==='wrong OS')f.inventory.actual.os='ubuntu22.04';
+  if(mutation==='wrong environment')f.inventory.id='engineering-arm64';
+  if(!['missing','unbound','wrong hash'].includes(mutation))await f.put('native-inventory.json',f.inventory);
+  await f.seal();
+  if(mutation==='unbound'){f.m.artifacts=f.m.artifacts.filter((a:Doc)=>a.path!=='native-inventory.json');await f.put('run-manifest.json',f.m);}
+  if(mutation==='wrong hash')await f.put('native-inventory.json',{...f.inventory,available:false});
+  await expect(readXarmObservation(f.root,{sourceCommit:commit},f.profile)).rejects.toThrow(['missing','unbound'].includes(mutation)?'R3_XARM_TRACE_MISSING:native-inventory.json':mutation==='wrong hash'?'R3_XARM_ARTIFACT_HASH':'R3_NATIVE_PROFILE_INVENTORY');
+ }finally{await f.cleanup();}
 });
