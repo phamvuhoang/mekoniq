@@ -6,8 +6,8 @@ import {sha256Hex} from '../twin/hash';
 // imported copy incomplete. The Lab never reads chunk contents to upgrade a verdict.
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
-import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json' with {type:'json'};
+import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
+import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json';
 import evidenceSchema from '../shared/engineering-schemas/navigation-run-evidence-v1.schema.json' with {type:'json'};
 import type {NavigationRunEvidenceV1,NavigationSceneV1} from '../shared/navigation2d';
 import type {RunReport} from '../scenarios/controls';
