@@ -245,8 +245,15 @@ def test_fix1_mode_graph_control_and_visual_defaults(mode):
     if mode=='X1':xml=re.sub(r'<gazebo><plugin filename="gz_ros2_control-system"[\s\S]*?</gazebo>','',xml).replace('gz_ros2_control/GazeboSimSystem','uf_robot_hardware/UFRobotFakeSystemHardware').replace('file://'+load_profile()['descriptionShare'],'package://xarm_description')
     validate_urdf(xml,mode)
     validate_urdf(xml.replace('<visual>','<visual><origin xyz="0 0 0" rpy="0 0 0"/>').replace('<mesh ','<mesh scale="1 1 1" '),mode)
+    validate_urdf(xml.replace('xyz="0 0 0"','xyz="+0e0 0.0 -.0"').replace('<offset>0</offset>','<offset>0e+0</offset>'),mode)
     mutations=[('<link name="world"/>',''),('<link name="link_eef"/>',''),('parent link="world"','parent link="missing"'),('parent link="world"','parent link="link_tcp"'),('parent link="link_eef"','parent link="link6"'),('<visual>','<visual><origin rpy="0 0 1"/>'),('<state_interface name="velocity"/>','<state_interface name="effort"/>'),('<joint name="joint1"><command_interface','<joint name="joint6"><command_interface'),('<mimicJoint>left_finger_joint</mimicJoint>','<mimicJoint>joint1</mimicJoint>'),('<mimic joint="drive_joint"','<mimic joint="joint1"'),('</hardware>','<param name="robot_ip">192.0.2.1</param></hardware>'),('<visual>','<visual><plugin name="evil"/>')]
     if mode=='X2':mutations.append(('/tmp/launch_params_protocolfixture','/tmp/../evil'))
     for old,new in mutations:
         bad=xml.replace(old,new,1);assert bad!=xml
         with pytest.raises(ValueError):validate_urdf(bad,mode)
+
+def test_fix1_rejects_non_urdf_numeric_spelling():
+    from native_xarm.mapping import validate_urdf
+    xml=(ROOT/'tests/fixtures/xarm-native-protocol.urdf').read_text()
+    for bad in [xml.replace('<offset>0</offset>','<offset> </offset>'),xml.replace('<offset>0</offset>','<offset/>'),xml.replace('<offset>0</offset>','<offset>0x0</offset>'),xml.replace('<offset>0</offset>','<offset>0_0</offset>'),xml.replace('xyz="0 0 0"','xyz="0_0 0 0"',1)]:
+        with pytest.raises(ValueError):validate_urdf(bad,'X2')

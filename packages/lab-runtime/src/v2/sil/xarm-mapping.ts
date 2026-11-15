@@ -18,7 +18,7 @@ function xmlTree(xml:string):Node{
  if(stack.length!==1||root.children.length!==1||root.children[0]!.name!=='robot'||root.text.trim())throw Error('XARM_XML_INVALID');return root.children[0]!;
 }
 const one=(n:Node,name:string)=>{const xs=n.children.filter(x=>x.name===name);if(xs.length!==1)throw Error('XARM_MAPPING_INVALID:'+name);return xs[0]!;};
-function numbers(s:string|undefined,n:number){const v=s?.trim().split(/\s+/).map(Number);if(!v||v.length!==n||!v.every(Number.isFinite))throw Error('XARM_MAPPING_NUMERIC');return v;}
+function numbers(s:string|undefined,n:number){const tokens=s?.trim().split(/\s+/);if(!tokens||tokens.length!==n||tokens.some(t=>!/^[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?$/.test(t)))throw Error('XARM_MAPPING_NUMERIC');const v=tokens.map(Number);if(!v.every(Number.isFinite))throw Error('XARM_MAPPING_NUMERIC');return v;}
 function near(a:number[],b:number[]){if(a.length!==b.length||a.some((v,i)=>Math.abs(v-b[i]!)>1e-9))throw Error('XARM_MAPPING_MISMATCH');}
 // Compare closed extension trees independent of ordering and numeric lexical spelling.
 function semantic(n:Node):string{

@@ -16,9 +16,15 @@ def validate_urdf(xml,mode):
         children=node.findall(key)
         if len(children)!=1:raise ValueError('XARM_MAPPING_INVALID:'+key)
         return children[0]
+    def numbers(raw):
+        if not isinstance(raw,str):raise ValueError('XARM_MAPPING_NUMERIC')
+        tokens=raw.split()
+        if not tokens or any(not re.fullmatch(r'[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?',t) for t in tokens):raise ValueError('XARM_MAPPING_NUMERIC')
+        values=[float(t) for t in tokens]
+        if not all(math.isfinite(v) for v in values):raise ValueError('XARM_MAPPING_NUMERIC')
+        return values
     def near(raw,expected):
-        try:values=[float(x) for x in raw.split()]
-        except (AttributeError,ValueError):raise ValueError('XARM_MAPPING_NUMERIC') from None
+        values=numbers(raw)
         if len(values)!=len(expected) or any(not math.isfinite(a) or abs(a-b)>1e-9 for a,b in zip(values,expected)):raise ValueError('XARM_MAPPING_MISMATCH')
     joints=robot.findall('joint');names=[j.get('name') for j in joints];children=[one(j,'child').get('link') for j in joints]
     if len(set(names))!=len(names) or len(set(children))!=len(children):raise ValueError('XARM_MAPPING_DUPLICATE')
@@ -74,10 +80,9 @@ def validate_urdf(xml,mode):
     def semantic(n):
         text=(n.text or '').strip()
         if n.tag in ('param','mechanicalReduction','multiplier','offset','sensitiveness','maxEffort'):
-            try:value=float(text)
-            except ValueError:raise ValueError('XARM_MAPPING_NUMERIC') from None
-            if not math.isfinite(value):raise ValueError('XARM_MAPPING_NUMERIC')
-            text=round(value,9)
+            values=numbers(text)
+            if len(values)!=1:raise ValueError('XARM_MAPPING_NUMERIC')
+            text=round(values[0],9)
         return json.dumps([n.tag,sorted(n.attrib.items()),text,sorted(semantic(c) for c in n)])
     if sorted(map(semantic,actual))!=sorted(map(semantic,expected_extensions)):raise ValueError('XARM_CONTROL_DECLARATION_MISMATCH')
     tags={'plugin','ros2_control','gazebo','transmission'}
