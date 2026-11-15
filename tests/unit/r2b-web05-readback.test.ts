@@ -18,6 +18,8 @@ const cases:Record<string,(f:ReturnType<typeof web05Fixture>)=>void>={
  'opened report source differs at same run':f=>{const m=f.files['replay/manifest.json'] as any,r=JSON.parse(String(f.files['replay/report.json']));r.manifest.sourceCommit='9'.repeat(40);const bytes=Buffer.from(JSON.stringify(r));f.put('replay/report.json',bytes);Object.assign(m.assets[0],{sha256:sha(bytes),decodedSha256:sha(bytes),bytes:bytes.length,decodedBytes:bytes.length});},
  'crossed recovery volume':f=>{const o=f.observations.find(o=>o.id==='container'),v=JSON.parse(o.stdout);v[0].Mounts[0].Name='other-volume';o.stdout=JSON.stringify(v);},
  'observations reordered':f=>{const o=f.observations.find(o=>o.id==='reclaim');o.startedAtEpochMs=1000;o.finishedAtEpochMs=1001;},
+ 'wrong finished reclaim run':f=>{f.observations.find(o=>o.id==='finishedReclaim').response.run.id='other';},
+ 'changed replay horizon':f=>{(f.files['replay-report.json'] as any).outcome.tick=3;},
  'other active run':f=>{(f.files['before-crash-report.json'] as any).manifest.runId='other';},
  'wrong image':f=>{(f.files['image-inspect.json'] as any).Id='sha256:'+'9'.repeat(64);f.observations.find(o=>o.id==='image').stdout=JSON.stringify([f.files['image-inspect.json']]);},
  'wrong health tuple':f=>{(f.files['health.json'] as any).sourceCommit='9'.repeat(40);},
