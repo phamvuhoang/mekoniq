@@ -103,7 +103,7 @@ export function compareRuns(a:RunReport,b:RunReport){
 
 // Cross-engine studies are immutable downstream views. Validation establishes shape, never a physics authority.
 import Ajv from 'ajv';
-import studySchema from '../shared/engineering-schemas/semantic-study-v1.schema.json';
+import studySchema from '../shared/engineering-schemas/semantic-study-v1.schema.json' with {type:'json'};
 import {tr} from '../i18n';
 import {esc} from '../ui/icons';
 interface StudyRun {runId:string;engine:string;reportRef:{path:string;sha256:string;bytes:number};artifactRefs:{path:string;sha256:string;bytes:number}[];sceneDigest:string;modelDigest:string;firstTick:number;lastTick:number;replay:{runId:string;tick:number}}

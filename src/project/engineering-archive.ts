@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 import type {ErrorObject} from 'ajv';
-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
+import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
 import projectSchema from '../shared/engineering-schemas/engineering-project.schema.json';
 import archiveSchema from '../shared/engineering-schemas/engineering-project-archive.schema.json';
 import assetSchema from '../shared/engineering-schemas/asset-revision.schema.json';

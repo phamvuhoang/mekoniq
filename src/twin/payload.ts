@@ -1,17 +1,17 @@
 // MuJoCo mobile view: admitted geometry and committed free-load poses only. No client dynamics or custody.
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
-import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json';
-import loadSchema from '../shared/engineering-schemas/load-profile-v1.schema.json';
-import navModelSchema from '../shared/engineering-schemas/navigation-model-2d-v1.schema.json';
-import navSchema from '../shared/engineering-schemas/navigation-scene-v1.schema.json';
-import sampleSchema from '../shared/engineering-schemas/twin-sample-v2.schema.json';
-import design from '../../fixtures/engineering/serve-payload-v1/serve-3d-project.json';
-import centerLoad from '../../fixtures/engineering/serve-payload-v1/cup-center.json';
-import offsetLoad from '../../fixtures/engineering/serve-payload-v1/cup-offset.json';
-import emptyLoad from '../../fixtures/engineering/serve-payload-v1/empty.json';
-import canonical from '../../fixtures/engineering/serve-payload-v1/physical-model-amr-1.json';
+import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
+import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json' with {type:'json'};
+import loadSchema from '../shared/engineering-schemas/load-profile-v1.schema.json' with {type:'json'};
+import navModelSchema from '../shared/engineering-schemas/navigation-model-2d-v1.schema.json' with {type:'json'};
+import navSchema from '../shared/engineering-schemas/navigation-scene-v1.schema.json' with {type:'json'};
+import sampleSchema from '../shared/engineering-schemas/twin-sample-v2.schema.json' with {type:'json'};
+import design from '../../fixtures/engineering/serve-payload-v1/serve-3d-project.json' with {type:'json'};
+import centerLoad from '../../fixtures/engineering/serve-payload-v1/cup-center.json' with {type:'json'};
+import offsetLoad from '../../fixtures/engineering/serve-payload-v1/cup-offset.json' with {type:'json'};
+import emptyLoad from '../../fixtures/engineering/serve-payload-v1/empty.json' with {type:'json'};
+import canonical from '../../fixtures/engineering/serve-payload-v1/physical-model-amr-1.json' with {type:'json'};
 import type {EngineeringProject} from '../shared/engineering';
 import type {RobotPhysicalModelV1,LoadProfileV1,NavigationSceneV1} from '../shared/navigation2d';
 import type {TwinSample} from './store';

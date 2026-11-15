@@ -1,6 +1,6 @@
 import {validMobileSample} from '../twin/payload';
-import physicsSchema from '../shared/engineering-schemas/physics-evidence-v1.schema.json';
-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
+import physicsSchema from '../shared/engineering-schemas/physics-evidence-v1.schema.json' with {type:'json'};
+import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
 // Import is a trust boundary. Validate every structural field consumed by replay/UI before persistence.
 // Domain state remains extensible, but known display fields cannot override these types.
 import Ajv from 'ajv';
