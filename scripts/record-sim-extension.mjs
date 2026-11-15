@@ -31,6 +31,7 @@ import {bytecodeUnder,summarizeResult as summarize} from './irsim-qualification.
 import {SPIKE_NOTE,SUITES,SUITES_R11,checkBlocked,checkLabCommits,preflight,screenLockedFromIoreg,checkIrsimRecord,checkR1Record,checkR11Record,checkQualification,qualify,qualifyR11,qualifyR2a,tableR2a} from './sim-extension-qualification.mjs';
 import {PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+if(process.argv[process.argv.indexOf('--release')+1]==='r3'){try{const {recordR3}=await import('./record-sim-extension-r3.mjs');process.exit(await recordR3(process.argv.slice(2)));}catch(e){console.error('NOT_RUN: '+e.message);process.exit(2);}}
 if(process.argv[process.argv.indexOf('--release')+1]==='r2b'){try{const {recordR2b}=await import('./record-sim-extension-r2b.mjs');process.exit(await recordR2b(process.argv.slice(2)));}catch(e){console.error('NOT_RUN: '+e.message);process.exit(2);}}
 const fail=(code,m)=>{console.error(`${code}: ${m}`);process.exit(code==='NOT_RUN'?2:1);};
 const raw=process.argv.slice(2),own={release:undefined,out:undefined,candidateId:undefined,irsimRecord:undefined,r1Record:undefined,r11Record:undefined,mock:undefined,lab:undefined,skipSuites:false,plan:false,webotsHome:undefined,webotsPython:undefined,blocked:undefined,blockedReason:undefined,mujocoProbe:undefined};

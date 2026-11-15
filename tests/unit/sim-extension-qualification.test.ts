@@ -451,3 +451,93 @@ test('R2b refuses caller-selected reduced tables, accepted true and a fabricated
  const r=Q.checkQualification(c.m,c.read);
  expect(r).toContain('RECORD_ACCEPTED');expect(r).toContain('CASE_TABLE_MISMATCH');expect(r).toContain('R2B_ARTIFACT_READBACK_REQUIRED');
 });
+
+test('R3 cannot fall through to historical R1 qualification or historical accepted compatibility',()=>{
+ for(const accepted of [false,true]){
+  const c=candidate();c.m.release='r3';c.m.profile='xarm6-jazzy-sim';c.m.scope='motion';c.m.accepted=accepted;
+  if(accepted){c.m.acceptedBy='fabricated';c.m.acceptedAt='today';}
+  const issues=checkQualification(c.m,c.read);
+  expect(issues).toContain('R3_ARTIFACT_READBACK_REQUIRED');
+  if(accepted)expect(issues).toContain('RECORD_ACCEPTED');
+ }
+});
+
+test('R3 recorder recognizes the closed profile matrix without a prerequisite probe',()=>{
+ const p=spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r3','--profile','xarm6-jazzy-sim','--scope','contact','--plan'],{encoding:'utf8',timeout:10000,env:{...process.env,PATH:'/nonexistent'}});
+ expect(p.status,p.stderr).toBe(0);expect(JSON.parse(p.stdout).requiredCases).toEqual(['DEP-PREP-01','DEP-XARM-01','DEP-XARM-02','DEP-XARM-03','DEP-SEC-01']);
+});
+
+// @ts-expect-error plain ESM artifact reader
+const r3api=async()=>import('../../scripts/r3-readback.mjs');
+async function r3Fixture(profile='mujoco-linux-amd64',scope='prepared'){
+ const {nativeHandoffFixture}=await import('../fixtures/native-handoff');
+ const {cp,writeFile,mkdir,rm}=await import('node:fs/promises');
+ // @ts-expect-error plain ESM artifact inventory
+ const {evidenceInventory}=await import('../../scripts/r2b-readback.mjs');
+ const mode=profile.startsWith('engineering-')?'ros_navigation':profile==='xarm6-jazzy-sim'?'ros_xarm':profile==='puma560-linuxcnc-sim'?'native_apt':'oci';
+ const f=await nativeHandoffFixture(mode);f.manifest.profile.id=profile;f.inventory.profileId=profile;if(mode==='ros_navigation'||mode==='ros_xarm')f.manifest.profile.os={id:'ubuntu',version:'24.04'};await f.reseal();
+ const root=mkdtempSync(join(tmpdir(),'r3-directory-'));await mkdir(join(root,'inputs'));await cp(f.root,join(root,'inputs/handoff'),{recursive:true});await mkdir(join(root,'inputs/native'));await rm(f.root,{recursive:true});
+ const s=f.manifest.subject,m:M={schemaVersion:1,documentType:'sim-extension-qualification',release:'r3',profile,scope,candidateId:'r3-unit',accepted:false,acceptedBy:null,acceptedAt:null,dynamics:'not_calibrated',subject:s,checker:{sourceCommit:s.sourceCommit,toolSha256:HEX},identity:{before:{sourceCommit:s.sourceCommit,dirty:false,toolClosures:{portable:s.portableClosureHash,native:s.nativeClosureHash}},after:{sourceCommit:s.sourceCommit,dirty:false,toolClosures:{portable:s.portableClosureHash,native:s.nativeClosureHash}},identityStable:true},lab:{commit:s.labCommit,dirty:false,pin:{sourceCommit:s.sourceCommit,artifactSha256:s.runtimeArtifactSha256,schemaHash:s.schemaHash,portableToolsDigest:s.portableClosureHash}},campaign:null,performance:null};
+ const seal=async()=>{m.artifacts=evidenceInventory(root);await writeFile(join(root,'qualification.json'),JSON.stringify(m));};
+ const derive=async()=>{Object.assign(m,await (await r3api()).collectR3Artifacts(root,m));await seal();};
+ return {root,m,seal,derive,cleanup:()=>rm(root,{recursive:true}),write:async(p:string,v:unknown)=>{await mkdir(join(root,p,'..'),{recursive:true});await writeFile(join(root,p),JSON.stringify(v));}};
+}
+
+test('R3 prepared directory is recomputed, retains every missing native case, and never claims native or physical acceptance',async()=>{
+ const f=await r3Fixture();try{await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);expect(f.m.cases['DEP-PREP-01'].status).toBe('tested');expect(f.m.gates['G-NATIVE-MJ'].status).toBe('not_run');expect(f.m.blockedNativeCases.map((c:M)=>c.id)).toEqual(['DEP-MJ-01','DEP-SEC-01']);expect(f.m.levels['R3.1']).toBe('not_run');expect(f.m.levels['R3.2']).toBe('not_run');}finally{await f.cleanup();}
+});
+
+test.each([
+ ['accepted reviewer fields',(m:M)=>{m.accepted=true;m.acceptedBy='invented';m.acceptedAt='today';},'RECORD_ACCEPTED'],
+ ['reduced required cases',(m:M)=>{m.requiredCases=[];},'R3_REQUIRED_CASES'],
+ ['invented tested gate',(m:M)=>{m.gates['G-NATIVE-MJ'].status='tested';},'R3_DERIVED_MISMATCH:gates'],
+ ['skipped case relabelled tested',(m:M)=>{m.cases['DEP-MJ-01'].status='tested';},'R3_DERIVED_MISMATCH:cases'],
+ ['another ISA',(m:M)=>{m.profile='mujoco-linux-arm64';},'R3_PROFILE_BINDING'],
+ ['MuJoCo replaces xArm',(m:M)=>{m.profile='xarm6-jazzy-sim';},'R3_PROFILE_BINDING'],
+ ['checker replacement',(m:M)=>{m.checker.sourceCommit='e'.repeat(40);},'R3_CHECKER_TUPLE'],
+ ['subject replacement',(m:M)=>{m.subject.sourceCommit='e'.repeat(40);},'R3_SUBJECT_BINDING'],
+])('R3 public readback rejects %s after coherent inventory reseal',async(_name,mutate,reason)=>{
+ const f=await r3Fixture();try{await f.derive();mutate(f.m);await f.seal();expect((await (await r3api()).verifyR3Directory(f.root)).join('|')).toContain(reason);}finally{await f.cleanup();}
+});
+
+test('R3 doctor-only and fake summaries cannot establish a native scope',async()=>{
+ const f=await r3Fixture('mujoco-linux-amd64','full');try{
+  await f.write('inputs/native/doctor.json',{available:true,nativeReady:true,profileId:f.m.profile,passed:true});await f.derive();expect((await (await r3api()).verifyR3Directory(f.root)).join()).toContain('R3_SCOPE_INCOMPLETE');
+  await f.write('inputs/native/index.json',{schemaVersion:1,profile:f.m.profile,architecture:'amd64',subject:f.m.subject,records:{current:{directory:'current'}}});await f.write('inputs/native/current/manifest.json',{kind:'r2b-native-payload-cell',qualification:'passed',accepted:false,subject:f.m.subject,cases:[],artifacts:[]});await f.derive();expect(f.m.cases['DEP-MJ-01'].status).not.toBe('tested');expect((await (await r3api()).verifyR3Directory(f.root)).join()).toContain('R3_SCOPE_INCOMPLETE');
+ }finally{await f.cleanup();}
+});
+
+test('R3 sidecar binds exact immutable candidate hash, profile, ISA and scope without accepting the candidate',async()=>{
+ const f=await r3Fixture();try{await f.derive();const q=await r3api(),sidecar={schemaVersion:1,documentType:'r3-human-review',candidateSha256:sha(readFileSync(join(f.root,'qualification.json'),'utf8')),candidateId:f.m.candidateId,profile:f.m.profile,architecture:'amd64',scope:'prepared',decision:'accept',reviewer:'unit-test-only',reviewedAt:'2026-11-15T00:00:00.000Z'};expect(await q.verifyR3Sidecar(f.root,sidecar)).toEqual([]);expect(await q.verifyR3Sidecar(f.root,{...sidecar,candidateSha256:HEX})).toContain('R3_SIDECAR_BINDING');expect(await q.verifyR3Sidecar(f.root,{...sidecar,scope:'full'})).toContain('R3_SIDECAR_BINDING');expect(f.m.accepted).toBe(false);}finally{await f.cleanup();}
+});
+
+test.each(['engineering-amd64','xarm6-jazzy-sim','puma560-linuxcnc-sim'])('R3 prepared %s retains its own complete native case matrix and explicit verifier gaps',async profile=>{
+ const f=await r3Fixture(profile);try{await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);expect(f.m.capabilities.toolingLimitations.length).toBeGreaterThan(0);expect(f.m.blockedNativeCases.every((c:M)=>c.status==='not_run')).toBe(true);
+ if(profile==='puma560-linuxcnc-sim'){f.m.profile='xarm6-jazzy-sim';await f.seal();expect((await (await r3api()).verifyR3Directory(f.root)).join()).toContain('R3_PROFILE_BINDING');}
+ }finally{await f.cleanup();}
+});
+test('R3 motion cannot close contact, terminal excludes only GUI/package case, and caller mutations cannot reduce the matrix',()=>{
+ const motion=Q.tableR3('xarm6-jazzy-sim','motion'),contact=Q.tableR3('xarm6-jazzy-sim','contact');expect(motion.requiredCases).not.toContain('DEP-XARM-03');expect(motion.nativeCases).toContain('DEP-XARM-03');expect(contact.requiredCases).toContain('DEP-XARM-03');motion.requiredCases.length=0;expect(Q.tableR3('xarm6-jazzy-sim','motion').requiredCases).toHaveLength(4);
+ expect(Q.tableR3('puma560-linuxcnc-sim','terminal').requiredCases).toEqual(['DEP-PREP-01','DEP-CNC-01','DEP-CNC-02','ALG04','DEP-SEC-01']);expect(()=>Q.tableR3('puma560-linuxcnc-sim','contact')).toThrow('R3_SCOPE_UNSUPPORTED');
+});
+
+test('R3 offline CLI verifies prepared bytes and a separate sidecar without changing the candidate',async()=>{
+ const f=await r3Fixture(),other=mkdtempSync(join(tmpdir(),'r3-sidecar-'));try{
+  await f.derive();const path=join(f.root,'qualification.json'),before=readFileSync(path,'utf8');const run=(...args:string[])=>spawnSync(process.execPath,['scripts/verify-r3.mjs',f.root,...args],{encoding:'utf8',timeout:15000});
+  const r=run();expect(r.status,r.stderr).toBe(0);expect(JSON.parse(r.stdout)).toMatchObject({valid:true,accepted:false});
+  const sidecar=join(other,'review.json');writeFileSync(sidecar,JSON.stringify({schemaVersion:1,documentType:'r3-human-review',candidateSha256:sha(before),candidateId:f.m.candidateId,profile:f.m.profile,architecture:'amd64',scope:'full',decision:'accept',reviewer:'unit-only',reviewedAt:'2026-11-15T00:00:00Z'}));const bad=run('--sidecar',sidecar);expect(bad.status).toBe(1);expect(JSON.parse(bad.stdout).issues).toContain('R3_SIDECAR_BINDING');expect(readFileSync(path,'utf8')).toBe(before);
+ }finally{await f.cleanup();rmSync(other,{recursive:true,force:true});}
+});
+
+test('R3 missing native slots remain reproducible when the immutable candidate directory is copied',async()=>{
+ const f=await r3Fixture('engineering-amd64'),copy=mkdtempSync(join(tmpdir(),'r3-published-copy-'));try{
+  const {mkdir,cp}=await import('node:fs/promises');await mkdir(join(f.root,'inputs/native/engineering'));await f.write('inputs/native/index.json',{schemaVersion:1,profile:f.m.profile,architecture:'amd64',subject:f.m.subject,records:{engineering:{directory:'engineering'}}});await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);
+  await cp(f.root,join(copy,'candidate'),{recursive:true});expect(await (await r3api()).verifyR3Directory(join(copy,'candidate'))).toEqual([]);expect(f.m.capabilities.observations.engineering).toHaveLength(7);
+ }finally{await f.cleanup();rmSync(copy,{recursive:true,force:true});}
+});
+
+test('R3 recorder observer closure does not force L00 optional native closure onto a portable-only subject',async()=>{
+ const f=await r3Fixture();try{
+  expect(f.m.subject.nativeClosureHash).toBeNull();f.m.identity.before.toolClosures.native=HEX;f.m.identity.after.toolClosures.native=HEX;await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);
+ }finally{await f.cleanup();}
+});

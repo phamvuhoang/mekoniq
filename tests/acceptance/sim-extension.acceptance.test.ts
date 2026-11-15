@@ -1,3 +1,5 @@
+// @ts-expect-error mandatory asynchronous R3 profile artifact readback
+import {verifyR3Directory} from '../../scripts/r3-readback.mjs';
 // @ts-expect-error mandatory asynchronous R2b artifact readback
 import {verifyR2bDirectory} from '../../scripts/r2b-readback.mjs';
 // Acceptance guard for the simulation-extension qualification: Release 1 (plan 01 W09), Release 1.1 (Webots arm, X08) and Release R2a (MuJoCo arm, web runtime, twin UI, Q01); the record names its release. It reads one recorded candidate directory (LAB_SIMEXT_EVIDENCE_DIR, written by
@@ -9,21 +11,21 @@ import {spawnSync} from 'node:child_process';
 import {existsSync,readdirSync,readFileSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 // @ts-expect-error plain ESM script without types
-import {GATE_IDS,GATE_IDS_R11,GATE_IDS_R2A,GATES_R2B,tableR2b,checkQualification} from '../../scripts/sim-extension-qualification.mjs';
+import {GATE_IDS,GATE_IDS_R11,GATE_IDS_R2A,GATES_R2B,tableR2b,tableR3,checkQualification} from '../../scripts/sim-extension-qualification.mjs';
 type Manifest=Record<string,any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 const dir=process.env.LAB_SIMEXT_EVIDENCE_DIR?resolve(process.env.LAB_SIMEXT_EVIDENCE_DIR):null;
 const read=(p:string)=>{const f=join(dir!,p);return existsSync(f)?readFileSync(f):null;};
 const SIMEXT='docs/implementation/evidence/sim-extension',IRSIM='docs/implementation/evidence/linkforge-irsim';
-const NO_CAMPAIGN=['r1.1','r2a','r2b'];
+const NO_CAMPAIGN=['r1.1','r2a','r2b','r3'];
 const manifest=():Manifest=>{const b=read('qualification.json');if(!b)throw new Error(`EVIDENCE_MISSING: ${dir}/qualification.json (record with node scripts/record-sim-extension.mjs --release r1 --out <new dir> ...)`);return JSON.parse(b.toString('utf8'));};
 
 test('a candidate directory is named and holds a qualification record',()=>{
  expect(dir,'EVIDENCE_MISSING: set LAB_SIMEXT_EVIDENCE_DIR to a recorded candidate directory').toBeTruthy();
  expect(manifest()).toMatchObject({schemaVersion:1,documentType:'sim-extension-qualification'});
- expect(['r1','r1.1','r2a','r2b']).toContain(manifest().release);
+ expect(['r1','r1.1','r2a','r2b','r3']).toContain(manifest().release);
 });
 test('the record is complete and consistent with every file beside it (fail-closed check shared with the recorder)',async()=>{
- expect(manifest().release==='r2b'?await verifyR2bDirectory(dir):checkQualification(manifest(),read)).toEqual([]);
+ expect(manifest().release==='r3'?await verifyR3Directory(dir):manifest().release==='r2b'?await verifyR2bDirectory(dir):checkQualification(manifest(),read)).toEqual([]);
 });
 test('the Webots campaign directory re-verifies from disk through the headless CLI (exit 0)',()=>{
  if(NO_CAMPAIGN.includes(manifest().release)){expect(manifest().campaign).toBeNull();return;} // R1.1 and R2a record no campaign; their engine evidence is the suites on the real engine
@@ -64,10 +66,11 @@ test('the IR-SIM record it builds on is the one in the tree (byte for byte) and 
  expect(m.irsimRecord.sourceCommit).toBe(m.identity.before.sourceCommit);
 });
 test('no gate is accepted by this record, only its own release\'s gates are named, and every not_run case has a reason (R1: ALG04 is not_run for R3, WB04 carries its limitation)',()=>{
- const m=manifest(),ids=m.release==='r2b'?Object.keys(tableR2b(m.scope).gates):m.release==='r2a'?GATE_IDS_R2A:m.release==='r1.1'?GATE_IDS_R11:GATE_IDS;
+ const m=manifest(),ids=m.release==='r3'?['G-PREP',tableR3(m.profile,m.scope).gate,'G-PHYS-PREP']:m.release==='r2b'?Object.keys(tableR2b(m.scope).gates):m.release==='r2a'?GATE_IDS_R2A:m.release==='r1.1'?GATE_IDS_R11:GATE_IDS;
  expect(Object.keys(m.gates).sort()).toEqual([...ids].sort());
  for(const g of ids)expect(m.gates[g].accepted,g).toBe(false);
  expect(m.accepted).toBe(false);expect(m.acceptedBy).toBeNull();
+ if(m.release==='r3'){for(const id of tableR3(m.profile,m.scope).requiredCases)expect(m.cases[id].status,id).toBe('tested');expect(m.capabilities.hardware).toBe('not_run');return;}
  for(const n of m.notRun as {id:string;reason:string}[])expect(n.reason,n.id).toMatch(/\S/);
  if(m.release==='r2b'){expect(Object.keys(m.gates)).toEqual(Object.keys(m.scope==='mobility'?tableR2b('mobility').gates:GATES_R2B));for(const g of ids)expect(m.gates[g].status).toBe(g==='G-HOST1'?'blocked_external':'tested');return;}
  if(m.release==='r1.1'){for(const g of ids)expect(m.gates[g].status,g).toBe('tested');return;}
