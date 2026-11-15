@@ -29,7 +29,8 @@ function validImageRecords(manifest:unknown,config:unknown,configBytes:number){
 }
 const FILE_LIMIT=64*1024*1024,JSON_LIMIT=1024*1024,TOTAL_LIMIT=256*1024*1024,REF_LIMIT=768;
 const hash=(bytes:Buffer|string)=>createHash('sha256').update(bytes).digest('hex');
-const safePath=(p:string)=>/^[A-Za-z0-9_-][A-Za-z0-9_.-]*(\/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$/.test(p)&&p.length<=240&&!p.split('/').some(x=>x==='.'||x==='..');
+// The sole hidden leaf is vendor metadata; the final lookahead requires the actual end of input.
+const safePath=(p:string)=>/^(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*\/)*(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*|\.gitattributes)(?![\s\S])/.test(p)&&p.length<=240&&!p.split('/').some(x=>x==='.'||x==='..');
 const secretPath=(p:string)=>p.split('/').some(x=>/^(\.env(?:\..*)?|id_(rsa|ed25519|ecdsa)|credentials(?:\..*)?)$|(?:private|secret|tunnel).*key|\.(?:key|pem|p12|pfx)$/i.test(x));
 const secretContent=(b:Buffer)=>/-----BEGIN (?:[A-Z0-9 ]*PRIVATE KEY|OPENSSH PRIVATE KEY)-----/.test(b.toString('utf8'));
 async function checkedRoot(root:string){const s=await lstat(root);if(!s.isDirectory()||s.isSymbolicLink())throw new Error('ROOT_NOT_DIRECTORY');return realpath(root);}

@@ -2,10 +2,10 @@
 // On a host without ROS 2/Gazebo `run` must stop at the doctor gate and write an honest not_run manifest; it never produces a pass.
 import {expect,test} from 'vitest';
 import {spawnSync} from 'node:child_process';
-import {copyFile,mkdtemp,mkdir,readFile,readdir,rm,writeFile} from 'node:fs/promises';
+import {copyFile,mkdtemp,mkdir,readFile,readdir,rm,writeFile,symlink} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
-import {join} from 'node:path';
+import {join,resolve} from 'node:path';
 const cli=(...args:string[])=>{const r=spawnSync(process.execPath,['scripts/lab-sil.mjs',...args],{encoding:'utf8',timeout:120000});return {code:r.status,out:r.stdout,err:r.stderr};};
 const sha=(s:string)=>createHash('sha256').update(s).digest('hex');
 
@@ -15,6 +15,10 @@ test.skipIf(spawnSync('python3',['--version']).status!==0)('doctor imports Pytho
   await mkdir(join(root,'scripts/native-sim'),{recursive:true});
   await copyFile('scripts/lab-sil.mjs',join(root,'scripts/lab-sil.mjs'));
   await copyFile('scripts/native-sim/profile-report.mjs',join(root,'scripts/native-sim/profile-report.mjs'));
+  await copyFile('scripts/native-sim/native-inventory.mjs',join(root,'scripts/native-sim/native-inventory.mjs'));
+  await mkdir(join(root,'packages/contracts/schemas'),{recursive:true});
+  await copyFile('packages/contracts/schemas/native-handoff-v1.schema.json',join(root,'packages/contracts/schemas/native-handoff-v1.schema.json'));
+  await symlink(resolve('node_modules'),join(root,'node_modules'),'dir'); // Actual pinned Ajv dependency; no doctor double.
   const simulation=join(root,'robotics/simulation');
   // Minimal packages isolate the doctor's import side effects from optional ROS/Python dependencies.
   for(const name of ['compiler','bridge','actors','metrics','collision','beverage_cell','cup_transfer','worlds']){

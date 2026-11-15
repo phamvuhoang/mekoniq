@@ -515,7 +515,7 @@
         "path": {
           "type": "string",
           "maxLength": 240,
-          "pattern": "^[A-Za-z0-9_-][A-Za-z0-9_.-]*(/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$"
+          "pattern": "^(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*|\\.gitattributes)(?![\\s\\S])"
         },
         "sha256": {
           "type": "string",
@@ -529,7 +529,7 @@
         "sourcePath": {
           "type": "string",
           "maxLength": 240,
-          "pattern": "^[A-Za-z0-9_-][A-Za-z0-9_.-]*(/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$"
+          "pattern": "^(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*|\\.gitattributes)(?![\\s\\S])"
         },
         "sourceCommit": {
           "type": "string",
