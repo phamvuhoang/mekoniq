@@ -1,3 +1,4 @@
+import {validateXarmMappingRecord} from './xarm-mapping';
 // Static admission for explicitly pinned preparation profiles. No workers, imports from input, or live probes.
 import {r2aDocumentBinding,validateR2aDocuments} from './native-handoff-r2a';
 import {createHash} from 'node:crypto';
@@ -76,8 +77,9 @@ function physicalTree(links:Link[],joints:Joint[],root:string){
 export function validateNativeDocuments(m:NativeHandoffV1,contents:ReadonlyMap<string,Buffer>):DocumentIssue[]{
  const issues:DocumentIssue[]=[],add=(code:string,path:string,severity:DocumentIssue['severity']='error')=>issues.push({code,path,severity});
  const read=(role:'project'|'world'|'model')=>{try{return JSON.parse(contents.get(m.refs[role][0].path)!.toString('utf8')) as unknown;}catch{throw Error('DOCUMENT_JSON_INVALID');}};
- const all=Object.values(m.refs).flat(),bySource=(path:string)=>{const refs=all.filter(r=>r.sourcePath===path);if(refs.length!==1)throw Error('DOCUMENT_DEPENDENCY_MISSING');return contents.get(refs[0]!.path)!;};
+ const all=Object.entries(m.refs).filter(([role])=>role!=='nativeMapping').flatMap(([,refs])=>refs),bySource=(path:string)=>{const refs=all.filter(r=>r.sourcePath===path);if(refs.length!==1)throw Error('DOCUMENT_DEPENDENCY_MISSING');return contents.get(refs[0]!.path)!;};
  try{
+  if(m.refs.nativeMapping&&m.profile.documents.kind!=='xarm_ros_canonical_v1')throw Error('NATIVE_MAPPING_KIND_MISMATCH');
   if(m.profile.documents.kind==='mujoco_r2a_arm_v1'){validateR2aDocuments(m,contents);return issues;}
   for(const [name,schema]of Object.entries(SCHEMAS)){const ref=m.refs.schema.find(r=>r.sourcePath===name);if(!ref)throw Error('DOCUMENT_SCHEMA_MISSING');if(!same(JSON.parse(contents.get(ref.path)!.toString()),schema))throw Error('DOCUMENT_SCHEMA_UNSUPPORTED');}
   const p=read('project'),w=read('world'),model=read('model'),kind=m.profile.documents.kind,binding=nativeDocumentBinding(kind);
@@ -117,7 +119,16 @@ export function validateNativeDocuments(m:NativeHandoffV1,contents:ReadonlyMap<s
   }
   if(kind==='xarm_ros_canonical_v1'){
    if(m.subject.executionKind!=='ros2_native'||m.profile.installation.kind!=='native_apt')throw Error('DOCUMENT_PROFILE_UNSUPPORTED');
-   add('NATIVE_MODEL_MAPPING_UNRESOLVED','/profile/documents','prerequisite');
+   if(!m.refs.nativeMapping)add('NATIVE_MODEL_MAPPING_UNRESOLVED','/profile/documents','prerequisite');
+   else {
+    const refs=m.refs.nativeMapping,urdf=refs.find(r=>r.sourcePath==='native-xarm/expanded.urdf'),mapping=refs.find(r=>r.sourcePath==='native-xarm/mapping.json');
+    if(!urdf||!mapping||refs.length!==2)throw Error('NATIVE_MAPPING_ARTIFACT_MISMATCH');
+    if(contents.get(mapping.path)!.length>1_000_000||contents.get(urdf.path)!.length>4_000_000)throw Error('NATIVE_MAPPING_TOO_LARGE');
+    const record=JSON.parse(contents.get(mapping.path)!.toString());validateXarmMappingRecord(contents.get(urdf.path)!.toString(),record,{sourceCommit:m.subject.sourceCommit,profileId:m.profile.id,architecture:m.profile.architecture,modelSha256:m.profile.modelSha256});
+    if(record.evidenceKind==='protocol_double')add('NATIVE_MAPPING_PROTOCOL_DOUBLE','/refs/nativeMapping','prerequisite');
+   }
+   const lock=m.profile.architecture==='amd64'?engineeringAmd64:engineeringArm64;
+   if(m.profile.id!==lock.id||lock.qualification!=='qualified'||!lock.packages||!lock.digests)add('NATIVE_ENGINE_PROFILE_UNRESOLVED','/profile','prerequisite');
   }else if(m.subject.executionKind!=='mujoco_image'||m.profile.installation.kind!=='oci')throw Error('DOCUMENT_PROFILE_UNSUPPORTED');
   validateWorldScene(w);const scene=w as LabWorldSceneV1,expected=(kind==='mujoco_world_v1'?world:cell) as unknown as LabWorldSceneV1;
   if(!validateComponentRevision(model).ok)throw Error('DOCUMENT_MODEL_INVALID');

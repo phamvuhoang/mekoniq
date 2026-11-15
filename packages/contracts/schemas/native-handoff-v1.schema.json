@@ -145,6 +145,15 @@
           "items": {
             "$ref": "#/definitions/HandoffRef"
           }
+        },
+        "nativeMapping": {
+          "description": "Optional generated native model readback: raw expanded URDF and bound mapping record. Never immutable runtime/tool closure members.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/definitions/HandoffRef"
+          }
         }
       }
     },

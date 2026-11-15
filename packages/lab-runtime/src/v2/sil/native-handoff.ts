@@ -75,7 +75,7 @@ export async function validateNativeHandoff(root:string,value:unknown,inventory?
    for(const file of closure.files){
     if(!file||typeof file.path!=='string'||!safePath(file.path)||names.has(file.path)||!Number.isSafeInteger(file.bytes)||file.bytes<0||typeof file.sha256!=='string'||!/^[a-f0-9]{64}$/.test(file.sha256)){add('CLOSURE_ENTRY_INVALID','/refs/runtimeManifest');continue;}
     names.add(file.path);
-    if(!refs.some(({role,ref})=>(role==='schema'?'packages/contracts/schemas/'+ref.sourcePath:ref.sourcePath)===file.path&&ref.sha256===file.sha256&&ref.bytes===file.bytes))add('CLOSURE_FILE_MISSING',`/refs/${file.path}`);
+    if(!refs.some(({role,ref})=>role!=='nativeMapping'&&(role==='schema'?'packages/contracts/schemas/'+ref.sourcePath:ref.sourcePath)===file.path&&ref.sha256===file.sha256&&ref.bytes===file.bytes))add('CLOSURE_FILE_MISSING',`/refs/${file.path}`);
    }
   }
   if(m.refs.runtime[0].sha256!==subject.runtimeArtifactSha256)add('RUNTIME_IDENTITY_MISMATCH','/refs/runtime');
@@ -94,7 +94,7 @@ export async function validateNativeHandoff(root:string,value:unknown,inventory?
   const native=runtime.nativeTools;
   if(subject.nativeClosureHash!==null){
    if(native?.version!==1||native?.digest!==subject.nativeClosureHash||!Array.isArray(native?.files)||hash(JSON.stringify(native.files))!==subject.nativeClosureHash)add('NATIVE_CLOSURE_IDENTITY_MISMATCH','/subject/nativeClosureHash');
-   else for(const file of native.files)if(!refs.some(({role,ref})=>(role==='schema'?'packages/contracts/schemas/'+ref.sourcePath:ref.sourcePath)===file.path&&ref.sha256===file.sha256&&ref.bytes===file.bytes))add('NATIVE_CLOSURE_FILE_MISSING',`/refs/${file.path}`);
+   else for(const file of native.files)if(!refs.some(({role,ref})=>role!=='nativeMapping'&&(role==='schema'?'packages/contracts/schemas/'+ref.sourcePath:ref.sourcePath)===file.path&&ref.sha256===file.sha256&&ref.bytes===file.bytes))add('NATIVE_CLOSURE_FILE_MISSING',`/refs/${file.path}`);
   }
   for(const ref of [...m.refs.engine,...m.refs.tool])if(![...closure?.files??[],...subject.nativeClosureHash!==null?native?.files??[]:[]].some((f:HandoffRef)=>f.path===ref.sourcePath&&f.sha256===ref.sha256&&f.bytes===ref.bytes))add('TOOL_IDENTITY_MISMATCH',`/refs/${ref.path}`);
  }catch{add('REF_METADATA_INVALID','/refs');}

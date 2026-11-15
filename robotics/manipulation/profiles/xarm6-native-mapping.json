@@ -1,0 +1,682 @@
+{
+  "schemaVersion": 1,
+  "scope": "arm_motion_kinematics_only",
+  "sourceModel": "xarm6-g2-v1",
+  "targetProfile": "xarm6-jazzy-sim-v1",
+  "targetBase": "link_base",
+  "targetTcp": "link_tcp",
+  "targetPlacement": "standalone_world_identity_not_source_cell_placement",
+  "nativeExecutionObserved": false,
+  "joints": [
+    {
+      "name": "joint1",
+      "type": "revolute",
+      "parent": "link_base",
+      "child": "link1",
+      "xyz": [
+        0,
+        0,
+        0.267
+      ],
+      "rpy": [
+        0.0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "limits": {
+        "effort": 179.4445,
+        "lower": -6.28318530718,
+        "upper": 6.28318530718,
+        "velocity": 3.14
+      }
+    },
+    {
+      "name": "joint2",
+      "type": "revolute",
+      "parent": "link1",
+      "child": "link2",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        -1.5707999999996645,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "limits": {
+        "effort": 179.4445,
+        "lower": -2.059,
+        "upper": 2.0944,
+        "velocity": 3.14
+      }
+    },
+    {
+      "name": "joint3",
+      "type": "revolute",
+      "parent": "link2",
+      "child": "link3",
+      "xyz": [
+        0.0535,
+        -0.2845,
+        0
+      ],
+      "rpy": [
+        0.0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "limits": {
+        "effort": 92,
+        "lower": -3.927,
+        "upper": 0.19198,
+        "velocity": 3.14
+      }
+    },
+    {
+      "name": "joint4",
+      "type": "revolute",
+      "parent": "link3",
+      "child": "link4",
+      "xyz": [
+        0.0775,
+        0.3425,
+        0
+      ],
+      "rpy": [
+        -1.5707999999996645,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "limits": {
+        "effort": 81.558,
+        "lower": -6.28318530718,
+        "upper": 6.28318530718,
+        "velocity": 3.14
+      }
+    },
+    {
+      "name": "joint5",
+      "type": "revolute",
+      "parent": "link4",
+      "child": "link5",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        1.5707999999996645,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "limits": {
+        "effort": 30.6,
+        "lower": -1.69297,
+        "upper": 3.14159265359,
+        "velocity": 3.14
+      }
+    },
+    {
+      "name": "joint6",
+      "type": "revolute",
+      "parent": "link5",
+      "child": "link6",
+      "xyz": [
+        0.076,
+        0.097,
+        0
+      ],
+      "rpy": [
+        -1.5707999999996645,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "limits": {
+        "effort": 30.6,
+        "lower": -6.28318530718,
+        "upper": 6.28318530718,
+        "velocity": 3.14
+      }
+    },
+    {
+      "name": "gripper_fix",
+      "type": "fixed",
+      "parent": "link6",
+      "child": "xarm_gripper_base_link",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0.0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "drive_joint",
+      "type": "revolute",
+      "parent": "xarm_gripper_base_link",
+      "child": "left_outer_knuckle",
+      "xyz": [
+        0,
+        0.035,
+        0.059098
+      ],
+      "rpy": [
+        0.0,
+        0,
+        0
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "limits": {
+        "effort": 50,
+        "lower": 0,
+        "upper": 0.85,
+        "velocity": 2
+      }
+    },
+    {
+      "name": "left_finger_joint",
+      "type": "revolute",
+      "parent": "left_outer_knuckle",
+      "child": "left_finger",
+      "xyz": [
+        0,
+        0.035465,
+        0.042039
+      ],
+      "rpy": [
+        0.0,
+        0,
+        0
+      ],
+      "axis": [
+        -1,
+        0,
+        0
+      ],
+      "limits": {
+        "effort": 50,
+        "lower": 0,
+        "upper": 0.85,
+        "velocity": 2
+      }
+    },
+    {
+      "name": "left_inner_knuckle_joint",
+      "type": "revolute",
+      "parent": "xarm_gripper_base_link",
+      "child": "left_inner_knuckle",
+      "xyz": [
+        0,
+        0.02,
+        0.074098
+      ],
+      "rpy": [
+        0.0,
+        0,
+        0
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "limits": {
+        "effort": 50,
+        "lower": 0,
+        "upper": 0.85,
+        "velocity": 2
+      }
+    },
+    {
+      "name": "right_outer_knuckle_joint",
+      "type": "revolute",
+      "parent": "xarm_gripper_base_link",
+      "child": "right_outer_knuckle",
+      "xyz": [
+        0,
+        -0.035,
+        0.059098
+      ],
+      "rpy": [
+        0.0,
+        0,
+        0
+      ],
+      "axis": [
+        -1,
+        0,
+        0
+      ],
+      "limits": {
+        "effort": 50,
+        "lower": 0,
+        "upper": 0.85,
+        "velocity": 2
+      }
+    },
+    {
+      "name": "right_finger_joint",
+      "type": "revolute",
+      "parent": "right_outer_knuckle",
+      "child": "right_finger",
+      "xyz": [
+        0,
+        -0.035465,
+        0.042039
+      ],
+      "rpy": [
+        0.0,
+        0,
+        0
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "limits": {
+        "effort": 50,
+        "lower": 0,
+        "upper": 0.85,
+        "velocity": 2
+      }
+    },
+    {
+      "name": "right_inner_knuckle_joint",
+      "type": "revolute",
+      "parent": "xarm_gripper_base_link",
+      "child": "right_inner_knuckle",
+      "xyz": [
+        0,
+        -0.02,
+        0.074098
+      ],
+      "rpy": [
+        0.0,
+        0,
+        0
+      ],
+      "axis": [
+        -1,
+        0,
+        0
+      ],
+      "limits": {
+        "effort": 50,
+        "lower": 0,
+        "upper": 0.85,
+        "velocity": 2
+      }
+    },
+    {
+      "name": "joint_tcp",
+      "type": "fixed",
+      "parent": "xarm_gripper_base_link",
+      "child": "link_tcp",
+      "xyz": [
+        0,
+        0,
+        0.172
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "sourceModelSha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+  "visualMeshes": [
+    {
+      "link": "link_base",
+      "uri": "package://xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28"
+    },
+    {
+      "link": "link1",
+      "uri": "package://xarm_description/meshes/xarm6_1305/visual/link1.stl",
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9"
+    },
+    {
+      "link": "link2",
+      "uri": "package://xarm_description/meshes/xarm6_1305/visual/link2.stl",
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82"
+    },
+    {
+      "link": "link3",
+      "uri": "package://xarm_description/meshes/xarm6_1305/visual/link3.stl",
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81"
+    },
+    {
+      "link": "link4",
+      "uri": "package://xarm_description/meshes/xarm6_1305/visual/link4.stl",
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943"
+    },
+    {
+      "link": "link5",
+      "uri": "package://xarm_description/meshes/xarm6_1305/visual/link5.stl",
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771"
+    },
+    {
+      "link": "link6",
+      "uri": "package://xarm_description/meshes/xarm6_1305/visual/link6.stl",
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f"
+    },
+    {
+      "link": "xarm_gripper_base_link",
+      "uri": "package://xarm_description/meshes/gripper/xarm/base_link_g2.dae",
+      "sha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575"
+    },
+    {
+      "link": "left_outer_knuckle",
+      "uri": "package://xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
+      "sha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b"
+    },
+    {
+      "link": "left_finger",
+      "uri": "package://xarm_description/meshes/gripper/xarm/left_finger_g2.dae",
+      "sha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b"
+    },
+    {
+      "link": "left_inner_knuckle",
+      "uri": "package://xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
+      "sha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86"
+    },
+    {
+      "link": "right_outer_knuckle",
+      "uri": "package://xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
+      "sha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55"
+    },
+    {
+      "link": "right_finger",
+      "uri": "package://xarm_description/meshes/gripper/xarm/right_finger_g2.dae",
+      "sha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36"
+    },
+    {
+      "link": "right_inner_knuckle",
+      "uri": "package://xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
+      "sha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3"
+    }
+  ],
+  "syntheticSimModelSelector": "XI13050520BB00",
+  "nominalInertials": [
+    {
+      "link": "link_base",
+      "massKg": 2.7,
+      "comM": [
+        0,
+        0,
+        0.09103
+      ],
+      "inertiaKgM2": [
+        0.00494875,
+        -3.5e-06,
+        1.25e-05,
+        0.00494174,
+        1.67e-06,
+        0.002219
+      ]
+    },
+    {
+      "link": "link1",
+      "massKg": 2.3814,
+      "comM": [
+        0.00022,
+        0.02951,
+        -0.0124
+      ],
+      "inertiaKgM2": [
+        0.0058562,
+        -1.79e-05,
+        3.55e-06,
+        0.0050316,
+        -0.000888336,
+        0.003536652
+      ]
+    },
+    {
+      "link": "link2",
+      "massKg": 2.2675,
+      "comM": [
+        0.03881,
+        -0.22783,
+        0.03496
+      ],
+      "inertiaKgM2": [
+        0.028315776,
+        0.005,
+        0.00066546,
+        0.0058,
+        -0.0045741,
+        0.0273447
+      ]
+    },
+    {
+      "link": "link3",
+      "massKg": 1.875,
+      "comM": [
+        0.07041,
+        0.11631,
+        0.0107
+      ],
+      "inertiaKgM2": [
+        0.0063483,
+        -0.0015397,
+        0.00096858,
+        0.00379758,
+        0.00186567,
+        0.00595768
+      ]
+    },
+    {
+      "link": "link4",
+      "massKg": 1.3192,
+      "comM": [
+        -0.00018,
+        0.01798,
+        -0.02291
+      ],
+      "inertiaKgM2": [
+        0.004896,
+        -6.925e-06,
+        -1.418e-05,
+        0.00445694,
+        -0.00023186,
+        0.00134332
+      ]
+    },
+    {
+      "link": "link5",
+      "massKg": 1.33854,
+      "comM": [
+        0.0651,
+        0.03096,
+        0.00315
+      ],
+      "inertiaKgM2": [
+        0.00146378,
+        -0.000450624,
+        0.000284306,
+        0.00184192,
+        0.000130866,
+        0.002333524
+      ]
+    },
+    {
+      "link": "link6",
+      "massKg": 0.17,
+      "comM": [
+        0,
+        -0.00677,
+        -0.01098
+      ],
+      "inertiaKgM2": [
+        9.3e-05,
+        0,
+        0,
+        5.87e-05,
+        -3.6e-06,
+        0.000132
+      ]
+    },
+    {
+      "link": "xarm_gripper_base_link",
+      "massKg": 0.54156,
+      "comM": [
+        -0.00065489,
+        -0.0018497,
+        0.048028
+      ],
+      "inertiaKgM2": [
+        0.00047106,
+        3.9292e-07,
+        2.6537e-06,
+        0.00033072,
+        -1.0975e-05,
+        0.00025642
+      ]
+    },
+    {
+      "link": "left_outer_knuckle",
+      "massKg": 0.033618,
+      "comM": [
+        2.9948e-14,
+        0.021559,
+        0.015181
+      ],
+      "inertiaKgM2": [
+        1.9111e-05,
+        -1.8803e-17,
+        -1.1002e-17,
+        6.6256e-06,
+        -7.3008e-06,
+        1.3185e-05
+      ]
+    },
+    {
+      "link": "left_finger",
+      "massKg": 0.048304,
+      "comM": [
+        -2.4536e-14,
+        -0.016413,
+        0.029258
+      ],
+      "inertiaKgM2": [
+        1.7493e-05,
+        -4.2156e-19,
+        6.9164e-18,
+        1.7225e-05,
+        4.6433e-06,
+        5.1466e-06
+      ]
+    },
+    {
+      "link": "left_inner_knuckle",
+      "massKg": 0.0230125781257,
+      "comM": [
+        1.86600784688e-06,
+        0.0220467847634,
+        0.0261334672831
+      ],
+      "inertiaKgM2": [
+        6.09490024272e-06,
+        6.0665132616e-11,
+        7.19102670501e-11,
+        6.01955084375e-06,
+        -2.75316812992e-06,
+        5.0786200448e-06
+      ]
+    },
+    {
+      "link": "right_outer_knuckle",
+      "massKg": 0.033618,
+      "comM": [
+        -3.1669e-14,
+        -0.021559,
+        0.015181
+      ],
+      "inertiaKgM2": [
+        1.9111e-05,
+        -1.8789e-17,
+        1.0986e-17,
+        6.6256e-06,
+        7.3008e-06,
+        1.3185e-05
+      ]
+    },
+    {
+      "link": "right_finger",
+      "massKg": 0.048304,
+      "comM": [
+        2.5618e-14,
+        0.016413,
+        0.029258
+      ],
+      "inertiaKgM2": [
+        1.7493e-05,
+        -5.0014e-19,
+        -7.5079e-18,
+        1.7225e-05,
+        -4.6435e-06,
+        5.1466e-06
+      ]
+    },
+    {
+      "link": "right_inner_knuckle",
+      "massKg": 0.023013,
+      "comM": [
+        1.866e-06,
+        -0.022047,
+        0.026133
+      ],
+      "inertiaKgM2": [
+        6.0949e-06,
+        -6.0665e-11,
+        7.191e-11,
+        6.0197e-06,
+        2.7531e-06,
+        5.0784e-06
+      ]
+    }
+  ]
+}

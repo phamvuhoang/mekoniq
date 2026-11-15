@@ -1,0 +1,66 @@
+# xArm native simulation preparation
+
+This provider prepares arm motion on Ubuntu 24.04 / ROS 2 Jazzy. **Native X1, X2 and X3 have not run.** Installed apt/plugin/runtime provenance is unresolved. It does not enable `engineering-contact-v1`, a physical xArm provider, or any Lab-to-hardware route. Source owns commands and their durable receipts. Dynamics remain `not_calibrated`; automatic records always have `accepted:false`.
+
+## Fixed profiles and source identity
+
+`robotics/manipulation/profiles/xarm6-jazzy-sim.json` is server configuration. `native-vendor.lock.json` pins xarm_ros2 Jazzy `d837f2e17f7f36043103b367fca3af8172626245` and SDK submodule `f36794320a285c0b4bf1cd8ef181cbff6e3b794a`. The inspected source bytes, Git object identities, SHA-256 digests, BSD license and NOTICE are retained under `vendor-source/`. These are inspection inputs; installed packages are not loaded from those snapshots. The old Humble R2a `vendor.lock.json` is unchanged. Its 21 imported source files match the Jazzy candidate byte for byte; that does not establish expanded URDF or controller parity.
+
+| Item | Requested R2a model | Explicit native target |
+| --- | --- | --- |
+| Model | xarm6-g2-v1, 1305 nominal geometry | xArm 6, `model1300:=false`, fixed synthetic selector `XI13050520BB00`, `limited:=false` |
+| Joints | J1…J6, radians | joint1…joint6, positive signs, zero offsets |
+| Base | base, placed in the Source cell | link_base, standalone native world; no assertion of cell placement parity |
+| Tool | tcp, 0.172 m from link6 | gripper_fix + joint_tcp → link_tcp; `add_gripper:=true`, `gripper_version:=G2` |
+| Geometry | manufacturer meshes, assumed dynamics | explicit 1305/G2 mesh URIs and installed source SHA-256; contact behavior unqualified |
+| X1 | no native execution | UFRobotFakeSystemHardware, ros2_control FollowJointTrajectory, `ros2_fake_system` |
+| X2 | no native execution | `gz_type:=gz`, `gz_ros2_control/GazeboSimSystem`, Harmonic, `gazebo_actual` |
+| Tests | portable protocol doubles | always `protocol_double`; never native motion/contact evidence |
+
+The fixed `syntheticSimModelSelector` is passed as the vendor `robot_sn` launch argument only to select a simulation model. It is **not a hardware serial, robot identity or commissioning datum**. The pinned `common.link.xacro` decoder selects model 6/1305, dateCode 2005, HD B, mass type 11 and HT_BR2 inertia. `model1300:=false` alone would select model number -1. Older/wrong selectors and substituted expanded inertia are negative test cases; browser substitution is impossible.
+
+The upstream controller YAML specifies a 150 Hz manager, 25 Hz state publisher and 10 Hz action monitor; the Gazebo launch builder overrides the manager to 1000 Hz. None is a qualified project timing bound. Observations retain controller/provider clock timestamps; the observer polls every 20 ms without inventing duplicate samples. The prepared freshness bound is 500 ms, subject to actual-host qualification. X1 uses the ROS system clock, X2 the Gazebo clock. No claim of MuJoCo fixed-step parity is made.
+
+## Run the prepared path
+
+The operator must provision and qualify the matching **native Linux** architecture/profile first, using the L00/L02 installation and inventory process. Do not install or run a container on macOS as substitute evidence. No provisioning is performed by these commands. Exact apt sources/packages, executable/plugin digests, overlay manifests and runtime environment remain in the engineering profile locks. Do not set qualification merely because a source checkout matches.
+
+Install the pinned vendor source at `/opt/mekoniq/xarm_ros2` with its exact submodule. Use the fixed isolated colcon install root `/opt/mekoniq/xarm_ws/install`; the description share is `/opt/mekoniq/xarm_ws/install/xarm_description/share/xarm_description`. The native checker verifies `ros2 pkg prefix xarm_description` and installed description hashes; symlink installs are not accepted. FakeSystem uses package mesh URIs, while the pinned Gazebo macro emits file URIs rooted at that exact description share. Different roots require a separately reviewed profile, not automatic path normalization. The native preflight checks that checkout, every retained upstream file and all 21 imported description bytes. Its installed overlay must also match the engineering environment's pinned overlay inventory. Source must be clean. ROS Python is the distro interpreter, not a portable MuJoCo venv.
+
+From a clean Source worktree, with Node 24.22.2 on PATH and the qualified ROS environment sourced:
+
+```sh
+perl -e 'alarm 250; exec @ARGV' node scripts/lab-xarm.mjs --mode X1 --environment-profile engineering-amd64 --case nominal --out /tmp/xarm-X1-nominal-unique
+perl -e 'alarm 250; exec @ARGV' node scripts/lab-xarm.mjs --mode X2 --environment-profile engineering-amd64 --case nominal --out /tmp/xarm-X2-nominal-unique
+```
+
+Repeat with `--case cancel` and `--case restart`, each in a new directory. `restart` first requires an observed canceled terminal result, then proves reopening the same durable run is refused. It never restarts a controller to continue an old run. Actual external controller-restart and lost-result qualification require an assigned Linux host and operator fault observation; portable tests cover the protocol refusals, not those native experiments. Use `engineering-arm64` only on its matching qualified native host. There is no browser input for IP, action, joint map, trajectory, shell, launch options or gripper mode.
+
+The entrypoint reaches `createXarmSimProvider(serverConfig)` and its typed `CellAdapter`. The sole approved program, `motion-probe`, reaches [0,0,-1,0,0,0] rad over ten seconds, then moves joint1 by 0.01 rad over one second. Motion is constrained to finite points, position limits, at most 60 seconds, and 0.25 rad/s segment speed. MoveIt is loaded by the fixed vendor launch, but this probe uses direct FollowJointTrajectory; **it is not a collision-planned production trajectory**. Controller joint/interface parameters, SRDF collision exclusions and planner parameters are read back and retained before motion. These remain simulation-only trajectories.
+
+One provider run has one command in flight. Source persists intent before transport and the worker persists intent before the ROS action. Repeated command IDs reuse their original receipt; conflicts are refused. Unknown ACK/result/cancel, expired actual feedback, stopped/reset clock, changed ROS controller publisher identity or epoch/boot mismatch latch the run unknown. Completion needs a successful action result and fresh actual joints observed after dispatch at the final target. A cancel ACK is not a stopped observation. Same-directory restart is refused, including after interrupted startup. New runs require external reconciliation; no automatic resend or continuation exists.
+
+The worker owns an exclusive ROS domain lease, rejects a nonempty graph, uses a private Gazebo partition, and launches only fixed simulation commands. It closes only its children; the Node supervisor owns the worker process group. Host admission failures occur before ROS imports or native process creation. Exit 2 is `not_run`/`blocked_external`; exit 1 is a failed executed case; exit 0 requires the selected motion result. Contact stays separately `not_run`.
+
+## Native mapping artifact producer and L00 reader
+
+After launch, `native_xarm.ros.RosPort.readback()` obtains `robot_description` from the actual robot_state_publisher parameter service and controller/MoveIt parameters from their fixed services. `native_xarm.mapping.produce_mapping()` validates and writes **expanded.urdf** and **mapping.json**, without overwriting either. The fixed target projection is `profiles/xarm6-native-mapping.json`. It includes all arm/gripper joint origins/axes/limits, 1305/G2 visual mesh URIs, nominal masses/COM/inertia tensors, explicit Source/native aliases, the fixed synthetic selector and tool offset. The producer checks that projection against raw expansion; it does not manufacture a native URDF from R2a.
+
+L00's additive optional `refs.nativeMapping` contains exactly those two generated artifacts, with source paths `native-xarm/expanded.urdf` and `native-xarm/mapping.json`. Generic handoff checks bind their bytes, lengths, source commit and safe paths. The independent TypeScript XML reader rechecks raw joint/tool/mesh/nominal-inertia/plugin semantics and binds the mapping metadata to the subject commit/profile/model hash, architecture, target profile, vendor pin and evidence kind. DTD/entity declarations, malformed XML, duplicate joints/children/links and unexpected simulation plugins fail closed. This scope is nominal arm/tool model mapping, including static inertia identity; it does not calibrate physical dynamics or certify expanded collision geometry, controller behavior or cell world placement. Native records also include controller joint/interface readback and raw SRDF; these are required separately from protocol-double mapping records.
+
+A protocol-double artifact adds `NATIVE_MAPPING_PROTOCOL_DOUBLE`. Missing artifacts retain `NATIVE_MODEL_MAPPING_UNRESOLVED`; malformed or cross-profile artifacts are errors. Passing static mapping never authenticates a host. The two generated artifacts cannot satisfy any missing immutable portable/native-tool closure entry and cannot be used as canonical model/tool input. Host/package/execution prerequisites remain separate. Existing manifests without the optional role remain readable with their original missing-mapping prerequisite.
+
+## Evidence and contact gate
+
+Each CLI run writes a source identity snapshot, separate motion/contact outcomes, inventory, command and outcome receipts, observations, raw URDF/mapping and controller readback, where those phases actually ran. The worker records a rosbag2 SQLite directory. After stopping owned children, the worker uses the L02 read-only SQLite backup helper to retain a separate `verified-bag/`, checks copied message contents and SQLite integrity, and derives `bag-coverage.json` from the copy. Original `raw-bag/` files remain untouched and are not artifact references. Missing/corrupt copy evidence blocks a successful probe close. Native qualification still needs independent replay and continuous-coverage assessment. The current CLI records preparation/probe outcomes; it does not claim an effective Git graph audit or independent qualification checker. Run L01's audited public checker process for any later qualification claim.
+
+X3 requires ten distinct grip/release trials with separate support and receiver observations, raw-observation SHA-256, mapping SHA-256 and collision-exclusion provenance. `assess_contact()` checks this structural contract but always retains the current `G2_MIMIC_CONTACT_NOT_OBSERVED` blocker. The five upstream mimic declarations and README concern are source evidence of a risk, **not a demonstrated native unsupported result**. No G2 contact spike ran here. Do not replace G2 with a different gripper under this profile. Resolve installed Harmonic mimic/plugin behavior, actual collision exclusions and the ten-trial native evidence before DEP-XARM-03 can pass. Motion gates DEP-XARM-01/02/SEC-01 never imply contact readiness.
+
+Portable checks:
+
+```sh
+perl -e 'alarm 300; exec @ARGV' pnpm exec vitest run tests/integration/xarm-native-contract.test.ts tests/integration/xarm6-rtb.test.ts
+PYTHONDONTWRITEBYTECODE=1 PYTEST_ADDOPTS='-p no:cacheprovider' PYTHONPATH=robotics/manipulation:robotics/simulation python3 -m pytest robotics/manipulation/tests/test_native_xarm.py -q
+```
+
+These tests are protocol/validator coverage. The nominal URDF under `tests/fixtures` is explicitly a protocol fixture, not a native expansion. RTB absence is a skipped/not_run cross-check. The prepared ROS callbacks use the Jazzy [controller state reference/feedback fields](https://raw.githubusercontent.com/ros-controls/control_msgs/jazzy/control_msgs/msg/JointTrajectoryControllerState.msg) and [FollowJointTrajectory result contract](https://raw.githubusercontent.com/ros-controls/control_msgs/jazzy/control_msgs/action/FollowJointTrajectory.action); source API inspection is not installed-version qualification.

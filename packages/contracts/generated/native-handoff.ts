@@ -89,6 +89,13 @@ export interface NativeHandoffV1 {
      * @maxItems 1
      */
     archive?: HandoffRef[];
+    /**
+     * Optional generated native model readback: raw expanded URDF and bound mapping record. Never immutable runtime/tool closure members.
+     *
+     * @minItems 2
+     * @maxItems 2
+     */
+    nativeMapping?: HandoffRef[];
   };
   profile: HandoffProfile;
   frames: {

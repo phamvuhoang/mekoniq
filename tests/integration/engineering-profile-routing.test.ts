@@ -56,14 +56,14 @@ test('legacy sets, scenarios and campaign rows keep their requirements', async (
   expect((await admitScenario('BV01', { mode: 'simulation', backendSetId: 'engineering-rigid-v1', available: ['gazebo_nav2'], catalog })).status).toBe('unavailable');
 });
 
-test('provider roles are server data: engineering sets are registered but the unimplemented providers are not installed', () => {
+test('provider roles are server data: engineering sets are registered but unqualified or unimplemented providers are not installed', () => {
   expect(catalog.sets['engineering-contact-v1']!.providers).toEqual({ amr: 'gazebo_nav2', arm: 'moveit_gazebo_arm', coffee: 'engineering_coffee_process' });
   expect(catalog.sets['coffee-simulation']!.providers).toEqual({ amr: 'gazebo_nav2', arm: 'linuxcnc_sim', coffee: 'coffee_io_sim' });
   expect(catalog.sets['engineering-rigid-v1']!.scenarioIds).toEqual(['FD01']);
   for (const id of ['moveit_gazebo_arm', 'engineering_coffee_process']) {
     const b = catalog.backends.find((x) => x.id === id)!;
     expect(b).toMatchObject({ installed: false, modes: ['simulation'] });
-    expect(b.reason).toMatch(/not implemented/i);
+    expect(b.reason).toMatch(id==='moveit_gazebo_arm'?/XARM_NATIVE_NOT_QUALIFIED/:/not implemented/i);
   }
   expect(catalog.sets['simulation-default']!.backends).toEqual(LEGACY);
 });

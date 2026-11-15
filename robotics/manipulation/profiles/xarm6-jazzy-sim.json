@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "id": "xarm6-jazzy-sim-v1",
+  "modelId": "xarm6-g2-v1",
+  "requestedProfile": "xarm6-g2-v1",
+  "target": {
+    "robot_type": "xarm",
+    "dof": 6,
+    "model1300": false,
+    "gripper_version": "G2",
+    "add_gripper": true,
+    "limited": false
+  },
+  "vendorCommit": "d837f2e17f7f36043103b367fca3af8172626245",
+  "installation": "native_apt",
+  "qualification": "not_run",
+  "dynamics": "not_calibrated",
+  "jointMap": [
+    {
+      "source": "J1",
+      "native": "joint1",
+      "sign": 1,
+      "offsetRad": 0,
+      "limits": {
+        "effort": 179.4445,
+        "lower": -6.28318530718,
+        "upper": 6.28318530718,
+        "velocity": 3.14
+      }
+    },
+    {
+      "source": "J2",
+      "native": "joint2",
+      "sign": 1,
+      "offsetRad": 0,
+      "limits": {
+        "effort": 179.4445,
+        "lower": -2.059,
+        "upper": 2.0944,
+        "velocity": 3.14
+      }
+    },
+    {
+      "source": "J3",
+      "native": "joint3",
+      "sign": 1,
+      "offsetRad": 0,
+      "limits": {
+        "effort": 92,
+        "lower": -3.927,
+        "upper": 0.19198,
+        "velocity": 3.14
+      }
+    },
+    {
+      "source": "J4",
+      "native": "joint4",
+      "sign": 1,
+      "offsetRad": 0,
+      "limits": {
+        "effort": 81.558,
+        "lower": -6.28318530718,
+        "upper": 6.28318530718,
+        "velocity": 3.14
+      }
+    },
+    {
+      "source": "J5",
+      "native": "joint5",
+      "sign": 1,
+      "offsetRad": 0,
+      "limits": {
+        "effort": 30.6,
+        "lower": -1.69297,
+        "upper": 3.14159265359,
+        "velocity": 3.14
+      }
+    },
+    {
+      "source": "J6",
+      "native": "joint6",
+      "sign": 1,
+      "offsetRad": 0,
+      "limits": {
+        "effort": 30.6,
+        "lower": -6.28318530718,
+        "upper": 6.28318530718,
+        "velocity": 3.14
+      }
+    }
+  ],
+  "frames": {
+    "sourceBase": "base",
+    "nativeBase": "link_base",
+    "sourceTcp": "tcp",
+    "nativeTcp": "link_tcp",
+    "flange": "link6",
+    "tcpInFlangeM": [
+      0,
+      0,
+      0.172
+    ]
+  },
+  "modes": {
+    "X1": {
+      "evidenceKind": "ros2_fake_system",
+      "launch": "xarm6_moveit_fake.launch.py",
+      "plugin": "uf_robot_hardware/UFRobotFakeSystemHardware",
+      "clock": "ros_system"
+    },
+    "X2": {
+      "evidenceKind": "gazebo_actual",
+      "launch": "xarm6_moveit_gazebo.launch.py",
+      "plugin": "gz_ros2_control/GazeboSimSystem",
+      "clock": "gazebo_sim"
+    }
+  },
+  "action": "/xarm6_traj_controller/follow_joint_trajectory",
+  "jointTopic": "/joint_states",
+  "trajectory": {
+    "maxPoints": 64,
+    "maxDurationS": 60,
+    "maxVelocityRadS": 0.25,
+    "goalToleranceRad": 0.005
+  },
+  "freshnessMs": 500,
+  "ackTimeoutMs": 5000,
+  "resultGraceMs": 5000,
+  "cancelTimeoutMs": 3000,
+  "contact": {
+    "status": "not_run",
+    "trialsRequired": 10,
+    "reason": "G2_MIMIC_CONTACT_NOT_OBSERVED",
+    "provenance": [
+      "xarm_description/urdf/gripper/xarm_gripper_macro.xacro",
+      "xarm_description/urdf/gripper/xarm_gripper.gazebo.xacro"
+    ],
+    "note": "Five mimic declarations exist; installed Harmonic support has not been tested. No claim of demonstrated unsupported behavior."
+  },
+  "programs": {
+    "motion-probe": [
+      {
+        "positions": [
+          0,
+          0,
+          -1,
+          0,
+          0,
+          0
+        ],
+        "timeS": 10
+      },
+      {
+        "positions": [
+          0.01,
+          0,
+          -1,
+          0,
+          0,
+          0
+        ],
+        "timeS": 11
+      }
+    ]
+  },
+  "planner": {
+    "execution": "direct_follow_joint_trajectory",
+    "moveitLoaded": true,
+    "plannedCollisionAvoidance": false,
+    "collisionExclusions": "upstream_srdf_requires_readback"
+  },
+  "nativeMapping": "not_run",
+  "syntheticSimModelSelector": "XI13050520BB00",
+  "selectorPurpose": "Simulation-only upstream model decoder input. Not a hardware serial or commissioning identity.",
+  "descriptionShare": "/opt/mekoniq/xarm_ws/install/xarm_description/share/xarm_description"
+}

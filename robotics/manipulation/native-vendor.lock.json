@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/xArm-Developer/xarm_ros2",
+  "branch": "jazzy",
+  "commit": "d837f2e17f7f36043103b367fca3af8172626245",
+  "tree": "716c810e5cf34dcef317454dd601bcb6826bea9b",
+  "submodules": [
+    {
+      "path": "xarm_sdk/cxx",
+      "url": "https://github.com/xArm-Developer/xArm-CPLUS-SDK.git",
+      "commit": "f36794320a285c0b4bf1cd8ef181cbff6e3b794a"
+    }
+  ],
+  "license": "BSD-3-Clause",
+  "files": [
+    {
+      "path": "LICENSE",
+      "contentSha256": "685e81e0cd30124e24e834ea2bf39bfead4efc9907d021bc9d1ae0f2dcea1431",
+      "gitBlobSha": "a9c5e843b5789f142cf6f23cfd9c516cc5b53290",
+      "url": "https://github.com/xArm-Developer/xarm_ros2/blob/d837f2e17f7f36043103b367fca3af8172626245/LICENSE"
+    },
+    {
+      "path": "xarm_moveit_config/launch/_robot_moveit_gazebo.launch.py",
+      "contentSha256": "8f39534351f7958ab122803d4e6625d43c4fde5634feac2f0ec6b559239bc464",
+      "gitBlobSha": "71aff65c45b4ec69c0aac0afc4b5677e14ece59a",
+      "url": "https://github.com/xArm-Developer/xarm_ros2/blob/d837f2e17f7f36043103b367fca3af8172626245/xarm_moveit_config/launch/_robot_moveit_gazebo.launch.py"
+    },
+    {
+      "path": "xarm_gazebo/launch/_robot_beside_table_gazebo.launch.py",
+      "contentSha256": "de1044e210c277a0a34043198178642967aeed6f5372deeb5344be82a84f9b63",
+      "gitBlobSha": "9f179819012d72ded39d2528aba6927a0997ca17",
+      "url": "https://github.com/xArm-Developer/xarm_ros2/blob/d837f2e17f7f36043103b367fca3af8172626245/xarm_gazebo/launch/_robot_beside_table_gazebo.launch.py"
+    },
+    {
+      "path": "xarm_description/urdf/gripper/xarm_gripper.ros2_control.xacro",
+      "contentSha256": "b10d2c9ba475f0eefa584c3e926b8856e3c979941d3a940450d0d6b3fac46aa2",
+      "gitBlobSha": "e0238d0422444bcaaf72a053b2624762fff7bc39",
+      "url": "https://github.com/xArm-Developer/xarm_ros2/blob/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/gripper/xarm_gripper.ros2_control.xacro"
+    },
+    {
+      "path": "xarm_description/urdf/gripper/xarm_gripper.gazebo.xacro",
+      "contentSha256": "3a8c2d1d56cf39826c6d642b62e9d2a54a1092ee4181c6bf2733a5882cd611db",
+      "gitBlobSha": "24219cb97f12855ea3ed433711affe1ceac2e317",
+      "url": "https://github.com/xArm-Developer/xarm_ros2/blob/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/gripper/xarm_gripper.gazebo.xacro"
+    },
+    {
+      "path": "xarm_moveit_config/launch/xarm6_moveit_gazebo.launch.py",
+      "contentSha256": "0c762d7fd30228ad2d66ebf9dd11235ea8a801b31846feca504775aea23af7a2",
+      "gitBlobSha": "b942d6d88a24918bd106c2d92badeea489894812",
+      "url": "https://github.com/xArm-Developer/xarm_ros2/blob/d837f2e17f7f36043103b367fca3af8172626245/xarm_moveit_config/launch/xarm6_moveit_gazebo.launch.py"
+    },
+    {
+      "path": "xarm_moveit_config/launch/xarm6_moveit_fake.launch.py",
+      "contentSha256": "ce8c8d2d4b28312e39306b382411e4eca26ab63fbf6e81706889c35aaf95badf",
+      "gitBlobSha": "61304972acf6bea9d0b983124b5f330e1d5e1845",
+      "url": "https://github.com/xArm-Developer/xarm_ros2/blob/d837f2e17f7f36043103b367fca3af8172626245/xarm_moveit_config/launch/xarm6_moveit_fake.launch.py"
+    },
+    {
+      "path": "xarm_description/urdf/gripper/xarm_gripper_macro.xacro",
+      "contentSha256": "60b681379a59957c31ef7b0e2b66ffa1c42c244d13f49aeff3690f4282e67a06",
+      "gitBlobSha": "e5d8cf2c4652a439032a7de879af919fe1e115b2",
+      "url": "https://github.com/xArm-Developer/xarm_ros2/blob/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/gripper/xarm_gripper_macro.xacro"
+    },
+    {
+      "path": "xarm_controller/config/xarm6_controllers.yaml",
+      "contentSha256": "a3106b9c0518aa380ded12a840b85ebf21f98272c95045bcab877aeb69fdae3d",
+      "gitBlobSha": "8ec0e4bd3c1b751665c1a495d1583172314030b5",
+      "url": "https://github.com/xArm-Developer/xarm_ros2/blob/d837f2e17f7f36043103b367fca3af8172626245/xarm_controller/config/xarm6_controllers.yaml"
+    },
+    {
+      "path": "xarm_description/urdf/common/common.link.xacro",
+      "contentSha256": "bcdb75c2d56195d93e4637b790f9804782eacf5cb5d37a77ce31bf8bba9bc55d",
+      "gitBlobSha": "d07fcf47b163718db84ffaca54f8e85ab363ff3d",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/common/common.link.xacro"
+    }
+  ],
+  "descriptionParity": {
+    "checkedOn": "2026-11-14",
+    "sourcePin": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+    "nativeCandidatePin": "d837f2e17f7f36043103b367fca3af8172626245",
+    "method": "Verified local SHA-256 against R2a vendor manifest, then computed Git blob SHA-1 including header and compared with native candidate's official recursive Git tree. Source file byte identity only; no expanded-URDF/native/readback qualification.",
+    "files": [
+      {
+        "path": "LICENSE",
+        "sha256": "685e81e0cd30124e24e834ea2bf39bfead4efc9907d021bc9d1ae0f2dcea1431",
+        "manifestSha256": "685e81e0cd30124e24e834ea2bf39bfead4efc9907d021bc9d1ae0f2dcea1431",
+        "gitBlobSha": "a9c5e843b5789f142cf6f23cfd9c516cc5b53290",
+        "jazzyGitBlobSha": "a9c5e843b5789f142cf6f23cfd9c516cc5b53290",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+        "sha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+        "manifestSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+        "gitBlobSha": "c4d5e813cbbb855d2f162f49a52fe8b56d541507",
+        "jazzyGitBlobSha": "c4d5e813cbbb855d2f162f49a52fe8b56d541507",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/config/kinematics/default/xarm6_default_kinematics.yaml",
+        "sha256": "9e02c7ec66a06574d27cddebacfb294b8259b4e8b43cfc05d3bf38e8f358eac1",
+        "manifestSha256": "9e02c7ec66a06574d27cddebacfb294b8259b4e8b43cfc05d3bf38e8f358eac1",
+        "gitBlobSha": "4047e93bbd334c47dffc35c5917145f860386fff",
+        "jazzyGitBlobSha": "4047e93bbd334c47dffc35c5917145f860386fff",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+        "sha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+        "manifestSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+        "gitBlobSha": "e7688297a9cf01ce232f1bebc20403a0c5ee1c73",
+        "jazzyGitBlobSha": "e7688297a9cf01ce232f1bebc20403a0c5ee1c73",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/config/xarm6/joint_limits_1305.yaml",
+        "sha256": "db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb",
+        "manifestSha256": "db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb",
+        "gitBlobSha": "04a95f1bbb05f83d011c71ecfdc7bc06ea39257c",
+        "jazzyGitBlobSha": "04a95f1bbb05f83d011c71ecfdc7bc06ea39257c",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+        "sha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+        "manifestSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+        "gitBlobSha": "dd1731764327674f4eb882e5a66ab89694741e11",
+        "jazzyGitBlobSha": "dd1731764327674f4eb882e5a66ab89694741e11",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/urdf/xarm_device_macro.xacro",
+        "sha256": "571dd90dd5ae4d8aa549686a253050e0576d0ef29755121cd2d7a95b24649eda",
+        "manifestSha256": "571dd90dd5ae4d8aa549686a253050e0576d0ef29755121cd2d7a95b24649eda",
+        "gitBlobSha": "b8f87c8540ee1ff3c516d7a2c125e4e1e4b29efd",
+        "jazzyGitBlobSha": "b8f87c8540ee1ff3c516d7a2c125e4e1e4b29efd",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+        "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+        "manifestSha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+        "gitBlobSha": "0cd69c0545079266dae5ffe8139dfc2771bbae00",
+        "jazzyGitBlobSha": "0cd69c0545079266dae5ffe8139dfc2771bbae00",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/xarm6_1305/visual/link1.stl",
+        "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+        "manifestSha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+        "gitBlobSha": "413cc3ee7e0685983b63b8afc93405ee2f72ce27",
+        "jazzyGitBlobSha": "413cc3ee7e0685983b63b8afc93405ee2f72ce27",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/xarm6_1305/visual/link2.stl",
+        "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+        "manifestSha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+        "gitBlobSha": "c5326251c4fb5584876dae1767497aeebe344df9",
+        "jazzyGitBlobSha": "c5326251c4fb5584876dae1767497aeebe344df9",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/xarm6_1305/visual/link3.stl",
+        "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+        "manifestSha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+        "gitBlobSha": "d6ea1c819b334a74c4788a95999d2bb51727327c",
+        "jazzyGitBlobSha": "d6ea1c819b334a74c4788a95999d2bb51727327c",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/xarm6_1305/visual/link4.stl",
+        "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+        "manifestSha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+        "gitBlobSha": "02b01579d135e9ce195c39d61155911ffc9f80d9",
+        "jazzyGitBlobSha": "02b01579d135e9ce195c39d61155911ffc9f80d9",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/xarm6_1305/visual/link5.stl",
+        "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+        "manifestSha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+        "gitBlobSha": "611d2e3a0b7ae34d73855d985a2a81856744100e",
+        "jazzyGitBlobSha": "611d2e3a0b7ae34d73855d985a2a81856744100e",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/xarm6_1305/visual/link6.stl",
+        "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+        "manifestSha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+        "gitBlobSha": "3fdbd8c3be45ebfc76ae495b8ecdcad3cf994d38",
+        "jazzyGitBlobSha": "3fdbd8c3be45ebfc76ae495b8ecdcad3cf994d38",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/gripper/xarm/base_link_g2.dae",
+        "sha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575",
+        "manifestSha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575",
+        "gitBlobSha": "ccd013a1a646dce76687b5c6a9b06840423e8843",
+        "jazzyGitBlobSha": "ccd013a1a646dce76687b5c6a9b06840423e8843",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/gripper/xarm/left_finger_g2.dae",
+        "sha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b",
+        "manifestSha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b",
+        "gitBlobSha": "d83985f50625fa61859b19eec5ef530b0d657ae2",
+        "jazzyGitBlobSha": "d83985f50625fa61859b19eec5ef530b0d657ae2",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
+        "sha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86",
+        "manifestSha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86",
+        "gitBlobSha": "c67124778233df0554b424e28388dd5162c872f1",
+        "jazzyGitBlobSha": "c67124778233df0554b424e28388dd5162c872f1",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
+        "sha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b",
+        "manifestSha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b",
+        "gitBlobSha": "64d2da0a9fb2e3200e2c87645a74f58f8c0bd83c",
+        "jazzyGitBlobSha": "64d2da0a9fb2e3200e2c87645a74f58f8c0bd83c",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/gripper/xarm/right_finger_g2.dae",
+        "sha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36",
+        "manifestSha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36",
+        "gitBlobSha": "85f9aa21bcc5fdaf894cb48c075abaae52ba6331",
+        "jazzyGitBlobSha": "85f9aa21bcc5fdaf894cb48c075abaae52ba6331",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
+        "sha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3",
+        "manifestSha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3",
+        "gitBlobSha": "b51cd6076488fa132abf5e4c4dbba16a8dae0bf3",
+        "jazzyGitBlobSha": "b51cd6076488fa132abf5e4c4dbba16a8dae0bf3",
+        "sameBytes": true,
+        "localVerified": true
+      },
+      {
+        "path": "xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
+        "sha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55",
+        "manifestSha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55",
+        "gitBlobSha": "838fc557b77e17b83e3c6a438a125ccf7c7e274c",
+        "jazzyGitBlobSha": "838fc557b77e17b83e3c6a438a125ccf7c7e274c",
+        "sameBytes": true,
+        "localVerified": true
+      }
+    ]
+  },
+  "qualification": "source_inspection_only",
+  "installedPackages": null,
+  "pluginDigests": null
+}
