@@ -13,7 +13,7 @@ from pathlib import Path
 STEP_TIMEOUT_S = 30.0
 
 
-def run_sequence(ctl, program, log, wait):
+def run_sequence(ctl, program, log, wait, before_action=None):
     """ctl: controller port (estop_reset, machine_on, home_all, program_open, auto_run, auto_pause, auto_resume, abort, inject_fault, clear_fault, state, version).
     wait(pred, timeout) polls pred until true or timeout and returns the last value. Returns the evidence record."""
     steps = []
@@ -21,6 +21,8 @@ def run_sequence(ctl, program, log, wait):
     def step(name, act, expect):
         observed, error = {}, None
         try:
+            if before_action is not None:
+                before_action()
             act()
             def matches():
                 nonlocal observed
@@ -106,6 +108,10 @@ class LinuxcncController:
     def version(self):
         return f"linuxcnc {getattr(self.lc, 'version', 'unknown')}"
 
+    def assert_epoch(self):
+        if controller_epoch() != self.epoch:
+            raise RuntimeError("CONTROLLER_EPOCH_CHANGED_NO_AUTO_RESUME")
+
     def state(self):
         epoch = controller_epoch()
         if epoch != self.epoch:
@@ -150,7 +156,7 @@ def main():
         rec = {"status": "blocked_external", "result": "not_run", "reasons": [reason]}
     else:
         try:
-            rec = run_sequence(ctl, program, lambda m: print(m, flush=True), _poll)
+            rec = run_sequence(ctl, program, lambda m: print(m, flush=True), _poll, before_action=ctl.assert_epoch)
         except Exception as e:  # preserve partial independent observations on controller loss
             rec = {"status": "fail", "reasons": [str(e)], "claims": "interrupted; no automatic resume"}
         if out:

@@ -87,3 +87,40 @@ def test_native_identity_failure_is_not_misreported_as_missing_python_module(tmp
     assert exit_info.value.code==2
     record=json.loads((tmp_path/'smoke-driver.json').read_text())
     assert record['reasons']==['CONTROLLER_INITIALIZATION_FAILED:CONTROLLER_PROCESS_AMBIGUOUS']
+
+
+def test_epoch_guard_runs_before_next_action_and_retains_failure():
+    import inspect
+    assert 'before_action' in inspect.signature(smoke_driver.run_sequence).parameters,'pre-action epoch guard missing'
+    actions=[]
+    class Controller:
+        def __getattr__(self,name):
+            if name=='state':return lambda:{'estop':False,'machineOn':True,'homed':True}
+            if name=='version':return lambda:'protocol_double'
+            return lambda *args:actions.append(name)
+    calls=0
+    def guard():
+        nonlocal calls
+        calls+=1
+        if calls==4:raise RuntimeError('CONTROLLER_EPOCH_CHANGED_NO_AUTO_RESUME')
+    record=smoke_driver.run_sequence(Controller(),'test',lambda x:None,lambda pred,timeout:pred(),before_action=guard)
+    assert record['status']=='fail'
+    assert actions==['estop_reset','machine_on','home_all']
+    assert record['steps'][-1]['step']=='program_open'
+    assert record['steps'][-1]['error']=='CONTROLLER_EPOCH_CHANGED_NO_AUTO_RESUME'
+
+
+def test_native_main_wires_guard_before_any_controller_command(monkeypatch):
+    actions=[]
+    class Controller:
+        def assert_epoch(self):raise RuntimeError('CONTROLLER_EPOCH_CHANGED_NO_AUTO_RESUME')
+        def __getattr__(self,name):
+            if name=='state':return lambda:{'estop':False,'machineOn':True,'homed':True}
+            if name=='version':return lambda:'protocol_double'
+            return lambda *args:actions.append(name)
+    monkeypatch.delenv('MEKONIQ_SMOKE_EVIDENCE',raising=False)
+    monkeypatch.setattr(smoke_driver,'LinuxcncController',Controller)
+    monkeypatch.setattr(smoke_driver,'_poll',lambda pred,timeout:pred())
+    with pytest.raises(SystemExit) as status:smoke_driver.main()
+    assert status.value.code==1
+    assert actions==[], 'command sent before failed epoch admission'
