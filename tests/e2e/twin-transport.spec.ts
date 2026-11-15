@@ -20,7 +20,9 @@ for(const viewport of [{width:390,height:844},{width:1024,height:768}])test(`wat
  const context=await browser.newContext({viewport,hasTouch:true}),page=await context.newPage();
  try{
   await page.goto('/#twin');
-  if(await page.getByTestId('runtime-popover').isVisible())await page.getByTestId('runtime-chip').tap();
+  await expect(page.getByTestId('runtime-popover')).toBeVisible();
+  await page.getByTestId('runtime-chip').tap();
+  await expect(page.getByTestId('runtime-popover')).toBeHidden();
   await page.getByRole('button',{name:'Chế độ xem',exact:true}).tap();
   await expect(page.locator('.twin-shell')).toHaveClass(/watch/);
   const exit=page.getByRole('button',{name:'Thoát chế độ xem',exact:true});

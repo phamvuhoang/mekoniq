@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test';
+import {test,expect} from '../support/replay-preview';
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 const out=process.env.LAB_B07B_EVIDENCE;
