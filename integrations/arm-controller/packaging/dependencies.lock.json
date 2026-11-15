@@ -21,5 +21,22 @@
     {"id": "virtual-hal", "kind": "config", "status": "candidate", "version": "configs/sim/puma560 (machine.hal loopbacks)", "sha256": null, "sha256Reason": "UNVERIFIED: hashed by the release manifest at export"},
     {"id": "model", "kind": "model", "status": "candidate", "version": "puma560-reference r1", "manifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5", "sha256": null, "sha256Reason": "UNVERIFIED: see manifestSha256; the release manifest hashes the model files"}
   ],
-  "excluded": {"igh-ethercat-master": "not required for simulation; a hardware profile pins it separately", "lcec": "same", "ros2": "not a dependency of the controller package"}
+  "excluded": {"igh-ethercat-master": "not required for simulation; a hardware profile pins it separately", "lcec": "same", "ros2": "not a dependency of the controller package"},
+  "nativeQualification": {
+    "status": "not_run",
+    "accepted": false,
+    "installationKind": "native_apt",
+    "resolvedHost": null,
+    "resolvedPackages": null,
+    "retainedSourceArtifacts": null,
+    "reason": "NO_ASSIGNED_DEBIAN_HOST; candidate versions above are not resolved package/source locks or ISA attestation",
+    "requiredEvidence": [
+      "exact Debian release and native ISA",
+      "installed package/version/architecture/source mappings",
+      "retained apt package and source artifacts with SHA256 and origin/trust",
+      "matching runtime inventory",
+      "terminal controller trace",
+      "separate operator GUI checklist"
+    ]
+  }
 }

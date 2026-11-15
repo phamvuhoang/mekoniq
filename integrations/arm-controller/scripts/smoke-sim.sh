@@ -18,7 +18,7 @@ while [ $# -gt 0 ]; do
 done
 if [ -z "$profile" ] || [ -z "$evidence" ] || [ ! -f "$profile" ] || [ ! -f "$lock" ]; then echo "usage: smoke-sim.sh --profile INI --evidence-dir DIR [--gui] [--dependencies-lock JSON]" >&2; exit 2; fi
 mkdir -p "$evidence"
-if [ -e "$evidence/smoke-sim.json" ] || [ -e "$evidence/smoke-driver.json" ]; then echo "EVIDENCE_OUTPUT_EXISTS: use a fresh evidence directory" >&2; exit 2; fi
+if [ -n "$(ls -A "$evidence")" ]; then echo "EVIDENCE_OUTPUT_EXISTS: use a fresh evidence directory" >&2; exit 2; fi
 sha() { python3 - "$1" <<'PY'
 import hashlib, sys; print(hashlib.sha256(open(sys.argv[1], 'rb').read()).hexdigest())
 PY
@@ -41,12 +41,18 @@ python3 -c 'import linuxcnc' >/dev/null 2>&1 || reasons+=("LINUXCNC_PYTHON_MODUL
 [ -n "${MEKONIQ_SMOKE_FORCE_MISSING:-}" ] && reasons+=("LINUXCNC_MISSING")
 record() { # $1 status $2 result $3 reasons-json $4 extra-json
   python3 - "$evidence/smoke-sim.json" "$1" "$2" "$3" "$4" "$profile" "$(sha "$profile")" "$model" "$(sha "$model")" "$lock" "$(sha "$lock")" <<'PY'
-import json, platform, sys, datetime
+import json, platform, sys, datetime, hashlib, os
+from pathlib import Path
 out, status, result, reasons, extra, profile, psha, model, msha, lock, lsha = sys.argv[1:]
 rec = {"schemaVersion": 1, "backend": "linuxcnc_sim", "status": status, "result": result, "reasons": json.loads(reasons),
        "host": {"platform": platform.system(), "release": platform.release(), "machine": platform.machine(), "python": platform.python_version()},
        "profile": {"path": profile, "sha256": psha}, "modelManifest": {"path": model, "sha256": msha}, "dependenciesLock": {"path": lock, "sha256": lsha},
        "recordedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(), "runtimeInventory": json.load(open(__import__("pathlib").Path(out).parent / "runtime-inventory.json")), "claims": "software sequence on a virtual HAL at most; no drive, timing, load or safety evidence", **json.loads(extra)}
+trace = Path(out).parent / "actual-joint-trace.json"
+rec["accepted"] = False
+rec["subjectSourceCommit"] = os.environ.get("MEKONIQ_SOURCE_COMMIT")
+rec["actualJointTrace"] = {"path": trace.name, "sha256": hashlib.sha256(trace.read_bytes()).hexdigest(), "bytes": trace.stat().st_size} if trace.is_file() else None
+rec["nativeTimingQualification"] = "not_run"
 json.dump(rec, open(out, "w"), indent=1)
 PY
 }

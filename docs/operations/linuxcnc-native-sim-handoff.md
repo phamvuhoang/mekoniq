@@ -1,0 +1,49 @@
+# LinuxCNC PUMA native SIM handoff
+
+L04 prepares a LinuxCNC actual-joint recorder and scoped ALG04 consumer. No Debian native host has been assigned. The candidate dependency lock is unresolved; terminal, GUI, package installation/trust/rollback, tunnel and controller restart qualification remain **not_run**. All generated qualification remains `accepted:false`. Protocol doubles and Mac preflight refusals establish portable behavior only.
+
+Use the separate Debian/ISA LinuxCNC profile, never an Ubuntu ROS lock or an amd64 label on an ARM64 host. `packaging/dependencies.lock.json` retains its existing candidate values and adds explicit missing native qualification evidence. Resolve exact installed binary package/version/architecture, source package/version, apt origin, signed repository metadata and retained `.deb`/source artifacts with SHA256 on the assigned host. `scripts/runtime-inventory.py` retains the dpkg command, its exit/output/digest, source-package mapping, executable/module identities, OS-release identity and apt source-file identities. Inventory does not validate archive trust, retained source artifacts or native execution; reconcile it with L00's strict `native_apt` profile and independent source artifacts. There is no fallback OCI image or invented source archive digest.
+
+## Capture on the assigned native host
+
+Start from a clean, audited Source commit, its retained Git graph, and the exact packaged SIM closure. Keep subject Source, recorder/producer, checker, Lab publication and runtime pin identities separate. The supplied `MEKONIQ_SOURCE_COMMIT` is a subject assertion, not authentication. Retain the release manifest and executable/script hashes next to the raw files. Under R89, nativeTools includes the immutable arm-controller/scripts and packaging directories; generated trace and run-inventory files remain evidence outside that closure. Use the existing package install/verify/rollback and trust procedures in `integrations/arm-controller/docs/`; never use this smoke launcher for a hardware profile.
+
+From `source/integrations/arm-controller`, with a fresh evidence directory and the assigned subject commit:
+
+```sh
+export PYTHONDONTWRITEBYTECODE=1
+export PYTEST_ADDOPTS='-p no:cacheprovider'
+export MEKONIQ_SOURCE_COMMIT='<full audited subject commit>'
+perl -e 'alarm 300; exec @ARGV' python3 -m pytest tests/test_model_units.py tests/test_arbiter.py tests/test_bridge_recovery.py tests/test_release_trust.py tests/test_actual_trace.py -q
+perl -e 'alarm 900; exec @ARGV' bash scripts/smoke-sim.sh --profile configs/sim/puma560/mekoniq.ini --evidence-dir "$cnc_evidence_dir"
+```
+
+The launcher refuses any nonempty evidence directory. It stages only byte-matching INI, virtual HAL, DH HAL, profile, tool and cup geometry from the reviewed SIM closure. The controller executes the existing terminal start/home/run/pause/resume/stop/fault/no-auto-resume sequence. Failed actions retain previous terminal steps. An epoch change before or across a poll aborts collection and does not resume or retry a motion command. Keep the original `linuxcnc.log`, prepared INI, inventory, `smoke-driver.json`, `actual-joint-trace.json` and `smoke-sim.json`; the last binds the trace's bytes and digest when present. A missing prerequisite writes `blocked_external/not_run`, exit 2. Terminal `pass` is only a terminal subset result, not full native qualification.
+
+## Trace v1 and ALG04
+
+The sampler reads documented `linuxcnc.stat.joint_actual_position` and `joint_position` separately. It retains six raw degree values in JOINT_0–5/J1–6 order, checked radians, independent sample IDs, controller process epoch (kernel boot UUID + single milltask PID + process start time), sequence and a host `monotonic_ns` receive bracket. Missing or nonfinite joint data remains null, which the numerical consumer refuses. Cartesian `actual_position` is never reinterpreted as six joint angles. The pinned model remains source inch/degree/alpha-radian with SI conversion, exact modified DH, arm_base→tcp, tool-0-notool, unknown inertia and unmeasured placement.
+
+The documented Python status API does not establish absolute controller sample time or field synchrony. `cycle_time` is a period; `echo_serial_number` acknowledges commands. Neither is a sample clock. This version records `controllerTime:null`, `clock.controller:unavailable`, `synchrony:unavailable`. Receive brackets do not time-align commanded and actual fields, prove motion settling, or provide continuous trajectory coverage. No interpolation is performed, and epoch segments never join. A host-specific clock extension requires a reviewed contract revision with inventory/provenance before it can clear timing gates.
+
+From a clean Source checker checkout, consume the retained trace bytes:
+
+```sh
+perl -e 'alarm 300; exec @ARGV' node scripts/lab-algorithm.mjs linuxcnc --trace "$cnc_evidence_dir/actual-joint-trace.json" --out "$alg04_evidence_dir" --python .venv-algorithm/bin/python
+```
+
+The consumer rejects wrong backend/model, DH/frame/tool hashes, units/conversions, absent vectors, invalid timing, duplicate sample identities and joint limits before calling RTB. RTB receives the independently recorded **actual** joints and exact controller DH; it never creates the input trace. `algorithm-results.json` retains the input byte SHA256, supplied subject commit, actual local checker checkout identity, oracle profile/lock digests, metrics and epoch coverage. Local Git identity is not a replacement for the public native-handoff clean-checker/full-Git-graph audit.
+
+Metrics are separate:
+
+- `maxObservedCommandActualDeltaRad`: within-poll field delta, explicitly **not** synchronized following-error qualification.
+- `maxFkTranslationResidualM` and `maxFkRotationResidualRad`: RTB versus TypeScript FK at those supplied actual joints; numerical model consistency only.
+- Controller Cartesian-versus-DH/TCP residual: `not_run`, `CONTROLLER_CARTESIAN_DH_TCP_ENDPOINT_NOT_ESTABLISHED`. This version does not assume a comparable native Cartesian endpoint, work/tool-offset convention or atomic field sample.
+
+A numeric failure remains `fail` (exit 1); an absent oracle remains `not_run`. Even successful numerical checks yield ALG04 `not_run` (exit 2), because native timing/synchrony, authenticated execution and trajectory coverage are still unresolved. `numericVerdict` distinguishes the completed numerical subset. `protocol_double` fixtures are explicitly marked and cannot qualify a host. Do not turn these receipts into DEP-CNC or ALG04 gate passes.
+
+## Native security, packaging and GUI obligations
+
+On the assigned host retain separate evidence for tunnel host key/known_hosts, HMI–bridge arbiter exclusivity, deadline expiry, controller restart, tunnel loss, unknown/no-resend/no-auto-resume and refusal of arbitrary MDI/HAL/launch requests. Use only SIM-authorized endpoints. Existing portable arbiter, bridge recovery, release trust and native-arm tunnel tests are regressions, not evidence that an SSH tunnel or controller ran.
+
+Run package install/verify/rollback against the exact signed candidate and preserve all failure attempts. Run the GUI in a **new** evidence directory with `--gui`; complete the independent `integrations/arm-controller/docs/hmi-acceptance.md` operator checklist. A GUI process exit or screenshot does not pass that checklist. DEP-CNC-01/02/03, ALG04 and SEC-01 remain open until their actual profile evidence exists; human acceptance remains a separately bound sidecar. No Lab-to-hardware route is added.

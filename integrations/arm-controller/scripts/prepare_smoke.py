@@ -13,6 +13,14 @@ def prepare_profile(root, profile, destination, gui=False):
     config.read(profile)
     if config.get('MEKONIQ', 'BACKEND', fallback='') != 'linuxcnc_sim':
         raise ValueError('SIM_PROFILE_REQUIRED')
+    # This entry point launches only the reviewed virtual HAL closure. A backend
+    # label alone cannot authorize a caller-supplied HALFILE, MDI or launch command.
+    canonical = root / 'configs/sim/puma560'
+    for name in ('mekoniq.ini', 'machine.hal', 'puma560-dh.hal', 'profile.json', 'tool.tbl', 'cup-geometry.json'):
+        if (profile.parent / name).read_bytes() != (canonical / name).read_bytes():
+            raise ValueError('SIM_CONFIG_BYTES_MISMATCH:' + name)
+    if profile.name != 'mekoniq.ini':
+        raise ValueError('SIM_CONFIG_BYTES_MISMATCH:ini')
     shutil.copytree(profile.parent, destination, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
     config['DISPLAY']['PROGRAM_PREFIX'] = str(root / 'programs')
     config['MEKONIQ']['MODEL_MANIFEST'] = str(root / 'models/puma560-reference/manifest.json')

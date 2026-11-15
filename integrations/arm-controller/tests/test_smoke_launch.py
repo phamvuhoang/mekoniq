@@ -2,6 +2,7 @@
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 import subprocess
 import json
 import os
@@ -12,9 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 
 class SmokeLaunchTest(unittest.TestCase):
-    def test_real_stat_joint_dictionary_fault_is_observed(self):
+    @patch('smoke_driver.controller_epoch', return_value='protocol-double')
+    def test_real_stat_joint_dictionary_fault_is_observed(self, _epoch):
         from smoke_driver import LinuxcncController
         ctl = LinuxcncController.__new__(LinuxcncController)
+        ctl.samples, ctl.epoch = [], 'protocol-double'
         ctl.lc = SimpleNamespace(STATE_ESTOP=1, STATE_ON=2, INTERP_READING=3, INTERP_WAITING=4)
         ctl.s = SimpleNamespace(poll=lambda: None, joint=({'fault': 1},), task_state=1, homed=[1]*6, file='', interp_state=0, paused=False)
         self.assertTrue(ctl.state()['fault'])
