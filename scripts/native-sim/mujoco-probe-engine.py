@@ -4,6 +4,7 @@ only one real qvel element is fault-injected. No Source custody assertion is mad
 """
 import hashlib
 import importlib.metadata
+import importlib.util
 import json
 from pathlib import Path
 import resource
@@ -16,6 +17,7 @@ OUT.mkdir(exist_ok=True, parents=True)
 def save(name, value):
     (OUT / name).write_text(json.dumps(value, allow_nan=False, separators=(",", ":")) + "\n")
 
+capture = None
 try:
     import mujoco
     import numpy as np
@@ -33,6 +35,10 @@ try:
     elif MODE in ("m00", "long_run"):
         sys.path.insert(0, "/probe/m00")
         import run as recipe
+        observer_spec = importlib.util.spec_from_file_location("probe_retention", "/probe/mujoco-probe-retention.py")
+        observer = importlib.util.module_from_spec(observer_spec)
+        observer_spec.loader.exec_module(observer)
+        capture = observer.install_retention(recipe, OUT, {"mode": MODE, "seed": int(sys.argv[3]) if len(sys.argv) > 3 else 42})
         if MODE == "m00":
             seed = int(sys.argv[3])
             sys.argv = ["/probe/m00/run.py", "trials", json.dumps({"seeds": [seed], "dump": str(OUT / "trace")})]
@@ -64,6 +70,8 @@ try:
         component = json.loads((bundle / "component.json").read_text())
         physics = json.loads((bundle / "physics.json").read_text())
         (OUT / "compiled.xml").write_text(compile_cell(scene, component, physics, str(bundle / "blobs"))[0])
+        for name in ("arm-cell-scene.json", "component.json", "physics.json"):
+            (OUT / name).write_bytes((bundle / name).read_bytes())
         session = WorkerSession(run_id="native-bad-state", bundle_root=str(bundle), lock_digest=hashlib.sha256(Path("/app/robotics/simulation-mujoco/requirements.lock").read_bytes()).hexdigest(), expected_scene_digest=scene["sceneDigest"])
         validator, _ = load_validators("/app/packages/contracts/schemas")
         requests, responses = [], []
@@ -84,6 +92,10 @@ try:
         before = {"tick": session.tick, "state": session.state}
         old_warnings = {k: int(data.warning[w].number) for k, w in BAD_STATE.items()}
         np.savez(OUT / "before-state.npz", qpos=data.qpos.copy(), qvel=data.qvel.copy(), qacc=data.qacc.copy(), ctrl=data.ctrl.copy())
+        injection = {"kind": "qvel_nan", "atTick": 1, "index": int(session.engine.arm_qvel[0]), "joint": "J1"}
+        if injection["index"] != 0:
+            raise RuntimeError("INJECTION_JOINT_INDEX_MISMATCH")
+        save("injection.json", injection)
         data.qvel[session.engine.arm_qvel[0]] = float("nan")
         np.savez(OUT / "injected-state.npz", qpos=data.qpos.copy(), qvel=data.qvel.copy(), qacc=data.qacc.copy(), ctrl=data.ctrl.copy())
         payload = {"targetTick": 1, "velocities": [], "actorUpdates": [], "jointTargets": [{"armId": "arm-1", "positionsRad": scene["arm"]["homeRad"]}]}
@@ -93,11 +105,15 @@ try:
         after = {"tick": session.tick, "state": session.state}
         warnings = {k: int(data.warning[w].number) - old_warnings[k] for k, w in BAD_STATE.items()}
         np.savez(OUT / "after-state.npz", qpos=data.qpos.copy(), qvel=data.qvel.copy(), qacc=data.qacc.copy(), ctrl=data.ctrl.copy())
+        save("snapshots.json", {"before": {**before, "warnings": old_warnings},
+                                "after": {**after, "warnings": {k: int(data.warning[w].number) for k, w in BAD_STATE.items()}}})
         post_fault = call("step", payload)
-        save("result.json", {"scope": "instrumented_historical_worker", "engineVersion": mujoco.__version__, "injection": {"kind": "qvel_nan", "atTick": 1}, "before": before, "after": after,
+        save("result.json", {"scope": "instrumented_historical_worker", "engineVersion": mujoco.__version__, "injection": injection, "before": before, "after": after,
                              "response": response, "postFault": post_fault, "warningDelta": warnings, "elapsedMs": elapsed})
         session.end()
     else:
         raise RuntimeError("UNKNOWN_PROBE_MODE")
 finally:
+    if capture is not None:
+        capture.finish("exception" if sys.exc_info()[0] else "returned")
     save("resource.json", {"maxRssKiB": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss})

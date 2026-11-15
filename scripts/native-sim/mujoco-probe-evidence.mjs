@@ -84,12 +84,12 @@ export async function probeArtifacts(root,base='',budget={files:0,bytes:0}){
 export function analyseWire(events){
  const seen=new Set(),pending=new Map(),spawned=[],ipcMs=[],issues=[];let maxActive=0,active=new Set();
  for(const e of events){
-  if(e.event==='spawn'){spawned.push(e.pid);active.add(e.pid);maxActive=Math.max(maxActive,active.size);}
-  else if(e.event==='exit')active.delete(e.pid);
+  if(e.event==='spawn'){if(spawned.includes(e.pid))issues.push('WIRE_DUPLICATE_SPAWN');spawned.push(e.pid);active.add(e.pid);maxActive=Math.max(maxActive,active.size);}
+  else if(e.event==='exit'){if(!active.has(e.pid))issues.push('WIRE_EXIT_WITHOUT_SPAWN');active.delete(e.pid);}
   else if(e.event==='request'){
-   const key=e.pid+':'+e.value?.requestId;if(!spawned.includes(e.pid)||seen.has(key)||pending.has(e.pid)||!Number.isFinite(e.atMs))issues.push('WIRE_RESEND_OR_OVERLAP');seen.add(key);pending.set(e.pid,e);
+   const key=e.pid+':'+e.value?.requestId;if(!active.has(e.pid)||seen.has(key)||pending.has(e.pid)||!Number.isFinite(e.atMs))issues.push('WIRE_RESEND_OR_OVERLAP');seen.add(key);pending.set(e.pid,e);
   }else if(e.event==='ack'){
-   const p=pending.get(e.pid);if(!p||p.value?.requestId!==e.value?.requestId||!Number.isFinite(e.atMs)||e.atMs<p.atMs)issues.push('WIRE_ACK_MISMATCH');else if(p.value.op==='step')ipcMs.push(e.atMs-p.atMs);pending.delete(e.pid);
+   const p=pending.get(e.pid);if(!active.has(e.pid)||!p||p.value?.requestId!==e.value?.requestId||!Number.isFinite(e.atMs)||e.atMs<p.atMs)issues.push('WIRE_ACK_MISMATCH');else if(p.value.op==='step')ipcMs.push(e.atMs-p.atMs);pending.delete(e.pid);
   }else issues.push('WIRE_OBSERVATION_INCOMPLETE');
  }
  if(active.size)issues.push('WIRE_EXIT_MISSING');
@@ -99,4 +99,19 @@ export function analyseWire(events){
 export function timingSummary(values){
  if(!quantiles(values))throw Error('TIMING_SAMPLES_INVALID');const sorted=[...values].sort((a,b)=>a-b);
  return {samples:sorted.length,p50Ms:sorted[Math.ceil(sorted.length*0.5)-1],p95Ms:sorted[Math.ceil(sorted.length*0.95)-1],maxMs:sorted.at(-1)};
+}
+// Shared by execution and independent readback; registry and measured package policy are symmetric.
+export function imagePrerequisites(handoff,engine,historicalRegistryDigest){
+ const issues=[],normalize=s=>s.toLowerCase().replace(/[-_.]+/g,'-');
+ if(handoff.subject?.image?.manifestDigest!==historicalRegistryDigest)issues.push('HISTORICAL_IMAGE_RESOLUTION_REQUIRED');
+ const required=handoff.profile.requiredPackages,packages=engine?.packages;
+ if(!Array.isArray(required)||required.length!==1)issues.push('UNMEASURED_PACKAGE_LOCK');
+ if(!Array.isArray(packages)||packages.some(p=>!Array.isArray(p)||typeof p[0]!=='string'||typeof p[1]!=='string'))issues.push('IMAGE_PACKAGE_MEASUREMENT');
+ else{
+  if(packages.some(([name])=>handoff.profile.forbiddenPackages.some(p=>normalize(p)===normalize(name))))issues.push('IMAGE_FORBIDDEN_PACKAGE');
+  if(packages.filter(([name,version])=>normalize(name)==='mujoco'&&version==='3.17.0').length!==1)issues.push('IMAGE_ENGINE_PACKAGE');
+ }
+ const lib=engine?.artifacts?.find(f=>f.path.includes('libmujoco')),lock=required?.find(p=>p.name==='mujoco');
+ if(!lock||lock.version!=='3.17.0'||'sha256:'+lock.sha256!==lib?.digest)issues.push('ENGINE_ARTIFACT_LOCK_MISMATCH');
+ return issues;
 }

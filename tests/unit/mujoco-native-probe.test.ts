@@ -109,7 +109,7 @@ test('passive spawn tap forwards exact values and refuses incomplete observation
 });
 
 test('prepared execution on an unassigned host retains a not_run manifest without touching Docker',async()=>{
- const {runMujocoProbe,verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe.mjs');
+ const {runMujocoProbe,verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe-core.mjs');
  const {mkdtemp}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
  const parent=await mkdtemp(join(tmpdir(),'L01-prepared-')),out=join(parent,'out');
  const r=await runMujocoProbe({handoff:join(parent,'missing'),out,checker:{sourceCommit:'1'.repeat(40),toolSha256:'2'.repeat(64)}});
@@ -120,7 +120,7 @@ test('prepared execution on an unassigned host retains a not_run manifest withou
 });
 
 test('reader rejects a resealed unit-log-only manifest and artifact substitution',async()=>{
- const {verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe.mjs');
+ const {verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe-core.mjs');
  const {mkdtemp,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
  const {mujocoCases,sha256}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
  const root=await mkdtemp(join(tmpdir(),'L01-unit-only-'));await writeFile(join(root,'unit.log'),'100 tests passed');
@@ -141,7 +141,7 @@ test('the actual Node preload observes imported spawn without changing a child b
 });
 
 test('recorder supplement refuses unverified passed claims',async()=>{
- const {readMujocoProbeSupplement}=await import('../../scripts/native-sim/mujoco-probe.mjs');
+ const {readMujocoProbeSupplement}=await import('../../scripts/native-sim/mujoco-probe-core.mjs');
  const {mkdtemp,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
  const root=await mkdtemp(join(tmpdir(),'L01-supplement-'));await writeFile(join(root,'manifest.json'),JSON.stringify({schemaVersion:1,kind:'mujoco-native-probe',qualification:'passed',DEP_MJ_01:'passed',accepted:false,artifacts:[]}));
  await expect(readMujocoProbeSupplement(root)).rejects.toThrow('PROBE_SUPPLEMENT_INVALID');
@@ -163,4 +163,65 @@ test('grasp assertions read raw contact continuity instead of trusting the recip
  const spec=mujocoCases()[0],row={q:[0,0,0,0,0,0],cmd:[0,0,0,0,0,0],cup:[0.35,0.35,0.15],cupquat:[1,0,0,0],rel:[0,0,0],held:false,L:false,R:false,tray:true,arm:false,cupv:0,cupw:0,label:'dwell:place'};
  const trace=Array.from({length:882},()=>({...row})),raw={scope:spec.scope,engineVersion:'3.17.0',trial:{seed:1,nan:false,heldAllCarry:true,notHeldCarry:0,liftM:0.15,slipM:0,dropTicks:1,placeErrM:0,peakFollowRad:0,settle:Object.fromEntries(['pregrasp','grasp','lift','preplace','place','retreat','home'].map(k=>[k,{ticks:1}])),warnings:{}},trace,tickMs:trace.map(()=>1),maxRssKiB:100};
  expect(assessCase(spec,raw).passed).toBe(false);
+});
+
+test('reader binds the complete checker tuple before accepting summaries',async()=>{
+ const {verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe-core.mjs');
+ const {mkdtemp,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+ const root=await mkdtemp(join(tmpdir(),'L01-checker-pin-')),checker={sourceCommit:'1'.repeat(40),toolSha256:'2'.repeat(64)};
+ for(const recorded of [undefined,{...checker,sourceCommit:'3'.repeat(40)},{...checker,toolSha256:'4'.repeat(64)}]){
+  await writeFile(join(root,'manifest.json'),JSON.stringify({schemaVersion:1,kind:'mujoco-native-probe',accepted:false,dynamics:'not_calibrated',qualification:'passed',DEP_MJ_01:'passed',checker:recorded,artifacts:[]}));
+  expect((await verifyMujocoProbe(root,checker)).issues).toContain('CHECKER_PIN');
+ }
+});
+test('execution and reader share exact historical image and measured package admission',async()=>{
+ const {imagePrerequisites}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
+ const digest='sha256:'+'a'.repeat(64),lib='b'.repeat(64),manifest={subject:{image:{manifestDigest:digest}},profile:{forbiddenPackages:['mujoco-core'],requiredPackages:[{name:'mujoco',version:'3.17.0',sha256:lib}]}},engine={version:'3.17.0',packages:[['mujoco','3.17.0']],artifacts:[{path:'/libmujoco.so',digest:'sha256:'+lib}]};
+ expect(imagePrerequisites(manifest,engine,digest)).toEqual([]);
+ expect(imagePrerequisites({...manifest,subject:{image:{manifestDigest:'sha256:'+'c'.repeat(64)}}},engine,digest)).toContain('HISTORICAL_IMAGE_RESOLUTION_REQUIRED');
+ expect(imagePrerequisites(manifest,{...engine,packages:[...engine.packages,['MuJoCo_Core','1']]},digest)).toContain('IMAGE_FORBIDDEN_PACKAGE');
+ expect(imagePrerequisites({...manifest,profile:{...manifest.profile,requiredPackages:[...manifest.profile.requiredPackages,{name:'other'}]}},engine,digest)).toContain('UNMEASURED_PACKAGE_LOCK');
+});
+
+// These exercise the actual reader's raw-source subvalidator, not full native admission.
+test.each(['none','truncated','resend','byte-count','incomplete','checkpoint','injection','requests'])('binds business reader claims to sealed raw sources: %s',async mutation=>{
+ const {mkdtemp,mkdir,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+ const {verifyBusinessRaw}=await import('../../scripts/native-sim/mujoco-probe-raw.mjs'),{sha256}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
+ const root=await mkdtemp(join(tmpdir(),'L01-raw-reader-')),put=async(p:string,v:unknown)=>{await mkdir(join(root,p,'..'),{recursive:true});await writeFile(join(root,p),JSON.stringify(v)+'\n');};
+ const runId='portable-double',wire=[{event:'spawn',runId,pid:42,atMs:1},{event:'request',runId,pid:42,atMs:2,value:{requestId:'a',op:'step'}},{event:'exit',runId,pid:42,atMs:4,signal:'SIGKILL'}],trace={samples:[]},props={samples:[]};
+ const traceBytes=JSON.stringify(trace)+'\n',propsBytes=JSON.stringify(props)+'\n',subject={sourceCommit:'1'.repeat(40),schemaHash:'2'.repeat(64)},report={manifest:{runId,sourceCommit:subject.sourceCommit},schemaHash:subject.schemaHash,arm:{trace:{path:'trace.json',sha256:sha256(traceBytes)},props:{path:'props.json',sha256:sha256(propsBytes)}}};
+ const raw={report,wire,trace,props,checkpoint:{runId,coffee:{arm:{programs:[{state:'unknown'}]}}},injection:{kind:'owned_pid_sigkill',pid:42,atMs:3},requests:[{actionId:'x'}]};
+ await put('report.json',report);await put('run-wire.json',wire);await put('requests.json',mutation==='requests'?[]:raw.requests);await put('injection.json',mutation==='injection'?{...raw.injection,pid:43}:raw.injection);
+ const copies=[];for(const [path,value] of Object.entries({'runtime/r/run.json':mutation==='checkpoint'?{runId,coffee:{arm:{programs:[]}}}:raw.checkpoint,'runtime/r/trace.json':trace,'runtime/r/props.json':props,'runtime/r/journal.db':{fixture:true}})){await put(path,value);const b=await readFile(join(root,path));copies.push({path,bytes:b.length,sha256:sha256(b)});}
+ await put('runtime-copies.json',{afterRuntimeClose:true,copies});
+ const events=mutation==='truncated'?wire.slice(0,-1):mutation==='resend'?[...wire.slice(0,2),{...wire[1],atMs:2.5},wire[2]]:wire;
+ const stream=events.map(e=>JSON.stringify(e)+'\n').join('');await writeFile(join(root,'wire.jsonl'),stream);await put('wire.jsonl.seal',{complete:true,totalBytes:Buffer.byteLength(stream)+(mutation==='byte-count'?1:0)});if(mutation==='incomplete')await writeFile(join(root,'wire.jsonl.incomplete'),'overflow\n');
+ // Every retained file is newly hashed, so negatives reach raw semantics rather than stale artifact hashes.
+ const {probeArtifacts}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');const artifacts=await probeArtifacts(root);expect(artifacts.length).toBeGreaterThan(5);
+ const issues=await verifyBusinessRaw(root,{kind:'worker_loss'},raw,subject);
+ if(mutation==='none')expect(issues).toEqual([]);else expect(issues.length).toBeGreaterThan(0);
+});
+
+test.each(['none','request','scene','compiled','before','injected','warning','snapshot','dimensions','npz-crc'])('binds bad-state reader to actual request/scene/state bytes: %s',async mutation=>{
+ const {mkdtemp,mkdir,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+ const {verifyBadStateRaw}=await import('../../scripts/native-sim/mujoco-probe-raw.mjs'),{stateNpz}=await import('../fixtures/native-probe-state');
+ const baseline=JSON.parse(await readFile('scripts/native-sim/r2a-arm-baseline.json','utf8'));
+ const root=await mkdtemp(join(tmpdir(),'L01-state-reader-'));await mkdir(join(root,'engine'));
+ const put=(p:string,v:unknown)=>writeFile(join(root,'engine',p),JSON.stringify(v)+'\n');
+ const injection={kind:'qvel_nan',atTick:1,index:0,joint:'J1'},before={tick:0,state:'running'},after={tick:0,state:'failed'},warnings={BADQPOS:0,BADQVEL:1,BADQACC:0};
+ const sizes=baseline.badStateCompiled.stateSizes,state={qpos:Array(sizes.qpos).fill(0),qvel:Array(sizes.qvel).fill(0),qacc:Array(sizes.qacc).fill(0),ctrl:Array(mutation==='dimensions'?1:sizes.ctrl).fill(0)},injected={...state,qvel:[NaN,...state.qvel.slice(1)]};
+ for(const [label,value]of Object.entries({before:mutation==='before'?injected:state,injected:mutation==='injected'?state:injected,after:state})){
+  const bytes=stateNpz(value);if(mutation==='npz-crc'&&label==='after')bytes[80]^=1;await writeFile(join(root,'engine',label+'-state.npz'),bytes);
+ }
+ const payload={targetTick:1,velocities:[],actorUpdates:[],jointTargets:[{armId:'arm-1',positionsRad:baseline.world.arm.homeRad}]};
+ const requests=['create','start','step','step'].map((op,i)=>({protocol:'mekoniq-sim3d/1',requestId:'probe-'+i,runId:'native-bad-state',expectedTick:0,op,payload:i===0?{sceneRef:'arm-cell-scene.json',seed:42,arms:[{armId:'arm-1',sceneRef:'arm-cell-scene.json'}]}:i<2?{}:payload}));
+ if(mutation==='request')requests[2].expectedTick=1;
+ const responses=requests.map((r,i)=>({requestId:r.requestId,ok:i<2,...i>=2?{error:{code:'PLANT_UNSTABLE'}}:{}}));
+ const raw={injection,before,after,warningDelta:warnings,response:responses[2],postFault:responses[3]};
+ await put('requests.json',requests);await put('responses.json',responses);await put('injection.json',injection);
+ await put('snapshots.json',{before:{...before,warnings:{BADQPOS:0,BADQVEL:0,BADQACC:0}},after:{...after,tick:mutation==='snapshot'?1:0,warnings:mutation==='warning'?{BADQPOS:0,BADQVEL:0,BADQACC:0}:warnings}});
+ await put('arm-cell-scene.json',mutation==='scene'?{...baseline.world,engineSeed:99}:baseline.world);
+ for(const name of ['component.json','physics.json'])await writeFile(join(root,'engine',name),await readFile('robotics/simulation-mujoco/fixtures/xarm6-g2-v1/'+name));
+ await writeFile(join(root,'engine/compiled.xml'),mutation==='compiled'?'<mujoco/>':await readFile('scripts/native-sim/r2a-arm-compiled.xml'));
+ const issues=await verifyBadStateRaw(root,raw,baseline);if(mutation==='none')expect(issues).toEqual([]);else expect(issues.length).toBeGreaterThan(0);
 });

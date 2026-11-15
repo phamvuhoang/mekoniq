@@ -1,0 +1,121 @@
+<mujoco model="arm_cell">
+ <compiler angle="radian" autolimits="true" meshdir="/probe/bad-state-bundle/blobs" />
+ <option timestep="0.002" integrator="implicitfast" cone="elliptic" impratio="10.0" />
+ <default>
+  <geom solref="0.01 1.0" solimp="0.9 0.95 0.005" />
+ </default>
+ <asset>
+  <mesh name="MESH_1" file="479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl" scale="1.0 1.0 1.0" />
+  <mesh name="MESH_2" file="25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl" scale="1.0 1.0 1.0" />
+  <mesh name="MESH_3" file="d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl" scale="1.0 1.0 1.0" />
+  <mesh name="MESH_4" file="48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl" scale="1.0 1.0 1.0" />
+  <mesh name="MESH_5" file="29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl" scale="1.0 1.0 1.0" />
+  <mesh name="MESH_6" file="25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl" scale="1.0 1.0 1.0" />
+  <mesh name="MESH_7" file="7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl" scale="1.0 1.0 1.0" />
+ </asset>
+ <worldbody>
+  <geom name="FLOOR" type="plane" size="0 0 1" friction="1.0 0.005 0.0001" contype="1" conaffinity="3" />
+  <geom name="STATIC_1" type="box" size="1.0 0.3000000000000001 0.5" pos="3.0 1.8000000000000003 0.5" quat="1.0 0.0 0.0 0.0" friction="1.0 0.005 0.0001" contype="1" conaffinity="3" />
+  <geom name="SUPPORT_1" type="box" size="0.05 0.05 0.05" pos="3.1399999999999997 0.65 0.75" quat="1.0 0.0 0.0 0.0" friction="1.0 0.005 0.0001" contype="1" conaffinity="3" />
+  <geom name="SUPPORT_2" type="box" size="0.1 0.1 0.03" pos="3.0 1.0 0.73" quat="1.0 0.0 0.0 0.0" friction="1.0 0.005 0.0001" contype="1" conaffinity="3" />
+  <body name="ARM_link0" pos="2.65 0.65 0.7" quat="1.0 0.0 0.0 0.0">
+   <inertial pos="0.0 0.0 0.09103" mass="2.7" fullinertia="0.00494875 0.00494174 0.002219 -3.5e-06 1.25e-05 1.67e-06" />
+   <geom type="mesh" mesh="MESH_1" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
+   <body name="ARM_link1" pos="0.0 0.0 0.267" quat="1.0 0.0 0.0 0.0">
+    <inertial pos="0.00022 0.02951 -0.0124" mass="2.3814" fullinertia="0.0058562 0.0050316 0.003536652 -1.79e-05 3.55e-06 -0.000888336" />
+    <joint name="J1" axis="0.0 0.0 1.0" range="-6.28318530718 6.28318530718" armature="0.1" damping="1.0" frictionloss="1.0" />
+    <geom type="mesh" mesh="MESH_2" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
+    <body name="ARM_link2" pos="0.0 0.0 0.0" quat="0.707105482511 -0.707108079859 0.0 0.0">
+     <inertial pos="0.03881 -0.22783 0.03496" mass="2.2675" fullinertia="0.028315776 0.0058 0.0273447 0.005 0.00066546 -0.0045741" />
+     <joint name="J2" axis="0.0 0.0 1.0" range="-2.059 2.0944" armature="0.1" damping="1.0" frictionloss="1.0" />
+     <geom type="mesh" mesh="MESH_3" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
+     <body name="ARM_link3" pos="0.0535 -0.2845 0.0" quat="1.0 0.0 0.0 0.0">
+      <inertial pos="0.07041 0.11631 0.0107" mass="1.875" fullinertia="0.0063483 0.00379758 0.00595768 -0.0015397 0.00096858 0.00186567" />
+      <joint name="J3" axis="0.0 0.0 1.0" range="-3.927 0.19198" armature="0.1" damping="1.0" frictionloss="1.0" />
+      <geom type="mesh" mesh="MESH_4" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
+      <body name="ARM_link4" pos="0.0775 0.3425 0.0" quat="0.707105482511 -0.707108079859 0.0 0.0">
+       <inertial pos="-0.00018 0.01798 -0.02291" mass="1.3192" fullinertia="0.004896 0.00445694 0.00134332 -6.925e-06 -1.418e-05 -0.00023186" />
+       <joint name="J4" axis="0.0 0.0 1.0" range="-6.28318530718 6.28318530718" armature="0.1" damping="1.0" frictionloss="1.0" />
+       <geom type="mesh" mesh="MESH_5" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
+       <body name="ARM_link5" pos="0.0 0.0 0.0" quat="0.707105482511 0.707108079859 0.0 0.0">
+        <inertial pos="0.0651 0.03096 0.00315" mass="1.33854" fullinertia="0.00146378 0.00184192 0.002333524 -0.000450624 0.000284306 0.000130866" />
+        <joint name="J5" axis="0.0 0.0 1.0" range="-1.69297 3.14159265359" armature="0.1" damping="1.0" frictionloss="1.0" />
+        <geom type="mesh" mesh="MESH_6" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
+        <body name="ARM_link6" pos="0.076 0.097 0.0" quat="0.707105482511 -0.707108079859 0.0 0.0">
+         <inertial pos="0.0 -0.00677 -0.01098" mass="0.17" fullinertia="9.3e-05 5.87e-05 0.000132 0.0 0.0 -3.6e-06" />
+         <joint name="J6" axis="0.0 0.0 1.0" range="-6.28318530718 6.28318530718" armature="0.1" damping="1.0" frictionloss="1.0" />
+         <geom type="mesh" mesh="MESH_7" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
+         <body name="ARM_part1" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+          <inertial pos="-0.00065489 -0.0018497 0.048028" mass="0.54156" fullinertia="0.00047106 0.00033072 0.00025642 3.9292e-07 2.6537e-06 -1.0975e-05" />
+          <geom name="PALM" type="box" size="0.0375 0.051 0.056" pos="0.0 0.0 0.047" group="3" contype="2" conaffinity="2" />
+          <body name="ARM_part2" pos="0.0 0.035 0.059098" quat="1.0 0.0 0.0 0.0">
+           <inertial pos="2.9948e-14 0.021559 0.015181" mass="0.033618" fullinertia="1.9111e-05 6.6256e-06 1.3185e-05 -1.8803e-17 -1.1002e-17 -7.3008e-06" />
+           <joint name="ARM_part2_joint" axis="1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
+           <body name="ARM_part3" pos="0.0 0.035465 0.042039" quat="1.0 0.0 0.0 0.0">
+            <inertial pos="-2.4536e-14 -0.016413 0.029258" mass="0.048304" fullinertia="1.7493e-05 1.7225e-05 5.1466e-06 -4.2156e-19 6.9164e-18 4.6433e-06" />
+            <joint name="ARM_part3_joint" axis="-1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
+            <geom name="PAD_1" type="box" size="0.012 0.002 0.02" pos="0.0 -0.024 0.04" condim="4" priority="1" friction="1.0 0.02 0.0001" group="3" contype="1" conaffinity="1" />
+           </body>
+          </body>
+          <body name="ARM_part4" pos="0.0 0.02 0.074098" quat="1.0 0.0 0.0 0.0">
+           <inertial pos="1.86600784688e-06 0.0220467847634 0.0261334672831" mass="0.0230125781257" fullinertia="6.09490024272e-06 6.01955084375e-06 5.0786200448e-06 6.0665132616e-11 7.19102670501e-11 -2.75316812992e-06" />
+           <joint name="ARM_part4_joint" axis="1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
+          </body>
+          <body name="ARM_part5" pos="0.0 -0.035 0.059098" quat="1.0 0.0 0.0 0.0">
+           <inertial pos="-3.1669e-14 -0.021559 0.015181" mass="0.033618" fullinertia="1.9111e-05 6.6256e-06 1.3185e-05 -1.8789e-17 1.0986e-17 7.3008e-06" />
+           <joint name="ARM_part5_joint" axis="-1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
+           <body name="ARM_part6" pos="0.0 -0.035465 0.042039" quat="1.0 0.0 0.0 0.0">
+            <inertial pos="2.5618e-14 0.016413 0.029258" mass="0.048304" fullinertia="1.7493e-05 1.7225e-05 5.1466e-06 -5.0014e-19 -7.5079e-18 -4.6435e-06" />
+            <joint name="ARM_part6_joint" axis="1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
+            <geom name="PAD_2" type="box" size="0.012 0.002 0.02" pos="0.0 0.024 0.04" condim="4" priority="1" friction="1.0 0.02 0.0001" group="3" contype="1" conaffinity="1" />
+           </body>
+          </body>
+          <body name="ARM_part7" pos="0.0 -0.02 0.074098" quat="1.0 0.0 0.0 0.0">
+           <inertial pos="1.866e-06 -0.022047 0.026133" mass="0.023013" fullinertia="6.0949e-06 6.0197e-06 5.0784e-06 -6.0665e-11 7.191e-11 2.7531e-06" />
+           <joint name="ARM_part7_joint" axis="-1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
+          </body>
+         </body>
+        </body>
+       </body>
+      </body>
+     </body>
+    </body>
+   </body>
+  </body>
+  <body name="PROP_1" pos="0.0 0.0 -11.0">
+   <freejoint name="PROP_1_free" />
+   <geom name="PROP_1" type="cylinder" size="0.04 0.05" mass="0.32" friction="0.6 0.005 0.0001" condim="4" contype="0" conaffinity="0" />
+  </body>
+  <body name="PROP_2" pos="0.0 0.0 -12.0">
+   <freejoint name="PROP_2_free" />
+   <geom name="PROP_2" type="cylinder" size="0.04 0.05" mass="0.32" friction="0.6 0.005 0.0001" condim="4" contype="0" conaffinity="0" />
+  </body>
+ </worldbody>
+ <contact>
+  <exclude body1="ARM_link5" body2="ARM_link6" />
+  <exclude body1="ARM_link4" body2="ARM_link5" />
+  <exclude body1="ARM_link3" body2="ARM_link4" />
+  <exclude body1="ARM_link2" body2="ARM_link3" />
+  <exclude body1="ARM_link1" body2="ARM_link2" />
+  <exclude body1="ARM_link0" body2="ARM_link1" />
+ </contact>
+ <equality>
+  <joint joint1="ARM_part3_joint" joint2="ARM_part2_joint" polycoef="0.0 1.0 0.0 0.0 0.0" solref="0.004 1.0" />
+  <joint joint1="ARM_part4_joint" joint2="ARM_part2_joint" polycoef="0.0 1.0 0.0 0.0 0.0" solref="0.004 1.0" />
+  <joint joint1="ARM_part5_joint" joint2="ARM_part2_joint" polycoef="0.0 1.0 0.0 0.0 0.0" solref="0.004 1.0" />
+  <joint joint1="ARM_part6_joint" joint2="ARM_part2_joint" polycoef="0.0 1.0 0.0 0.0 0.0" solref="0.004 1.0" />
+  <joint joint1="ARM_part7_joint" joint2="ARM_part2_joint" polycoef="0.0 1.0 0.0 0.0 0.0" solref="0.004 1.0" />
+ </equality>
+ <actuator>
+  <position name="J1_act" joint="J1" kp="6000.0" kv="150.0" forcerange="-179.4445 179.4445" ctrlrange="-6.28318530718 6.28318530718" />
+  <position name="J2_act" joint="J2" kp="6000.0" kv="150.0" forcerange="-179.4445 179.4445" ctrlrange="-2.059 2.0944" />
+  <position name="J3_act" joint="J3" kp="5000.0" kv="100.0" forcerange="-92.0 92.0" ctrlrange="-3.927 0.19198" />
+  <position name="J4_act" joint="J4" kp="2000.0" kv="40.0" forcerange="-81.558 81.558" ctrlrange="-6.28318530718 6.28318530718" />
+  <position name="J5_act" joint="J5" kp="2000.0" kv="30.0" forcerange="-30.6 30.6" ctrlrange="-1.69297 3.14159265359" />
+  <position name="J6_act" joint="J6" kp="500.0" kv="14.0" forcerange="-30.6 30.6" ctrlrange="-6.28318530718 6.28318530718" />
+  <position name="grip_act" joint="ARM_part2_joint" kp="20.0" kv="0.5" forcerange="-1.2 1.2" ctrlrange="0.0 0.85" />
+ </actuator>
+ <keyframe>
+  <key name="home" qpos="-4.93613604879e-10 -1.14779631171 -0.324460234973 -3.14159266066 0.098539780113 7.05694566235e-09 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 -11.0 1.0 0.0 0.0 0.0 0.0 0.0 -12.0 1.0 0.0 0.0 0.0" ctrl="-4.93613604879e-10 -1.14779631171 -0.324460234973 -3.14159266066 0.098539780113 7.05694566235e-09 0.0" />
+ </keyframe>
+</mujoco>

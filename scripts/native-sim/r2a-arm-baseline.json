@@ -676,5 +676,19 @@
         "sha256": "02163a31bad7f5a5d3ae8467da15239a8bc92919c92f2d508e7900b10e1f7962"
       }
     ]
+  },
+  "badStateCompiled": {
+    "path": "r2a-arm-compiled.xml",
+    "sha256": "2717a5375922b0e88735859550641e37f8ff664a0f57a10d15bf0f9f585499a8",
+    "compilerSourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+    "compilerSourcePath": "robotics/simulation-mujoco/mujoco_worker/compile.py",
+    "compilerSha256": "9185142c8dc3495790ba46369e07fe2041e439dd03343ff198d59f15950b572d",
+    "method": "frozen stdlib-only compile_cell; verified frozen scene/component/physics/mesh bytes; meshdir normalized to /probe/bad-state-bundle/blobs; no MuJoCo import or execution",
+    "stateSizes": {
+      "qpos": 26,
+      "qvel": 24,
+      "qacc": 24,
+      "ctrl": 7
+    }
   }
 }

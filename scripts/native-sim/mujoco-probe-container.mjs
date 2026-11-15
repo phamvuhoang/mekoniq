@@ -69,6 +69,7 @@ async function business(spec){
   const copies=[];async function copy(source,target,path=''){await mkdir(target,{recursive:true});for(const name of await readdir(source)){const p=path?path+'/'+name:name,s=await lstat(join(source,name));if(s.isDirectory())await copy(join(source,name),join(target,name),p);else{const b=await probeFile(data,p);await copyFile(join(source,name),join(target,name));if(sha256(await probeFile(join(out,'runtime'),p))!==sha256(b))throw Error('RUNTIME_COPY_CHANGED');copies.push({path:'runtime/'+p,sha256:sha256(b),bytes:b.length});}}}
   await copy(data,join(out,'runtime'));await save('runtime-copies.json',{afterRuntimeClose:true,copies});
  }
+ raw.checkpoint=await read(join(out,'runtime',runDir.slice(data.length+1),'run.json'));
  const events=(await wire()).filter(e=>e.runId===runId||e.event==='incomplete'),analysis=analyseWire(events);await save('run-wire.json',events);
  const missing=await lstat(wirePath+'.incomplete').then(()=>true,()=>false);const seal=await read(wirePath+'.seal');if(missing||seal.complete!==true||!analysis.valid)throw Error('WIRE_OBSERVATION_INCOMPLETE');
  raw.wire=events;raw.ipcMs=analysis.ipcMs;raw.workerObservation={maxActive:analysis.maxActive,spawned:analysis.spawned,afterLoss:injection?events.filter(e=>e.event==='spawn'&&e.atMs>injection.atMs).map(e=>e.pid):[]};
