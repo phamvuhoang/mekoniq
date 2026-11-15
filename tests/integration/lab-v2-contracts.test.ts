@@ -198,6 +198,7 @@ test('project validation route reports field issues and never applies anything',
 
 test('server denies capability before any run or backend exists',async()=>{
  const {g,directory}=await setup(),h=await headersV2(g),url=g.url+'/lab/v2/runs';
+ const ownershipBaseline=(await readdir(directory)).sort();expect(ownershipBaseline).toEqual(['.runtime-owner.sqlite']);
  const denied=async(body:unknown,status:number,codesWanted:string[])=>{const r=await post(url,h,body);expect(r.status).toBe(status);expect((await r.json() as {reasonCodes:string[]}).reasonCodes).toEqual(codesWanted);};
  await denied(run({mode:'hardware',access:'live',backendSetId:'hardware-live'}),403,['ACCESS_NOT_GRANTED']);
  await denied(run({mode:'hardware',access:'hil',backendSetId:'hardware-hil'}),403,['ACCESS_NOT_GRANTED']);
@@ -212,7 +213,7 @@ test('server denies capability before any run or backend exists',async()=>{
  await denied(run({runtimeIdentity:{sourceCommit:'other',schemaHash:hash}}),409,['CONTRACT_MISMATCH']);
  // An admissible mock set still starts nothing while only the schema exists.
  await denied(run(),501,['BACKEND_EXECUTION_DISABLED']);
- expect(await readdir(directory)).toEqual([]);
+ expect((await readdir(directory)).sort()).toEqual(ownershipBaseline);
 });
 
 test('v2 action and read routes validate then deny without a run; mode change is immutable',async()=>{
@@ -230,10 +231,11 @@ test('a shadow grant cannot carry a hil/live set even when every backend is prov
  const provisioned:CapabilityCatalog={backends:defaultCatalog.backends.map(b=>({...b,installed:true,compatible:true,reachable:true,commissioned:true})),sets:{...defaultCatalog.sets,'amr-live':{mode:'hardware',access:'live',backends:['valetudo_native']},'amr-hil':{mode:'hardware',access:'hil',backends:['valetudo_native']}}};
  const directory=await mkdtemp(join(tmpdir(),'lab-v2-'));dirs.push(directory);
  const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:hash,v2:{catalog:provisioned,enabledBackends:['valetudo_native']}});instances.push(g);
+ const ownershipBaseline=(await readdir(directory)).sort();expect(ownershipBaseline).toEqual(['.runtime-owner.sqlite']);
  const h=await headersV2(g);
  for(const backendSetId of ['amr-live','amr-hil','hardware-live']){
   const r=await post(g.url+'/lab/v2/runs',h,run({mode:'hardware',access:'shadow',backendSetId}));
   expect(r.status).toBe(422);expect((await r.json() as {reasonCodes:string[]}).reasonCodes).toEqual(['ACCESS_MODE_MISMATCH']);
  }
- expect(await readdir(directory)).toEqual([]);
+ expect((await readdir(directory)).sort()).toEqual(ownershipBaseline);
 });

@@ -475,7 +475,7 @@ async function r3Fixture(profile='mujoco-linux-amd64',scope='prepared'){
  // @ts-expect-error plain ESM artifact inventory
  const {evidenceInventory}=await import('../../scripts/r2b-readback.mjs');
  const mode=profile.startsWith('engineering-')?'ros_navigation':profile==='xarm6-jazzy-sim'?'ros_xarm':profile==='puma560-linuxcnc-sim'?'native_apt':'oci';
- const f=await nativeHandoffFixture(mode);f.manifest.profile.id=profile;f.inventory.profileId=profile;if(mode==='ros_navigation'||mode==='ros_xarm')f.manifest.profile.os={id:'ubuntu',version:'24.04'};await f.reseal();
+ const f=await nativeHandoffFixture(mode);f.manifest.profile.id=profile;f.inventory.profileId=profile;if(mode==='ros_navigation'||mode==='ros_xarm')f.manifest.profile.os={id:'ubuntu',version:'24.04'};if(profile==='mujoco-linux-arm64'){f.manifest.profile.architecture='arm64';f.manifest.subject.image=null;}await f.reseal();
  const root=mkdtempSync(join(tmpdir(),'r3-directory-'));await mkdir(join(root,'inputs'));await cp(f.root,join(root,'inputs/handoff'),{recursive:true});await mkdir(join(root,'inputs/native'));await rm(f.root,{recursive:true});
  const s=f.manifest.subject,m:M={schemaVersion:1,documentType:'sim-extension-qualification',release:'r3',profile,scope,candidateId:'r3-unit',accepted:false,acceptedBy:null,acceptedAt:null,dynamics:'not_calibrated',subject:s,checker:{sourceCommit:s.sourceCommit,toolSha256:HEX},identity:{before:{sourceCommit:s.sourceCommit,dirty:false,toolClosures:{portable:s.portableClosureHash,native:s.nativeClosureHash}},after:{sourceCommit:s.sourceCommit,dirty:false,toolClosures:{portable:s.portableClosureHash,native:s.nativeClosureHash}},identityStable:true},lab:{commit:s.labCommit,dirty:false,pin:{sourceCommit:s.sourceCommit,artifactSha256:s.runtimeArtifactSha256,schemaHash:s.schemaHash,portableToolsDigest:s.portableClosureHash}},campaign:null,performance:null};
  const seal=async()=>{m.artifacts=evidenceInventory(root);await writeFile(join(root,'qualification.json'),JSON.stringify(m));};
@@ -485,6 +485,15 @@ async function r3Fixture(profile='mujoco-linux-amd64',scope='prepared'){
 
 test('R3 prepared directory is recomputed, retains every missing native case, and never claims native or physical acceptance',async()=>{
  const f=await r3Fixture();try{await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);expect(f.m.cases['DEP-PREP-01'].status).toBe('tested');expect(f.m.gates['G-NATIVE-MJ'].status).toBe('not_run');expect(f.m.blockedNativeCases.map((c:M)=>c.id)).toEqual(['DEP-MJ-01','DEP-SEC-01']);expect(f.m.levels['R3.1']).toBe('not_run');expect(f.m.levels['R3.2']).toBe('not_run');}finally{await f.cleanup();}
+});
+
+test('R3 prepared arm64 exposes the absent adapter and host separately in case, blocked cases and native gate',async()=>{
+ const f=await r3Fixture('mujoco-linux-arm64');try{
+  await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);
+  const row={status:'not_run',category:'tooling_and_observation',reason:'ASSIGNED_HOST_CASE_ARTIFACTS_MISSING; MUJOCO_ARM64_CAMPAIGN_ADAPTER_NOT_IMPLEMENTED'};
+  expect({case:f.m.cases['DEP-MJ-01'],blocked:f.m.blockedNativeCases.find((c:M)=>c.id==='DEP-MJ-01'),gate:f.m.gates['G-NATIVE-MJ']}).toMatchObject({case:row,blocked:{id:'DEP-MJ-01',...row},gate:{status:'not_run',blockers:expect.arrayContaining([{id:'DEP-MJ-01',category:row.category,reason:row.reason}])}});
+  expect(f.m.requiredCases).toEqual(['DEP-PREP-01']);expect(f.m.levels['R3.1']).toBe('not_run');expect(f.m.accepted).toBe(false);
+ }finally{await f.cleanup();}
 });
 
 test.each([

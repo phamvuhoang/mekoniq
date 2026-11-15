@@ -3,7 +3,7 @@ import net from 'node:net';
 import http from 'node:http';
 import https from 'node:https';
 import dgram from 'node:dgram';
-import {mkdtemp,readdir,rm} from 'node:fs/promises';
+import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createClock,TICK_MS} from '../../packages/lab-runtime/src/v2/clock';
@@ -132,7 +132,7 @@ test('no robot network transport is instantiated by a mock run; only enabled moc
  expect(()=>instantiateBackends('mock-amr',defaultCatalog,[])).toThrow('BACKEND_EXECUTION_DISABLED');
  expect(instantiateBackends('mock-amr',defaultCatalog,['mock_amr'])).toMatchObject({mode:'mock',access:'simulated',backends:['mock_amr']});
  expect(instantiateBackends('mock-default',defaultCatalog,['mock_amr','mock_coffee','mock_arm'])).toMatchObject({backends:['mock_amr','mock_coffee','mock_arm']});
- expect([...scenarioRegistry.keys()]).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','WB-FD01','WB-FD07','WB-BV01','MJ-BV01']);
+ expect([...scenarioRegistry.keys()]).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','MJ-FD01','WB-FD01','WB-FD07','WB-BV01','MJ-CELL-BV01','MJ-BV01']);
 });
 
 // ---- gateway: run ownership and action idempotency (carried from F01) ----
@@ -144,6 +144,7 @@ async function pair(g:LabGateway){const r=await post(g.url+'/lab/v2/sessions',{O
 test('v2 gateway runs the mock AMR set only, binds runs to the pairing session and keeps action receipts idempotent',async()=>{
  const directory=await mkdtemp(join(tmpdir(),'lab-v2-gw-'));gwDirs.push(directory);
  const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:hash,v2:{enabledBackends:['mock_amr']}});gateways.push(g);
+ const ownershipBaseline=(await readdir(directory)).sort();expect(ownershipBaseline).toEqual(['.runtime-owner.sqlite']);
  const health=await (await fetch(g.url+'/lab/v2/health')).json() as {backends:{id:string;enabled:boolean}[];scenarioIds:string[]};
  expect(health.backends.filter(b=>b.enabled).map(b=>b.id)).toEqual(['mock_amr']);expect(health.scenarioIds).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','WB-FD01','WB-FD07','WB-BV01']);
  const owner=await pair(g),other=await pair(g);
@@ -152,8 +153,11 @@ test('v2 gateway runs the mock AMR set only, binds runs to the pairing session a
  expect((await post(g.url+'/lab/v2/runs',owner,{...body,mode:'hardware',access:'live',backendSetId:'hardware-live'})).status).toBe(403);
  expect((await post(g.url+'/lab/v2/runs',owner,{...body,scenarioId:'NOPE'})).status).toBe(422);
  expect((await post(g.url+'/lab/v2/runs',owner,{...body,scenarioRevision:9})).status).toBe(409);
+ expect((await readdir(directory)).sort()).toEqual(ownershipBaseline);
  const created=await post(g.url+'/lab/v2/runs',owner,body);expect(created.status).toBe(201);
  const view=await created.json() as {run:{id:string;status:string;runRevision:number}};expect(view.run.status).toBe('ready');
+ const createdEntries=(await readdir(directory)).sort(),runDirectories=createdEntries.filter(name=>!ownershipBaseline.includes(name));expect(runDirectories).toHaveLength(1);
+ const savedRun=JSON.parse(await readFile(join(directory,runDirectories[0]!,'run.json'),'utf8'));expect(savedRun.runId).toBe(view.run.id);
  const url=`${g.url}/lab/v2/runs/${view.run.id}`;
  expect((await fetch(url,{headers:other})).status).toBe(404);
  expect((await post(url+'/actions',other,{actionId:'s1',expectedRevision:0,kind:'start',payload:{}})).status).toBe(404);
@@ -168,7 +172,7 @@ test('v2 gateway runs the mock AMR set only, binds runs to the pairing session a
  const report=await (await fetch(url+'/report',{headers:owner})).json() as {manifest:{backends:{model:string}[]}};expect(report.manifest.backends[0]!.model).toBe('mock_kinematic');
  // F06: the v2 business-event stream is served (SSE); v1 keeps answering 501 for events (lab-runtime-gateway tests)
  const ctl=new AbortController(),events=await fetch(url+'/events',{headers:owner,signal:ctl.signal});expect(events.status).toBe(200);expect(events.headers.get('content-type')).toMatch(/event-stream/);ctl.abort();
- expect(await readdir(directory)).toHaveLength(1);
+ expect((await readdir(directory)).sort()).toEqual(createdEntries);
 });
 
 test('v2 gateway runs the coffee set once every mock backend of it is enabled; hardware stays denied',async()=>{

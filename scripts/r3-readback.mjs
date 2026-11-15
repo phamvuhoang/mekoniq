@@ -33,6 +33,7 @@ export async function collectR3Artifacts(root,m){
  }catch(e){issues.push('R3_HANDOFF_UNREADABLE:'+detail(e));cases['DEP-PREP-01']={status:'failed',reason:issues.at(-1),category:'invalid_artifact'};}
  // Known producer limitations stay visible even when no host has been assigned.
  for(const id of t.nativeCases)if(limitations[t.kind].length)cases[id]=missing('ASSIGNED_HOST_CASE_ARTIFACTS_MISSING; '+limitations[t.kind].join(';'),'tooling_and_observation');
+ if(t.kind==='mujoco'&&t.architecture==='arm64')cases['DEP-MJ-01']=missing('ASSIGNED_HOST_CASE_ARTIFACTS_MISSING; MUJOCO_ARM64_CAMPAIGN_ADAPTER_NOT_IMPLEMENTED','tooling_and_observation');
  let index;try{index=read(root,'inputs/native/index.json');}catch(e){if(e.code!=='ENOENT')issues.push('R3_NATIVE_INDEX_UNREADABLE:'+detail(e));}
  if(index){
   const roles={mujoco:['historical','current','r2bQualification'],engineering:['engineering'],xarm:['xarm'],linuxcnc:['linuxcnc']}[t.kind];
