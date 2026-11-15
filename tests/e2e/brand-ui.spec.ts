@@ -15,6 +15,33 @@ test('canonical theme, original artwork and keyboard focus', async ({ page }) =>
   await expect(brand).toHaveCSS('outline-color', 'rgb(99, 220, 197)');
 });
 
+for (const control of ['skip', 'brand'] as const) test(`startup health rendering preserves ${control} keyboard position and native activation`, async ({page}, info) => {
+  let release!:()=>void, captured!:()=>void, first=true;
+  const gate=new Promise<void>(done=>release=done), responseReady=new Promise<void>(done=>captured=done);
+  await page.route('**/lab/v1/health',async route=>{
+    if(!first||route.request().method()!=='GET'){await route.continue();return;}
+    first=false;const response=await route.fetch();
+    info.annotations.push({type:'test-response-scheduling-input',description:`Actual loopback startup health HTTP ${response.status()}, held until ordinary keyboard focus; not qualification evidence.`});
+    captured();await gate;await route.fulfill({response});
+  });
+  try {
+    await page.goto(control==='skip'?'/#design':'/#restaurant');
+    const skip=page.locator('.skip-link'),brand=page.getByRole('link',{name:'MEKONIQ Robot Lab',exact:true}),target=control==='skip'?skip:brand;
+    await expect(brand).toBeVisible();await responseReady;
+    await page.keyboard.press('Tab');await expect(skip).toBeFocused();
+    if(control==='brand'){await page.keyboard.press('Tab');await expect(brand).toBeFocused();}
+    const original=await target.elementHandle();expect(original).not.toBeNull();release();
+    await expect.poll(()=>original!.evaluate(node=>node.isConnected)).toBe(false);
+    await expect(target).toBeFocused();
+    await expect(target).toHaveAttribute('href',control==='skip'?'#workspace':'#design');
+    await page.keyboard.press('Tab');await expect(control==='skip'?brand:page.getByRole('button',{name:'VI',exact:true})).toBeFocused();
+    await page.keyboard.press('Shift+Tab');await expect(target).toBeFocused();
+    if(control==='brand')await expect(brand).toHaveCSS('outline-color','rgb(99, 220, 197)');
+    await page.keyboard.press('Enter');await expect(page).toHaveURL(control==='skip'?/#workspace$/:/#design$/);
+    await expect(control==='skip'?page.locator('#workspace'):brand).toBeFocused();
+  } finally {release();}
+});
+
 for (const width of [390, 1024, 1512]) test(`six workspaces and three locales at ${width}px`, async ({ page }, testInfo) => {
   await page.setViewportSize({ width, height: 1000 });
   await page.emulateMedia({ reducedMotion: 'reduce' });

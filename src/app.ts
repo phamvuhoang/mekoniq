@@ -175,9 +175,9 @@ export class LabApp {
   }
   private header() {
     const ns = names();
-    return `<a class="skip-link" href="#workspace">${tr("Đến vùng làm việc", "ワークスペースへ", "Skip to workspace")}</a>
+    return `<a id="app-skip-link" class="skip-link" href="#workspace">${tr("Đến vùng làm việc", "ワークスペースへ", "Skip to workspace")}</a>
 <header class="topbar">
-<a class="brand mq-brand" href="#design" aria-label="MEKONIQ Robot Lab">
+<a id="app-brand-link" class="brand mq-brand" href="#design" aria-label="MEKONIQ Robot Lab">
 <img class="brand-horizontal" src="/brand/assets/MEKONIQ_Horizontal_White_Transparent_v2.png" width="1420" height="300" alt="">
 <img class="brand-compact" src="/brand/assets/MEKONIQ_Icon_Transparent.svg" width="40" height="40" alt="">
 <span class="brand-lab">ROBOT LAB</span>
