@@ -173,7 +173,7 @@
     {
       "name": "gripper_fix",
       "type": "fixed",
-      "parent": "link6",
+      "parent": "link_eef",
       "child": "xarm_gripper_base_link",
       "xyz": [
         0,
@@ -238,6 +238,11 @@
         "lower": 0,
         "upper": 0.85,
         "velocity": 2
+      },
+      "mimic": {
+        "joint": "drive_joint",
+        "multiplier": 1,
+        "offset": 0
       }
     },
     {
@@ -265,6 +270,11 @@
         "lower": 0,
         "upper": 0.85,
         "velocity": 2
+      },
+      "mimic": {
+        "joint": "drive_joint",
+        "multiplier": 1,
+        "offset": 0
       }
     },
     {
@@ -292,6 +302,11 @@
         "lower": 0,
         "upper": 0.85,
         "velocity": 2
+      },
+      "mimic": {
+        "joint": "drive_joint",
+        "multiplier": 1,
+        "offset": 0
       }
     },
     {
@@ -319,6 +334,11 @@
         "lower": 0,
         "upper": 0.85,
         "velocity": 2
+      },
+      "mimic": {
+        "joint": "drive_joint",
+        "multiplier": 1,
+        "offset": 0
       }
     },
     {
@@ -346,6 +366,11 @@
         "lower": 0,
         "upper": 0.85,
         "velocity": 2
+      },
+      "mimic": {
+        "joint": "drive_joint",
+        "multiplier": 1,
+        "offset": 0
       }
     },
     {
@@ -363,6 +388,38 @@
         0,
         0
       ]
+    },
+    {
+      "name": "world_joint",
+      "type": "fixed",
+      "parent": "world",
+      "child": "link_base",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "joint_eef",
+      "type": "fixed",
+      "parent": "link6",
+      "child": "link_eef",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ]
     }
   ],
   "sourceModelSha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
@@ -370,72 +427,282 @@
     {
       "link": "link_base",
       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link_base.stl",
-      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28"
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "link1",
       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link1.stl",
-      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9"
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "link2",
       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link2.stl",
-      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82"
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "link3",
       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link3.stl",
-      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81"
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "link4",
       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link4.stl",
-      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943"
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "link5",
       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link5.stl",
-      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771"
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "link6",
       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link6.stl",
-      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f"
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "xarm_gripper_base_link",
       "uri": "package://xarm_description/meshes/gripper/xarm/base_link_g2.dae",
-      "sha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575"
+      "sha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "left_outer_knuckle",
       "uri": "package://xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
-      "sha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b"
+      "sha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "left_finger",
       "uri": "package://xarm_description/meshes/gripper/xarm/left_finger_g2.dae",
-      "sha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b"
+      "sha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "left_inner_knuckle",
       "uri": "package://xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
-      "sha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86"
+      "sha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "right_outer_knuckle",
       "uri": "package://xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
-      "sha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55"
+      "sha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "right_finger",
       "uri": "package://xarm_description/meshes/gripper/xarm/right_finger_g2.dae",
-      "sha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36"
+      "sha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     {
       "link": "right_inner_knuckle",
       "uri": "package://xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
-      "sha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3"
+      "sha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "rpy": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     }
   ],
   "syntheticSimModelSelector": "XI13050520BB00",
@@ -678,5 +945,13 @@
         5.0784e-06
       ]
     }
-  ]
+  ],
+  "nativeAttachment": {
+    "root": "world",
+    "canonicalFlange": "link6",
+    "nativeFlangeAlias": "link_eef",
+    "aliasTransform": "identity",
+    "canonicalModelUnchanged": true
+  },
+  "controlParameterFiles": "unresolved_separate_from_raw_declaration_mapping"
 }

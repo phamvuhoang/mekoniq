@@ -61,7 +61,7 @@ def main():
         print(json.dumps({'kind':'refusal','reasons':reasons,'status':'not_run','result':'blocked_external','accepted':False,'dynamics':'not_calibrated'}),flush=True);return 2
     import fcntl
     domain=40+int(hashlib.sha256(args.run_id.encode()).hexdigest()[:6],16)%160
-    os.environ.update(ROS_DOMAIN_ID=str(domain),ROS_LOCALHOST_ONLY='1',GZ_PARTITION='mekoniq-xarm-'+args.run_id)
+    os.environ.update(ROS_DOMAIN_ID=str(domain),ROS_LOCALHOST_ONLY='1',GZ_PARTITION='mekoniq-xarm-'+args.run_id,TMPDIR='/tmp')
     lease=open('/tmp/mekoniq-ros-domain-'+str(domain)+'.lock','a');fcntl.flock(lease,fcntl.LOCK_EX|fcntl.LOCK_NB)
     graph=subprocess.run(['ros2','node','list','--no-daemon'],capture_output=True,text=True,timeout=15,check=False)
     if graph.returncode or graph.stdout.strip():raise RuntimeError('ROS_DOMAIN_NOT_EMPTY')

@@ -154,7 +154,10 @@ def test_prepared_worker_lifecycle_uses_fixed_launch_and_owned_shutdown(tmp_path
         def sample(self):return {'bootId':self.boot,'epoch':1,'seq':1,'clockNs':1000000000,'stampNs':1000000000,'actualRad':Q,'commandedRad':Q,'tcpM':[0,0,.172]}
         def readback(self):
             xml=(ROOT/'tests/fixtures/xarm-native-protocol.urdf').read_text()
-            if mode=='X1':xml=xml.replace('gz_ros2_control/GazeboSimSystem','uf_robot_hardware/UFRobotFakeSystemHardware').replace('file://'+load_profile()['descriptionShare'],'package://xarm_description')
+            if mode=='X1':
+                import re
+                xml=re.sub(r'<gazebo><plugin filename="gz_ros2_control-system"[\s\S]*?</gazebo>','',xml)
+                xml=xml.replace('gz_ros2_control/GazeboSimSystem','uf_robot_hardware/UFRobotFakeSystemHardware').replace('file://'+load_profile()['descriptionShare'],'package://xarm_description')
             return {'/robot_state_publisher':{'robot_description':{'string':xml}}}
         def close(self):self.closed=True
     monkeypatch.setattr(worker,'preflight',lambda profile:({'reasonCodes':[]},[]))
@@ -225,3 +228,25 @@ def test_delayed_callback_keeps_original_receipt_age(session):
     s,p=session
     s.observe({'bootId':'boot-1','epoch':1,'seq':2,'clockNs':1020000000,'stampNs':1020000000,'actualRad':Q,'commandedRad':Q,'tcpM':[0,0,.172],'receivedMs':-1000})
     assert s.execute('a','h',points())['unknown'];assert p.sends==0
+
+@pytest.mark.parametrize('case',['scale','visual_origin','missing_tcp','orphan','cycle','gazebo_plugin','empty_control'])
+def test_fix1_mapping_closed_semantics(case):
+    from native_xarm.mapping import validate_urdf
+    import re
+    xml=(ROOT/'tests/fixtures/xarm-native-protocol.urdf').read_text()
+    bad={'scale':xml.replace('<mesh ','<mesh scale="1000 1000 1000" ',1),'visual_origin':xml.replace('<visual>','<visual><origin xyz="100 0 0" rpy="0 0 0"/>',1),'missing_tcp':xml.replace('<link name="link_tcp"/>',''),'orphan':xml.replace('</robot>','<link name="orphan"/></robot>'),'cycle':xml.replace('</robot>','<joint name="cycle" type="fixed"><parent link="link_tcp"/><child link="link_base"/></joint></robot>'),'gazebo_plugin':xml.replace('</robot>','<gazebo><plugin name="unapproved" filename="libunapproved.so"/></gazebo></robot>'),'empty_control':re.sub(r'<ros2_control[\s\S]*?</ros2_control>','<ros2_control name="xarm6" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware></ros2_control>',xml)}[case]
+    with pytest.raises(ValueError):validate_urdf(bad,'X2')
+
+@pytest.mark.parametrize('mode',['X1','X2'])
+def test_fix1_mode_graph_control_and_visual_defaults(mode):
+    from native_xarm.mapping import validate_urdf
+    import re
+    xml=(ROOT/'tests/fixtures/xarm-native-protocol.urdf').read_text()
+    if mode=='X1':xml=re.sub(r'<gazebo><plugin filename="gz_ros2_control-system"[\s\S]*?</gazebo>','',xml).replace('gz_ros2_control/GazeboSimSystem','uf_robot_hardware/UFRobotFakeSystemHardware').replace('file://'+load_profile()['descriptionShare'],'package://xarm_description')
+    validate_urdf(xml,mode)
+    validate_urdf(xml.replace('<visual>','<visual><origin xyz="0 0 0" rpy="0 0 0"/>').replace('<mesh ','<mesh scale="1 1 1" '),mode)
+    mutations=[('<link name="world"/>',''),('<link name="link_eef"/>',''),('parent link="world"','parent link="missing"'),('parent link="world"','parent link="link_tcp"'),('parent link="link_eef"','parent link="link6"'),('<visual>','<visual><origin rpy="0 0 1"/>'),('<state_interface name="velocity"/>','<state_interface name="effort"/>'),('<joint name="joint1"><command_interface','<joint name="joint6"><command_interface'),('<mimicJoint>left_finger_joint</mimicJoint>','<mimicJoint>joint1</mimicJoint>'),('<mimic joint="drive_joint"','<mimic joint="joint1"'),('</hardware>','<param name="robot_ip">192.0.2.1</param></hardware>'),('<visual>','<visual><plugin name="evil"/>')]
+    if mode=='X2':mutations.append(('/tmp/launch_params_protocolfixture','/tmp/../evil'))
+    for old,new in mutations:
+        bad=xml.replace(old,new,1);assert bad!=xml
+        with pytest.raises(ValueError):validate_urdf(bad,mode)

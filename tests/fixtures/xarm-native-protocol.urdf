@@ -51,7 +51,7 @@
 <limit effort="30.6" lower="-6.28318530718" upper="6.28318530718" velocity="3.14"/>
 </joint>
 <joint name="gripper_fix" type="fixed">
-<parent link="link6"/><child link="xarm_gripper_base_link"/>
+<parent link="link_eef"/><child link="xarm_gripper_base_link"/>
 <origin xyz="0 0 0" rpy="0.0 0 0"/>
 </joint>
 <joint name="drive_joint" type="revolute">
@@ -65,34 +65,70 @@
 <origin xyz="0 0.035465 0.042039" rpy="0.0 0 0"/>
 <axis xyz="-1 0 0"/>
 <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+<mimic joint="drive_joint" multiplier="1" offset="0"/>
 </joint>
 <joint name="left_inner_knuckle_joint" type="revolute">
 <parent link="xarm_gripper_base_link"/><child link="left_inner_knuckle"/>
 <origin xyz="0 0.02 0.074098" rpy="0.0 0 0"/>
 <axis xyz="1 0 0"/>
 <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+<mimic joint="drive_joint" multiplier="1" offset="0"/>
 </joint>
 <joint name="right_outer_knuckle_joint" type="revolute">
 <parent link="xarm_gripper_base_link"/><child link="right_outer_knuckle"/>
 <origin xyz="0 -0.035 0.059098" rpy="0.0 0 0"/>
 <axis xyz="-1 0 0"/>
 <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+<mimic joint="drive_joint" multiplier="1" offset="0"/>
 </joint>
 <joint name="right_finger_joint" type="revolute">
 <parent link="right_outer_knuckle"/><child link="right_finger"/>
 <origin xyz="0 -0.035465 0.042039" rpy="0.0 0 0"/>
 <axis xyz="1 0 0"/>
 <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+<mimic joint="drive_joint" multiplier="1" offset="0"/>
 </joint>
 <joint name="right_inner_knuckle_joint" type="revolute">
 <parent link="xarm_gripper_base_link"/><child link="right_inner_knuckle"/>
 <origin xyz="0 -0.02 0.074098" rpy="0.0 0 0"/>
 <axis xyz="-1 0 0"/>
 <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+<mimic joint="drive_joint" multiplier="1" offset="0"/>
 </joint>
 <joint name="joint_tcp" type="fixed">
 <parent link="xarm_gripper_base_link"/><child link="link_tcp"/>
 <origin xyz="0 0 0.172" rpy="0 0 0"/>
 </joint>
-<ros2_control name="xarm6" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware></ros2_control>
+<link name="link_tcp"/><link name="link_eef"/><link name="world"/>
+<joint name="world_joint" type="fixed"><parent link="world"/><child link="link_base"/><origin xyz="0 0 0" rpy="0 0 0"/></joint>
+<joint name="joint_eef" type="fixed"><parent link="link6"/><child link="link_eef"/><origin xyz="0 0 0" rpy="0 0 0"/></joint>
+<ros2_control name="gz_ros2_control/GazeboSimSystem" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware><joint name="joint1"><command_interface name="position"><param name="min">-6.28318530718</param><param name="max">6.28318530718</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint><joint name="joint2"><command_interface name="position"><param name="min">-2.059</param><param name="max">2.0944</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint><joint name="joint3"><command_interface name="position"><param name="min">-3.927</param><param name="max">0.19198</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint><joint name="joint4"><command_interface name="position"><param name="min">-6.28318530718</param><param name="max">6.28318530718</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint><joint name="joint5"><command_interface name="position"><param name="min">-1.69297</param><param name="max">3.14159265359</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint><joint name="joint6"><command_interface name="position"><param name="min">-6.28318530718</param><param name="max">6.28318530718</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint></ros2_control>
+<ros2_control name="XArmGripperSystem" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware><joint name="drive_joint"><command_interface name="position"></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint></ros2_control>
+<transmission name="tran1"><type>transmission_interface/SimpleTransmission</type><joint name="joint1"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor1"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
+<transmission name="tran2"><type>transmission_interface/SimpleTransmission</type><joint name="joint2"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor2"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
+<transmission name="tran3"><type>transmission_interface/SimpleTransmission</type><joint name="joint3"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor3"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
+<transmission name="tran4"><type>transmission_interface/SimpleTransmission</type><joint name="joint4"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor4"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
+<transmission name="tran5"><type>transmission_interface/SimpleTransmission</type><joint name="joint5"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor5"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
+<transmission name="tran6"><type>transmission_interface/SimpleTransmission</type><joint name="joint6"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor6"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
+<transmission name="drive_joint_trans"><type>transmission_interface/SimpleTransmission</type><joint name="drive_joint"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="drive_joint_motor"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>1</mechanicalReduction></actuator></transmission>
+<gazebo reference="link_base"><selfCollide>true</selfCollide></gazebo>
+<gazebo reference="link1"><selfCollide>true</selfCollide></gazebo>
+<gazebo reference="link2"><selfCollide>true</selfCollide></gazebo>
+<gazebo reference="link3"><selfCollide>true</selfCollide></gazebo>
+<gazebo reference="link4"><selfCollide>true</selfCollide></gazebo>
+<gazebo reference="link5"><selfCollide>true</selfCollide></gazebo>
+<gazebo reference="link6"><selfCollide>true</selfCollide></gazebo>
+<gazebo reference="xarm_gripper_base_link"><selfCollide>false</selfCollide></gazebo>
+<gazebo reference="left_outer_knuckle"><selfCollide>false</selfCollide></gazebo>
+<gazebo reference="left_finger"><selfCollide>false</selfCollide></gazebo>
+<gazebo reference="left_inner_knuckle"><selfCollide>false</selfCollide></gazebo>
+<gazebo reference="right_outer_knuckle"><selfCollide>false</selfCollide></gazebo>
+<gazebo reference="right_finger"><selfCollide>false</selfCollide></gazebo>
+<gazebo reference="right_inner_knuckle"><selfCollide>false</selfCollide></gazebo>
+<gazebo><plugin name="gz::sim::systems::GazeboMimicJointPlugin" filename="libgazebo_mimic_joint_plugin.so"><joint>drive_joint</joint><mimicJoint>left_finger_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>
+<gazebo><plugin name="gz::sim::systems::GazeboMimicJointPlugin" filename="libgazebo_mimic_joint_plugin.so"><joint>drive_joint</joint><mimicJoint>left_inner_knuckle_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>
+<gazebo><plugin name="gz::sim::systems::GazeboMimicJointPlugin" filename="libgazebo_mimic_joint_plugin.so"><joint>drive_joint</joint><mimicJoint>right_outer_knuckle_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>
+<gazebo><plugin name="gz::sim::systems::GazeboMimicJointPlugin" filename="libgazebo_mimic_joint_plugin.so"><joint>drive_joint</joint><mimicJoint>right_finger_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>
+<gazebo><plugin name="gz::sim::systems::GazeboMimicJointPlugin" filename="libgazebo_mimic_joint_plugin.so"><joint>drive_joint</joint><mimicJoint>right_inner_knuckle_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>
+<gazebo><plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin"><parameters>/tmp/launch_params_protocolfixture</parameters></plugin></gazebo>
 </robot>

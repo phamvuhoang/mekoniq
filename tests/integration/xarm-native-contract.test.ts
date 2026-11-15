@@ -95,3 +95,29 @@ test('a late result cannot revive Source completion after close',async()=>{
  const p=await createXarmSimProvider({sourceRoot:resolve('.'),runDirectory:directory,runId:'run-1',deviceId:'arm-1',cellId:'cell-1',mode:'X1',environmentProfile:'engineering-arm64'},port);
  await p.adapter.execute(command());const query=p.adapter.reconcile('a');await p.close();reply!({status:'completed',evidence:{}});expect((await query).status).toBe('unknown');
 });
+
+// Native-kind metadata below is an in-memory adversarial record, never native evidence.
+test('fix1 closes geometry graph and plugin semantics even with a coherently resealed native record',async()=>{
+ const {createHash}=await import('node:crypto');const {validateXarmUrdf,validateXarmMappingRecord}=await import('../../packages/lab-runtime/src/v2/sil/xarm-mapping');
+ const xml=await readFile('tests/fixtures/xarm-native-protocol.urdf','utf8');
+ const subject={sourceCommit:'1'.repeat(40),profileId:'engineering-amd64',architecture:'amd64',modelSha256:'0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a'};
+ const record={...validateXarmUrdf(xml,'X2'),producer:'native_xarm.robot_description.v1',sourceCommit:subject.sourceCommit,subjectProfileId:subject.profileId,environmentProfile:'engineering-amd64',sourceModelSha256:subject.modelSha256,vendorCommit:'d837f2e17f7f36043103b367fca3af8172626245',evidenceKind:'gazebo_actual',syntheticSimModelSelector:'XI13050520BB00',controller:{joints:['joint1','joint2','joint3','joint4','joint5','joint6'],commandInterfaces:['position'],stateInterfaces:['position'],srdf:'<robot/>'}};
+ const cases={scale:xml.replace('<mesh ','<mesh scale="1000 1000 1000" '),visualOrigin:xml.replace('<visual>','<visual><origin xyz="100 0 0" rpy="0 0 0"/>'),missingTcp:xml.replace('<link name="link_tcp"/>',''),extraLink:xml.replace('</robot>','<link name="orphan"/></robot>'),extraJoint:xml.replace('</robot>','<joint name="cycle" type="fixed"><parent link="link_tcp"/><child link="link_base"/></joint></robot>'),dangling:xml.replace('parent link="world"','parent link="missing"'),attachment:xml.replace('parent link="world"','parent link="link_tcp"'),wrongInterface:xml.replace('<state_interface name="velocity"/>','<state_interface name="effort"/>'),wrongControlJoint:xml.replace('<joint name="joint1"><command_interface','<joint name="joint6"><command_interface'),wrongMimic:xml.replace('<mimicJoint>left_finger_joint</mimicJoint>','<mimicJoint>joint1</mimicJoint>'),wrongMimicRelation:xml.replace('<mimic joint="drive_joint"','<mimic joint="joint1"'),extraHardware:xml.replace('</hardware>','<param name="robot_ip">192.0.2.1</param></hardware>'),wrongParameters:xml.replace('/tmp/launch_params_protocolfixture','/tmp/../evil'),nestedPlugin:xml.replace('<visual>','<visual><plugin name="evil"/>'),gazeboPlugin:xml.replace('</robot>','<gazebo><plugin name="unapproved" filename="libunapproved.so"/></gazebo></robot>'),emptyControl:xml.replace(/<ros2_control[\s\S]*?<\/ros2_control>/g,'<ros2_control name="xarm6" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware></ros2_control>')};
+ for(const [name,bad]of Object.entries(cases)){
+  expect(()=>validateXarmUrdf(bad,'X2'),name).toThrow();
+  expect(()=>validateXarmMappingRecord(bad,{...record,urdfSha256:createHash('sha256').update(bad).digest('hex')},subject),name+' resealed').toThrow();
+ }
+});
+
+test('both pinned mode graphs accept URDF visual defaults and explicit equivalents',async()=>{
+ const {validateXarmUrdf,validateXarmMappingRecord}=await import('../../packages/lab-runtime/src/v2/sil/xarm-mapping');let xml=await readFile('tests/fixtures/xarm-native-protocol.urdf','utf8');
+ for(const mode of ['X2','X1'] as const){
+  if(mode==='X1')xml=xml.replaceAll('gz_ros2_control/GazeboSimSystem','uf_robot_hardware/UFRobotFakeSystemHardware').replaceAll('file:///opt/mekoniq/xarm_ws/install/xarm_description/share/xarm_description','package://xarm_description').replace(/<gazebo><plugin filename="gz_ros2_control-system"[\s\S]*?<\/gazebo>/,'');
+  const explicit=xml.replaceAll('<visual>','<visual><origin xyz="0 0 0" rpy="0 0 0"/>').replaceAll('<mesh ','<mesh scale="1 1 1" ');
+  expect(()=>validateXarmUrdf(explicit,mode)).not.toThrow();
+  const subject={sourceCommit:'1'.repeat(40),profileId:'engineering-amd64',architecture:'amd64',modelSha256:'0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a'};
+  const record={...validateXarmUrdf(xml,mode),producer:'native_xarm.robot_description.v1',sourceCommit:subject.sourceCommit,subjectProfileId:subject.profileId,environmentProfile:'engineering-amd64',sourceModelSha256:subject.modelSha256,vendorCommit:'d837f2e17f7f36043103b367fca3af8172626245',syntheticSimModelSelector:'XI13050520BB00',evidenceKind:mode==='X1'?'ros2_fake_system':'gazebo_actual',controller:{joints:['joint1','joint2','joint3','joint4','joint5','joint6'],commandInterfaces:['position'],stateInterfaces:['position'],srdf:'<robot/>'}};
+  expect(()=>validateXarmMappingRecord(xml,record,subject)).not.toThrow();
+  for(const bad of [xml.replace('<link name="link_tcp"/>',''),xml.replace('<link name="world"/>',''),xml.replace('<link name="link_eef"/>',''),xml.replace('parent link="link_eef"','parent link="link6"'),xml.replace('<visual>','<visual><origin rpy="0 0 1"/>')])expect(()=>validateXarmUrdf(bad,mode)).toThrow();
+ }
+});

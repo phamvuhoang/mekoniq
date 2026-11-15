@@ -72,6 +72,66 @@
       "contentSha256": "bcdb75c2d56195d93e4637b790f9804782eacf5cb5d37a77ce31bf8bba9bc55d",
       "gitBlobSha": "d07fcf47b163718db84ffaca54f8e85ab363ff3d",
       "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/common/common.link.xacro"
+    },
+    {
+      "path": "xarm_description/urdf/xarm6/xarm6.ros2_control.xacro",
+      "contentSha256": "8bd4f1708880c7eb384bcc8dd3b979f6550257881b332741b726ddbc4408ef48",
+      "gitBlobSha": "0d41e443b8431c301e29d9f08df44ea5d347158e",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm6/xarm6.ros2_control.xacro"
+    },
+    {
+      "path": "xarm_description/urdf/xarm6/xarm6_robot_macro.xacro",
+      "contentSha256": "754c352b96c09c4150508d69a0d0547a3b410efce79eb78c187c5d090e60da9a",
+      "gitBlobSha": "f3b2623511e229811d51e68d476952d215830473",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm6/xarm6_robot_macro.xacro"
+    },
+    {
+      "path": "xarm_description/urdf/xarm6/xarm6.gazebo.xacro",
+      "contentSha256": "45502e8d9dbfdc50a23fd7174e14ec71aa9cdc07e9981240551a1e3c8ac3d137",
+      "gitBlobSha": "99ed6c0d9c4325426871f07951017b9ee3876b15",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm6/xarm6.gazebo.xacro"
+    },
+    {
+      "path": "xarm_description/urdf/xarm6/xarm6.transmission.xacro",
+      "contentSha256": "536f1bcdf87ac6f08c6511dd89235a322803007628caf6beed7ed652dcfd7d6d",
+      "gitBlobSha": "d0bde66fe4530983d0cdfbccc7292e091dd95bde",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm6/xarm6.transmission.xacro"
+    },
+    {
+      "path": "xarm_description/urdf/common/common.gazebo.xacro",
+      "contentSha256": "a59da43657e269866019aa5693fcecc9daee150828719e7194cb464f186eae00",
+      "gitBlobSha": "c5ada1a78bdfbf8f3266f1857966330a386c9298",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/common/common.gazebo.xacro"
+    },
+    {
+      "path": "xarm_description/urdf/xarm_device_macro.xacro",
+      "contentSha256": "571dd90dd5ae4d8aa549686a253050e0576d0ef29755121cd2d7a95b24649eda",
+      "gitBlobSha": "b8f87c8540ee1ff3c516d7a2c125e4e1e4b29efd",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm_device_macro.xacro"
+    },
+    {
+      "path": "xarm_description/urdf/xarm_device.urdf.xacro",
+      "contentSha256": "effbda7f945fcee8347c8e1f3bec59bbeea38f60a6e9a5b75aea221b3ed4e81a",
+      "gitBlobSha": "2e34d8870a44a0582cc0c9dea48451a05c9746bb",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm_device.urdf.xacro"
+    },
+    {
+      "path": "xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+      "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+      "gitBlobSha": "dd1731764327674f4eb882e5a66ab89694741e11",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/gripper/xarm_gripper.urdf.xacro"
+    },
+    {
+      "path": "xarm_description/urdf/gripper/xarm_gripper.transmission.xacro",
+      "contentSha256": "83a1298210243871e0039cf58b2a09a9c24e0848432e02a4da960ec8efbdf771",
+      "gitBlobSha": "4c8e4170608f899b3d5ad790d6bb6359b483e77e",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/gripper/xarm_gripper.transmission.xacro"
+    },
+    {
+      "path": "uf_ros_lib/uf_ros_lib/uf_robot_utils.py",
+      "contentSha256": "91f99f87d6c5467b02d3da4d9778e7db13b7d95bacc528329c35e22a0d7abd63",
+      "gitBlobSha": "9deef8d48ab6b4e466ea58101efc1082861daba5",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/uf_ros_lib/uf_ros_lib/uf_robot_utils.py"
     }
   ],
   "descriptionParity": {
