@@ -28,7 +28,14 @@ export function tableR2b(scope='full'){
   const actual=m.suites??[];if(actual.length!==used.size||new Set(actual.map(s=>s.id)).size!==actual.length||actual.some(s=>!used.has(s.id)))reasons.push('SUITE_TABLE_MISMATCH');
   if(!/^[a-f0-9]{40}$/.test(m.lab?.commit??''))reasons.push('LAB_COMMIT_REQUIRED');
   if(m.blocked||m.cl01||m.web06)reasons.push('R2B_UNSUPPORTED_OVERRIDE');
-  return {input:{},reasons};},adjust(q){return scope==='full'?{...q,gates:{...q.gates,'G-HOST1':{...q.gates['G-HOST1'],status:'blocked_external'}}}:q;}};
+  if(!equalKeys(m.artifactDispositions,tableCases)||Object.values(m.artifactDispositions??{}).some(x=>!['tested','not_run','failed','blocked_external'].includes(x?.status)||!Array.isArray(x?.issues)))reasons.push('ARTIFACT_DISPOSITION_SHAPE');
+  return {input:{artifactDispositions:m.artifactDispositions},reasons};},adjust(q,input){
+   for(const [id,c]of Object.entries(q.cases)){if(id==='WEB06')continue;const d=input.artifactDispositions?.[id]??{status:'not_run',issues:['ARTIFACT_READBACK_PENDING']};
+    const absentContainer=id==='WEB05'&&input.suites?.find(s=>s.id==='web-container'&&s.reason==='IMAGE_UNBUILT'&&!s.result&&!s.process&&s.exitCode===2);
+    if(d.status==='failed'||d.status==='not_run'&&(c.status!=='failed'||absentContainer)){c.status=d.status;c.reason='artifact '+d.status+': '+d.issues.join('; ');}else if(c.status==='tested')c.evidence.push('artifact:'+id);
+   }
+   q.notRun=Object.entries(q.cases).filter(([,c])=>c.status!=='tested').map(([id,c])=>({id,reason:c.reason}));for(const [id,g]of Object.entries(q.gates))g.status=id==='G-HOST1'?'blocked_external':g.cases.every(id=>q.cases[id].status==='tested')?'tested':'not_run';return q;
+  }};
 }
 export const qualifyR2bStructure=input=>qualify(input,tableR2b(input.scope));
 export function checkR2bStructure(m,read){try{return checkQualification(m,read,tableR2b(m.scope));}catch(e){return ['R2B_STRUCTURE_INVALID:'+e.message];}}

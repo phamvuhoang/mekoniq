@@ -338,6 +338,11 @@
       "exists": true
     },
     {
+      "file": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
       "file": "docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
       "href": "00-implementation-status.md",
       "exists": true

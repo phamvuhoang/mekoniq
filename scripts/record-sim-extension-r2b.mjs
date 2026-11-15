@@ -5,7 +5,7 @@ import {join,resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {tableR2b,qualifyR2bStructure} from './sim-extension-r2b.mjs';
-import {verifyR2bDirectory,assessR2bDirectory,evidenceInventory,boundedEvidenceRead} from './r2b-readback.mjs';
+import {verifyR2bDirectory,assessR2bDirectory,collectR2bArtifactDispositions,evidenceInventory,boundedEvidenceRead} from './r2b-readback.mjs';
 import {summarizeResult} from './irsim-qualification.mjs';
 import {closureIdentity} from './lab-irsim.mjs';
 import {runR2bCaseCommand} from './native-sim/r2b-process.mjs';
@@ -32,6 +32,7 @@ export async function recordR2b(args){
  const licenses=join(out,'suites/licenses');await mkdir(licenses);const l=await runR2bCaseCommand(process.execPath,['scripts/portable-licenses.mjs','--check'],{out:licenses,cwd:root,env,timeoutMs:120000,signal:abort.signal});commands.push({id:'licenses',exitCode:l.exitCode??1,process:'suites/licenses/process.json'});
  if(o.scope==='full'&&!refs.containerRecord&&existsSync(join(out,'inputs/container/web05.json')))refs.containerRecord={file:'inputs/container/web05.json',sha256:sha(boundedEvidenceRead(out,'inputs/container/web05.json'))};
  const after=identity(),identityStable=JSON.stringify(before)===JSON.stringify(after)&&git(lab,'rev-parse','HEAD')===labCommit&&!git(lab,'status','--porcelain','--untracked-files=all'),q=qualifyR2bStructure({scope:o.scope,suites,lab:true,sourceCommit:before.sourceCommit}),m={schemaVersion:1,documentType:'sim-extension-qualification',release:'r2b',scope:o.scope,candidateId:o['candidate-id']??out.split('/').at(-1),accepted:false,acceptedBy:null,acceptedAt:null,identity:{before,after,identityStable},lab:{commit:labCommit,dirty:!identityStable,pin:{sourceCommit:pin.sourceCommit,artifactSha256:pin.artifactSha256,portableToolsDigest:pin.portableToolsDigest,schemaHash:pin.schemaHash}},campaign:null,performance:null,...refs,suites,commands,cases:q.cases,gates:q.gates,notRun:q.notRun,artifacts:evidenceInventory(out)};
- const constructionProblems=await assessR2bDirectory(out,m);if(constructionProblems.length){for(const [id,c]of Object.entries(m.cases))if(c.status==='tested')m.cases[id]={...c,status:'not_run',reason:'Actual-artifact qualification incomplete; see construction-problems.json'};for(const [id,g]of Object.entries(m.gates))if(id!=='G-HOST1')m.gates[id]={...g,status:'not_run'};await writeFile(join(out,'construction-problems.json'),JSON.stringify(constructionProblems,null,2)+'\n');m.artifacts=evidenceInventory(out);}
+ const derived=await collectR2bArtifactDispositions(out,m);m.artifactDispositions=derived.artifactDispositions;Object.assign(m,qualifyR2bStructure({scope:o.scope,suites,lab:true,sourceCommit:before.sourceCommit,artifactDispositions:m.artifactDispositions}));
+ const constructionProblems=await assessR2bDirectory(out,m);if(constructionProblems.length){await writeFile(join(out,'construction-problems.json'),JSON.stringify(constructionProblems,null,2)+'\n');m.artifacts=evidenceInventory(out);}
  await writeFile(join(out,'qualification.json'),JSON.stringify(m,null,2)+'\n',{flag:'wx'});const problems=await verifyR2bDirectory(out);console.log(JSON.stringify({accepted:false,candidateId:m.candidateId,problems,gates:m.gates}));return problems.length?1:0;
 }

@@ -14,10 +14,10 @@
       "role": "rebased_design_or_gtm",
       "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
       "destination": "docs/implementation/web-lab-to-physical/design/01-research.md",
-      "originalBytes": 21504,
-      "originalSha256": "2003ef81bca2be838724a944345129865c5c5c71d5ab2d558af97bf2701a5f1a",
-      "destinationBytes": 21351,
-      "destinationSha256": "32ddac0f492063ba50acec3761dbfdbb60ca584d87fff701cd25b61c367b489c"
+      "originalBytes": 22516,
+      "originalSha256": "97ea79f36baac2b4f358a626a6f7b876aa4e9c86a834ebe3b627467b3df6c154",
+      "destinationBytes": 22363,
+      "destinationSha256": "a9c184379462b86f2ddb2b3927fa50ff6406193a7580cc636370a9ed32dc9405"
     },
     {
       "role": "exact_design_or_gtm",
@@ -41,28 +41,28 @@
       "role": "rebased_design_or_gtm",
       "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
       "destination": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
-      "originalBytes": 25299,
-      "originalSha256": "8500acce41e59e33b7b5acc497315581169ae595c181b2a90d8b2cc2682507fe",
-      "destinationBytes": 25290,
-      "destinationSha256": "2c2cc3c3deb913b5a7941e3168cbd30b644a70e4a2a6780345ecf162a773cd7a"
+      "originalBytes": 25742,
+      "originalSha256": "c7de280a894121c9c04cdae0350f7c14849c01e3d51ede02bd0aa9fc930e5b6d",
+      "destinationBytes": 25733,
+      "destinationSha256": "c480d87aa0738e6b9a1148f3730b3f6fe611dd9b9f00e685ca8a22077e3042c3"
     },
     {
       "role": "exact_design_or_gtm",
       "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions-ledger.json",
       "destination": "docs/implementation/web-lab-to-physical/design/05-implementation-decisions-ledger.json",
-      "originalBytes": 95235,
-      "originalSha256": "ac337f532b60240bed1c69c04e952269c91f4e92931b9b8fcf74a2e6b6cb38f3",
-      "destinationBytes": 95235,
-      "destinationSha256": "ac337f532b60240bed1c69c04e952269c91f4e92931b9b8fcf74a2e6b6cb38f3"
+      "originalBytes": 96924,
+      "originalSha256": "241fac747e23426973d32332c812674a0b20b5d2ee4167d1753d46ba20e6e78c",
+      "destinationBytes": 96924,
+      "destinationSha256": "241fac747e23426973d32332c812674a0b20b5d2ee4167d1753d46ba20e6e78c"
     },
     {
       "role": "exact_design_or_gtm",
       "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
       "destination": "docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
-      "originalBytes": 75380,
-      "originalSha256": "8296769b68e7a5147847ff194034a624ee745af3815ab86a21a17ca922a2180d",
-      "destinationBytes": 75380,
-      "destinationSha256": "8296769b68e7a5147847ff194034a624ee745af3815ab86a21a17ca922a2180d"
+      "originalBytes": 76475,
+      "originalSha256": "a0f2c8e0f05044b875f39a00dd5652ba4369ac951fe1904aef1e10b2b31bbcf4",
+      "destinationBytes": 76475,
+      "destinationSha256": "a0f2c8e0f05044b875f39a00dd5652ba4369ac951fe1904aef1e10b2b31bbcf4"
     },
     {
       "role": "rebased_design_or_gtm",
@@ -500,10 +500,10 @@
       "role": "exact_historical_review_or_ledger",
       "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/progress.md",
       "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/progress.md",
-      "originalBytes": 162956,
-      "originalSha256": "5f1e92b2c27c26b9646d254e31823718c7493cf7a8e0937491888f3efa3b3cc3",
-      "destinationBytes": 162956,
-      "destinationSha256": "5f1e92b2c27c26b9646d254e31823718c7493cf7a8e0937491888f3efa3b3cc3"
+      "originalBytes": 165884,
+      "originalSha256": "e0470ec94ca0978205460a5ae5f190ad7f1312d66d0eb647c6989167727ca640",
+      "destinationBytes": 165884,
+      "destinationSha256": "e0470ec94ca0978205460a5ae5f190ad7f1312d66d0eb647c6989167727ca640"
     },
     {
       "role": "exact_historical_review_or_ledger",
@@ -1269,6 +1269,15 @@
       "originalSha256": "ed16809a4b5bb2b72868b4902aac6ca4e28219c1ec48a955e8c4af45d1625be4",
       "destinationBytes": 521,
       "destinationSha256": "ed16809a4b5bb2b72868b4902aac6ca4e28219c1ec48a955e8c4af45d1625be4"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R92.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R92.json",
+      "originalBytes": 703,
+      "originalSha256": "2501e4c6b18b1cf8424a743ff6a4f182d1a78983e7ccd1d2ec90fdc16d757e1a",
+      "destinationBytes": 703,
+      "destinationSha256": "2501e4c6b18b1cf8424a743ff6a4f182d1a78983e7ccd1d2ec90fdc16d757e1a"
     },
     {
       "role": "exact_historical_review_or_ledger",

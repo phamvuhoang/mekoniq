@@ -1,13 +1,15 @@
 #!/bin/sh
-# deploy/lab-runtime/build.sh <tag> [--platform linux/amd64|linux/arm64]
+# deploy/lab-runtime/build.sh <tag> [--platform linux/amd64|linux/arm64] [--oci-out FRESH_DIR]
 # Builds the headless Lab runtime image in a dedicated context. Refuses a dirty tree (no modified or untracked file), so the tracked content of the working tree equals HEAD.
 # runtime.mjs is bundled by scripts/export-lab-runtime.mjs from that clean tree, with the tree's installed node_modules (not a fresh frozen install); the MuJoCo tool root
 # comes from `git archive HEAD`. A from-scratch build from a fresh clone with a frozen install is the Cloud Build path of the deployment runbook. Pushes nothing.
 # Run with Node 24 first on PATH (the exporter bundles with the repository's esbuild).
 set -eu
-tag=${1:?usage: build.sh <tag> [--platform linux/amd64|linux/arm64]}; shift
+tag=${1:?usage: build.sh <tag> [--platform linux/amd64|linux/arm64] [--oci-out FRESH_DIR]}; shift
 platform=
+oci_out=
 if [ "${1:-}" = --platform ]; then platform=${2:?--platform needs a value}; shift 2; fi
+if [ "${1:-}" = --oci-out ]; then oci_out=${2:?--oci-out needs a fresh directory}; shift 2; fi
 [ $# -eq 0 ] || { echo "UNKNOWN_ARGUMENT:$1" >&2; exit 2; }
 case "$platform" in ''|linux/amd64|linux/arm64) ;; *) echo "UNSUPPORTED_PLATFORM:$platform" >&2; exit 2;; esac
 here=$(cd "$(dirname "$0")" && pwd); root=$(cd "$here/../.." && pwd)
@@ -25,5 +27,9 @@ cp "$here/Dockerfile" "$ctx/Dockerfile"
 printf '%s\n' '**/__pycache__' '**/*.pyc' '**/tests' '**/.git' '**/.env*' > "$ctx/.dockerignore"
 package_sha=$(shasum -a 256 "$ctx/r2b-campaign-package.json" | cut -d " " -f 1)
 bundle_sha=$(shasum -a 256 "$ctx/r2b-campaign.mjs" | cut -d " " -f 1)
+if [ -n "$oci_out" ]; then
+  node "$root/scripts/native-sim/build-r2b-local-oci.mjs" "$ctx" "$tag" "$platform" "$oci_out"
+else
 docker build ${platform:+--platform "$platform"} --build-arg "SOURCE_COMMIT=$commit" --build-arg "R2B_CAMPAIGN_PACKAGE_SHA256=$package_sha" --build-arg "R2B_CAMPAIGN_BUNDLE_SHA256=$bundle_sha" -t "$tag" "$ctx"
+fi
 echo "built $tag from $commit"

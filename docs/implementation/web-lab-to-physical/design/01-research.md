@@ -122,3 +122,9 @@ Thay đường dẫn bằng một trong hai đường dẫn còn lại để xem
 Worktree source `681b8adb8ed473f7195062773b23fabc3b922cd5` đã ghi campaign payload 19 ca và đọc lại độc lập đạt; review task đã đạt ở phạm vi B04a. Biến thể giảm tham số ma sát geom từ 0,6 xuống 0,3 không tự tạo tiếp xúc bánh–sàn ít ma sát hơn: sàn trong fixture vẫn 0,8, cốc 0,6. MuJoCo lấy giá trị lớn hơn theo từng thành phần khi hai geom cùng priority; contact pair khai riêng có quy tắc riêng. Vì vậy UI/comparison phải phân biệt input đã đổi và hiệu ứng thực đo được. [MuJoCo3.17 — Contact parameters](https://mujoco.readthedocs.io/en/3.17.0/modeling.html#contact-parameters).
 
 Metric B03 `stopDistanceM` bắt đầu khi plant nhận target bằng 0, sau phần ramp của controller. Nó không phải toàn bộ quãng đường từ lúc người dùng bấm hủy đến lúc robot dừng. Campaign phanh giữ thêm cửa sổ quan sát thực để đủ hold samples; UI sẽ giữ đúng định nghĩa này. Đây là phép đo mô phỏng chưa hiệu chuẩn, không phải khoảng cách phanh của thiết bị thật.
+
+## Bổ sung ngày 15/11/2026: OCI local cho R2b
+
+Tài liệu Docker cho phép một build dùng nhiều exporter, với Buildx và BuildKit từ 0.13; OCI exporter ghi image layout, còn Docker exporter/`--load` nạp image vào image store. Điều này hỗ trợ chuẩn bị đường build local không cần push registry. Cần driver hỗ trợ exporter và kiểm config identity giữa các output; đây là thiết kế áp dụng từ tài liệu, chưa là lượt build/load đã chạy. [Exporters overview](https://docs.docker.com/build/exporters/), [OCI and Docker exporters](https://docs.docker.com/build/exporters/oci-docker/), [Buildx build reference](https://docs.docker.com/reference/cli/docker/buildx/build/).
+
+Quyết định92 giữ riêng platform-manifest digest, config digest và filesystem quan sát. RepoDigests vắng không được thay bằng tag; association local phải có artifact/hash/config/rootfs phù hợp. Docker prerequisite và qualification native vẫn mở.

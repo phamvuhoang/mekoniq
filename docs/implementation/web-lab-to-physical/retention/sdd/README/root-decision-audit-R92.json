@@ -1,0 +1,15 @@
+{
+  "snapshot": "B10 local OCI association R92",
+  "humanEntries": 92,
+  "rawRecords": 96,
+  "exactRawLedgerMatch": true,
+  "prior95recordsPreserved": true,
+  "humanFileSha256": "a0f2c8e0f05044b875f39a00dd5652ba4369ac951fe1904aef1e10b2b31bbcf4",
+  "rawFileSha256": "241fac747e23426973d32332c812674a0b20b5d2ee4167d1753d46ba20e6e78c",
+  "sources": [
+    "https://docs.docker.com/build/exporters/",
+    "https://docs.docker.com/build/exporters/oci-docker/",
+    "https://docs.docker.com/reference/cli/docker/buildx/build/"
+  ],
+  "evidence": "Root current-code read and agent confirmation of local build/no offline OCI producer. Primary Docker docs checked; no Docker probe/build/load/native execution."
+}

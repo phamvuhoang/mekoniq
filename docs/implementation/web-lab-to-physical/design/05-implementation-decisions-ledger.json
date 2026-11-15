@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "snapshot": "L00–L05 prepared code reviewed; native qualification incomplete; B10 tooling active; latest ruling R91",
+  "snapshot": "L00–L05 prepared code reviewed; native qualification incomplete; B10 tooling active; latest ruling R92",
   "scope": "all explicit Ruling: lines plus Sequencing ruling for final evidence: in README and active 01/02/03 plan ledgers",
   "records": [
     {
@@ -417,6 +417,11 @@
       "ledger": "02-r2b-cell-and-web/progress.md",
       "lineAtSnapshot": 456,
       "text": "Ruling: R91 binds the generated current-R2b campaign package manifest as an OCI-label-bound companion artifact, preserving the L00 handoff schema and immutable engine/tool closure admission. Clean build.sh sets fixed labels for exact package-manifest and bundle SHA256s; current admission reads the already hash-admitted raw platform image config from inventory provenance, validates those labels and compares actual inspect labels plus in-container file hashes. The package binds observer/input graph and source/runtime/schema/portable/profile/campaign identity; mismatched build export/source, missing/wrong labels, config-versus-manifest digest confusion, mutable tag substitution, altered companion/bundle/observer and coherent wrong tuples must fail. Apply bounded safe-path/symlink/size/secret and artifact retention rules; the generated companion cannot fill immutable closure membership or bypass nativeReady. Reason: L00 correctly refuses generated build output as refs.engine/tool, while the immutable image config can bind those packaged bytes without another generated-artifact role. Cost if wrong: self-declared labels could be mistaken for provenance or execution; preserve platform/config digest verification, compare the actual packaged inputs/output under the declared build policy, test coherent negatives and retain host/image/native gates. Labels and synthetic config/inspect tests do not authenticate a host or prove a campaign ran; absent image/host remains not_run/nativeReadyfalse."
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 462,
+      "text": "Ruling: R92 provides an explicit no-push local OCI export/load association for current R2b instead of requiring a registry RepoDigest from a local docker build. Preserve L00 raw platform-manifest to config digest verification; compare actual inspect configId, OS/architecture, R91 labels and RootFS.Layers against raw config.rootfs.diff_ids, and execute by exact config ID. An absent RepoDigests list is admissible only with the verified local export association and recorded as such, never as a registry-manifest observation; present conflicting values fail closed. Verify OCI descriptor/blob hashes, sizes and selected platform with bounded safe paths, no symlinks or unchecked archive extraction. Prepare one-build OCI plus Docker-export/load outputs on an explicitly supported local Buildx/BuildKit>=0.13 driver, verify their exact config association rather than assuming it, and fail unsupported/missing inputs. No registry push, remote builder/context or unrelated-builder mutation. Reason: existing build.sh local docker build -t produces no explicit offline OCI admission package, so mandatory RepoDigests would leave the advertised local preparation path unusable. Cost if wrong: daemon/exporter differences or a forged association can admit wrong filesystem provenance; coherent fixture negatives and exact artifact/config/rootfs checks reduce this risk, but actual build/export/load and WEB05/native execution remain not_run until the final owned prerequisite stage. Source27d6be9 smoke is an earlier local producer and remains separately attributed after R92 changes."
     },
     {
       "ledger": "03-r3-linux-readiness/progress.md",

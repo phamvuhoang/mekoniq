@@ -27,6 +27,7 @@ export function currentPackageBindingIssues(pkgBytes,config,inspected){
  if(pkg.documentProfile!=='mujoco_cell_v1'||! /^[a-f0-9]{64}$/.test(pkg.engineObserverSha256??'')||! /^[a-f0-9]{64}$/.test(pkg.payloadRegistrySha256??'')||! /^[a-f0-9]{64}$/.test(pkg.cellRegistrySha256??''))r.push('R2B_PACKAGE_PROFILE_GRAPH');
  const paths=new Set();for(const f of pkg.inputs??[]){if(typeof f.path!=='string'||!/^[-\w.@+%/]+$/.test(f.path)||f.path.split('/').some(p=>!p||p==='..'||p==='.')||paths.has(f.path)||! /^[a-f0-9]{64}$/.test(f.sha256??'')||!Number.isSafeInteger(f.bytes)||f.bytes<0)r.push('R2B_PACKAGE_INPUT_GRAPH');paths.add(f.path);}
  for(const file of ['scripts/r2b-campaign-entry.ts','scripts/native-sim/r2b-engine-inventory.py','packages/sync/migrations/sqlite/001_journal.sql'])if(!paths.has(file))r.push('R2B_PACKAGE_INPUT_GRAPH');
+ for(const [id,key]of [['payload-v1','payloadRegistrySha256'],['mj-cell-bv01-v1','cellRegistrySha256']])if(pkg.imageFiles?.filter(f=>f.path==='robotics/simulation-mujoco/campaigns/'+id+'.json'&&f.sha256===pkg[key]).length!==1)r.push('R2B_REGISTRY_GRAPH');
  if(pkg.inputs?.find(f=>f.path==='scripts/native-sim/r2b-engine-inventory.py')?.sha256!==pkg.engineObserverSha256)r.push('R2B_OBSERVER_GRAPH');
  return [...new Set(r)];
 }
