@@ -2365,6 +2365,15 @@ main:has(>.twin-shell){display:flex;flex-direction:column;min-height:0;padding:8
  .twin-runbar-right{gap:6px 8px}
  .twin-scenario,.twin-runtime-chip{padding:0 8px}
 }
+/* At tablet/desktop widths, reserve space for the complete connection/status words, not extra scenario padding. */
+@media (min-width:1024px) and (max-width:1279px){
+ .twin-runbar{column-gap:6px}
+ .twin-runbar-left,.twin-runbar-right{column-gap:4px}
+ .twin-runbar .twin-scenario{min-width:min(100%,calc(12ch + 24px))}
+ .twin-runbar .twin-scenario,.twin-runbar .twin-runtime-chip{padding-inline:4px}
+ .twin-runbar .twin-problems{padding-inline:8px;min-width:44px}
+ .twin-runbar .button.primary{padding-inline:8px}
+}
 @media (max-height:699px){
  #app:has(.twin-shell){height:auto}
  .twin-shell{grid-template-rows:auto minmax(480px,1fr) auto}
