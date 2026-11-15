@@ -627,6 +627,22 @@
           "sha256": "2f2199f0f8063c1ea287822fd71b116d25ed8767b54a543a4ef77e4b69d42149"
         }
       ]
+    },
+    "cell-nominal-export": {
+      "directory": "b10-historical-expected-export",
+      "files": [
+        {
+          "path": "manifest.json",
+          "bytes": 26525,
+          "sha256": "b3eb6e7cc0e6c2287092c358e02ab3c860e76e5bc828a5ed41bae4e83bbebaea"
+        }
+      ],
+      "producer": {
+        "originalPath": "/tmp/b07a-final-packages-ZYL6r5/nominal/manifest.json",
+        "scope": "Historical B07a exact expected export inventory of B06 nominal7; imported integrity only, not current qualification",
+        "runId": "9821d890-85d2-41f0-91f8-d070ab7c222a",
+        "accepted": false
+      }
     }
   }
 }

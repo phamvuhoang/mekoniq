@@ -1,0 +1,34 @@
+import {tsImport} from 'tsx/esm/api';
+import {CHUNK_PROGRAM,WORKER_PROGRAM} from './web05-observations.mjs';
+const canonical=v=>JSON.stringify(v&&typeof v==='object'?Array.isArray(v)?v.map(x=>JSON.parse(canonical(x))):Object.fromEntries(Object.keys(v).sort().map(k=>[k,JSON.parse(canonical(v[k]))])):v);
+const equal=(a,b)=>canonical(a)===canonical(b);
+export async function verifyWeb05Artifacts(read,record,tuple){
+ const issues=[],check=(ok,code)=>{if(!ok)issues.push('WEB05_'+code);},json=p=>{const b=read(p);if(!b)throw Error('MISSING:'+p);return JSON.parse(b);};let replay;
+ try{
+  const {sourceCommit:source,schemaHash:schema}=tuple,v=record,active=v.activeRunId,finished=v.finishedRunId,name=v.containerName,contender=v.contenderName;
+  check(v.version===2&&v.accepted===false&&v.execution==='actual_container'&&v.sourceCommit===source&&v.schemaHash===schema&&v.image?.sourceCommit===source&&/^sha256:[a-f0-9]{64}$/.test(v.image?.id??'')&&typeof active==='string'&&active.length&&typeof finished==='string'&&finished.length&&active!==finished&&[name,contender,v.volumeName,v.invocationId].every(x=>typeof x==='string'&&x.length>0)&&name!==contender,'IDENTITY');
+  const log=json('lifecycle-observations.json'),rows=log.observations;check(log.invocationId===v.invocationId&&Array.isArray(rows)&&rows.length<=100000,'OBSERVATION_IDENTITY');
+  const ids=new Set();for(const [i,o]of rows.entries()){check(typeof o.id==='string'&&!ids.has(o.id)&&o.sequence===i&&Number.isFinite(o.startedAtEpochMs)&&Number.isFinite(o.finishedAtEpochMs)&&o.startedAtEpochMs<=o.finishedAtEpochMs,'OBSERVATION_ORDER');ids.add(o.id);}
+  const seen=new Set(),get=key=>{const id=v.observations?.[key],o=rows.find(o=>o.id===id);if(!o||seen.has(id))throw Error('OBSERVATION_REF:'+key);seen.add(id);return o;};
+  const command=(key,args)=>{const o=get(key);check(o.kind==='command'&&o.command==='docker'&&equal(o.args,args)&&o.exitCode===0&&o.signal===null&&typeof o.stdout==='string'&&typeof o.stderr==='string','COMMAND:'+key);return o;};
+  const http=(key,path,method='GET',status=200)=>{const o=get(key);check(o.kind==='http'&&o.method===method&&o.path===path&&o.status===status,'HTTP:'+key);return o;};
+  const image=json('image-inspect.json'),imageObservation=command('image',['image','inspect',v.image.id]),container=command('container',['inspect',name]);
+  check(equal(JSON.parse(imageObservation.stdout),[image])&&image.Id===v.image.id&&image.Config?.Labels?.['org.opencontainers.image.revision']===source&&image.Os===v.image.os&&image.Architecture===v.image.architecture,'IMAGE');
+  const inspected=JSON.parse(container.stdout);check(inspected.length===1&&inspected[0].Name==='/'+name&&inspected[0].Image===image.Id&&inspected[0].Mounts?.some(m=>m.Type==='volume'&&m.Name===v.volumeName&&m.Destination==='/data/runs'&&m.RW===true),'RUNNING_IMAGE');
+  const health=json('health.json'),h=http('health','/health');check(equal(h.response,health)&&health.sourceCommit===source&&health.schemaHash===schema,'HEALTH');
+  const before=json('before-crash-report.json'),after=json('after-crash-report.json'),done=json('finished-report.json'),b=http('before',`/runs/${active}/report`),a=http('after',`/runs/${active}/report`),f=http('finished',`/runs/${finished}/report`);
+  const report=(r,id,status,tick)=>r.manifest?.runId===id&&r.manifest?.sourceCommit===source&&r.schemaHash===schema&&r.outcome?.status===status&&r.outcome?.tick===tick;
+  check(report(before,active,'running',100)&&report(after,active,'needs_attention',100)&&report(done,finished,'completed',done.outcome?.tick)&&Number.isSafeInteger(done.outcome?.tick)&&done.outcome.tick>0&&done.outcome.served==='2'&&equal(b.response,before)&&equal(a.response,after)&&equal(f.response,done),'REPORT_CHAIN');
+  const cb=command('chunksBefore',['exec',name,'node','-e',CHUNK_PROGRAM,active]),ca=command('chunksAfter',['exec',name,'node','-e',CHUNK_PROGRAM,active]),chunks=json('committed-before.json'),afterChunks=json('committed-after.json');
+  check(Object.keys(chunks).length>0&&Object.entries(chunks).every(([p,h])=>/^[\w.-]+\.ndjson\.gz$/.test(p)&&/^[a-f0-9]{64}$/.test(h))&&equal(chunks,afterChunks)&&equal(JSON.parse(cb.stdout),chunks)&&equal(JSON.parse(ca.stdout),afterChunks),'CHUNKS');
+  const start=get('contenderStart');check(start.kind==='command'&&start.command==='docker'&&start.exitCode===0&&start.signal===null&&start.args[0]==='run'&&start.args.includes('-d')&&start.args[start.args.indexOf('--name')+1]===contender&&start.args[start.args.indexOf('-v')+1]===v.volumeName+':/data/runs'&&start.args.at(-1)===v.image.id,'CONTENDER_START');
+  const wait=command('contenderWait',['wait',contender]),logs=command('contenderLogs',['logs','--tail','20',contender]);check(wait.stdout.trim()==='1'&&/LAB_DATA_DIR_BUSY/.test(logs.stdout+'\n'+logs.stderr),'OWNERSHIP');
+  const kill=command('kill',['kill','--signal','KILL',name]),restart=command('restart',['start',name]),ha=http('healthAfter','/health');check(ha.response?.sourceCommit===source&&ha.response?.schemaHash===schema,'RECOVERY_HEALTH');
+  const reclaim=http('reclaim',`/runs/${active}/reclaim`,'POST'),resume=http('resume',`/runs/${active}/actions`,'POST',403),workers=command('workers',['exec',name,'node','-e',WORKER_PROGRAM]);
+  check(reclaim.response?.run?.id===active&&reclaim.response?.run?.status==='needs_attention'&&reclaim.response?.tick===100&&reclaim.response?.controlAccess==='view_reconcile'&&resume.request?.kind==='resume'&&resume.response?.error==='RECLAIM_READ_ONLY'&&workers.stdout.trim()==='0','RECOVERY');
+  const publication=http('replay',`/runs/${finished}/replay`,'POST',201),manifest=json('replay-manifest.json'),actual=json('replay/manifest.json');check(equal(manifest,actual)&&equal(publication.response?.manifest,actual),'REPLAY_MANIFEST_BINDING');
+  const chain=[h,f,b,cb,start,wait,logs,kill,restart,ha,reclaim,a,ca,resume,workers,publication];check(chain.every((o,i)=>!i||o.sequence>chain[i-1].sequence&&o.startedAtEpochMs>=chain[i-1].finishedAtEpochMs),'LIFECYCLE_ORDER');
+  const {openReplayPackage}=await tsImport('../packages/lab-runtime/src/v2/replay/reader.ts',import.meta.url);replay=await openReplayPackage(read('replay/manifest.json'),async function*(asset){const bytes=read('replay/'+asset.path);if(!bytes)throw Error('REPLAY_ASSET_MISSING');yield bytes;});
+  check(replay.manifest.runId===finished&&replay.manifest.horizon.tick===done.outcome.tick&&replay.manifest.coverage.prefixCovered&&replay.manifest.coverage.streamFinalized&&replay.manifest.streams.some(s=>s.kind==='world')&&['manifest','outcome','worldSweep','businessEvents'].every(k=>equal(replay.capturedReport[k],done[k])),'REPLAY_REPORT_BINDING');
+ }catch(e){issues.push('WEB05_RAW_INVALID:'+e.message);}finally{replay?.close();}return [...new Set(issues)];
+}

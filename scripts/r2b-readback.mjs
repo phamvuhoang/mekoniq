@@ -5,6 +5,8 @@ import {createHash} from 'node:crypto';
 import {checkR2bStructure,tableR2b} from './sim-extension-r2b.mjs';
 import {checkQualification,GATES_R2A} from './sim-extension-qualification.mjs';
 import {checkCaptureClock,assessCapture} from './browser-capture-clock.mjs';
+import {verifyBrowserArtifacts} from './browser-evidence-readback.mjs';
+import {verifyWeb05Artifacts} from './web05-readback.mjs';
 import {tsImport} from 'tsx/esm/api';
 const sha=b=>createHash('sha256').update(b).digest('hex');
 export function boundedEvidenceRead(root,path){
@@ -54,14 +56,11 @@ export async function collectR2bArtifactDispositions(root,m){
    if(web.version!==2||web.accepted!==false||web.sourceCommit!==source||web.runtimeArtifact!==m.lab?.pin?.artifactSha256||web.buildIdentity?.labHead!==lab||web.buildIdentity?.labStatus!=='')r.push('WEB_CAPTURE_TUPLE');
    r.push(...checkCaptureClock(web));const assessment=assessCapture(web);r.push(...assessment.issues);if(!assessment.meetsTargets)r.push('WEB_PERFORMANCE_TARGETS_NOT_MET');if(!web.sourceExecution?.startsWith('unchanged hash-verified exported runtime CLI'))r.push('WEB_EXPORTED_RUNTIME_REQUIRED');
    if(!Number.isFinite(web.capture?.elapsedMs)||!Number.isFinite(web.capture?.activeCellMs)||web.capture?.elapsedMs<180000||web.capture?.activeCellMs<180000||!web.capture?.renderEvents?.length||!web.workerRaw?.length||web.errors?.length)r.push('WEB_CAPTURE_INCOMPLETE');
-   try{const dom=read('inputs/web/report-replay-fetched-cursor0-390-dom.json');if(!dom)r.push('WEB_390_DOM_MISSING');else{const d=JSON.parse(dom);if(d.topbarCount!==1||d.viewport?.width!==390||!d.runId||d.runtimeIdentity?.sourceCommit!==source||d.runtimeIdentity?.schemaHash!==m.lab?.pin?.schemaHash||d.flow!=='live-report-replay'||!read('inputs/web/report-replay-fetched-cursor0-390.png'))r.push('WEB_390_DOM_CORRELATION');}
-   }catch{r.push('WEB_390_DOM_CORRUPT');}
-   const browser=read('inputs/web/browser-result.json');try{const stats=JSON.parse(browser).stats;if(stats.expected<1||stats.unexpected!==0||stats.skipped!==0)r.push('WEB_BROWSER_NOT_TESTED');}catch{r.push('WEB_BROWSER_MISSING');}
+   r.push(...verifyBrowserArtifacts(p=>read('inputs/web/'+p),web,{sourceCommit:source,labCommit:lab,artifactSha256:m.lab?.pin?.artifactSha256,schemaHash:m.lab?.pin?.schemaHash}));
   }
   collect('web');
   // Container lifecycle proof is independent of a Linux-native campaign. The raw persisted reports/replay accompany its suite receipt.
-  const container=ref('containerRecord','inputs/container/web05.json','WEB05');if(container){if(container.accepted!==false||container.execution!=='actual_container'||container.sourceCommit!==source||container.schemaHash!==m.lab?.pin?.schemaHash||container.image?.sourceCommit!==source||!/^sha256:[a-f0-9]{64}$/.test(container.image?.id??''))r.push('WEB05_IDENTITY');for(const p of ['health.json','before-crash-report.json','after-crash-report.json','finished-report.json','committed-before.json','committed-after.json','replay-manifest.json','image-inspect.json'])if(!read('inputs/container/'+p))r.push('WEB05_ARTIFACT_MISSING:'+p);
-   try{const j=p=>JSON.parse(read('inputs/container/'+p)),before=j('before-crash-report.json'),after=j('after-crash-report.json'),finished=j('finished-report.json'),replay=j('replay-manifest.json');if(before.outcome.tick!==100||after.outcome.tick!==100||finished.outcome.status!=='completed'||finished.outcome.served!=='2'||JSON.stringify(j('committed-before.json'))!==JSON.stringify(j('committed-after.json'))||replay.runId!==finished.manifest.runId||finished.manifest.sourceCommit!==source||replay.horizon?.tick!==finished.outcome.tick)r.push('WEB05_LIFECYCLE');const {openReplayPackage}=await tsImport('../packages/lab-runtime/src/v2/replay/reader.ts',import.meta.url);const replayReader=await openReplayPackage(read('inputs/container/replay/manifest.json'),async function*(asset){const b=read('inputs/container/replay/'+asset.path);if(!b)throw Error('WEB05_REPLAY_ASSET_MISSING');yield b;});replayReader.close();}catch{r.push('WEB05_RAW_INVALID');}}
+  const container=ref('containerRecord','inputs/container/web05.json','WEB05');if(container)r.push(...await verifyWeb05Artifacts(p=>read('inputs/container/'+p),container,{sourceCommit:source,schemaHash:m.lab?.pin?.schemaHash}));
   collect('container');
  }
  return {issues:[...new Set(r)],artifactDispositions:artifactDispositionsFromGroups(m.scope,groups)};
