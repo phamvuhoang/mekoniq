@@ -124,3 +124,50 @@ def test_native_main_wires_guard_before_any_controller_command(monkeypatch):
     with pytest.raises(SystemExit) as status:smoke_driver.main()
     assert status.value.code==1
     assert actions==[], 'command sent before failed epoch admission'
+
+
+@pytest.mark.parametrize('gui',[False,True])
+def test_stage_excludes_caller_parameter_state_and_unreviewed_siblings(tmp_path,gui):
+    from prepare_smoke import prepare_profile
+    import shutil
+    cfg=tmp_path/'caller';shutil.copytree(ROOT/'configs/sim/puma560',cfg)
+    (cfg/'sim.var').write_text('5221 123.45\n')
+    (cfg/'extra.ini').write_text('[HAL]\nHALFILE=unreviewed.hal\n')
+    (cfg/'unreviewed').mkdir();(cfg/'unreviewed'/'nested').write_text('not an input')
+    staged=prepare_profile(ROOT,cfg/'mekoniq.ini',tmp_path/'stage',gui=gui)
+    assert not (staged.parent/'sim.var').exists(), 'caller work offsets were staged'
+    assert not (staged.parent/'extra.ini').exists()
+    assert not (staged.parent/'unreviewed').exists()
+    import configparser
+    parsed=configparser.ConfigParser();parsed.read(staged)
+    assert parsed['RS274NGC']['PARAMETER_FILE']=='sim.var'
+    assert (cfg/'sim.var').read_text()=='5221 123.45\n'
+
+
+@pytest.mark.parametrize('changed_file',['machine.hal','mekoniq.ini'])
+def test_stage_uses_checked_snapshot_despite_later_caller_mutation(tmp_path,monkeypatch,changed_file):
+    from prepare_smoke import prepare_profile
+    import shutil
+    cfg=tmp_path/'caller';shutil.copytree(ROOT/'configs/sim/puma560',cfg)
+    target=cfg/changed_file;original=target.read_bytes();read_bytes=Path.read_bytes
+    def changing_read(path):
+        captured=read_bytes(path)
+        if path==target:
+            target.write_bytes(captured+b'\nloadrt unreviewed\n' if changed_file=='machine.hal' else captured.replace(b'PARAMETER_FILE = sim.var',b'PARAMETER_FILE = unreviewed.var'))
+        return captured
+    monkeypatch.setattr(Path,'read_bytes',changing_read)
+    staged=prepare_profile(ROOT,cfg/'mekoniq.ini',tmp_path/'stage')
+    if changed_file=='machine.hal':
+        assert (staged.parent/changed_file).read_bytes()==original
+    else:
+        import configparser
+        parsed=configparser.ConfigParser();parsed.read(staged)
+        assert parsed['RS274NGC']['PARAMETER_FILE']=='sim.var'
+
+
+def test_stage_refuses_existing_destination_without_overwriting_state(tmp_path):
+    from prepare_smoke import prepare_profile
+    stage=tmp_path/'stage';stage.mkdir();state=stage/'sim.var';state.write_text('5221 123.45\n')
+    with pytest.raises(FileExistsError):
+        prepare_profile(ROOT,ROOT/'configs/sim/puma560/mekoniq.ini',stage)
+    assert state.read_text()=='5221 123.45\n'
