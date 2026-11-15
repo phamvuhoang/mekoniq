@@ -48,3 +48,5 @@ The CLI is read-only: it reads files and prints a verdict (exit 0 only with no r
 ## Limits
 
 A passing test here proves the validator's rules on synthetic data. It is not a measurement, not a payload or safety result, and not a safety certification. Simulation (Gazebo, `geometry_sim.yaml`) never proves load or safety.
+
+For arm target selection and prerequisite documents, see [arm commissioning preparation](arm-commissioning-preparation.md). Arm dossiers grant no chassis or arm admission.

@@ -1,0 +1,384 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mekoniq.app/schemas/physical-target-dossier-v1.schema.json",
+  "title": "PhysicalTargetDossierV1",
+  "description": "Preparation references only. Does not verify evidence, signatures, hardware admission or motion limits. Dossier profile IDs for arms are document kinds, never executable profiles.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "targetKind",
+    "branch",
+    "profileId",
+    "identity",
+    "modelRevision",
+    "prerequisites"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "targetKind": {
+      "enum": [
+        "undecided",
+        "arm",
+        "chassis"
+      ]
+    },
+    "branch": {
+      "enum": [
+        null,
+        "xarm_ros2",
+        "custom_linuxcnc"
+      ]
+    },
+    "profileId": {
+      "enum": [
+        null,
+        "arm-xarm-dossier-v1",
+        "arm-custom-dossier-v1",
+        "wheeltec-s100",
+        "zltech-differential"
+      ]
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vendor",
+        "model",
+        "firmware",
+        "sdk",
+        "serial"
+      ],
+      "properties": {
+        "vendor": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/identityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/identityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "firmware": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/identityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sdk": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/identityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "serial": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/identityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "modelRevision": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/reference"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "prerequisites": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "controller",
+        "tool",
+        "safety",
+        "latency",
+        "maintenance",
+        "calibration",
+        "observer",
+        "signature",
+        "vendorInterface",
+        "operatingLimits",
+        "conformance"
+      ],
+      "properties": {
+        "host": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "controller": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "safety": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "latency": {
+          "anyOf": [
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/reference"
+                }
+              ],
+              "properties": {
+                "sourceKind": {
+                  "const": "measurement"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maintenance": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "calibration": {
+          "anyOf": [
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/reference"
+                }
+              ],
+              "properties": {
+                "sourceKind": {
+                  "const": "measurement"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observer": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "signature": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vendorInterface": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operatingLimits": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "conformance": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "targetKind": {
+          "const": "undecided"
+        },
+        "branch": {
+          "const": null
+        },
+        "profileId": {
+          "const": null
+        }
+      }
+    },
+    {
+      "properties": {
+        "targetKind": {
+          "const": "chassis"
+        },
+        "branch": {
+          "const": null
+        },
+        "profileId": {
+          "enum": [
+            "wheeltec-s100",
+            "zltech-differential"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "targetKind": {
+          "const": "arm"
+        },
+        "branch": {
+          "const": "xarm_ros2"
+        },
+        "profileId": {
+          "const": "arm-xarm-dossier-v1"
+        }
+      }
+    },
+    {
+      "properties": {
+        "targetKind": {
+          "const": "arm"
+        },
+        "branch": {
+          "const": "custom_linuxcnc"
+        },
+        "profileId": {
+          "const": "arm-custom-dossier-v1"
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "sourceKind",
+        "sourceRef",
+        "owner"
+      ],
+      "properties": {
+        "value": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "sourceKind": {
+          "enum": [
+            "vendor",
+            "measurement",
+            "owner"
+          ]
+        },
+        "sourceRef": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "owner": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      }
+    },
+    "identityReference": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/reference"
+        }
+      ],
+      "properties": {
+        "sourceKind": {
+          "enum": [
+            "vendor",
+            "measurement"
+          ]
+        }
+      }
+    }
+  }
+}
