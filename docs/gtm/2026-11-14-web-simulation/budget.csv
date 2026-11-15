@@ -1,0 +1,28 @@
+﻿scenario,cost_type,category,quantity,unit,unit_cost_vnd,total_vnd,assumption
+lean,cash_ceiling,content_external,1,90_day_envelope,6000000,6000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+lean,cash_ceiling,marketing_tools,1,90_day_envelope,3000000,3000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+lean,cash_ceiling,discovery_travel,1,90_day_envelope,6000000,6000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+lean,cash_ceiling,workshop_webinar,1,90_day_envelope,3000000,3000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+lean,cash_ceiling,localization_review,1,90_day_envelope,0,0,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+lean,cash_ceiling,paid_search_conditional,1,90_day_envelope,0,0,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+lean,cash_ceiling,reserve_unallocated,1,90_day_envelope,6000000,6000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+lean,imputed_labor,founder_sales_content,120,hour,300000,36000000,Planning opportunity cost; exclude delivery hours already in service COGS
+lean,imputed_labor,engineer_presales,36,hour,400000,14400000,Planning opportunity cost; exclude delivery hours already in service COGS
+standard,cash_ceiling,content_external,1,90_day_envelope,12000000,12000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+standard,cash_ceiling,marketing_tools,1,90_day_envelope,9000000,9000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+standard,cash_ceiling,discovery_travel,1,90_day_envelope,9000000,9000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+standard,cash_ceiling,workshop_webinar,1,90_day_envelope,6000000,6000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+standard,cash_ceiling,localization_review,1,90_day_envelope,6000000,6000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+standard,cash_ceiling,paid_search_conditional,1,90_day_envelope,12000000,12000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+standard,cash_ceiling,reserve_unallocated,1,90_day_envelope,6000000,6000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+standard,imputed_labor,founder_sales_content,180,hour,300000,54000000,Planning opportunity cost; exclude delivery hours already in service COGS
+standard,imputed_labor,engineer_presales,60,hour,400000,24000000,Planning opportunity cost; exclude delivery hours already in service COGS
+partner_intensive,cash_ceiling,content_external,1,90_day_envelope,24000000,24000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+partner_intensive,cash_ceiling,marketing_tools,1,90_day_envelope,12000000,12000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+partner_intensive,cash_ceiling,discovery_travel,1,90_day_envelope,18000000,18000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+partner_intensive,cash_ceiling,workshop_webinar,1,90_day_envelope,12000000,12000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+partner_intensive,cash_ceiling,localization_review,1,90_day_envelope,24000000,24000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+partner_intensive,cash_ceiling,paid_search_conditional,1,90_day_envelope,18000000,18000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+partner_intensive,cash_ceiling,reserve_unallocated,1,90_day_envelope,12000000,12000000,Planning ceiling; actual spend unknown; reserve is not spent; no hardware or product R&D
+partner_intensive,imputed_labor,founder_sales_content,240,hour,300000,72000000,Planning opportunity cost; exclude delivery hours already in service COGS
+partner_intensive,imputed_labor,engineer_presales,90,hour,400000,36000000,Planning opportunity cost; exclude delivery hours already in service COGS

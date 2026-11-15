@@ -1,0 +1,10 @@
+{
+  "snapshot": "B10 current adapter R90 deadline policy",
+  "humanEntries": 90,
+  "rawRecords": 94,
+  "exactRawLedgerMatch": true,
+  "prior93recordsPreserved": true,
+  "humanFileSha256": "efe1fa165cf3843a92161fc0dae182ce0f5197c7a0726e457d7c65c6713842f7",
+  "rawFileSha256": "d13a00384fdb1afb40b256d693d2d0b146891f8dd6f463ab59b099192d6943c8",
+  "evidence": "Root read campaign6000seconds,3nominal+5fault; historical process helper1800000ms and outer worker1500000ms. No process/native execution."
+}

@@ -1,0 +1,13 @@
+{
+  "actual": 82,
+  "saved": 82,
+  "humanEntries": 78,
+  "missing": 0,
+  "extra": 0,
+  "scope": [
+    "01-r2b-mobility/progress.md",
+    "02-r2b-cell-and-web/progress.md",
+    "03-r3-linux-readiness/progress.md",
+    "README/progress.md"
+  ]
+}

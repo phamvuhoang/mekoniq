@@ -1,0 +1,164 @@
+{
+  "source": "00d41e7f25ec1294b9bc8e8c81de3d8e1a869316",
+  "lab": "82b5f92005673c99ba0d1f434ae4c512800fa75e",
+  "sourceTree": "365ef73ebaa86cf490f8d6d43c54cc604758f916",
+  "labTree": "a5b06e2e3cb12bc5f744aeb3a994d8868a545a67",
+  "clean": true,
+  "fixBase": {
+    "source": "e6db696b2ac1266fdeede8c2a64521cd4064481a",
+    "lab": "7652851fb9e92e560c70e4e6675b85fa5f445cf4"
+  },
+  "export": "/tmp/l02-fix1-runtime-00d41e7-20261115",
+  "pin": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "00d41e7f25ec1294b9bc8e8c81de3d8e1a869316",
+    "schemaHash": "07e01e8efb146fb50b8c68eebfa27d989ee07d4e80bcdb796639e3c2aaa42068",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "fbca966393c5fdb0216c1e826d16aea133f4632ae7cee514a7de0d04825435c6",
+    "entrypoint": "runtime.mjs",
+    "portableToolsDigest": "5c58ddfacb92fc52adc7106cbe03f2758a9dd6ee23f4d64686e33803757774d3"
+  },
+  "nativeToolsDigest": "f7236fd861ea3fcdee0364b0a92425c19b06952283f86dd35c05cd3754ea3a59",
+  "refsChecked": [
+    {
+      "kind": "native",
+      "count": 180,
+      "bytes": 1316217
+    },
+    {
+      "kind": "portable",
+      "count": 237,
+      "bytes": 8107847
+    }
+  ],
+  "schemasChecked": 57,
+  "changedNativeRefs": [
+    "robotics/simulation/bridge/engineering_session.py"
+  ],
+  "portableClosureUnchanged": true,
+  "unchangedOriginalFiles": [
+    "scripts/lab-sil.mjs",
+    "robotics/simulation/fixtures/engineering-navigation-v1/compiler-manifest.json",
+    "robotics/simulation/fixtures/engineering-navigation-v1/native-mapping.json",
+    "robotics/simulation/profiles/engineering-amd64.lock.json",
+    "robotics/simulation/profiles/engineering-arm64.lock.json"
+  ],
+  "report": {
+    "bytes": 43670,
+    "sha256": "429acbb6e9b3d847068b9896fc762129ee5de8e106f2b4696e4d44996b1ebed4",
+    "preservedPrefixBytes": 25692,
+    "preservedPrefixSha256": "6fd0359cda1e0a09b24ecd73deb8fc2ac57bf1b40f7ad876ee400a123ac1e1c1"
+  },
+  "preservedOldEvidenceFiles": 86,
+  "oldExportPreserved": "/tmp/l02-runtime-e6db696-20261115",
+  "attributions": [
+    {
+      "check": "combined-python",
+      "files": [
+        "robotics/simulation/bridge/engineering_session.py",
+        "robotics/simulation/tests/test_engineering_native_parity.py"
+      ],
+      "exitCode": 0
+    },
+    {
+      "check": "final-cli",
+      "files": [
+        "tests/integration/engineering-native-cli.test.ts",
+        "tests/support/engineering-cli-probes.mjs"
+      ],
+      "exitCode": 0
+    },
+    {
+      "check": "final-focused-lint",
+      "files": [
+        "tests/integration/engineering-native-cli.test.ts",
+        "tests/support/engineering-cli-probes.mjs"
+      ],
+      "exitCode": 0
+    },
+    {
+      "check": "final-typecheck",
+      "files": [
+        "tests/integration/engineering-native-cli.test.ts",
+        "tests/support/engineering-cli-probes.mjs"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "cases": [
+    {
+      "case": "nominal",
+      "manifestSha256": "a905e3024457908cbcbdb451ac899f682c55c625ef0eff2660390408d2a27a8b",
+      "requestedRepeat": 3,
+      "status": "not_run",
+      "exitCode": 2
+    },
+    {
+      "case": "obstacle",
+      "manifestSha256": "aeb70abbc24fce9654b72507d690ea0acd40c8ac2a0a97b854b83b025412e5ca",
+      "requestedRepeat": 1,
+      "status": "not_run",
+      "exitCode": 2
+    },
+    {
+      "case": "no-path",
+      "manifestSha256": "e86a10bb02cb15823df83d2a60cbae462a6f08d9fe5408ab6c1f5626b1c6abb7",
+      "requestedRepeat": 1,
+      "status": "not_run",
+      "exitCode": 2
+    },
+    {
+      "case": "cancel",
+      "manifestSha256": "9209061f5a920f7e1af15c1d15bb7e48586e471483082bc1225d35ce467957c7",
+      "requestedRepeat": 1,
+      "status": "not_run",
+      "exitCode": 2
+    },
+    {
+      "case": "worker-loss",
+      "manifestSha256": "069b29b81ec81e9b037e427eee55e168a5f63ed5c0fee3d1a346d5ec8c1716aa",
+      "requestedRepeat": 1,
+      "status": "not_run",
+      "exitCode": 2
+    }
+  ],
+  "newEvidenceIndex": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L02-r1-evidence-file-index.json",
+    "files": 63,
+    "sha256": "23b30c9611d4dae9cf9a6e1f3db84f4267f16959f272761b6d9c1a295cf52ae9"
+  },
+  "packages": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-e6db696..00d41e7.diff",
+      "bytes": 26692,
+      "sha256": "265e5697ec0d52ee7589c86456847344c621c93aa3ace6f5ce86d91f2f7bef2e"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-7652851..82b5f92.diff",
+      "bytes": 3433,
+      "sha256": "5f3c3cd413a87c10dfc16b55dbc9db5302c4e8af6003121daccbb6170a95cd4b"
+    }
+  ],
+  "checksRead": [
+    "RED TF6failed13passed",
+    "Initial CLI1passed on unchanged production parser",
+    "Final combined128TS/85Python",
+    "Later finalCLI1/typecheck/scopedlint ownexit0",
+    "Labimport/sync/check/types ownexit0",
+    "Native doctor/cases/verifier allownexit2"
+  ],
+  "limits": [
+    "Byte/identity audit does not validate semantics or native transport.",
+    "R1 disputed finding to reconcile through unchanged parser plus real CLI argv regression; not silently parked.",
+    "No native campaign/host qualification; full historical lint27errors remains B10-owned."
+  ]
+}

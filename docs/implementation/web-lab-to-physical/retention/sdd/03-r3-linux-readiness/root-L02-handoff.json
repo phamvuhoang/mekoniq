@@ -1,0 +1,73 @@
+{
+  "source": "e6db696b2ac1266fdeede8c2a64521cd4064481a",
+  "lab": "7652851fb9e92e560c70e4e6675b85fa5f445cf4",
+  "clean": true,
+  "report": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L02-report.md",
+    "bytes": 25692,
+    "sha256": "6fd0359cda1e0a09b24ecd73deb8fc2ac57bf1b40f7ad876ee400a123ac1e1c1"
+  },
+  "evidenceIndex": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L02-evidence-file-index.json",
+    "files": 86,
+    "sha256": "092c84d601f9372e4fc5c9efe0196621e292834b4297fb4e1d2d2948ad7c8f4c"
+  },
+  "byteAudit": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L02-handoff-byte-audit.json",
+  "lintHistoricalAudit": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L02-historical-lint-audit.json",
+  "focusedLintReceipt": {
+    "sourceCommit": "e6db696b2ac1266fdeede8c2a64521cd4064481a",
+    "sourceCleanBefore": true,
+    "sourceCommitAfter": "e6db696b2ac1266fdeede8c2a64521cd4064481a",
+    "sourceCleanAfter": true,
+    "command": "perl",
+    "argv": [
+      "-e",
+      "alarm 120; exec @ARGV",
+      "pnpm",
+      "exec",
+      "eslint",
+      "packages/lab-runtime/src/v2/sil/engineering-native.ts",
+      "packages/lab-runtime/src/v2/sil/campaign.ts",
+      "packages/lab-runtime/src/v2/sil/cli.ts",
+      "packages/lab-runtime/src/v2/sil/native-handoff-documents.ts",
+      "packages/lab-runtime/src/v2/backends/gazebo-nav2.ts",
+      "scripts/lab-sil.mjs",
+      "scripts/native-sim/profile-report.mjs",
+      "scripts/native-sim/tool-identity.mjs",
+      "tests/integration/engineering-native-lifecycle.test.ts",
+      "tests/integration/engineering-native-evidence.test.ts",
+      "tests/integration/engineering-profile-routing.test.ts"
+    ],
+    "node": "v24.22.2",
+    "exitCode": 0,
+    "signal": null,
+    "error": null
+  },
+  "reviewPackages": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-874d05a..e6db696.diff",
+      "bytes": 163998,
+      "sha256": "4b79e8bcfd6b03b59cc94b6f6b8f2a82b7a373ab60642cd175ca84c6b65b541e"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-4a207b4..7652851.diff",
+      "bytes": 3528,
+      "sha256": "7890df02663a4c990dc20922cf6af5ee5b5c22e918d01b08980460567f8da2e3"
+    }
+  ],
+  "checksRead": {
+    "typescript": 127,
+    "python": 74,
+    "laterTestOnlyFactory": 4,
+    "contracts": "matches",
+    "typecheck": "passed",
+    "labSourceAndTypecheck": "passed",
+    "focusedLint": "own exit 0; prior masked-exit claim corrected by appended exact receipt",
+    "fullLint": "failed 27 errors in five unchanged historical scripts"
+  },
+  "limits": [
+    "No native engine/ROS/Gazebo run; five requested case preflights blocked_external/not_run; nominal requested three repeats.",
+    "Package/plugin/host qualification unresolved; no physical gate closed.",
+    "Covering checks have distinct development/final focused attribution in complete report; counts not additive."
+  ]
+}

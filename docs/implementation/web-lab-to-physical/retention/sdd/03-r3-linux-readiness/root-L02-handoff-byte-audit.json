@@ -1,0 +1,134 @@
+{
+  "source": "e6db696b2ac1266fdeede8c2a64521cd4064481a",
+  "lab": "7652851fb9e92e560c70e4e6675b85fa5f445cf4",
+  "clean": true,
+  "export": "/tmp/l02-runtime-e6db696-20261115",
+  "runtimeSha256": "89686e9595476379e12b980caccb714d7f0d7fab6560ddd45bf18b5d88ed360d",
+  "schemaHash": "07e01e8efb146fb50b8c68eebfa27d989ee07d4e80bcdb796639e3c2aaa42068",
+  "schemasByteChecked": 57,
+  "nativeToolsDigest": "6643ae338a7b3ee2e03c5659cbed5e962ae346d01746c1aaabd0ef912f61140f",
+  "portableToolsDigest": "5c58ddfacb92fc52adc7106cbe03f2758a9dd6ee23f4d64686e33803757774d3",
+  "sourceRefsChecked": [
+    {
+      "kind": "native",
+      "refs": 180,
+      "bytes": 1313874
+    },
+    {
+      "kind": "portable",
+      "refs": 237,
+      "bytes": 8107847
+    }
+  ],
+  "pinAndCacheMatch": true,
+  "notRunCases": [
+    {
+      "case": "nominal",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L02/native-not-run/nominal/run-manifest.json",
+      "sha256": "79f088e59b1f919752f385d40ca5c35011e63037baef3903c0afd4a66a32eded",
+      "requestedSeed": 17,
+      "requestedRepeat": 3,
+      "status": "not_run",
+      "result": "blocked_external",
+      "exitCode": 2,
+      "reasons": [
+        "PREREQUISITE_MISSING:linux",
+        "PREREQUISITE_MISSING:python-deps",
+        "PREREQUISITE_MISSING:compiler",
+        "PREREQUISITE_MISSING:ros2",
+        "PREREQUISITE_MISSING:gz",
+        "PREREQUISITE_MISSING:environment-profile"
+      ]
+    },
+    {
+      "case": "obstacle",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L02/native-not-run/obstacle/run-manifest.json",
+      "sha256": "3c400dd2d20b941073f9a9bf5aeb0828b4f4ef3d8b5894ce172011d3390532b1",
+      "requestedSeed": 17,
+      "requestedRepeat": 1,
+      "status": "not_run",
+      "result": "blocked_external",
+      "exitCode": 2,
+      "reasons": [
+        "PREREQUISITE_MISSING:linux",
+        "PREREQUISITE_MISSING:python-deps",
+        "PREREQUISITE_MISSING:compiler",
+        "PREREQUISITE_MISSING:ros2",
+        "PREREQUISITE_MISSING:gz",
+        "PREREQUISITE_MISSING:environment-profile"
+      ]
+    },
+    {
+      "case": "no-path",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L02/native-not-run/no-path/run-manifest.json",
+      "sha256": "01de633e61efa552dc35dae9cdbfcf01171919bb7553f8277ec053a7f17a6e45",
+      "requestedSeed": 17,
+      "requestedRepeat": 1,
+      "status": "not_run",
+      "result": "blocked_external",
+      "exitCode": 2,
+      "reasons": [
+        "PREREQUISITE_MISSING:linux",
+        "PREREQUISITE_MISSING:python-deps",
+        "PREREQUISITE_MISSING:compiler",
+        "PREREQUISITE_MISSING:ros2",
+        "PREREQUISITE_MISSING:gz",
+        "PREREQUISITE_MISSING:environment-profile"
+      ]
+    },
+    {
+      "case": "cancel",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L02/native-not-run/cancel/run-manifest.json",
+      "sha256": "dcc9a5097b59d47b458f4c4dfb0e4ecfd6325c9d97d43a73a3fea3805c3569dd",
+      "requestedSeed": 17,
+      "requestedRepeat": 1,
+      "status": "not_run",
+      "result": "blocked_external",
+      "exitCode": 2,
+      "reasons": [
+        "PREREQUISITE_MISSING:linux",
+        "PREREQUISITE_MISSING:python-deps",
+        "PREREQUISITE_MISSING:compiler",
+        "PREREQUISITE_MISSING:ros2",
+        "PREREQUISITE_MISSING:gz",
+        "PREREQUISITE_MISSING:environment-profile"
+      ]
+    },
+    {
+      "case": "worker-loss",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L02/native-not-run/worker-loss/run-manifest.json",
+      "sha256": "7a20340088e80ac5de3ef70b3a50e4f36e0e4184769e6d58b7623e0c6055d337",
+      "requestedSeed": 17,
+      "requestedRepeat": 1,
+      "status": "not_run",
+      "result": "blocked_external",
+      "exitCode": 2,
+      "reasons": [
+        "PREREQUISITE_MISSING:linux",
+        "PREREQUISITE_MISSING:python-deps",
+        "PREREQUISITE_MISSING:compiler",
+        "PREREQUISITE_MISSING:ros2",
+        "PREREQUISITE_MISSING:gz",
+        "PREREQUISITE_MISSING:environment-profile"
+      ]
+    }
+  ],
+  "packages": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-874d05a..e6db696.diff",
+      "bytes": 163998,
+      "sha256": "4b79e8bcfd6b03b59cc94b6f6b8f2a82b7a373ab60642cd175ca84c6b65b541e"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-4a207b4..7652851.diff",
+      "bytes": 3528,
+      "sha256": "7890df02663a4c990dc20922cf6af5ee5b5c22e918d01b08980460567f8da2e3"
+    }
+  ],
+  "limitations": [
+    "Byte/identity and recorded refusal audit; not semantic mapping, native execution or host authenticity proof.",
+    "Portable test interpreter is Python3.11; actual rejected Mac preflight observed systemPython3.15.2 separately.",
+    "No full lint pass: five historical files/27 configuration errors audited separately.",
+    "Earlier metadata display was truncated and one display-only script assumed a count was an array; corrected read-only audit used declared lists and did not mutate any artifact."
+  ]
+}

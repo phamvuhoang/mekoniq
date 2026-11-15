@@ -1,0 +1,49 @@
+{
+  "source": "298db9bdbc207b14bdbef78ec8d70adf4e901c71",
+  "lab": "7698aa628fc9a60598d1337b292bdcec2fe91fdc",
+  "clean": true,
+  "allRefsChecked": 239,
+  "payloadBytes": 10724081,
+  "manifestSha256": "010c10024179c6cd03e52efbd0c01d150795f219747ffb5c56ca36146cc9772e",
+  "artifactSha256": "802b58db276ae16097d3b1d896ee252e96c8e3afa33e1f6081c885582a0efe9b",
+  "schemaHash": "07e01e8efb146fb50b8c68eebfa27d989ee07d4e80bcdb796639e3c2aaa42068",
+  "portableToolsDigest": "9e84b636309e418ae467b73450574c0d99f80142090c08648394067bad2716b2",
+  "image": null,
+  "checkerToolSha256": "c75a5b6fb4f69a0170fa7cc77a6463e9e382bf319763bee7b1a7b340236d6caf",
+  "reportPrefix": {
+    "bytes": 35537,
+    "sha256": "a473337a44262bc29b0c3099f6bb4890f44daa21c463dc14209756fad0ac71bd",
+    "preserved": true
+  },
+  "oldManifests": [
+    {
+      "path": "/tmp/mekoniq-l00-evbHOR/handoff/manifest.json",
+      "sha256": "b8582c43a36368a2d878017d6d165af462ab29324f72837e97c89e5fb742810a"
+    },
+    {
+      "path": "/tmp/mekoniq-l00-static-Ee1bDp/handoff/manifest.json",
+      "sha256": "64e8049c0f72836540fa3b85199852f1c09af734141f09afe568977c4ca39b32"
+    }
+  ],
+  "packages": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-2b7d39c..298db9b.diff",
+      "base": "2b7d39cdeab06b499e9037aef1a24f1babe03a4f",
+      "head": "298db9bdbc207b14bdbef78ec8d70adf4e901c71",
+      "bytes": 62754,
+      "sha256": "16ea0aabd497675c2e2f9c0560863c18dac255a427e6544038b1dc1d4dd149f3"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-fd43652..7698aa6.diff",
+      "base": "fd4365291f6db7fdcbd72407f94ac7c0f35a20b4",
+      "head": "7698aa628fc9a60598d1337b292bdcec2fe91fdc",
+      "bytes": 3433,
+      "sha256": "a6230f94b2ba9f2053bd2c8aaa95171e217ceda1f1a3455e9d97b39d193a6ec5"
+    }
+  ],
+  "limits": [
+    "Byte/identity audit only, no semantic/native/authenticity claim",
+    "Report full fix appendix read; 115-test/contracts/type/lint/export/pin evidence inspected, no rerun",
+    "Scoped independent review pending"
+  ]
+}

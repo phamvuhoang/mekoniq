@@ -440,3 +440,14 @@ test('pre-flight: refuses early what would fail later, from injected probe resul
  expect(q.screenLockedFromIoreg('<key>CGSSessionScreenIsLocked</key>\n\t\t<true/>')).toBe(true);
  expect(q.screenLockedFromIoreg('<key>CGSSessionOnConsoleKey</key><true/>')).toBe(false);
 });
+
+test('R2b has closed local cases and separate external host gate; a summary-only call cannot qualify artifacts',()=>{
+ expect(Q.GATES_R2B).toEqual({'G-MJ1':['MJ01','MJ02','MJ03','MJ04','MJ05','MJ06','MJ07'],'G-CELL1':['CELL01','CELL02','CELL03','CELL04','CELL05','CELL06'],'G-WEB1':['WEB01','WEB02','WEB03','WEB04','WEB05'],'G-X1':['X01'],'G-REG4':['REG04'],'G-HOST1':['WEB06']});
+ const r=Q.checkQualification({release:'r2b',accepted:false},()=>null);
+ expect(r).toContain('R2B_ARTIFACT_READBACK_REQUIRED');
+});
+test('R2b refuses caller-selected reduced tables, accepted true and a fabricated artifact-verification boolean',()=>{
+ const c=candidate();c.m.release='r2b';c.m.accepted=true;c.m.acceptedBy='fabricated';c.m.acceptedAt='today';c.m.artifactsVerified=true;c.m.scope='full';
+ const r=Q.checkQualification(c.m,c.read);
+ expect(r).toContain('RECORD_ACCEPTED');expect(r).toContain('CASE_TABLE_MISMATCH');expect(r).toContain('R2B_ARTIFACT_READBACK_REQUIRED');
+});

@@ -1,0 +1,157 @@
+{
+  "source": {
+    "head": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+    "allInventoryRowsChecked": 8841,
+    "allFeatureOnlyRowsChecked": 354,
+    "inventoryMatchesGitObjects": true,
+    "clean": true,
+    "unaccountedPaths": [],
+    "frozenMismatches": [
+      "docs/implementation/README.md"
+    ],
+    "overlaps": [],
+    "featureOnlyChanged": [],
+    "packages": [
+      {
+        "argv": [
+          "git",
+          "diff",
+          "--no-renames",
+          "--full-index",
+          "-U10",
+          "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+          "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+          "--",
+          "deploy/lab-runtime/mekoniq.env.example",
+          "scripts/cloud-run-qualification.mjs",
+          "scripts/test-runner.mjs",
+          "tests/acceptance/cloud-run.acceptance.test.ts",
+          "tests/unit/cloud-run-qualification.test.ts"
+        ],
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/root-B00R2-platform.diff",
+        "bytes": 21328,
+        "sha256": "b4927b2cb53243e7d720ca1c071358de54309f9b559719777db2cd4a77daf722"
+      },
+      {
+        "argv": [
+          "git",
+          "diff",
+          "--no-renames",
+          "--full-index",
+          "-U10",
+          "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+          "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+          "--",
+          "artifacts/README.md",
+          "artifacts/src/r2a-demo-guide/README.md",
+          "artifacts/src/r2a-demo-guide/app.js",
+          "artifacts/src/r2a-demo-guide/build-manifest.json",
+          "artifacts/src/r2a-demo-guide/build.py",
+          "artifacts/src/r2a-demo-guide/facts.json",
+          "artifacts/src/r2a-demo-guide/style.css",
+          "artifacts/src/r2a-demo-guide/verification.json",
+          "artifacts/src/r2a-demo-guide/verify.cjs"
+        ],
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/root-B00R2-guide-editable-and-manifests.diff",
+        "bytes": 111786,
+        "sha256": "9e9c9ba054ec43590b0a6d2e49b6824553737c924c1de6e11a3a33a5931e52e5"
+      },
+      {
+        "argv": [
+          "git",
+          "diff",
+          "--no-renames",
+          "--full-index",
+          "-U10",
+          "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+          "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+          "--",
+          "docs/implementation/README.md",
+          "docs/operations/lab-runtime-cloud-run.md",
+          "docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/04-qualification.md"
+        ],
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/root-B00R2-docs.diff",
+        "bytes": 58878,
+        "sha256": "07b30edb712e65ff9db9c3228435065ca2308a8fa83d4dc8be012f34f53cc95d"
+      }
+    ],
+    "runtimeTreeUnchanged": true,
+    "fullStandardReviewPackage": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/review-3c917ce..d0f3074.diff",
+      "bytes": 154315121,
+      "sha256": "82d40cf2cfa108b09d695df43c6f2405ee01851e421b7ed66dc458c951f2151f"
+    },
+    "fullNoRenameBinaryPatch": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/evidence-B00R2/source-original-base.diff",
+      "bytes": 530076779,
+      "sha256": "4b5433d2559e2ba17dc733930d55dd411fbaf9098a334a50831b67a8d2b661e2"
+    }
+  },
+  "lab": {
+    "head": "176bf348b6a839037473cc6d87413093ed17ff54",
+    "allInventoryRowsChecked": 229,
+    "allFeatureOnlyRowsChecked": 226,
+    "inventoryMatchesGitObjects": true,
+    "clean": true,
+    "unaccountedPaths": [],
+    "frozenMismatches": [],
+    "overlaps": [],
+    "featureOnlyChanged": [
+      "README.md",
+      "config/source-runtime.lock.json",
+      "src/shared/engineering.ts",
+      "src/shared/navigation2d.ts"
+    ],
+    "packages": [
+      {
+        "argv": [
+          "git",
+          "diff",
+          "--no-renames",
+          "--full-index",
+          "-U10",
+          "538ba452c81005010a479f337aab0edbad6e5159",
+          "176bf348b6a839037473cc6d87413093ed17ff54",
+          "--",
+          "README.md",
+          "config/source-runtime.lock.json",
+          "src/shared/engineering.ts",
+          "src/shared/navigation2d.ts"
+        ],
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/root-B00R2-lab-own-changes.diff",
+        "bytes": 6627,
+        "sha256": "076e038404e5c4eee9c4f6f96a75b36f6af50bcd680a12b654e8cb09d6bd6a14"
+      }
+    ],
+    "fullStandardReviewPackage": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/01-r2b-mobility/review-538ba45..176bf34.diff",
+      "bytes": 2144213,
+      "sha256": "7caed2fd661db128c55b69efff35f9b5e8426d1d3c202ee3735a126775b6459a"
+    },
+    "fullNoRenameBinaryPatch": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/evidence-B00R2/lab-original-base.diff",
+      "bytes": 25888473,
+      "sha256": "70a10f742aa34cc3e7873605398dd81ff2c087707c3ffd4b87ac6873c485c1d6"
+    }
+  },
+  "runtime": {
+    "currentArtifactSha256": "dd30b291d0211de31dcee2a5a3e659b355e6501677d9fce08abed3788eb857b7",
+    "previousArtifactSha256": "18967bcf397be1e1d43ca86fae2cdae3558be90772981c9c112b071ff54aabae",
+    "onlySourceIdentityReplacement": true,
+    "replacementCount": 3,
+    "sites": [
+      "approvedCommit",
+      "startLabGateway sourceCommit",
+      "CLI Source display"
+    ],
+    "exportAndLabPinMatch": true,
+    "dirty": false
+  },
+  "auditCorrection": "Initial inline root audit incorrectly expected one embedded source identity occurrence; actual three documented identity sites are the only byte differences. That audit failed before writing a handoff; this script is the successful retained audit, not a product fix.",
+  "limitations": [
+    "Git tree/blob provenance, not semantic review of inherited tick records",
+    "No new native/browser/cloud/container run",
+    "Inherited log whitespace retained; see summaries",
+    "Generated HTML/images exact frozen blobs; editable guide/manifests explicit review packages"
+  ]
+}

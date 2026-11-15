@@ -1,0 +1,11 @@
+{
+  "snapshot": "after L04 prepared-code review, R89 unchanged",
+  "humanEntries": 89,
+  "rawRecords": 93,
+  "exactRawLedgerMatch": true,
+  "missing": [],
+  "extra": [],
+  "humanFileSha256": "47670c55ebf775053ff027201a544a6f07a8802da5209721c9c245f6f36ed36d",
+  "rawFileSha256": "8c75cebe235ec2863b91e510f6107eb256827090b2ff3ce15ddab063f9437b0a",
+  "limit": "Current navigation/status snapshot; no new ruling or native qualification."
+}

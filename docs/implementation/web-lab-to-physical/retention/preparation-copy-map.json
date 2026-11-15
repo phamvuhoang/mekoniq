@@ -1,0 +1,1337 @@
+{
+  "scope": "B10 tooling preparation; final tuple/status/reviews and final destination audit still pending",
+  "files": [
+    {
+      "role": "rebased_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "originalBytes": 21754,
+      "originalSha256": "a9505d2be4e067a7fe82f3ef33515547db2cd92ad56c7dd9d0fb9da8424dfffe",
+      "destinationBytes": 21760,
+      "destinationSha256": "397fde2491462fa5b3e42d2cce4b7dbe7055e71f560f8747aa7d99c53142de0b"
+    },
+    {
+      "role": "rebased_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "originalBytes": 21504,
+      "originalSha256": "2003ef81bca2be838724a944345129865c5c5c71d5ab2d558af97bf2701a5f1a",
+      "destinationBytes": 21351,
+      "destinationSha256": "32ddac0f492063ba50acec3761dbfdbb60ca584d87fff701cd25b61c367b489c"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "originalBytes": 22428,
+      "originalSha256": "3fefd42b2126dc799a384d6a4b40f4e857b066a583c167f82efbf6761d0f853b",
+      "destinationBytes": 22428,
+      "destinationSha256": "3fefd42b2126dc799a384d6a4b40f4e857b066a583c167f82efbf6761d0f853b"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "originalBytes": 32610,
+      "originalSha256": "120bf2be6a53ae19352b3b9bba77bad7a4c5b04f24a7d7ea81d6412884de9752",
+      "destinationBytes": 32610,
+      "destinationSha256": "120bf2be6a53ae19352b3b9bba77bad7a4c5b04f24a7d7ea81d6412884de9752"
+    },
+    {
+      "role": "rebased_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "originalBytes": 25299,
+      "originalSha256": "8500acce41e59e33b7b5acc497315581169ae595c181b2a90d8b2cc2682507fe",
+      "destinationBytes": 25290,
+      "destinationSha256": "2c2cc3c3deb913b5a7941e3168cbd30b644a70e4a2a6780345ecf162a773cd7a"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions-ledger.json",
+      "destination": "docs/implementation/web-lab-to-physical/design/05-implementation-decisions-ledger.json",
+      "originalBytes": 95235,
+      "originalSha256": "ac337f532b60240bed1c69c04e952269c91f4e92931b9b8fcf74a2e6b6cb38f3",
+      "destinationBytes": 95235,
+      "destinationSha256": "ac337f532b60240bed1c69c04e952269c91f4e92931b9b8fcf74a2e6b6cb38f3"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "originalBytes": 75380,
+      "originalSha256": "8296769b68e7a5147847ff194034a624ee745af3815ab86a21a17ca922a2180d",
+      "destinationBytes": 75380,
+      "destinationSha256": "8296769b68e7a5147847ff194034a624ee745af3815ab86a21a17ca922a2180d"
+    },
+    {
+      "role": "rebased_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/README.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/README.md",
+      "originalBytes": 9242,
+      "originalSha256": "d79bc76468d24d4b926d3377af8dad320f34849108bf453d469d4fa5d53df93a",
+      "destinationBytes": 9215,
+      "destinationSha256": "d2ba7900c68bbdf3fe9d388949de97d87af4824fe6fb6074d25306749d7c3f6e"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/01-r2b-mobility.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "originalBytes": 15398,
+      "originalSha256": "45ceeceaf59d3376aec4c76769fbe7cc7c4dbb1ffdf083656132fce816f14d16",
+      "destinationBytes": 15398,
+      "destinationSha256": "45ceeceaf59d3376aec4c76769fbe7cc7c4dbb1ffdf083656132fce816f14d16"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/02-r2b-cell-and-web.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "originalBytes": 22467,
+      "originalSha256": "ae0c7c17aa424e2e46de6c262e4c129f11c65d57245aea80dd387acab20297fa",
+      "destinationBytes": 22467,
+      "destinationSha256": "ae0c7c17aa424e2e46de6c262e4c129f11c65d57245aea80dd387acab20297fa"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/03-r3-linux-readiness.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "originalBytes": 22801,
+      "originalSha256": "b1f986c1d7b40191dd4a2841da2a3c3787a6c544acce1e7627722d2dad3c9f6f",
+      "destinationBytes": 22801,
+      "destinationSha256": "b1f986c1d7b40191dd4a2841da2a3c3787a6c544acce1e7627722d2dad3c9f6f"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "destination": "docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "originalBytes": 8249,
+      "originalSha256": "958d9a25613b0477e589f668373996a630e3f89c03711f9516351bf7033c44b1",
+      "destinationBytes": 8249,
+      "destinationSha256": "958d9a25613b0477e589f668373996a630e3f89c03711f9516351bf7033c44b1"
+    },
+    {
+      "role": "rebased_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "destination": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "originalBytes": 19071,
+      "originalSha256": "47feda2d74a27fdafe34ce4d2436dcd2d02b47d85a1b1b59e535dc7f40245dfe",
+      "destinationBytes": 19079,
+      "destinationSha256": "77214d93466a9a76ee70efe808b198ac22848f5999277229d26dafeba81f7dec"
+    },
+    {
+      "role": "rebased_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/02-pitch-and-demo.md",
+      "destination": "docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "originalBytes": 19818,
+      "originalSha256": "accca912dec42f6006869380154c7cf6e2ac6b07901396708aa35b8d11aecd02",
+      "destinationBytes": 19802,
+      "destinationSha256": "131ecc2a01fd47123c50aad263d42ca50af3529e4fd2753fc78435194ec9cab1"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/03-gtm-and-commercial.md",
+      "destination": "docs/gtm/2026-11-14-web-simulation/03-gtm-and-commercial.md",
+      "originalBytes": 20214,
+      "originalSha256": "3280117d605a7fad8c7f5021ab9a19b181140be56b50e3c09e44364c4efd1b6c",
+      "destinationBytes": 20214,
+      "destinationSha256": "3280117d605a7fad8c7f5021ab9a19b181140be56b50e3c09e44364c4efd1b6c"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/04-digital-marketing.md",
+      "destination": "docs/gtm/2026-11-14-web-simulation/04-digital-marketing.md",
+      "originalBytes": 14412,
+      "originalSha256": "fd72567f02645190f8f4956ba20a95b5dbc5f980f0fb5a085a355066a683dcad",
+      "destinationBytes": 14412,
+      "destinationSha256": "fd72567f02645190f8f4956ba20a95b5dbc5f980f0fb5a085a355066a683dcad"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/05-ready-to-use-content.md",
+      "destination": "docs/gtm/2026-11-14-web-simulation/05-ready-to-use-content.md",
+      "originalBytes": 23071,
+      "originalSha256": "20fdb8317a1526c30fd29d05586c806cd2e0d3e8962fd8758f4c90d9a19ef842",
+      "destinationBytes": 23071,
+      "destinationSha256": "20fdb8317a1526c30fd29d05586c806cd2e0d3e8962fd8758f4c90d9a19ef842"
+    },
+    {
+      "role": "rebased_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "destination": "docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "originalBytes": 18269,
+      "originalSha256": "955b1890c6ed0d42e54017b25db476ad6246af4c0d0e4baea6f3618b7a8c989e",
+      "destinationBytes": 18241,
+      "destinationSha256": "02f615aa62699af858e9680ac7f929682758d5c64f052cde68d5ae554d4db9a4"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/07-calendar-and-weekly-checklist.md",
+      "destination": "docs/gtm/2026-11-14-web-simulation/07-calendar-and-weekly-checklist.md",
+      "originalBytes": 10518,
+      "originalSha256": "c6163c95b80e4b7cb724914653d8dc505e0f64d6cc2adc389f8d74f632d01d0c",
+      "destinationBytes": 10518,
+      "destinationSha256": "c6163c95b80e4b7cb724914653d8dc505e0f64d6cc2adc389f8d74f632d01d0c"
+    },
+    {
+      "role": "rebased_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/README.md",
+      "destination": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "originalBytes": 12025,
+      "originalSha256": "422a4e807fd2b091eb42101285abc3731ed6792a3149f5a2fe43a5cc2aed3001",
+      "destinationBytes": 12011,
+      "destinationSha256": "5846eca7de09a095bb184657a142c106b961e0ecac51d28cafcbe07253f3d7a6"
+    },
+    {
+      "role": "rebased_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/REVIEW.md",
+      "destination": "docs/gtm/2026-11-14-web-simulation/REVIEW.md",
+      "originalBytes": 12968,
+      "originalSha256": "0d00f3621f0642e1e68e8b2a11692c130c7a5c8740ddac3f3d14f07ac7a11bcb",
+      "destinationBytes": 12940,
+      "destinationSha256": "688f43479b7875c9e1312a39ca72c2fa3337f1716fdd41f38ec441f24c07b8a5"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/budget.csv",
+      "destination": "docs/gtm/2026-11-14-web-simulation/budget.csv",
+      "originalBytes": 4434,
+      "originalSha256": "f389191f89a1f47a1bb9d99f68c62ddeeabce83af35b5c4a9d9101e912cd0193",
+      "destinationBytes": 4434,
+      "destinationSha256": "f389191f89a1f47a1bb9d99f68c62ddeeabce83af35b5c4a9d9101e912cd0193"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/build-and-validate-model.py",
+      "destination": "docs/gtm/2026-11-14-web-simulation/build-and-validate-model.py",
+      "originalBytes": 6500,
+      "originalSha256": "aea4d26db4b376897f14b337a746f1b7799b81a2190d36b558976819486309e9",
+      "destinationBytes": 6500,
+      "destinationSha256": "aea4d26db4b376897f14b337a746f1b7799b81a2190d36b558976819486309e9"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/economics.csv",
+      "destination": "docs/gtm/2026-11-14-web-simulation/economics.csv",
+      "originalBytes": 1821,
+      "originalSha256": "eab51833efcbd4b9c016047aef00927dc959265d097d59a3b9aeb81a569e94a0",
+      "destinationBytes": 1821,
+      "destinationSha256": "eab51833efcbd4b9c016047aef00927dc959265d097d59a3b9aeb81a569e94a0"
+    },
+    {
+      "role": "exact_design_or_gtm",
+      "original": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/funnel.csv",
+      "destination": "docs/gtm/2026-11-14-web-simulation/funnel.csv",
+      "originalBytes": 4739,
+      "originalSha256": "24550a29debdddd1d548cf2686b3f8a1e81f2ec4a1acd3aeb725a1a3f3c34f25",
+      "destinationBytes": 4739,
+      "destinationSha256": "24550a29debdddd1d548cf2686b3f8a1e81f2ec4a1acd3aeb725a1a3f3c34f25"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/progress.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/progress.md",
+      "originalBytes": 45578,
+      "originalSha256": "61647e849c631f496b1c57504ffc5877aede79e15c283c75859db920382a5b67",
+      "destinationBytes": 45578,
+      "destinationSha256": "61647e849c631f496b1c57504ffc5877aede79e15c283c75859db920382a5b67"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/root-B00R2-audit.py",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/root-B00R2-audit.py",
+      "originalBytes": 6631,
+      "originalSha256": "7765ee0e23415105631196962aeb87991afa5d800699f1d4222e9e9c6223ab8f",
+      "destinationBytes": 6631,
+      "destinationSha256": "7765ee0e23415105631196962aeb87991afa5d800699f1d4222e9e9c6223ab8f"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/root-B00R2-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/root-B00R2-handoff.json",
+      "originalBytes": 6353,
+      "originalSha256": "b4ae5361cc25bd2c71c083919511e6e6bb063c14cac0f3d99a273331a9fa1800",
+      "destinationBytes": 6353,
+      "destinationSha256": "b4ae5361cc25bd2c71c083919511e6e6bb063c14cac0f3d99a273331a9fa1800"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B00-report.md",
+      "originalBytes": 4312,
+      "originalSha256": "1b82aa2015abf711c3fbb33c2321602f52663145cfee4e421ea3cc1e5b6c48ea",
+      "destinationBytes": 4312,
+      "destinationSha256": "1b82aa2015abf711c3fbb33c2321602f52663145cfee4e421ea3cc1e5b6c48ea"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B00R-report.md",
+      "originalBytes": 39604,
+      "originalSha256": "eb8d9c4c0097eb9431c8004a9859ecf083832029978b6f26928356e499998334",
+      "destinationBytes": 39604,
+      "destinationSha256": "eb8d9c4c0097eb9431c8004a9859ecf083832029978b6f26928356e499998334"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B00R-review-1.md",
+      "originalBytes": 10843,
+      "originalSha256": "2a9fdffd610f0affe944fc91f620e94faff5355b1b8e610e481213225f8778f9",
+      "destinationBytes": 10843,
+      "destinationSha256": "2a9fdffd610f0affe944fc91f620e94faff5355b1b8e610e481213225f8778f9"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B00R-review-2.md",
+      "originalBytes": 7197,
+      "originalSha256": "4b1c3dcc260d60fcdfee9ff61df2441475e38b51e3350497366447ecc79d90e7",
+      "destinationBytes": 7197,
+      "destinationSha256": "4b1c3dcc260d60fcdfee9ff61df2441475e38b51e3350497366447ecc79d90e7"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R2-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B00R2-report.md",
+      "originalBytes": 19307,
+      "originalSha256": "da8e0673995cdc9e2b409376b57b5842fdfcf495a81a2284880353fe9117e497",
+      "destinationBytes": 19307,
+      "destinationSha256": "da8e0673995cdc9e2b409376b57b5842fdfcf495a81a2284880353fe9117e497"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R2-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B00R2-review-1.md",
+      "originalBytes": 10739,
+      "originalSha256": "b5587267be817eb8a23df61fc43252f814117887a20286f8879d177283ea5375",
+      "destinationBytes": 10739,
+      "destinationSha256": "b5587267be817eb8a23df61fc43252f814117887a20286f8879d177283ea5375"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B01-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B01-report.md",
+      "originalBytes": 13753,
+      "originalSha256": "9e46b475dc5d5c985c8fbd855f3781c0b9e61510ab3feb4f3f05a592ded0a712",
+      "destinationBytes": 13753,
+      "destinationSha256": "9e46b475dc5d5c985c8fbd855f3781c0b9e61510ab3feb4f3f05a592ded0a712"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02a-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02a-report.md",
+      "originalBytes": 22669,
+      "originalSha256": "5d60a19af3f5dbf5295607038b4cc26f6ef17f1aa5645ae2ff3fb97f3190be45",
+      "destinationBytes": 22669,
+      "destinationSha256": "5d60a19af3f5dbf5295607038b4cc26f6ef17f1aa5645ae2ff3fb97f3190be45"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02a-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02a-review-1.md",
+      "originalBytes": 1132,
+      "originalSha256": "afb3e3d1e0d4b052d3cc51802e4ecd85c8f678eb0d33c0cc639f77dff314c9c4",
+      "destinationBytes": 1132,
+      "destinationSha256": "afb3e3d1e0d4b052d3cc51802e4ecd85c8f678eb0d33c0cc639f77dff314c9c4"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02a-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02a-review-2.md",
+      "originalBytes": 645,
+      "originalSha256": "66bb2f00f0f14c1d896fa6c605dc701d0c51532405e4c484194324ba511060e6",
+      "destinationBytes": 645,
+      "destinationSha256": "66bb2f00f0f14c1d896fa6c605dc701d0c51532405e4c484194324ba511060e6"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02b-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02b-report.md",
+      "originalBytes": 32601,
+      "originalSha256": "3b610697c6013d409426248a18e8eb2bfb6686a75831a34961baf1995d7ecde8",
+      "destinationBytes": 32601,
+      "destinationSha256": "3b610697c6013d409426248a18e8eb2bfb6686a75831a34961baf1995d7ecde8"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02b-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02b-review-1.md",
+      "originalBytes": 2322,
+      "originalSha256": "d2b9277dd029e48987140586eb7da0ab26cf9dbf7c1a993756353e756c999804",
+      "destinationBytes": 2322,
+      "destinationSha256": "d2b9277dd029e48987140586eb7da0ab26cf9dbf7c1a993756353e756c999804"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02b-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02b-review-2.md",
+      "originalBytes": 3470,
+      "originalSha256": "c35347ccc1e4356f71b2d4a4d15bcafd4c7220e0687fb1a15b92dc58d28aaaff",
+      "destinationBytes": 3470,
+      "destinationSha256": "c35347ccc1e4356f71b2d4a4d15bcafd4c7220e0687fb1a15b92dc58d28aaaff"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B03-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B03-report.md",
+      "originalBytes": 21658,
+      "originalSha256": "c6a0199f4d62f6f09618b0a3522b8e9b75dafc04dc222a2b9c9e44495859031f",
+      "destinationBytes": 21658,
+      "destinationSha256": "c6a0199f4d62f6f09618b0a3522b8e9b75dafc04dc222a2b9c9e44495859031f"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B03-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B03-review-1.md",
+      "originalBytes": 10837,
+      "originalSha256": "38d9fe47e4495affcedcf7e266b7c149649f5c3a449e074969b4ea5a2809043c",
+      "destinationBytes": 10837,
+      "destinationSha256": "38d9fe47e4495affcedcf7e266b7c149649f5c3a449e074969b4ea5a2809043c"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B03-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B03-review-2.md",
+      "originalBytes": 4902,
+      "originalSha256": "7c4dadd3a82b83825eca8a0df1150b52f208c698da3b5c5e3eade958bc550748",
+      "destinationBytes": 4902,
+      "destinationSha256": "7c4dadd3a82b83825eca8a0df1150b52f208c698da3b5c5e3eade958bc550748"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04a-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B04a-report.md",
+      "originalBytes": 49149,
+      "originalSha256": "32387294b473198ce7393ac8a6daf268dead51ff3585c547e376a6d84cbe1754",
+      "destinationBytes": 49149,
+      "destinationSha256": "32387294b473198ce7393ac8a6daf268dead51ff3585c547e376a6d84cbe1754"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04a-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B04a-review-1.md",
+      "originalBytes": 10515,
+      "originalSha256": "bad2f6521ef6fcd94150b91554fe2f2b778fd266a8854b8d4ff56308e229a73b",
+      "destinationBytes": 10515,
+      "destinationSha256": "bad2f6521ef6fcd94150b91554fe2f2b778fd266a8854b8d4ff56308e229a73b"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04b-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B04b-report.md",
+      "originalBytes": 28539,
+      "originalSha256": "dbaaf2e46614fa51a5eff3b1801b059982b4402531f94a7ebb5c0a06dbce3db4",
+      "destinationBytes": 28539,
+      "destinationSha256": "dbaaf2e46614fa51a5eff3b1801b059982b4402531f94a7ebb5c0a06dbce3db4"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04b-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B04b-review-1.md",
+      "originalBytes": 11412,
+      "originalSha256": "46544b159f4868662bd6b33e65bf639e99c75f82064a404058544e6eb1ef2ff4",
+      "destinationBytes": 11412,
+      "destinationSha256": "46544b159f4868662bd6b33e65bf639e99c75f82064a404058544e6eb1ef2ff4"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04b-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B04b-review-2.md",
+      "originalBytes": 5297,
+      "originalSha256": "fd32ce57926abf3379308290c1e226d6f3ce0f1aa3defa164cb29ff447d8bf16",
+      "destinationBytes": 5297,
+      "destinationSha256": "fd32ce57926abf3379308290c1e226d6f3ce0f1aa3defa164cb29ff447d8bf16"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B07a/root-package-byte-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/evidence-B07a/root-package-byte-audit.json",
+      "originalBytes": 1341,
+      "originalSha256": "5398fa71ffc8d810f5a948436892b71b450d624529abf28d126f052f2ff7253c",
+      "destinationBytes": 1341,
+      "destinationSha256": "5398fa71ffc8d810f5a948436892b71b450d624529abf28d126f052f2ff7253c"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B07b/root-H7-zip-byte-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/evidence-B07b/root-H7-zip-byte-audit.json",
+      "originalBytes": 11418,
+      "originalSha256": "954bfa756de256f2fadc3a212c6097ad9389ed52a172d234ec460c6e62b1cfcf",
+      "destinationBytes": 11418,
+      "destinationSha256": "954bfa756de256f2fadc3a212c6097ad9389ed52a172d234ec460c6e62b1cfcf"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B07b/root-catalog-byte-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/evidence-B07b/root-catalog-byte-audit.json",
+      "originalBytes": 57293,
+      "originalSha256": "3d15158e3397c69dc9e522f4c073b6b90994af1cb4739dcee4c1425a3247259f",
+      "destinationBytes": 57293,
+      "destinationSha256": "3d15158e3397c69dc9e522f4c073b6b90994af1cb4739dcee4c1425a3247259f"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B07b/root-final-r70-zip-byte-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/evidence-B07b/root-final-r70-zip-byte-audit.json",
+      "originalBytes": 16482,
+      "originalSha256": "720321cac46dd82157ea3da6a2d374e15629379fb49011b26dbed55e6def06c3",
+      "destinationBytes": 16482,
+      "destinationSha256": "720321cac46dd82157ea3da6a2d374e15629379fb49011b26dbed55e6def06c3"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B07b/root-post-copy-original-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/evidence-B07b/root-post-copy-original-audit.json",
+      "originalBytes": 490,
+      "originalSha256": "50ad96101832f611a7852ca9a325301d607b93315153fb2075e2fa24eef5edd3",
+      "destinationBytes": 490,
+      "destinationSha256": "50ad96101832f611a7852ca9a325301d607b93315153fb2075e2fa24eef5edd3"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B08/root-final-x01-byte-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/evidence-B08/root-final-x01-byte-audit.json",
+      "originalBytes": 64697,
+      "originalSha256": "8a3274ad7709cfc3f11a7e4b241da26c387d4ea1ba45bd2b4a1b2b3ef11d843d",
+      "destinationBytes": 64697,
+      "destinationSha256": "8a3274ad7709cfc3f11a7e4b241da26c387d4ea1ba45bd2b4a1b2b3ef11d843d"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/progress.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/progress.md",
+      "originalBytes": 162956,
+      "originalSha256": "5f1e92b2c27c26b9646d254e31823718c7493cf7a8e0937491888f3efa3b3cc3",
+      "destinationBytes": 162956,
+      "destinationSha256": "5f1e92b2c27c26b9646d254e31823718c7493cf7a8e0937491888f3efa3b3cc3"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B05-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B05-report.md",
+      "originalBytes": 27112,
+      "originalSha256": "628c86d6f0d9d7ccf44616c88c7f473b997ef6883bc92c20f80fcd7b76136f9b",
+      "destinationBytes": 27112,
+      "destinationSha256": "628c86d6f0d9d7ccf44616c88c7f473b997ef6883bc92c20f80fcd7b76136f9b"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B05-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B05-review-1.md",
+      "originalBytes": 9477,
+      "originalSha256": "af7852ff3ea350ed2f8f72a6d2cc19ad9099b5c0a3ce5944ef4c17ac4725685b",
+      "destinationBytes": 9477,
+      "destinationSha256": "af7852ff3ea350ed2f8f72a6d2cc19ad9099b5c0a3ce5944ef4c17ac4725685b"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B05-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B05-review-2.md",
+      "originalBytes": 5403,
+      "originalSha256": "b7f4b2b2cb4e7bc40796d9540f60e3b572f7a0b76848213b255e21f711b7bab3",
+      "destinationBytes": 5403,
+      "destinationSha256": "b7f4b2b2cb4e7bc40796d9540f60e3b572f7a0b76848213b255e21f711b7bab3"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B06-fix-1-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B06-fix-1-report.md",
+      "originalBytes": 9334,
+      "originalSha256": "f738a1f391e7d76a6365d7c4f5d73ed533683dce1c1fe07f5e64c3a8356b2708",
+      "destinationBytes": 9334,
+      "destinationSha256": "f738a1f391e7d76a6365d7c4f5d73ed533683dce1c1fe07f5e64c3a8356b2708"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B06-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B06-report.md",
+      "originalBytes": 39996,
+      "originalSha256": "ee5fed6cd205477550a395321697626da5009383ce583a0802cc11f050c95077",
+      "destinationBytes": 39996,
+      "destinationSha256": "ee5fed6cd205477550a395321697626da5009383ce583a0802cc11f050c95077"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B06-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B06-review-1.md",
+      "originalBytes": 14030,
+      "originalSha256": "e197e05d88fdea5b8870bfaa043f33e061a79bad615ee1faf740d1aa3469375c",
+      "destinationBytes": 14030,
+      "destinationSha256": "e197e05d88fdea5b8870bfaa043f33e061a79bad615ee1faf740d1aa3469375c"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B06-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B06-review-2.md",
+      "originalBytes": 3606,
+      "originalSha256": "2d0b1d0929185dcb46d31a4cecccb27e83397d357ba076cac63b81a5305bc9a5",
+      "destinationBytes": 3606,
+      "destinationSha256": "2d0b1d0929185dcb46d31a4cecccb27e83397d357ba076cac63b81a5305bc9a5"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07a-fix-1-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07a-fix-1-report.md",
+      "originalBytes": 13979,
+      "originalSha256": "cd16ff6bf5a83b0436d749fbff783d6b09144025df1fd382339b9f5b6b56b8bc",
+      "destinationBytes": 13979,
+      "destinationSha256": "cd16ff6bf5a83b0436d749fbff783d6b09144025df1fd382339b9f5b6b56b8bc"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07a-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07a-report.md",
+      "originalBytes": 38656,
+      "originalSha256": "3ebef936c6e663f50e95900c3fe661ffd6e9aacff845996d938bb1be80f814a6",
+      "destinationBytes": 38656,
+      "destinationSha256": "3ebef936c6e663f50e95900c3fe661ffd6e9aacff845996d938bb1be80f814a6"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07a-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07a-review-1.md",
+      "originalBytes": 11779,
+      "originalSha256": "e3c73e299b7b53566f2474d9fbe2ca3a9be4326bebdd819245f66d6548ddeed1",
+      "destinationBytes": 11779,
+      "destinationSha256": "e3c73e299b7b53566f2474d9fbe2ca3a9be4326bebdd819245f66d6548ddeed1"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07a-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07a-review-2.md",
+      "originalBytes": 5814,
+      "originalSha256": "05076a828ecf9d2e549d4ca068c5239c22f2a33dd2c164666743cd48fb5c34a6",
+      "destinationBytes": 5814,
+      "destinationSha256": "05076a828ecf9d2e549d4ca068c5239c22f2a33dd2c164666743cd48fb5c34a6"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07b-fix-1-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07b-fix-1-report.md",
+      "originalBytes": 10595,
+      "originalSha256": "66ebdb78562f485b33affb24a2e2b4ac5f81d65d64913d98cc1628eabf0c884d",
+      "destinationBytes": 10595,
+      "destinationSha256": "66ebdb78562f485b33affb24a2e2b4ac5f81d65d64913d98cc1628eabf0c884d"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07b-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07b-report.md",
+      "originalBytes": 39132,
+      "originalSha256": "f33118b0c1548665bcc3350dae15418a54fd886f3faf1a6866a2763953d86e66",
+      "destinationBytes": 39132,
+      "destinationSha256": "f33118b0c1548665bcc3350dae15418a54fd886f3faf1a6866a2763953d86e66"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07b-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07b-review-1.md",
+      "originalBytes": 10176,
+      "originalSha256": "8ee9dd4163dc446ab08de2c215bd787f27ee7dd70fa43965bde242a5cad32dd0",
+      "destinationBytes": 10176,
+      "destinationSha256": "8ee9dd4163dc446ab08de2c215bd787f27ee7dd70fa43965bde242a5cad32dd0"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07b-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07b-review-2.md",
+      "originalBytes": 9670,
+      "originalSha256": "49af2aa5b313632af1237ca7011fda08440da65b1d4e999884b311fffee72989",
+      "destinationBytes": 9670,
+      "destinationSha256": "49af2aa5b313632af1237ca7011fda08440da65b1d4e999884b311fffee72989"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-fix-1-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B08-fix-1-report.md",
+      "originalBytes": 11906,
+      "originalSha256": "66f4d72ea8a87e0fe680e71a9868d26d5e7d5cf0284311cc999516c731678aee",
+      "destinationBytes": 11906,
+      "destinationSha256": "66f4d72ea8a87e0fe680e71a9868d26d5e7d5cf0284311cc999516c731678aee"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-fix-2-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B08-fix-2-report.md",
+      "originalBytes": 10519,
+      "originalSha256": "a3dd1dd948151a6357c99db27955d6392e039dec52190ba003691eb57a88d1c2",
+      "destinationBytes": 10519,
+      "destinationSha256": "a3dd1dd948151a6357c99db27955d6392e039dec52190ba003691eb57a88d1c2"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B08-report.md",
+      "originalBytes": 29527,
+      "originalSha256": "8eb698f4d7d2e3b412bdf81e947fd5c1c374011f7e0f400d05c86990048a18e5",
+      "destinationBytes": 29527,
+      "destinationSha256": "8eb698f4d7d2e3b412bdf81e947fd5c1c374011f7e0f400d05c86990048a18e5"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B08-review-1.md",
+      "originalBytes": 12641,
+      "originalSha256": "8e51009f734aa29829c5899e58c79426d8e0d5a61880751bd76b8d5e31dd895d",
+      "destinationBytes": 12641,
+      "destinationSha256": "8e51009f734aa29829c5899e58c79426d8e0d5a61880751bd76b8d5e31dd895d"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B08-review-2.md",
+      "originalBytes": 7650,
+      "originalSha256": "8f2a4fbbd90f98dc651df9ca862f888d3946bb34ee430ff4728f1a84b64c2703",
+      "destinationBytes": 7650,
+      "destinationSha256": "8f2a4fbbd90f98dc651df9ca862f888d3946bb34ee430ff4728f1a84b64c2703"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-review-3.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B08-review-3.md",
+      "originalBytes": 7260,
+      "originalSha256": "2e27e5e988c9b41876b45bf9163dc28b64ac13dbfc8d572cfadfe56541366c89",
+      "destinationBytes": 7260,
+      "destinationSha256": "2e27e5e988c9b41876b45bf9163dc28b64ac13dbfc8d572cfadfe56541366c89"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B09-fix-1-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B09-fix-1-report.md",
+      "originalBytes": 12311,
+      "originalSha256": "9d5789d8464cc4be050e69ff2e551b1b9aa015a56d17bef7a05c4cfd80a58773",
+      "destinationBytes": 12311,
+      "destinationSha256": "9d5789d8464cc4be050e69ff2e551b1b9aa015a56d17bef7a05c4cfd80a58773"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B09-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B09-report.md",
+      "originalBytes": 22786,
+      "originalSha256": "5f8de4c0b9aaa7b832d018dd1e7db9d90590f2e4ab0d048556e6e38590ccf3da",
+      "destinationBytes": 22786,
+      "destinationSha256": "5f8de4c0b9aaa7b832d018dd1e7db9d90590f2e4ab0d048556e6e38590ccf3da"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B09-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B09-review-1.md",
+      "originalBytes": 17210,
+      "originalSha256": "2cb65c9dad7b51e94a91263fa0375cf2833113b1badd231b11212e76be31e1d1",
+      "destinationBytes": 17210,
+      "destinationSha256": "2cb65c9dad7b51e94a91263fa0375cf2833113b1badd231b11212e76be31e1d1"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B09-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B09-review-2.md",
+      "originalBytes": 9105,
+      "originalSha256": "177c5964fd795a38a681000e771cfd6b18782cab2c2b660942d9734d3337404d",
+      "destinationBytes": 9105,
+      "destinationSha256": "177c5964fd795a38a681000e771cfd6b18782cab2c2b660942d9734d3337404d"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/progress.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/progress.md",
+      "originalBytes": 63184,
+      "originalSha256": "2f8ec987052a9d701353ce0488e5e3bf077bb168738d365fae78cbb07e43d1eb",
+      "destinationBytes": 63184,
+      "destinationSha256": "2f8ec987052a9d701353ce0488e5e3bf077bb168738d365fae78cbb07e43d1eb"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L00-handoff-static.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L00-handoff-static.json",
+      "originalBytes": 2382,
+      "originalSha256": "2de3fc2a9c87c0ed923c97b818b844fc6cd78df2882f803ab1b858f4d066c099",
+      "destinationBytes": 2382,
+      "destinationSha256": "2de3fc2a9c87c0ed923c97b818b844fc6cd78df2882f803ab1b858f4d066c099"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L00-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L00-handoff.json",
+      "originalBytes": 1679,
+      "originalSha256": "6d2059b570d397f4deb27a33213b0b0b5817dbf665a4d9a2a38afc0c21ece1b4",
+      "destinationBytes": 1679,
+      "destinationSha256": "6d2059b570d397f4deb27a33213b0b0b5817dbf665a4d9a2a38afc0c21ece1b4"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L00-r1-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L00-r1-handoff.json",
+      "originalBytes": 2176,
+      "originalSha256": "95967fb80af53498984c79f80b5c2a1571be24c93d681a88b507480ab0cd6e33",
+      "destinationBytes": 2176,
+      "destinationSha256": "95967fb80af53498984c79f80b5c2a1571be24c93d681a88b507480ab0cd6e33"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L01-byte-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L01-byte-audit.json",
+      "originalBytes": 42272,
+      "originalSha256": "574e24b890508ddb482a6fbe47b55cdb11978fb65f6791e3766f818351f34c43",
+      "destinationBytes": 42272,
+      "destinationSha256": "574e24b890508ddb482a6fbe47b55cdb11978fb65f6791e3766f818351f34c43"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L01-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L01-handoff.json",
+      "originalBytes": 4883,
+      "originalSha256": "1896e0564a078aeefe09fc9221005a4bb3fbb938c3d680ae947efced07df616a",
+      "destinationBytes": 4883,
+      "destinationSha256": "1896e0564a078aeefe09fc9221005a4bb3fbb938c3d680ae947efced07df616a"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L01-r1-byte-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L01-r1-byte-audit.json",
+      "originalBytes": 42286,
+      "originalSha256": "c6b0ab69263b082cef7c19c2db76307009a9187dbf25bda034c2baceef49f2d1",
+      "destinationBytes": 42286,
+      "destinationSha256": "c6b0ab69263b082cef7c19c2db76307009a9187dbf25bda034c2baceef49f2d1"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L01-r1-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L01-r1-handoff.json",
+      "originalBytes": 5986,
+      "originalSha256": "8c23aadc7729d2f9b293e76de7ba803fd4fc334ae26a03a9c37216b07126e3f2",
+      "destinationBytes": 5986,
+      "destinationSha256": "8c23aadc7729d2f9b293e76de7ba803fd4fc334ae26a03a9c37216b07126e3f2"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L01-r2-byte-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L01-r2-byte-audit.json",
+      "originalBytes": 42277,
+      "originalSha256": "02b8d6408b05b1b2f18a10bc3532cd54829f8efe2e5983a81a1a09b1107cd3c5",
+      "destinationBytes": 42277,
+      "destinationSha256": "02b8d6408b05b1b2f18a10bc3532cd54829f8efe2e5983a81a1a09b1107cd3c5"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L01-r2-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L01-r2-handoff.json",
+      "originalBytes": 5738,
+      "originalSha256": "5675b4e84e470a7d52ae4cbd7fa5c6578b6d8ce8254a967b96fceb181fd2ac8b",
+      "destinationBytes": 5738,
+      "destinationSha256": "5675b4e84e470a7d52ae4cbd7fa5c6578b6d8ce8254a967b96fceb181fd2ac8b"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L02-handoff-byte-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L02-handoff-byte-audit.json",
+      "originalBytes": 5488,
+      "originalSha256": "1bcac764d195d52533ca14f3c345a1e1080ff754690028c3351eb3332564557e",
+      "destinationBytes": 5488,
+      "destinationSha256": "1bcac764d195d52533ca14f3c345a1e1080ff754690028c3351eb3332564557e"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L02-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L02-handoff.json",
+      "originalBytes": 3327,
+      "originalSha256": "c4c9d90f467ad32df788a6d3184a901f71ca1f2742627c4a520b34f89946cadb",
+      "destinationBytes": 3327,
+      "destinationSha256": "c4c9d90f467ad32df788a6d3184a901f71ca1f2742627c4a520b34f89946cadb"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L02-historical-lint-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L02-historical-lint-audit.json",
+      "originalBytes": 1963,
+      "originalSha256": "073b7e9687667d99bc6b43fa678f76d21be3d812f594c8b3792092fb2c43ce57",
+      "destinationBytes": 1963,
+      "destinationSha256": "073b7e9687667d99bc6b43fa678f76d21be3d812f594c8b3792092fb2c43ce57"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L02-r1-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L02-r1-handoff.json",
+      "originalBytes": 5488,
+      "originalSha256": "974c3b58567dffbca90903c1dba60fcee505cae2ec95c6a37dcb734235831ce0",
+      "destinationBytes": 5488,
+      "destinationSha256": "974c3b58567dffbca90903c1dba60fcee505cae2ec95c6a37dcb734235831ce0"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L02-review-closure.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L02-review-closure.json",
+      "originalBytes": 596,
+      "originalSha256": "5a51380d1d05115d0db9ad25ea43510ddb0ab7a280e1bfa9305110f5404b6579",
+      "destinationBytes": 596,
+      "destinationSha256": "5a51380d1d05115d0db9ad25ea43510ddb0ab7a280e1bfa9305110f5404b6579"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L03-handoff-audit.py",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L03-handoff-audit.py",
+      "originalBytes": 7850,
+      "originalSha256": "0e2e7f5f5f5c1eb138cf051b721695bcc4b96eb77c17011d8a4508f86647235f",
+      "destinationBytes": 7850,
+      "destinationSha256": "0e2e7f5f5f5c1eb138cf051b721695bcc4b96eb77c17011d8a4508f86647235f"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L03-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L03-handoff.json",
+      "originalBytes": 16308,
+      "originalSha256": "c7715898f7fc0d91a1e8856e140db5ec8800d09b69124c88ea1124740022dfbc",
+      "destinationBytes": 16308,
+      "destinationSha256": "c7715898f7fc0d91a1e8856e140db5ec8800d09b69124c88ea1124740022dfbc"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L03-r1-handoff-audit.py",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L03-r1-handoff-audit.py",
+      "originalBytes": 8918,
+      "originalSha256": "bf4c4229769d2ae610e903f6b4736ac538cf340637719b406c7e04cd0e89cc19",
+      "destinationBytes": 8918,
+      "destinationSha256": "bf4c4229769d2ae610e903f6b4736ac538cf340637719b406c7e04cd0e89cc19"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L03-r1-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L03-r1-handoff.json",
+      "originalBytes": 17730,
+      "originalSha256": "39210616fec7978e7dec9e67a3bf57b8bb8d2fd1a552046d91e4188a5e8de2fa",
+      "destinationBytes": 17730,
+      "destinationSha256": "39210616fec7978e7dec9e67a3bf57b8bb8d2fd1a552046d91e4188a5e8de2fa"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L04-handoff-audit.py",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L04-handoff-audit.py",
+      "originalBytes": 8596,
+      "originalSha256": "00b00f3a141d5bbb56aaa309b4fe4aac227f703738a4ab108e5586beee80711f",
+      "destinationBytes": 8596,
+      "destinationSha256": "00b00f3a141d5bbb56aaa309b4fe4aac227f703738a4ab108e5586beee80711f"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L04-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L04-handoff.json",
+      "originalBytes": 36805,
+      "originalSha256": "fea2fa60f26f7ace609ee0f38ecd3152899674d4afe824083b9f264bac3f0624",
+      "destinationBytes": 36805,
+      "destinationSha256": "fea2fa60f26f7ace609ee0f38ecd3152899674d4afe824083b9f264bac3f0624"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L04-r1-handoff-audit.py",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L04-r1-handoff-audit.py",
+      "originalBytes": 6961,
+      "originalSha256": "03fc988974243de70617a068241f0ee9cf345248c49da6b702f3072d347ff5f7",
+      "destinationBytes": 6961,
+      "destinationSha256": "03fc988974243de70617a068241f0ee9cf345248c49da6b702f3072d347ff5f7"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L04-r1-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L04-r1-handoff.json",
+      "originalBytes": 9535,
+      "originalSha256": "d26cb90a3a711de98f12f84a1ddf77f1001e63b37dfb3c5ffd9a8978471e3469",
+      "destinationBytes": 9535,
+      "destinationSha256": "d26cb90a3a711de98f12f84a1ddf77f1001e63b37dfb3c5ffd9a8978471e3469"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L05-handoff-audit.py",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L05-handoff-audit.py",
+      "originalBytes": 6754,
+      "originalSha256": "350e481af52b53a6f22f85fb6ccbe370aa5ebd981463115bd30dcc38dfbe8b7b",
+      "destinationBytes": 6754,
+      "destinationSha256": "350e481af52b53a6f22f85fb6ccbe370aa5ebd981463115bd30dcc38dfbe8b7b"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L05-handoff.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/root-L05-handoff.json",
+      "originalBytes": 19598,
+      "originalSha256": "3afb24b82056f42f4a9c6681ac3a4b6b9e287169dfe20875f1dc16c0a823a166",
+      "destinationBytes": 19598,
+      "destinationSha256": "3afb24b82056f42f4a9c6681ac3a4b6b9e287169dfe20875f1dc16c0a823a166"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L00-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L00-report.md",
+      "originalBytes": 48030,
+      "originalSha256": "11040d11d0cec073f3a04eaf38c370f4ea4aecd3bcea9fe21faba56a85c17d89",
+      "destinationBytes": 48030,
+      "destinationSha256": "11040d11d0cec073f3a04eaf38c370f4ea4aecd3bcea9fe21faba56a85c17d89"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L00-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L00-review-1.md",
+      "originalBytes": 12681,
+      "originalSha256": "d189cffddb4e6c5d3d29c5e61d425a401d4122dccc9d3321b2c2d392abbbe5b9",
+      "destinationBytes": 12681,
+      "destinationSha256": "d189cffddb4e6c5d3d29c5e61d425a401d4122dccc9d3321b2c2d392abbbe5b9"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L00-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L00-review-2.md",
+      "originalBytes": 7236,
+      "originalSha256": "364448fff77aa6b74e8cc55ab77776caa2f800a82102abe3d16a77cbe521b803",
+      "destinationBytes": 7236,
+      "destinationSha256": "364448fff77aa6b74e8cc55ab77776caa2f800a82102abe3d16a77cbe521b803"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L01-report.md",
+      "originalBytes": 50317,
+      "originalSha256": "afa3f19d62840264f4be3a30f0d63c4ad72487411a5457bfd7d28db024e8f9af",
+      "destinationBytes": 50317,
+      "destinationSha256": "afa3f19d62840264f4be3a30f0d63c4ad72487411a5457bfd7d28db024e8f9af"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L01-review-1.md",
+      "originalBytes": 13641,
+      "originalSha256": "c2d428e85abb52abfaef80affa4a379e6e15695eb7147bddfc2e7c03ad4a9dc9",
+      "destinationBytes": 13641,
+      "destinationSha256": "c2d428e85abb52abfaef80affa4a379e6e15695eb7147bddfc2e7c03ad4a9dc9"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L01-review-2.md",
+      "originalBytes": 11315,
+      "originalSha256": "48ef13cf300a5b035305f976a1005b63f0626b84247b269d8ebfbcd79944e4f7",
+      "destinationBytes": 11315,
+      "destinationSha256": "48ef13cf300a5b035305f976a1005b63f0626b84247b269d8ebfbcd79944e4f7"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-review-3.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L01-review-3.md",
+      "originalBytes": 8875,
+      "originalSha256": "e69cd99c9bc3c362b0cafbf18c2887af19dbcf89b8ae6f91210e7daa6f51139a",
+      "destinationBytes": 8875,
+      "destinationSha256": "e69cd99c9bc3c362b0cafbf18c2887af19dbcf89b8ae6f91210e7daa6f51139a"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L02-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L02-report.md",
+      "originalBytes": 43670,
+      "originalSha256": "429acbb6e9b3d847068b9896fc762129ee5de8e106f2b4696e4d44996b1ebed4",
+      "destinationBytes": 43670,
+      "destinationSha256": "429acbb6e9b3d847068b9896fc762129ee5de8e106f2b4696e4d44996b1ebed4"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L02-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L02-review-1.md",
+      "originalBytes": 12436,
+      "originalSha256": "2574b15728973924d9db9c4a6a624a271ff6759e34a388712be414befe6b6870",
+      "destinationBytes": 12436,
+      "destinationSha256": "2574b15728973924d9db9c4a6a624a271ff6759e34a388712be414befe6b6870"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L02-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L02-review-2.md",
+      "originalBytes": 12724,
+      "originalSha256": "20a52669beb91ef67b7ed82ffec31aecba11783b309d682aed1f4d006477bbb9",
+      "destinationBytes": 12724,
+      "destinationSha256": "20a52669beb91ef67b7ed82ffec31aecba11783b309d682aed1f4d006477bbb9"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L03-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L03-report.md",
+      "originalBytes": 61029,
+      "originalSha256": "0a9e11a6c1a8c6bd85dcbc1ae80ae59170ede62bb296d098d01c1d00f8e0fbc6",
+      "destinationBytes": 61029,
+      "destinationSha256": "0a9e11a6c1a8c6bd85dcbc1ae80ae59170ede62bb296d098d01c1d00f8e0fbc6"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L03-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L03-review-1.md",
+      "originalBytes": 21339,
+      "originalSha256": "c62550631934d95ee758df78fbbd7192e263e83cb27f927457947f2387a025f7",
+      "destinationBytes": 21339,
+      "destinationSha256": "c62550631934d95ee758df78fbbd7192e263e83cb27f927457947f2387a025f7"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L03-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L03-review-2.md",
+      "originalBytes": 10954,
+      "originalSha256": "a581e8c427b8f098fa2ca44c13513345c9da7906dc50bcc7aee740b0233e6b16",
+      "destinationBytes": 10954,
+      "destinationSha256": "a581e8c427b8f098fa2ca44c13513345c9da7906dc50bcc7aee740b0233e6b16"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L04-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L04-report.md",
+      "originalBytes": 43224,
+      "originalSha256": "bc73c1dedbc4a908400d17c2e781341a3c918b709c7d9dd0deef6ec7e70ec46d",
+      "destinationBytes": 43224,
+      "destinationSha256": "bc73c1dedbc4a908400d17c2e781341a3c918b709c7d9dd0deef6ec7e70ec46d"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L04-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L04-review-1.md",
+      "originalBytes": 11425,
+      "originalSha256": "1796e6c77d6e908a741bb6530562957421b44dac3a2da32edb7da19f7d63e077",
+      "destinationBytes": 11425,
+      "destinationSha256": "1796e6c77d6e908a741bb6530562957421b44dac3a2da32edb7da19f7d63e077"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L04-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L04-review-2.md",
+      "originalBytes": 7206,
+      "originalSha256": "23334b917f5f11949795c46a2756827633827296d933fc56124d5038d3481b4a",
+      "destinationBytes": 7206,
+      "destinationSha256": "23334b917f5f11949795c46a2756827633827296d933fc56124d5038d3481b4a"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L05-report.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L05-report.md",
+      "originalBytes": 31963,
+      "originalSha256": "e8c86b1e7cba873e6f92d7551a9ba69a267205b23c14db155ca605b8a5993496",
+      "destinationBytes": 31963,
+      "destinationSha256": "e8c86b1e7cba873e6f92d7551a9ba69a267205b23c14db155ca605b8a5993496"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L05-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L05-review-1.md",
+      "originalBytes": 10936,
+      "originalSha256": "02c2edd2608e4ea0806066517f7ca81383f0902422a6cb059f098137c496c898",
+      "destinationBytes": 10936,
+      "destinationSha256": "02c2edd2608e4ea0806066517f7ca81383f0902422a6cb059f098137c496c898"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/progress.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/progress.md",
+      "originalBytes": 40259,
+      "originalSha256": "c61f10ee3b00bbd8f4b333c017d79b2c377f6d8b4ab495a3afb17046755c5be8",
+      "destinationBytes": 40259,
+      "destinationSha256": "c61f10ee3b00bbd8f4b333c017d79b2c377f6d8b4ab495a3afb17046755c5be8"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R77.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R77.json",
+      "originalBytes": 334,
+      "originalSha256": "b498607c5d6117616b999db1d2910553bf136e19f257008acb4e9604dd902720",
+      "destinationBytes": 334,
+      "destinationSha256": "b498607c5d6117616b999db1d2910553bf136e19f257008acb4e9604dd902720"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R78.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R78.json",
+      "originalBytes": 244,
+      "originalSha256": "3c9d9d8c6a8501db4c4955cf1304eb3bf8f686078274d5d66e1756878b2ac26d",
+      "destinationBytes": 244,
+      "destinationSha256": "3c9d9d8c6a8501db4c4955cf1304eb3bf8f686078274d5d66e1756878b2ac26d"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R79.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R79.json",
+      "originalBytes": 86,
+      "originalSha256": "4b7d730c8cd9f3a2424cba8883a0f4f8a571758503f759817b52f16017b749d8",
+      "destinationBytes": 86,
+      "destinationSha256": "4b7d730c8cd9f3a2424cba8883a0f4f8a571758503f759817b52f16017b749d8"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R80.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R80.json",
+      "originalBytes": 86,
+      "originalSha256": "f8c6b5b8264cb68378bcdb6a39ed2f33beadd733d9e7e00f45900d43723e9a16",
+      "destinationBytes": 86,
+      "destinationSha256": "f8c6b5b8264cb68378bcdb6a39ed2f33beadd733d9e7e00f45900d43723e9a16"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R81.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R81.json",
+      "originalBytes": 86,
+      "originalSha256": "80c9678922b89dac062a3a9809dc58b9e94dbfd7355cb42f56d0f655825e1c45",
+      "destinationBytes": 86,
+      "destinationSha256": "80c9678922b89dac062a3a9809dc58b9e94dbfd7355cb42f56d0f655825e1c45"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R82.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R82.json",
+      "originalBytes": 86,
+      "originalSha256": "32cd8109dc4139082b79b3587861c8600cf8c422fb6cf47d6d6be0407fb46bf7",
+      "destinationBytes": 86,
+      "destinationSha256": "32cd8109dc4139082b79b3587861c8600cf8c422fb6cf47d6d6be0407fb46bf7"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R84.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R84.json",
+      "originalBytes": 86,
+      "originalSha256": "d8d387376c1bd5cbbdf23b0ee1c114821c356766bef6af3d18f69ea404f2a14f",
+      "destinationBytes": 86,
+      "destinationSha256": "d8d387376c1bd5cbbdf23b0ee1c114821c356766bef6af3d18f69ea404f2a14f"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R85.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R85.json",
+      "originalBytes": 86,
+      "originalSha256": "48080e7adaa78a0fa31f0781e9935df5511b5afadf481781a18970e42a5fd6c1",
+      "destinationBytes": 86,
+      "destinationSha256": "48080e7adaa78a0fa31f0781e9935df5511b5afadf481781a18970e42a5fd6c1"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R86.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R86.json",
+      "originalBytes": 86,
+      "originalSha256": "7bd9d5f44a1dff38b3e04ceae7665ba84726ae6becbef5d9d290ece794b3bbb0",
+      "destinationBytes": 86,
+      "destinationSha256": "7bd9d5f44a1dff38b3e04ceae7665ba84726ae6becbef5d9d290ece794b3bbb0"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R87.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R87.json",
+      "originalBytes": 86,
+      "originalSha256": "76d2c2a7b05d13f981c48b29728765c44d307433f87405da4c355d15021db74c",
+      "destinationBytes": 86,
+      "destinationSha256": "76d2c2a7b05d13f981c48b29728765c44d307433f87405da4c355d15021db74c"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R88.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R88.json",
+      "originalBytes": 86,
+      "originalSha256": "2cce1e2656659a31239ac9ceb98b22f39f4af69f7b159c5ad5890fe0e5c2b84d",
+      "destinationBytes": 86,
+      "destinationSha256": "2cce1e2656659a31239ac9ceb98b22f39f4af69f7b159c5ad5890fe0e5c2b84d"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R89-after-L04.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R89-after-L04.json",
+      "originalBytes": 436,
+      "originalSha256": "6245afa62fbdca9a100c58b3b40e13bc7c3427cad5f55eacf8494323381d3ba7",
+      "destinationBytes": 436,
+      "destinationSha256": "6245afa62fbdca9a100c58b3b40e13bc7c3427cad5f55eacf8494323381d3ba7"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R89-after-L05.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R89-after-L05.json",
+      "originalBytes": 445,
+      "originalSha256": "db25a6203ad555d7504ab8331ef7cea3f0add88a459b021fa96a2c8ce2ed723f",
+      "destinationBytes": 445,
+      "destinationSha256": "db25a6203ad555d7504ab8331ef7cea3f0add88a459b021fa96a2c8ce2ed723f"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R89.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R89.json",
+      "originalBytes": 754,
+      "originalSha256": "a141b1eaf6c48fee322f0d71e84573d1dcde76b7b652949f799b47e8e1fed0ab",
+      "destinationBytes": 754,
+      "destinationSha256": "a141b1eaf6c48fee322f0d71e84573d1dcde76b7b652949f799b47e8e1fed0ab"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R90.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R90.json",
+      "originalBytes": 499,
+      "originalSha256": "37f82e3c7a1eb8f8dac6eb4525f8ea009f8614de576e1a21243978871e6242ec",
+      "destinationBytes": 499,
+      "destinationSha256": "37f82e3c7a1eb8f8dac6eb4525f8ea009f8614de576e1a21243978871e6242ec"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-R91.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-R91.json",
+      "originalBytes": 521,
+      "originalSha256": "ed16809a4b5bb2b72868b4902aac6ca4e28219c1ec48a955e8c4af45d1625be4",
+      "destinationBytes": 521,
+      "destinationSha256": "ed16809a4b5bb2b72868b4902aac6ca4e28219c1ec48a955e8c4af45d1625be4"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-decision-audit-after-r76.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-decision-audit-after-r76.json",
+      "originalBytes": 183,
+      "originalSha256": "7f7e21dfa1ed409a3fb964718d89a8b1c7492de595b1ed94a91e418786f9124a",
+      "destinationBytes": 183,
+      "destinationSha256": "7f7e21dfa1ed409a3fb964718d89a8b1c7492de595b1ed94a91e418786f9124a"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-doc-link-audit-pre-B10.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-doc-link-audit-pre-B10.json",
+      "originalBytes": 45565,
+      "originalSha256": "42aff114f1c2244507ac7cd9293d37842108b380144194b853b6f711a4392515",
+      "destinationBytes": 45565,
+      "destinationSha256": "42aff114f1c2244507ac7cd9293d37842108b380144194b853b6f711a4392515"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-final-review-ancestry-preflight.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-final-review-ancestry-preflight.json",
+      "originalBytes": 829,
+      "originalSha256": "20f73dc46fcfb32e2b6a170d17ca119c8dfb1e8e8e634412e5d1d5fca7308dea",
+      "destinationBytes": 829,
+      "destinationSha256": "20f73dc46fcfb32e2b6a170d17ca119c8dfb1e8e8e634412e5d1d5fca7308dea"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-retention-preparation-after-L03.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-retention-preparation-after-L03.json",
+      "originalBytes": 31731,
+      "originalSha256": "68897e26b1e2f7bcc18fde4f7252e844e021a7c2fb06d46acbb0b970aebdec4a",
+      "destinationBytes": 31731,
+      "destinationSha256": "68897e26b1e2f7bcc18fde4f7252e844e021a7c2fb06d46acbb0b970aebdec4a"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-review-retention-index.json",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/root-review-retention-index.json",
+      "originalBytes": 22398,
+      "originalSha256": "972f2b88ed17d5d76a516adeb33c54729ad31cfcabe2e86e25201895b0fc4d68",
+      "destinationBytes": 22398,
+      "destinationSha256": "972f2b88ed17d5d76a516adeb33c54729ad31cfcabe2e86e25201895b0fc4d68"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/deferred-findings.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/deferred-findings.md",
+      "originalBytes": 12958,
+      "originalSha256": "43db6f01726ecbf48b411189228f2ebecc11f40f1280ba68036759590c38cc3c",
+      "destinationBytes": 12958,
+      "destinationSha256": "43db6f01726ecbf48b411189228f2ebecc11f40f1280ba68036759590c38cc3c"
+    },
+    {
+      "role": "exact_historical_review_or_ledger",
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/progress.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/progress.md",
+      "originalBytes": 5851,
+      "originalSha256": "f8b42076b19109f293aadd4405cd6e73c39b95dfdef1340ef5a8088b8ee4b490",
+      "destinationBytes": 5851,
+      "destinationSha256": "f8b42076b19109f293aadd4405cd6e73c39b95dfdef1340ef5a8088b8ee4b490"
+    }
+  ]
+}

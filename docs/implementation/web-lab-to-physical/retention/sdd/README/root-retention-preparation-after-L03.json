@@ -1,0 +1,649 @@
+{
+  "schema": "controller-retention-preparation/1",
+  "snapshot": "after L03 prepared-code review, L04 active; NOT final",
+  "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+  "limits": [
+    "Controller navigation inventory only; refresh after later reports, rulings and final review.",
+    "No evidence rewritten or copied to product docs yet; B10 owns versioned placement and rebased link validation.",
+    "Full raw evidence and reproducible large review-package identities must be selected from original reports/audits, not replaced by this index.",
+    "B00/B01 standalone reviews unavailable; retain actual ledger verdicts without inventing reports.",
+    "Do not wholesale include giant B00R2 imported patches or ignored runtime/cache."
+  ],
+  "files": [
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "bytes": 21649,
+      "sha256": "81de024152b2bd8982fa7189f7b938dd741cc1562b63f41c0e1cfa54410c6153"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "bytes": 21504,
+      "sha256": "2003ef81bca2be838724a944345129865c5c5c71d5ab2d558af97bf2701a5f1a"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "bytes": 22428,
+      "sha256": "3fefd42b2126dc799a384d6a4b40f4e857b066a583c167f82efbf6761d0f853b"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "bytes": 32610,
+      "sha256": "120bf2be6a53ae19352b3b9bba77bad7a4c5b04f24a7d7ea81d6412884de9752"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "bytes": 23747,
+      "sha256": "0afabdc1134eb715ac9a7add281640f2f43d3f76f879bcbb0933761844f257d5"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions-ledger.json",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/05-implementation-decisions-ledger.json",
+      "bytes": 90670,
+      "sha256": "b2c9ab27785aa66cd359a5c2fcadfff6fe5ead0de04bf6ff780f4572d97d8277"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "bytes": 72409,
+      "sha256": "2a2ab8f09e66f98d56ea87f92eb11411bd7d1945f77c2c229b037113dcb3ba25"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/README.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "bytes": 9242,
+      "sha256": "d79bc76468d24d4b926d3377af8dad320f34849108bf453d469d4fa5d53df93a"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/01-r2b-mobility.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/plans/01-r2b-mobility.md",
+      "bytes": 15398,
+      "sha256": "45ceeceaf59d3376aec4c76769fbe7cc7c4dbb1ffdf083656132fce816f14d16"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/02-r2b-cell-and-web.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/plans/02-r2b-cell-and-web.md",
+      "bytes": 22467,
+      "sha256": "ae0c7c17aa424e2e46de6c262e4c129f11c65d57245aea80dd387acab20297fa"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/03-r3-linux-readiness.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/plans/03-r3-linux-readiness.md",
+      "bytes": 22801,
+      "sha256": "b1f986c1d7b40191dd4a2841da2a3c3787a6c544acce1e7627722d2dad3c9f6f"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "proposedDestination": "docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "bytes": 8249,
+      "sha256": "958d9a25613b0477e589f668373996a630e3f89c03711f9516351bf7033c44b1"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "bytes": 18986,
+      "sha256": "2082b936c9d48cc05e9e66cae244dff2c0d50be3b4d93d31231ef907b3548ce0"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/02-pitch-and-demo.md",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/02-pitch-and-demo.md",
+      "bytes": 19818,
+      "sha256": "accca912dec42f6006869380154c7cf6e2ac6b07901396708aa35b8d11aecd02"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/03-gtm-and-commercial.md",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/03-gtm-and-commercial.md",
+      "bytes": 20214,
+      "sha256": "3280117d605a7fad8c7f5021ab9a19b181140be56b50e3c09e44364c4efd1b6c"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/04-digital-marketing.md",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/04-digital-marketing.md",
+      "bytes": 14412,
+      "sha256": "fd72567f02645190f8f4956ba20a95b5dbc5f980f0fb5a085a355066a683dcad"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/05-ready-to-use-content.md",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/05-ready-to-use-content.md",
+      "bytes": 23071,
+      "sha256": "20fdb8317a1526c30fd29d05586c806cd2e0d3e8962fd8758f4c90d9a19ef842"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "bytes": 18269,
+      "sha256": "955b1890c6ed0d42e54017b25db476ad6246af4c0d0e4baea6f3618b7a8c989e"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/07-calendar-and-weekly-checklist.md",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/07-calendar-and-weekly-checklist.md",
+      "bytes": 10518,
+      "sha256": "c6163c95b80e4b7cb724914653d8dc505e0f64d6cc2adc389f8d74f632d01d0c"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/README.md",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "bytes": 11900,
+      "sha256": "cc74ccb5a8dfe0cb9fcd296ed13a180a336d428099ac996fac2a473b4c677e6a"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/REVIEW.md",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/REVIEW.md",
+      "bytes": 12968,
+      "sha256": "0d00f3621f0642e1e68e8b2a11692c130c7a5c8740ddac3f3d14f07ac7a11bcb"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/budget.csv",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/budget.csv",
+      "bytes": 4434,
+      "sha256": "f389191f89a1f47a1bb9d99f68c62ddeeabce83af35b5c4a9d9101e912cd0193"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/build-and-validate-model.py",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/build-and-validate-model.py",
+      "bytes": 6500,
+      "sha256": "aea4d26db4b376897f14b337a746f1b7799b81a2190d36b558976819486309e9"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/economics.csv",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/economics.csv",
+      "bytes": 1821,
+      "sha256": "eab51833efcbd4b9c016047aef00927dc959265d097d59a3b9aeb81a569e94a0"
+    },
+    {
+      "role": "design_or_gtm",
+      "path": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/funnel.csv",
+      "proposedDestination": "docs/2026-11-14-web-simulation-gtm/funnel.csv",
+      "bytes": 4739,
+      "sha256": "24550a29debdddd1d548cf2686b3f8a1e81f2ec4a1acd3aeb725a1a3f3c34f25"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/progress.md",
+      "plan": "README",
+      "bytes": 40259,
+      "sha256": "c61f10ee3b00bbd8f4b333c017d79b2c377f6d8b4ab495a3afb17046755c5be8"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/progress.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 45578,
+      "sha256": "61647e849c631f496b1c57504ffc5877aede79e15c283c75859db920382a5b67"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00-report.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 4312,
+      "sha256": "1b82aa2015abf711c3fbb33c2321602f52663145cfee4e421ea3cc1e5b6c48ea"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R-report.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 39604,
+      "sha256": "eb8d9c4c0097eb9431c8004a9859ecf083832029978b6f26928356e499998334"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R-review-1.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 10843,
+      "sha256": "2a9fdffd610f0affe944fc91f620e94faff5355b1b8e610e481213225f8778f9"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R-review-2.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 7197,
+      "sha256": "4b1c3dcc260d60fcdfee9ff61df2441475e38b51e3350497366447ecc79d90e7"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R2-report.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 19307,
+      "sha256": "da8e0673995cdc9e2b409376b57b5842fdfcf495a81a2284880353fe9117e497"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R2-review-1.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 10739,
+      "sha256": "b5587267be817eb8a23df61fc43252f814117887a20286f8879d177283ea5375"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B01-report.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 13753,
+      "sha256": "9e46b475dc5d5c985c8fbd855f3781c0b9e61510ab3feb4f3f05a592ded0a712"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02a-report.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 22669,
+      "sha256": "5d60a19af3f5dbf5295607038b4cc26f6ef17f1aa5645ae2ff3fb97f3190be45"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02a-review-1.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 1132,
+      "sha256": "afb3e3d1e0d4b052d3cc51802e4ecd85c8f678eb0d33c0cc639f77dff314c9c4"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02a-review-2.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 645,
+      "sha256": "66bb2f00f0f14c1d896fa6c605dc701d0c51532405e4c484194324ba511060e6"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02b-report.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 32601,
+      "sha256": "3b610697c6013d409426248a18e8eb2bfb6686a75831a34961baf1995d7ecde8"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02b-review-1.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 2322,
+      "sha256": "d2b9277dd029e48987140586eb7da0ab26cf9dbf7c1a993756353e756c999804"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02b-review-2.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 3470,
+      "sha256": "c35347ccc1e4356f71b2d4a4d15bcafd4c7220e0687fb1a15b92dc58d28aaaff"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02b-review-lab.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 2056,
+      "sha256": "4086a0a940b3cf019b03284ee8a0ec2e87a10c8c6f366fdbea2fa0393ad1823e"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B03-report.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 21658,
+      "sha256": "c6a0199f4d62f6f09618b0a3522b8e9b75dafc04dc222a2b9c9e44495859031f"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B03-review-1.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 10837,
+      "sha256": "38d9fe47e4495affcedcf7e266b7c149649f5c3a449e074969b4ea5a2809043c"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B03-review-2.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 4902,
+      "sha256": "7c4dadd3a82b83825eca8a0df1150b52f208c698da3b5c5e3eade958bc550748"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04a-report.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 49149,
+      "sha256": "32387294b473198ce7393ac8a6daf268dead51ff3585c547e376a6d84cbe1754"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04a-review-1.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 10515,
+      "sha256": "bad2f6521ef6fcd94150b91554fe2f2b778fd266a8854b8d4ff56308e229a73b"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04b-report.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 28539,
+      "sha256": "dbaaf2e46614fa51a5eff3b1801b059982b4402531f94a7ebb5c0a06dbce3db4"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04b-review-1.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 11412,
+      "sha256": "46544b159f4868662bd6b33e65bf639e99c75f82064a404058544e6eb1ef2ff4"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04b-review-2.md",
+      "plan": "01-r2b-mobility",
+      "bytes": 5297,
+      "sha256": "fd32ce57926abf3379308290c1e226d6f3ce0f1aa3defa164cb29ff447d8bf16"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/progress.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 157397,
+      "sha256": "2139f9e56110dd0e8722ccbb9b96791dd9015628e486354aec0673993c6544a5"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B05-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 27112,
+      "sha256": "628c86d6f0d9d7ccf44616c88c7f473b997ef6883bc92c20f80fcd7b76136f9b"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B05-review-1.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 9477,
+      "sha256": "af7852ff3ea350ed2f8f72a6d2cc19ad9099b5c0a3ce5944ef4c17ac4725685b"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B05-review-2.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 5403,
+      "sha256": "b7f4b2b2cb4e7bc40796d9540f60e3b572f7a0b76848213b255e21f711b7bab3"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B06-fix-1-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 9334,
+      "sha256": "f738a1f391e7d76a6365d7c4f5d73ed533683dce1c1fe07f5e64c3a8356b2708"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B06-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 39996,
+      "sha256": "ee5fed6cd205477550a395321697626da5009383ce583a0802cc11f050c95077"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B06-review-1.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 14030,
+      "sha256": "e197e05d88fdea5b8870bfaa043f33e061a79bad615ee1faf740d1aa3469375c"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B06-review-2.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 3606,
+      "sha256": "2d0b1d0929185dcb46d31a4cecccb27e83397d357ba076cac63b81a5305bc9a5"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07a-fix-1-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 13979,
+      "sha256": "cd16ff6bf5a83b0436d749fbff783d6b09144025df1fd382339b9f5b6b56b8bc"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07a-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 38656,
+      "sha256": "3ebef936c6e663f50e95900c3fe661ffd6e9aacff845996d938bb1be80f814a6"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07a-review-1.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 11779,
+      "sha256": "e3c73e299b7b53566f2474d9fbe2ca3a9be4326bebdd819245f66d6548ddeed1"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07a-review-2.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 5814,
+      "sha256": "05076a828ecf9d2e549d4ca068c5239c22f2a33dd2c164666743cd48fb5c34a6"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07b-fix-1-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 10595,
+      "sha256": "66ebdb78562f485b33affb24a2e2b4ac5f81d65d64913d98cc1628eabf0c884d"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07b-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 39132,
+      "sha256": "f33118b0c1548665bcc3350dae15418a54fd886f3faf1a6866a2763953d86e66"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07b-review-1.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 10176,
+      "sha256": "8ee9dd4163dc446ab08de2c215bd787f27ee7dd70fa43965bde242a5cad32dd0"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07b-review-2.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 9670,
+      "sha256": "49af2aa5b313632af1237ca7011fda08440da65b1d4e999884b311fffee72989"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-fix-1-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 11906,
+      "sha256": "66f4d72ea8a87e0fe680e71a9868d26d5e7d5cf0284311cc999516c731678aee"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-fix-2-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 10519,
+      "sha256": "a3dd1dd948151a6357c99db27955d6392e039dec52190ba003691eb57a88d1c2"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 29527,
+      "sha256": "8eb698f4d7d2e3b412bdf81e947fd5c1c374011f7e0f400d05c86990048a18e5"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-review-1.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 12641,
+      "sha256": "8e51009f734aa29829c5899e58c79426d8e0d5a61880751bd76b8d5e31dd895d"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-review-2.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 7650,
+      "sha256": "8f2a4fbbd90f98dc651df9ca862f888d3946bb34ee430ff4728f1a84b64c2703"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-review-3.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 7260,
+      "sha256": "2e27e5e988c9b41876b45bf9163dc28b64ac13dbfc8d572cfadfe56541366c89"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B09-fix-1-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 12311,
+      "sha256": "9d5789d8464cc4be050e69ff2e551b1b9aa015a56d17bef7a05c4cfd80a58773"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B09-report.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 22786,
+      "sha256": "5f8de4c0b9aaa7b832d018dd1e7db9d90590f2e4ab0d048556e6e38590ccf3da"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B09-review-1.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 17210,
+      "sha256": "2cb65c9dad7b51e94a91263fa0375cf2833113b1badd231b11212e76be31e1d1"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B09-review-2.md",
+      "plan": "02-r2b-cell-and-web",
+      "bytes": 9105,
+      "sha256": "177c5964fd795a38a681000e771cfd6b18782cab2c2b660942d9734d3337404d"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/progress.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 52172,
+      "sha256": "4ed56a49167c247ab245a287ccaed0823464bed3e4efb272760fd5e321decd86"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L00-report.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 48030,
+      "sha256": "11040d11d0cec073f3a04eaf38c370f4ea4aecd3bcea9fe21faba56a85c17d89"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L00-review-1.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 12681,
+      "sha256": "d189cffddb4e6c5d3d29c5e61d425a401d4122dccc9d3321b2c2d392abbbe5b9"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L00-review-2.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 7236,
+      "sha256": "364448fff77aa6b74e8cc55ab77776caa2f800a82102abe3d16a77cbe521b803"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-report.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 50317,
+      "sha256": "afa3f19d62840264f4be3a30f0d63c4ad72487411a5457bfd7d28db024e8f9af"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-review-1.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 13641,
+      "sha256": "c2d428e85abb52abfaef80affa4a379e6e15695eb7147bddfc2e7c03ad4a9dc9"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-review-2.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 11315,
+      "sha256": "48ef13cf300a5b035305f976a1005b63f0626b84247b269d8ebfbcd79944e4f7"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-review-3.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 8875,
+      "sha256": "e69cd99c9bc3c362b0cafbf18c2887af19dbcf89b8ae6f91210e7daa6f51139a"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L02-report.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 43670,
+      "sha256": "429acbb6e9b3d847068b9896fc762129ee5de8e106f2b4696e4d44996b1ebed4"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L02-review-1.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 12436,
+      "sha256": "2574b15728973924d9db9c4a6a624a271ff6759e34a388712be414befe6b6870"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L02-review-2.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 12724,
+      "sha256": "20a52669beb91ef67b7ed82ffec31aecba11783b309d682aed1f4d006477bbb9"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L03-report.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 61029,
+      "sha256": "0a9e11a6c1a8c6bd85dcbc1ae80ae59170ede62bb296d098d01c1d00f8e0fbc6"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L03-review-1.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 21339,
+      "sha256": "c62550631934d95ee758df78fbbd7192e263e83cb27f927457947f2387a025f7"
+    },
+    {
+      "role": "full_report_or_ledger",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L03-review-2.md",
+      "plan": "03-r3-linux-readiness",
+      "bytes": 10954,
+      "sha256": "a581e8c427b8f098fa2ca44c13513345c9da7906dc50bcc7aee740b0233e6b16"
+    },
+    {
+      "role": "triage_or_index",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/deferred-findings.md",
+      "bytes": 11373,
+      "sha256": "9a9cdddedb141bff87693d5ce357d8e59861e7a32f2cee5020a5f2a3fd359144"
+    },
+    {
+      "role": "triage_or_index",
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-review-retention-index.json",
+      "bytes": 20198,
+      "sha256": "9f2c86ebdaf870edbd81b79c7915b4c59b4e59d79e0b74dbd5436e1e94b2584e"
+    }
+  ]
+}

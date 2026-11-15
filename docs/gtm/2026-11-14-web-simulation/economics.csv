@@ -1,0 +1,11 @@
+﻿item,period,revenue_vnd,direct_cost_vnd,gross_profit_vnd,gross_margin,assumed_cac_vnd,payback_months,status,note
+workflow_assessment,one_time,8000000,5000000,3000000,0.375,,,hypothesis_not_observed,10h x400k plus1m direct costs; proposed fee not approved
+software_integration,one_time,30000000,21000000,9000000,0.3,,,hypothesis_not_observed,45h x400k plus3m direct costs; scope-specific example
+saas_serve,monthly_per_site,2000000,600000,1400000,0.7,,,hypothesis_not_observed,cloud200k plus application_support400k; excludes hardware and onsite support
+hardware_resale_illustration,one_time,120000000,108000000,12000000,0.1,,,hypothesis_not_observed,ARBITRARY FINANCIAL EXAMPLE NOT A ROBOT QUOTE; landed95m install5m warranty8m
+hardware_maintenance_illustration,monthly_per_site,1500000,1200000,300000,0.2,,,hypothesis_not_observed,Separate hardware support; do not double-count SaaS support
+payback_base,monthly_per_site,2000000,600000,1400000,0.7,12000000,8.571429,hypothesis_not_observed,Prospective SaaS only; no observed CAC or churn/LTV; excludes service/hardware GP
+payback_price_low,monthly_per_site,1000000,600000,400000,0.4,12000000,30.0,hypothesis_not_observed,Prospective SaaS only; no observed CAC or churn/LTV; excludes service/hardware GP
+payback_price_high,monthly_per_site,3000000,600000,2400000,0.8,12000000,5.0,hypothesis_not_observed,Prospective SaaS only; no observed CAC or churn/LTV; excludes service/hardware GP
+payback_support_high,monthly_per_site,2000000,1200000,800000,0.4,12000000,15.0,hypothesis_not_observed,Prospective SaaS only; no observed CAC or churn/LTV; excludes service/hardware GP
+payback_cac_high,monthly_per_site,2000000,600000,1400000,0.7,24000000,17.142857,hypothesis_not_observed,Prospective SaaS only; no observed CAC or churn/LTV; excludes service/hardware GP

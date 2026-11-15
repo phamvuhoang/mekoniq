@@ -1,0 +1,1077 @@
+{
+  "scope": "External design/GTM Markdown local inline links before final versioned copy",
+  "method": "Read-only simple inline-link parser; Unicode GitHub-heading approximation and explicit HTML id/name. Not final destination validation; reference-style links and rendering quirks need final B10 check.",
+  "filesScanned": 20,
+  "links": [
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "line": 78,
+      "href": "01-research.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "line": 80,
+      "href": "../2026-11-14-web-simulation-gtm/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "line": 80,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 9,
+      "href": "../../source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 10,
+      "href": "../../source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 10,
+      "href": "../../source/artifacts/mekoniq-r2a-demo-guide.html",
+      "target": "/Users/hoangpham/source/prv/robot/source/artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 16,
+      "href": "README.md#3-những-gì-đã-có-và-những-gì-chưa-có",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/README.md",
+      "exists": true,
+      "fragment": "3-những-gì-đã-có-và-những-gì-chưa-có",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 20,
+      "href": "#h-lf07",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "exists": true,
+      "fragment": "h-lf07",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 21,
+      "href": "#h-r105",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "exists": true,
+      "fragment": "h-r105",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 22,
+      "href": "#h-r1102",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "exists": true,
+      "fragment": "h-r1102",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/specs/2026-11-08-linkforge-irsim/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/specs/2026-11-08-linkforge-irsim/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/specs/2026-11-08-linkforge-irsim/contracts.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/specs/2026-11-08-linkforge-irsim/contracts.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/specs/2026-11-08-linkforge-irsim/workers-runtime.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/specs/2026-11-08-linkforge-irsim/workers-runtime.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/specs/2026-11-08-linkforge-irsim/verification.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/specs/2026-11-08-linkforge-irsim/verification.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/plans/2026-11-08-linkforge-irsim/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/plans/2026-11-08-linkforge-irsim/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/specs/2026-11-10-simulation-extension-design.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/specs/2026-11-10-simulation-extension-design.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/plans/2026-11-10-simulation-extension/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/plans/2026-11-10-simulation-extension/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/specs/2026-11-10-webots-arm-design.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/specs/2026-11-10-webots-arm-design.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/plans/2026-11-10-webots-arm/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/plans/2026-11-10-webots-arm/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 27,
+      "href": "../../source/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 33,
+      "href": "../../source/packages/lab-runtime/src/v2/navigation2d/plant.ts",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/lab-runtime/src/v2/navigation2d/plant.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 33,
+      "href": "../../source/packages/lab-runtime/src/v2/navigation2d/readiness.ts",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/lab-runtime/src/v2/navigation2d/readiness.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 34,
+      "href": "../../source/robotics/simulation-mujoco/mujoco_worker/engine.py",
+      "target": "/Users/hoangpham/source/prv/robot/source/robotics/simulation-mujoco/mujoco_worker/engine.py",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 35,
+      "href": "../../source/packages/contracts/schemas/sim3d-worker-v1.schema.json",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/contracts/schemas/sim3d-worker-v1.schema.json",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 36,
+      "href": "../../source/packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports.ts",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 37,
+      "href": "../../source/packages/lab-runtime/src/v2/navigation2d/evidence.ts",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/lab-runtime/src/v2/navigation2d/evidence.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 38,
+      "href": "../../source/packages/lab-runtime/src/v2/comparison.ts",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/lab-runtime/src/v2/comparison.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 38,
+      "href": "../../source/packages/lab-runtime/src/v2/residuals.ts",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/lab-runtime/src/v2/residuals.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 39,
+      "href": "../../source/packages/lab-runtime/src/v2/control/pid.ts",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/lab-runtime/src/v2/control/pid.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 40,
+      "href": "../../source/robotics/simulation-mujoco/requirements.in",
+      "target": "/Users/hoangpham/source/prv/robot/source/robotics/simulation-mujoco/requirements.in",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 40,
+      "href": "../../source/docs/research/2026-11-mujoco-arm-spike.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/research/2026-11-mujoco-arm-spike.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 40,
+      "href": "../../source/deploy/lab-runtime/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/deploy/lab-runtime/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 41,
+      "href": "../../source/deploy/lab-runtime/build.sh",
+      "target": "/Users/hoangpham/source/prv/robot/source/deploy/lab-runtime/build.sh",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 42,
+      "href": "../../lab/src/runtime/target.ts",
+      "target": "/Users/hoangpham/source/prv/robot/lab/src/runtime/target.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 42,
+      "href": "../../lab/src/runtime/fetch-event-source.ts",
+      "target": "/Users/hoangpham/source/prv/robot/lab/src/runtime/fetch-event-source.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 42,
+      "href": "../../lab/src/twin/sample-buffer.ts",
+      "target": "/Users/hoangpham/source/prv/robot/lab/src/twin/sample-buffer.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 42,
+      "href": "../../lab/src/viewer/twin3d.ts",
+      "target": "/Users/hoangpham/source/prv/robot/lab/src/viewer/twin3d.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 43,
+      "href": "../../lab/src/reports/replay.ts",
+      "target": "/Users/hoangpham/source/prv/robot/lab/src/reports/replay.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 43,
+      "href": "../../lab/src/reports/evidence.ts",
+      "target": "/Users/hoangpham/source/prv/robot/lab/src/reports/evidence.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 44,
+      "href": "../../source/packages/lab-runtime/src/v2/sil/native-providers.ts",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/lab-runtime/src/v2/sil/native-providers.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 44,
+      "href": "../../source/packages/lab-runtime/src/v2/sil/cli.ts",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/lab-runtime/src/v2/sil/cli.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 45,
+      "href": "../../source/packages/lab-runtime/src/v2/capabilities.ts",
+      "target": "/Users/hoangpham/source/prv/robot/source/packages/lab-runtime/src/v2/capabilities.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 45,
+      "href": "../../source/robotics/manipulation/vendor.lock.json",
+      "target": "/Users/hoangpham/source/prv/robot/source/robotics/manipulation/vendor.lock.json",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 46,
+      "href": "../../source/robotics/simulation/profiles/engineering-amd64.lock.json",
+      "target": "/Users/hoangpham/source/prv/robot/source/robotics/simulation/profiles/engineering-amd64.lock.json",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 46,
+      "href": "../../source/docs/engineering-lab/native-environment.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/engineering-lab/native-environment.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 47,
+      "href": "../../source/docs/operations/robot-commissioning.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/operations/robot-commissioning.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "line": 47,
+      "href": "../../source/docs/engineering-lab/calibration-protocol.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/engineering-lab/calibration-protocol.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "line": 5,
+      "href": "01-research.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "line": 5,
+      "href": "03-contracts-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "line": 5,
+      "href": "plans/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "line": 52,
+      "href": "03-contracts-and-evidence.md#3-một-world-một-bước-mỗi-tick",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "exists": true,
+      "fragment": "3-một-world-một-bước-mỗi-tick",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "line": 111,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "line": 128,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "line": 134,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "line": 229,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "line": 236,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "line": 238,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "line": 288,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "line": 3,
+      "href": "01-research.md#cập-nhật-bằng-chứng-r2a--2026-11-14-0900-ict",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "exists": true,
+      "fragment": "cập-nhật-bằng-chứng-r2a--2026-11-14-0900-ict",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "line": 61,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "line": 63,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "line": 153,
+      "href": "../../source/docs/engineering-lab/calibration-protocol.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/engineering-lab/calibration-protocol.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "line": 3,
+      "href": "00-implementation-status.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "line": 313,
+      "href": "05-implementation-decisions-ledger.json",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions-ledger.json",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 3,
+      "href": "00-implementation-status.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 13,
+      "href": "00-implementation-status.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 14,
+      "href": "01-research.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 15,
+      "href": "02-r2b-web-lab-spec.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 16,
+      "href": "03-contracts-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 17,
+      "href": "04-r3-linux-physical-readiness-spec.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 18,
+      "href": "05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 19,
+      "href": "plans/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 20,
+      "href": "plans/01-r2b-mobility.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/01-r2b-mobility.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 21,
+      "href": "plans/02-r2b-cell-and-web.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/02-r2b-cell-and-web.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 22,
+      "href": "plans/03-r3-linux-readiness.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/03-r3-linux-readiness.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 28,
+      "href": "../../source/docs/superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 30,
+      "href": "../../source/docs/superpowers/specs/2026-11-10-simulation-extension-design.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/specs/2026-11-10-simulation-extension-design.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 30,
+      "href": "../../source/docs/superpowers/plans/2026-11-10-simulation-extension/02-release-2-3.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/superpowers/plans/2026-11-10-simulation-extension/02-release-2-3.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/README.md",
+      "line": 48,
+      "href": "01-research.md#1-baseline-từ-repository",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "exists": true,
+      "fragment": "1-baseline-từ-repository",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/01-r2b-mobility.md",
+      "line": 9,
+      "href": "README.md#global-constraints",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "exists": true,
+      "fragment": "global-constraints",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/01-r2b-mobility.md",
+      "line": 11,
+      "href": "../02-r2b-web-lab-spec.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/01-r2b-mobility.md",
+      "line": 11,
+      "href": "../03-contracts-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/01-r2b-mobility.md",
+      "line": 15,
+      "href": "README.md#global-constraints",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "exists": true,
+      "fragment": "global-constraints",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/02-r2b-cell-and-web.md",
+      "line": 9,
+      "href": "README.md#global-constraints",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "exists": true,
+      "fragment": "global-constraints",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/02-r2b-cell-and-web.md",
+      "line": 11,
+      "href": "../02-r2b-web-lab-spec.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/02-r2b-cell-and-web.md",
+      "line": 11,
+      "href": "../03-contracts-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/02-r2b-cell-and-web.md",
+      "line": 15,
+      "href": "README.md#global-constraints",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "exists": true,
+      "fragment": "global-constraints",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/02-r2b-cell-and-web.md",
+      "line": 102,
+      "href": "../05-implementation-decisions.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/03-r3-linux-readiness.md",
+      "line": 9,
+      "href": "README.md#global-constraints",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "exists": true,
+      "fragment": "global-constraints",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/03-r3-linux-readiness.md",
+      "line": 11,
+      "href": "../04-r3-linux-physical-readiness-spec.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/03-r3-linux-readiness.md",
+      "line": 11,
+      "href": "../03-contracts-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/03-r3-linux-readiness.md",
+      "line": 15,
+      "href": "README.md#global-constraints",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "exists": true,
+      "fragment": "global-constraints",
+      "fragmentMatchesHeuristic": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "line": 11,
+      "href": "../02-r2b-web-lab-spec.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "line": 11,
+      "href": "../03-contracts-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "line": 11,
+      "href": "../04-r3-linux-physical-readiness-spec.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "line": 11,
+      "href": "../01-research.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/01-research.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "line": 33,
+      "href": "01-r2b-mobility.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/01-r2b-mobility.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "line": 34,
+      "href": "02-r2b-cell-and-web.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/02-r2b-cell-and-web.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-13-web-lab-to-physical/plans/README.md",
+      "line": 35,
+      "href": "03-r3-linux-readiness.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/plans/03-r3-linux-readiness.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 60,
+      "href": "../../source/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 61,
+      "href": "../../source/docs/product/2026-10-30-capability-matrix.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/product/2026-10-30-capability-matrix.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 62,
+      "href": "../2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 63,
+      "href": "../2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/02-r2b-web-lab-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 64,
+      "href": "../2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/04-r3-linux-physical-readiness-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 65,
+      "href": "../../source/artifacts/src/business-plan.js",
+      "target": "/Users/hoangpham/source/prv/robot/source/artifacts/src/business-plan.js",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 66,
+      "href": "../../web/index.html",
+      "target": "/Users/hoangpham/source/prv/robot/web/index.html",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 67,
+      "href": "../../source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 68,
+      "href": "../../source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 68,
+      "href": "../../source/docs/implementation/evidence/production/r2a-2026-11-14/browser-smoke.json",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/production/r2a-2026-11-14/browser-smoke.json",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 69,
+      "href": "../../source/artifacts/mekoniq-r2a-demo-guide.html",
+      "target": "/Users/hoangpham/source/prv/robot/source/artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "line": 70,
+      "href": "../2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/02-pitch-and-demo.md",
+      "line": 3,
+      "href": "06-measurement-and-launch.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/02-pitch-and-demo.md",
+      "line": 56,
+      "href": "../../source/artifacts/mekoniq-r2a-demo-guide.html",
+      "target": "/Users/hoangpham/source/prv/robot/source/artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/02-pitch-and-demo.md",
+      "line": 56,
+      "href": "../../source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/02-pitch-and-demo.md",
+      "line": 81,
+      "href": "03-gtm-and-commercial.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/03-gtm-and-commercial.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/03-gtm-and-commercial.md",
+      "line": 104,
+      "href": "06-measurement-and-launch.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/03-gtm-and-commercial.md",
+      "line": 117,
+      "href": "01-research-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/04-digital-marketing.md",
+      "line": 81,
+      "href": "07-calendar-and-weekly-checklist.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/07-calendar-and-weekly-checklist.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/05-ready-to-use-content.md",
+      "line": 3,
+      "href": "06-measurement-and-launch.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "line": 12,
+      "href": "03-gtm-and-commercial.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/03-gtm-and-commercial.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "line": 91,
+      "href": "../../source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "line": 91,
+      "href": "../../source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "line": 99,
+      "href": "../../source/artifacts/mekoniq-r2a-demo-guide.html",
+      "target": "/Users/hoangpham/source/prv/robot/source/artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/07-calendar-and-weekly-checklist.md",
+      "line": 3,
+      "href": "05-ready-to-use-content.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/05-ready-to-use-content.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 3,
+      "href": "01-research-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 5,
+      "href": "../../source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 5,
+      "href": "../../source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 5,
+      "href": "../../source/artifacts/mekoniq-r2a-demo-guide.html",
+      "target": "/Users/hoangpham/source/prv/robot/source/artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 5,
+      "href": "01-research-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 7,
+      "href": "../2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-physical/00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 16,
+      "href": "01-research-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 42,
+      "href": "06-measurement-and-launch.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 52,
+      "href": "04-digital-marketing.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/04-digital-marketing.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 52,
+      "href": "budget.csv",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/budget.csv",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 60,
+      "href": "01-research-and-evidence.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/01-research-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 61,
+      "href": "02-pitch-and-demo.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/02-pitch-and-demo.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 62,
+      "href": "03-gtm-and-commercial.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/03-gtm-and-commercial.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 63,
+      "href": "04-digital-marketing.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/04-digital-marketing.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 64,
+      "href": "05-ready-to-use-content.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/05-ready-to-use-content.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 65,
+      "href": "06-measurement-and-launch.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/06-measurement-and-launch.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 66,
+      "href": "07-calendar-and-weekly-checklist.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/07-calendar-and-weekly-checklist.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 67,
+      "href": "budget.csv",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/budget.csv",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 67,
+      "href": "funnel.csv",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/funnel.csv",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 67,
+      "href": "economics.csv",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/economics.csv",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/README.md",
+      "line": 68,
+      "href": "REVIEW.md",
+      "target": "/Users/hoangpham/source/prv/robot/docs/2026-11-14-web-simulation-gtm/REVIEW.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/REVIEW.md",
+      "line": 73,
+      "href": "../../source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/REVIEW.md",
+      "line": 73,
+      "href": "../../source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "target": "/Users/hoangpham/source/prv/robot/source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/2026-11-14-web-simulation-gtm/REVIEW.md",
+      "line": 73,
+      "href": "../../source/artifacts/mekoniq-r2a-demo-guide.html",
+      "target": "/Users/hoangpham/source/prv/robot/source/artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    }
+  ],
+  "issues": []
+}

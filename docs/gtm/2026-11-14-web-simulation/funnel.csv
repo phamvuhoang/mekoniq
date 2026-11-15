@@ -1,0 +1,26 @@
+﻿scenario,funnel,stage,unit,planned_count,previous_count,conversion_from_previous,evidence_status,note
+low,restaurant_account,researched,deduplicated_restaurant_account,120,,,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+low,restaurant_account,identified_demo_viewed,deduplicated_restaurant_account,36,120,0.3,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+low,restaurant_account,meaningful_demo,deduplicated_restaurant_account,18,36,0.5,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+low,restaurant_account,qualified,deduplicated_restaurant_account,6,18,0.333333,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+low,restaurant_account,meeting_held,deduplicated_restaurant_account,4,6,0.666667,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+low,restaurant_account,assessment_scoped,deduplicated_restaurant_account,2,4,0.5,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+low,restaurant_account,assessment_paid,deduplicated_restaurant_account,0,2,0.0,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+base,restaurant_account,researched,deduplicated_restaurant_account,120,,,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+base,restaurant_account,identified_demo_viewed,deduplicated_restaurant_account,60,120,0.5,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+base,restaurant_account,meaningful_demo,deduplicated_restaurant_account,36,60,0.6,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+base,restaurant_account,qualified,deduplicated_restaurant_account,18,36,0.5,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+base,restaurant_account,meeting_held,deduplicated_restaurant_account,12,18,0.666667,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+base,restaurant_account,assessment_scoped,deduplicated_restaurant_account,6,12,0.5,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+base,restaurant_account,assessment_paid,deduplicated_restaurant_account,3,6,0.5,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+high,restaurant_account,researched,deduplicated_restaurant_account,120,,,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+high,restaurant_account,identified_demo_viewed,deduplicated_restaurant_account,84,120,0.7,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+high,restaurant_account,meaningful_demo,deduplicated_restaurant_account,59,84,0.702381,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+high,restaurant_account,qualified,deduplicated_restaurant_account,30,59,0.508475,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+high,restaurant_account,meeting_held,deduplicated_restaurant_account,20,30,0.666667,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+high,restaurant_account,assessment_scoped,deduplicated_restaurant_account,10,20,0.5,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+high,restaurant_account,assessment_paid,deduplicated_restaurant_account,5,10,0.5,hypothesis_not_observed,Scoping is not an onsite visit; paid assessment is not SaaS or physical pilot
+base,content_viewer,viewed,unique_person_if_measurable_else_report_sessions,600,,,hypothesis_not_observed,Separate funnel; do not multiply into restaurant-account funnel without identity evidence
+base,content_viewer,started,unique_person_if_measurable_else_report_sessions,300,600,0.5,hypothesis_not_observed,Separate funnel; do not multiply into restaurant-account funnel without identity evidence
+base,content_viewer,meaningful_completed,unique_person_if_measurable_else_report_sessions,180,300,0.6,hypothesis_not_observed,Separate funnel; do not multiply into restaurant-account funnel without identity evidence
+base,partner,meeting_held,partner_meeting,3,,,hypothesis_not_observed,Additional to 12 restaurant meetings; not an account-funnel conversion

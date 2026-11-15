@@ -14,7 +14,7 @@ afterAll(async()=>{for(const c of compiled)await c.close();});
 test.each([['default','slow'],['default','fast'],['slow','fast']])('accepts only registered speed caps and their completely verified derived references: %s / %s',(a,b)=>{
  const runs={default:base,slow,fast};const c=comparePhysicsRuns(runs[a as keyof typeof runs],runs[b as keyof typeof runs]);expect(c.reasons).toEqual([]);expect(c.comparable).toBe(true);expect(c.percentiles).toBeNull();expect(c.population).toMatchObject({runsA:1,runsB:1});expect(c.deltas.length).toBeGreaterThan(0);
 });
-test('an extra adjacent geometry/contact/controller change is incomparable even when its bytes are rehashed',()=>{
+test('adjacent geometry/contact/controller changes with stale upstream seals are rejected as corrupted inputs',()=>{
  for(const [path,mutate]of [['physical-model/amr-1.json',(d:RobotPhysicalModelV1)=>d.links[0].massKg.value+=1],['drive-contact-profile.json',(d:{contact:{sliding:number}})=>d.contact.sliding+=.01],['mobile-controller-policy.json',(d:{ramp:string})=>d.ramp='measured-velocity']] as const){
   const copy=structuredClone(slow),i=copy.artifacts.findIndex(a=>a.ref.path===path),doc=JSON.parse(copy.artifacts[i]!.content);mutate(doc);copy.artifacts[i]=artifact(path,doc);expect(comparePhysicsRuns(base,copy).comparable).toBe(false);
  }

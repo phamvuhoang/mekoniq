@@ -5,7 +5,8 @@
 import {execFileSync,spawnSync} from 'node:child_process';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {createServer} from 'node:net';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import {join,resolve} from 'node:path';
 import {afterAll,describe,expect,test} from 'vitest';
 import {xarmProject} from '../support/mujoco-arm';
 
@@ -101,7 +102,7 @@ describe.skipIf(!dockerUp||!image)('persistent mobile/cell image',()=>{
   const moved=await action(await action(mobile,'start'),'step',{ticks:100});expect(moved.tick).toBe(100);const mobileReport=await ok(`/runs/${mobile.run.id}/report`);expect(mobileReport.manifest.backends.some((b:{id:string})=>b.id==='mujoco_3d')).toBe(true);expect(mobileReport.physicsEvidence.manifest.identity.runId).toBe(mobile.run.id);await ok(`/runs/${mobile.run.id}/archive`,{});
   const cellProject=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json','utf8'));
   const createCell=()=>ok('/runs',{project:cellProject,scenarioId:'MJ-CELL-BV01',backendSetId:'engineering-mujoco-cell-v1',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',runtimeIdentity});
-  const finished=await createCell();let view=await action(finished,'start');while(['running','created','paused'].includes(view.run.status)){if(view.tick>30000)throw Error('CELL_STEP_LIMIT');view=await action(view,'step',{ticks:100});}expect(view.run.status).toBe('completed');await ok(`/runs/${finished.run.id}/archive`,{});
+  const finished=await createCell();let view=await action(finished,'start');while(['running','created','paused'].includes(view.run.status)){if(view.tick>30000)throw Error('CELL_STEP_LIMIT');view=await action(view,'step',{ticks:100});}expect(view.run.status).toBe('completed');const finishedReport=await ok(`/runs/${finished.run.id}/report`);await ok(`/runs/${finished.run.id}/archive`,{});
   const active=await createCell(),stepped=await action(await action(active,'start'),'step',{ticks:100});expect(stepped.tick).toBe(100);const before=await ok(`/runs/${active.run.id}/report`);
   const committedFiles=(id:string)=>{const result=docker(['exec',name,'node','-e',"const fs=require('fs'),path=require('path'),crypto=require('crypto');const root='/data/runs',id=process.argv[1];const dir=fs.readdirSync(root).find(n=>{try{return JSON.parse(fs.readFileSync(path.join(root,n,'reclaim.json'))).runId===id}catch{return false}});const evidence=path.join(root,dir,'world-evidence');console.log(JSON.stringify(Object.fromEntries(fs.readdirSync(evidence).filter(n=>n.endsWith('.ndjson.gz')).map(n=>[n,crypto.createHash('sha256').update(fs.readFileSync(path.join(evidence,n))).digest('hex')]))))",id]);expect(result.ok,result.err).toBe(true);return JSON.parse(result.out);};
   const committed=committedFiles(active.run.id);expect(Object.keys(committed).length).toBeGreaterThan(0);
@@ -112,6 +113,11 @@ describe.skipIf(!dockerUp||!image)('persistent mobile/cell image',()=>{
   const workers=docker(['exec',name,'node','-e',"const fs=require('fs');console.log(fs.readdirSync('/proc').filter(n=>/^\\d+$/.test(n)).filter(n=>{try{return fs.readFileSync('/proc/'+n+'/cmdline','utf8').split('\\0').includes('mujoco_worker')}catch{return false}}).length)"]);expect(workers.out).toBe('0');
   await ok(`/runs/${active.run.id}/archive`,{});await ok(`/runs/${finished.run.id}/reclaim`,{proof:finished.reclaimToken});const replay=await ok(`/runs/${finished.run.id}/replay`,{});expect(replay.manifest.provenance.accepted).toBe(false);expect(replay.manifest.assets.length).toBeGreaterThan(0);
   const downloaded=await fetch(`http://127.0.0.1:${port}/lab/v2/runs/${finished.run.id}/replay/${replay.exportId}/assets/0`,{headers:{authorization:`Bearer ${token}`,origin:ORIGIN}});expect(downloaded.status).toBe(200);expect((await downloaded.arrayBuffer()).byteLength).toBe(replay.manifest.assets[0].bytes);
+  if(process.env.LAB_WEB05_EVIDENCE_DIR){
+   const out=resolve(process.env.LAB_WEB05_EVIDENCE_DIR);await mkdir(out,{recursive:false});const inspected=JSON.parse(docker(['image','inspect',image]).out)[0],imageIdentity={id:inspected.Id,sourceCommit:inspected.Config.Labels['org.opencontainers.image.revision'],os:inspected.Os,architecture:inspected.Architecture};
+   const records={'health.json':health,'before-crash-report.json':before,'after-crash-report.json':after,'finished-report.json':finishedReport,'committed-before.json':committed,'committed-after.json':committedFiles(active.run.id),'replay-manifest.json':replay.manifest,'image-inspect.json':{...imageIdentity,rootfs:inspected.RootFS},'web05.json':{version:1,accepted:false,execution:'actual_container',sourceCommit:head,schemaHash:health.schemaHash,image:imageIdentity,competingWriter:{exitCode:1,reason:'LAB_DATA_DIR_BUSY'},crash:{signal:'KILL',committedTick:100,workerCountAfterReclaim:0}}};for(const [file,value]of Object.entries(records))await writeFile(join(out,file),JSON.stringify(value,null,2));
+   const replayRoot=join(out,'replay');await mkdir(replayRoot);await writeFile(join(replayRoot,'manifest.json'),JSON.stringify(replay.manifest));for(const [index,asset]of replay.manifest.assets.entries()){const response=await fetch(`http://127.0.0.1:${port}/lab/v2/runs/${finished.run.id}/replay/${replay.exportId}/assets/${index}`,{headers:{authorization:`Bearer ${token}`,origin:ORIGIN}});expect(response.status).toBe(200);const bytes=Buffer.from(await response.arrayBuffer());await mkdir(join(replayRoot,asset.path,'..'),{recursive:true});await writeFile(join(replayRoot,asset.path),bytes);}
+  }
   const stop=docker(['stop','-t','20',name]);expect(stop.ok).toBe(true);expect(docker(['inspect','--format','{{.State.ExitCode}}',name]).out).toBe('0');
   console.log('B09 WEB05',JSON.stringify({platform:docker(['image','inspect','--format','{{.Os}}/{{.Architecture}}',image]).out,sourceCommit:head,imageId:docker(['image','inspect','--format','{{.Id}}',image]).out,volumeRecovery:true,finishedReplay:true,accepted:false}));
  },800_000);

@@ -72,13 +72,14 @@ async function setup(o:{root:string;out:string}){
   compiled.set(experimentId,{locked,scene});
  }return {service,compiled,workerRoot};
 }
-export async function runPayloadCampaign(o:{root:string;out:string;sourceCommit:string;python?:string}):Promise<PayloadCampaignVerdict>{
+export async function runPayloadCampaign(o:{root:string;out:string;sourceCommit:string;python?:string;caseId?:string}):Promise<PayloadCampaignVerdict>{
  if(!/^[a-f0-9]{40}(?:-dirty)?$/.test(o.sourceCommit))throw new Error('SOURCE_COMMIT_REQUIRED');
  // Never overwrite a previous campaign, including a failed one.
+ if(o.caseId&&!campaign.cases.some(c=>c.id===o.caseId))throw Error('CAMPAIGN_CASE_UNREGISTERED');
  await mkdir(o.out);await writeFile(join(o.out,'campaign.json'),json({campaign,sourceCommit:o.sourceCommit,accepted:false,recording:'development_experimental'}));
  const {service,compiled,workerRoot}=await setup(o),runtime={python:o.python??join(o.root,'.venv-mujoco/bin/python'),workerRoot,schemaDir:join(o.root,'packages/contracts/schemas'),lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1};
  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)};
- for(const spec of campaign.cases){
+ for(const spec of campaign.cases.filter(c=>!o.caseId||c.id===o.caseId)){
   const {locked,scene}=compiled.get(spec.experimentId)!,dir=join(o.out,spec.id);await mkdir(dir);
   const bundle=join(dir,'bundle');await mkdir(bundle);for(const path of ['navigation-scene.json',...scene.files.map(f=>f.path)]){await mkdir(join(bundle,path,'..'),{recursive:true});await writeFile(join(bundle,path),await service.bundleFile(locked.ref.bundleDigest,path));}
   await writeFile(join(dir,'input.json'),json(locked.project));
@@ -118,7 +119,7 @@ export async function runPayloadCampaign(o:{root:string;out:string;sourceCommit:
   if(load.id!==payloadExperiment(spec.experimentId).load)throw new Error('LOAD_IDENTITY_MISMATCH');
   await writeFile(join(dir,'case.json'),json(record));
  }
- const verdict=await verifyPayloadCampaign(o.out);await writeFile(join(o.out,'summary.json'),json({accepted:false,...verdict}));return verdict;
+ const verdict=await verifyPayloadCampaign(o.out);await writeFile(join(o.out,'summary.json'),json({accepted:false,...verdict}));return o.caseId?{...verdict,expectedRuns:1,completedCases:verdict.issues.some(x=>x.startsWith(o.caseId+':')&&!x.endsWith(':REPEAT_MISMATCH_OR_MISSING'))?0:1,missingArtifacts:verdict.missingArtifacts.filter(id=>id.startsWith(o.caseId+':')),issues:verdict.issues.filter(x=>(x.startsWith(o.caseId+':')||!x.includes(':'))&&!x.endsWith(':REPEAT_MISMATCH_OR_MISSING'))}:verdict;
 }
 
 /** Readback is intentionally independent of summary.json and report metrics. Every required case has retained source/physics/navigation artifacts. */

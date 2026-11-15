@@ -1,0 +1,12 @@
+{
+  "scope": [
+    "01-r2b-mobility/progress.md",
+    "02-r2b-cell-and-web/progress.md",
+    "README/progress.md"
+  ],
+  "rule": "whole lines containing Ruling: or Sequencing ruling for final evidence:; R3 setup historical duplicates excluded until its execution starts",
+  "actual": 81,
+  "saved": 81,
+  "missing": 0,
+  "extra": 0
+}

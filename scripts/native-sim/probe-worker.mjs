@@ -6,7 +6,8 @@ process.once('message',async({operation,input,checker:expected})=>{
  let result,error,checker;
  try{
   checker=await checkedCheckerIdentity();if(!isDeepStrictEqual(checker,expected))throw Error('CHECKER_CHANGED_DURING_ASSESSMENT');
-  if(operation==='prepare'){const m=await import('./prepare-mujoco-r2a-core.mjs');result=await m.prepareR2aHandoff({...input,checker});}
+  if(operation==='run-r2b'||operation==='verify-r2b'){const m=await import('./r2b-campaign-core.mjs');result=operation==='run-r2b'?await m.runR2bNative({...input,checker,signal:abort.signal}):await m.verifyR2bNative(input.root,checker);}
+  else if(operation==='prepare'){const m=await import('./prepare-mujoco-r2a-core.mjs');result=await m.prepareR2aHandoff({...input,checker});}
   else{
    const m=await import('./mujoco-probe-core.mjs');
    if(operation==='run')result=await m.runMujocoProbe({...input,checker,signal:AbortSignal.any([abort.signal,AbortSignal.timeout(1500000)])});

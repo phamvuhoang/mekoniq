@@ -1,0 +1,11 @@
+{
+  "snapshot": "after L05 prepared review; B10 tooling active; R89 unchanged",
+  "humanEntries": 89,
+  "rawRecords": 93,
+  "exactRawLedgerMatch": true,
+  "missing": [],
+  "extra": [],
+  "humanFileSha256": "08969aa90a6ff301b94355c60ffa862ee983e7f4ba5533d6e52e486bcc147f91",
+  "rawFileSha256": "f0f10b001b6f902cab1d53110b78ca2424be719f719b51831179f2d14adba715",
+  "limit": "Status/navigation audit only. No new ruling or native qualification."
+}

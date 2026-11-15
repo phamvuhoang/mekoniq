@@ -1,0 +1,815 @@
+{
+  "schema": "controller-review-retention-index/1",
+  "scope": [
+    "README",
+    "01-r2b-mobility",
+    "02-r2b-cell-and-web",
+    "03-r3-linux-readiness"
+  ],
+  "purpose": "Content identities and navigation only. Read full reviews and progress-ledger dispositions; headings are not verdict extraction or a substitute for final triage.",
+  "retentionRequirement": "Version all applicable full review reports, implementer reports, decisions and deferred dispositions before SDD cleanup. Regenerate after subsequent tasks. Preserve old evidence identities and exact Git range/argv/hash for large reproducible diff packages.",
+  "reviews": [
+    {
+      "path": "01-r2b-mobility/task-B00R-review-1.md",
+      "bytes": 10843,
+      "sha256": "2a9fdffd610f0affe944fc91f620e94faff5355b1b8e610e481213225f8778f9",
+      "findingNavigation": [
+        {
+          "line": 21,
+          "text": "### Critical (Must Fix)"
+        },
+        {
+          "line": 25,
+          "text": "### Important (Should Fix)"
+        },
+        {
+          "line": 49,
+          "text": "### Minor (Nice to Have)"
+        },
+        {
+          "line": 63,
+          "text": "## Assessment"
+        }
+      ]
+    },
+    {
+      "path": "01-r2b-mobility/task-B00R-review-2.md",
+      "bytes": 7197,
+      "sha256": "4b1c3dcc260d60fcdfee9ff61df2441475e38b51e3350497366447ecc79d90e7",
+      "findingNavigation": [
+        {
+          "line": 9,
+          "text": "## Strengths and finding disposition"
+        },
+        {
+          "line": 19,
+          "text": "### Critical"
+        },
+        {
+          "line": 23,
+          "text": "### Important"
+        },
+        {
+          "line": 27,
+          "text": "### Minor / non-blocking ledger"
+        },
+        {
+          "line": 40,
+          "text": "## Assessment"
+        }
+      ]
+    },
+    {
+      "path": "01-r2b-mobility/task-B00R2-review-1.md",
+      "bytes": 10739,
+      "sha256": "b5587267be817eb8a23df61fc43252f814117887a20286f8879d177283ea5375",
+      "findingNavigation": [
+        {
+          "line": 7,
+          "text": "## Scope and reviewed identities"
+        },
+        {
+          "line": 57,
+          "text": "## Findings"
+        },
+        {
+          "line": 61,
+          "text": "## Verification and cannot verify from diff"
+        }
+      ]
+    },
+    {
+      "path": "01-r2b-mobility/task-B02a-review-1.md",
+      "bytes": 1132,
+      "sha256": "afb3e3d1e0d4b052d3cc51802e4ecd85c8f678eb0d33c0cc639f77dff314c9c4",
+      "findingNavigation": []
+    },
+    {
+      "path": "01-r2b-mobility/task-B02a-review-2.md",
+      "bytes": 645,
+      "sha256": "66bb2f00f0f14c1d896fa6c605dc701d0c51532405e4c484194324ba511060e6",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# B02a fix round 1 scoped re-review"
+        }
+      ]
+    },
+    {
+      "path": "01-r2b-mobility/task-B02b-review-1.md",
+      "bytes": 2322,
+      "sha256": "d2b9277dd029e48987140586eb7da0ab26cf9dbf7c1a993756353e756c999804",
+      "findingNavigation": []
+    },
+    {
+      "path": "01-r2b-mobility/task-B02b-review-2.md",
+      "bytes": 3470,
+      "sha256": "c35347ccc1e4356f71b2d4a4d15bcafd4c7220e0687fb1a15b92dc58d28aaaff",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# B02b scoped re-review \u2014 fix round 1"
+        },
+        {
+          "line": 3,
+          "text": "## Finding Verdicts"
+        },
+        {
+          "line": 18,
+          "text": "## Out-of-Scope Observations"
+        },
+        {
+          "line": 23,
+          "text": "## Verdict"
+        }
+      ]
+    },
+    {
+      "path": "01-r2b-mobility/task-B02b-review-lab.md",
+      "bytes": 2056,
+      "sha256": "4086a0a940b3cf019b03284ee8a0ec2e87a10c8c6f366fdbea2fa0393ad1823e",
+      "findingNavigation": []
+    },
+    {
+      "path": "01-r2b-mobility/task-B03-review-1.md",
+      "bytes": 10837,
+      "sha256": "38d9fe47e4495affcedcf7e266b7c149649f5c3a449e074969b4ea5a2809043c",
+      "findingNavigation": [
+        {
+          "line": 5,
+          "text": "## Verdicts"
+        },
+        {
+          "line": 10,
+          "text": "## Finding B03-R1-01 \u2014 P2: apply the byte budget before publishing the initial manifest"
+        },
+        {
+          "line": 83,
+          "text": "## Scoped limits / cannot verify"
+        }
+      ]
+    },
+    {
+      "path": "01-r2b-mobility/task-B03-review-2.md",
+      "bytes": 4902,
+      "sha256": "7c4dadd3a82b83825eca8a0df1150b52f208c698da3b5c5e3eade958bc550748",
+      "findingNavigation": []
+    },
+    {
+      "path": "01-r2b-mobility/task-B04a-review-1.md",
+      "bytes": 10515,
+      "sha256": "bad2f6521ef6fcd94150b91554fe2f2b778fd266a8854b8d4ff56308e229a73b",
+      "findingNavigation": [
+        {
+          "line": 24,
+          "text": "## Findings"
+        },
+        {
+          "line": 26,
+          "text": "### Critical"
+        },
+        {
+          "line": 30,
+          "text": "### Important"
+        },
+        {
+          "line": 34,
+          "text": "### Minor"
+        },
+        {
+          "line": 49,
+          "text": "## Cannot verify / scope limits"
+        },
+        {
+          "line": 56,
+          "text": "## Assessment"
+        }
+      ]
+    },
+    {
+      "path": "01-r2b-mobility/task-B04b-review-1.md",
+      "bytes": 11412,
+      "sha256": "46544b159f4868662bd6b33e65bf639e99c75f82064a404058544e6eb1ef2ff4",
+      "findingNavigation": [
+        {
+          "line": 22,
+          "text": "### Critical (Must Fix)"
+        },
+        {
+          "line": 26,
+          "text": "### Important (Should Fix)"
+        },
+        {
+          "line": 70,
+          "text": "### Minor (Nice to Have)"
+        },
+        {
+          "line": 81,
+          "text": "## Cannot verify from this diff / scope limits"
+        },
+        {
+          "line": 87,
+          "text": "## Assessment"
+        }
+      ]
+    },
+    {
+      "path": "01-r2b-mobility/task-B04b-review-2.md",
+      "bytes": 5297,
+      "sha256": "fd32ce57926abf3379308290c1e226d6f3ce0f1aa3defa164cb29ff447d8bf16",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# Finding Verdicts"
+        },
+        {
+          "line": 25,
+          "text": "# Out-of-Scope Observations"
+        },
+        {
+          "line": 29,
+          "text": "# Verdict"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B05-review-1.md",
+      "bytes": 9477,
+      "sha256": "af7852ff3ea350ed2f8f72a6d2cc19ad9099b5c0a3ce5944ef4c17ac4725685b",
+      "findingNavigation": [
+        {
+          "line": 18,
+          "text": "## Important findings"
+        },
+        {
+          "line": 40,
+          "text": "## Minor retained validation noise"
+        },
+        {
+          "line": 45,
+          "text": "## Scoped checks and limits"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B05-review-2.md",
+      "bytes": 5403,
+      "sha256": "b7f4b2b2cb4e7bc40796d9540f60e3b572f7a0b76848213b255e21f711b7bab3",
+      "findingNavigation": [
+        {
+          "line": 9,
+          "text": "## Scoped Evidence Checks"
+        },
+        {
+          "line": 18,
+          "text": "## Out-of-Scope Observations"
+        },
+        {
+          "line": 22,
+          "text": "## Verdict"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B06-review-1.md",
+      "bytes": 14030,
+      "sha256": "e197e05d88fdea5b8870bfaa043f33e061a79bad615ee1faf740d1aa3469375c",
+      "findingNavigation": [
+        {
+          "line": 17,
+          "text": "#### Critical (Must Fix)"
+        },
+        {
+          "line": 21,
+          "text": "#### Important (Should Fix)"
+        },
+        {
+          "line": 32,
+          "text": "#### Minor (Nice to Have)"
+        },
+        {
+          "line": 36,
+          "text": "### Validation and scope"
+        },
+        {
+          "line": 131,
+          "text": "### Assessment"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B06-review-2.md",
+      "bytes": 3606,
+      "sha256": "2d0b1d0929185dcb46d31a4cecccb27e83397d357ba076cac63b81a5305bc9a5",
+      "findingNavigation": []
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B07a-review-1.md",
+      "bytes": 11779,
+      "sha256": "e3c73e299b7b53566f2474d9fbe2ca3a9be4326bebdd819245f66d6548ddeed1",
+      "findingNavigation": [
+        {
+          "line": 17,
+          "text": "#### Critical (Must Fix)"
+        },
+        {
+          "line": 21,
+          "text": "#### Important (Should Fix)"
+        },
+        {
+          "line": 31,
+          "text": "#### Minor (Nice to Have)"
+        },
+        {
+          "line": 35,
+          "text": "### Assessment"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B07a-review-2.md",
+      "bytes": 5814,
+      "sha256": "05076a828ecf9d2e549d4ca068c5239c22f2a33dd2c164666743cd48fb5c34a6",
+      "findingNavigation": [
+        {
+          "line": 10,
+          "text": "### Out-of-Scope Observations"
+        },
+        {
+          "line": 22,
+          "text": "### Verdict"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B07b-review-1.md",
+      "bytes": 10176,
+      "sha256": "8ee9dd4163dc446ab08de2c215bd787f27ee7dd70fa43965bde242a5cad32dd0",
+      "findingNavigation": [
+        {
+          "line": 19,
+          "text": "#### Critical (Must Fix)"
+        },
+        {
+          "line": 23,
+          "text": "#### Important (Should Fix)"
+        },
+        {
+          "line": 40,
+          "text": "#### Minor (Nice to Have)"
+        },
+        {
+          "line": 47,
+          "text": "### Validation and Review Scope"
+        },
+        {
+          "line": 54,
+          "text": "### Assessment"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B07b-review-2.md",
+      "bytes": 9670,
+      "sha256": "49af2aa5b313632af1237ca7011fda08440da65b1d4e999884b311fffee72989",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# B07b fix round 1 \u2014 scoped re-review"
+        },
+        {
+          "line": 5,
+          "text": "## Scope and identity"
+        },
+        {
+          "line": 56,
+          "text": "## Separate nonblocking observations and deferred scope"
+        },
+        {
+          "line": 62,
+          "text": "## Fix-round verdict"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B08-review-1.md",
+      "bytes": 12641,
+      "sha256": "8e51009f734aa29829c5899e58c79426d8e0d5a61880751bd76b8d5e31dd895d",
+      "findingNavigation": [
+        {
+          "line": 3,
+          "text": "## Verdict"
+        },
+        {
+          "line": 9,
+          "text": "## Exact scope and method"
+        },
+        {
+          "line": 17,
+          "text": "## Findings"
+        },
+        {
+          "line": 19,
+          "text": "### Important I1 \u2014 Semantic study accepts a changed baseline physical input under the same name"
+        },
+        {
+          "line": 37,
+          "text": "### Minor M1 \u2014 Several advertised mismatch tests stop at stale hashes rather than the intended semantic check"
+        },
+        {
+          "line": 47,
+          "text": "## Requirement assessment and concrete strengths"
+        },
+        {
+          "line": 66,
+          "text": "## Cannot verify / limits"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B08-review-2.md",
+      "bytes": 7650,
+      "sha256": "8f2a4fbbd90f98dc651df9ca862f888d3946bb34ee430ff4728f1a84b64c2703",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# B08 fix round 1 scoped re-review"
+        },
+        {
+          "line": 7,
+          "text": "## Original Important I1 \u2014 NOT ADDRESSED completely"
+        },
+        {
+          "line": 31,
+          "text": "## New findings introduced by the fix"
+        },
+        {
+          "line": 44,
+          "text": "## Out-of-scope observations and limitations"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B08-review-3.md",
+      "bytes": 7260,
+      "sha256": "2e27e5e988c9b41876b45bf9163dc28b64ac13dbfc8d572cfadfe56541366c89",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# B08 review 3 \u2014 scoped fix2 re-review"
+        },
+        {
+          "line": 5,
+          "text": "## Scope"
+        },
+        {
+          "line": 17,
+          "text": "## New findings and dependency check"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B09-review-1.md",
+      "bytes": 17210,
+      "sha256": "2cb65c9dad7b51e94a91263fa0375cf2833113b1badd231b11212e76be31e1d1",
+      "findingNavigation": [
+        {
+          "line": 9,
+          "text": "## Critical"
+        },
+        {
+          "line": 13,
+          "text": "## Important"
+        },
+        {
+          "line": 46,
+          "text": "## Important verified behavior"
+        },
+        {
+          "line": 69,
+          "text": "## Scope and unchanged boundaries"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B09-review-2.md",
+      "bytes": 9105,
+      "sha256": "177c5964fd795a38a681000e771cfd6b18782cab2c2b660942d9734d3337404d",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# B09 scoped independent re-review \u2014 fix round 1"
+        },
+        {
+          "line": 33,
+          "text": "## Fix-introduced findings"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L00-review-1.md",
+      "bytes": 12681,
+      "sha256": "d189cffddb4e6c5d3d29c5e61d425a401d4122dccc9d3321b2c2d392abbbe5b9",
+      "findingNavigation": [
+        {
+          "line": 7,
+          "text": "## Important findings"
+        },
+        {
+          "line": 29,
+          "text": "## Specification assessment and strengths"
+        },
+        {
+          "line": 43,
+          "text": "## Test and evidence assessment"
+        },
+        {
+          "line": 59,
+          "text": "## Cannot verify from diff / external limits"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L00-review-2.md",
+      "bytes": 7236,
+      "sha256": "364448fff77aa6b74e8cc55ab77776caa2f800a82102abe3d16a77cbe521b803",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# L00 scoped fix review 2"
+        },
+        {
+          "line": 7,
+          "text": "## Existing finding verdicts"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L01-review-1.md",
+      "bytes": 13641,
+      "sha256": "c2d428e85abb52abfaef80affa4a379e6e15695eb7147bddfc2e7c03ad4a9dc9",
+      "findingNavigation": [
+        {
+          "line": 7,
+          "text": "## Scope and evidence"
+        },
+        {
+          "line": 32,
+          "text": "## Important findings"
+        },
+        {
+          "line": 72,
+          "text": "## Minor findings"
+        },
+        {
+          "line": 80,
+          "text": "## Cannot verify from the diff / retained portable evidence"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L01-review-2.md",
+      "bytes": 11315,
+      "sha256": "48ef13cf300a5b035305f976a1005b63f0626b84247b269d8ebfbcd79944e4f7",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# L01 scoped fix-round1 re-review"
+        },
+        {
+          "line": 5,
+          "text": "## Scope and identity"
+        },
+        {
+          "line": 16,
+          "text": "## Original findings"
+        },
+        {
+          "line": 42,
+          "text": "## New Important blocker"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L01-review-3.md",
+      "bytes": 8875,
+      "sha256": "e69cd99c9bc3c362b0cafbf18c2887af19dbcf89b8ae6f91210e7daa6f51139a",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# L01 scoped fix-round2 re-review"
+        },
+        {
+          "line": 5,
+          "text": "## Scope and reviewed identities"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L02-review-1.md",
+      "bytes": 12436,
+      "sha256": "2574b15728973924d9db9c4a6a624a271ff6759e34a388712be414befe6b6870",
+      "findingNavigation": [
+        {
+          "line": 3,
+          "text": "## Verdicts"
+        },
+        {
+          "line": 9,
+          "text": "## Scope and basis"
+        },
+        {
+          "line": 20,
+          "text": "## Findings"
+        },
+        {
+          "line": 22,
+          "text": "### L02-R1 \u2014 Important \u2014 Resolve the engineering project path before changing the compiler working directory"
+        },
+        {
+          "line": 32,
+          "text": "### L02-R2 \u2014 Important \u2014 A cached TF chain is accepted indefinitely as current feedback"
+        },
+        {
+          "line": 44,
+          "text": "## Strengths and requirement assessment"
+        },
+        {
+          "line": 54,
+          "text": "## Cannot verify from this diff / retained evidence"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L02-review-2.md",
+      "bytes": 12724,
+      "sha256": "20a52669beb91ef67b7ed82ffec31aecba11783b309d682aed1f4d006477bbb9",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# L02 fix round 1 \u2014 scoped re-review"
+        },
+        {
+          "line": 3,
+          "text": "## Verdict"
+        },
+        {
+          "line": 10,
+          "text": "## Scope and evidence"
+        },
+        {
+          "line": 77,
+          "text": "## Preserved boundaries and out-of-scope observations"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L03-review-1.md",
+      "bytes": 21339,
+      "sha256": "c62550631934d95ee758df78fbbd7192e263e83cb27f927457947f2387a025f7",
+      "findingNavigation": [
+        {
+          "line": 5,
+          "text": "## Review scope and evidence"
+        },
+        {
+          "line": 18,
+          "text": "## Important findings"
+        },
+        {
+          "line": 117,
+          "text": "## Cannot verify from the diff or supplied local records"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L03-review-2.md",
+      "bytes": 10954,
+      "sha256": "a581e8c427b8f098fa2ca44c13513345c9da7906dc50bcc7aee740b0233e6b16",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# L03 fix round 1 scoped review"
+        },
+        {
+          "line": 7,
+          "text": "## Scope and evidence"
+        },
+        {
+          "line": 22,
+          "text": "## Original finding dispositions"
+        },
+        {
+          "line": 58,
+          "text": "## New fix-introduced finding"
+        },
+        {
+          "line": 60,
+          "text": "### L03-R2-01 \u2014 Minor, nonblocking: Python extension comparison rejects negative zero"
+        },
+        {
+          "line": 70,
+          "text": "## Nonblocking out-of-scope observations and limits"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L04-review-1.md",
+      "bytes": 11425,
+      "sha256": "1796e6c77d6e908a741bb6530562957421b44dac3a2da32edb7da19f7d63e077",
+      "findingNavigation": [
+        {
+          "line": 3,
+          "text": "## Verdicts"
+        },
+        {
+          "line": 23,
+          "text": "## Findings"
+        },
+        {
+          "line": 25,
+          "text": "### Important \u2014 L04-R1: stage only reviewed inputs, not the entire caller directory"
+        },
+        {
+          "line": 37,
+          "text": "### Minor \u2014 L04-R2: trace admission exceeds the single-call oracle limits"
+        },
+        {
+          "line": 45,
+          "text": "## Strengths and requirement assessment"
+        },
+        {
+          "line": 62,
+          "text": "## Cannot verify from diff"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L04-review-2.md",
+      "bytes": 7206,
+      "sha256": "23334b917f5f11949795c46a2756827633827296d933fc56124d5038d3481b4a",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# L04 task review 2 \u2014 scoped fix round 1"
+        },
+        {
+          "line": 3,
+          "text": "## Verdicts"
+        },
+        {
+          "line": 19,
+          "text": "## Finding disposition"
+        },
+        {
+          "line": 21,
+          "text": "### Important \u2014 L04-R1: ADDRESSED"
+        },
+        {
+          "line": 35,
+          "text": "### New fix findings"
+        },
+        {
+          "line": 39,
+          "text": "### Untouched-code observation \u2014 Minor L04-R2: DEFERRED, NOT CLOSED"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L05-review-1.md",
+      "bytes": 10936,
+      "sha256": "02c2edd2608e4ea0806066517f7ca81383f0902422a6cb059f098137c496c898",
+      "findingNavigation": [
+        {
+          "line": 3,
+          "text": "## Verdicts"
+        },
+        {
+          "line": 27,
+          "text": "## Spec assessment"
+        },
+        {
+          "line": 42,
+          "text": "## Quality assessment and strengths"
+        },
+        {
+          "line": 52,
+          "text": "## Findings"
+        }
+      ]
+    }
+  ],
+  "legacyLedgerOnly": [
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "line": 10,
+      "text": "Task B00: complete (commits 086121c..e137b57, review clean by /root/review_b00). Fresh worktree export /tmp/mekoniq-r2b-baseline-e137b57-20261114 installed; pnpm check:source passed, Lab pin commit recorded next in git log. Accepted remains false."
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "line": 13,
+      "text": "Task B01: complete. Source 26199b8e3cddb3bb7b21b52a7e2c004d89b7ced6; Lab 1604e05fc5e74c1abac2279efc9dd29f4a7f1c24. Review /root/review_b01: spec compliant, Approved, no findings; checked fixture copied bytes, manifest/scene hashes and call sites. Implementer evidence: source 129 + Lab 426 + MuJoCo 25 + Webots 26 tests; contracts/typecheck/lint and clean export/check:source pass. Accepted remains false."
+    }
+  ],
+  "legacyLedgerOnlyLimit": "B00/B01 independent-review verdicts survive in these ledger entries. No standalone full review report for those two tasks was found in the current scoped review-file inventory. Preserve the original records; do not fabricate a retrospective report or claim this index recreates one. Final whole-branch review covers their net feature changes."
+}

@@ -1,0 +1,10 @@
+{
+  "snapshot": "B10 current-image package R91",
+  "humanEntries": 91,
+  "rawRecords": 95,
+  "exactRawLedgerMatch": true,
+  "prior94recordsPreserved": true,
+  "humanFileSha256": "8296769b68e7a5147847ff194034a624ee745af3815ab86a21a17ca922a2180d",
+  "rawFileSha256": "ac337f532b60240bed1c69c04e952269c91f4e92931b9b8fcf74a2e6b6cb38f3",
+  "evidence": "Root read current sil/native-handoff.ts immutable engine/tool and raw platform/config hash checks, plus current generated build/package path. No Docker/native execution."
+}

@@ -11,5 +11,7 @@ export default tseslint.config(
     document:'readonly', window:'readonly', navigator:'readonly', localStorage:'readonly',
     crypto:'readonly', TextEncoder:'readonly', TextDecoder:'readonly', Request:'readonly', Response:'readonly',
     AbortSignal:'readonly', Headers:'readonly', structuredClone:'readonly'
-  } } }
+  } } },
+  {files:['docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/{smoke,smoke-initial,smoke-attempt-02}.mjs'],languageOptions:{globals:{AbortController:'readonly',performance:'readonly'}}},
+  {files:['docs/implementation/evidence/production/r2a-2026-11-14/browser-smoke.cjs','docs/implementation/evidence/production/r2a-2026-11-14/browser-attempt-01/browser-smoke.cjs'],languageOptions:{sourceType:'commonjs',globals:{require:'readonly',__dirname:'readonly',module:'readonly'}},rules:{'@typescript-eslint/no-require-imports':'off'}}
 );

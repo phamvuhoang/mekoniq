@@ -1,0 +1,21 @@
+{
+  "purpose": "Read-only review packaging preflight; final exact heads/packages still chosen after all implementation and evidence. No changed worktree bytes or final review verdict inferred.",
+  "rows": [
+    {
+      "repo": "source",
+      "headAtPreflight": "874d05aedfbf573496994fd73016f19ef19e6932",
+      "frozenUpstream": "11d25b47a18adafb88ac21adc249499109996bc5",
+      "mergeBase": "11d25b47a18adafb88ac21adc249499109996bc5",
+      "frozenIsAncestor": true,
+      "netChangedPathsVersusFrozen": 406
+    },
+    {
+      "repo": "lab",
+      "headAtPreflight": "4a207b43c613cf0c1226a9ff3c1990a96ec5ac08",
+      "frozenUpstream": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+      "mergeBase": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+      "frozenIsAncestor": true,
+      "netChangedPathsVersusFrozen": 226
+    }
+  ]
+}

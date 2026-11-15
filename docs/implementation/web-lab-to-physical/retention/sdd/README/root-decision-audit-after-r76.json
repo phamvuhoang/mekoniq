@@ -1,0 +1,9 @@
+{
+  "scope": "decision-record parity, not runtime qualification",
+  "rawActual": 80,
+  "rawSaved": 80,
+  "missing": [],
+  "extra": [],
+  "humanDecisions": 76,
+  "consecutive": true
+}

@@ -1,0 +1,14 @@
+{
+  "source": "00d41e7f25ec1294b9bc8e8c81de3d8e1a869316",
+  "lab": "82b5f92005673c99ba0d1f434ae4c512800fa75e",
+  "review": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L02-review-2.md",
+  "reviewBytes": 12724,
+  "reviewSha256": "20a52669beb91ef67b7ed82ffec31aecba11783b309d682aed1f4d006477bbb9",
+  "findings": {
+    "R1": "ADDRESSED; withdrawn as false positive by scoped reviewer",
+    "R2": "ADDRESSED"
+  },
+  "preparedCodeApproved": true,
+  "nativeExecution": "not_run/blocked_external",
+  "unresolvedCodeFindings": []
+}

@@ -10,10 +10,14 @@ RUN python3 -m venv /opt/venv-mujoco && /opt/venv-mujoco/bin/pip install --no-ca
 
 FROM ${BASE}
 ARG SOURCE_COMMIT=unknown
+ARG R2B_CAMPAIGN_PACKAGE_SHA256
+ARG R2B_CAMPAIGN_BUNDLE_SHA256
+LABEL org.mekoniq.r2b.campaign-package-sha256="${R2B_CAMPAIGN_PACKAGE_SHA256}" org.mekoniq.r2b.campaign-bundle-sha256="${R2B_CAMPAIGN_BUNDLE_SHA256}"
 LABEL org.opencontainers.image.title="mekoniq-lab-runtime" org.opencontainers.image.revision="${SOURCE_COMMIT}"
 RUN apt-get update && apt-get install -y --no-install-recommends python3 && rm -rf /var/lib/apt/lists/*
 COPY --from=venv /opt/venv-mujoco /opt/venv-mujoco
 COPY runtime.mjs /app/runtime.mjs
+COPY r2b-campaign.mjs r2b-campaign-package.json r2b-engine-inventory.py /app/
 COPY catalog /app/catalog
 # the schemas twice: the exporter's layout (/app/schemas) and the one the worker derives from its root (<root>/../../packages/contracts/schemas)
 COPY schemas /app/schemas

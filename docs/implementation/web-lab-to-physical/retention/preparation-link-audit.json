@@ -1,0 +1,778 @@
+{
+  "scope": "Rebased design/GTM local inline Markdown links and Unicode heading/explicit-id fragments; reference-style/renderer nuances remain final audit scope",
+  "links": [
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "href": "01-research.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "href": "../../../gtm/2026-11-14-web-simulation/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "README.md#3-nh\u1eefng-g\u00ec-\u0111\u00e3-c\u00f3-v\u00e0-nh\u1eefng-g\u00ec-ch\u01b0a-c\u00f3",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "#h-lf07",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "#h-r105",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "#h-r1102",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/specs/2026-11-08-linkforge-irsim/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/specs/2026-11-08-linkforge-irsim/contracts.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/specs/2026-11-08-linkforge-irsim/workers-runtime.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/specs/2026-11-08-linkforge-irsim/verification.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/plans/2026-11-08-linkforge-irsim/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/specs/2026-11-10-simulation-extension-design.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/plans/2026-11-10-simulation-extension/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/specs/2026-11-10-webots-arm-design.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/plans/2026-11-10-webots-arm/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../superpowers/plans/2026-11-12-realistic-arm-web-ui/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/lab-runtime/src/v2/navigation2d/plant.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/lab-runtime/src/v2/navigation2d/readiness.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../robotics/simulation-mujoco/mujoco_worker/engine.py",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/contracts/schemas/sim3d-worker-v1.schema.json",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/lab-runtime/src/v2/navigation2d/evidence.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/lab-runtime/src/v2/comparison.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/lab-runtime/src/v2/residuals.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/lab-runtime/src/v2/control/pid.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../robotics/simulation-mujoco/requirements.in",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../research/2026-11-mujoco-arm-spike.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../deploy/lab-runtime/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../deploy/lab-runtime/build.sh",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../../lab/src/runtime/target.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../../lab/src/runtime/fetch-event-source.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../../lab/src/twin/sample-buffer.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../../lab/src/viewer/twin3d.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../../lab/src/reports/replay.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../../lab/src/reports/evidence.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/lab-runtime/src/v2/sil/native-providers.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/lab-runtime/src/v2/sil/cli.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../packages/lab-runtime/src/v2/capabilities.ts",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../robotics/manipulation/vendor.lock.json",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../../robotics/simulation/profiles/engineering-amd64.lock.json",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../engineering-lab/native-environment.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../operations/robot-commissioning.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "href": "../../../engineering-lab/calibration-protocol.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "href": "01-research.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "href": "03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "href": "plans/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "href": "03-contracts-and-evidence.md#3-m\u1ed9t-world-m\u1ed9t-b\u01b0\u1edbc-m\u1ed7i-tick",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "href": "01-research.md#c\u1eadp-nh\u1eadt-b\u1eb1ng-ch\u1ee9ng-r2a--2026-11-14-0900-ict",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "href": "../../../engineering-lab/calibration-protocol.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "href": "00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "href": "05-implementation-decisions-ledger.json",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "01-research.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "02-r2b-web-lab-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "04-r3-linux-physical-readiness-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "plans/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "plans/01-r2b-mobility.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "plans/02-r2b-cell-and-web.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "plans/03-r3-linux-readiness.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "../../../superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "../../../superpowers/specs/2026-11-10-simulation-extension-design.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "../../../superpowers/plans/2026-11-10-simulation-extension/02-release-2-3.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/README.md",
+      "href": "01-research.md#1-baseline-t\u1eeb-repository",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "href": "README.md#global-constraints",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "href": "../02-r2b-web-lab-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "href": "../03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "href": "README.md#global-constraints",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "href": "README.md#global-constraints",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "href": "../02-r2b-web-lab-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "href": "../03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "href": "README.md#global-constraints",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "href": "../05-implementation-decisions.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "href": "README.md#global-constraints",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "href": "../04-r3-linux-physical-readiness-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "href": "../03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "href": "README.md#global-constraints",
+      "exists": true,
+      "fragmentResolved": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "href": "../02-r2b-web-lab-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "href": "../03-contracts-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "href": "../04-r3-linux-physical-readiness-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "href": "../01-research.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "href": "01-r2b-mobility.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "href": "02-r2b-cell-and-web.md",
+      "exists": true
+    },
+    {
+      "file": "docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "href": "03-r3-linux-readiness.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../../README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../product/2026-10-30-capability-matrix.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../../artifacts/src/business-plan.js",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../../../../../web/index.html",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../implementation/evidence/production/r2a-2026-11-14/browser-smoke.json",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../../artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "href": "../../implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "href": "06-measurement-and-launch.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "href": "../../../artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "href": "../../implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "href": "03-gtm-and-commercial.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/03-gtm-and-commercial.md",
+      "href": "06-measurement-and-launch.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/03-gtm-and-commercial.md",
+      "href": "01-research-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/04-digital-marketing.md",
+      "href": "07-calendar-and-weekly-checklist.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/05-ready-to-use-content.md",
+      "href": "06-measurement-and-launch.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "href": "03-gtm-and-commercial.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "href": "../../implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "href": "../../implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "href": "../../../artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/07-calendar-and-weekly-checklist.md",
+      "href": "05-ready-to-use-content.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "01-research-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "../../implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "../../implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "../../../artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "01-research-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "../../implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "01-research-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "06-measurement-and-launch.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "04-digital-marketing.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "budget.csv",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "01-research-and-evidence.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "02-pitch-and-demo.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "03-gtm-and-commercial.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "04-digital-marketing.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "05-ready-to-use-content.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "06-measurement-and-launch.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "07-calendar-and-weekly-checklist.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "budget.csv",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "funnel.csv",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "economics.csv",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "href": "REVIEW.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/REVIEW.md",
+      "href": "../../implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/REVIEW.md",
+      "href": "../../implementation/evidence/production/r2a-2026-11-14/README.md",
+      "exists": true
+    },
+    {
+      "file": "docs/gtm/2026-11-14-web-simulation/REVIEW.md",
+      "href": "../../../artifacts/mekoniq-r2a-demo-guide.html",
+      "exists": true
+    }
+  ]
+}

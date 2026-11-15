@@ -1,0 +1,49 @@
+{
+  "source": "2b7d39cdeab06b499e9037aef1a24f1babe03a4f",
+  "lab": "fd4365291f6db7fdcbd72407f94ac7c0f35a20b4",
+  "clean": true,
+  "allRefsChecked": 239,
+  "payloadBytes": 10724081,
+  "mismatches": [],
+  "manifestSha256": "64e8049c0f72836540fa3b85199852f1c09af734141f09afe568977c4ca39b32",
+  "artifactSha256": "139c32dac4861e5aa419520c5321208df0aa3e7c33ca765c6725b058147cee2b",
+  "schemaHash": "07e01e8efb146fb50b8c68eebfa27d989ee07d4e80bcdb796639e3c2aaa42068",
+  "portableToolsDigest": "9e84b636309e418ae467b73450574c0d99f80142090c08648394067bad2716b2",
+  "image": null,
+  "checkerToolSha256": "1c62c33fed19ccd2b10af5cfca2d271c013f2ad632d12e6415803636413db85a",
+  "checkerDigestFiles": [
+    "scripts/native-handoff.mjs",
+    "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+    "packages/lab-runtime/src/v2/sil/native-handoff-documents.ts",
+    "scripts/native-sim/native-inventory.mjs",
+    "packages/contracts/schemas/native-handoff-v1.schema.json",
+    "pnpm-lock.yaml"
+  ],
+  "reportPrefix": {
+    "bytes": 19155,
+    "sha256": "9ba248301555261aabf01d96879bb7df911a1685ba91612c7044570ebe7d8b80",
+    "preserved": true
+  },
+  "packages": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-d0f3074..2b7d39c.diff",
+      "base": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+      "head": "2b7d39cdeab06b499e9037aef1a24f1babe03a4f",
+      "bytes": 129077,
+      "sha256": "6f7dc13c47c3599cb26a43cc9d5d69523a4353085c8d57745d1cc37a2ae42a72"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-176bf34..fd43652.diff",
+      "base": "176bf348b6a839037473cc6d87413093ed17ff54",
+      "head": "fd4365291f6db7fdcbd72407f94ac7c0f35a20b4",
+      "bytes": 3657,
+      "sha256": "53500ca1b6cba4e202110d89844b9483f4675f9c92494adf5d07240f5746bf38"
+    }
+  ],
+  "limits": [
+    "Independent bytes/identity and declared short checker digest audit; not semantic validation or host authenticity",
+    "Checker Source commit pins transitive validators/reference corpus; short digest is not full closure",
+    "95-test/contracts/type/lint/export/pin logs inspected separately, no suite rerun",
+    "Independent task review pending; R81 old arm-only adapter belongs L01, L02/L03 native mappings remain unready"
+  ]
+}

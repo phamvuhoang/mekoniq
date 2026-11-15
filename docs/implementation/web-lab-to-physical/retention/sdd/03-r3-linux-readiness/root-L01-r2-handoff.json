@@ -1,0 +1,140 @@
+{
+  "source": "874d05aedfbf573496994fd73016f19ef19e6932",
+  "lab": "4a207b43c613cf0c1226a9ff3c1990a96ec5ac08",
+  "clean": true,
+  "fixBase": {
+    "source": "eeea18db88485e113aafe1cc15edd7f75ced2b66",
+    "lab": "e8577a5b7f4f6b615aa333b3f86126d06e1f0c05"
+  },
+  "checkedTree": "6a59ef54f7861d12b1901d88da63394df6b5a830",
+  "subject": {
+    "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+    "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+    "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
+    "portableClosureHash": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+    "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+    "id": "r2a-4f893ac-linux-amd64",
+    "executionKind": "mujoco_image",
+    "profileSha256": "148afd50b392d9ab05845018a35cc5cc2c02e45d77e76bca0a64612670400263",
+    "nativeClosureHash": null,
+    "image": null
+  },
+  "checker": {
+    "sourceCommit": "874d05aedfbf573496994fd73016f19ef19e6932",
+    "toolSha256": "f0052cf8449b7c978d432ead1c65a9ebfda784db166933ada3e9c6bba9f0557f"
+  },
+  "handoff": {
+    "root": "/tmp/mekoniq-L01-fix2-preparation-sQ7TjS/handoff",
+    "manifestSha256": "d0016f8d04d9a2d6446d4e94722ace768957e64f8ea5c4f0b478a3783afa406c",
+    "refs": 184,
+    "refBytes": 9648529
+  },
+  "probe": {
+    "root": "/tmp/mekoniq-L01-fix2-preparation-sQ7TjS/native-not-run",
+    "manifestSha256": "2fc0b0d0958a2e37eee60bd8b1bf957779c2df3aedb8da478e000a4710c94e5f",
+    "cases": 16,
+    "status": "not_run",
+    "cliExit": 2,
+    "readbackExit": 1
+  },
+  "currentRuntime": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "874d05aedfbf573496994fd73016f19ef19e6932",
+    "schemaHash": "07e01e8efb146fb50b8c68eebfa27d989ee07d4e80bcdb796639e3c2aaa42068",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "7230dcac101d3010a9580b22f9c5d1ded01b79c917a6e7dff9182a9f262f7013",
+    "entrypoint": "runtime.mjs",
+    "portableToolsDigest": "4ba424081c04ba0f532c069047bf244a99385edd09ca9df347cfb45fe6d22e6e"
+  },
+  "runtimeSameAfterSourceIdentityReplacement": true,
+  "sourceIdentityOccurrences": 3,
+  "report": {
+    "bytes": 50317,
+    "sha256": "afa3f19d62840264f4be3a30f0d63c4ad72487411a5457bfd7d28db024e8f9af",
+    "preservedPrefixBytes": 40356,
+    "preservedPrefixSha256": "b1f75fc143850247ef313541b352f9909c71a12adcc9c95f71c5de8fdf64a878"
+  },
+  "preservedArtifacts": [
+    {
+      "path": "/tmp/mekoniq-L01-preparation-g53avI/handoff",
+      "manifestSha256": "76f3a4fda8ef1b7c21695d1f261ce6a9d08758e401d0beb5be21883783547e30",
+      "refs": 184
+    },
+    {
+      "path": "/tmp/mekoniq-L01-preparation-g53avI/native-not-run",
+      "manifestSha256": "be5a3ed01296bcafdf1f98137e202b9d476c609b8726abf6468acc95e582ed7a",
+      "refs": 187
+    },
+    {
+      "path": "/tmp/mekoniq-L01-fix1-preparation-CRyEAA/handoff",
+      "manifestSha256": "482d8f694b479f235af53fee3572abda6a0fb7c8e07065c2ab1ff97c89dc708a",
+      "refs": 184
+    },
+    {
+      "path": "/tmp/mekoniq-L01-fix1-preparation-CRyEAA/native-not-run",
+      "manifestSha256": "e5a298fc8b4d17264ab36c3e2ed7569c80eda627087da36ed9d28acb17e17741",
+      "refs": 187
+    },
+    {
+      "path": "/tmp/mekoniq-L01-fix1-isolated-preparation-1sLaHG/handoff",
+      "manifestSha256": "f8e4755506ffb36bc2cd93dddbbe2ff96eb81e0e1d3aed8e681cf042c1a53dac",
+      "refs": 184
+    },
+    {
+      "path": "/tmp/mekoniq-L01-fix1-isolated-preparation-1sLaHG/native-not-run",
+      "manifestSha256": "deb9af0d37d89dc283b0cb37efa3d838ee55dd61a2291e0ee1ef644c7f98a38d",
+      "refs": 187
+    }
+  ],
+  "evidenceManifests": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L01/fix1/evidence-manifest.json",
+      "sha256": "7436882f950a6eb4908236ba43c839a12637cf64a3bd5117ee75829d6bbcadf0",
+      "files": 51
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L01/fix1/plan-test-isolation/evidence-manifest.json",
+      "sha256": "bb0ee20fa5648713371772dac80c33fcfacca49b2b8684029d6485e47861dd7a",
+      "files": 27
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L01/fix2/evidence-manifest.json",
+      "sha256": "3b93f10febc2b5f89d907287e047121de52943dc548a7f14d6c599f84c22883d",
+      "files": 28
+    }
+  ],
+  "packages": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-eeea18d..874d05a.diff",
+      "bytes": 19832,
+      "sha256": "714c10d87b882ea4c83e1ed5e8217d358c773fa8dac80e5ed7a2deffcf59869d"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-e8577a5..4a207b4.diff",
+      "bytes": 3433,
+      "sha256": "8a507355a4f73a8509575b17af5cce7475237491db1b17eb2101eea88c884999"
+    }
+  ],
+  "checksRead": [
+    "writer RED1fail2pass/40unselected",
+    "writer GREEN3pass/40unselected",
+    "covering52pass2files",
+    "Source types/scopedlint",
+    "Lab pin/types"
+  ],
+  "limitations": [
+    "Byte/identity audit only; semantic assessment belongs scoped reviewer.",
+    "No actual engine/native/Docker/cloud/hardware run in fix2.",
+    "Native-positive execution remains unavailable; synthetic tests are not qualification.",
+    "Earlier fix1 inherited real docker info probe is disclosed in preserved report; no status inferred."
+  ]
+}

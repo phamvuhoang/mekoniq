@@ -1,0 +1,151 @@
+{
+  "source": "eeea18db88485e113aafe1cc15edd7f75ced2b66",
+  "lab": "e8577a5b7f4f6b615aa333b3f86126d06e1f0c05",
+  "clean": true,
+  "fixBase": {
+    "source": "2f4837d10d746a7c8c5e5ca5675ec57db4111c28",
+    "lab": "69032d509cc94b178102c386ddf82280996cf74e"
+  },
+  "subject": {
+    "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+    "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+    "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
+    "portableClosureHash": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+    "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+    "id": "r2a-4f893ac-linux-amd64",
+    "executionKind": "mujoco_image",
+    "profileSha256": "148afd50b392d9ab05845018a35cc5cc2c02e45d77e76bca0a64612670400263",
+    "nativeClosureHash": null,
+    "image": null
+  },
+  "checker": {
+    "sourceCommit": "eeea18db88485e113aafe1cc15edd7f75ced2b66",
+    "toolSha256": "abb467b33ad9011efbf3867e3ce6fd91aa080f8763e7be03736749a540f6a378"
+  },
+  "independentChecker": {
+    "sourceCommit": "eeea18db88485e113aafe1cc15edd7f75ced2b66",
+    "toolSha256": "1ffa5a770189a26128cf8a1e6bbb546b946dd73fe9d20750af58bc256eff5ff3"
+  },
+  "handoff": {
+    "path": "/tmp/mekoniq-L01-fix1-isolated-preparation-1sLaHG/handoff",
+    "manifestSha256": "f8e4755506ffb36bc2cd93dddbbe2ff96eb81e0e1d3aed8e681cf042c1a53dac",
+    "refs": 184,
+    "bytes": 9648529
+  },
+  "probe": {
+    "path": "/tmp/mekoniq-L01-fix1-isolated-preparation-1sLaHG/native-not-run",
+    "manifestSha256": "deb9af0d37d89dc283b0cb37efa3d838ee55dd61a2291e0ee1ef644c7f98a38d",
+    "cases": 16,
+    "status": "not_run",
+    "refs": 187,
+    "bytes": 9724487
+  },
+  "currentRuntime": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "eeea18db88485e113aafe1cc15edd7f75ced2b66",
+    "schemaHash": "07e01e8efb146fb50b8c68eebfa27d989ee07d4e80bcdb796639e3c2aaa42068",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "a0389ddd56cc96c3c3116a00e2f1b7e433b6ae06b90627d4578754ae6bb0dded",
+    "entrypoint": "runtime.mjs",
+    "portableToolsDigest": "4ba424081c04ba0f532c069047bf244a99385edd09ca9df347cfb45fe6d22e6e"
+  },
+  "testOnlyFollowup": {
+    "changedFile": "tests/unit/sim-extension-qualification.test.ts",
+    "oldRuntimeSourceOccurrences": 3,
+    "newRuntimeSourceOccurrences": 3,
+    "runtimeEqualAfterSourceIdentityReplacement": true,
+    "focusedPassed": 1,
+    "unselected": 24,
+    "priorTests": {
+      "vitest": 182,
+      "pythonPortable": 9,
+      "handoffSource": "bb62601ff706fa2460f8d586fc50591df6f99054",
+      "rerunOnNewHead": false
+    }
+  },
+  "preservedPrefixes": [
+    {
+      "bytes": 16463,
+      "sha256": "bee7eda7120cebc3afea510c2947dccedc8a56ac7ea9e0f1a9c1652a6de82912",
+      "preserved": true
+    },
+    {
+      "bytes": 31958,
+      "sha256": "5275ed03e2d4b984810cd8eff263a1c0cbb6a222e0299d04e3c9758ab0637008",
+      "preserved": true
+    }
+  ],
+  "preservedArtifactPairs": [
+    {
+      "root": "/tmp/mekoniq-L01-preparation-g53avI/handoff",
+      "manifestSha256": "76f3a4fda8ef1b7c21695d1f261ce6a9d08758e401d0beb5be21883783547e30",
+      "refs": 184,
+      "bytes": 9648529
+    },
+    {
+      "root": "/tmp/mekoniq-L01-preparation-g53avI/native-not-run",
+      "manifestSha256": "be5a3ed01296bcafdf1f98137e202b9d476c609b8726abf6468acc95e582ed7a",
+      "refs": 187,
+      "bytes": 9724487
+    },
+    {
+      "root": "/tmp/mekoniq-L01-fix1-preparation-CRyEAA/handoff",
+      "manifestSha256": "482d8f694b479f235af53fee3572abda6a0fb7c8e07065c2ab1ff97c89dc708a",
+      "refs": 184,
+      "bytes": 9648529
+    },
+    {
+      "root": "/tmp/mekoniq-L01-fix1-preparation-CRyEAA/native-not-run",
+      "manifestSha256": "e5a298fc8b4d17264ab36c3e2ed7569c80eda627087da36ed9d28acb17e17741",
+      "refs": 187,
+      "bytes": 9724487
+    }
+  ],
+  "evidenceManifests": [
+    {
+      "root": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L01/fix1",
+      "files": 51,
+      "manifestSha256": "7436882f950a6eb4908236ba43c839a12637cf64a3bd5117ee75829d6bbcadf0"
+    },
+    {
+      "root": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L01/fix1/plan-test-isolation",
+      "files": 27,
+      "manifestSha256": "bb0ee20fa5648713371772dac80c33fcfacca49b2b8684029d6485e47861dd7a"
+    }
+  ],
+  "packages": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-2f4837d..eeea18d.diff",
+      "base": "2f4837d10d746a7c8c5e5ca5675ec57db4111c28",
+      "head": "eeea18db88485e113aafe1cc15edd7f75ced2b66",
+      "bytes": 154794,
+      "sha256": "91d8b7f4420357df28b82a9a6f2213efc6df60fbffd2575740086f4bf9550f32"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-69032d5..e8577a5.diff",
+      "base": "69032d509cc94b178102c386ddf82280996cf74e",
+      "head": "e8577a5b7f4f6b615aa333b3f86126d06e1f0c05",
+      "bytes": 3475,
+      "sha256": "c845ae555acd9e2f7af0db767eec5cf2b307f72cb86d4651529d4878be457c10"
+    }
+  ],
+  "report": {
+    "bytes": 40356,
+    "sha256": "b1f75fc143850247ef313541b352f9909c71a12adcc9c95f71c5de8fdf64a878"
+  },
+  "limitations": [
+    "Byte/identity audit only; no native/host/image authenticity proof.",
+    "Earlier combined unit test invoked inherited read-only docker info via --plan; real child status/output not retained. No container or readiness result inferred.",
+    "Current focused test uses an exclusive owned Docker stub; native probe itself still stopped before Docker.",
+    "Native16cases and currentR2b adapter execution not_run; R83 implementation remains B10 responsibility; R1-05 deferred."
+  ]
+}

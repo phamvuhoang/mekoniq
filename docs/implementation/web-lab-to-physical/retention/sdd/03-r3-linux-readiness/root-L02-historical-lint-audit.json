@@ -1,0 +1,39 @@
+{
+  "issue": "Full lint has 27 no-undef/CommonJS format configuration errors in five unchanged historical evidence scripts. Actual diagnostics retained; not a full lint pass.",
+  "log": "/tmp/l02-checks/lint-combined1.log",
+  "logSha256": "f0343f07de47d5ee6a1d8bcd84ae74540cf623cc24adade8ac342a2a38b7d988",
+  "evidenceScripts": [
+    {
+      "path": "docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/smoke-attempt-02.mjs",
+      "bytes": 7235,
+      "sha256": "f5415036783d92aef0b664c36bdafd5f4b0f7f2993647767064ec72d34d3f5ed",
+      "equalL02BaseAndFrozenUpstream": true
+    },
+    {
+      "path": "docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/smoke-initial.mjs",
+      "bytes": 7198,
+      "sha256": "68c588a690cde46b43276b9c736106a9259813de8851ea24724ce51f72513d16",
+      "equalL02BaseAndFrozenUpstream": true
+    },
+    {
+      "path": "docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/smoke.mjs",
+      "bytes": 7636,
+      "sha256": "10063cabceec2d36f49810f17387d1763670844ecc1241c0f890a9afecc87d14",
+      "equalL02BaseAndFrozenUpstream": true
+    },
+    {
+      "path": "docs/implementation/evidence/production/r2a-2026-11-14/browser-attempt-01/browser-smoke.cjs",
+      "bytes": 7282,
+      "sha256": "88a4fd43fac7db06c73000477e26dc7f11e6ddd6405d4d8a4404662d801d5744",
+      "equalL02BaseAndFrozenUpstream": true
+    },
+    {
+      "path": "docs/implementation/evidence/production/r2a-2026-11-14/browser-smoke.cjs",
+      "bytes": 7661,
+      "sha256": "b04592322643b6321213b277c33116eb029701fb20532ccdb712a4e49b9d3a5e",
+      "equalL02BaseAndFrozenUpstream": true
+    }
+  ],
+  "nextOwner": "B10 final CI tooling must resolve appropriate lint environment/format configuration without rewriting historical evidence or blanket-dropping changed product code from lint. L02 changed-file lint remains required.",
+  "limits": "Read-only byte comparison plus existing lint output; no lint rerun or runtime behavior assertion."
+}

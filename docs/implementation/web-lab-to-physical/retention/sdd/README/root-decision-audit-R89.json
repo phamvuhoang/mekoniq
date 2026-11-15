@@ -1,0 +1,18 @@
+{
+  "snapshot": "R89",
+  "humanEntries": 89,
+  "rawRecords": 93,
+  "counts": {
+    "README": 14,
+    "01-r2b-mobility": 18,
+    "02-r2b-cell-and-web": 49,
+    "03-r3-linux-readiness": 12
+  },
+  "exactRawLedgerMatch": true,
+  "missing": [],
+  "extra": [],
+  "humanFileSha256": "e5883d57c4dc4d6213d38b94cd1a6fdb5f29bf6c2c8aeb261f1a6d021eb0f33c",
+  "rawFileSha256": "077cff2b074557f9f242b8bb8b441e77ea5231acccd700a58fa3580b682ec92c",
+  "scope": "All lines containing literal Ruling: and Sequencing ruling for final evidence:, including embedded Task prefixes and intentional duplicates.",
+  "correctedAttempt": "Initial prefix-only extraction yielded85 instead of93 and failed assertion; corrected to capture all literal occurrences. No product changes."
+}

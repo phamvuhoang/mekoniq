@@ -1,0 +1,1575 @@
+{
+  "scope": "Independent read-only stored-byte/hash audit of final X01 report and declared artifact files. No SQLite opened, no engine execution, no authenticity/native/human acceptance claim. Duplicate compiled/run-bundle locations both checked when present.",
+  "recordingSource": "709a797fa791727d0a8c830e935e0d80192843b0",
+  "studySha256": "2738b3ab02c44cad745c53f47ef962d2d89c9f8cb7de90bfe9c69dada42b2412",
+  "files": [
+    {
+      "engine": "irsim_2d",
+      "kind": "report",
+      "logicalPath": "report.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/report.json",
+      "bytes": 658510,
+      "sha256": "b50dcc997104b6696f69b2dbab02eedfde9cc2e0ff16c3d258a3ef759fde9e8a",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "assets.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/assets.json",
+      "bytes": 3216,
+      "sha256": "0df54cb8bfc5a11ceeab7ad55e01400f844dfa78c9ad014627579233b35eaebe",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "bom.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/bom.json",
+      "bytes": 4889,
+      "sha256": "dd2d251266f4fd7c7259452627bae39d02dc6ac7377486ac7a7d40b385b0ef25",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "engineering-project.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/engineering-project.json",
+      "bytes": 5783,
+      "sha256": "ddfecfb4f2eda7dab8f7ee5fd192888b1333d0338047b71efc5a0109fd004df6",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "irsim/name-map.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/irsim/name-map.json",
+      "bytes": 298,
+      "sha256": "10338e69d11ab0dcfbf0d6c606ccac58ee07b305bd658a29d0988f371e6d195e",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "irsim/name-map.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/bundle/irsim/name-map.json",
+      "bytes": 298,
+      "sha256": "10338e69d11ab0dcfbf0d6c606ccac58ee07b305bd658a29d0988f371e6d195e",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "irsim/world.yaml",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/irsim/world.yaml",
+      "bytes": 2671,
+      "sha256": "55a50661163c61d98ab72a90dcf1a9ce0751d862f4c0606acaa6ee3697fae2b2",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "irsim/world.yaml",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/bundle/irsim/world.yaml",
+      "bytes": 2671,
+      "sha256": "55a50661163c61d98ab72a90dcf1a9ce0751d862f4c0606acaa6ee3697fae2b2",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "navigation-model/amr-1.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/navigation-model/amr-1.json",
+      "bytes": 3048,
+      "sha256": "c8de40ede63777f155b37e6df1704a561091a3c7cb47054cdbad15f680278f57",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "navigation-policy.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/navigation-policy.json",
+      "bytes": 1050,
+      "sha256": "7a0a75ed094c57a4c317eaaddf56b8941b6aa14446969c22f0508bc1213b1a83",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "navigation-scene.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/navigation-scene.json",
+      "bytes": 13292,
+      "sha256": "015e5da05119a9ece05022d470fe8c902bdabf4c4802e99d0b3a28dafd6415b9",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "navigation-scene.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/bundle/navigation-scene.json",
+      "bytes": 13292,
+      "sha256": "015e5da05119a9ece05022d470fe8c902bdabf4c4802e99d0b3a28dafd6415b9",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "physical-model/amr-1.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "82817033d23cc4e1d86dc69536acf03f803d0ea9b3af31699004406a8bd4b6b4",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "recipes.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/recipes.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "resolved-assembly.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/resolved-assembly.json",
+      "bytes": 41219,
+      "sha256": "1322124b421cab1fb7ad74c9af7efb51a17d88b4b2b8802f4d68b413494a1bdd",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "robots/amr-1.urdf",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/robots/amr-1.urdf",
+      "bytes": 8857,
+      "sha256": "a1f77b69284b23cca573b493fb497896cf743b508ca6ea5794f0c3d4a58a3688",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "runtime-project.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/runtime-project.json",
+      "bytes": 3003,
+      "sha256": "e1dad47fbe8805b5f0e468659d1da3dc69f3f8e2729eec55ec9150b76f2c7686",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "scene.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/compiled/scene.json",
+      "bytes": 47789,
+      "sha256": "3e13251e27774773e30920d4be6bfa41e655c5f3ba7c874b2de16ca2af690391",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000001-aa96b6ac.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000001-aa96b6ac.ndjson.gz",
+      "bytes": 1523,
+      "sha256": "c9064094e7432dbd464f2cf41d8481b273cfaf905f3003d5b672a8406ef4c3d9",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000002-699fc6f2.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000002-699fc6f2.ndjson.gz",
+      "bytes": 3629,
+      "sha256": "5a0e4b2bb23a72b210e79485dd98a27dfcedda2eb2667cda31ed27cc89a7a871",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000003-7b027e68.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000003-7b027e68.ndjson.gz",
+      "bytes": 2094,
+      "sha256": "dacce81aa6b6b1c8afc0a0a45ad65ae8f7cbea97aa12ceb30865423cc9ba9df2",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000004-ab6dc2d4.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000004-ab6dc2d4.ndjson.gz",
+      "bytes": 3142,
+      "sha256": "9199199975e6593f6cf8292c50b8e5a344ddb7a3ff22d909202ac70a68b8cf78",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000005-cf2dfe35.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000005-cf2dfe35.ndjson.gz",
+      "bytes": 2304,
+      "sha256": "0390a58e14190e0e05221b1fb06474819e77c3c5346fb119cd9e38fb468c7a7f",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000006-19631364.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000006-19631364.ndjson.gz",
+      "bytes": 3103,
+      "sha256": "66ce3710a4a643723c0d8252a3a50ebc9a934c0823a166497e4148563ace3aef",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000007-b95406f4.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000007-b95406f4.ndjson.gz",
+      "bytes": 2878,
+      "sha256": "4ad3c0fa5da0c1270db69402e500972e34a5627a73180de17259a1dca8f437b0",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000008-193cd367.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000008-193cd367.ndjson.gz",
+      "bytes": 2764,
+      "sha256": "0191b192c00a5a2b1045e8bf9709b5cba933d3e2772f4d7cef313dd056958455",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000009-ab76fe67.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000009-ab76fe67.ndjson.gz",
+      "bytes": 3275,
+      "sha256": "9b560f30e32f4e8a3812ff2d98834a893efb320ba7ef6aa1cb8c88eeaebeea8d",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000010-4e5c9834.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000010-4e5c9834.ndjson.gz",
+      "bytes": 3912,
+      "sha256": "0ac35f38fb9894790463de777ddd3000d527b505e4eef1fc14b4a1cb47e7fa0f",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000011-0f9a9b05.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000011-0f9a9b05.ndjson.gz",
+      "bytes": 3638,
+      "sha256": "b6c824d21343082739fdb257191c754414b68aace1b6608fb2aa3cdd82206b84",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000012-44229155.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/control-000012-44229155.ndjson.gz",
+      "bytes": 1935,
+      "sha256": "9f603336e64cf64035f9f8f266a65b779d41e4d7748dd168df55f3b0782a036d",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000001-58c1c888.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000001-58c1c888.ndjson.gz",
+      "bytes": 9880,
+      "sha256": "2845c3f3678587a2db5b66fc1521644612f2fd6e5601698c4537ca9bca049d81",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000002-c6bebf01.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000002-c6bebf01.ndjson.gz",
+      "bytes": 133660,
+      "sha256": "c833c389fa2f30253c8e7802808926a51a1b1ee907c7b14bb180c96f818aa07d",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000003-54ad67a3.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000003-54ad67a3.ndjson.gz",
+      "bytes": 131308,
+      "sha256": "a3b2a7b926a6a011ec36a30ae71134d534277f69bed5bf8850150dd697bbdde3",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000004-50b26ea4.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000004-50b26ea4.ndjson.gz",
+      "bytes": 135579,
+      "sha256": "d3bd4b61d8d3c35991cfd93151e6731b545d34c44e4fc9654b42288a1693a6de",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000005-ad9d8060.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000005-ad9d8060.ndjson.gz",
+      "bytes": 113473,
+      "sha256": "7bddbdcdc9b0948f540b1b0a5125bdbd2dc449df12b3c00b63f11cfa786f1485",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000006-efb1e0dd.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000006-efb1e0dd.ndjson.gz",
+      "bytes": 139806,
+      "sha256": "535182f92608775e57cf07cbdf3031176be19ab9a17b65d6d662122e34d5b9cd",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000007-ce3da043.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000007-ce3da043.ndjson.gz",
+      "bytes": 137257,
+      "sha256": "2f3e101d3ec757cabdc7780db76c9e8a4934eeb2ab1c835f952b3b2ed6cc2ad2",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000008-955d53ff.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000008-955d53ff.ndjson.gz",
+      "bytes": 111349,
+      "sha256": "145921c1ee3b38c893b49ca18c84920f9375bd9216c5688d7ef04931648b9da7",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000009-c457829a.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000009-c457829a.ndjson.gz",
+      "bytes": 136121,
+      "sha256": "65129fdac074f9a109b184b1eecd4292a41e610ef4d741ef10169c96d04ad921",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000010-60014de9.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000010-60014de9.ndjson.gz",
+      "bytes": 139233,
+      "sha256": "07db48db37799f2e7ea030725e40df6759c03a9ab97f88ec0cdb561d6d7f849b",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000011-369fb4d0.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000011-369fb4d0.ndjson.gz",
+      "bytes": 136960,
+      "sha256": "c5472b5a1da0b3f38a7dc342b6acee94d8da977d80ff6741ee6e6f09ebe44dd1",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000012-7bbf793b.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/sensors-000012-7bbf793b.ndjson.gz",
+      "bytes": 81528,
+      "sha256": "f7ca9f81f3653355fe95087f91cb615f9db1f8389585b5939ddc8c3ff2b10f80",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000001-52675f28.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000001-52675f28.ndjson.gz",
+      "bytes": 1605,
+      "sha256": "339d936a81c7b0a6c3537886a8b7d2145f093226fcc8b791f7921e424a06c893",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000002-48b4ed96.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000002-48b4ed96.ndjson.gz",
+      "bytes": 7537,
+      "sha256": "f9f40fecdd09da4caeb53ccf38a0024b55ac810fbad16be6938cfab322aefcce",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000003-c1ad54b8.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000003-c1ad54b8.ndjson.gz",
+      "bytes": 6117,
+      "sha256": "dd0405ff5f3fba1cd8c772cc25ea100b5315aa1b9998942c42d7790fa818423e",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000004-6d829851.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000004-6d829851.ndjson.gz",
+      "bytes": 7491,
+      "sha256": "59e0f1c6d5727c1f63355b9009509194d5326deb1f2ae527ff258b0f84867e64",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000005-c5a6987f.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000005-c5a6987f.ndjson.gz",
+      "bytes": 4092,
+      "sha256": "e00804f50e0fefe5a1afeb2b566b45354e7c43a1d8d2b2d508deb5d4c4373458",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000006-c8b4cef1.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000006-c8b4cef1.ndjson.gz",
+      "bytes": 6496,
+      "sha256": "275cebd12bb0a63bcf08159785267310c1353c74a3eb68caab6e6040cfe6f60a",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000007-f20cb073.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000007-f20cb073.ndjson.gz",
+      "bytes": 8687,
+      "sha256": "25380c5495311950d36457ac119a703a05c4b9500de87feaa4e562f499fa4d0b",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000008-cb7cbd53.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000008-cb7cbd53.ndjson.gz",
+      "bytes": 5228,
+      "sha256": "f79091e5653a355dad341a5595a1a50eeab79126218428c1aec6cb1fdf8df49c",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000009-92289b0f.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000009-92289b0f.ndjson.gz",
+      "bytes": 6890,
+      "sha256": "d7f1e06afa59448106c4fefd1e40a43ac893b83b90242a04261363304a6aca6a",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000010-5200fb8d.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000010-5200fb8d.ndjson.gz",
+      "bytes": 9307,
+      "sha256": "8913ea022e48d818920b16f7d2b4410eefa098cf3161e61930cfe2201e940f2c",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000011-887a13e7.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000011-887a13e7.ndjson.gz",
+      "bytes": 8604,
+      "sha256": "57f9d6684a9d9cf58a3b74517f0f56c1a7cc9ac2fe21dd616583994dce214a2b",
+      "matches": true
+    },
+    {
+      "engine": "irsim_2d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000012-5c129626.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/irsim_2d/run/evidence/trajectory-000012-5c129626.ndjson.gz",
+      "bytes": 3905,
+      "sha256": "240274be5186a91b01ca4def4adcac79b850177e1b77d52cb2fb9f296c76ee7c",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "report",
+      "logicalPath": "report.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/report.json",
+      "bytes": 749375,
+      "sha256": "0de086d0fdcecaeb0024a5f04bf1166c66b4e8af987b64d125b136f8bcfff8ac",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "assets.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/assets.json",
+      "bytes": 3216,
+      "sha256": "0df54cb8bfc5a11ceeab7ad55e01400f844dfa78c9ad014627579233b35eaebe",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "bom.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/bom.json",
+      "bytes": 4889,
+      "sha256": "dd2d251266f4fd7c7259452627bae39d02dc6ac7377486ac7a7d40b385b0ef25",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "engineering-project.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/engineering-project.json",
+      "bytes": 5784,
+      "sha256": "fe65f427f566f44c0caedb9d249b69a27a84105eaa866f6c41da90867558f079",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "navigation-model/amr-1.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/navigation-model/amr-1.json",
+      "bytes": 3048,
+      "sha256": "9716b19d3151ec784de95b998376fac13200aa7b6905763b91d0534faa9c7881",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "navigation-policy.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/navigation-policy.json",
+      "bytes": 1050,
+      "sha256": "7a0a75ed094c57a4c317eaaddf56b8941b6aa14446969c22f0508bc1213b1a83",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "navigation-scene.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/navigation-scene.json",
+      "bytes": 13319,
+      "sha256": "1827c5a8d1c4f83e9d95bc771c1daf1abf22295d3509899596e4f2bd4414ac60",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "navigation-scene.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/bundle/navigation-scene.json",
+      "bytes": 13319,
+      "sha256": "1827c5a8d1c4f83e9d95bc771c1daf1abf22295d3509899596e4f2bd4414ac60",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "physical-model/amr-1.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "physical-model/amr-1.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "recipes.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/recipes.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "resolved-assembly.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/resolved-assembly.json",
+      "bytes": 41219,
+      "sha256": "1322124b421cab1fb7ad74c9af7efb51a17d88b4b2b8802f4d68b413494a1bdd",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "runtime-project.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/runtime-project.json",
+      "bytes": 3003,
+      "sha256": "e1dad47fbe8805b5f0e468659d1da3dc69f3f8e2729eec55ec9150b76f2c7686",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "scene.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/compiled/scene.json",
+      "bytes": 13319,
+      "sha256": "1827c5a8d1c4f83e9d95bc771c1daf1abf22295d3509899596e4f2bd4414ac60",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000001-e15b99bc.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000001-e15b99bc.ndjson.gz",
+      "bytes": 1523,
+      "sha256": "c9064094e7432dbd464f2cf41d8481b273cfaf905f3003d5b672a8406ef4c3d9",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000002-733c3210.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000002-733c3210.ndjson.gz",
+      "bytes": 3940,
+      "sha256": "cd0acad1748575271b4c639e172793d726d36b98da16924c23aa765193db81bc",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000003-6b463773.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000003-6b463773.ndjson.gz",
+      "bytes": 3965,
+      "sha256": "201db21c6fb5cc3a7e39280ec0879cc51e3dda6711425df8934a1c660fcff1bf",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000004-ad8b914c.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000004-ad8b914c.ndjson.gz",
+      "bytes": 4383,
+      "sha256": "e986402d6688776cf54de843ee4568589719a2964c564690f80221a4849fee1e",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000005-4ab9f898.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000005-4ab9f898.ndjson.gz",
+      "bytes": 2868,
+      "sha256": "c495fa2093d180d37607457b57e7d0dd62b96cf45dbed419a60d94382a3d9804",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000006-20efba53.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000006-20efba53.ndjson.gz",
+      "bytes": 3202,
+      "sha256": "ceb14c1f9ce6361737a1749a80b8082ba3302ad1af425b140287b1180d8ae5b9",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000007-9b327b7c.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000007-9b327b7c.ndjson.gz",
+      "bytes": 4544,
+      "sha256": "4a5406d3ce522d2137991b218004ec09aee7cf3aba639f0f80d6022c4bba2155",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000008-e506077d.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000008-e506077d.ndjson.gz",
+      "bytes": 3509,
+      "sha256": "5ef431853be01529b2ae7a26df66bd2102f49227d689faf5aa65121a8a0dde17",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000009-a92b7dcd.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000009-a92b7dcd.ndjson.gz",
+      "bytes": 3257,
+      "sha256": "7d2637966170961291ceed0e6befccac2d7efbd342f506de0913621b566fcaa4",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000010-c3da2596.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000010-c3da2596.ndjson.gz",
+      "bytes": 4583,
+      "sha256": "2ad9dd8b467b68eeaf85b5d21df29f4eba953a71c2ae546af6142a131cb0a719",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000011-823e4339.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000011-823e4339.ndjson.gz",
+      "bytes": 4378,
+      "sha256": "6a6ce77c4e46ad323649ffa65b7595a7848a6658c907a30a55434f96d039f302",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000012-37cbdc88.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/control-000012-37cbdc88.ndjson.gz",
+      "bytes": 3315,
+      "sha256": "e2602361f39baa1d86cd5246d6bf9e0fda26d9c7ee7ac4a27cc2a6bd8d38ecd1",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000001-702d821d.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000001-702d821d.ndjson.gz",
+      "bytes": 23727,
+      "sha256": "1624571f90402cd502d9b6e4e17517b9b4b6d50853754703778eafa999c9a203",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000002-5fe929a0.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000002-5fe929a0.ndjson.gz",
+      "bytes": 134432,
+      "sha256": "468a271319bb1e35fb8ac85be6d026065276a5f39cbfe15a3f496bae4e4e4155",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000003-74b4612b.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000003-74b4612b.ndjson.gz",
+      "bytes": 134556,
+      "sha256": "51bb27a8295a13dc7e6559cad90f93537769b86fbd433655fe46a33fd314d180",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000004-5045d9f3.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000004-5045d9f3.ndjson.gz",
+      "bytes": 137355,
+      "sha256": "99582fc852535e881de53a5aa3b9a129814d08295efd2565e7d12cd6918ef116",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000005-f1e67ee7.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000005-f1e67ee7.ndjson.gz",
+      "bytes": 126570,
+      "sha256": "e3445e039e60fb9153af198741591f09eb5980f3f5966b6d93a0049b78adc2f9",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000006-2e3fca14.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000006-2e3fca14.ndjson.gz",
+      "bytes": 140165,
+      "sha256": "7dde5b3cd78ee302931ccbd33758e9da1c929d922a0a75a60c442c12513b9b85",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000007-2f879086.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000007-2f879086.ndjson.gz",
+      "bytes": 137615,
+      "sha256": "9beb45c122839b3d8257e418ab67ab2b720d8ddc36e3a48fe5b0f2b50cd63eef",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000008-29ca68c2.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000008-29ca68c2.ndjson.gz",
+      "bytes": 126680,
+      "sha256": "29032f8b5ed931f856f19104b9b975f6a2cc442d3f13aa4e153684d8255260d1",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000009-27c0d9ae.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000009-27c0d9ae.ndjson.gz",
+      "bytes": 137020,
+      "sha256": "2fe4991b2bedc4bf6316d88f7deb8e61543396a1288ffc388a42f146f1a10c78",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000010-032f1a62.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000010-032f1a62.ndjson.gz",
+      "bytes": 137799,
+      "sha256": "3e22115c20b3421e9a14e9a3d54bd416d603969551fda8f17a4308f8695fb6a0",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000011-8384fe34.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000011-8384fe34.ndjson.gz",
+      "bytes": 139645,
+      "sha256": "d8105d93e3bba77c5dacf7de84d1a42b36bfddfffd9b4032d1284d84149d76e9",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000012-aeaad7dd.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/sensors-000012-aeaad7dd.ndjson.gz",
+      "bytes": 116473,
+      "sha256": "354aaa45aaaaeca553945cb942e9b741493da50146aac575a229d3660f1e4438",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000001-4e24f085.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000001-4e24f085.ndjson.gz",
+      "bytes": 14395,
+      "sha256": "bc8ec0d0a035fc3a9976b5065f63b20b605de52fd7466b60f0b410472989dffd",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000002-7268ffd9.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000002-7268ffd9.ndjson.gz",
+      "bytes": 19869,
+      "sha256": "c67879c79627dbc6e44a971e18e04351d6539e3d1c236f40f48a9f8972586076",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000003-d7904002.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000003-d7904002.ndjson.gz",
+      "bytes": 15739,
+      "sha256": "c65dbd0db2cefc6a92ee1e55753ba3ef0aa5c12a15229944ce467e6e495c11e8",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000004-83b5a1db.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000004-83b5a1db.ndjson.gz",
+      "bytes": 18992,
+      "sha256": "06eb2b286527d5ad4e8722d506f44dd8031f21366ea6c85a380fcd2053fceeda",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000005-3fbf6824.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000005-3fbf6824.ndjson.gz",
+      "bytes": 19793,
+      "sha256": "a32fc229d225dad4798be5f049ab732ad4ed6ed3ba9a90bcb427d959d977fb35",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000006-f758f598.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000006-f758f598.ndjson.gz",
+      "bytes": 19902,
+      "sha256": "3353e085229c016041c41b3875beff435162769430b9fdde1806c84f9b6672d6",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000007-d43c8997.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000007-d43c8997.ndjson.gz",
+      "bytes": 16932,
+      "sha256": "5b570b9efd499a14481e7d0fa6bbd451cc9862c3079cad00b07f9ec6aba69d99",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000008-7cb5557e.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000008-7cb5557e.ndjson.gz",
+      "bytes": 19588,
+      "sha256": "4974b8a4175cf7630c0ef5e40e3c337a8762759b525a4bcac0954c3e088ae197",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000009-a6211f82.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000009-a6211f82.ndjson.gz",
+      "bytes": 19955,
+      "sha256": "8f2e3e6de77e9a2e091c8daca094ecc325af0d431f6c54d6c0acaffa32e61b4c",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000010-b3e149ad.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000010-b3e149ad.ndjson.gz",
+      "bytes": 20166,
+      "sha256": "a5346863d8f986d8065cfabf9ecf76b4d56c1e251f73caac9e0da888855db6d2",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000011-728173cd.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000011-728173cd.ndjson.gz",
+      "bytes": 18427,
+      "sha256": "134fa8b37defa2a79df176d953cd8f31a1476d8103739d01e121225ace9b6896",
+      "matches": true
+    },
+    {
+      "engine": "webots_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000012-a92640fa.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/webots_3d/run/evidence/trajectory-000012-a92640fa.ndjson.gz",
+      "bytes": 17227,
+      "sha256": "abf90d75ef65c2394a5e06067aa9dad57ae9039ea65f8d20303a838e130b7a26",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "report",
+      "logicalPath": "report.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/report.json",
+      "bytes": 864571,
+      "sha256": "5f063aff8c401615a2a6c88c09d73e3b31ac7cdc84cdd84ce36c2450ef602065",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "assets.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/assets.json",
+      "bytes": 3216,
+      "sha256": "0df54cb8bfc5a11ceeab7ad55e01400f844dfa78c9ad014627579233b35eaebe",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "assumptions.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "assumptions.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "bom.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/bom.json",
+      "bytes": 4889,
+      "sha256": "dd2d251266f4fd7c7259452627bae39d02dc6ac7377486ac7a7d40b385b0ef25",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "canonical-physical-model.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "canonical-physical-model.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "cell-layout.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "cell-layout.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "drive-contact-profile.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "drive-contact-profile.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "empty.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/empty.json",
+      "bytes": 1479,
+      "sha256": "93b12965a96bdbf8fa7f26fa65a4a968879927129069ccb50a32765ad30a0b9a",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "empty.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/bundle/empty.json",
+      "bytes": 1479,
+      "sha256": "93b12965a96bdbf8fa7f26fa65a4a968879927129069ccb50a32765ad30a0b9a",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "engineering-project.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/engineering-project.json",
+      "bytes": 5824,
+      "sha256": "7f37ce2f85f4df8a656f3775519c43975359106e7861c77dd3a5ddd02f564c91",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "mobile-controller-policy.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "mobile-controller-policy.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "mobile-stop-policy.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "mobile-stop-policy.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "navigation-model/amr-1.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/navigation-model/amr-1.json",
+      "bytes": 3048,
+      "sha256": "a7e89706d2bfb3a999af30ec55873b05b06c99c091b7d5ef50f172d3bec015a7",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "navigation-policy.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/navigation-policy.json",
+      "bytes": 1050,
+      "sha256": "7a0a75ed094c57a4c317eaaddf56b8941b6aa14446969c22f0508bc1213b1a83",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "navigation-scene.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/navigation-scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "navigation-scene.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/bundle/navigation-scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "physical-model/amr-1.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9d935e14f2c17b941dff819021116bde5293d8765974cf9c3c2defbda956c402",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "physical-model/amr-1.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9d935e14f2c17b941dff819021116bde5293d8765974cf9c3c2defbda956c402",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "recipes.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/recipes.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "resolved-assembly.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/resolved-assembly.json",
+      "bytes": 41219,
+      "sha256": "1322124b421cab1fb7ad74c9af7efb51a17d88b4b2b8802f4d68b413494a1bdd",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "runtime-project.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/runtime-project.json",
+      "bytes": 3003,
+      "sha256": "e1dad47fbe8805b5f0e468659d1da3dc69f3f8e2729eec55ec9150b76f2c7686",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "scene.json",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/compiled/scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000001-59c9de90.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000001-59c9de90.ndjson.gz",
+      "bytes": 1523,
+      "sha256": "c9064094e7432dbd464f2cf41d8481b273cfaf905f3003d5b672a8406ef4c3d9",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000002-5345df57.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000002-5345df57.ndjson.gz",
+      "bytes": 3695,
+      "sha256": "dc9a57cfbc24dc2f4efc65f1b2e1d14d01cfa58bd92e68e9d2d550265c586d7e",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000003-4716dcec.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000003-4716dcec.ndjson.gz",
+      "bytes": 4301,
+      "sha256": "6988511364d8d4fb5bc55d32bdee767025c56a3543cd662f522d6cdff3b41dcd",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000004-aa32acd1.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000004-aa32acd1.ndjson.gz",
+      "bytes": 4198,
+      "sha256": "6890e8f1b8caf462bf869e5296ed467c269aa823b98b668abc4f73ed9eb11329",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000005-7dcd0da2.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000005-7dcd0da2.ndjson.gz",
+      "bytes": 2669,
+      "sha256": "df2c39edfc116b4a9a6a85fb12624ced88a9c7e8bbedaf4a17acd41d7f762230",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000006-fd914999.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000006-fd914999.ndjson.gz",
+      "bytes": 2187,
+      "sha256": "1a0c48c58ed4f0c22ca35ee9f2a8897e885933d265477e63e4b73ce895a8c8c7",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000007-76fcb3fa.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000007-76fcb3fa.ndjson.gz",
+      "bytes": 3091,
+      "sha256": "2a4536026363a18594b0e5cd48a07ee53fff84c7f44e5c8e35ae3c838c57c537",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000008-75f89407.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000008-75f89407.ndjson.gz",
+      "bytes": 4549,
+      "sha256": "605c47e54f87e4050539d9a2a053c055f0a09cee8f2c9820da51d6bae1c071c7",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000009-046fcae4.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000009-046fcae4.ndjson.gz",
+      "bytes": 3466,
+      "sha256": "6ef6decf565f8b9ae014c765f7efc6b13434ecf2198c5e3eb215fab6c26af6c0",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000010-a333ccdd.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000010-a333ccdd.ndjson.gz",
+      "bytes": 2337,
+      "sha256": "575f0ac6fbd60d0e1abf93e514d37ff3760b0ab34c72755b58d0653f25420791",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000011-fd26b5b2.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000011-fd26b5b2.ndjson.gz",
+      "bytes": 3929,
+      "sha256": "cf479f33d1d8d98eec4e6ede9551d8d9cb8cedb12b8b5c33dae342668b5ce0c9",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000012-8ba3a4dd.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000012-8ba3a4dd.ndjson.gz",
+      "bytes": 4314,
+      "sha256": "4a1ecba592245728d968d6daf2a2890317d83bf117b0fbc7729c25775ac6d26f",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000013-9417b0c2.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000013-9417b0c2.ndjson.gz",
+      "bytes": 4286,
+      "sha256": "d328cd08383a9c0f50f9e3efcafef8f72466fd4dbd399adcbc5fff2d23fa3a67",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/control-000014-4df0d653.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/control-000014-4df0d653.ndjson.gz",
+      "bytes": 2757,
+      "sha256": "a8c73e88925dfe8f52e79ca3738776c115b75c7a5ffac52977fc4cd29549545e",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000001-7dc75acd.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000001-7dc75acd.ndjson.gz",
+      "bytes": 35336,
+      "sha256": "d31904b46013bc002088af65587f786943ead7e266c349da1fdf92bad55d4387",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000002-6ff0c4fd.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000002-6ff0c4fd.ndjson.gz",
+      "bytes": 139292,
+      "sha256": "bec8bb7951d701f13a640492ef3753489dd6c53a5668c96c6af8ca330316e424",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000003-9f14b211.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000003-9f14b211.ndjson.gz",
+      "bytes": 143116,
+      "sha256": "0dff6b1561a0f64648b12cdad2194c66de47776ee63f57baf646c607d62add6a",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000004-70f0ed93.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000004-70f0ed93.ndjson.gz",
+      "bytes": 143632,
+      "sha256": "3f4ba141d59762ae524ad9fdf52ff1eae807a54fc427ab64e51b81431d6772de",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000005-9cb19c56.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000005-9cb19c56.ndjson.gz",
+      "bytes": 134023,
+      "sha256": "ac2fa738eb01f0cad44b21d447a81f01ee0bc077a964596f1ece3a0da5fb7456",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000006-ca2d0860.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000006-ca2d0860.ndjson.gz",
+      "bytes": 144246,
+      "sha256": "87bdf18cf4a11f51e79739d3f18e0f02b4d8edbc9a231ddc40f61ce1efb6713b",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000007-e8efa337.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000007-e8efa337.ndjson.gz",
+      "bytes": 144276,
+      "sha256": "2711f6eb9f1d2f75457570b085ff8bd9c5f2922a21b2977243d2f64629b5cea4",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000008-e2e43b43.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000008-e2e43b43.ndjson.gz",
+      "bytes": 143116,
+      "sha256": "7bad14ab111ce4133a45b1c6bad5e019dfc90e33ef3675a0d1bc37dbad500cfa",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000009-14cf05bf.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000009-14cf05bf.ndjson.gz",
+      "bytes": 131046,
+      "sha256": "340c8034adfcbb3ba268357a266f2cfded51e4cd4f6c5da403abf19751e053f0",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000010-61d91ced.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000010-61d91ced.ndjson.gz",
+      "bytes": 140737,
+      "sha256": "6f380030bbfefc800fa04ba243cf4360f3ed2812cbbfd1674c6d30d2703b5a45",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000011-c64ea5d2.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000011-c64ea5d2.ndjson.gz",
+      "bytes": 140180,
+      "sha256": "470084f5092cd23ad52ee234b655cce3db8bbe9d63e755e21e50bc8963590070",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000012-64c2a4b6.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000012-64c2a4b6.ndjson.gz",
+      "bytes": 144082,
+      "sha256": "87b151af8fc0ee78f13ade95b2ccbbbbedb96edff49e474d085ac9f94ac428f7",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000013-aaa21858.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000013-aaa21858.ndjson.gz",
+      "bytes": 143092,
+      "sha256": "d2071c6aa2af332535a28ee76396ec5d44f66f77bf7e2dd965a8d11c67ecb0ac",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/sensors-000014-d9dccb1a.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/sensors-000014-d9dccb1a.ndjson.gz",
+      "bytes": 114347,
+      "sha256": "b791a4e8eccd8083e4f138549436505d28b0e83128cec8e727cbd00c209070c6",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000001-e1f260b3.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000001-e1f260b3.ndjson.gz",
+      "bytes": 16370,
+      "sha256": "b9f0aabe159737abd16aee758f6e5e989d5e246e7dc42f3283081da6c38d602d",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000002-793d7e55.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000002-793d7e55.ndjson.gz",
+      "bytes": 21099,
+      "sha256": "d8d263c1e1bfc30ff9da97ee22f820090012d1cbcc5875306e8e26fee5eab801",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000003-4ccc7e80.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000003-4ccc7e80.ndjson.gz",
+      "bytes": 20844,
+      "sha256": "1c6f19ac5b983431232dc2d2d3df7860a129b838e412564b755cbe1a54f07987",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000004-f98b52c0.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000004-f98b52c0.ndjson.gz",
+      "bytes": 20973,
+      "sha256": "42cddb128e52a5024393210426242a06b3c60b55ac58670680879e72d7b73654",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000005-8c2c0b75.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000005-8c2c0b75.ndjson.gz",
+      "bytes": 20489,
+      "sha256": "50a450f1d731c099f1bee0abc1b4fda3bbacd1cadd2ea5f2b0d32149d920b641",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000006-249f9a50.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000006-249f9a50.ndjson.gz",
+      "bytes": 21032,
+      "sha256": "d7c2ed047817c3beb634ec42d9f98577a6dfb701982edcc19a4e7b45a7a4ad45",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000007-dff59a41.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000007-dff59a41.ndjson.gz",
+      "bytes": 21022,
+      "sha256": "ffd1674ba6e3b5da1d7fa43a44a0fa21d79300094756fb16800fbec182f3e531",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000008-cc2cbedc.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000008-cc2cbedc.ndjson.gz",
+      "bytes": 21291,
+      "sha256": "68096cd197506e6471244322ba1a4c1c640652394068985246a6b93d7c901434",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000009-489952ce.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000009-489952ce.ndjson.gz",
+      "bytes": 20634,
+      "sha256": "6c7f4fbfb3794a895064a9396673a24bf4bcd303bcd505c6fb6cac69d6f8629c",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000010-01bc4af5.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000010-01bc4af5.ndjson.gz",
+      "bytes": 21097,
+      "sha256": "fb65bf34b93404d054a9d72e238a8553a61fa3f4282a017d56ca52633f4a4d9b",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000011-449cf009.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000011-449cf009.ndjson.gz",
+      "bytes": 21140,
+      "sha256": "1f93587ae0854956163ce5ef1d974d01ec537d97094e0226c4d6cbd9e3c2c985",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000012-3a0bdf20.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000012-3a0bdf20.ndjson.gz",
+      "bytes": 21289,
+      "sha256": "01ace41cd7965544eaea7e094811976d1bbecc2fc02382b346fe4e478f691330",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000013-38dce6d8.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000013-38dce6d8.ndjson.gz",
+      "bytes": 21427,
+      "sha256": "d57641d305274d91f0ae09a579dbd54fe5805b45f1ed83a6e727b918b1bb27ab",
+      "matches": true
+    },
+    {
+      "engine": "mujoco_3d",
+      "kind": "asset",
+      "logicalPath": "evidence/trajectory-000014-86ee8e60.ndjson.gz",
+      "file": "/tmp/mekoniq-b08-x01-final-709a797-20261115-0110/mujoco_3d/run/evidence/trajectory-000014-86ee8e60.ndjson.gz",
+      "bytes": 17387,
+      "sha256": "64953532880d22c8b09ccba072626dd794f275297d0b9467f95f15b59617a7cf",
+      "matches": true
+    }
+  ],
+  "issues": [],
+  "accepted": false
+}

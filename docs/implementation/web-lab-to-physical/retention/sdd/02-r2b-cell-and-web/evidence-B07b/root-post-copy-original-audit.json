@@ -1,0 +1,12 @@
+{
+  "scope": "read-only original file-byte audit after copied diagnostic; no SQLite opened, no native execution",
+  "inputInventory": "/tmp/b07b-evidence/complete-export-focused/copy-identity.json",
+  "original": "/tmp/b07b-native-production-i9dvxF",
+  "runId": "22d2d1bc-1a3c-4582-8302-3c3191e273a6",
+  "verifiedFiles": 67,
+  "bytes": 17427298,
+  "mismatches": [],
+  "unexpectedFiles": [],
+  "symlinks": [],
+  "copyOnlyExceptionPath": "3f0292e4-291a-4569-ad70-1d79b798e4b5/reclaim.json"
+}

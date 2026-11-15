@@ -1,0 +1,115 @@
+{
+  "source": "2f4837d10d746a7c8c5e5ca5675ec57db4111c28",
+  "lab": "69032d509cc94b178102c386ddf82280996cf74e",
+  "clean": true,
+  "historicalSubject": {
+    "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+    "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+    "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
+    "portableClosureHash": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+    "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+    "id": "r2a-4f893ac-linux-amd64",
+    "executionKind": "mujoco_image",
+    "profileSha256": "148afd50b392d9ab05845018a35cc5cc2c02e45d77e76bca0a64612670400263",
+    "nativeClosureHash": null,
+    "image": null
+  },
+  "preparer": {
+    "sourceCommit": "2f4837d10d746a7c8c5e5ca5675ec57db4111c28",
+    "toolSha256": "72a14a2899f91fa54c4b43bbbb925af6853589e1603d5cf88dd6ab87916b865d"
+  },
+  "independentChecker": {
+    "sourceCommit": "2f4837d10d746a7c8c5e5ca5675ec57db4111c28",
+    "toolSha256": "c90b022a4b56d7b584d5aff3e3d705db85e47fe651f03662736048c799db437b"
+  },
+  "probeObserver": {
+    "sourceCommit": "2f4837d10d746a7c8c5e5ca5675ec57db4111c28",
+    "toolSha256": "93b29e7e8907b9908cab6ddda3c38c9c084a959c052c4836f99aa7080804b2b8"
+  },
+  "manifestSha256": "76f3a4fda8ef1b7c21695d1f261ce6a9d08758e401d0beb5be21883783547e30",
+  "refsChecked": 184,
+  "payloadBytes": 9648529,
+  "originalPortableEntriesAccounted": 179,
+  "currentRuntime": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "2f4837d10d746a7c8c5e5ca5675ec57db4111c28",
+    "schemaHash": "07e01e8efb146fb50b8c68eebfa27d989ee07d4e80bcdb796639e3c2aaa42068",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "7941fee45b37560d2d38b22bc54f870ec47401c6203d2414ccbea36bea6ce54d",
+    "entrypoint": "runtime.mjs",
+    "portableToolsDigest": "4ba424081c04ba0f532c069047bf244a99385edd09ca9df347cfb45fe6d22e6e"
+  },
+  "currentExportManifest": {
+    "sha256": "c00ca9a38042f138ebe49a8025e7322c53f70d8489653f77034f2e7fe03ae867",
+    "bytes": 67017
+  },
+  "currentCacheManifest": {
+    "sha256": "a41ac968f9d5ff67b336be815c8279a74d51713bef0a3472e792447092347d49",
+    "bytes": 88166,
+    "parsedJsonEqualToExport": true
+  },
+  "notRunRecord": {
+    "path": "/tmp/mekoniq-L01-preparation-g53avI/native-not-run",
+    "manifestSha256": "be5a3ed01296bcafdf1f98137e202b9d476c609b8726abf6468acc95e582ed7a",
+    "cases": [
+      "m00-1",
+      "m00-2",
+      "m00-3",
+      "m00-4",
+      "m00-5",
+      "m00-6",
+      "m00-7",
+      "m00-8",
+      "m00-9",
+      "m00-10",
+      "mj-bv01-7",
+      "mj-bv01-42",
+      "mj-bv01-99",
+      "bad-state",
+      "worker-loss",
+      "long-run"
+    ],
+    "status": "not_run",
+    "artifactsChecked": 187
+  },
+  "packages": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-298db9b..2f4837d.diff",
+      "base": "298db9bdbc207b14bdbef78ec8d70adf4e901c71",
+      "head": "2f4837d10d746a7c8c5e5ca5675ec57db4111c28",
+      "bytes": 151085,
+      "sha256": "edd72cddd272750ee7b2a73c7dbcecfda4355c4b236b6270c8651a9a02517e4a"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-7698aa6..69032d5.diff",
+      "base": "7698aa628fc9a60598d1337b292bdcec2fe91fdc",
+      "head": "69032d509cc94b178102c386ddf82280996cf74e",
+      "bytes": 3528,
+      "sha256": "692fbba0156def6c7ec74c505d411059841c3be2b133114d9c585cb67904d4c8"
+    }
+  ],
+  "report": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-report.md",
+    "bytes": 16463,
+    "sha256": "bee7eda7120cebc3afea510c2947dccedc8a56ac7ea9e0f1a9c1652a6de82912"
+  },
+  "auditCorrections": [
+    "Initial root audit incorrectly equated preparer and independent checker short digests; focused code read and corrected recomputation confirm three intended tool scopes.",
+    "Second root audit incorrectly required byte-identical current export/cache manifest formatting; parsed JSON is exactly equal, cache is pretty-printed. Runtime bytes are exactly equal.",
+    "Schema sourcePath basenames normalized to packages/contracts/schemas for declared closure membership."
+  ],
+  "limitations": [
+    "Read-only byte/identity and declared closure membership audit, not semantic/native execution or host/image authenticity.",
+    "Final report discloses intermediate AJV/schema diagnostics not retained in standalone raw logs; no regenerated history claimed.",
+    "Actual image/engine/host prerequisites and all16nativecases remain not_run; currentR2b adapter remains required B10 tooling."
+  ]
+}

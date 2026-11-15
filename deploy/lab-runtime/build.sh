@@ -15,6 +15,7 @@ here=$(cd "$(dirname "$0")" && pwd); root=$(cd "$here/../.." && pwd)
 commit=$(git -C "$root" rev-parse HEAD)
 ctx=$(mktemp -d); trap 'rm -rf "$ctx"' EXIT
 node "$root/scripts/export-lab-runtime.mjs" "$ctx/export" >/dev/null
+node "$root/scripts/build-r2b-campaign.mjs" "$ctx" "$ctx/export"
 mkdir "$ctx/robotics"
 cp "$ctx/export/runtime.mjs" "$ctx/runtime.mjs"; cp -R "$ctx/export/schemas" "$ctx/schemas"; rm -rf "$ctx/export"
 # only the MuJoCo tool root, as committed, without its tests
@@ -22,5 +23,7 @@ git -C "$root" archive HEAD robotics/simulation-mujoco | tar -x -C "$ctx" --excl
 node "$here/prepare-catalog.mjs" "$ctx/robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-components.json" "$ctx/catalog"
 cp "$here/Dockerfile" "$ctx/Dockerfile"
 printf '%s\n' '**/__pycache__' '**/*.pyc' '**/tests' '**/.git' '**/.env*' > "$ctx/.dockerignore"
-docker build ${platform:+--platform "$platform"} --build-arg "SOURCE_COMMIT=$commit" -t "$tag" "$ctx"
+package_sha=$(shasum -a 256 "$ctx/r2b-campaign-package.json" | cut -d " " -f 1)
+bundle_sha=$(shasum -a 256 "$ctx/r2b-campaign.mjs" | cut -d " " -f 1)
+docker build ${platform:+--platform "$platform"} --build-arg "SOURCE_COMMIT=$commit" --build-arg "R2B_CAMPAIGN_PACKAGE_SHA256=$package_sha" --build-arg "R2B_CAMPAIGN_BUNDLE_SHA256=$bundle_sha" -t "$tag" "$ctx"
 echo "built $tag from $commit"

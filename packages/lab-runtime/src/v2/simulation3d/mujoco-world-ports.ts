@@ -34,7 +34,7 @@ import type {WorldPortsFactory,WorldTickCommand} from './world-ports';
 
 const worldProofs=new Map<string,{fixtureDigest:string;valid:boolean}>();
 export const verifiedWorldRun=(runId:string,fixtureDigest:string)=>{const p=worldProofs.get(runId);return !!p?.valid&&p.fixtureDigest===fixtureDigest;};
-export function mujocoWorldPorts(runtime:MujocoRuntimeOptions):WorldPortsFactory{return async input=>{
+export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawnMujocoWorker=spawnMujocoWorker):WorldPortsFactory{return async input=>{
  const set=defaultCatalog.sets[input.manifest.backendSetId],workflow=set?.execution?.composition==='single_world'&&set.scenarioIds?.includes(input.manifest.scenarioId)===true;
  if(!workflow)throw Error('WORLD_SCENARIO_UNSUPPORTED');
  if(runtime.physicsOverride||runtime.padFrictionOverride!==undefined||runtime.armExtraStatics)throw Error('WORLD_PROFILE_OVERRIDE_UNSUPPORTED');
@@ -58,7 +58,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions):WorldPortsFactory
   const bundle=join(input.directory,'mujoco-world','bundle');await mkdir(bundle,{recursive:true,mode:0o700});
   for(const [name,b] of files){const path=join(bundle,name);await mkdir(dirname(path),{recursive:true});await writeFile(path,b);}
   await writeFile(join(bundle,'lab-world-scene.json'),JSON.stringify(scene));
-  worker=await spawnMujocoWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:input.runId,bundleRoot:bundle,runDirectory:join(input.directory,'mujoco-world','run'),lockDigest:runtime.lockDigest,schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...runtime.onRequestTiming?{onRequestTiming:runtime.onRequestTiming}:{},...runtime.entry?{entry:runtime.entry}:{}});
+  worker=await spawn({python:runtime.python,workerRoot:runtime.workerRoot,runId:input.runId,bundleRoot:bundle,runDirectory:join(input.directory,'mujoco-world','run'),lockDigest:runtime.lockDigest,schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...runtime.onRequestTiming?{onRequestTiming:runtime.onRequestTiming}:{},...runtime.entry?{entry:runtime.entry}:{}});
   let requests=0,engineTick=0,failed=false,sent=false,durableTick=-1,pending:WorldTickCommand|null=null,decisions:Decision[]=[],last:Sim3DSnapshotV1,observing:Sim3DSnapshotV1|undefined;
   const ask=async(op:string,payload:unknown)=>{const r=await worker!.request({protocol:'mekoniq-sim3d/1',requestId:`world-${++requests}`,runId:input.runId,expectedTick:engineTick,op,payload} as Parameters<NonNullable<typeof worker>['request']>[0]);if(!r.ok)throw Error(r.error.code);return r.result as Sim3DSnapshotV1;};
   last=await ask('create',{sceneRef:'lab-world-scene.json',seed:input.manifest.seed});validateWorldObservation(last,scene,[]);await ask('start',{});

@@ -20,5 +20,7 @@ if (suite === 'load') {
   args.splice(0, args.length, free ? 'tests/acceptance/supabase-free-capacity.test.ts' : 'tests/acceptance/load-budget.test.ts');
 }
 const command = suite === 'e2e' ? ['playwright','test'] : ['vitest','run'];
-const child = spawnSync('pnpm', ['exec', ...command, ...(args.length ? args : [`tests/${suite}`])], {stdio:'inherit'});
+// One color policy for child runners; historical logs retain their original warnings.
+const runnerEnv={...process.env};if(runnerEnv.NO_COLOR!==undefined)delete runnerEnv.FORCE_COLOR;
+const child = spawnSync('pnpm', ['exec', ...command, ...(args.length ? args : [`tests/${suite}`])], {stdio:'inherit',env:runnerEnv});
 process.exit(child.status ?? 1);

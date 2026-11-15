@@ -1,0 +1,1137 @@
+{
+  "schema": "controller-native-handoff-byte-audit/1",
+  "source": "eeea18db88485e113aafe1cc15edd7f75ced2b66",
+  "lab": "e8577a5b7f4f6b615aa333b3f86126d06e1f0c05",
+  "clean": true,
+  "handoff": "/private/tmp/mekoniq-L01-fix1-isolated-preparation-1sLaHG/handoff",
+  "manifestSha256": "f8e4755506ffb36bc2cd93dddbbe2ff96eb81e0e1d3aed8e681cf042c1a53dac",
+  "subject": {
+    "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+    "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+    "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
+    "portableClosureHash": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+    "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+    "id": "r2a-4f893ac-linux-amd64",
+    "executionKind": "mujoco_image",
+    "profileSha256": "148afd50b392d9ab05845018a35cc5cc2c02e45d77e76bca0a64612670400263",
+    "nativeClosureHash": null,
+    "image": null
+  },
+  "checker": {
+    "sourceCommit": "eeea18db88485e113aafe1cc15edd7f75ced2b66",
+    "toolSha256": "abb467b33ad9011efbf3867e3ce6fd91aa080f8763e7be03736749a540f6a378"
+  },
+  "allRefsChecked": 184,
+  "payloadBytes": 9648529,
+  "refs": [
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/algorithm-result-v1.schema.json",
+      "bytes": 1665,
+      "sha256": "3f8e662764289df06a6024d538e27c4b238830d731fa3e6cd42a35aace477842"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/arm-cell-scene-v1.schema.json",
+      "bytes": 5768,
+      "sha256": "c5acf75b8194cb306fee9714c2b9f3e24d1d55b7851b507c249607731f38901e"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/arm-command.schema.json",
+      "bytes": 10216,
+      "sha256": "d0651b4c2b6426e61959d79256375de4b6694fa1def29d906bfacfec51f3089e"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/arm-observation.schema.json",
+      "bytes": 19608,
+      "sha256": "ac79ea556862be1d1de4366a96c5f889179f7ac9e0ffa6847c803fab6914336e"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/arm-scene-3d-v1.schema.json",
+      "bytes": 4374,
+      "sha256": "5ce0150cfbcb61c0da229d8fccb15812500bbd4c80b236e7af3945bb20df5255"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/asset-manifest.schema.json",
+      "bytes": 181,
+      "sha256": "df1bb9f365c767f9ae2cc3108a54162fa3fa2bd05cb78e1b7b700147fe4829b8"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/asset-revision.schema.json",
+      "bytes": 8139,
+      "sha256": "ff741ad719244d9f16cd971b9fc8dc4e9a9462270e130cfd6f89f679c741721d"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/authority-provision.schema.json",
+      "bytes": 208,
+      "sha256": "2e1da90406d1c13452f41788346f819960d614506d0f1ec0b2ac9390c2390b3b"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/cell-command.schema.json",
+      "bytes": 20421,
+      "sha256": "45d327b86a8b7afd2cf482caf7a6cd552f8958fd597d9355866a17b6def8a7be"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/cell-observation.schema.json",
+      "bytes": 1986,
+      "sha256": "79282ad4053a8b600929ce6e6706d6a371ee3a4595c8f1b3bf78a01eae6db616"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/coffee-recipe.schema.json",
+      "bytes": 9624,
+      "sha256": "e9ff88cb242ea4dad6beeea5e75f33601b40a411590a88ce8a72c17f07a53873"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/command.schema.json",
+      "bytes": 178,
+      "sha256": "98c4b1b65f35902a716ef4edabd0c0df9b4d1c9a4cf3867ffa8731290a201313"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/commit-batch.schema.json",
+      "bytes": 175,
+      "sha256": "7e8695e3d7a2617955b769267b515eac6308b534379d117380e520ad613b1c8b"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/engineering-bundle.schema.json",
+      "bytes": 23448,
+      "sha256": "11cb042eefd50874c6933edbdc4eccb559a433075eba5efb042c39f4781374ea"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/engineering-calibration.schema.json",
+      "bytes": 9378,
+      "sha256": "b4758ae46ca512a01ca917b7824659198c5f8bed4d4b23d76ecf8a69dd9fa90f"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/engineering-candidate.schema.json",
+      "bytes": 3345,
+      "sha256": "95db9205a1cef4aea9d5eb5458d4d4a50fff6e5358c3098d1c842aaf78938427"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/engineering-component.schema.json",
+      "bytes": 24517,
+      "sha256": "5e535859cfe6afa3f04fd46d137370b3b6d776762a657ba957f5c5ad041eae55"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/engineering-evidence.schema.json",
+      "bytes": 9358,
+      "sha256": "faaef3034432a8c21f3187b512fa1097c41e1721c9af30556033b3a59a958e7e"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/engineering-project-archive.schema.json",
+      "bytes": 2470,
+      "sha256": "bb8c52729792f85b7b274684bc645da2e345440161a81da55e7fbadfd0e985af"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/engineering-project.schema.json",
+      "bytes": 3684,
+      "sha256": "62b215bea19e65d7b0716beb6e49741d0651d3a602716913a76544d66ad3d1d8"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/grant-return.schema.json",
+      "bytes": 185,
+      "sha256": "358827d5aceaa449a3784d0b13db45dd87dcd5694befc51dfd4d14d3831c9494"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/irsim-worker-v1.schema.json",
+      "bytes": 18478,
+      "sha256": "fa0dd48a828f4c38327af0c49fa9104ed4798a879ca2fe8f1f5498ba8d44d1f6"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/journal.schema.json",
+      "bytes": 172,
+      "sha256": "ba4b8962bbad02633eb49ad239beb926ed18de35612028357ac01019b293844b"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-action-v2.schema.json",
+      "bytes": 9066,
+      "sha256": "75c0d8380699e5e9120505a45d47221cc37f2e687631d910bffaf5a6f7680c1f"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-arm-collision-evidence.schema.json",
+      "bytes": 8628,
+      "sha256": "f9dec2ad4b6f372a9d82a3f2bad5a6ad42c6aad7c7c1d495cd31a074e50fd8ee"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-deployment.schema.json",
+      "bytes": 13270,
+      "sha256": "12d180b9c8c4dca598fd8711d1ecde913674726c86535871b4a8e7d9e4e98679"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-evidence-v2.schema.json",
+      "bytes": 4569,
+      "sha256": "b9ebf24647539f91a6b9d112210282f46f5d568a739be77603b9ff19ef1c77e3"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-fault-schedule.schema.json",
+      "bytes": 1582,
+      "sha256": "bdfac85d58c0b0887ad9cda85d3881480039a81a5d6226a55e5f5738db5e1062"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-project-v2.schema.json",
+      "bytes": 10046,
+      "sha256": "29737e456a2fc664d174e03c4dc501a369341d893ef7f9e0a099e15a5a77bd22"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-project.schema.json",
+      "bytes": 4638,
+      "sha256": "d6dda9f63e3ded3421004444a64a32cb0b7d4ccf1e139901ebc76c8e021a97ea"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-run-v2.schema.json",
+      "bytes": 4928,
+      "sha256": "92d6815dd639c05752dfe6f987abe87bce17ed713a8a4962d873d7b7b5f75c8f"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-run-verification.schema.json",
+      "bytes": 3619,
+      "sha256": "0ec157ef4060da1447992256d7c71d463d3b5835ef758dc5420524d59cafe90d"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-run.schema.json",
+      "bytes": 2573,
+      "sha256": "f2063867b11ee8e144cfe9f0785cb39fc5622e3dc2c9f060780fba851d139059"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/lab-transfer-evidence.schema.json",
+      "bytes": 6258,
+      "sha256": "67e41979a78821556ce0fbdd0ec71336e3a146655ea016d6e38e1994faacab15"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/model-validation-report-v1.schema.json",
+      "bytes": 6172,
+      "sha256": "4b1c8a3cfa70e6f65688c87c265a51d2b74b1ea9c4c01ef94988f2be69bff314"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/money.schema.json",
+      "bytes": 156,
+      "sha256": "b0ed9c5f9681da5fe247795bab29d77a72a8779d49cacbe4f8e48cf6f26db383"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/navigation-model-2d-v1.schema.json",
+      "bytes": 6499,
+      "sha256": "2b35b6d79bd21cc9b1d16bf7ddd49c27d051267c90d60f7ba39118a6044ac119"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/navigation-run-evidence-v1.schema.json",
+      "bytes": 20962,
+      "sha256": "2ca60c0c80a18b7e606ed7f6f7177bbb9e8e5e881bccd98dfc7255dccb07a511"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/navigation-scene-v1.schema.json",
+      "bytes": 15113,
+      "sha256": "28f60f3d6b39583e6d395f87864cc904d39f77e48689ea06efe6539387b3ff95"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/offline-grant.schema.json",
+      "bytes": 190,
+      "sha256": "a3d48413cbdb9a5ed793f3633e7a4e5a73b30359c2974019a251a4eb70251bb8"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/ownership-grant.schema.json",
+      "bytes": 184,
+      "sha256": "f495946471e5ad00b01e70257f0b7974fef6640749cbb8231626a3148e7704e3"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/pairing-grant.schema.json",
+      "bytes": 190,
+      "sha256": "d36ef1da07f93cac9c30000da20bf89d80e9731f7d51c9b543fdf0a8db25b8e9"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/robot-command.schema.json",
+      "bytes": 178,
+      "sha256": "9a39142ea1cbc4087dc04fc4af2204e6431e826d33d82321375b0206d985bc06"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/robot-manifest.schema.json",
+      "bytes": 181,
+      "sha256": "63660819ee65df2ff0d005ddcc61fdd34dcfde116cbd586677487655507953f5"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/robot-physical-model-v1.schema.json",
+      "bytes": 6793,
+      "sha256": "3ff41bbf5b4c57dc66cbfa0e64556704a6a5ab5e6473b095b7ceb45dec8cb6ab"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/settlement-grant.schema.json",
+      "bytes": 187,
+      "sha256": "3b82f3ac830b6fe6a542cd3de54ab75a9ca96f9923e580105892004837c1ba4b"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/sim3d-worker-v1.schema.json",
+      "bytes": 29632,
+      "sha256": "094725811f6d2d160aca23ab4456776d1bc3597638044f62ff27a37fb36a8830"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/sync-ack.schema.json",
+      "bytes": 163,
+      "sha256": "cec00df823d37bb6d1503721d95b68032d9c85da6df01e9d32d1c410e4a922e5"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/twin-sample-v2.schema.json",
+      "bytes": 12423,
+      "sha256": "a229356dec024a4518b5035540cb24641094ee1126c3efc79262c8de7e01e26b"
+    },
+    {
+      "kind": "schema",
+      "path": "subject/packages/contracts/schemas/wire.schema.json",
+      "bytes": 49136,
+      "sha256": "4e0985c9db08871ddca853774c18bf4ef2f3f7fed6affed9654c50b0eddfb523"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/README.md",
+      "bytes": 2273,
+      "sha256": "66028b76471be044ea11a095847a60af17a1c10b6934bb04fdfe5b9306c170be"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/algorithm_checks/__init__.py",
+      "bytes": 2420,
+      "sha256": "27f98b5959c9172491757485ac4f48bf2bb303c7624c101d2fe51badb0795ef9"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/algorithm_checks/__main__.py",
+      "bytes": 27,
+      "sha256": "b9bb7a5f266f707c1d8c243dd01fd4e0c78ffb760976ecf9196502f723a092b8"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/algorithm_checks/errors.py",
+      "bytes": 124,
+      "sha256": "83181321bb197535c14ccea5708f08a9b1ff70a7645d8ad6134bedc252c770de"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/algorithm_checks/kinematics.py",
+      "bytes": 4040,
+      "sha256": "b7940ee70eb13b6f74ba31c68b5cb099d5ebd00eda355370b4eaa0d0bd43888c"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/algorithm_checks/pid.py",
+      "bytes": 4240,
+      "sha256": "7e47d79b23c2cf0893a554bf87eaabd99a2507af846abc7ee3d66703fc404d73"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/licenses.json",
+      "bytes": 4513,
+      "sha256": "2a9da78740522e9eb0a5522d4541979975a991f4e03658c80fb390f75a43bb1e"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/oracle-profile-v1.json",
+      "bytes": 2112,
+      "sha256": "1b40333361628f32cc94fe54d7320ad273eda07cf1580383ed1978cd8953d5ec"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/pyproject.toml",
+      "bytes": 346,
+      "sha256": "25f950b306aa0c76b2b0b9497ee0b5288cb8b888a0d7c15690b23467b2425366"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/requirements.in",
+      "bytes": 56,
+      "sha256": "31965916cf1222f405d782bb9b98b6d51fc75b55fa62967be0082b473b25a9c3"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/algorithm/requirements.lock",
+      "bytes": 63288,
+      "sha256": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/README.md",
+      "bytes": 1810,
+      "sha256": "7fc186e61a68946642b702d89c385a05e3aa20b7c040a1960216dffadae5b8ed"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/conftest.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/licenses.json",
+      "bytes": 1950,
+      "sha256": "9cad148ddbb23387f9176967632800acec80fafa9edf9acc2c2f16f1c0546f0b"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/linkforge_worker/__init__.py",
+      "bytes": 162,
+      "sha256": "29c1fb67e27ff72c406773534e8d77878b37c40362a0bd7dd8bfd50ba7030170"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/linkforge_worker/__main__.py",
+      "bytes": 1210,
+      "sha256": "7cdfcf5c7b83c25d45609ee705c12dab179148adffca966f75c7d29106fc7049"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/linkforge_worker/adapter.py",
+      "bytes": 19056,
+      "sha256": "20a4509af619a65034a26975e16cce8bd47d70b2fa8c4d2399b5fc95d0fa2b03"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/linkforge_worker/names.py",
+      "bytes": 2601,
+      "sha256": "a2fed70ceb9637c43d23e9c39800fed187ad0d9e60b6adf3f1f1e3c70acaa410"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/linkforge_worker/parity.py",
+      "bytes": 13099,
+      "sha256": "4141d07ff78c26ea48fe0c686a7361f8b179991a9ea176f40914d0b4e34507a0"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/pyproject.toml",
+      "bytes": 336,
+      "sha256": "1b264b8346c3b4258d499dcbd4eed5ae5bde26be2afb450b31bc04f10e65a6e4"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/requirements.in",
+      "bytes": 84,
+      "sha256": "a4671323fe59a76ab73c8597231f998a23959a51e410821b8db36ab082e2b2a2"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/model-validation/requirements.lock",
+      "bytes": 19995,
+      "sha256": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/README.md",
+      "bytes": 3171,
+      "sha256": "e5a71a424251679e577ca672becc7e9858ef5606476c20446b83986187f12517"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/campaigns/c02-concurrent.json",
+      "bytes": 1258,
+      "sha256": "ea93c7ac9f7f586d135d89df80792af53a7f2cdd8deae28754bceb7774546724"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/campaigns/c02-qualification.json",
+      "bytes": 9019,
+      "sha256": "2af4682ec97e65eef6e9f6540d3500f9b5ec3387f49f08d00121a6d3a876ec43"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/manifest.json",
+      "bytes": 1955,
+      "sha256": "802902b194932b083e567c85fa1c1da78a2ba859c0cb93a46179177b638d4d4f"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/navigation-policy.json",
+      "bytes": 1050,
+      "sha256": "7a0a75ed094c57a4c317eaaddf56b8941b6aa14446969c22f0508bc1213b1a83"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/navigation-scene-two-robot.json",
+      "bytes": 18473,
+      "sha256": "3cedbc43e631cffea94a57e80e47c63ecb935dc944c9faf9a454b960873820d6"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/navigation-scene.json",
+      "bytes": 12909,
+      "sha256": "4aff7df1b8daa33bd4b180a19f0f4e0783cce1f3880ce1ff17af3f3f476c6e82"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/restaurant-10-tables.json",
+      "bytes": 4872,
+      "sha256": "8276f8ef026b17083d889e818d2c4322aa0f0e01e3e8354d5353833ca0bf4f25"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/serve-components.json",
+      "bytes": 63686,
+      "sha256": "07cae981082cc084abef78ef675d7d8e67353000f5905125dcdd4f5c702efb23"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/serve-enclosed-project.json",
+      "bytes": 11457,
+      "sha256": "90a73f17da8eea5739c95adc36f860c7cfca259c98526804d29b5ec67bf3d11f"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/serve-fleet-project.json",
+      "bytes": 15742,
+      "sha256": "8204f39a1a39db6ca13939b045418becf4dd54896fc77d2a85f202d9f49c2630"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/serve-noisy-project.json",
+      "bytes": 11028,
+      "sha256": "e3f247fe423f9ec050554a04e3f84fbe33014394803ba874c44c922d3a208206"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/serve-project.json",
+      "bytes": 11028,
+      "sha256": "5ca48410be47efe5e2cdc3afe7f492c43c69f799b6624955d76a26388f570d38"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/fixtures/serve-demo-v1/serve-sensor-model.json",
+      "bytes": 2646,
+      "sha256": "b93879192cf9b9e505e6cece0f02d9491e5abcf1d5f2e6a1e1bcc5dbb35b6691"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/irsim_worker/__init__.py",
+      "bytes": 167,
+      "sha256": "4c10a2c978de7d264d40e162b0cd81caab1089d0bcdf95380821c03dabaa7152"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/irsim_worker/__main__.py",
+      "bytes": 2215,
+      "sha256": "50988a11a934973db169720ba6e81ec99630c5556d94617385e2e930badb9d21"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/irsim_worker/compile.py",
+      "bytes": 4977,
+      "sha256": "89fa554419d94d1d61bad70d7b80c1a6e6eead371a88467e31ff23efb5274425"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/irsim_worker/protocol.py",
+      "bytes": 3930,
+      "sha256": "fc350d89351c0a57c84f0ee4cee49e41bd59e393bf3b0cea5cc202ccdc523f83"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/irsim_worker/scene.py",
+      "bytes": 5300,
+      "sha256": "4f6bb815e4febcdd0a5f45aa34bd15ab718ca69e655199bdab4a5f3add994210"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/irsim_worker/session.py",
+      "bytes": 14142,
+      "sha256": "83fdf7040e87c534981708860f7b1f650967578a4e59b86ce222c5c8353b11c2"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/irsim_worker/snapshot.py",
+      "bytes": 3692,
+      "sha256": "fb1c9970f4181d4fc0e0f15df1f2053aa5ad46b8657369e1169f1060fe83c771"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/licenses.json",
+      "bytes": 3560,
+      "sha256": "77f763ce46d9da428e5019b42d2f91cfdb6523348d2752b628387240c930703d"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/pyproject.toml",
+      "bytes": 306,
+      "sha256": "bcaebcb5490447de8025fd71419dbeb102404d271b83095db51fa48c9a331c41"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/requirements.in",
+      "bytes": 63,
+      "sha256": "61896c0a18171a98093b588efc7098ccbba4af0434f73f65818b66f15515459b"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/navigation-2d/requirements.lock",
+      "bytes": 73546,
+      "sha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/README.md",
+      "bytes": 5046,
+      "sha256": "364f0cf0fa932d3940e070aa69f0500e97b9c2c29793a11578165139fc4da8fa"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/campaigns/r1-qualification.json",
+      "bytes": 7325,
+      "sha256": "00da63f7a094fce5337cf5618a2a5b677578015e3dca00368499fa03fd7a6775"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/campaigns/r1-smoke.json",
+      "bytes": 890,
+      "sha256": "440f182ac863989735260e411e084166a3ee81c133f6bf3b4e7a4ca4265fdf70"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/arm-ref-3d-v1/README.md",
+      "bytes": 2626,
+      "sha256": "47710c343813c052f8e819c57fd78d84cad3361af3cc4d56563622617f2b81bc"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/arm-ref-3d-v1/component.json",
+      "bytes": 26885,
+      "sha256": "18eba69d973279fcda541fc287f8531ed5997e4121d3f9c03653fed0a02ef6ae"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/arm-ref-3d-v1/fk-golden.json",
+      "bytes": 1146,
+      "sha256": "f3611159f6952a28ba370f7f6447efc6259fbcfa2f1c655dea2fcde4c1bf3d4a"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/arm-ref-3d-v1/manifest.json",
+      "bytes": 883,
+      "sha256": "d2e85fe0c9b014e34e752f94df6e1e2300d4375ea019bb4f69825c6a1f29f3b3"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/serve-3d-v1/manifest.json",
+      "bytes": 1836,
+      "sha256": "920d586700e6cbfd4995322c26881b5445538505835963602c0d3207df57bc31"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/serve-3d-v1/navigation-scene-two-robot.json",
+      "bytes": 18801,
+      "sha256": "6f027d5f0f78d7e834e88eff7669e3ea731ca2afc7cece5b0886af6462de21f4"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/serve-3d-v1/navigation-scene.json",
+      "bytes": 13156,
+      "sha256": "94f215d4ff81ea4889f41bd9a794d0a065d7102b76e839d62cec05886846645c"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/serve-3d-v1/physical-model-amr-1.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/serve-3d-v1/physical-model-robot01.json",
+      "bytes": 47581,
+      "sha256": "eed63815e489c890dc8ad608900bec0c9d1fe4dc52f64474bebb6471902460b8"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/serve-3d-v1/physical-model-robot02.json",
+      "bytes": 47520,
+      "sha256": "b35d2070dcc93f43f7d4c26703b15c75e7db33aebb8fe1571443f714b14d0f88"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-components.json",
+      "bytes": 61944,
+      "sha256": "475a785832cb1a54d588781075c86bfda7a5e9d965365469f7e48fac47f53f2b"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-fleet-project.json",
+      "bytes": 17745,
+      "sha256": "40a9aad4a8ae5888a280a2baadc034cdc6a544bbf4fbdf3dec5459935e71fb0a"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json",
+      "bytes": 12009,
+      "sha256": "f1c97e1bd6b6bd1258b08e82a9da3c565e398cfd7572d837d89c67d3a1340147"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/fixtures/serve-3d-v1/world3d.json",
+      "bytes": 129,
+      "sha256": "68a6c28f4faf93da908c3c7f862e5d554fe605ddf91a84b96bdf6d34c0ec7808"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/licenses.json",
+      "bytes": 1724,
+      "sha256": "ff41df81d34be0b4a4c1216861ceb278350ea45b747ad41e4af4d0f7294b59b6"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/pyproject.toml",
+      "bytes": 355,
+      "sha256": "1512a39368a1fca25c56d549505c3f5e65c950228a14faf3bdd8a54eabbdd093"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/requirements.in",
+      "bytes": 48,
+      "sha256": "dc6a16f79f9cfca7f005e94a8d841b1850b006c74e5f3c063a63695d67a15ead"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/requirements.lock",
+      "bytes": 13495,
+      "sha256": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/webots_worker/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/webots_worker/__main__.py",
+      "bytes": 2190,
+      "sha256": "e88659d752095f9b4eb5aac0f75a1a318c34fb4af938105e6dba317ecbc68a31"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/webots_worker/arm_controller.py",
+      "bytes": 1754,
+      "sha256": "c9d09449241298349e06156bd83b566b253e039393b0b3cfc763f6ba40c98f58"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/webots_worker/compile.py",
+      "bytes": 29363,
+      "sha256": "863f0cc4920f24fb36cb94dd29399534d8a487ddbfc5f06647a76987ad5321e7"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/webots_worker/engine.py",
+      "bytes": 13230,
+      "sha256": "cb00a9620ad815855b6dc3c4c54e331b1fc79bc412d9bb03a597ac1b38fc79ad"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/webots_worker/protocol.py",
+      "bytes": 4087,
+      "sha256": "b5009e99ede179fa5ac377052ce28e171c5861af87d9d4d1169ab76ae8cbb238"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/webots_worker/robot_controller.py",
+      "bytes": 1741,
+      "sha256": "b5a28335c0d967d3d61b0f54f06555cb3a47c358f140b835866d524d0c64620f"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/webots_worker/session.py",
+      "bytes": 20663,
+      "sha256": "afc461c76cb8e3b82fce7ec108b4536a26e7fe7415893aa8ee57d4ed2b2bda6a"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/webots_worker/snapshot.py",
+      "bytes": 8151,
+      "sha256": "20bd6fcd1638931e0def6e9ce454570d1a0bd6671935856dc4db73f93a47130c"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-3d/webots_worker/supervisor.py",
+      "bytes": 6061,
+      "sha256": "31e19c1ef3b75ceaf06290c1cecb1899d3eb6ba8c87d4ee12a9f620f3286da94"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/README.md",
+      "bytes": 5573,
+      "sha256": "44af943553095273f0c2b70418f615e7f2ae9be7324a9a0dcf05d082bc281803"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/NOTICE",
+      "bytes": 1840,
+      "sha256": "7b06a81d2e13936d721ea6ab2d0e3fc00901600a4f4c2cd6aa2829698518303c"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/README.md",
+      "bytes": 5711,
+      "sha256": "df05605c06720016a640746dc5ec4f09e2f91c3b315c059d283e8c30fe347316"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+      "bytes": 22284,
+      "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+      "bytes": 242684,
+      "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+      "bytes": 563584,
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+      "bytes": 290784,
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+      "bytes": 243084,
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+      "bytes": 2505834,
+      "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+      "bytes": 150084,
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+      "bytes": 340884,
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+      "bytes": 202384,
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+      "bytes": 242684,
+      "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+      "bytes": 366284,
+      "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+      "bytes": 291584,
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+      "bytes": 366284,
+      "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+      "bytes": 22284,
+      "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/fk-golden.json",
+      "bytes": 8008,
+      "sha256": "87dc76938e7687fb9543046c0fc1c3c8b522bf78c0ec286d9cd6d88206137d90"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/manifest.json",
+      "bytes": 7983,
+      "sha256": "51bad5842206673d9f417a5f0f4813ac904f64b12a53cbfb403e1e12294b3407"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/physics.json",
+      "bytes": 3930,
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/programs.json",
+      "bytes": 3914,
+      "sha256": "af99b362b9d22ca2bbb327deef6ab820ae6de9dc181643e6ffd61b85e1ce0e48"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/vendor-manifest.json",
+      "bytes": 12148,
+      "sha256": "4c8e12ba58f748c0a5aefd879a5b349261fe0ea10d0255f2c3485cd1c5c2dbfe"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/licenses.json",
+      "bytes": 2787,
+      "sha256": "d94d41581136307bf07c4b810f3ee823b8355d9461df892b5107e9ec3c0e01dd"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/mujoco_worker/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/mujoco_worker/__main__.py",
+      "bytes": 2031,
+      "sha256": "1327f9f60f1e7f53fcf63180a37ef2b7344fbafd4e37992cc80808a7047bf237"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/mujoco_worker/compile.py",
+      "bytes": 18480,
+      "sha256": "9185142c8dc3495790ba46369e07fe2041e439dd03343ff198d59f15950b572d"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/mujoco_worker/engine.py",
+      "bytes": 8850,
+      "sha256": "b10f38a6cf81a6630b6b699dfd57a83712ca86eaadc826407fd89b75766fde78"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/mujoco_worker/protocol.py",
+      "bytes": 4087,
+      "sha256": "b5009e99ede179fa5ac377052ce28e171c5861af87d9d4d1169ab76ae8cbb238"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/mujoco_worker/session.py",
+      "bytes": 14388,
+      "sha256": "e7f2633289b6f44509d59f294f45495f2700344420a1e84e82d20a825d316936"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/mujoco_worker/snapshot.py",
+      "bytes": 5791,
+      "sha256": "bcc43c095068d4e47e691552d0203b9657faf6fdd02597418e169f4df35cb5a1"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/pyproject.toml",
+      "bytes": 375,
+      "sha256": "fa87a87d4a37da5335e83244f2081311eb5bb5cebe2e92c22c0c96f88a85967f"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation-mujoco/requirements.in",
+      "bytes": 83,
+      "sha256": "416004b2087a20b12533fc5e5c5b28cc44ed3e01913f88d9cf4fc9d692dba5d5"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/actors/__init__.py",
+      "bytes": 101,
+      "sha256": "2f5772071f2ba0fedc2bd33e13d23d5370b379f48b8af276b0d2bcf73352063f"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/actors/blocker.py",
+      "bytes": 2182,
+      "sha256": "9c19912b2e5f9caffe7152053bbab3a1d5a44e2f98ecd8adba032953847a0567"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/actors/pedestrian.py",
+      "bytes": 4443,
+      "sha256": "cf8a2aac0d2e2cb95150ab049ee458c3ff4f269f08ed3e273413761b9b779e43"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/actors/scenario.py",
+      "bytes": 4683,
+      "sha256": "355cd9a60320255b87775486e1b23404acb634c744226d5414636bc4e6fbc171"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/compiler/__init__.py",
+      "bytes": 360,
+      "sha256": "1482a5f4fe9e2ef5fea7de1ff3170519b9150bb795e2e31b96000f9bd562eebd"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/compiler/__main__.py",
+      "bytes": 2750,
+      "sha256": "01b62acd528480e5ff82ef12527d3be56d7c1e1acac106f79e5452fd11016737"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/compiler/compile_world.py",
+      "bytes": 18570,
+      "sha256": "dcc8e6ca8ef153c14900900cc9dbba1a9c486cbcf838bfebb00ed27c418cae99"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/compiler/description.py",
+      "bytes": 4262,
+      "sha256": "fa0c240b4377c117d23ca7fe5e1074587974c090f950f5200f24dd4a8da24993"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/compiler/engineering.py",
+      "bytes": 13668,
+      "sha256": "17c01a902c55955672760f975a985b483eb179f93f1379c1a908572d155621f5"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/compiler/manifest.py",
+      "bytes": 2006,
+      "sha256": "9072c063fb24d6a01adece6404f19abb39ab2aff3f38eb0aa1db66b7f2a8397f"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/compiler/models.py",
+      "bytes": 15254,
+      "sha256": "4d41340425241b8a230a4bf00973e2be11844c51ed6ae0d06200df8a2858e4b7"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/compiler/occupancy.py",
+      "bytes": 1350,
+      "sha256": "39d308340650f69d81a3410495a7fea5c835d86ccd754e8c19e04198c1137a24"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/worlds/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/worlds/generate_restaurant.py",
+      "bytes": 6512,
+      "sha256": "58b17d075f28df9d42775542882c203b97b43b2a57191d382c86af52b75fcdb1"
+    },
+    {
+      "kind": "tool",
+      "path": "subject/robotics/simulation/worlds/restaurant.sdf",
+      "bytes": 6997,
+      "sha256": "149be7d30a95a6065c953b5cc8ccb7ba5eba5991598b701cef020845395ce516"
+    },
+    {
+      "kind": "project",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/coffee-cell-project.json",
+      "bytes": 2917,
+      "sha256": "c22cc9d91c261e6b23d27c99472e5545c1a8fd9b564421fa86a4996f3f49ca7e"
+    },
+    {
+      "kind": "model",
+      "path": "subject/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/component.json",
+      "bytes": 69507,
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a"
+    },
+    {
+      "kind": "engine",
+      "path": "subject/robotics/simulation-mujoco/requirements.lock",
+      "bytes": 37555,
+      "sha256": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+    },
+    {
+      "kind": "runtime",
+      "path": "runtime.mjs",
+      "bytes": 2179596,
+      "sha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270"
+    },
+    {
+      "kind": "runtimeManifest",
+      "path": "runtime-manifest.json",
+      "bytes": 73664,
+      "sha256": "7ca04acd31abf81182e2344924e9808c5acb6471551fdf42661c2d75922729bf"
+    },
+    {
+      "kind": "labLock",
+      "path": "lab-lock.json",
+      "bytes": 534,
+      "sha256": "b4ca40a6e23c2c87391e9bdb68a6f1f4801bd3cdacc45ad4f922e4c9ec42aeae"
+    },
+    {
+      "kind": "world",
+      "path": "derived/arm-cell-scene.json",
+      "bytes": 1506,
+      "sha256": "f739f83dc8424f505a8b68179cb8cdb1d33f9ef53b996c0af02d4ddb35d91d86"
+    },
+    {
+      "kind": "profile",
+      "path": "derived/linux-amd64.json",
+      "bytes": 7823,
+      "sha256": "148afd50b392d9ab05845018a35cc5cc2c02e45d77e76bca0a64612670400263"
+    }
+  ],
+  "limits": [
+    "Byte and declared identity audit only; no semantic or closure completeness claim.",
+    "No subject execution, host authenticity, image-layer or native readiness proof.",
+    "Historical subject and current checker/repository identities remain separate."
+  ]
+}

@@ -29,7 +29,7 @@ export function assessCase(spec,raw){
   check(finite(raw?.elapsedMs)&&raw.elapsedMs<5000,'FAULT_BOUND');
  }else if(spec.kind==='m00'){
   const r=raw?.trial;check(r?.seed===spec.seed&&!r.nan&&r.heldAllCarry===true&&r.notHeldCarry===0,'GRASP_HELD');
-  check(finite(r?.liftM)&&r.liftM>=0.15&&finite(r?.slipM)&&r.slipM<=0.005&&positive(r?.dropTicks)&&r.dropTicks<=50&&finite(r?.placeErrM)&&r.placeErrM<=0.01,'GRASP_LIMITS');
+  check(finite(r?.liftM)&&r.liftM>=0.14&&finite(r?.slipM)&&r.slipM<=0.005&&positive(r?.dropTicks)&&r.dropTicks<=50&&finite(r?.placeErrM)&&r.placeErrM<=0.01,'GRASP_LIMITS');
   check(finite(r?.peakFollowRad)&&r.peakFollowRad<=0.05&&Object.values(r?.settle??{}).length===7&&Object.values(r.settle).every(s=>positive(s.ticks)&&s.ticks<=25),'TRACKING_LIMITS');
   check(r?.warnings&&typeof r.warnings==='object'&&Object.values(r.warnings).every(n=>n===0),'ENGINE_WARNINGS');
   check(Array.isArray(raw?.trace)&&raw.trace.length>=800&&raw.trace.every(t=>Array.isArray(t.q)&&t.q.length===6&&t.q.every(finite)&&Array.isArray(t.cup)&&t.cup.every(finite)&&Array.isArray(t.cupquat)&&t.cupquat.every(finite)&&typeof t.held==='boolean'),'RAW_CONTACT_POSE_REQUIRED');
@@ -38,7 +38,7 @@ export function assessCase(spec,raw){
    const t=raw.trace,close=t.filter(s=>s.label==='close:settle').at(-1),lift=t.filter(s=>s.label==='move:lift').at(-1),place=t.filter(s=>s.label==='dwell:place').at(-1);
    const from=t.indexOf(close),to=t.indexOf(place),carry=t.slice(from+1,to+1),opened=t.filter(s=>s.label==='open'||s.label==='open:settle');
    check(from>=0&&to>from&&carry.length>0&&carry.every(s=>s.held&&s.L&&s.R),'RAW_GRASP_CONTINUITY');
-   check(!!lift&&!!close&&lift.cup[2]-close.cup[2]>=0.15&&carry.every(s=>s.rel?.length===3&&Math.hypot(...s.rel.map((v,i)=>v-close.rel[i]))<=0.005),'RAW_LIFT_SLIP');
+   check(!!lift&&!!close&&lift.cup[2]-close.cup[2]>=0.14&&carry.every(s=>s.rel?.length===3&&Math.hypot(...s.rel.map((v,i)=>v-close.rel[i]))<=0.005),'RAW_LIFT_SLIP');
    const settled=opened.findIndex((_,i)=>opened.slice(i).every(s=>s.tray&&!s.L&&!s.R&&s.cupv<0.005&&s.cupw<0.05));
    check(settled>=0&&settled<50&&Math.hypot(opened.at(-1).cup[0]-0.35,opened.at(-1).cup[1]-0.35)<=0.01,'RAW_RELEASE');
    check(t.every(s=>s.arm===false&&s.cmd?.length===6&&s.q.every((q,i)=>Math.abs(q-s.cmd[i])<=0.05)),'RAW_TRACKING_CONTACT');

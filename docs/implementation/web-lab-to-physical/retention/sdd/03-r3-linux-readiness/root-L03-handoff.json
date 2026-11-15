@@ -1,0 +1,408 @@
+{
+  "sourceBase": "00d41e7f25ec1294b9bc8e8c81de3d8e1a869316",
+  "labBase": "82b5f92005673c99ba0d1f434ae4c512800fa75e",
+  "source": "2a7ec9c89935649835fc08eee4ebe81fc6190cf0",
+  "lab": "020b818b6ce0b813c22b8826945a917fe4017816",
+  "sourceTree": "03e850529dadd8c8b3306c3d3b8837f501648063",
+  "labTree": "51478596a7d6616e1525aafde1c72c931cde87d8",
+  "clean": true,
+  "export": "/tmp/l03-runtime-2a7ec9c-20261115",
+  "runtimeArtifactSha256": "8fbb40b2bdbef61f744f210d6eb4133b41d3346d45194b20b045c3f77292fec5",
+  "schemaHash": "9e869f41bd7dbbbae1f26f81b75449b727e7160fdfb1a3b32cf3b23a5cb034e4",
+  "schemas": 57,
+  "closures": {
+    "native": {
+      "files": 202,
+      "bytes": 1432713,
+      "digest": "53c4a5ccc2fa3e93305f90e3b26abfa923ca89c9a6097c644f535bac4b976a9d"
+    },
+    "portable": {
+      "files": 237,
+      "bytes": 8108202,
+      "digest": "1fb6f053d4903a109a41f862556a02c2fd71c60d5011d94d27463165ad697d82"
+    }
+  },
+  "report": {
+    "bytes": 31609,
+    "sha256": "e1286018bb57fd1e6a771bda5c322c79008229609e4d6b935852c157aa058884"
+  },
+  "checks": [
+    {
+      "name": "final-ts",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/integration/xarm-native-contract.test.ts",
+        "tests/integration/engineering-profile-routing.test.ts",
+        "tests/unit/native-handoff.test.ts",
+        "tests/security/native-handoff.test.ts",
+        "tests/integration/engineering-native-lifecycle.test.ts",
+        "tests/integration/engineering-native-evidence.test.ts",
+        "tests/integration/lab-v2-native-profile.test.ts"
+      ],
+      "logSha256": "cb4dd6ac54d92434a8cb78bb5b148f20378ca4e0c97c9345ba8c94097aa8f4e6",
+      "receiptSha256": "1a47c0326d89aff9d6ce761654ec59435fa82d58d757416887fbb849f2558ed4"
+    },
+    {
+      "name": "final-python",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        ".venv-irsim/bin/python",
+        "-m",
+        "pytest",
+        "robotics/manipulation/tests/test_native_xarm.py",
+        "robotics/simulation/tests/test_engineering_native_parity.py",
+        "robotics/simulation/tests/test_engineering_profile.py",
+        "robotics/simulation/tests/test_native_profile.py",
+        "robotics/simulation/tests/test_nav2_session.py",
+        "-q"
+      ],
+      "logSha256": "523b3fa37743338555967559d8bf143decf333eb4bf0875d4ff1991817d527d0",
+      "receiptSha256": "8bcb0f4908224a118ad19037c9e96f69bf6a6d7031d4172159f643d283896c3e"
+    },
+    {
+      "name": "final-mapping-ts",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/integration/xarm-native-contract.test.ts",
+        "tests/integration/engineering-profile-routing.test.ts"
+      ],
+      "logSha256": "e65e5e4d5b257f30126386ddeff3c9d45be102f25b7db6bfe23b1ce17f405f47",
+      "receiptSha256": "736e22295807062f8ecdd1714c1685b516236d7de5318c5ee8589b705fe66a0b"
+    },
+    {
+      "name": "final-worker-python",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        ".venv-irsim/bin/python",
+        "-m",
+        "pytest",
+        "robotics/manipulation/tests/test_native_xarm.py",
+        "-q"
+      ],
+      "logSha256": "c4fd646741eec3df4615e14cafc10dfd6c7524a8d48bbbbc72af87bc99b48829",
+      "receiptSha256": "b5d7dc01a527045008d82222221fb701f4becd321b809d5ee3d413a6f93cb739"
+    },
+    {
+      "name": "contracts-check",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        "pnpm",
+        "contracts:check"
+      ],
+      "logSha256": "b01efc8275af27aef1593ccbccacf369a068c21bf75222530690ef4d51d5633c",
+      "receiptSha256": "4715282a0363c3488e3397bef5ee443293d7b868aace1a07b25f9487515f99f0"
+    },
+    {
+      "name": "final-lint-2",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        "pnpm",
+        "exec",
+        "eslint",
+        "packages/lab-runtime/src/v2/sil/xarm-provider.ts",
+        "packages/lab-runtime/src/v2/sil/xarm-mapping.ts",
+        "packages/lab-runtime/src/v2/sil/xarm-cli.ts",
+        "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+        "packages/lab-runtime/src/v2/sil/native-handoff-documents.ts",
+        "packages/lab-runtime/src/v2/capabilities.ts",
+        "tests/integration/xarm-native-contract.test.ts",
+        "tests/integration/engineering-profile-routing.test.ts",
+        "scripts/lab-xarm.mjs",
+        "scripts/native-sim/tool-identity.mjs"
+      ],
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "receiptSha256": "309d1ff57adc8501b15cd739bfaef72d5318d85f44b8bce8a7961793ffb0f19c"
+    },
+    {
+      "name": "final-typecheck-2",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "logSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "receiptSha256": "8437151d1391f1801adb30f85d6110354e67d829b7616de651b40a3fdec485d0"
+    },
+    {
+      "name": "selfreview-ts",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/integration/xarm-native-contract.test.ts"
+      ],
+      "logSha256": "272024fb83e0f35ba528da522fac10a944c2bf7b3d5e9c40c4a589a9998fa483",
+      "receiptSha256": "1eda8a852bc869fb3c726974e50f152c80b6691be3cd09afb727b408342372c6"
+    },
+    {
+      "name": "selfreview-python",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        ".venv-irsim/bin/python",
+        "-m",
+        "pytest",
+        "robotics/manipulation/tests/test_native_xarm.py",
+        "-q"
+      ],
+      "logSha256": "1456f30ad6b29683b3dbf2cf20e1e5b0035560e452e23e4bf259d32b29950e3e",
+      "receiptSha256": "34eea0fae47c8b9e593022e2481fecc5ab53f3dc2452a9ed9fac3fa1b9f7d674"
+    },
+    {
+      "name": "selfreview-typecheck",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "logSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "receiptSha256": "7e27141da29c01f76a1ff3011ce687a2ba2418c50b81627bb1d4f7033ed11e47"
+    },
+    {
+      "name": "selfreview-lint",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        "pnpm",
+        "exec",
+        "eslint",
+        "packages/lab-runtime/src/v2/sil/xarm-provider.ts",
+        "packages/lab-runtime/src/v2/sil/xarm-mapping.ts",
+        "packages/lab-runtime/src/v2/sil/xarm-cli.ts",
+        "tests/integration/xarm-native-contract.test.ts"
+      ],
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "receiptSha256": "d788f44a86d9c484c097cb96ce31ef89eddb2526e14b231b36c243cc1947dd66"
+    },
+    {
+      "name": "diff-check-2",
+      "exitCode": 0,
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "receiptSha256": "7a22578c43dcd69560557d9fc21b23379a5aaa760affa7832ae3897fe26e8eb8"
+    },
+    {
+      "name": "export",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 290; exec @ARGV",
+        "node",
+        "scripts/export-lab-runtime.mjs",
+        "/tmp/l03-runtime-2a7ec9c-20261115"
+      ],
+      "logSha256": "5b04e3447c4a50bedbc4d4d3f656f0f4a195cad0f51e481ff90b4d1eea378cf6",
+      "receiptSha256": "447693bea4f014ad61f29828747fd6a2618aee7d10c1fd280030c9a5fabd665a"
+    },
+    {
+      "name": "lab-import",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "node",
+        "scripts/import-runtime.mjs",
+        "/tmp/l03-runtime-2a7ec9c-20261115"
+      ],
+      "logSha256": "d61e693e23253b3a66127991dc6b8e287ccc30b283dfb8fc24bb1387ee5a53a6",
+      "receiptSha256": "21fde949b047aabb215eeb20c680a7baebb1e5f68365303d770fa0dbba7cecb4"
+    },
+    {
+      "name": "lab-sync",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "node",
+        "scripts/sync-engineering-contracts.mjs"
+      ],
+      "logSha256": "84731b62ae9a5141c2b86ed05a6c5786c87be631f44b35181ea6b2e089481837",
+      "receiptSha256": "db529c3c6426f01b11f42de0655ab0255b397c8353840fb46d7826210b804ab9"
+    },
+    {
+      "name": "lab-check-source",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "check:source"
+      ],
+      "logSha256": "38157d27f78703879b9ef725d9223e6622bb7c06c1c316674215c84a152a1155",
+      "receiptSha256": "7a399b17b61eaa94ec71e79367a23781dc511d2d30f55fa865730faef9ad3e57"
+    },
+    {
+      "name": "lab-typecheck",
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "logSha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881",
+      "receiptSha256": "5a3cadcd9d7d4244e1ff943b52fc1463c6046d86cf7e0679e6c4d425184bef71"
+    }
+  ],
+  "finalByteAttribution": {
+    "docs/operations/xarm-native-sim.md": "Final bytes match recorded tested working tree.",
+    "packages/lab-runtime/src/v2/sil/xarm-cli.ts": "Final bytes match recorded tested working tree.",
+    "packages/lab-runtime/src/v2/sil/xarm-mapping.ts": "Only one trailing blank line removed after checks; diff-check-2 passed.",
+    "packages/lab-runtime/src/v2/sil/xarm-provider.ts": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/native-vendor.lock.json": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/native_xarm/__init__.py": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/native_xarm/mapping.py": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/native_xarm/policy.py": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/native_xarm/ros.py": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/native_xarm/session.py": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/native_xarm/worker.py": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/profiles/xarm6-jazzy-sim.json": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/profiles/xarm6-native-mapping.json": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/tests/test_native_xarm.py": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/LICENSE": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/NOTICE": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/xarm_controller/config/xarm6_controllers.yaml": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/xarm_description/urdf/common/common.link.xacro": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.gazebo.xacro": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.ros2_control.xacro": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper_macro.xacro": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/xarm_gazebo/launch/_robot_beside_table_gazebo.launch.py": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/xarm_moveit_config/launch/_robot_moveit_gazebo.launch.py": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/xarm_moveit_config/launch/xarm6_moveit_fake.launch.py": "Final bytes match recorded tested working tree.",
+    "robotics/manipulation/vendor-source/xarm_moveit_config/launch/xarm6_moveit_gazebo.launch.py": "Final bytes match recorded tested working tree.",
+    "scripts/lab-xarm.mjs": "Final bytes match recorded tested working tree.",
+    "tests/fixtures/xarm-native-protocol.urdf": "Final bytes match recorded tested working tree.",
+    "tests/integration/xarm-native-contract.test.ts": "Final bytes match recorded tested working tree.",
+    "packages/contracts/generated/native-handoff.ts": "Final bytes match recorded tested working tree.",
+    "packages/contracts/schemas/native-handoff-v1.schema.json": "Final bytes match recorded tested working tree.",
+    "packages/lab-runtime/src/v2/capabilities.ts": "Final bytes match recorded tested working tree.",
+    "packages/lab-runtime/src/v2/sil/native-handoff-documents.ts": "Final bytes match recorded tested working tree.",
+    "packages/lab-runtime/src/v2/sil/native-handoff.ts": "Final bytes match recorded tested working tree.",
+    "scripts/native-sim/tool-identity.mjs": "Final bytes match recorded tested working tree.",
+    "tests/integration/engineering-profile-routing.test.ts": "Final bytes match recorded tested working tree."
+  },
+  "preservedL02": [
+    {
+      "index": "root-L02-evidence-file-index.json",
+      "files": 86
+    },
+    {
+      "index": "root-L02-r1-evidence-file-index.json",
+      "files": 63
+    }
+  ],
+  "cases": [
+    {
+      "case": "X1-engineering-amd64-nominal",
+      "manifestSha256": "9f5a9df44b76652ce8b88513cb38ba0c3a0c642bb8447ab604e878514e77fbd6",
+      "exitCode": 2,
+      "motion": "not_run",
+      "contact": "not_run"
+    },
+    {
+      "case": "X1-engineering-arm64-nominal",
+      "manifestSha256": "26e9670725f496a2b22aeffc60c0d1e86bbfdc0052a0a5911cd1ac519efe80b4",
+      "exitCode": 2,
+      "motion": "not_run",
+      "contact": "not_run"
+    },
+    {
+      "case": "X2-engineering-amd64-nominal",
+      "manifestSha256": "d73abbec5562a9e70c5030d1077609dead35ce00178dce084b70d1ccde33163e",
+      "exitCode": 2,
+      "motion": "not_run",
+      "contact": "not_run"
+    },
+    {
+      "case": "X2-engineering-arm64-cancel",
+      "manifestSha256": "a038a7648c7fefa50473da05f3d739a8386f29dfaa22f87ccee7108502c3dd48",
+      "exitCode": 2,
+      "motion": "not_run",
+      "contact": "not_run"
+    },
+    {
+      "case": "X2-engineering-arm64-nominal",
+      "manifestSha256": "18ebf6cd559c9b60954a943d7c74a573dc4b87340eaf23da38ffb96ec35a21a8",
+      "exitCode": 2,
+      "motion": "not_run",
+      "contact": "not_run"
+    },
+    {
+      "case": "X2-engineering-arm64-restart",
+      "manifestSha256": "45f207f313a1119d346fdf3e74496ca839dd72f211d84f86df7bafb204666293",
+      "exitCode": 2,
+      "motion": "not_run",
+      "contact": "not_run"
+    }
+  ],
+  "evidenceFiles": 140,
+  "limits": [
+    "Read-only local byte and receipt consistency; no native execution, host authenticity or effective tool Git graph attestation.",
+    "136TS/92Python are pre-final-URI refinements; focused20/27 then13/28 receipts cover subsequent changes. Counts are overlapping, not additive.",
+    "Unchanged upstream snapshots and R2a locks preserved; vendor .gitattributes added after behavioral checks; only authored EOF newline changed after selfreview checks.",
+    "Full repository historical lint remains B10-owned. No full CI or native/hardware qualification."
+  ],
+  "packages": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-00d41e7..2a7ec9c.diff",
+      "bytes": 229889,
+      "sha256": "b7e6d7b83e87e1bc54474845ebf5706c9c2eabfaf1fb23c1f51c788ff177fdab"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-82b5f92..020b818.diff",
+      "bytes": 3615,
+      "sha256": "9acb682f2669ddbc2ec57e29826c9afc927203f4b473d515dcd3bcf502883c29"
+    }
+  ]
+}

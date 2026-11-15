@@ -1,3 +1,5 @@
+// @ts-expect-error explicit digest-verified retained evidence tooling
+import {retainedInput} from '../../scripts/retained-inputs.mjs';
 import {afterEach,expect,test} from 'vitest';
 import {cp,mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -10,7 +12,7 @@ import {createScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runn
 import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
 import {amrAsset} from '../support/lab-v2';
 import {exportWebReplay} from '../../packages/lab-runtime/src/v2/replay/export';
-const original='/tmp/mekoniq-b06-nominal-7-1iGdiu',roots:string[]=[];afterEach(async()=>{for(const d of roots.splice(0))await rm(d,{recursive:true,force:true});});
+const original=retainedInput('cell-nominal-7'),roots:string[]=[];afterEach(async()=>{for(const d of roots.splice(0))await rm(d,{recursive:true,force:true});});
 const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
 async function root(){const d=await mkdtemp(join(tmpdir(),'replay-capture-'));roots.push(d);return d;}
 test('actual retained reopen captures both exports without a world spawn and leaves original bytes unchanged',async()=>{

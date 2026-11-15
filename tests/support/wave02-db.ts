@@ -1,8 +1,13 @@
+// @ts-expect-error explicit test-owned service admission
+import {ownedCiReceiptIssues} from '../../scripts/owned-ci-config.mjs';
 import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
 import postgres from 'postgres';
 import {closeCloudDatabase} from '../../apps/cloud-web/src/server/modules/identity/tenant-context';
 export async function setupWave02() {
+ const serviceFile=process.env.MEKONIQ_TEST_SERVICE_RECEIPT;if(!serviceFile)throw Error('OWNED_TEST_SERVICE_REQUIRED: run through scripts/owned-source-ci.mjs; a scratch DB alone is insufficient');
+ const receipt=JSON.parse(readFileSync(serviceFile,'utf8'));if(ownedCiReceiptIssues(receipt).length)throw Error('OWNED_TEST_SERVICE_REQUIRED');
+ const container=execFileSync('docker',['inspect','--format','{{.Id}}','supabase_db_'+receipt.projectId],{encoding:'utf8',timeout:10000}).trim();if(container!==receipt.containerId)throw Error('OWNED_TEST_SERVICE_CHANGED');
  // MEKONIQ_TEST_DB lets the restore rehearsals point the whole cloud stack at a scratch database on the same local server; it defaults to the normal one.
  const database=process.env.MEKONIQ_TEST_DB??'postgres';
  const url=process.env.DATABASE_ADMIN_URL??`postgresql://postgres:postgres@127.0.0.1:57422/${database}`;

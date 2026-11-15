@@ -1,3 +1,5 @@
+import {checkR2bStructure} from './sim-extension-r2b.mjs';
+export {CASES_R2B,GATES_R2B,SUITES_R2B,tableR2b} from './sim-extension-r2b.mjs';
 // sim-extension-qualification/1 (W09 Release 1; X08 Release 1.1 adds the `r1.1` table below): the one mapping from the verification cases of spec 2026-11-10-simulation-extension-design.md §6.3 to the evidence that
 // tests them, shared by scripts/record-sim-extension.mjs (which writes qualification.json) and tests/acceptance/sim-extension.acceptance.test.ts (which refuses it).
 // It uses the same core as the LinkForge + IR-SIM record (scripts/irsim-qualification.mjs) with its own table. `tested` means the named campaign cases passed, the named suites
@@ -298,4 +300,4 @@ export const qualifyR2a=(input)=>qualifyWith(input,tableR2a(input.blocked?.gates
 
 export const qualify=(input)=>qualifyWith(input,TABLE);
 /** The table follows the record's own release; a record that names none of them is checked as R1 and fails on its content. */
-export const checkQualification=(m,read)=>m?.release==='r2a'?check(m,read,tableR2a(m.blocked?.gates??[],m.blocked?.reason)):m?.release==='r1.1'?check(m,read,TABLE_R11):check(m,read,TABLE);
+export const checkQualification=(m,read)=>m?.release==='r2b'?[...checkR2bStructure(m,read),'R2B_ARTIFACT_READBACK_REQUIRED']:m?.release==='r2a'?check(m,read,tableR2a(m.blocked?.gates??[],m.blocked?.reason)):m?.release==='r1.1'?check(m,read,TABLE_R11):check(m,read,TABLE);

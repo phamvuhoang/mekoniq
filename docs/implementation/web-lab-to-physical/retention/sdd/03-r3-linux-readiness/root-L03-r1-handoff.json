@@ -1,0 +1,429 @@
+{
+  "source": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+  "lab": "58d082a9d57ea9216fa123ebb5d676ae1421b550",
+  "sourceTree": "5a0a6783109235645ee5d003d9f53eddb1158ef8",
+  "labTree": "d7b286768637f7df87bae968f5a27701b3f417e0",
+  "clean": true,
+  "fixBase": {
+    "source": "2a7ec9c89935649835fc08eee4ebe81fc6190cf0",
+    "lab": "020b818b6ce0b813c22b8826945a917fe4017816"
+  },
+  "export": "/tmp/l03-fix1-final-runtime-20261115",
+  "runtimeArtifactSha256": "108e6233183a0646cc09ddb4e376a6a5fda3262cc964d7be242e991b3c08863a",
+  "schemaHash": "9e869f41bd7dbbbae1f26f81b75449b727e7160fdfb1a3b32cf3b23a5cb034e4",
+  "schemas": 57,
+  "closures": {
+    "native": {
+      "files": 213,
+      "bytes": 1511374,
+      "digest": "1d738a3cb17b63f6cf9702554e99a59de51cbbcf1b2ae72b25cd43048f480e50"
+    },
+    "portable": {
+      "files": 237,
+      "bytes": 8108202,
+      "digest": "1fb6f053d4903a109a41f862556a02c2fd71c60d5011d94d27463165ad697d82"
+    }
+  },
+  "report": {
+    "bytes": 61029,
+    "sha256": "0a9e11a6c1a8c6bd85dcbc1ae80ae59170ede62bb296d098d01c1d00f8e0fbc6",
+    "prefixBytes": 31609,
+    "prefixSha256": "e1286018bb57fd1e6a771bda5c322c79008229609e4d6b935852c157aa058884"
+  },
+  "checks": {
+    "final-ts": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/integration/xarm-native-contract.test.ts",
+        "tests/integration/xarm-native-cli.test.ts",
+        "tests/unit/native-handoff.test.ts",
+        "tests/security/native-handoff.test.ts"
+      ],
+      "receiptSha256": "2453e2c5da895e693a40ee3de67c822ff4343ad23fb675a2f69d2040db1798c9",
+      "logSha256": "5d2c3183e70169cdf7c515e24e1b508295810d7e77015a26abf8e9d22e575e82"
+    },
+    "final-python": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 110; exec @ARGV",
+        ".venv-irsim/bin/python",
+        "-m",
+        "pytest",
+        "robotics/manipulation/tests/test_native_xarm.py",
+        "-q"
+      ],
+      "receiptSha256": "2cd983b5444936c14d71a6846ea4cb989df63ea50d2d795b3889be812c22ff4e",
+      "logSha256": "e283b39e1d7385449425408e32b74a2b66078ee160a14ce37c59c1f0fb41317f"
+    },
+    "final-contracts": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "contracts:check"
+      ],
+      "receiptSha256": "98d63ae511c4aa77f64518917160a266abd05605748988761fbca65f1e5aed2b",
+      "logSha256": "b01efc8275af27aef1593ccbccacf369a068c21bf75222530690ef4d51d5633c"
+    },
+    "final-typecheck": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "receiptSha256": "e736d0e80a13e06327c6795396901df1d49991250a3f14731b1c78aa745aa457",
+      "logSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5"
+    },
+    "final-lint": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 110; exec @ARGV",
+        "pnpm",
+        "exec",
+        "eslint",
+        "packages/lab-runtime/src/v2/sil/xarm-mapping.ts",
+        "packages/lab-runtime/src/v2/sil/xarm-cli.ts",
+        "tests/integration/xarm-native-contract.test.ts",
+        "tests/integration/xarm-native-cli.test.ts"
+      ],
+      "receiptSha256": "8727166240208a7191596c44f11a56101d02ab1e9a33fe70a0801e6df51c6af0",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "selfreview-ts": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/integration/xarm-native-contract.test.ts"
+      ],
+      "receiptSha256": "56dbc305377038f301b8be5cdb6f2ae58f228f7c383862d213820c3d03da6835",
+      "logSha256": "b3cf0537354b58399b952d3626044c6139e5ab4b98f9ba62bcb61cb6af0899ea"
+    },
+    "selfreview-python": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        ".venv-irsim/bin/python",
+        "-m",
+        "pytest",
+        "robotics/manipulation/tests/test_native_xarm.py",
+        "-k",
+        "native_readback or mapping or mode_graph or numeric_spelling",
+        "-q"
+      ],
+      "receiptSha256": "30bf3980a0043353aa39c3685b3c1e61e449a8057fc93dad5cc6597d14e6287f",
+      "logSha256": "ff785b5679b8d5b9b8154e6ab5214359a38d955154c77e72c100b3ecdd23aaa9"
+    },
+    "selfreview-typecheck": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "receiptSha256": "59b716d133460d2d28ad4ba7334ba6fed15156ee5026325aa421e404d5960524",
+      "logSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5"
+    },
+    "selfreview-lint": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "exec",
+        "eslint",
+        "packages/lab-runtime/src/v2/sil/xarm-mapping.ts",
+        "tests/integration/xarm-native-contract.test.ts"
+      ],
+      "receiptSha256": "b9d7f6d70d111a03bdb3f1f33fd91b4c3e5b404222a0f55d35174dc07ab6a435",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "selfreview-diff-check": {
+      "exitCode": 0,
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "receiptSha256": "cb99de06bbb5c10f1e0b96906b0430217497877998ecd0aabce8d8281458d46c",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "export-final": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "node",
+        "scripts/export-lab-runtime.mjs",
+        "/tmp/l03-fix1-final-runtime-20261115"
+      ],
+      "receiptSha256": "20c5e86e76cc629fcae74f6992fd8adf26a74e02e31ff0cbd19e33b6ae1878ef",
+      "logSha256": "05e91719239530dd01acb59eabaf3938f0f656e77d0dbfc8cd0656fca937b6bb"
+    },
+    "lab-import-final": {
+      "exitCode": 0,
+      "argv": [
+        "node",
+        "scripts/import-runtime.mjs",
+        "/tmp/l03-fix1-final-runtime-20261115"
+      ],
+      "receiptSha256": "2d46f49c5ce030bb2a256050298c5e59a520e6f36a5904db16a06a21c7fb8b25",
+      "logSha256": "182a230291b556ac35b55acbb915763f5962d48213a6ccc4be02de134ceeaf91"
+    },
+    "lab-sync-final": {
+      "exitCode": 0,
+      "argv": [
+        "node",
+        "scripts/sync-engineering-contracts.mjs"
+      ],
+      "receiptSha256": "68bdecec54bd86cba5e4dd2c6356feea3362572bc53591566bb4893bb0520c48",
+      "logSha256": "84731b62ae9a5141c2b86ed05a6c5786c87be631f44b35181ea6b2e089481837"
+    },
+    "lab-typecheck-final": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "receiptSha256": "e5a85af1f84d83f636f416498dcfef694897448b6b3503a99bb2db716e27c439",
+      "logSha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881"
+    },
+    "lab-check-source-final": {
+      "exitCode": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "check:source"
+      ],
+      "receiptSha256": "18949f1c1b68c6ba4cc45a50a8039af80dcb2f6fbedae0d54338bc60e00bc3cf",
+      "logSha256": "c0cb240ab1a09760b43cebfebb1a17989b89cec566a343f349399a2caecd9b52"
+    },
+    "lab-diff-check-final": {
+      "exitCode": 0,
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "receiptSha256": "e6f2197fe427943b02c5f90c95b3b48f7e4068c21cc4cc79eb8732d8a120e10d",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "preservation-final": {
+      "exitCode": 0,
+      "argv": [
+        "python3",
+        ".superpowers/sdd/03-r3-linux-readiness/evidence-L03/fix1/audit-preservation.py"
+      ],
+      "receiptSha256": "aacdadeabc7ee66a35bac5b0f75926be2eba7d65db171ffe99a8d0d9e98cc57d",
+      "logSha256": "ca627af325cb8de3c727b9cb9d44637b5ebaaf3a600aa31000715c6447e2def3"
+    }
+  },
+  "finalByteAttribution": {
+    "docs/operations/xarm-native-sim.md": {
+      "receipt": "final-ts",
+      "sha256": "d1382a8a33e4a2094c411dc47380a59e5c4f6bf065e72909d657ef54a68f7753",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "packages/lab-runtime/src/v2/sil/xarm-cli.ts": {
+      "receipt": "final-ts",
+      "sha256": "7f48b66fb4ae2f4a2bf162e4e392b79c68e4e12b4d78bf969f06784a5e73653c",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "packages/lab-runtime/src/v2/sil/xarm-mapping.ts": {
+      "receipt": "selfreview-ts",
+      "sha256": "cf43ae35ff15d8f9904bb32bc67c67b76a3f83f493f041e9c9ac52281e93ab01",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/native-vendor.lock.json": {
+      "receipt": "final-ts",
+      "sha256": "5ee56f0e23d946db1d9fa65422b86c90ba106272b2425cf45c06dcac1022aabf",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/native_xarm/mapping.py": {
+      "receipt": "selfreview-python",
+      "sha256": "ae6c68619bfc58fb731eeaaf2f497fe437fe4183077df8a072925241d5c9394e",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/native_xarm/worker.py": {
+      "receipt": "final-python",
+      "sha256": "8d2d4df230629c996c5adc26709b94fac4b3bc46e535f782097dd68fb065cd67",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/profiles/xarm6-native-mapping.json": {
+      "receipt": "final-ts",
+      "sha256": "2fac12a74d83f93eab7ba6490d69d1060cc51bbeeabdd520707c484f98527b57",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/profiles/xarm6-sim-extensions.json": {
+      "receipt": "final-ts",
+      "sha256": "ba6c2e6915c62ab2f221ea85b3a7dc1107cab67cdceb104280c8ed1e3416bfbe",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/tests/test_native_xarm.py": {
+      "receipt": "selfreview-python",
+      "sha256": "867b3479b2c30ebd4733209fa83cc8eb6a766452a517cd8fc59f3705eb9f5e8c",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/vendor-source/uf_ros_lib/uf_ros_lib/uf_robot_utils.py": {
+      "receipt": "final-ts",
+      "sha256": "91f99f87d6c5467b02d3da4d9778e7db13b7d95bacc528329c35e22a0d7abd63",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/vendor-source/xarm_description/urdf/common/common.gazebo.xacro": {
+      "receipt": "final-ts",
+      "sha256": "a59da43657e269866019aa5693fcecc9daee150828719e7194cb464f186eae00",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.transmission.xacro": {
+      "receipt": "final-ts",
+      "sha256": "83a1298210243871e0039cf58b2a09a9c24e0848432e02a4da960ec8efbdf771",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.urdf.xacro": {
+      "receipt": "final-ts",
+      "sha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.gazebo.xacro": {
+      "receipt": "final-ts",
+      "sha256": "45502e8d9dbfdc50a23fd7174e14ec71aa9cdc07e9981240551a1e3c8ac3d137",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.ros2_control.xacro": {
+      "receipt": "final-ts",
+      "sha256": "8bd4f1708880c7eb384bcc8dd3b979f6550257881b332741b726ddbc4408ef48",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.transmission.xacro": {
+      "receipt": "final-ts",
+      "sha256": "536f1bcdf87ac6f08c6511dd89235a322803007628caf6beed7ed652dcfd7d6d",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6_robot_macro.xacro": {
+      "receipt": "final-ts",
+      "sha256": "754c352b96c09c4150508d69a0d0547a3b410efce79eb78c187c5d090e60da9a",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/vendor-source/xarm_description/urdf/xarm_device.urdf.xacro": {
+      "receipt": "final-ts",
+      "sha256": "effbda7f945fcee8347c8e1f3bec59bbeea38f60a6e9a5b75aea221b3ed4e81a",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "robotics/manipulation/vendor-source/xarm_description/urdf/xarm_device_macro.xacro": {
+      "receipt": "final-ts",
+      "sha256": "571dd90dd5ae4d8aa549686a253050e0576d0ef29755121cd2d7a95b24649eda",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "tests/fixtures/xarm-native-protocol.urdf": {
+      "receipt": "final-ts",
+      "sha256": "b042816565a0dea4df2822ca91490250698bedabbdbdf487f7b690c2b0bc9640",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "tests/integration/xarm-native-cli.test.ts": {
+      "receipt": "final-ts",
+      "sha256": "bd9c27643a81d7a2f1c7d1734888327d6f48d2c72c0a4555bb32ce4e907bf215",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    },
+    "tests/integration/xarm-native-contract.test.ts": {
+      "receipt": "selfreview-ts",
+      "sha256": "31ab64495348ee30673852ea0ebbade32389b2cd67b3cf919df836ac3b364641",
+      "limit": "Matches checked-tree bytes; semantic coverage is the named test scope, not an assertion every file was executed."
+    }
+  },
+  "preserved": [
+    {
+      "index": "root-L03-evidence-file-index.json",
+      "files": 140
+    },
+    {
+      "index": "root-L02-evidence-file-index.json",
+      "files": 86
+    },
+    {
+      "index": "root-L02-r1-evidence-file-index.json",
+      "files": 63
+    }
+  ],
+  "oldArtifacts": [
+    {
+      "sourceCommit": "2a7ec9c89935649835fc08eee4ebe81fc6190cf0",
+      "export": "/tmp/l03-runtime-2a7ec9c-20261115",
+      "runtimeArtifactSha256": "8fbb40b2bdbef61f744f210d6eb4133b41d3346d45194b20b045c3f77292fec5",
+      "cases": 6
+    },
+    {
+      "sourceCommit": "97af81ba9e4d4c6e6633384dad23d0f201a06817",
+      "export": "/tmp/l03-fix1-runtime-97af81b-20261115",
+      "runtimeArtifactSha256": "b8b6096d994e7028e7f0ac87f142673db64d8de12e16c5773146574d6809e1fa",
+      "cases": 2
+    }
+  ],
+  "vendorSnapshotsChecked": 20,
+  "cases": [
+    {
+      "case": "X1-engineering-arm64-nominal",
+      "manifestSha256": "548029702b7d6f8eb752ad25de95f2074d267cd3f796c7900f88426b3bfff961",
+      "exitCode": 2,
+      "motion": "not_run"
+    },
+    {
+      "case": "X2-engineering-arm64-nominal",
+      "manifestSha256": "e821722e0df51f6cfc219794b25ad58bb111aad966d212cefcd9212e9f5eccd3",
+      "exitCode": 2,
+      "motion": "not_run"
+    }
+  ],
+  "newEvidenceFiles": 125,
+  "limits": [
+    "No suites/native/SQLite executed; read-only local byte/receipt consistency, not effective Git graph/native authenticity.",
+    "123TS/37Python precede numeric refinement; final15TS/12selectedPython cover later changes,26Python deselected not passes. Counts overlap.",
+    "R1-05 remains incomplete native qualification; prepared-code scoped review still pending.",
+    "External parameter YAML contents, installed/native behavior, contact and full CI remain unqualified."
+  ],
+  "packages": {
+    "source": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-2a7ec9c..7b5b3a1.diff",
+      "bytes": 164952,
+      "sha256": "35e94c0f98c001f675573c54cb0b9a99d0c8b38a9170f168540357e166cb2d3e"
+    },
+    "lab": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-020b818..58d082a.diff",
+      "bytes": 3475,
+      "sha256": "79e19871537c145d01790b6b706ab244a71ec1d4df29ecdf59218c94b540b82d"
+    }
+  }
+}

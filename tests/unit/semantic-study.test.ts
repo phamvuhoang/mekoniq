@@ -1,7 +1,7 @@
 import {expect,test} from 'vitest';
 import fixture from '../fixtures/simulation-study/mismatched-world.json';
 import {buildSemanticStudy} from '../../packages/lab-runtime/src/v2/simulation3d/semantic-study';
-test('explicit two-report mismatched common projection is incomparable and never ranked',()=>{
+test('historical mismatched-world fixture fails integrity admission and is never ranked',()=>{
  const study=buildSemanticStudy(fixture as never);
  expect(study.status).toBe('incomparable');expect(study.reasonCodes).toContain('INPUTS_NOT_EQUIVALENT');expect(Object.hasOwn(study,'winner')).toBe(false);
 });
@@ -19,7 +19,7 @@ const input=()=>{const equivalence=semanticEquivalence(runs[0]!);return {equival
 test('fresh equivalent geometric inputs compare source causality with IR-SIM dynamics unsupported, without ranking',()=>{
  const study=buildSemanticStudy(input());expect(study.reasonCodes).toEqual([]);expect(study.status).toBe('complete');expect(study.runs).toHaveLength(3);expect(study.unsupportedDimensions).toContainEqual(expect.objectContaining({engine:'irsim_2d',dimension:'contact',status:'unsupported'}));expect(study).not.toHaveProperty('winner');expect(study).not.toHaveProperty('rank');
 });
-test.each(['world','frame','goal','digest'])('rejects a %s binding or input mismatch without treating it as engine behavior',kind=>{
+test.each(['world','frame','goal','digest'])('rejects stale-seal %s corruption without treating it as engine behavior',kind=>{
  const i=input();if(kind==='digest')i.runs[1]!.report.ref.sha256='0'.repeat(64);else{const j=i.runs[1]!.artifacts.findIndex(a=>a.ref.path==='navigation-scene.json'),s=JSON.parse(i.runs[1]!.artifacts[j]!.content);if(kind==='world')s.world.id='another-world';if(kind==='frame')s.robots[0].model.baseFrameId='another-frame';if(kind==='goal')s.robots[0].targetBindings[0].x+=.5;i.runs[1]!.artifacts[j]=artifact('navigation-scene.json',s);}
  const study=buildSemanticStudy(i);expect(study.status).toBe('incomparable');expect(study.reasonCodes).toContain('INPUTS_NOT_EQUIVALENT');
 });
@@ -88,4 +88,12 @@ test('rejects a coherent navigation document substituted for the physical model'
  const i=input(),before=JSON.stringify(runs[2]),run=substituteStudyPhysicalWithNavigation(i.runs[2]!),verified=verifiedSimulationInput(run),model=verified.get<{documentType:string;robotId:string;modelDigest:string;inputs:unknown}>('physical-model/amr-1.json');
  expect(model.documentType).toBe('navigation-model-2d');expect(validateNavigationDocument(model).ok).toBe(true);expect(model.robotId).toBe(verified.scene.robots[0]!.robotId);expect(model.modelDigest).toBe(verified.scene.robots[0]!.model.physicalModelDigest);expect(model.inputs).toEqual(verified.scene.inputs);
  i.runs[2]={...run,commonProjection:i.equivalence.commonProjection};const study=buildSemanticStudy(i);expect(study.status).toBe('incomparable');expect(study.reasonCodes).toContain('INPUTS_NOT_EQUIVALENT');expect(study.reasonCodes).toContain('SEMANTIC_LOAD_MODEL_BINDING_MISMATCH');expect(JSON.stringify(runs[2])).toBe(before);
+});
+
+test.each(['goal','frame'])('coherently resealed %s mismatch reaches semantic equivalence after upstream integrity',kind=>{
+ const i=input(),run=i.runs[1]!,index=run.artifacts.findIndex(a=>a.ref.path==='navigation-scene.json'),scene=JSON.parse(run.artifacts[index]!.content);
+ if(kind==='goal')scene.robots[0].targetBindings[0].x+=.5;else{scene.robots[0].model.baseFrameId='another-frame';scene.robots[0].model.modelDigest=documentDigest(scene.robots[0].model,'modelDigest');}
+ scene.sceneDigest=documentDigest(scene,'sceneDigest');const sealed=artifact('navigation-scene.json',scene);run.artifacts[index]=sealed;
+ const report=JSON.parse(run.report.content);report.navigation2d.sceneDigest=scene.sceneDigest;report.navigation2d.sceneRef={...sealed.ref,path:'bundle/navigation-scene.json'};report.navigation2d.modelDigests=scene.robots.map((r:{model:{modelDigest:string}})=>r.model.modelDigest);report.manifest.models.find((m:{id:string})=>m.id===scene.engine.id).hash=scene.sceneDigest;run.report=artifact('report.json',report);
+ expect(validateNavigationDocument(scene).ok).toBe(true);expect(()=>verifiedSimulationInput(run)).not.toThrow();const study=buildSemanticStudy(i);expect(study.status).toBe('incomparable');expect(study.reasonCodes).toContain('EQUIVALENCE_BINDING_MISMATCH');
 });

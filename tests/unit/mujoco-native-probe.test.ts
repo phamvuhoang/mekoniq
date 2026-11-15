@@ -249,3 +249,11 @@ test.each(['none','request','scene','compiled','before','injected','warning','sn
  await writeFile(join(root,'engine/compiled.xml'),mutation==='compiled'?'<mujoco/>':await readFile('scripts/native-sim/r2a-arm-compiled.xml'));
  const issues=await verifyBadStateRaw(root,raw,baseline);if(mutation==='none')expect(issues).toEqual([]);else expect(issues.length).toBeGreaterThan(0);
 });
+
+test('M00 reader preserves frozen 0.14m acceptance separately from the commanded 0.15m lift',async()=>{
+ const {mujocoCases,assessCase}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs'),spec=mujocoCases()[0]!;
+ const row=(label:string,z:number,open=false)=>({label,cup:[.35,.35,z],cupquat:[0,0,0,1],q:[0,0,0,0,0,0],cmd:[0,0,0,0,0,0],rel:[0,0,0],held:!open,L:!open,R:!open,tray:open,cupv:0,cupw:0,arm:false});
+ const trace=[row('close:settle',0),row('move:lift',.14),...Array.from({length:787},()=>row('carry',.14)),row('dwell:place',.14),...Array.from({length:10},()=>row('open:settle',.14,true))];
+ const raw={scope:spec.scope,engineVersion:'3.17.0',trial:{seed:spec.seed,nan:false,heldAllCarry:true,notHeldCarry:0,liftM:.14,slipM:0,dropTicks:1,placeErrM:0,peakFollowRad:0,settle:Object.fromEntries(Array.from({length:7},(_,n)=>[n,{ticks:1}])),warnings:{}},trace,tickMs:trace.map(()=>1),maxRssKiB:1};
+ expect(assessCase(spec,raw).issues).toEqual([]);raw.trial.liftM=.139;trace[1]!.cup[2]=.139;expect(assessCase(spec,raw).issues).toContain('GRASP_LIMITS');expect(assessCase(spec,raw).issues).toContain('RAW_LIFT_SLIP');
+});

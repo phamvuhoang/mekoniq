@@ -1,0 +1,263 @@
+{
+  "source": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+  "lab": "2ccfbddb86282a9547368302f6121c7ee09acb71",
+  "sourceTree": "3e4ca16ff3243df5a98a629a64ca3d3894f6ac31",
+  "labTree": "62233dd67677af93f9dc19140ad2109ae27614de",
+  "clean": true,
+  "fixBase": {
+    "source": "3edb4320d7146343a4b9df977c65d846472c473b",
+    "lab": "e8ed78b98399947a26e525b8f9902e3463aef36a"
+  },
+  "export": "/tmp/l04-fix1-runtime-7d8bede-20261115",
+  "runtimeArtifactSha256": "a3a54f2664a60724344f7b05bf7265ed280fc036498a5e77e87b30102c138737",
+  "schemaHash": "9e869f41bd7dbbbae1f26f81b75449b727e7160fdfb1a3b32cf3b23a5cb034e4",
+  "schemas": 57,
+  "closures": {
+    "native": {
+      "files": 225,
+      "bytes": 1570598,
+      "digest": "3d11e50dde374699a1f30c8de16821bfdc26fa077c080ecc825155a05aad6f8d"
+    },
+    "portable": {
+      "files": 237,
+      "bytes": 8108202,
+      "digest": "1fb6f053d4903a109a41f862556a02c2fd71c60d5011d94d27463165ad697d82"
+    }
+  },
+  "report": {
+    "bytes": 43224,
+    "sha256": "bc73c1dedbc4a908400d17c2e781341a3c918b709c7d9dd0deef6ec7e70ec46d",
+    "prefixBytes": 32387,
+    "prefixSha256": "642e137959397ea426347af99995df76657cd404269b53ce2c91dbd8815df199"
+  },
+  "checks": {
+    "clean-export": {
+      "exit": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "node",
+        "scripts/export-lab-runtime.mjs",
+        "/tmp/l04-fix1-runtime-7d8bede-20261115"
+      ],
+      "sourceCommit": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+      "receiptSha256": "c8061c9471118a4017fa6768e5a1fc25e7ebf802350924244fbfac2664d81e5f",
+      "logSha256": "1c41f9db30c7ec6715382a1c881232d9ff4aef0c2a532f1888052503b4d5f8fa"
+    },
+    "final-bytes": {
+      "exit": 0,
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "sourceCommit": "3edb4320d7146343a4b9df977c65d846472c473b",
+      "receiptSha256": "f497cda09731563b05d8e995368bc27a1981ccd56e94baec6cf87997112e0a82",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green-staging": {
+      "exit": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "python",
+        "-m",
+        "pytest",
+        "tests/test_actual_trace.py",
+        "tests/test_smoke_launch.py",
+        "tests/test_linuxcnc_sim.py",
+        "-q"
+      ],
+      "sourceCommit": "3edb4320d7146343a4b9df977c65d846472c473b",
+      "receiptSha256": "09084646cc1b211d164a8d31e6b9c7571fe89736b4e4bcbbc3a7bfe94233d62f",
+      "logSha256": "67f058e588691a96ad2f2bb379d4c537697681fd0965daad3106734ee52c0f00"
+    },
+    "identity": {
+      "exit": 0,
+      "argv": [
+        "python",
+        ".superpowers/sdd/03-r3-linux-readiness/evidence-L04/fix1/audit.py"
+      ],
+      "sourceCommit": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+      "receiptSha256": "7d0a4405de30c762665a5c5a3802596a62fbd44058c2cab5b47f68ba7cc22bee",
+      "logSha256": "7cc38970becbc99e95b59d23346f45e5feaffd664b1627fe7028e32276233b2e"
+    },
+    "lab-check-source": {
+      "exit": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "check:source"
+      ],
+      "sourceCommit": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+      "receiptSha256": "670a9dd04b3f69a922e7bfaa59e107454ceb0a396f4c35f8a7d980f6b9b36148",
+      "logSha256": "104474a339c81de74efc1c16a0544c7fc8d3b3518bc107b1b9fac205145b08f8"
+    },
+    "lab-import": {
+      "exit": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "node",
+        "scripts/import-runtime.mjs",
+        "/tmp/l04-fix1-runtime-7d8bede-20261115"
+      ],
+      "sourceCommit": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+      "receiptSha256": "faf2215ba2fa1d194beeeabb93ed6a6d532c0533736d528077452a2d03da6930",
+      "logSha256": "da9a3debb20d33cc65275e1410e39ec355cdb1a2efa151021ae2ac22364f7ad2"
+    },
+    "lab-staged-check": {
+      "exit": 0,
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "sourceCommit": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+      "receiptSha256": "b64e8dda75bfd759e0ca3631840f284c3ec1affbdef8a46053d1a8cb8206a4cf",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lab-sync": {
+      "exit": 0,
+      "argv": [
+        "node",
+        "scripts/sync-engineering-contracts.mjs"
+      ],
+      "sourceCommit": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+      "receiptSha256": "b7ca7c7fca57a3f49991fee0fce23d04dd8a9adbd28a6b8492c36ce9e8598c9c",
+      "logSha256": "84731b62ae9a5141c2b86ed05a6c5786c87be631f44b35181ea6b2e089481837"
+    },
+    "lab-typecheck": {
+      "exit": 0,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 170; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "sourceCommit": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+      "receiptSha256": "5b8f6886f9b17b53d6105639b09e9ddfb10411b1e1bdc8832bfd36d71bcf19ab",
+      "logSha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881"
+    },
+    "post-report": {
+      "exit": 0,
+      "argv": [
+        "python",
+        ".superpowers/sdd/03-r3-linux-readiness/evidence-L04/fix1/audit.py",
+        "post-report-identities.json"
+      ],
+      "sourceCommit": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+      "receiptSha256": "ac5d6b79e7d8e3f9e8e7005174a972c1ac02f770e7cf7f0481f33dfb1f9eb60a",
+      "logSha256": "140945bc6cb0d71affa75d4e602a35d5d2bdba85f6c25999f5579cc751831b87"
+    },
+    "red-staging": {
+      "exit": 1,
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "python",
+        "-m",
+        "pytest",
+        "tests/test_actual_trace.py",
+        "-q",
+        "-k",
+        "stage_"
+      ],
+      "sourceCommit": "3edb4320d7146343a4b9df977c65d846472c473b",
+      "receiptSha256": "810a5972b06f760336ad91cad9aa98f3a70a3591708f0b989d0d1cc4e30fb033",
+      "logSha256": "b772cc37c6006d39f44317842e09da8f0d26d2b8dbbcc210ddcf29f1d11a6a14"
+    },
+    "report-append": {
+      "exit": 0,
+      "argv": [
+        "python",
+        ".superpowers/sdd/03-r3-linux-readiness/evidence-L04/fix1/append-report.py"
+      ],
+      "sourceCommit": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+      "receiptSha256": "2de00835f877abd97b78649cb9fcef337d80708987d7aeddaf2e5b9424a4cf16",
+      "logSha256": "4afc452644ccabacf4bf8807d0651dc7bf4028aeaae21e409c75c35cd76ecb93"
+    }
+  },
+  "finalByteAttribution": {
+    "docs/operations/linuxcnc-native-sim-handoff.md": {
+      "receipt": "green-staging",
+      "sha256": "edac2adc1439d04ec6f809032785dcc52be139e1dbfc04495993400fd411460e",
+      "limit": "Checked-tree byte identity; Python behavior covered by named suite, documentation not executed."
+    },
+    "integrations/arm-controller/scripts/prepare_smoke.py": {
+      "receipt": "green-staging",
+      "sha256": "1b39e0e271ce697c7f5f2963c1c3c37deb3e33d485559586b2bebe9cd0bfbd78",
+      "limit": "Checked-tree byte identity; Python behavior covered by named suite, documentation not executed."
+    },
+    "integrations/arm-controller/tests/test_actual_trace.py": {
+      "receipt": "green-staging",
+      "sha256": "f12e11b4e8620f606511d31eec17dced25c11dbbf5f3e02db6af18d90afb3865",
+      "limit": "Checked-tree byte identity; Python behavior covered by named suite, documentation not executed."
+    }
+  },
+  "preserved": [
+    {
+      "index": "root-L04-evidence-file-index.json",
+      "files": 114
+    },
+    {
+      "index": "root-L03-evidence-file-index.json",
+      "files": 140
+    },
+    {
+      "index": "root-L03-r1-evidence-file-index.json",
+      "files": 125
+    },
+    {
+      "index": "root-L02-evidence-file-index.json",
+      "files": 86
+    },
+    {
+      "index": "root-L02-r1-evidence-file-index.json",
+      "files": 63
+    }
+  ],
+  "oldArtifacts": [
+    {
+      "source": "962e925a9b5f1adadbc5c881be43f7f170034264",
+      "export": "/tmp/l04-runtime-962e925-20261115",
+      "runtimeArtifactSha256": "0abee6f3bb8e04535149a885bb69c2e4593bf93bd794fae455017614a733315f"
+    },
+    {
+      "source": "3edb4320d7146343a4b9df977c65d846472c473b",
+      "export": "/tmp/l04-runtime-3edb432-20261115",
+      "runtimeArtifactSha256": "8303ab748c346c9fbe506b756c3d795f28ad3a5e309b36f6c0f766baeb5ced03"
+    },
+    {
+      "source": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "export": "/tmp/l03-fix1-final-runtime-20261115",
+      "runtimeArtifactSha256": "108e6233183a0646cc09ddb4e376a6a5fda3262cc964d7be242e991b3c08863a"
+    }
+  ],
+  "newEvidenceFiles": 33,
+  "limits": [
+    "Read-only local byte/receipt audit, no suites/native/SQLite; not effective Git graph or host authentication.",
+    "34 Python tests plus3 subtests cover fix1; prior138TS/71Python retain original bytes/identities. No new native preflight or native qualification.",
+    "L04-R2 remains deferred; native qualification, fullCI and earlier historical lint issue remain incomplete."
+  ],
+  "packages": {
+    "source": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-3edb432..7d8bede.diff",
+      "bytes": 11785,
+      "sha256": "64a860f556c25aafe8771ce690fe2fce44c6ca0da4943a9c6f5d810778f8f892"
+    },
+    "lab": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.superpowers/sdd/03-r3-linux-readiness/review-e8ed78b..2ccfbdd.diff",
+      "bytes": 3466,
+      "sha256": "29d1a888c438067c814da807e09309fa7d491aeb48294a14cb80896f007d45dd"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "utc": "2026-11-14T13:32:41.561377+00:00",
+  "scope": "Read-only independent stored/decompressed byte and hash audit; no Source/worker/browser execution, no schema or producer-authenticity claim",
+  "accepted": false,
+  "packages": [
+    {
+      "case": "nominal",
+      "directory": "/private/tmp/b07a-final-packages-ZYL6r5/nominal",
+      "manifestSha256": "b3eb6e7cc0e6c2287092c358e02ab3c860e76e5bc828a5ed41bae4e83bbebaea",
+      "manifestBytes": 26525,
+      "assetCount": 74,
+      "storedBytesIncludingManifest": 18365397,
+      "decodedAssetBytes": 138127785,
+      "mismatches": []
+    },
+    {
+      "case": "world-cup-fall",
+      "directory": "/private/tmp/b07a-final-packages-ZYL6r5/world-cup-fall",
+      "manifestSha256": "98d43fafb890e9bd9cce7c0de6bdc182b46458ec8d601ba44a8f73494526e6e7",
+      "manifestBytes": 15185,
+      "assetCount": 40,
+      "storedBytesIncludingManifest": 8968994,
+      "decodedAssetBytes": 36988567,
+      "mismatches": []
+    },
+    {
+      "case": "cup-fall",
+      "directory": "/private/tmp/b07a-final-packages-ZYL6r5/cup-fall",
+      "manifestSha256": "0300656468e9cf507a2844d3e784cf89c4b2e038ebcc1ce405bdc4e49383953f",
+      "manifestBytes": 9042,
+      "assetCount": 26,
+      "storedBytesIncludingManifest": 841774,
+      "decodedAssetBytes": 2988363,
+      "mismatches": []
+    }
+  ]
+}
