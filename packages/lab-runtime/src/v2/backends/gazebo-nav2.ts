@@ -59,20 +59,20 @@ const SIM_ROOT=resolve(fileURLToPath(new URL('../../../../../robotics/simulation
 /** Per-run ROS domain (1..100) and Gazebo partition from the run id: two runs on one host never share a graph (the worker keeps them if set). */
 export function partitionEnv(runId:string){const n=parseInt(createHash('sha256').update(runId).digest('hex').slice(0,8),16);return {ROS_DOMAIN_ID:String(1+n%100),GZ_PARTITION:`lab-${runId}`};}
 /** Fixed argv for the worker (shell:false): module, bundle, run id, namespaces, state dir, optional scenario fixture. No user string reaches it. */
-export function workerArgv(world:CompiledWorld,runId:string,python='python3',scenarioFile?:string,simulationRoot=SIM_ROOT){
- return {command:python,args:['-m','bridge.nav2_session','--bundle',world.outputDirectory,'--run-id',runId,'--robots',world.robots.map(r=>r.namespace).join(','),'--state-dir',join(world.outputDirectory,'.bridge'),...scenarioFile?['--scenario',scenarioFile]:[]],cwd:simulationRoot,
-  env:{...process.env,PYTHONPATH:`${simulationRoot}:${resolve(simulationRoot,'../agent')}`,...partitionEnv(runId)}};
+export function workerArgv(world:CompiledWorld,runId:string,python='python3',scenarioFile?:string,simulationRoot=SIM_ROOT,engineeringProfile?:string,engineeringCase?:string){
+ return {command:python,args:['-m',engineeringProfile?'bridge.engineering_session':'bridge.nav2_session','--bundle',world.outputDirectory,'--run-id',runId,'--robots',world.robots.map(r=>r.namespace).join(','),'--state-dir',join(world.outputDirectory,'.bridge'),...scenarioFile?['--scenario',scenarioFile]:[],...engineeringProfile?['--profile',engineeringProfile,...engineeringCase?['--case',engineeringCase]:[]]:[]],cwd:simulationRoot,
+  env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:`${simulationRoot}:${resolve(simulationRoot,'../agent')}`,...partitionEnv(runId),...engineeringProfile?{ROS_DOMAIN_ID:String(100+Number(partitionEnv(runId).ROS_DOMAIN_ID)),ROS_LOCALHOST_ONLY:'1',GZ_IP:'127.0.0.1'}:{}}};
 }
 /** JSON-lines request/response over a child's stdio; one in-flight request at a time per id, bounded wait. */
 export class StdioWorkerPort implements WorkerPort {
  private pending=new Map<string,{resolve:(v:JsonObject)=>void;reject:(e:Error)=>void}>();private seq=0;private exited:Error|null=null;private listeners=new Set<(e:WorkerEvent)=>void>();
- constructor(private child:ChildProcess,private timeoutMs=10000){
+ constructor(private child:ChildProcess,private timeoutMs=10000,private closeTimeoutMs=10000,private ownedGroup=false){
   createInterface({input:child.stdout!}).on('line',line=>{let m:JsonObject;try{m=JSON.parse(line) as JsonObject;}catch{return;}
    if(typeof m.event==='string'){for(const l of this.listeners)l({event:m.event,payload:(m.payload??{}) as JsonObject});return;}
    const p=typeof m.id==='string'?this.pending.get(m.id):undefined;if(!p)return;this.pending.delete(String(m.id));
    if(m.ok===true)p.resolve(m.result as JsonObject);else p.reject(new Error(`WORKER_ERROR:${String((m.error as JsonObject|undefined)?.code??'UNKNOWN')}`));});
   const gone=(e:Error)=>{this.exited=e;for(const p of this.pending.values())p.reject(e);this.pending.clear();};
-  child.once('exit',code=>gone(new Error(`WORKER_EXITED:${code}`)));
+  child.once('exit',code=>{gone(new Error(`WORKER_EXITED:${code}`));if(this.ownedGroup&&child.pid)try{process.kill(-child.pid,'SIGKILL');}catch{/* owned group is already gone */}});
   child.stdin!.on('error',e=>gone(new Error(`WORKER_STDIN:${(e as NodeJS.ErrnoException).code??e.message}`))); // EPIPE after a worker death must never escape the event loop
  }
  request(op:WorkerOp,args:JsonObject,timeoutMs=this.timeoutMs):Promise<JsonObject>{
@@ -85,33 +85,34 @@ export class StdioWorkerPort implements WorkerPort {
   });
  }
  onEvent(listener:(e:WorkerEvent)=>void){this.listeners.add(listener);return ()=>{this.listeners.delete(listener);};}
- async close(){if(this.exited)return;await this.request('close',{}).catch(()=>{});this.child.kill('SIGTERM');}
+ async close(){if(this.exited)return;await this.request('close',{},this.closeTimeoutMs).catch(()=>{});this.child.kill('SIGTERM');}
 }
-async function spawnWorker(world:CompiledWorld,runId:string,python:string,scenarioFile?:string,simulationRoot=SIM_ROOT):Promise<{port:WorkerPort|null;reasons:string[]}>{
- const a=workerArgv(world,runId,python,scenarioFile,simulationRoot);
+async function spawnWorker(world:CompiledWorld,runId:string,python:string,scenarioFile?:string,simulationRoot=SIM_ROOT,engineeringProfile?:string,engineeringCase?:string):Promise<{port:WorkerPort|null;reasons:string[]}>{
+ const a=workerArgv(world,runId,python,scenarioFile,simulationRoot,engineeringProfile,engineeringCase);
  return new Promise(res=>{
   // stderr is inherited: rclpy/Nav2 logging never fills a pipe nobody drains (which would block the worker into WORKER_TIMEOUT)
-  const child=spawn(a.command,a.args,{cwd:a.cwd,env:a.env,stdio:['pipe','pipe','inherit'],shell:false});
+  const child=spawn(a.command,a.args,{cwd:a.cwd,env:a.env,stdio:['pipe','pipe','inherit'],shell:false,detached:!!engineeringProfile});
   child.once('error',e=>res({port:null,reasons:[(e as NodeJS.ErrnoException).code==='ENOENT'?'PYTHON_MISSING':`WORKER_SPAWN_FAILED:${(e as Error).message}`]}));
-  child.once('spawn',()=>res({port:new StdioWorkerPort(child),reasons:[]}));
+  child.once('spawn',()=>res({port:new StdioWorkerPort(child,10000,engineeringProfile?90000:10000,!!engineeringProfile),reasons:[]}));
  });
 }
 /**
  * Start the backend for one run. `options.port` injects a worker transport (tests: a protocol double); otherwise the Python worker is spawned.
  * Poll only the same worker during bounded startup; terminal failure remains unavailable, with no fallback.
  */
-export async function startGazeboBackend(world:CompiledWorld,runId:string,options:{simulationRoot?:string;port?:WorkerPort;python?:string;scenarioFile?:string;startupTimeoutMs?:number;startupPollMs?:number;environmentProfile?:string}={}):Promise<GazeboBackend>{
+export async function startGazeboBackend(world:CompiledWorld,runId:string,options:{simulationRoot?:string;port?:WorkerPort;python?:string;scenarioFile?:string;startupTimeoutMs?:number;startupPollMs?:number;environmentProfile?:string;engineering?:boolean;engineeringCase?:string}={}):Promise<GazeboBackend>{
+ if(options.engineering&&(!/^engineering-(amd64|arm64)$/.test(options.environmentProfile??'')||options.scenarioFile))throw Error('ENGINEERING_PROFILE_REQUIRED');
  const simRoot=options.simulationRoot??SIM_ROOT;
  let image:JsonObject|undefined;try{image=JSON.parse(await readFile(join(simRoot,'image.lock.json'),'utf8')) as JsonObject;}catch{image=undefined;}
  let environment:JsonObject|undefined;
  if(options.environmentProfile){
   image=undefined;
-  const p=spawnSync(options.python??'python3',['-m','bridge.native_profile','--profile',options.environmentProfile],{cwd:simRoot,env:{...process.env,PYTHONPATH:`${simRoot}:${resolve(simRoot,'../agent')}`},encoding:'utf8',timeout:30000});
+  const p=spawnSync(options.python??'python3',['-m','bridge.native_profile','--profile',options.environmentProfile],{cwd:simRoot,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:`${simRoot}:${resolve(simRoot,'../agent')}`},encoding:'utf8',timeout:30000});
   try{const inspected:unknown=JSON.parse(p.stdout);if(p.status!==0||!validNativeProfileReport(inspected,options.environmentProfile))throw new Error();environment=inspected as JsonObject;}catch{environment={id:options.environmentProfile,available:false,reasonCodes:['PROFILE_INVENTORY_UNREADABLE']};}
  }
  let port=options.port??null,reasons:string[]=[];
  if(environment&&environment.available!==true){reasons=Array.isArray(environment.reasonCodes)?environment.reasonCodes.map(String):['PROFILE_UNAVAILABLE'];await port?.close();port=null;}
- if(!port&&(!environment||environment.available===true)){const spawned=await spawnWorker(world,runId,options.python??'python3',options.scenarioFile,simRoot);port=spawned.port;reasons=spawned.reasons;}
+ if(!port&&(!environment||environment.available===true)){const spawned=await spawnWorker(world,runId,options.python??'python3',options.scenarioFile,simRoot,options.engineering?options.environmentProfile:undefined,options.engineeringCase);port=spawned.port;reasons=spawned.reasons;}
  let capability:BackendCapability={backendId:'gazebo_nav2',available:false,step:false,version:GAZEBO_NAV2.version,reasons,evidence:'none',bootId:null,robots:[],...image?{image}:{},...environment?{environment}:{}};
  if(port){
   const timeoutMs=options.startupTimeoutMs??60_000,pollMs=options.startupPollMs??250;
@@ -125,7 +126,7 @@ export async function startGazeboBackend(world:CompiledWorld,runId:string,option
     capability={...capability,available:c.available===true,step:c.step===true,version:String(c.version??GAZEBO_NAV2.version),reasons:Array.isArray(c.reasons)?c.reasons.map(String):[],evidence:options.port?'protocol_double':String(c.evidence??'unknown'),bootId:typeof c.bootId==='string'?c.bootId:null,robots:Array.isArray(c.robots)?c.robots.map(String):[],...c.beverage&&typeof c.beverage==='object'&&!Array.isArray(c.beverage)?{beverage:structuredClone(c.beverage) as unknown as NonNullable<BackendCapability['beverage']>}:{}};
    }catch(e){capability={...capability,reasons:[`WORKER_UNAVAILABLE:${(e as Error).message}`]};break;}
    finally{if(timer)clearTimeout(timer);}
-   if(capability.available||!capability.reasons.length||capability.reasons.some(r=>r!=='CLOCK_MISSING'&&!r.startsWith('NAV2_NOT_READY:'))||performance.now()>=deadline)break;
+   if(capability.available||!capability.reasons.length||capability.reasons.some(r=>r!=='CLOCK_MISSING'&&!r.startsWith('NAV2_NOT_READY:')&&!(options.engineering&&(/^(TF_MISSING|SCAN_FEEDBACK_STALE|JOINTS_FEEDBACK_STALE)/.test(r))))||performance.now()>=deadline)break;
    await new Promise(r=>setTimeout(r,Math.min(pollMs,Math.max(0,deadline-performance.now()))));
   }while(performance.now()<deadline);
  }

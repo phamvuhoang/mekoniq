@@ -81,7 +81,7 @@ ENGINEERING_PROFILES = {"engineering-arm64": "arm64", "engineering-amd64": "amd6
 
 
 def inspect_engineering_profile(profile_id):
-    from bridge.engineering_profile import qualify_inventory
+    from bridge.engineering_profile import qualify_native_inventory
     lock_file = PROFILES / f"{profile_id}.lock.json"
     locked = json.loads(lock_file.read_text())
     os_release = {}
@@ -104,7 +104,27 @@ def inspect_engineering_profile(profile_id):
                     actual["packages"][fields[0]] = fields[2]
     except (OSError, subprocess.TimeoutExpired):
         pass
-    report = qualify_inventory(actual, locked)
+    for path in (locked.get("digests") or {}):
+        try:
+            file=Path(path)
+            if file.is_absolute() and file.is_file():actual["digests"][path]=hashlib.sha256(file.read_bytes()).hexdigest()
+        except OSError:pass
+    executables={}
+    for name in ("ros2","gz","python3"):
+        found=shutil.which(name)
+        if found:
+            file=Path(found).resolve()
+            executables[name]={"path":str(file),"sha256":hashlib.sha256(file.read_bytes()).hexdigest()}
+    prefixes=[p for p in os.environ.get("AMENT_PREFIX_PATH","").split(os.pathsep) if p]
+    actual["runtime"]={"rosDistro":os.environ.get("ROS_DISTRO"),"executables":executables,"amentPrefixes":prefixes,"pythonPath":worker_pythonpath_identity(os.environ.get("PYTHONPATH",""),Path(__file__).resolve().parents[1]),"libraryPath":os.environ.get("LD_LIBRARY_PATH",""),"gazeboPluginPath":os.environ.get("GZ_SIM_SYSTEM_PLUGIN_PATH","")}
+    try:actual["runtime"]["overlayManifests"]={p:overlay_fingerprint(p) for p in prefixes if Path(p).resolve()!=Path('/opt/ros/jazzy')}
+    except (OSError,ValueError) as error:actual["runtime"]["overlayError"]=str(error)
+    sources={}
+    for file in [Path('/etc/apt/sources.list'),*sorted(Path('/etc/apt/sources.list.d').glob('*'))]:
+        if file.is_file():sources[str(file)]=hashlib.sha256(file.read_bytes()).hexdigest()
+    actual["aptProvenance"]={"sources":sources}
+    actual["platform"]=platform.system().lower()
+    report = qualify_native_inventory(actual, locked)
     reasons = list(report["reasons"])
     if platform.system().lower() != "linux":
         reasons.insert(0, "PROFILE_PLATFORM_MISMATCH")

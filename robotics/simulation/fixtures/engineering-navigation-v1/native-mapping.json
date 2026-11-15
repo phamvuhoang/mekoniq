@@ -1,0 +1,35 @@
+{
+  "assumptions": [
+    "mass, inertia, friction and sensor parameters are assumed",
+    "ideal velocity actuation; no torque/current/voltage model"
+  ],
+  "calibration": "not_calibrated",
+  "compiler": {
+    "id": "engineering-gazebo-canonical",
+    "version": "1"
+  },
+  "frameMap": {
+    "base": "chassis/base",
+    "odom": "odom",
+    "sensor": "lidar/head",
+    "world": "map"
+  },
+  "jointMap": [
+    "wheel-left/axle",
+    "wheel-right/axle"
+  ],
+  "kind": "engineering-gazebo-canonical-v1",
+  "navigationSceneDigest": "23f4aef19621e4da55f814f6cac6f09ee69eb7ee0206f1e48e96761494f54462",
+  "physicalModelDigest": "e6a44a42b6a0a02cc7a54e7f5956d5aaed093fd4b3c30abcaf2df7e7d4d3cb2e",
+  "profiles": [
+    "engineering-amd64",
+    "engineering-arm64"
+  ],
+  "projectDigest": "a129edccc0ccaf2ca3a87400237ae77b82f4aa8c2da4bad1abec03855b93a938",
+  "schemaVersion": 1,
+  "sourceUnits": {
+    "angle": "rad",
+    "length": "m"
+  },
+  "targetBackendSet": "engineering-rigid-v1"
+}

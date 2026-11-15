@@ -99,7 +99,7 @@ test('the legacy native lifecycle and SIL preflight refuse engineering sets inst
   const r = preflight('BV01', 'engineering-contact-v1');
   expect(r.ok).toBe(false);
   expect(r.reasons.join()).toContain('BACKEND_MISSING:moveit_gazebo_arm');
-  expect(preflight('FD01', 'engineering-rigid-v1').reasons.join()).toContain('ENGINEERING_LIFECYCLE_UNAVAILABLE');
+  expect(preflight('FD01', 'engineering-rigid-v1')).toMatchObject({ok:true,fixture:null});
 });
 
 test('with the engineering service the engineering sets are listed as supported per scenario', async () => {

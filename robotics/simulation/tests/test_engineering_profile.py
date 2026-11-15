@@ -66,3 +66,11 @@ def test_inspect_on_an_unprovisioned_host_reports_blockers_not_availability():
     assert report["id"] == "engineering-arm64" and report["available"] is False
     assert "INVENTORY_UNRESOLVED" in report["reasonCodes"]
     assert inspect_profile("engineering-unknown")["reasonCodes"] == ["PROFILE_UNKNOWN"]
+
+
+def test_native_profile_requires_plugins_runtime_and_apt_provenance():
+    from bridge.engineering_profile import qualify_native_inventory
+    candidate=locked()
+    assert 'PLUGIN_INVENTORY_UNRESOLVED' in qualify_native_inventory(actual(),candidate)['reasons']
+    assert 'RUNTIME_INVENTORY_UNRESOLVED' in qualify_native_inventory(actual(),candidate)['reasons']
+    assert 'APT_PROVENANCE_UNRESOLVED' in qualify_native_inventory(actual(),candidate)['reasons']

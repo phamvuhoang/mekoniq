@@ -94,3 +94,33 @@ class SimClock:
             raise RuntimeError("CLOCK_REGRESSION")
         if not self.paused:
             self.sim_ns += dt_ns
+
+
+class NativeClockMapping:
+    """Receipt clock never substitutes for provider time. A reset/stall latches failure."""
+    def __init__(self):
+        self.origin = self.last = self.received = None
+        self.failed = False
+
+    def observe(self, provider_ns, receive_ns):
+        if self.failed:
+            raise RuntimeError('CLOCK_FAILED')
+        if not isinstance(provider_ns, int) or provider_ns < 0 or not isinstance(receive_ns, int) or receive_ns < 0:
+            self.failed = True
+            raise RuntimeError('CLOCK_INVALID')
+        if self.last is not None and (provider_ns < self.last or receive_ns < self.received):
+            self.failed = True
+            raise RuntimeError('CLOCK_RESET')
+        if self.origin is None:
+            self.origin = provider_ns
+        if self.last != provider_ns:
+            self.received = receive_ns
+        self.last = provider_ns
+        return {'providerSimNs':str(provider_ns),'sourceTick':(provider_ns-self.origin)//20_000_000,'receiveMonotonicNs':str(receive_ns)}
+
+    def check_fresh(self, now_ns):
+        if self.failed:
+            raise RuntimeError('CLOCK_FAILED')
+        if self.received is None or now_ns-self.received > 500_000_000:
+            self.failed = True
+            raise RuntimeError('FEEDBACK_STALE')

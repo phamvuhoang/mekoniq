@@ -31,6 +31,10 @@ import physicalSchema from '../../../../contracts/schemas/robot-physical-model-v
 import navigationSchema from '../../../../contracts/schemas/navigation-model-2d-v1.schema.json';
 import sceneSchema from '../../../../contracts/schemas/navigation-scene-v1.schema.json';
 import cellSchema from '../../../../contracts/schemas/arm-cell-scene-v1.schema.json';
+import nativeNavigationManifest from '../../../../../robotics/simulation/fixtures/engineering-navigation-v1/compiler-manifest.json';
+import nativeNavigationMapping from '../../../../../robotics/simulation/fixtures/engineering-navigation-v1/native-mapping.json';
+import engineeringAmd64 from '../../../../../robotics/simulation/profiles/engineering-amd64.lock.json';
+import engineeringArm64 from '../../../../../robotics/simulation/profiles/engineering-arm64.lock.json';
 import navProject from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json';
 import navScene from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1/navigation-scene.json';
 import navPhysical from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1/physical-model-amr-1.json';
@@ -85,7 +89,18 @@ export function validateNativeDocuments(m:NativeHandoffV1,contents:ReadonlyMap<s
    if(mobile.robotId!==m.profile.modelId||!same(m.profile.documents,binding)||m.frames.world!=='map'||m.frames.robotBase!==mobile.baseFrameId||m.frames.tool!==null)throw Error('DOCUMENT_MAPPING_MISMATCH');
    if(!same(p,navProject)||!same(w,navScene)||!same(model,navPhysical)||canonical(p)!==mobile.inputs.project.digest||!same(scene.inputs,mobile.inputs)||canonical((p as typeof navProject).runtimeProject.world)!==scene.inputs.world.hash||!same(projectNavigationModel(mobile,scene.policy),scene.robots[0]!.model))throw Error('NAVIGATION_PROJECT_MODEL_MISMATCH');
    if(!m.refs.engine.some(r=>r.sourcePath==='robotics/simulation-3d/requirements.lock'))throw Error('DOCUMENT_ENGINE_MISMATCH');
-   add('NATIVE_ENGINE_MAPPING_UNRESOLVED','/profile/documents','prerequisite');return issues;
+   const base='robotics/simulation/fixtures/engineering-navigation-v1/';
+   if(!m.refs.engine.some(r=>r.sourcePath===base+'compiler-manifest.json')){add('NATIVE_ENGINE_MAPPING_UNRESOLVED','/profile/documents','prerequisite');return issues;}
+   if(!same(JSON.parse(bySource(base+'compiler-manifest.json').toString()),nativeNavigationManifest)||!same(JSON.parse(bySource(base+'native-mapping.json').toString()),nativeNavigationMapping))throw Error('NATIVE_ENGINE_MAPPING_MISMATCH');
+   for(const output of nativeNavigationManifest.outputs){
+    const ref=all.find(r=>r.sourcePath===base+output.path);
+    if(!ref){add('NATIVE_ARTIFACT_CLOSURE_MISSING','/refs/engine','prerequisite');break;}
+    if(hash(contents.get(ref.path)!)!==output.sha256)throw Error('NATIVE_ARTIFACT_MAPPING_MISMATCH');
+   }
+   const lock=m.profile.architecture==='amd64'?engineeringAmd64:engineeringArm64;
+   // Static mapping is now explicit. Installed package/plugin qualification is a separate unresolved gate.
+   if(m.profile.id!==lock.id||lock.qualification!=='qualified'||!lock.packages||!lock.digests)add('NATIVE_ENGINE_PROFILE_UNRESOLVED','/profile','prerequisite');
+   return issues;
   }
   if(!validateProjectV2(p).ok)throw Error('DOCUMENT_PROJECT_INVALID');
   if(!same(m.profile.documents,binding))throw Error('DOCUMENT_MAPPING_MISMATCH');

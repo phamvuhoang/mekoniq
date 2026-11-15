@@ -1,3 +1,4 @@
+import {engineeringNativeAdmission,assessEngineeringEvidence,assessEngineeringFault,type EngineeringNativeFactory} from './engineering-native';
 import {assessPhysicsObservations} from './physics-assessment';
 import {runNativeSilScenario} from './native-campaign';
 import type {NativeProviderFactory} from './native-lifecycle';
@@ -34,7 +35,7 @@ const FINAL=['completed','cancelled','failed'];
 /** Iterations a link/sensor fault stays active (disconnect, reboot, sensor-drop): long enough for a poll to see it, short enough to resume. */
 const FAULT_ITERATIONS=25;
 export interface SilRunOptions {
- nativeFactory?:NativeProviderFactory;
+ nativeFactory?:NativeProviderFactory;engineeringFactory?:EngineeringNativeFactory;
  scenarioId:string;scenarioRevision:number;seed:number;project:unknown;sourceCommit:string;outDir:string;world:CompiledWorld;backendSetId:string;
  maxIterations:number;paceMs:number;backendFactory(world:CompiledWorld,runId:string):Promise<GazeboBackend>;
  scenarios?:ReadonlyMap<string,ScenarioDefinition>;catalog?:CapabilityCatalog;nowMs?:()=>number;
@@ -54,13 +55,14 @@ const UUID=/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,ISO=
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 export async function runSilScenario(o:SilRunOptions):Promise<SilRunResult>{
  if(o.scenarioId==='BV01'){if(!o.nativeFactory)throw new Error('BACKEND_MISSING:linuxcnc_sim,coffee_io_sim:NATIVE_FACTORY_REQUIRED');return runNativeSilScenario(o,o.nativeFactory);}
- const registry=o.scenarios??scenarioRegistry,catalog=o.catalog??defaultCatalog,nowMs=o.nowMs??Date.now;
+ const sourceEpoch=Date.now(),registry=o.scenarios??scenarioRegistry,catalog=o.catalog??defaultCatalog,nowMs=o.engineeringFactory?()=>sourceEpoch+o.engineeringFactory!.clock.tick*20:o.nowMs??Date.now;
  const registered=registry.get(o.scenarioId);if(!registered)throw new Error('SCENARIO_UNSUPPORTED');
  const scenario=structuredClone(registered);checkScenario(scenario);
  if(scenario.revision!==o.scenarioRevision)throw new Error('SCENARIO_REVISION_MISMATCH');
  const set=Object.hasOwn(catalog.sets,o.backendSetId)?catalog.sets[o.backendSetId]!:undefined;
  if(!set||set.mode!=='simulation')throw new Error('BACKEND_SET_UNKNOWN');
- if(set.scenarioIds)throw new Error('ENGINEERING_LIFECYCLE_UNAVAILABLE');
+ if(set.scenarioIds){if(!o.engineeringFactory)throw new Error('ENGINEERING_LIFECYCLE_UNAVAILABLE');engineeringNativeAdmission(o.project,o.scenarioId,o.backendSetId,o.engineeringFactory.profile);if(o.world.inputHash!==o.engineeringFactory.world.inputHash)throw Error('ENGINEERING_BUNDLE_MISMATCH');}
+ else if(o.engineeringFactory)throw Error('ENGINEERING_BACKEND_SET_REQUIRED');
  const required=requiredBackends(scenario,'simulation',o.backendSetId,catalog);
  const missing=required.filter(b=>!set.backends.includes(b)||!IMPLEMENTED.includes(b));
  if(missing.length)throw new Error(`BACKEND_MISSING:${missing.join(',')}`);
@@ -86,7 +88,7 @@ export async function runSilScenario(o:SilRunOptions):Promise<SilRunResult>{
  if(schedule.issues.length)throw new Error(`FAULT_SCHEDULE_INVALID:${schedule.issues.map(i=>`${i.index}:${i.reasonCodes.join('|')}`).join(';')}`);
  for(const f of (o.faults??[]).filter(isWorkerFault))faultLog.push({faultId:f.faultId,entityId:f.entityId??null,atTick:f.atTick,scope:'worker',applied:'deferred_to_worker'});
  // ---- backend first: an unavailable simulator is refused before the journal exists (never an attempt, never a mock) ----
- const backend=await o.backendFactory(o.world,runId),capability=await backend.capability();
+ const backend=await (o.engineeringFactory?o.engineeringFactory.open(runId):o.backendFactory(o.world,runId)),capability=await backend.capability();
  if(!capability.available){await backend.close().catch(()=>{});throw new Error(`BACKEND_UNAVAILABLE:${capability.reasons.join(',')||'NO_REASON'}`);}
  const linked:GazeboBackend={...backend,execute:(r,c)=>link.downUntil>=iteration?Promise.reject(new Error('LINK_DOWN')):backend.execute(r,c),query:(r,c)=>link.downUntil>=iteration?Promise.reject(new Error('LINK_DOWN')):backend.query(r,c),
   cancel:(r,c)=>link.downUntil>=iteration?Promise.reject(new Error('LINK_DOWN')):backend.cancel(r,c),stop:(r,c)=>link.downUntil>=iteration?Promise.reject(new Error('LINK_DOWN')):backend.stop(r,c)};
@@ -183,7 +185,14 @@ export async function runSilScenario(o:SilRunOptions):Promise<SilRunResult>{
   return true;
  };
  try{
-  for(iteration=0;iteration<o.maxIterations;iteration++){
+  const wallDeadline=performance.now()+Math.max(1000,o.maxIterations*20);
+  for(iteration=0;iteration<o.maxIterations;iteration=o.engineeringFactory?iteration:iteration+1){
+   if(o.engineeringFactory){
+    const clock=o.engineeringFactory.clock;
+    while(clock.tick<=iteration&&!clock.failure&&performance.now()<wallDeadline){await sleep(20);if(clock.mapping.length)try{clock.assertFresh();}catch{/* latched below */}}
+    if(clock.failure||performance.now()>=wallDeadline){attention.push({reason:clock.failure??'NATIVE_WALL_DEADLINE',iteration});status='needs_attention';break;}
+    iteration=clock.tick;
+   }
    if(!suspended){
     try{
      for(const w of workload)if(!w.placed&&w.atTick<=iteration)await placeOrder(w);
@@ -204,6 +213,8 @@ export async function runSilScenario(o:SilRunOptions):Promise<SilRunResult>{
    if(o.paceMs>0)await sleep(o.paceMs);else await new Promise<void>(resolve=>setImmediate(resolve));
   }
   if(status==='timeout'&&[...confirmations.values()].some(x=>x.barrier==='pending')){status='needs_attention';for(const b of barriers.records().filter(b=>b.status==='pending'))attention.push({reason:`BARRIER_INCOMPLETE:${b.barrierId}:${b.missing.join(',')}`,iteration});}
+  const engineeringEvidence=o.engineeringFactory?await o.engineeringFactory.finish():null;
+  const engineeringAssessment=engineeringEvidence?assessEngineeringEvidence(engineeringEvidence):null;
   // ---- evidence ----
   const journal=(await source.journal()).map(entry=>({sequence:entry.sequence,at:entry.recordedAt,events:(entry.payload.events as unknown as DomainEvent[]).map(e=>({type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject}))}));
   const effects=(await source.effects()).filter(e=>String(e.type).startsWith('robot.')).map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject}));
@@ -218,25 +229,31 @@ export async function runSilScenario(o:SilRunOptions):Promise<SilRunResult>{
   const lastMission=[...journal.flatMap(j=>j.events)].reverse().find(e=>e.type==='MissionCreated');
   const standby=lastMission&&((lastMission.state.stops as JsonObject[])??[]).every(s=>s.action==='standby'&&roles.robots.some(r=>r.parkingId===s.targetId));
   const assertions:SilAssertion[]=[
+   ...engineeringAssessment?[{id:'FD01.native-evidence',result:engineeringAssessment.result,reason:engineeringAssessment.blockers.join(',')}]:[],
    {id:`${scenario.id}.served-after-handoff`,...served===BigInt(expected)&&expected>0&&types.indexOf('CargoLoaded')<types.indexOf('DeliveryHandedOff')&&types.includes('DeliveryHandedOff')?{result:'pass',detail:`served ${served}/${expected} after CargoLoaded`}:{result:'fail',reason:'SERVED_MISMATCH',detail:`served ${served}/${expected}`}},
    {id:`${scenario.id}.arrival-from-observation`,...arrivals>0&&arrivals===observedCompleted?{result:'pass',detail:`${arrivals} arrivals from ${observedCompleted} observed completions`}:{result:'fail',reason:'ARRIVAL_WITHOUT_OBSERVATION',detail:`${arrivals} arrivals, ${observedCompleted} observed completions`}},
    ...scenario.park?[{id:`${scenario.id}.parked-not-charging`,...status==='completed'&&standby?{result:'pass' as const,detail:'last mission is a standby at the robot parking point'}:{result:'fail' as const,reason:'NOT_PARKED'}}]:[],
    {id:'SIM.progress-or-reason',...status==='completed'?{result:'pass',detail:`completed in ${iteration+1} iterations`}:status==='needs_attention'?{result:'pass',detail:`explicit attention: ${attention.map(a=>a.reason).join(',')}`}:{result:'fail',reason:'NO_PROGRESS:ITERATION_LIMIT',detail:`${o.maxIterations} iterations without completion or an explicit reason`}},
    ...physicsAssessment.map(a=>physics?a:{id:a.id,result:'not_run' as const,reason:a.reason==='SINGLE_ROBOT'?'SINGLE_ROBOT':'PHYSICS_EVIDENCE_MISSING',detail:`backend evidence ${capability.evidence}`}),
   ];
+  if(o.engineeringFactory&&['no-path','cancel','worker-loss'].includes(o.engineeringFactory.nativeCase)){
+   for(let i=assertions.length-1;i>=0;i--)if(/\.(served-after-handoff|arrival-from-observation|parked-not-charging)$/.test(assertions[i]!.id))assertions.splice(i,1);
+   assertions.push({id:'FD01.native-fault',...assessEngineeringFault({nativeCase:o.engineeringFactory.nativeCase,fault:o.engineeringFactory.fault,status,served:business.served,effects,observedCompleted})});
+  }
+  if(o.engineeringFactory?.nativeCase==='obstacle')assertions.push({id:'FD01.native-fault',result:o.engineeringFactory.fault.status==='applied'?'pass':'not_run',reason:o.engineeringFactory.fault.status});
   // Canonical business form: runtime UUIDs become logical ids, wall-clock stamps (keys *At/*AtMs, ISO strings) are dropped; causal order, ids, quantities and statuses stay.
   const canonical=(v:unknown):unknown=>{const ids=new Map<string,string>();const norm=(x:unknown):unknown=>typeof x==='string'?(ISO.test(x)?'<time>':x.replace(UUID,m=>{const k=m.toLowerCase();if(!ids.has(k))ids.set(k,`uuid#${ids.size+1}`);return ids.get(k)!;})):Array.isArray(x)?x.map(norm):x&&typeof x==='object'?Object.fromEntries(Object.entries(x).filter(([k])=>k!=='at'&&!/At(Ms)?$/.test(k)).map(([k,y])=>[k,norm(y)])):x;return norm(v);};
   const businessDigest=hashJson(canonical({events:journal.map(j=>j.events),outcome:{status,served:business.served},effects:effects.map(e=>({type:e.type,status:e.status,attempts:e.attempts}))}));
-  const files:Record<string,string>={'journal.json':JSON.stringify(journal),'effects.json':JSON.stringify(effects),
+  const files:Record<string,string>={...engineeringEvidence?{'engineering-native-evidence.json':JSON.stringify({...engineeringEvidence,...engineeringAssessment,nativeCase:o.engineeringFactory!.nativeCase,fault:o.engineeringFactory!.fault})}:{},'journal.json':JSON.stringify(journal),'effects.json':JSON.stringify(effects),
    'telemetry.json':JSON.stringify({...recorder.report(),source:'gazebo_nav2 worker events',ingest:ingestLog,sensorReports:poseSensorReports}),
    'contacts.json':JSON.stringify({available:physics,...physics?{}:{reason:'PHYSICS_EVIDENCE_MISSING'},evidence:capability.evidence,physicsAssessment,contacts,sensorReports,coverage:{contactGaps:[...contactGaps].sort(),poseGaps:[...poseGaps].sort()},liveness:Object.fromEntries(liveness),separation:{samples:separation.samples,min:separation.min}}),
    'barriers.json':JSON.stringify(barriers.records()),'faults.json':JSON.stringify(faultLog),'assertions.json':JSON.stringify(assertions)};
   for(const [name,text] of Object.entries(files))await writeFile(join(o.outDir,name),text);
   const manifest:SilRunManifest={schemaVersion:1,runId,sourceCommit:o.sourceCommit,mode:'simulation',access:'simulated',backendSetId:o.backendSetId,backends:required,
    scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)},project:{id:project.id,revision:project.revision,hash:hashJson(project)},
-   world:{inputHash:o.world.inputHash,manifestHash:o.world.manifestHash,mapId:o.world.mapId,mapRevision:o.world.mapRevision},seed:o.seed,prng:{...PRNG},clock:{iterationMs:SIL_TICK_MS,source:'orchestrator iteration; the worker runs on its own /clock'},
+   world:{inputHash:o.world.inputHash,manifestHash:o.world.manifestHash,mapId:o.world.mapId,mapRevision:o.world.mapRevision},seed:o.seed,prng:{...PRNG},clock:{iterationMs:SIL_TICK_MS,source:o.engineeringFactory?'provider /clock mapped to source tick; receipt monotonic watchdog':'orchestrator iteration; the worker runs on its own /clock'},
    evidence:capability.evidence,backendCapability:capability,status,iterations:iteration+1,businessDigest,hashAlgorithm:'sha256-canonical-json-v1',
-   outputs:Object.entries(files).map(([path,text])=>({path,sha256:createHash('sha256').update(text).digest('hex')})),
+   outputs:[...Object.entries(files).map(([path,text])=>({path,sha256:createHash('sha256').update(text).digest('hex')})),...engineeringEvidence?.artifacts??[]],
    limitations:['Business results come from the source journal; physics rows need a real SIL worker (evidence sil) and stay not_run otherwise.','Mock-only scenario obstacles are ignored in SIL; scene actors/blockers come from the scenario fixture through the compiled world.',...physics?[]:[`Backend evidence is ${capability.evidence}: no plant telemetry, no contacts, no separation.`]]};
   manifest.manifestHash=hashJson(manifest);
   await writeFile(join(o.outDir,'run-manifest.json'),JSON.stringify(manifest,null,2)+'\n');

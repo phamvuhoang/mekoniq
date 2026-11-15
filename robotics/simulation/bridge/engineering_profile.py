@@ -28,3 +28,24 @@ def qualify_inventory(actual: dict, locked: dict) -> dict:
     for name in sorted(set(locked.get("forbidden") or []) & set(installed)):
         reasons.append(f"HARDWARE_PLUGIN_PRESENT:{name}")
     return {"qualified": not reasons, "reasons": reasons}
+
+
+def qualify_native_inventory(actual, locked):
+    """Native execution additionally binds actual plugin files, launch environment and apt sources.
+    The generic comparator above remains a portable consistency test, not a host attestation.
+    """
+    report=qualify_inventory(actual,locked);reasons=report['reasons']
+    plugins=locked.get('digests')
+    if not isinstance(plugins,dict) or not plugins or not all(name.startswith('/') and len(digest)==64 for name,digest in plugins.items()):
+        reasons.append('PLUGIN_INVENTORY_UNRESOLVED')
+    runtime=locked.get('runtimePin')
+    if not isinstance(runtime,dict) or not runtime:
+        reasons.append('RUNTIME_INVENTORY_UNRESOLVED')
+    elif actual.get('runtime') != runtime:
+        reasons.append('RUNTIME_INVENTORY_MISMATCH')
+    provenance=locked.get('aptProvenance')
+    if not isinstance(provenance,dict) or not provenance:
+        reasons.append('APT_PROVENANCE_UNRESOLVED')
+    elif actual.get('aptProvenance') != provenance:
+        reasons.append('APT_PROVENANCE_MISMATCH')
+    return {'qualified':not reasons,'reasons':reasons}

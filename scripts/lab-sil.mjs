@@ -16,7 +16,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),SIM=join(root,'
 const BACKENDS=['gazebo_nav2','linuxcnc_sim'],ARM=join(root,'integrations/arm-controller');
 const sha=(s)=>createHash('sha256').update(s).digest('hex');
 const usage=(m)=>{console.error(`${m}\nusage: lab-sil.mjs doctor --backend gazebo_nav2 [--json] [--environment-profile ID] | run (--scenario ID --seed N | --campaign ID [--seed N]) [--repeat N] --out DIR [--backend-set ID] [--environment-profile ID] [--engineering-project PATH] | verify --input DIR`);process.exit(2);};
-const SCHEMA={doctor:{backend:'string',json:'flag','environment-profile':'id','native-config':'path'},run:{scenario:'id',campaign:'id',seed:'int',repeat:'int',out:'path','backend-set':'id','environment-profile':'id','native-config':'path','engineering-project':'path'},verify:{input:'path'}};
+const SCHEMA={doctor:{backend:'string',json:'flag','environment-profile':'id','native-config':'path'},run:{scenario:'id',campaign:'id',seed:'int',repeat:'int',out:'path','backend-set':'id','environment-profile':'id','native-config':'path','engineering-project':'path','engineering-case':'id'},verify:{input:'path'}};
 function parse(command,argv){
  const schema=SCHEMA[command];if(!schema)usage(`UNKNOWN_COMMAND:${command??''}`);
  const o={};
@@ -90,7 +90,10 @@ async function run(o){
  if(!o.out)usage('MISSING_OPTION:--out');
  if(o.campaign&&(o.scenario||o['backend-set']))usage('CAMPAIGN_EXCLUDES:--scenario/--backend-set');
  // engineering sets run a compiled project, never a preset; a project with a legacy set is a mistake, not a fallback
+ if(o['engineering-case']&&!['nominal','obstacle','no-path','cancel','worker-loss'].includes(o['engineering-case']))usage('ENGINEERING_CASE_INVALID');
  const engineeringSet=String(o['backend-set']??'').startsWith('engineering-');
+ const subjectCommit=spawnSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).stdout.trim();
+ if(o['engineering-case']&&!engineeringSet)usage('ENGINEERING_CASE_NEEDS_ENGINEERING_BACKEND_SET');
  if(engineeringSet&&!o['engineering-project'])usage('MISSING_OPTION:--engineering-project');
  if(o['engineering-project']&&!engineeringSet)usage('ENGINEERING_PROJECT_NEEDS_ENGINEERING_BACKEND_SET');
  if(o['engineering-project']&&!/^engineering-(arm64|amd64)$/.test(String(o['environment-profile']??'')))usage('ENGINEERING_PROJECT_NEEDS_ENGINEERING_ENVIRONMENT_PROFILE');
@@ -109,7 +112,7 @@ async function run(o){
  if(!report.prerequisitesMet||blocked.length){
   // every scenario or nothing: a campaign with one blocked scenario is not_run as a whole, never "pass with skips"
   const reasons=[...report.checks.filter(c=>!c.ok).map(c=>`PREREQUISITE_MISSING:${c.id}`),...blocked.map(e=>`SCENARIO_BLOCKED:${e.id}:${e.preflight.reasons.join('|')}`)];
-  await writeFile(manifestFile,JSON.stringify({schemaVersion:1,status:'not_run',result:'blocked_external',...o.campaign?{campaignId:o.campaign,scenarios,expectedRuns}:{scenarioId:o.scenario,seed:o.seed,repeat:o.repeat??1,backendSetId:entries[0].backendSet,requiredBackends:entries[0].preflight.required},reasons,doctor:report},null,2)+'\n');
+  await writeFile(manifestFile,JSON.stringify({schemaVersion:1,status:'not_run',result:'blocked_external',...engineeringSet?{sourceCommit:subjectCommit,engineeringCase:o['engineering-case']??'nominal',accepted:false,dynamics:'not_calibrated'}:{},...o.campaign?{campaignId:o.campaign,scenarios,expectedRuns}:{scenarioId:o.scenario,seed:o.seed,repeat:o.repeat??1,backendSetId:entries[0].backendSet,requiredBackends:entries[0].preflight.required},reasons,doctor:report},null,2)+'\n');
   console.error(`NOT_RUN: ${reasons.join(', ')} (see ${manifestFile})`);process.exit(2);
  }
  const fixtures=join(root,'tests/fixtures/digital-twin');
@@ -117,12 +120,13 @@ async function run(o){
  if(o.campaign)await writeFile(manifestFile,JSON.stringify({schemaVersion:1,status:'running',campaignId:o.campaign,sourceCommit:commit,scenarios,expectedRuns,doctor:report},null,2)+'\n');
  let failed=0,completed=0;
  for(const e of entries){
-  const fixture=join(fixtures,e.preflight.fixture.project),scenarioFile=e.preflight.fixture.scenario?join(fixtures,e.preflight.fixture.scenario):null;
+  const engineering=e.backendSet==='engineering-rigid-v1';
+  const fixture=engineering?o['engineering-project']:join(fixtures,e.preflight.fixture.project),scenarioFile=e.preflight.fixture?.scenario?join(fixtures,e.preflight.fixture.scenario):null;
   for(let i=1;i<=e.repeat;i++){
    const dir=o.campaign?join(o.out,e.id,`run-${i}`):join(o.out,`run-${i}`);await mkdir(dir,{recursive:true});
-   const compiled=spawnSync('python3',['-m','compiler','--fixture',fixture,'--out',join(dir,'bundle'),...scenarioFile?['--scenario',scenarioFile]:[]],{cwd:SIM,env:{...process.env,PYTHONPATH:`${SIM}:${join(root,'robotics/agent')}`},encoding:'utf8'});
+   const compiled=spawnSync('python3',engineering?['-m','compiler.engineering_native','--project',fixture,'--out',join(dir,'bundle')]:['-m','compiler','--fixture',fixture,'--out',join(dir,'bundle'),...scenarioFile?['--scenario',scenarioFile]:[]],{cwd:SIM,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:`${SIM}:${join(root,'robotics/agent')}`},encoding:'utf8'});
    if(compiled.status!==0){console.error(`COMPILE_FAILED: ${compiled.stderr.trim()}`);process.exit(1);}
-   const r=spawnSync(TSX,[CLI,'run','--scenario',e.id,'--seed',String(e.seed),'--out',dir,'--fixture',fixture,'--bundle',join(dir,'bundle'),'--backend-set',e.backendSet,'--source-commit',commit,...o['environment-profile']?['--environment-profile',o['environment-profile']]:[],...(o['native-config']??process.env.LAB_NATIVE_CONFIG)?['--native-config',o['native-config']??process.env.LAB_NATIVE_CONFIG]:[]],{stdio:'inherit',timeout:3600000});
+   const r=spawnSync(TSX,[CLI,'run','--scenario',e.id,'--seed',String(engineering?e.seed+i-1:e.seed),'--out',dir,'--fixture',fixture,'--bundle',join(dir,'bundle'),'--backend-set',e.backendSet,'--source-commit',commit,...o['environment-profile']?['--environment-profile',o['environment-profile']]:[],...engineering&&o['engineering-case']?['--engineering-case',o['engineering-case']]:[],...(o['native-config']??process.env.LAB_NATIVE_CONFIG)?['--native-config',o['native-config']??process.env.LAB_NATIVE_CONFIG]:[]],{stdio:'inherit',timeout:3600000});
    if(r.status!==0)failed++;else completed++;
   }
  }
@@ -144,6 +148,7 @@ async function verify(o){
  let failures=[],notRun=[];
  for(const [d,m] of manifests){
   if(m.status==='not_run'||m.evidence!=='sil'){notRun.push(`${d}: ${m.status==='not_run'?(m.reasons??[]).join(',')||'not_run':`evidence ${m.evidence}`}`);continue;}
+  if(m.backendSetId==='engineering-rigid-v1'){const checked=spawnSync(TSX,[CLI,'verify-engineering','--input',d],{encoding:'utf8',timeout:60000});if(checked.status!==0)failures.push(`${d}: engineering evidence replay failed: ${(checked.stdout||checked.stderr).trim()}`);}
   for(const out of m.outputs??[]){let bytes;try{bytes=await readFile(join(d,out.path));}catch{failures.push(`${d}: missing ${out.path}`);continue;}if(sha(bytes)!==out.sha256)failures.push(`${d}: hash mismatch ${out.path}`);}
   if(m.scenario?.id==='BV01'&&m.nativeFaultExpectation){
    try{const path='fault-case-assessment.json',assessment=JSON.parse(await readFile(join(d,path),'utf8'));if(!m.outputs?.some(o=>o.path===path)||JSON.stringify(assessment.expectation)!==JSON.stringify(m.nativeFaultExpectation)||assessment.producer!=='native'||assessment.businessOutcome?.status!=='needs_attention'||assessment.businessOutcome?.served!=='0'||!Array.isArray(assessment.assessment)||!assessment.assessment.length)failures.push(`${d}: invalid negative-case assessment`);if(assessment.result==='not_run')notRun.push(`${d}: negative-case assessment not_run`);if(!['pass','not_run'].includes(assessment.result)||assessment.assessment.some(a=>a.result==='fail')||assessment.result==='pass'&&assessment.assessment.some(a=>a.result!=='pass'))failures.push(`${d}: negative-case assessment failed`);}catch{failures.push(`${d}: negative-case assessment unreadable`);}
